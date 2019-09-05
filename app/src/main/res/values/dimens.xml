@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 右下メニューボタンの位置指定用 -->
+    <dimen name="dp_64">64dp</dimen>
+    <dimen name="dp_122">122dp</dimen>
+    <dimen name="dp_180">180dp</dimen>
+    <dimen name="dp_238">238dp</dimen>
+
+    <!-- MainActivity側のクリックガードサイズ -->
+    <dimen name="bg_guard_top_height">112dp</dimen>
+
+    <!-- ブクマ登録ダイアログの表示位置調整用 -->
+    <dimen name="dp_80">80dp</dimen>
+
+    <!-- トースト通知の表示位置調整用 -->
+    <dimen name="toast_offset_y">8dp</dimen>
+
+    <!-- エントリー項目のサイズ -->
+    <dimen name="dp_18">18dp</dimen>
+    <dimen name="entry_item_with_bookmarked_data">134dp</dimen>
+    <dimen name="entry_item_normal">116dp</dimen>
+
+    <!-- 右下スターボタンの位置指定用 -->
+    <dimen name="yellow_star_position">72dp</dimen>
+    <dimen name="green_star_position">128dp</dimen>
+    <dimen name="red_star_position">184dp</dimen>
+    <dimen name="blue_star_position">240dp</dimen>
+    <dimen name="purple_star_position">296dp</dimen>
+
+    <!-- ダイアログサイズ -->
+    <dimen name="dialog_width_major">95%</dimen>
+    <dimen name="dialog_width_minor">95%</dimen>
+</resources>

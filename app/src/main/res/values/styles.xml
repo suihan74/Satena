@@ -1,0 +1,126 @@
+<resources>
+    <!-- Base application theme. -->
+
+    <!--Theme.AppCompat.Light.DarkActionBar-->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+
+        <!-- ダイアログのデフォルトスタイル -->
+        <item name="android:alertDialogTheme">@style/AlertDialogStyle</item>
+
+        <!-- enable fragment transition -->
+        <item name="android:windowContentTransitions">true</item>
+
+        <!-- Toolbarハンバーガーボタンなどの色 -->
+        <item name="android:textColorSecondary">@color/colorPrimaryText</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+
+        <!-- action bar area -->
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <item name="android:textColorPrimary">@color/colorPrimaryText</item>
+
+        <!-- TabLayout -->
+        <item name="tabSelectedTextColor">@color/colorPrimary</item>
+        <item name="tabTextColor">@color/disabledColor</item>
+        <item name="tabIndicatorColor">@color/colorPrimary</item>
+
+        <!-- for NumberPicker -->
+        <item name="colorControlNormal">@color/colorPrimary</item>
+    </style>
+
+    <!-- Light Theme -->
+    <style name="AppTheme.Light" parent="AppTheme">
+        <item name="panelBackground">@color/panelBackground</item>
+        <item name="tabBackground">@color/tabBackground</item>
+        <item name="textColor">@color/textColor</item>
+        <item name="textColorHint">@color/textColorHint</item>
+        <item name="dividerColor">@color/dividerColor</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
+        <item name="entryCommentBackground">@color/entryCommentBackground</item>
+
+        <item name="android:spinnerStyle">@style/SpinnerStyle.Light</item>
+    </style>
+
+    <!-- Dark Theme -->
+    <style name="AppTheme.Dark" parent="AppTheme">
+        <item name="panelBackground">@color/panelBackgroundDark</item>
+        <item name="tabBackground">@color/tabBackgroundDark</item>
+        <item name="textColor">@color/textColorDark</item>
+        <item name="textColorHint">@color/textColorHintDark</item>
+        <item name="dividerColor">@color/dividerColorDark</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
+        <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
+
+        <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
+    </style>
+
+    <style name="LoginEditTextStyle" parent="Widget.AppCompat.EditText">
+        <item name="colorControlNormal">@color/colorControlNormal</item>
+        <item name="colorControlActivated">@color/colorPrimary</item>
+        <item name="android:textCursorDrawable">@color/textCursorDrawable</item>
+        <item name="android:textColor">@color/textColor</item>
+        <item name="android:textColorHint">@color/textColorHint</item>
+        <item name="android:textColorHighlight">@color/colorPrimary</item>
+    </style>
+
+    <style name="MastodonLoginEditTextStyle" parent="Widget.AppCompat.EditText">
+        <item name="colorControlNormal">@color/colorControlNormal</item>
+        <item name="colorControlActivated">@color/colorPrimary</item>
+        <item name="android:textCursorDrawable">@color/textCursorDrawable</item>
+        <item name="android:textColor">@color/mastodonTextColor</item>
+        <item name="android:textColorHint">@color/textColorHint</item>
+        <item name="android:textColorHighlight">@color/colorPrimary</item>
+    </style>
+
+
+    <!-- AlertDialog -->
+    <style name="AlertDialogStyle" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
+        <item name="android:windowMinWidthMajor">@dimen/dialog_width_major</item>
+        <item name="android:windowMinWidthMinor">@dimen/dialog_width_minor</item>
+
+        <!-- TabLayout -->
+        <item name="tabSelectedTextColor">@color/colorPrimary</item>
+        <item name="tabTextColor">@color/disabledColor</item>
+        <item name="tabIndicatorColor">@color/colorPrimary</item>
+        <item name="tabBackground">@color/tabBackground</item>
+    </style>
+
+    <style name="AlertDialogTitleStyle" parent="TextAppearance.AppCompat.Title">
+        <item name="android:textColor">@color/textColor</item>
+    </style>
+
+
+    <!-- Spinner -->
+    <style name="SpinnerStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:scrollbarAlwaysDrawVerticalTrack">true</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/colorPrimaryText</item>
+        <item name="android:dropDownSelector">@color/colorPrimaryText</item>
+    </style>
+
+    <style name="SpinnerStyle.Light" parent="SpinnerStyle">
+        <item name="android:popupBackground">@color/panelBackground</item>
+    </style>
+
+    <style name="SpinnerStyle.Dark" parent="Widget.AppCompat.Spinner">
+        <item name="android:popupBackground">@color/panelBackgroundDark</item>
+    </style>
+
+
+    <!-- IgnoreTarget @ IgnoredEntryDialog -->
+    <style name="IgnoreTargetCheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="colorControlNormal">@color/textColor</item>
+    </style>
+
+</resources>

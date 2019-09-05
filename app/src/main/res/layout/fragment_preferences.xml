@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:fitsSystemWindows="true"
+        tools:context=".activities.PreferencesActivity">
+
+    <android.support.v7.widget.Toolbar
+            android:id="@+id/preferences_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="@color/colorPrimaryText"
+            android:background="?attr/colorPrimary"/>
+
+    <RelativeLayout
+            android:background="?attr/panelBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <ScrollView
+                android:id="@+id/preferences_tabs_scroll_view"
+                android:layout_alignParentStart="true"
+                android:background="?attr/panelBackground"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical">
+
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                <ImageButton
+                        android:id="@+id/preferences_tab_information"
+                        android:src="@drawable/ic_baseline_info"
+                        android:background="@color/colorPrimary"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:onClick="onClickedTab"/>
+
+                <ImageButton
+                        android:id="@+id/preferences_tab_accounts"
+                        android:src="@drawable/ic_preferences_accounts"
+                        android:background="@null"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:onClick="onClickedTab"/>
+
+                <ImageButton
+                        android:id="@+id/preferences_tab_generals"
+                        android:src="@drawable/ic_preferences_generals"
+                        android:background="@null"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:onClick="onClickedTab"/>
+
+                <ImageButton
+                        android:id="@+id/preferences_tab_entries"
+                        android:src="@drawable/ic_preferences_entries"
+                        android:background="@null"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:onClick="onClickedTab"/>
+
+                <ImageButton
+                        android:id="@+id/preferences_tab_bookmarks"
+                        android:src="@drawable/ic_preferences_bookmarks"
+                        android:background="@null"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:onClick="onClickedTab"/>
+
+                <ImageButton
+                        android:id="@+id/preferences_tab_filters"
+                        android:src="@drawable/ic_preferences_filters"
+                        android:background="@null"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:onClick="onClickedTab"/>
+
+                <ImageButton
+                        android:id="@+id/preferences_tab_ignored_users"
+                        android:src="@drawable/ic_preferences_ignored_users"
+                        android:background="@null"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:onClick="onClickedTab"/>
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+                android:id="@+id/preferences_separator"
+                android:layout_toEndOf="@id/preferences_tabs_scroll_view"
+                android:background="?attr/colorPrimary"
+                android:orientation="vertical"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"/>
+
+        <android.support.v4.view.ViewPager
+                android:id="@+id/preferences_view_pager"
+                android:background="?attr/panelBackground"
+                android:layout_toEndOf="@id/preferences_separator"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+    </RelativeLayout>
+
+</LinearLayout>
+

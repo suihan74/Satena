@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:fitsSystemWindows="false"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/mastodonBackground"
+
+        android:layout_gravity="center"
+        android:scrollbars="none"
+        tools:context=".activities.MainActivity">
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="58dp"
+            android:orientation="vertical">
+
+        <ImageView
+                android:id="@+id/title"
+                android:src="@drawable/ic_mstdn_logo_full"
+                android:layout_centerInParent="true"
+                android:layout_width="256dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"/>
+
+        <EditText
+                android:id="@+id/instance_name"
+                android:hint="インスタンス名 (e.g. mstdn.jp)"
+                style="@style/MastodonLoginEditTextStyle"
+                app:theme="@style/MastodonLoginEditTextStyle"
+                android:nextFocusDown="@id/auth_button"
+                android:layout_below="@id/title"
+                android:layout_marginStart="64dp"
+                android:layout_marginEnd="64dp"
+                android:layout_marginTop="12dp"
+                android:inputType="text"
+                android:maxLines="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="48dp"/>
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@id/instance_name"
+                android:layout_centerHorizontal="true">
+
+            <Button
+                    android:id="@+id/cancel_button"
+                    android:text="@string/cancel"
+                    android:textColor="#222"
+                    app:backgroundTint="#ccc"
+                    android:layout_marginEnd="56dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <Button
+                    android:id="@+id/auth_button"
+                    android:text="@string/signin"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/mastodonColorPrimary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+    </RelativeLayout>
+</ScrollView>

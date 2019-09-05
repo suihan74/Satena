@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:fitsSystemWindows="false"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/panelBackground"
+        android:paddingStart="64dp"
+        android:paddingEnd="64dp"
+        android:layout_gravity="center"
+        android:scrollbars="none"
+        tools:context=".activities.MainActivity">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="72dp"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/title"
+                android:text="はてなブックマーク"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:layout_marginBottom="48dp"/>
+
+        <EditText
+                android:id="@+id/user_name"
+                android:hint="ユーザーID"
+                style="@style/LoginEditTextStyle"
+                app:theme="@style/LoginEditTextStyle"
+                android:nextFocusDown="@id/password"
+                android:textColor="?attr/textColor"
+                android:inputType="text"
+                android:maxLines="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"/>
+
+        <EditText
+                android:id="@+id/password"
+                android:hint="パスワード"
+                style="@style/LoginEditTextStyle"
+                app:theme="@style/LoginEditTextStyle"
+                android:nextFocusDown="@id/auth_button"
+                android:textColor="?attr/textColor"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"/>
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center_horizontal">
+
+            <Button
+                    android:id="@+id/cancel_button"
+                    android:text="@string/cancel"
+                    android:textColor="#222"
+                    app:backgroundTint="#ccc"
+                    android:layout_marginEnd="56dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <Button
+                    android:id="@+id/auth_button"
+                    android:text="@string/signin"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/colorPrimary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

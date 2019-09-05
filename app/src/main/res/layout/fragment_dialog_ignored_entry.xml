@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <android.support.design.widget.TabLayout
+            android:id="@+id/tab_layout"
+            app:tabSelectedTextColor="?attr/tabIndicatorColor"
+            app:tabIndicatorColor="?attr/tabIndicatorColor"
+            app:tabTextColor="?attr/tabTextColor"
+            app:tabBackground="@android:color/transparent"
+            android:layout_marginBottom="4dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <android.support.design.widget.TabItem
+                android:id="@+id/tab_url"
+                android:text="@string/ignored_entry_dialog_tab_url"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        <android.support.design.widget.TabItem
+                android:id="@+id/tab_text"
+                android:text="@string/ignored_entry_dialog_tab_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+    </android.support.design.widget.TabLayout>
+
+    <EditText
+            android:id="@+id/query_text"
+            android:textColor="@color/textColor"
+            android:inputType="text"
+            android:singleLine="true"
+            android:hint="@string/ignored_entry_dialog_tab_url"
+            android:layout_below="@id/tab_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:id="@+id/desc_text"
+            android:textColor="@color/textColor"
+            android:layout_below="@id/query_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:id="@+id/target_desc_text"
+            android:layout_below="@id/desc_text"
+            android:textColor="@color/textColor"
+            android:text="ミュート対象"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    <CheckBox
+            android:id="@+id/target_entry_checkbox"
+            android:theme="@style/IgnoreTargetCheckBox"
+            android:text="エントリ"
+            android:textSize="13sp"
+            android:textColor="@color/textColor"
+            android:checked="true"
+            android:layout_below="@id/target_desc_text"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <CheckBox
+            android:id="@+id/target_bookmark_checkbox"
+            android:theme="@style/IgnoreTargetCheckBox"
+            android:text="ブコメ"
+            android:textSize="13sp"
+            android:textColor="@color/textColor"
+            android:layout_alignTop="@id/target_entry_checkbox"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+</RelativeLayout>

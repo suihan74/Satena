@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.suihan74.satena">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <application
+            android:name=".SatenaApplication"
+            android:allowBackup="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme.Light"
+            android:usesCleartextTraffic="true">  <!-- 暗号化されていないHTTP通信を許可 -->
+        <!-- android:theme="@style/Theme.AppCompat.Light.NoActionBar" -->
+
+        <!-- Services -->
+        <service android:name=".NotificationService" />
+
+        <!-- Receivers -->
+        <receiver android:name=".ConnectivityReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".BrowserToolbarManager"/>
+
+        <!-- Activities -->
+        <activity android:name=".activities.MainActivity" android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="satena-mastodon"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".activities.BookmarksActivity">
+            <intent-filter android:label="Satenaでコメントを見る">
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+
+            <intent-filter android:label="Satenaでブコメページを開く">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="b.hatena.ne.jp" android:pathPrefix="/entry/"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".activities.PreferencesActivity" android:launchMode="singleTop"/>
+
+        <activity android:name=".activities.BookmarkPostActivity" android:launchMode="singleTop"/>
+
+
+        <!-- ライセンス一覧 -->
+        <activity
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:name="com.google.android.gms.oss.licenses.OssLicensesActivity"
+        />
+        <activity
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
+        />
+
+    </application>
+
+</manifest>

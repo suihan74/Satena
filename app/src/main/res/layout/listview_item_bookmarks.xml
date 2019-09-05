@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="6dp"
+        android:background="?android:attr/selectableItemBackground">
+
+    <ImageView
+            android:id="@+id/bookmark_user_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"/>
+
+    <ImageView
+            android:id="@+id/ignored_user_mark"
+            android:src="@drawable/ic_ignored_user_mark"
+            android:visibility="invisible"
+            android:layout_below="@id/bookmark_user_icon"
+            android:layout_alignStart="@id/bookmark_user_icon"
+            android:layout_marginTop="4dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"/>
+
+    <TextView
+            android:id="@+id/bookmark_user_name"
+            android:textColor="?attr/textColor"
+            android:textStyle="bold"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textSize="14sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/bookmark_user_icon"
+            android:layout_alignEnd="@id/bookmark_comment"
+            android:layout_marginTop="4dp"/>
+
+    <TextView
+            android:id="@+id/bookmark_comment"
+            android:textColor="?attr/textColor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="1.2sp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
+            android:layout_marginEnd="10dp"
+            android:textSize="14sp"
+            android:layout_toEndOf="@id/bookmark_user_icon"
+            android:layout_below="@id/bookmark_user_name"/>
+
+    <LinearLayout
+            android:id="@+id/bookmark_tags_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_toEndOf="@id/bookmark_user_icon"
+            android:layout_below="@id/bookmark_comment"
+            android:layout_marginTop="2dp">
+
+        <ImageView
+                android:id="@+id/bookmark_tag_icon"
+                app:srcCompat="@drawable/ic_tag"
+                android:layout_marginTop="3dp"
+                android:layout_width="14sp"
+                android:layout_height="14sp"/>
+        <TextView
+                android:id="@+id/bookmark_tags"
+                android:textSize="14sp"
+                android:textColor="@color/tagColor"
+                android:layout_marginStart="2dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <TextView
+            android:id="@+id/bookmark_timestamp"
+            android:textSize="14sp"
+            android:textColor="@color/timestampColor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/bookmark_tags_layout"
+            android:layout_toEndOf="@id/bookmark_user_icon"
+            android:layout_marginTop="2dp"/>
+
+
+    <!-- IDコール先 -->
+
+    <RelativeLayout
+            android:id="@+id/bookmark_mention_area"
+            android:layout_below="@id/bookmark_timestamp"
+            android:layout_alignStart="@id/bookmark_user_name"
+            android:layout_alignEnd="@id/bookmark_user_name"
+            android:paddingTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/bookmark_mention_user_icon"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"/>
+
+        <TextView
+                android:id="@+id/bookmark_mention_user_name"
+                android:layout_toEndOf="@id/bookmark_mention_user_icon"
+                android:layout_alignTop="@id/bookmark_mention_user_icon"
+                android:textStyle="bold"
+                android:textColor="?attr/textColor"
+                android:textSize="12sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/bookmark_mention_comment"
+                android:layout_below="@id/bookmark_mention_user_name"
+                android:layout_alignStart="@id/bookmark_mention_user_name"
+                android:layout_marginTop="2dp"
+                android:textColor="?attr/textColor"
+                android:textSize="12sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+
+
+</RelativeLayout>

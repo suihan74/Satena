@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        tools:context=".activities.BookmarksActivity">
+
+    <EditText
+            android:id="@+id/post_bookmark_comment"
+            android:minHeight="96dp"
+            android:maxHeight="96dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:id="@+id/post_bookmark_comment_count"
+            android:text="100"
+            android:layout_below="@id/post_bookmark_comment"
+            android:layout_toStartOf="@id/post_bookmark_button"
+            android:layout_alignBaseline="@id/post_bookmark_button"
+            android:layout_marginEnd="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <Button
+            android:id="@+id/post_bookmark_button"
+            android:textStyle="bold"
+            android:text="B!"
+            app:backgroundTint="@color/colorPrimary"
+            android:layout_below="@id/post_bookmark_comment"
+            android:layout_alignParentEnd="true"
+            android:layout_width="65dp"
+            android:layout_height="wrap_content" android:layout_marginTop="0dp"/>
+
+    <CheckBox
+            android:text="Ms"
+            android:id="@+id/post_bookmark_post_mastodon"
+            android:layout_below="@id/post_bookmark_comment"
+            android:layout_alignBaseline="@id/post_bookmark_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <CheckBox
+            android:text="Tw"
+            android:id="@+id/post_bookmark_post_twitter"
+            android:layout_toEndOf="@id/post_bookmark_post_mastodon"
+            android:layout_below="@id/post_bookmark_comment"
+            android:layout_alignBaseline="@id/post_bookmark_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <CheckBox
+            android:text="Fb"
+            android:id="@+id/post_bookmark_post_facebook"
+            android:layout_toEndOf="@id/post_bookmark_post_twitter"
+            android:layout_below="@id/post_bookmark_comment"
+            android:layout_alignBaseline="@id/post_bookmark_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <CheckBox
+            android:text="En"
+            android:id="@+id/post_bookmark_post_evernote"
+            android:layout_toEndOf="@id/post_bookmark_post_facebook"
+            android:layout_below="@id/post_bookmark_comment"
+            android:layout_alignBaseline="@id/post_bookmark_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <CheckBox
+            android:text="Pr"
+            android:id="@+id/post_bookmark_private"
+            android:layout_toEndOf="@id/post_bookmark_post_evernote"
+            android:layout_below="@id/post_bookmark_comment"
+            android:layout_alignBaseline="@id/post_bookmark_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+</RelativeLayout>

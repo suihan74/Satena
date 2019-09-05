@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingEnd="16dp"
+        android:paddingStart="15dp"
+        android:orientation="horizontal">
+
+    <RelativeLayout
+            android:layout_weight="0.5"
+            android:layout_width="0dp"
+            android:layout_height="match_parent">
+
+        <ImageView
+                android:id="@+id/app_icon"
+                android:src="@mipmap/ic_launcher"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="8dp"/>
+
+        <TextView
+                android:id="@+id/app_name"
+                android:textColor="?attr/textColor"
+                android:text="@string/app_name"
+                android:textSize="20sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/app_icon"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="12dp"/>
+
+        <TextView
+                android:id="@+id/app_version"
+                android:textColor="?attr/textColor"
+                android:textSize="16sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/app_name"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="2dp"/>
+
+        <TextView
+                android:id="@+id/copyright"
+                android:textColor="?attr/textColor"
+                android:text="@string/copyright"
+                android:textSize="14sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/app_version"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="4dp"/>
+
+        <Button
+                android:id="@+id/show_licenses_button"
+                android:text="ライセンス情報"
+                android:textColor="@color/textColor"
+                android:layout_below="@id/copyright"
+                android:layout_centerHorizontal="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"/>
+    </RelativeLayout>
+
+
+    <RelativeLayout
+            android:layout_weight="0.5"
+            android:layout_width="0dp"
+            android:layout_height="match_parent">
+
+        <Button
+                android:id="@+id/load_settings_button"
+                android:text="ファイルから設定を読み込む"
+                android:textColor="@color/textColor"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginBottom="6dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/save_settings_button"
+                android:text="設定をファイルに保存"
+                android:textColor="@color/textColor"
+                android:layout_below="@id/load_settings_button"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

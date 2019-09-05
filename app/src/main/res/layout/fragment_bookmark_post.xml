@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/bookmark_post_layout"
+        android:background="?attr/bookmarkDialogBackground"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp">
+
+    <EditText
+            android:id="@+id/post_bookmark_comment"
+            android:textColor="?attr/textColor"
+            android:gravity="top"
+            android:hint="@string/bookmark_comment_edit_text_hint"
+            android:autofillHints=""
+            android:textColorHint="?attr/textColorHint"
+
+            android:inputType="text"
+            android:singleLine="true"
+            android:imeOptions="actionDone"
+
+            android:layout_width="match_parent"
+            android:layout_height="152dp"/>
+
+    <TextView
+            android:id="@+id/post_bookmark_comment_count"
+            android:layout_below="@id/post_bookmark_comment"
+            android:layout_toStartOf="@id/post_bookmark_button"
+            android:layout_alignBaseline="@id/post_bookmark_button"
+            android:layout_marginEnd="16dp"
+            android:textColor="?attr/textColor"
+            android:text="0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <Button
+            android:id="@+id/post_bookmark_button"
+            android:textStyle="bold"
+            android:text="B!"
+            android:textColor="@color/colorPrimaryText"
+            app:backgroundTint="@color/colorPrimary"
+            android:layout_below="@id/post_bookmark_comment"
+            android:layout_alignParentEnd="true"
+            android:layout_width="65dp"
+            android:layout_height="46dp"/>
+
+    <LinearLayout
+            android:layout_below="@id/post_bookmark_comment"
+            android:layout_toStartOf="@id/post_bookmark_comment_count"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:paddingStart="8dp"
+            android:layout_height="46dp">
+
+        <ToggleButton
+                android:background="@drawable/toggle_button_post_mastodon"
+                android:textColor="#00000000"
+                android:id="@+id/post_bookmark_post_mastodon"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        <ToggleButton
+                android:background="@drawable/toggle_button_post_twitter"
+                android:textColor="#00000000"
+                android:id="@+id/post_bookmark_post_twitter"
+                android:layout_marginStart="16dp"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        <ToggleButton
+                android:id="@+id/post_bookmark_post_facebook"
+                android:layout_marginStart="16dp"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        <ToggleButton
+                android:id="@+id/post_bookmark_post_evernote"
+                android:layout_marginStart="16dp"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        <ToggleButton
+                android:background="@drawable/toggle_button_private_mode"
+                android:textColor="#00000000"
+                android:id="@+id/post_bookmark_private"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="16dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+    </LinearLayout>
+</RelativeLayout>

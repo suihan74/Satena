@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:configChanges="orientation|screenSize"
+        android:background="?attr/panelBackground"
+        tools:context=".activities.MainActivity">
+
+    <android.support.v7.widget.LinearLayoutCompat
+            android:id="@+id/main_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    <View
+            android:id="@+id/click_guard"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:background="#a0000000"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    <ProgressBar
+            android:id="@+id/main_progress_bar"
+            android:visibility="invisible"
+            style="?android:attr/progressBarStyle"
+            android:indeterminateTint="?attr/colorPrimary"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+</android.support.design.widget.CoordinatorLayout>

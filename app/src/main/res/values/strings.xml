@@ -1,0 +1,85 @@
+<resources>
+    <string name="app_name">Satena</string>
+    <string name="copyright">Copyright \u00A9 2019 &lt;a href=&quot;https://www.twitter.com/suihan742&quot;&gt;suihan&lt;/a&gt;</string>
+
+    <string name="drawer_open">開く</string>
+    <string name="drawer_close">閉じる</string>
+
+    <string name="cancel">キャンセル</string>
+    <string name="signin">ログイン</string>
+
+    <string name="bookmarks_tab_popular">人気</string>
+    <string name="bookmarks_tab_recent">新着</string>
+    <string name="bookmarks_tab_custom">カスタム</string>
+    <string name="bookmarks_tab_all">すべて</string>
+
+    <string name="entries_tab_hot">人気</string>
+    <string name="entries_tab_recent">新着</string>
+    <string name="entries_tab_mybookmarks">マイブックマーク</string>
+    <string name="entries_tab_readlater">あとで読む</string>
+
+    <string name="search_type_tag">タグ</string>
+    <string name="search_type_text">テキスト</string>
+
+    <string name="category_all">総合</string>
+    <string name="category_social">世の中</string>
+    <string name="category_economics">政治と経済</string>
+    <string name="category_life">暮らし</string>
+    <string name="category_knowledge">学び</string>
+    <string name="category_it">テクノロジー</string>
+    <string name="category_entertainment">エンタメ</string>
+    <string name="category_game">アニメとゲーム</string>
+    <string name="category_fun">おもしろ</string>
+    <string name="category_myhotentries">マイホットエントリ</string>
+    <string name="category_mybookmarks">マイブックマーク</string>
+    <string name="category_mytags">タグ</string>
+    <string name="category_search">検索</string>
+
+    <string name="notices_desc">通知</string>
+    <string name="categories_desc">カテゴリ</string>
+    <string name="my_bookmarks_desc">マイブックマーク</string>
+    <string name="preferences_desc">設定</string>
+
+    <!-- 設定項目の説明 -->
+    <string name="pref_title_information">情報</string>
+    <string name="pref_title_account">アカウント</string>
+    <string name="pref_title_generals">基本</string>
+    <string name="pref_title_entries">エントリ画面</string>
+    <string name="pref_title_bookmarks">ブックマーク画面</string>
+    <string name="pref_title_ignored_entries">非表示URL/TEXT</string>
+    <string name="pref_title_ignored_users">非表示ユーザー</string>
+    <!-- generals -->
+    <string name="pref_generals_theme_desc">テーマ</string>
+    <string name="pref_generals_using_termination_dialog_desc">終了確認ダイアログを表示する</string>
+    <string name="pref_generals_notices_last_seen_updatable_desc">通知の既読状態をアプリから更新する</string>
+    <string name="pref_generals_background_checking_notices_desc">常駐して通知を確認する</string>
+    <string name="pref_generals_checking_notices_intervals_desc">通知を確認する間隔</string>
+    <!-- entries -->
+    <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
+    <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
+    <string name="pref_home_category_desc">ホームカテゴリ</string>
+    <string name="pref_entries_initial_tab_desc">最初に表示するタブ</string>
+    <string name="pref_entries_menu_tap_guard_desc">メニュー表示中に他の操作をできないようにする</string>
+    <string name="pref_entries_hiding_toolbar_by_scrolling">スクロールでツールバーを隠す</string>
+    <!-- bookmarks -->
+    <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
+    <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>
+    <string name="pref_bookmarks_hiding_buttons_with_scrolling_desc">スクロールにあわせて画面下部のボタンを隠す</string>
+    <string name="pref_bookmarks_showing_ignored_users_in_all_bookmarks_desc">「すべて」タブでは非表示ユーザーを表示する</string>
+    <string name="pref_bookmarks_showing_ignored_users_with_calling_desc">idコールで言及されている非表示ユーザーを表示する</string>
+    <string name="pref_bookmarks_showing_stars_of_ignored_users_desc">ブクマ詳細画面で非表示ユーザーのスターを表示する</string>
+    <string name="pref_bookmarks_hiding_toolbar_by_scrolling">スクロールでツールバーを隠す</string>
+    <string name="pref_bookmarks_using_post_star_dialog_desc">スターをつける前に確認する</string>
+
+    <!-- 非表示エントリ登録ダイアログ -->
+    <string name="ignored_entry_dialog_tab_url">URL</string>
+    <string name="ignored_entry_dialog_tab_text">TEXT</string>
+    <string name="ignored_entry_dialog_desc_url">↑から始まるURLのエントリを非表示にする</string>
+    <string name="ignored_entry_dialog_desc_text">↑の文字列を含むエントリ(orブコメ)を非表示にする</string>
+
+    <!-- ブックマーク投稿ダイアログ -->
+    <string name="bookmark_comment_edit_text_hint">ブコメ(任意)</string>
+
+    <!-- ブコメ詳細activity -->
+    <string name="muted_comment_description">※ NGワードを含むコメントです ※</string>
+</resources>

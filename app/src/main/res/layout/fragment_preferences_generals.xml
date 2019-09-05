@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:scrollbars="vertical"
+        android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+        android:scrollbarSize="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingEnd="16dp"
+            android:paddingStart="15dp"
+            android:orientation="vertical">
+
+        <TextView
+                android:text="@string/pref_generals_theme_desc"
+                android:textColor="?attr/textColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ToggleButton
+                android:id="@+id/preferences_generals_theme"
+                style="@style/Widget.AppCompat.Button"
+                android:textColor="@color/textColor"
+                android:textOn="Dark"
+                android:textOff="Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:text="@string/pref_generals_using_termination_dialog_desc"
+                android:textColor="?attr/textColor"
+                android:layout_marginTop="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ToggleButton
+                android:id="@+id/preferences_generals_using_termination_dialog"
+                style="@style/Widget.AppCompat.Button"
+                android:textColor="@color/textColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:text="@string/pref_generals_notices_last_seen_updatable_desc"
+                android:textColor="?attr/textColor"
+                android:layout_marginTop="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ToggleButton
+                android:id="@+id/preferences_generals_notices_last_seen_updatable"
+                style="@style/Widget.AppCompat.Button"
+                android:textColor="@color/textColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:text="@string/pref_generals_background_checking_notices_desc"
+                android:textColor="?attr/textColor"
+                android:layout_marginTop="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ToggleButton
+                android:id="@+id/preferences_generals_background_checking_notices"
+                style="@style/Widget.AppCompat.Button"
+                android:textColor="@color/textColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:text="@string/pref_generals_checking_notices_intervals_desc"
+                android:textColor="?attr/textColor"
+                android:layout_marginTop="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/preferences_generals_checking_notices_interval"
+                style="@style/Widget.AppCompat.Button"
+                android:textColor="@color/textColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+
+    </LinearLayout>
+</ScrollView>
