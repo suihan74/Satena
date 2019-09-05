@@ -18,11 +18,11 @@ data class Bookmark (
 ) : Serializable {
     companion object {
         fun createFrom(src: BookmarkWithStarCount) = Bookmark(
-            user = src.user.name,
+            user = src.user,
             comment = src.comment,
             tags = src.tags,
             timestamp = src.timestamp,
-            starCount = src.starCount)
+            starCount = src.starCount.map { it.toStar() })
     }
 
     var mUserIconUrl: String? = null

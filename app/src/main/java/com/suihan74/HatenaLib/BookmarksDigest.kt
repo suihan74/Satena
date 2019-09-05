@@ -9,8 +9,23 @@ data class User (
     val profileImageUrl : String
 ) : Serializable
 
+data class StarCount (
+    @JsonAdapter(StarColorDeserializer::class)
+    val color : StarColor,
+    val count : Int
+) : Serializable {
+
+    internal fun toStar() = Star(
+        user = "",
+        quote = "",
+        color = color,
+        count = count
+    )
+
+}
+
 data class BookmarkWithStarCount (
-    val user : User,
+    private val mUser : User,
     val comment : String,
 
     val isPrivate : Boolean,
@@ -19,8 +34,16 @@ data class BookmarkWithStarCount (
 
     @JsonAdapter(TimestampDeserializer::class)
     val timestamp : LocalDateTime,
-    val starCount : List<Star>
-) : Serializable
+    val starCount : List<StarCount>
+) : Serializable {
+
+    val user: String
+        get() = mUser.name
+
+    val userIconUrl: String
+        get() = mUser.profileImageUrl
+
+}
 
 data class BookmarksDigest (
     val referredBlogEntries : List<Entry>,
