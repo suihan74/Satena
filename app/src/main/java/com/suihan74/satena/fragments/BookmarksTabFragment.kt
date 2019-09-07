@@ -32,25 +32,19 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
     private lateinit var mRecyclerView: RecyclerView
 
     private lateinit var mBookmarksAdapter: BookmarksAdapter
-    private lateinit var mParentTabAdapter : BookmarksTabAdapter
+    private lateinit var mParentTabAdapter: BookmarksTabAdapter
     private lateinit var mTabType : BookmarksTabType
 
-    private var mBookmarks : List<Bookmark> = emptyList()
-    private lateinit var mBookmarksEntry : BookmarksEntry
-    private lateinit var mStarsMap : Map<String, StarsEntry>
+    private var mBookmarksFragment: BookmarksFragment? = null
 
     companion object {
         fun createInstance(
-            b: List<Bookmark>,
-            bookmarksEntry: BookmarksEntry,
-            starsMap: Map<String, StarsEntry>,
-            adapter: BookmarksTabAdapter,
+            bookmarksFragment: BookmarksFragment,
+            parentTabAdapter: BookmarksTabAdapter,
             type: BookmarksTabType
         ) = BookmarksTabFragment().apply {
-            mBookmarks = b
-            mBookmarksEntry = bookmarksEntry
-            mStarsMap = starsMap
-            mParentTabAdapter = adapter
+            mBookmarksFragment = bookmarksFragment
+            mParentTabAdapter = parentTabAdapter
             mTabType = type
         }
     }
@@ -59,10 +53,13 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         val view = inflater.inflate(R.layout.fragment_bookmarks_tab, container, false)
         mView = view
 
+        val bookmarks = getBookmarks(mBookmarksFragment!!)
+        val bookmarksEntry = mBookmarksFragment!!.bookmarksEntry!!
+
         // initialize mBookmarks list
         val viewManager = LinearLayoutManager(context)
         mRecyclerView = view.findViewById(R.id.bookmarks_list)
-        mBookmarksAdapter = object : BookmarksAdapter(this, ArrayList(mBookmarks), mBookmarksEntry, mStarsMap, mTabType) {
+        mBookmarksAdapter = object : BookmarksAdapter(this, bookmarks, bookmarksEntry, mTabType) {
             fun ignoreUser(b: Bookmark) {
                 launch(Dispatchers.Main) {
                     try {
@@ -135,9 +132,8 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 val activity = activity as BookmarksActivity
 
                 val fragment = BookmarkDetailFragment.createInstance(
-                    bookmark,
-                    mStarsMap,
-                    mBookmarksEntry
+                    mBookmarksFragment!!,
+                    bookmark
                 )
                 activity.showFragment(fragment, null)
             }
@@ -191,6 +187,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 return super.onItemLongClicked(bookmark)
             }
         }
+
         mRecyclerView.apply {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
                 R.drawable.recycler_view_item_divider
@@ -205,6 +202,27 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                     super.onScrolled(recyclerView, dx, dy)
                 }
             })
+
+            if (BookmarksTabType.ALL != mTabType) {
+                val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter.itemCount - 1) {
+                    override fun load() {
+                        launch(Dispatchers.Main) {
+                            try {
+                                mBookmarksFragment!!.getNextBookmarksAsync().await()
+                                mParentTabAdapter.update()
+                            }
+                            catch (e: Exception) {
+                                Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
+                                activity?.showToast("ブクマリスト更新失敗")
+                            }
+                            finally {
+                                loadCompleted(mBookmarksAdapter.itemCount - 1)
+                            }
+                        }
+                    }
+                }
+                addOnScrollListener(bookmarksUpdater)
+            }
         }
 
 
@@ -235,14 +253,40 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         return view
     }
 
-    fun setBookmarks(b: List<Bookmark>) {
-        mBookmarks = b
-        if (this::mBookmarksAdapter.isInitialized) {
-            launch(Dispatchers.Main) {
-                mBookmarksAdapter.setBookmarks(b)
-                scrollToTop()
+    private fun getBookmarks(fragment: BookmarksFragment) = when(mTabType) {
+        BookmarksTabType.POPULAR ->
+            fragment.popularBookmarks.filterNot {
+                fragment.ignoredUsers.contains(it.user)
+            }
+
+        BookmarksTabType.RECENT ->
+            fragment.recentBookmarks.filterNot {
+                it.comment.isBlank() || fragment.ignoredUsers.contains(it.user)
+            }
+
+        BookmarksTabType.ALL -> {
+            val bookmarks = fragment.recentBookmarks
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val showIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS)
+            if (showIgnoredUsers) {
+                bookmarks
+            }
+            else {
+                bookmarks.filterNot {
+                    fragment.ignoredUsers.contains(it.user)
+                }
             }
         }
+    }
+
+    private fun filter(bookmark: Bookmark, fragment: BookmarksFragment, tabType: BookmarksTabType, showIgnoredUsers: Boolean) = when(tabType) {
+        BookmarksTabType.POPULAR -> !fragment.ignoredUsers.contains(bookmark.user)
+        BookmarksTabType.RECENT -> bookmark.comment.isNotBlank() && !fragment.ignoredUsers.contains(bookmark.user)
+        BookmarksTabType.ALL -> showIgnoredUsers || !fragment.ignoredUsers.contains(bookmark.user)
+    }
+
+    fun update() {
+        mBookmarksAdapter.setBookmarks(getBookmarks(mBookmarksFragment!!))
     }
 
     fun setSearchText(text : String) {

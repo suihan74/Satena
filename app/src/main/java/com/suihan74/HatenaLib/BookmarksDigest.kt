@@ -1,7 +1,10 @@
 package com.suihan74.HatenaLib
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.JsonAdapter
+import com.google.gson.annotations.SerializedName
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.format.DateTimeFormatter
 import java.io.Serializable
 
 data class User (
@@ -25,6 +28,7 @@ data class StarCount (
 }
 
 data class BookmarkWithStarCount (
+    @SerializedName("user")
     private val mUser : User,
     val comment : String,
 
@@ -43,6 +47,12 @@ data class BookmarkWithStarCount (
     val userIconUrl: String
         get() = mUser.profileImageUrl
 
+
+    fun getBookmarkUrl(entry: Entry) : String {
+        val dateFormat = DateTimeFormatter.ofPattern("yyyMMdd")
+        val date = timestamp.format(dateFormat)
+        return "${HatenaClient.B_BASE_URL}/$user/$date#bookmark-${entry.id}"
+    }
 }
 
 data class BookmarksDigest (

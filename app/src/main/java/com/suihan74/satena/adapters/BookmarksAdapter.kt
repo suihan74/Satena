@@ -18,23 +18,25 @@ import com.suihan74.utilities.*
 import com.suihan74.satena.R
 import com.suihan74.satena.models.*
 import kotlinx.coroutines.*
+import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.lang.StringBuilder
 
 open class BookmarksAdapter(
     private val fragment: CoroutineScopeFragment,
-    private val bookmarks : ArrayList<Bookmark>,
+    bookmarks : List<Bookmark>,
     private val bookmarksEntry: BookmarksEntry,
-    private val starsMap: Map<String, StarsEntry>,
     private val tabType: BookmarksTabType
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states : ArrayList<RecyclerState<Bookmark>>
+    private var states : ArrayList<RecyclerState<Bookmark>>
     var searchText = ""
         set(value) {
             field = value
 
-            val list = bookmarks
+            val list = states
+                .filter { RecyclerType.BODY == it.type }
+                .map { it.body!! }
                 .filter { isShowable(it) }
                 .map { RecyclerState(RecyclerType.BODY, it) }
             states.removeAll { it.type == RecyclerType.BODY }
@@ -63,10 +65,10 @@ open class BookmarksAdapter(
             .map { it.query }
 
         states = RecyclerState.makeStatesWithFooter(bookmarks.filter { bookmark ->
-                muteWords.none { word ->
-                    bookmark.comment.contains(word) && bookmark.getTagsText().contains(word)
-                }
-            })
+            muteWords.none { word ->
+                bookmark.comment.contains(word) && bookmark.getTagsText().contains(word)
+            }
+        })
     }
 
     private fun isShowable(b: Bookmark) =
@@ -75,48 +77,54 @@ open class BookmarksAdapter(
         || b.comment.contains(searchText)
         || b.tags.find { it.contains(searchText) } != null
 
-    fun setBookmarks(b: List<Bookmark>) {
-        if (bookmarks.isEmpty()) {
-            bookmarks.addAll(b)
-            for (i in 0 until bookmarks.size) {
-                val item = bookmarks[i]
-                if (isShowable(item)) {
-                    states.add(i, RecyclerState(RecyclerType.BODY, item))
-                    notifyItemInserted(i)
-                }
-            }
+    private fun getStarCount(list: List<Star>, color: StarColor) =
+        list.firstOrNull { it.color == color }?.count ?: 0
+
+    private fun equalsStarCount(prev: List<Star>?, cur: List<Star>?) : Boolean {
+        if (prev.isNullOrEmpty() != cur.isNullOrEmpty()) return true
+        return if (prev != null && cur != null) {
+            prev.size != cur.size || StarColor.values().all { getStarCount(prev, it) == getStarCount(cur, it) }
+        }
+        else true
+    }
+
+    fun setBookmarks(bookmarks: List<Bookmark>) {
+        if (RecyclerState.isBodiesEmpty(states)) {
+            states = RecyclerState.makeStatesWithFooter(bookmarks)
+            notifyDataSetChanged()
         }
         else {
-            val indexed = b.mapIndexed { i, bookmark -> Pair(i, bookmark) }.toTypedArray()
+            val indexed = bookmarks.withIndex()
 
             // 新規項目
             indexed
-                .filter {
-                    val target = it.second
-                    bookmarks.find { b -> b.user == target.user } == null
+                .filterNot {
+                    states.any { st -> st.body?.user == it.value.user }
                 }
-                .sortedBy { it.first }
-                .forEach {
-                    val item = it.second
-                    bookmarks.add(it.first, item)
+                .forEach { (_, item) ->
                     if (isShowable(item)) {
-                        states.add(it.first, RecyclerState(RecyclerType.BODY, item))
-                        notifyItemInserted(it.first)
+                        val position = states.indexOfFirst { item.timestamp > it.body?.timestamp ?: LocalDateTime.MIN }
+                        states.add(position, RecyclerState(RecyclerType.BODY, item))
+                        notifyItemInserted(position)
                     }
                 }
 
             // 内容の更新
             indexed
-                .filter {
-                    val target = it.second
-                    bookmarks.firstOrNull { b -> b.user == target.user && b.comment != target.comment } != null
+                .map {
+                    val existedIndex = states.indexOfFirst { state ->
+                        RecyclerType.BODY == state.type &&
+                        state.body!!.user == it.value.user &&
+                        (state.body!!.comment != it.value.comment ||
+                        state.body!!.getTagsText() != it.value.getTagsText() ||
+                        !equalsStarCount(state.body!!.starCount, it.value.starCount))
+                    }
+                    Pair(existedIndex, it.value)
                 }
-                .forEach {
-                    val item = it.second
-                    bookmarks[it.first] = item
-                    if (isShowable(item)) {
-                        states[it.first] = RecyclerState(RecyclerType.BODY, item)
-                        notifyItemChanged(it.first)
+                .forEach { (existedIndex, item) ->
+                    if (existedIndex >= 0 && isShowable(item)) {
+                        states[existedIndex] = RecyclerState(RecyclerType.BODY, item)
+                        notifyItemChanged(existedIndex)
                     }
                 }
         }
@@ -160,7 +168,6 @@ open class BookmarksAdapter(
                 (holder as ViewHolder).apply {
                     val b = states[position].body!!
                     setBookmark(b, bookmarksEntry)
-                    starsEntry = this@BookmarksAdapter.starsMap[b.user]
                 }
             }
 
@@ -309,32 +316,6 @@ open class BookmarksAdapter(
                 }
             }
         }
-
-        var starsEntry : StarsEntry? = null
-            get
-            internal set(value) {
-                field = value
-
-                val builder = StringBuilder()
-                val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
-                builder.append(bookmark!!.timestamp.format(formatter))
-                builder.append("　")
-
-                if (value != null) {
-                    val yellowStarCount = value.getStarsCount(StarColor.Yellow)
-                    val redStarCount = value.getStarsCount(StarColor.Red)
-                    val greenStarCount = value.getStarsCount(StarColor.Green)
-                    val blueStarCount = value.getStarsCount(StarColor.Blue)
-                    val purpleStarCount = value.getStarsCount(StarColor.Purple)
-
-                    appendStarText(builder, purpleStarCount, view.context, R.color.starPurple)
-                    appendStarText(builder, blueStarCount, view.context, R.color.starBlue)
-                    appendStarText(builder, redStarCount, view.context, R.color.starRed)
-                    appendStarText(builder, greenStarCount, view.context, R.color.starGreen)
-                    appendStarText(builder, yellowStarCount, view.context, R.color.starYellow)
-                }
-                timestamp.setHtml(builder.toString())
-            }
 
         private fun appendStarText(builder: StringBuilder, count: Int, context: Context, colorId: Int) {
             val color = ContextCompat.getColor(context, colorId)

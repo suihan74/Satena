@@ -25,7 +25,7 @@ abstract class RecyclerViewScrollingUpdater(private var invokingPosition: Int) :
 
     abstract fun load()
 
-    protected fun loadCompleted(newInvokingPosition: Int) {
+    protected fun loadCompleted(newInvokingPosition: Int = invokingPosition) {
         isLoading = false
         refreshInvokingPosition(newInvokingPosition)
     }

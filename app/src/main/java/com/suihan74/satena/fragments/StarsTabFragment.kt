@@ -20,26 +20,30 @@ import kotlinx.coroutines.*
 import kotlin.collections.ArrayList
 
 class StarsTabFragment : CoroutineScopeFragment() {
+    private var mBookmarksFragment : BookmarksFragment? = null
     private lateinit var mBookmark : Bookmark
-    private lateinit var mStarsMap : Map<String, StarsEntry>
-    private lateinit var mStarsEntry : StarsEntry
-    private lateinit var mBookmarksEntry : BookmarksEntry
     private lateinit var mStarsTabMode : StarsAdapter.StarsTabMode
 
     private lateinit var mStarsAdapter: StarsAdapter
 
     companion object {
-        fun createInstance(b: Bookmark, sMap: Map<String, StarsEntry>, bEntry: BookmarksEntry, tabMode: StarsAdapter.StarsTabMode) = StarsTabFragment().apply {
+        fun createInstance(
+            fragment: BookmarksFragment,
+            b: Bookmark,
+            tabMode: StarsAdapter.StarsTabMode
+        ) = StarsTabFragment().apply {
+            mBookmarksFragment = fragment
             mBookmark = b
-            mStarsMap = sMap
-            mStarsEntry = sMap[b.user] ?: StarsEntry("", ArrayList(), null)
-            mBookmarksEntry = bEntry
             mStarsTabMode = tabMode
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_stars_tab, container, false)
+
+        val bookmarksEntry = mBookmarksFragment!!.bookmarksEntry!!
+        val starsMap = mBookmarksFragment!!.starsMap
+        val allBookmarks = bookmarksEntry.bookmarks
 
         // initialize bookmarks list
         view.findViewById<RecyclerView>(R.id.stars_list).apply {
@@ -48,16 +52,15 @@ class StarsTabFragment : CoroutineScopeFragment() {
             addItemDecoration(dividerItemDecoration)
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
-            mStarsAdapter = object : StarsAdapter(context, mBookmark, mStarsMap, mBookmarksEntry.bookmarks, mStarsTabMode) {
+            mStarsAdapter = object : StarsAdapter(context, mBookmark, starsMap, allBookmarks, mStarsTabMode) {
                 override fun onItemClicked(user: String, star: Star?) {
-                    val target = mBookmarksEntry.bookmarks.firstOrNull { it.user == user } ?: return
+                    val target = allBookmarks.firstOrNull { it.user == user } ?: return
 
                     (activity as FragmentContainerActivity).apply {
                         showFragment(
                             BookmarkDetailFragment.createInstance(
-                                target,
-                                mStarsMap,
-                                mBookmarksEntry
+                                mBookmarksFragment!!,
+                                target
                             ), null)
                     }
                 }
@@ -79,7 +82,7 @@ class StarsTabFragment : CoroutineScopeFragment() {
                                 try {
                                     val tasks = ArrayList<Deferred<Any>>()
                                     for (i in 1..star!!.count) {
-                                        tasks.add(HatenaClient.deleteStarAsync(mBookmark.getBookmarkUrl(mBookmarksEntry), star))
+                                        tasks.add(HatenaClient.deleteStarAsync(mBookmark.getBookmarkUrl(bookmarksEntry), star))
                                     }
                                     tasks.awaitAll()
                                     removeItem(user)
@@ -128,12 +131,5 @@ class StarsTabFragment : CoroutineScopeFragment() {
 
         retainInstance = true
         return view
-    }
-
-
-    fun updateStars(sMap: Map<String, StarsEntry>) {
-        mStarsMap = sMap
-        mStarsEntry = sMap[mBookmark.user] ?: StarsEntry("", ArrayList(), null)
-        mStarsAdapter.updateStars(sMap)
     }
 }

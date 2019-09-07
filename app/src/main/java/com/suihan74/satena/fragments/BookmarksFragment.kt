@@ -29,9 +29,9 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.R
 import com.suihan74.utilities.*
 import kotlinx.coroutines.*
+import org.threeten.bp.LocalDateTime
 import java.net.SocketTimeoutException
-import java.util.ArrayList
-import java.util.HashMap
+import java.util.*
 
 class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     private lateinit var mRoot : View
@@ -51,14 +51,28 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     private var mEntry : Entry = emptyEntry()
     private val mStarsMap = HashMap<String, StarsEntry>()
     private var mBookmarksDigest : BookmarksDigest? = null
+    private var mBookmarksRecent : List<Bookmark> = emptyList()
 
     // ロード完了と同時に詳細画面に遷移する場合の対象ユーザー
     private var mTargetUser : String? = null
 
     // プリロード中のブクマ・スター
     private var mPreLoadingTasks : BookmarksActivity.PreLoadingTasks? = null
+    private var mFetchStarsTasks = WeakHashMap<String, Deferred<Unit>>()
 
     var bookmarksEntry : BookmarksEntry? = null
+        private set
+
+    val popularBookmarks
+        get() = mBookmarksDigest?.scoredBookmarks?.map { Bookmark.createFrom(it) } ?: emptyList()
+
+    val recentBookmarks
+        get() = mBookmarksRecent
+
+    val starsMap : Map<String, StarsEntry>
+        get() = lock(mStarsMap) { mStarsMap }
+
+    var ignoredUsers : Set<String> = emptySet()
         private set
 
     companion object {
@@ -107,7 +121,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 override fun onTabUnselected(p0: TabLayout.Tab?) {}
                 override fun onTabReselected(tab: TabLayout.Tab?) {
                     val adapter = mTabPager.adapter as BookmarksTabAdapter
-                    val fragment = adapter.findFragment(mTabPager, tab!!.position)
+                    val fragment = adapter.findFragment(tab!!.position)
                     fragment.scrollToTop()
                 }
             })
@@ -146,32 +160,33 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
             launch(Dispatchers.Main) {
                 try {
-                    val digestBookmarksTask = mPreLoadingTasks?.bookmarksDigestTask ?: HatenaClient.getDigestBookmarksAsync(mEntry.url)
+                    val ignoredUsersTask = HatenaClient.getIgnoredUsersAsync()
                     val bookmarksEntryTask = mPreLoadingTasks?.bookmarksTask ?: HatenaClient.getBookmarksEntryAsync(mEntry.url)
+                    val digestBookmarksTask = mPreLoadingTasks?.bookmarksDigestTask ?: HatenaClient.getDigestBookmarksAsync(mEntry.url)
+                    val recentBookmarksTask = mPreLoadingTasks?.bookmarksRecentTask ?: HatenaClient.getRecentBookmarksAsync(mEntry.url)
 
                     listOf(
+                        ignoredUsersTask,
                         digestBookmarksTask,
+                        recentBookmarksTask,
                         bookmarksEntryTask
                     ).awaitAll()
 
-                    mBookmarksDigest = digestBookmarksTask.await()
+                    ignoredUsers = ignoredUsersTask.await().toSet()
                     bookmarksEntry = bookmarksEntryTask.await()
+                    mBookmarksDigest = digestBookmarksTask.await()
+
+                    val recents = recentBookmarksTask.await()
+                    mBookmarksRecent = makeBookmarksRecent(recents.map { Bookmark.createFrom(it) })
 
                     val mBookmarksEntry = bookmarksEntry!!
                     toolbar.title = mBookmarksEntry.title
                     entryInfoFragment.bookmarksEntry = mBookmarksEntry
-                    refreshStars(mBookmarksEntry.bookmarks)
+                    updateStarsMap(mBookmarksEntry.bookmarks)
 
                     mPreLoadingTasks = null
 
-                    val adapter = object : BookmarksTabAdapter(
-                        childFragmentManager,
-                        activity,
-                        mBookmarksEntry.bookmarks,
-                        mBookmarksDigest,
-                        mBookmarksEntry,
-                        mStarsMap
-                    ) {
+                    val adapter = object : BookmarksTabAdapter(this@BookmarksFragment, mTabPager) {
                         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = onScrolled(dy)
                     }
                     mTabPager.apply {
@@ -180,7 +195,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                     }
 
                     if (mTargetUser != null) {
-                        val tab = adapter.findFragment(mTabPager, initialTabPosition)
+                        val tab = adapter.findFragment(initialTabPosition)
                         tab.scrollTo(mTargetUser!!)
                     }
 
@@ -213,9 +228,8 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                         if (bookmark != null) {
                             val detailFragment =
                                 BookmarkDetailFragment.createInstance(
-                                    bookmark,
-                                    mStarsMap,
-                                    bookmarksEntry!!
+                                    this@BookmarksFragment,
+                                    bookmark
                                 )
                             activity.showFragment(detailFragment, null)
                         }
@@ -231,14 +245,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             val bookmarks = bookmarksEntry?.bookmarks ?: ArrayList()
 
             toolbar.subtitle = getSubTitle(bookmarks)
-            mTabPager.adapter = object : BookmarksTabAdapter(
-                childFragmentManager,
-                activity,
-                bookmarks,
-                mBookmarksDigest,
-                bookmarksEntry!!,
-                mStarsMap
-            ) {
+            mTabPager.adapter = object : BookmarksTabAdapter(this, mTabPager) {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = onScrolled(dy)
             }
             mTabPager.setCurrentItem(initialTabPosition, false)
@@ -256,7 +263,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                     val tabAdapter = mTabPager.adapter as BookmarksTabAdapter?
                     if (tabAdapter != null) {
                         for (i in 0 until tabAdapter.count) {
-                            tabAdapter.findFragment(mTabPager, i).apply {
+                            tabAdapter.findFragment(i).apply {
                                 setSearchText(text.toString())
                             }
                         }
@@ -269,7 +276,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             root.findViewById<FloatingActionButton>(R.id.bookmarks_scroll_top_button).apply {
                 setOnClickListener {
                     val adapter = mTabPager.adapter as BookmarksTabAdapter
-                    val tab = adapter.findFragment(mTabPager, mTabPager.currentItem)
+                    val tab = adapter.findFragment(mTabPager.currentItem)
                     tab.scrollToTop()
                     hideScrollButtons()
                 }
@@ -277,7 +284,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             root.findViewById<FloatingActionButton>(R.id.bookmarks_scroll_my_bookmark_button).apply {
                 setOnClickListener {
                     val adapter = mTabPager.adapter as BookmarksTabAdapter
-                    val tab = adapter.findFragment(mTabPager, mTabPager.currentItem)
+                    val tab = adapter.findFragment(mTabPager.currentItem)
                     tab.scrollTo(HatenaClient.account?.name ?: "")
                     hideScrollButtons()
                 }
@@ -285,7 +292,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             root.findViewById<FloatingActionButton>(R.id.bookmarks_scroll_bottom_button).apply {
                 setOnClickListener {
                     val adapter = mTabPager.adapter as BookmarksTabAdapter
-                    val tab = adapter.findFragment(mTabPager, mTabPager.currentItem)
+                    val tab = adapter.findFragment(mTabPager.currentItem)
                     tab.scrollToBottom()
                     hideScrollButtons()
                 }
@@ -379,7 +386,8 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             fab.animate()
                 .withEndAction {
                     mAreScrollButtonsVisible = false
-                    fab.visibility = View.INVISIBLE
+                    fab.hide()
+//                    fab.visibility = View.INVISIBLE
                     fab.isClickable = false
                 }
                 .alphaBy(1f)
@@ -399,7 +407,8 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             fab.animate()
                 .withStartAction {
                     mAreScrollButtonsVisible = true
-                    fab.visibility = View.VISIBLE
+                    fab.hide()
+//                    fab.visibility = View.VISIBLE
                     fab.isClickable = true
                 }
                 .alphaBy(0f)
@@ -451,60 +460,127 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         }
     }
 
-    private suspend fun refreshStars(bookmarks: List<Bookmark>, times: Int = 0) {
-        if (times > 5) {
-            activity!!.showToast("スター取得失敗")
-            return
+    private fun makeBookmarksRecent(recents: List<Bookmark>) =
+        mBookmarksRecent
+            .plus(recents)
+            .distinctBy { it.user }
+            .sortedByDescending { it.timestamp }
+
+    fun updateRecentBookmarksAsync(updateStarsMap: Boolean = false) = async {
+        val recents = ArrayList<BookmarkWithStarCount>()
+        var of: Long? = null
+        try {
+            while (true) {
+                val response = HatenaClient.getRecentBookmarksAsync(mEntry.url, of = of).await()
+
+                if (mBookmarksRecent.isEmpty()) {
+                    recents.addAll(response)
+                    break
+                }
+
+                val existedLatest = mBookmarksRecent.first()
+                val responseLast = response.lastOrNull()
+                if ((responseLast?.timestamp ?: LocalDateTime.MIN) <= existedLatest.timestamp) break
+
+                of = response.size - 1L
+                recents.addAll(response)
+            }
+        }
+        catch (e: Exception) {
+            Log.e("FailedToFetchBookmarks", e.message)
         }
 
-        try {
-            val urls = bookmarks
-                .filter { it.comment.isNotBlank() }
-                .map { it.getBookmarkUrl(mEntry) }
+        val bookmarks = recents.map { Bookmark.createFrom(it) }
 
-            val task =
-                mPreLoadingTasks?.starsEntriesTask ?: HatenaClient.getStarsEntryAsync(urls)
-            val entries = task.await()
-            for (b in bookmarks) {
-                val starsEntry = entries.find { it.url == b.getBookmarkUrl(mEntry) }
-                mStarsMap[b.user] = starsEntry ?: continue
+        if (updateStarsMap) {
+            updateStarsMap(bookmarks)
+        }
+
+        mBookmarksRecent = makeBookmarksRecent(bookmarks)
+    }
+
+    fun getNextBookmarksAsync() : Deferred<List<Bookmark>> = async {
+        if (mBookmarksRecent.isEmpty()) return@async emptyList<Bookmark>()
+
+        try {
+            val of = mBookmarksRecent.size - 1L
+            val response = HatenaClient.getRecentBookmarksAsync(mEntry.url, of = of).await()
+
+            val newer = response
+                .filterNot { mBookmarksRecent.any { exists -> exists.user == it.user } }
+                .map { Bookmark.createFrom(it) }
+
+            mBookmarksRecent = makeBookmarksRecent(newer)
+
+            return@async newer
+        }
+        catch (e: Exception) {
+            Log.e("FailedToFetchBookmarks", e.message)
+            return@async emptyList<Bookmark>()
+        }
+    }
+
+    fun updateStarsMap(bookmarks: List<Bookmark>) {
+        val list = bookmarks
+            .filter {
+                it.comment.isNotEmpty() &&
+                it.starCount?.isEmpty() != true &&
+                !mStarsMap.contains(it.user) &&
+                !mFetchStarsTasks.contains(it.user)
             }
-        } catch (e: SocketTimeoutException) {
-            Log.d("Timeout", e.message)
-            refreshStars(bookmarks, times + 1)
+
+        val urls = list
+            .map { it.getBookmarkUrl(mEntry) }
+
+        if (urls.isEmpty()) return
+
+        val task = async {
+            try {
+                val entries = HatenaClient.getStarsEntryAsync(urls).await()
+                lock(mStarsMap) {
+                    for (b in bookmarks) {
+                        mStarsMap[b.user] =
+                            entries.firstOrNull { it.url == b.getBookmarkUrl(mEntry) } ?: continue
+                    }
+                }
+            } catch (e: SocketTimeoutException) {
+                Log.d("Timeout", e.message)
+            }
+            return@async
+        }
+
+        list.forEach {
+            mFetchStarsTasks[it.user] = task
         }
     }
 
     // ブックマーク取得
-    fun refreshBookmarksAsync() : Deferred<List<Bookmark>> = async {
+    fun refreshBookmarksAsync() = async(Dispatchers.Main) {
+        val getIgnoredUsersTask = HatenaClient.getIgnoredUsersAsync()
+        val getBookmarksEntryTask = HatenaClient.getBookmarksEntryAsync(mEntry.url)
+        val getDigestBookmarksTask = HatenaClient.getDigestBookmarksAsync(mEntry.url)
+        val updateRecentBookmarksTask = updateRecentBookmarksAsync()
+
         val tasks = listOf(
-            HatenaClient.getIgnoredUsersAsync(),
-            HatenaClient.getBookmarksEntryAsync(mEntry.url)
+            getIgnoredUsersTask,
+            getBookmarksEntryTask,
+            getDigestBookmarksTask,
+            updateRecentBookmarksTask
         )
         tasks.awaitAll()
-        bookmarksEntry = tasks.last().await() as BookmarksEntry
 
-        launch(Dispatchers.Main) {
-            if (bookmarksEntry != null) {
-                view?.findViewById<Toolbar>(R.id.bookmarks_toolbar)?.apply {
-                    subtitle = getSubTitle(bookmarksEntry?.bookmarks ?: ArrayList())
-                }
+        ignoredUsers = getIgnoredUsersTask.await().toSet()
+        bookmarksEntry = getBookmarksEntryTask.await()
+
+        if (bookmarksEntry != null) {
+            view?.findViewById<Toolbar>(R.id.bookmarks_toolbar)?.apply {
+                subtitle = getSubTitle(bookmarksEntry?.bookmarks ?: ArrayList())
             }
         }
 
         val adapter = mTabPager.adapter as BookmarksTabAdapter
-        val bookmarks = bookmarksEntry?.bookmarks ?: emptyList()
-
-        for (i in 0 until adapter.count) {
-            val fragment = adapter.findFragment(mTabPager, i)
-            fragment.setBookmarks(adapter.filterBookmarks(bookmarks, i))
-        }
-
-        return@async adapter.filterBookmarks(bookmarks, mTabLayout.selectedTabPosition)
+        adapter.update()
     }
-
-    fun getStarsEntry(b: Bookmark) : StarsEntry? = mStarsMap[b.user]
-    fun getStarsMap() : Map<String, StarsEntry> = mStarsMap
 
     override fun onBackPressed() : Boolean {
         if (mDrawer.isDrawerOpen(Gravity.END)) {

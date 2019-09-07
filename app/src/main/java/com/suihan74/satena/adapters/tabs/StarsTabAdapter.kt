@@ -1,25 +1,21 @@
 package com.suihan74.satena.adapters.tabs
 
 import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import com.suihan74.HatenaLib.Bookmark
-import com.suihan74.HatenaLib.BookmarksEntry
-import com.suihan74.HatenaLib.StarsEntry
-import com.suihan74.HatenaLib.int
-import com.suihan74.satena.adapters.MentionedBookmarksAdapter
 import com.suihan74.satena.adapters.StarsAdapter
+import com.suihan74.satena.fragments.BookmarkDetailFragment
+import com.suihan74.satena.fragments.BookmarksFragment
 import com.suihan74.satena.fragments.MentionedBookmarksTabFragment
 import com.suihan74.satena.fragments.StarsTabFragment
 import com.suihan74.utilities.BookmarkCommentDecorator
 import java.lang.RuntimeException
 
 class StarsTabAdapter(
-    fm: FragmentManager,
-    private val bookmark : Bookmark,
-    private val starsMap : Map<String, StarsEntry>,
-    private val bookmarksEntry : BookmarksEntry
-) : FragmentPagerAdapter(fm) {
+    private val bookmarksFragment : BookmarksFragment,
+    private val detailFragment: BookmarkDetailFragment,
+    private val bookmark : Bookmark
+) : FragmentPagerAdapter(detailFragment.childFragmentManager) {
 
     enum class Tab(val int: Int) {
         TO_USER(0),
@@ -33,22 +29,24 @@ class StarsTabAdapter(
     }
 
     private val tabs = ArrayList<Pair<Tab, ()->Fragment>>()
+    private val starsMap = bookmarksFragment.starsMap
 
     init {
         val analyzed = BookmarkCommentDecorator.convert(bookmark.comment)
         val ids = analyzed.ids
         val targetUser = bookmark.user
 
+        val bookmarksEntry = bookmarksFragment.bookmarksEntry!!
         val mentionsFromUser = bookmarksEntry.bookmarks.filter { b -> ids.contains(b.user) }
         val mentionsToUser = bookmarksEntry.bookmarks.filter { b -> b.comment.contains("id:$targetUser") }
 
         tabs.apply {
             clear()
             add(Tab.TO_USER to {
-                StarsTabFragment.createInstance(bookmark, starsMap, bookmarksEntry, StarsAdapter.StarsTabMode.TO_USER)
+                StarsTabFragment.createInstance(bookmarksFragment, bookmark, StarsAdapter.StarsTabMode.TO_USER)
             })
             add(Tab.FROM_USER to {
-                StarsTabFragment.createInstance(bookmark, starsMap, bookmarksEntry, StarsAdapter.StarsTabMode.FROM_USER)
+                StarsTabFragment.createInstance(bookmarksFragment, bookmark, StarsAdapter.StarsTabMode.FROM_USER)
             })
             if (mentionsToUser.isNotEmpty()) {
                 add(Tab.MENTION_TO_USER to {

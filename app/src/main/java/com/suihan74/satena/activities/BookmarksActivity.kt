@@ -18,6 +18,7 @@ class BookmarksActivity : ActivityBase() {
     data class PreLoadingTasks (
         val bookmarksTask : Deferred<BookmarksEntry>,
         val bookmarksDigestTask : Deferred<BookmarksDigest>,
+        val bookmarksRecentTask : Deferred<List<BookmarkWithStarCount>>,
         val starsEntriesTask : Deferred<List<StarsEntry>>
     )
 
@@ -71,6 +72,8 @@ class BookmarksActivity : ActivityBase() {
 
             val bookmarksEntryTask = HatenaClient.getBookmarksEntryAsync(entry.url)
             val digestTask = HatenaClient.getDigestBookmarksAsync(entry.url)
+            val recentTask = HatenaClient.getRecentBookmarksAsync(entry.url)
+
             val starsEntriesTask = GlobalScope.async {
                 while (true) {
                     if (bookmarksEntryTask.isCompleted || bookmarksEntryTask.isCancelled) break
@@ -96,6 +99,7 @@ class BookmarksActivity : ActivityBase() {
             preLoadingTasks = PreLoadingTasks(
                 bookmarksEntryTask,
                 digestTask,
+                recentTask,
                 starsEntriesTask
             )
         }

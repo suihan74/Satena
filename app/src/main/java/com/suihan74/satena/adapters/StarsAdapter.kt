@@ -48,14 +48,6 @@ open class StarsAdapter(
     }
 
 
-    fun updateStars(sMap: Map<String, StarsEntry>) {
-        starsMap = sMap
-        stars = createStarsListToUser()
-        statesModeTo = RecyclerState.makeStatesWithFooter(stars)
-        notifyDataSetChanged()
-    }
-
-
     private fun createStarsListToUser() : List<Star> {
         if (mode != StarsTabMode.TO_USER) return emptyList()
 

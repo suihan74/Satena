@@ -17,7 +17,10 @@ enum class RecyclerType(val int: Int) {
     }
 }
 
-class RecyclerState<T>(val type: RecyclerType, var body: T? = null) {
+class RecyclerState<T>(
+    val type: RecyclerType,
+    var body: T? = null
+) {
     companion object {
         fun <T> makeStatesWithFooter(datas : List<T>) : ArrayList<RecyclerState<T>> {
             val list = ArrayList<RecyclerState<T>>()
@@ -26,6 +29,12 @@ class RecyclerState<T>(val type: RecyclerType, var body: T? = null) {
 
             return list
         }
+
+        fun bodiesCount(datas: List<RecyclerState<*>>) =
+            datas.count { RecyclerType.BODY == it.type }
+
+        fun isBodiesEmpty(datas: List<RecyclerState<*>>) =
+            datas.none { RecyclerType.BODY == it.type }
     }
 }
 

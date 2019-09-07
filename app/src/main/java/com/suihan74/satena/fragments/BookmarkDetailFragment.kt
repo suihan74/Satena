@@ -23,18 +23,17 @@ import kotlinx.coroutines.launch
 class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
     private lateinit var mView : View
     private lateinit var mBookmark : Bookmark
-    private lateinit var mStarsMap: Map<String, StarsEntry>
-    private lateinit var mBookmarksEntry : BookmarksEntry
 
     private lateinit var mColorStars : UserColorStarsCount
 
     private var mIsStarMenuOpened : Boolean = false
 
+    private var mBookmarksFragment: BookmarksFragment? = null
+
     companion object {
-        fun createInstance(b: Bookmark, s: Map<String, StarsEntry>, bEntry: BookmarksEntry) = BookmarkDetailFragment().apply {
+        fun createInstance(bookmarksFragment: BookmarksFragment, b: Bookmark) = BookmarkDetailFragment().apply {
+            mBookmarksFragment = bookmarksFragment
             mBookmark = b
-            mStarsMap = s
-            mBookmarksEntry = bEntry
 
             enterTransition = TransitionSet()
                 .addTransition(Fade())
@@ -124,10 +123,9 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         }
 
         tabPager.adapter = StarsTabAdapter(
-            childFragmentManager,
-            mBookmark,
-            mStarsMap,
-            mBookmarksEntry
+            mBookmarksFragment!!,
+            this,
+            mBookmark
         )
         tabLayout.setupWithViewPager(tabPager)
 
@@ -276,7 +274,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                     val quote = mView.findViewById<TextView>(R.id.quote_text_view).text.toString()
 
                     HatenaClient.postStarAsync(
-                        url = mBookmark.getBookmarkUrl(mBookmarksEntry),
+                        url = mBookmark.getBookmarkUrl(mBookmarksFragment!!.bookmarksEntry!!),
                         color = color,
                         quote = quote
                     ).await()
