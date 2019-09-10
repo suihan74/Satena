@@ -40,6 +40,10 @@ class EntriesTabFragment : CoroutineScopeFragment() {
             mTabPosition = tabPosition
             mCategory = category
         }
+
+        private const val BUNDLE_BASE = "com.suihan74.satena.fragments.EntriesTabFragment."
+        private const val BUNDLE_CATEGORY = BUNDLE_BASE + "mCategory"
+        private const val BUNDLE_TAB_POSITION = BUNDLE_BASE + "mTabPosition"
     }
 
     fun setEntries(entriesList: List<Entry>) {
@@ -56,13 +60,16 @@ class EntriesTabFragment : CoroutineScopeFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt("tab_position", mTabPosition)
+        outState.run {
+            putInt(BUNDLE_CATEGORY, mCategory.int)
+            putInt(BUNDLE_TAB_POSITION, mTabPosition)
+        }
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
-        if (savedInstanceState != null) {
-            mTabPosition = savedInstanceState.getInt("tab_position")
+        savedInstanceState?.let {
+            mTabPosition = it.getInt(BUNDLE_TAB_POSITION)
         }
     }
 
@@ -77,6 +84,10 @@ class EntriesTabFragment : CoroutineScopeFragment() {
 
         val activity = activity as ActivityBase
         mEntriesFragment = activity.currentFragment as? EntriesFragment
+
+        savedInstanceState?.let {
+            mCategory = Category.fromInt(it.getInt(BUNDLE_CATEGORY))
+        }
 
         // initialize entries list
         val recyclerView = view.findViewById<RecyclerView>(R.id.entries_list)

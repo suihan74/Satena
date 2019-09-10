@@ -31,6 +31,8 @@ import com.suihan74.satena.adapters.tabs.EntriesTabAdapter
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
 import kotlinx.coroutines.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 class EntriesFragment : CoroutineScopeFragment(), BackPressable {
     private lateinit var mEntriesTabPager : ViewPager
@@ -54,12 +56,16 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
         fun createInstance() = EntriesFragment().apply {
             enterTransition = TransitionSet().addTransition(AutoTransition())
         }
+
+        private const val BUNDLE_BASE = "com.suihan74.satena.fragments.EntriesFragment."
+        private const val BUNDLE_CATEGORY = BUNDLE_BASE + "mCategory"
+        private const val BUNDLE_CURRENT_TAB = BUNDLE_BASE + "currentTab"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt("category", mEntriesTabAdapter.category.int)
-        outState.putInt("current_tab", mEntriesTabPager.currentItem)
+        outState.putInt(BUNDLE_CATEGORY, mEntriesTabAdapter.category.int)
+        outState.putInt(BUNDLE_CURRENT_TAB, mEntriesTabPager.currentItem)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,12 +74,9 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
         // 設定を読み込む
         refreshPreferences()
 
-        val category = if (savedInstanceState == null) {
-            mHomeCategory
-        }
-        else {
-            Category.fromInt(savedInstanceState.getInt("category"))
-        }
+        val category = savedInstanceState?.let {
+            Category.fromInt(it.getInt(BUNDLE_CATEGORY))
+        } ?: mHomeCategory
         mCurrentCategory = category
 
         // エントリリスト用アダプタ作成
@@ -86,7 +89,11 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
         val mainActivity = activity as MainActivity
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context!!)
-        val textId = mainActivity.resources.getIdentifier("category_${mEntriesTabAdapter.category.name.toLowerCase()}", "string", mainActivity.packageName)
+        val textId = mainActivity.resources.getIdentifier(
+            "category_${mEntriesTabAdapter.category.name.toLowerCase(Locale.ROOT)}",
+            "string",
+            mainActivity.packageName
+        )
 
         val toolbar = mView.findViewById<Toolbar>(R.id.main_toolbar).apply {
             title = getString(textId)
@@ -212,7 +219,7 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
             mEntriesTabPager.currentItem = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
         }
         else {
-            val restoreTab = savedInstanceState.getInt("current_tab")
+            val restoreTab = savedInstanceState.getInt(BUNDLE_CURRENT_TAB)
             mEntriesTabPager.currentItem = restoreTab
             launch {
                 mEntriesTabAdapter.refreshAllTab(mEntriesTabPager)
@@ -363,7 +370,7 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
         val mainActivity = activity as MainActivity
         val toolbar = mView.findViewById<Toolbar>(R.id.main_toolbar)
 
-        val textId = mainActivity.resources.getIdentifier("category_${category.name.toLowerCase()}", "string", mainActivity.packageName)
+        val textId = mainActivity.resources.getIdentifier("category_${category.name.toLowerCase(Locale.ROOT)}", "string", mainActivity.packageName)
         toolbar.title = getString(textId)
 
         mainActivity.showProgressBar()
