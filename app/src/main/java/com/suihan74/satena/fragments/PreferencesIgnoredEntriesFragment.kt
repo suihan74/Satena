@@ -37,6 +37,7 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
             override fun onItemClicked(entry: IgnoredEntry) {
                 val dialog = IgnoredEntryDialogFragment.createInstance(entry) { modified ->
                     mIgnoredEntriesAdapter.modifyItem(entry, modified)
+                    this@PreferencesIgnoredEntriesFragment.modifyItem(entry, modified)
                     true
                 }
                 dialog.show(fragmentManager, "dialog")
@@ -99,6 +100,16 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
     fun removeItem(entry: IgnoredEntry) {
         mIgnoredEntries.remove(entry)
         mIgnoredEntriesAdapter.removeItem(entry)
+
+        val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context!!)
+        prefs.edit {
+            put(IgnoredEntriesKey.IGNORED_ENTRIES, mIgnoredEntries)
+        }
+    }
+
+    fun modifyItem(older: IgnoredEntry, newer: IgnoredEntry) {
+        val position = mIgnoredEntries.indexOf(older)
+        mIgnoredEntries[position] = newer
 
         val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context!!)
         prefs.edit {
