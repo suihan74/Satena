@@ -28,6 +28,11 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
             mQuery = query
             mSearchType = searchType
         }
+
+        fun createInstance() = SearchEntriesFragment().apply {
+            mQuery = ""
+            mSearchType = SearchType.Text
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -53,7 +58,13 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
             text.clear()
             text.append(mQuery)
 
-            if (savedInstanceState != null) {
+            if (savedInstanceState == null) {
+                if (!mQuery.isBlank()) {
+                    isFocusable = false
+                    isFocusableInTouchMode = false
+                }
+            }
+            else {
                 isFocusable = false
                 isFocusableInTouchMode = false
 

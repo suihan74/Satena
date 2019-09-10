@@ -21,16 +21,15 @@ import android.widget.TextView
 import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.SearchType
-import com.suihan74.utilities.*
+import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.activities.PreferencesActivity
 import com.suihan74.satena.adapters.CategoriesAdapter
 import com.suihan74.satena.adapters.tabs.EntriesTabAdapter
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.activities.ActivityBase
+import com.suihan74.utilities.*
 import kotlinx.coroutines.*
 
 class EntriesFragment : CoroutineScopeFragment(), BackPressable {
@@ -177,10 +176,7 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
                         }
 
                         Category.Search -> {
-                            val fragment = SearchEntriesFragment.createInstance(
-                                "",
-                                SearchType.Text
-                            )
+                            val fragment = SearchEntriesFragment.createInstance()
                             activity.showFragment(fragment, null)
                         }
 
