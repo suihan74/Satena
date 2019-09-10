@@ -22,8 +22,8 @@ class BookmarkPostActivity : ActivityBase() {
     }
 
     override val containerId: Int = R.id.content_layout
-    override fun getProgressBarId() = R.id.detail_progress_bar
-    override fun getProgressBackgroundId() = R.id.click_guard
+    override val progressBarId = R.id.detail_progress_bar
+    override val progressBackgroundId = R.id.click_guard
 
     private lateinit var mEntry: Entry
 

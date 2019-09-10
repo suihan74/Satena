@@ -14,8 +14,8 @@ abstract class ActivityBase(
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : FragmentContainerActivity(), CoroutineScope {
 
-    abstract fun getProgressBarId() : Int?
-    abstract fun getProgressBackgroundId() : Int?
+    protected abstract val progressBarId : Int?
+    protected abstract val progressBackgroundId : Int?
 
     private var showAction: ((ProgressBar?, View?)->Unit)? = null
     private var hideAction: ((ProgressBar?, View?)->Unit)? = null
@@ -37,11 +37,11 @@ abstract class ActivityBase(
     }
 
     fun showProgressBar(clickGuard: Boolean = true) {
-        val progressBar = getProgressBarId()?.let {
+        val progressBar = progressBarId?.let {
             findViewById<ProgressBar>(it).apply { visibility = View.VISIBLE }
         }
         val background = if (clickGuard) {
-            getProgressBackgroundId()?.let {
+            progressBackgroundId?.let {
                 findViewById<View>(it).apply { visibility = View.VISIBLE }
             }
         } else null
@@ -50,10 +50,10 @@ abstract class ActivityBase(
     }
 
     fun hideProgressBar() {
-        val progressBar = getProgressBarId()?.let {
+        val progressBar = progressBarId?.let {
             findViewById<ProgressBar>(it)
         }
-        val background = getProgressBackgroundId()?.let {
+        val background = progressBackgroundId?.let {
             findViewById<View>(it)
         }
 

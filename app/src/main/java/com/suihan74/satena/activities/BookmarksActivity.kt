@@ -37,8 +37,8 @@ class BookmarksActivity : ActivityBase() {
         get() = mEntry
 
     override val containerId = R.id.bookmarks_layout
-    override fun getProgressBarId(): Int? = R.id.detail_progress_bar
-    override fun getProgressBackgroundId(): Int? = R.id.click_guard
+    override val progressBarId: Int? = R.id.detail_progress_bar
+    override val progressBackgroundId: Int? = R.id.click_guard
 
     init {
         setShowingProgressBarAction { progressBar, _ ->

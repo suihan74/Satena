@@ -372,17 +372,17 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
         mCurrentCategory = category
         mEntriesTabAdapter.setCategory(mEntriesTabPager, category)
 
-        for (i in 0 until mEntriesTabAdapter.count) {
-            val tabFragment = mEntriesTabAdapter.findFragment(mEntriesTabPager, i)
-            val tab = mEntriesTabLayout.getTabAt(i)!!
+        for (tabPosition in 0 until mEntriesTabAdapter.count) {
+            val tabFragment = mEntriesTabAdapter.findFragment(mEntriesTabPager, tabPosition)
+            val tab = mEntriesTabLayout.getTabAt(tabPosition)!!
 
             mEntriesTabAdapter.setCategory(mEntriesTabPager, category)
-            tab.text = mEntriesTabAdapter.getPageTitle(i)
+            tab.text = mEntriesTabAdapter.getPageTitle(tabPosition)
 
             val deferred = async(Dispatchers.Main) {
                 try {
-                    val entries = mainActivity.refreshEntries(i)
                     if (isActive) {
+                        val entries = refreshEntriesAsync(tabPosition).await()
                         tabFragment.setEntries(entries)
                     }
                     return@async

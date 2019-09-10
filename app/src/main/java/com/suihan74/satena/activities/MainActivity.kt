@@ -1,27 +1,26 @@
 package com.suihan74.satena.activities
 
-import android.os.Bundle
 import android.content.Intent
+import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.ProgressBar
-import com.jakewharton.threetenabp.AndroidThreeTen
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.utilities.*
-import com.suihan74.satena.*
+import com.suihan74.satena.R
 import com.suihan74.satena.fragments.EntriesFragment
 import com.suihan74.satena.fragments.HatenaAuthenticationFragment
 import com.suihan74.satena.fragments.MastodonAuthenticationFragment
 import com.suihan74.satena.models.PreferenceKey
-import kotlinx.coroutines.*
-import java.util.*
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.showToast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ActivityBase() {
     private var entriesShowed = true
 
     override val containerId = R.id.main_layout
-    override fun getProgressBarId(): Int? = R.id.main_progress_bar
-    override fun getProgressBackgroundId(): Int? = R.id.click_guard
+    override val progressBarId = R.id.main_progress_bar
+    override val progressBackgroundId = R.id.click_guard
 
     override fun onSaveInstanceState(outState: Bundle?) {
         super.onSaveInstanceState(outState)
@@ -111,15 +110,5 @@ class MainActivity : ActivityBase() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         setIntent(intent)
-    }
-
-    suspend fun refreshEntries(tabPosition: Int, offset: Int? = null) : List<Entry> {
-        val f = currentFragment
-        return if (f is EntriesFragment) {
-            f.refreshEntriesAsync(tabPosition, offset).await()
-        }
-        else {
-            emptyList()
-        }
     }
 }

@@ -11,9 +11,9 @@ import android.view.View
 import android.view.ViewGroup
 import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
-import com.suihan74.satena.activities.MainActivity
-import com.suihan74.satena.adapters.EntriesAdapter
 import com.suihan74.satena.R
+import com.suihan74.satena.activities.ActivityBase
+import com.suihan74.satena.adapters.EntriesAdapter
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +25,8 @@ class EntriesTabFragment : CoroutineScopeFragment() {
     private lateinit var mEntriesScrollingUpdater : RecyclerViewScrollingUpdater
     private lateinit var mView : View
     private lateinit var mCategory: Category
+
+    private var mEntriesFragment: EntriesFragment? = null
 
     var category: Category
         get() = mCategory
@@ -73,6 +75,9 @@ class EntriesTabFragment : CoroutineScopeFragment() {
         val view = inflater.inflate(R.layout.fragment_entries_tab, container, false)
         mView = view
 
+        val activity = activity as ActivityBase
+        mEntriesFragment = activity.currentFragment as? EntriesFragment
+
         // initialize entries list
         val recyclerView = view.findViewById<RecyclerView>(R.id.entries_list)
         val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
@@ -86,10 +91,8 @@ class EntriesTabFragment : CoroutineScopeFragment() {
             mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter.itemCount - 1) {
                 override fun load() {
                     launch(Dispatchers.Main) {
-                        val activity = activity as MainActivity
-
                         try {
-                            activity.refreshEntries(mTabPosition, mEntriesAdapter.entireOffset).let {
+                            mEntriesFragment?.refreshEntriesAsync(mTabPosition, mEntriesAdapter.entireOffset)?.await()?.let {
                                 mEntriesAdapter.addEntries(it)
                             }
                         }
@@ -107,16 +110,13 @@ class EntriesTabFragment : CoroutineScopeFragment() {
         }
 
         // スワイプ更新機能の設定
-        view.findViewById<SwipeRefreshLayout>(R.id.entries_swipe_layout).apply {
-            val swiper = this
-            setProgressBackgroundColorSchemeColor(activity!!.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(ContextCompat.getColor(activity!!, R.color.colorPrimary))
+        view.findViewById<SwipeRefreshLayout>(R.id.entries_swipe_layout).apply swipeLayout@ {
+            setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
+            setColorSchemeColors(ContextCompat.getColor(activity, R.color.colorPrimary))
             setOnRefreshListener {
                 launch(Dispatchers.Main) {
-                    val activity = activity as MainActivity
-
                     try {
-                        activity.refreshEntries(mTabPosition).let {
+                        mEntriesFragment?.refreshEntriesAsync(mTabPosition)?.await()?.let {
                             mEntriesAdapter.setEntries(it)
                             mEntriesScrollingUpdater.refreshInvokingPosition(mEntriesAdapter.itemCount)
                         }
@@ -126,7 +126,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
                         activity.showToast("エントリーリスト更新失敗")
                     }
                     finally {
-                        swiper.isRefreshing = false
+                        this@swipeLayout.isRefreshing = false
                     }
                 }
             }

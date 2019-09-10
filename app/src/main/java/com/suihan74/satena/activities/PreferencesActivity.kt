@@ -11,8 +11,8 @@ import com.suihan74.utilities.SafeSharedPreferences
 
 class PreferencesActivity : ActivityBase() {
     override val containerId = R.id.preferences_layout
-    override fun getProgressBarId(): Int? = R.id.detail_progress_bar
-    override fun getProgressBackgroundId(): Int? = R.id.click_guard
+    override val progressBarId: Int? = R.id.detail_progress_bar
+    override val progressBackgroundId: Int? = R.id.click_guard
 
     private lateinit var mPrefsFragment : PreferencesFragment
     private var themeChanged : Boolean = false

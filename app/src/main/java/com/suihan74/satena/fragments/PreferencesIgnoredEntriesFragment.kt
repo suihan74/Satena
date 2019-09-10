@@ -30,7 +30,6 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_preferences_ignored_entries, container, false)
 
-
         val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context!!)
         mIgnoredEntries = ArrayList(prefs.get<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES))
 
