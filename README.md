@@ -23,3 +23,5 @@
 
 * Activity直下のFragment遷移に関する処理は[utilities.FragmentContainerActivity](https://github.com/suihan74/Satena/blob/master/app/src/main/java/com/suihan74/utilities/FragmentContainerActivity.kt)にまとめてある
   * さらにそれを継承した[activities.ActivityBase](https://github.com/suihan74/Satena/blob/master/app/src/main/java/com/suihan74/satena/activities/ActivityBase.kt)にプログレスバー周りの処理をまとめて，各Activityで継承して使用している
+
+* はてなとの通信は[HatenaLib.HatenaClient](https://github.com/suihan74/Satena/blob/master/app/src/main/java/com/suihan74/HatenaLib/HatenaClient.kt)を介して行う．HatenaLib/以下にある他のファイルは大体そのレスポンスデータ
