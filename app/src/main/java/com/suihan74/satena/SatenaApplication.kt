@@ -22,6 +22,9 @@ class SatenaApplication : Application() {
 
     var currentActivity : ActivityBase? = null
 
+    var isFirstLaunch : Boolean = false
+        private set
+
     init {
         instance = this
     }
@@ -53,6 +56,7 @@ class SatenaApplication : Application() {
         // GUIDの作成（初回のみ）
         val uuid = prefs.getString(PreferenceKey.ID)
         if (uuid.isNullOrEmpty()) {
+            isFirstLaunch = true
             prefs.edit {
                 putString(PreferenceKey.ID, UUID.randomUUID().toString())
             }

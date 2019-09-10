@@ -3,7 +3,9 @@ package com.suihan74.satena.activities
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.fragments.EntriesFragment
 import com.suihan74.satena.fragments.HatenaAuthenticationFragment
 import com.suihan74.satena.fragments.MastodonAuthenticationFragment
@@ -49,15 +51,9 @@ class MainActivity : ActivityBase() {
             entriesShowed = savedInstanceState.getBoolean("entries_showed")
         }
 
-        if (prefs.version == SafeSharedPreferences.versionDefault || !entriesShowed) {
+        if ((SatenaApplication.instance.isFirstLaunch && !HatenaClient.signedIn()) || !entriesShowed) {
             // 初回起動時にはログインフラグメントを選択
-
             entriesShowed = false
-
-            // とにかくedit呼べばバージョン情報は書き込まれる
-            // TODO: なんかそれっぽい初回書き込み用のものを用意した方がいいかも
-            prefs.edit {}
-
             showFragment(HatenaAuthenticationFragment.createInstance())
         }
         else if (!isFragmentShowed()) {
