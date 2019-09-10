@@ -20,6 +20,8 @@ import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.activities.BookmarkPostActivity
+import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
 import com.sys1yagi.mastodon4j.api.entity.Status
@@ -27,7 +29,6 @@ import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.ref.WeakReference
 
 class BookmarkPostFragment : CoroutineScopeFragment() {
 
@@ -56,6 +57,20 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mRoot = inflater.inflate(R.layout.fragment_bookmark_post, container, false)
+
+        savedInstanceState?.let {
+            val activity = activity
+            if (activity is BookmarksActivity) {
+                mEntry = activity.entry
+            }
+            else if (activity is BookmarkPostActivity) {
+                mEntry = activity.entry
+            }
+            else {
+                throw NotImplementedError()
+            }
+        }
+
         initBookmarkDialog(mRoot!!)
         retainInstance = true
         return mRoot

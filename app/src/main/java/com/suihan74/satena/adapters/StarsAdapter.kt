@@ -25,9 +25,13 @@ open class StarsAdapter(
     private val mode : StarsTabMode
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    enum class StarsTabMode {
-        TO_USER,
-        FROM_USER
+    enum class StarsTabMode(val int: Int) {
+        TO_USER(0),
+        FROM_USER(1);
+
+        companion object {
+            fun fromInt(i: Int) = values().firstOrNull { it.int == i } ?: TO_USER
+        }
     }
 
     private val muteWords : List<String>

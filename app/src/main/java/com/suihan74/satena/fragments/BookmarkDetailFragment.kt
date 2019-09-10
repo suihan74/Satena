@@ -16,6 +16,7 @@ import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
+import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.adapters.tabs.StarsTabAdapter
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
@@ -33,20 +34,43 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
     private var mBookmarksFragment: BookmarksFragment? = null
 
+    val bookmark
+        get() = mBookmark
+
     companion object {
-        fun createInstance(bookmarksFragment: BookmarksFragment, b: Bookmark) = BookmarkDetailFragment().apply {
-            mBookmarksFragment = bookmarksFragment
+        fun createInstance(b: Bookmark) = BookmarkDetailFragment().apply {
             mBookmark = b
 
             enterTransition = TransitionSet()
                 .addTransition(Fade())
                 .addTransition(Slide(Gravity.END))
         }
+
+        private const val BUNDLE_BASE = "com.suihan74.satena.fragments.BookmarkDetailFragment."
+        private const val BUNDLE_BOOKMARK = BUNDLE_BASE + "mBookmark"
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.run {
+            putSerializable(BUNDLE_BOOKMARK, mBookmark)
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        savedInstanceState?.let {
+            mBookmark = it.getSerializable(BUNDLE_BOOKMARK) as Bookmark
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_bookmark_detail, container, false)
         mView = view
+
+        val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksDetailFragment has created from an invalid activity")
+        mBookmarksFragment = activity.bookmarksFragment
 
         val user = view.findViewById<TextView>(R.id.user_name)
         val icon = view.findViewById<ImageView>(R.id.user_icon)
@@ -62,7 +86,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             view.findViewById<TextView>(R.id.tags).apply {
                 text = BookmarkCommentDecorator.makeClickableTagsText(mBookmark.tags) { tag ->
                     val fragment = SearchEntriesFragment.createInstance(tag, SearchType.Tag)
-                    (activity as FragmentContainerActivity).showFragment(fragment, null)
+                    activity.showFragment(fragment, null)
                 }
                 movementMethod = LinkMovementMethod.getInstance()
             }
@@ -107,7 +131,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                     catch (e: Exception) {
                         mColorStars = UserColorStarsCount(red = 0, green = 0, blue = 0, purple = 0)
                         Log.d("failedToFetchStars", Log.getStackTraceString(e))
-                        activity?.showToast("所持スター数の取得に失敗しました")
+                        activity.showToast("所持スター数の取得に失敗しました")
                     }
                     finally {
                         mView.apply {

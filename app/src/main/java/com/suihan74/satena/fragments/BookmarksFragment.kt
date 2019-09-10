@@ -67,6 +67,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     var bookmarksEntry : BookmarksEntry? = null
         private set
 
+    val bookmarksTabAdapter : BookmarksTabAdapter
+        get() = mTabPager.adapter as BookmarksTabAdapter
+
     val popularBookmarks
         get() = mBookmarksDigest?.scoredBookmarks?.map { Bookmark.createFrom(it) } ?: emptyList()
 
@@ -191,7 +194,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
                     mPreLoadingTasks = null
 
-                    val adapter = object : BookmarksTabAdapter(this@BookmarksFragment, mTabPager) {
+                    val adapter = object : BookmarksTabAdapter(activity, mTabPager) {
                         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = onScrolled(dy)
                     }
                     mTabPager.apply {
@@ -258,7 +261,6 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                         if (bookmark != null) {
                             val detailFragment =
                                 BookmarkDetailFragment.createInstance(
-                                    this@BookmarksFragment,
                                     bookmark
                                 )
                             activity.showFragment(detailFragment, null)
@@ -275,7 +277,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             val bookmarks = bookmarksEntry?.bookmarks ?: emptyList()
 
             toolbar.subtitle = getSubTitle(bookmarks)
-            mTabPager.adapter = object : BookmarksTabAdapter(this, mTabPager) {
+            mTabPager.adapter = object : BookmarksTabAdapter(activity, mTabPager) {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = onScrolled(dy)
             }
             mTabPager.setCurrentItem(initialTabPosition, false)

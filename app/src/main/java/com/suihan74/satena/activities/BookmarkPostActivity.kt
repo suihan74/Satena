@@ -16,16 +16,28 @@ import java.lang.ref.WeakReference
 
 class BookmarkPostActivity : ActivityBase() {
     companion object {
-        const val EXTRA_ENTRY = "entry"
-
         private var bookmarksEntryCache = WeakReference<BookmarksEntry>(null)
+
+        private const val EXTRA_BASE = "com.suihan74.satena.activities.BookmarkPostActivity."
+        const val EXTRA_ENTRY = EXTRA_BASE + "entry"
+
+        private const val BUNDLE_ENTRY = EXTRA_BASE + "mEntry"
     }
 
     override val containerId: Int = R.id.content_layout
     override val progressBarId = R.id.detail_progress_bar
     override val progressBackgroundId = R.id.click_guard
 
-    private lateinit var mEntry: Entry
+    private var mEntry: Entry? = null
+    val entry
+        get() = mEntry!!
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        outState?.run {
+            putSerializable(BUNDLE_ENTRY, mEntry)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,28 +55,36 @@ class BookmarkPostActivity : ActivityBase() {
         }
         setContentView(R.layout.activity_bookmark_post)
 
-        showProgressBar()
+        if (savedInstanceState == null) {
+            showProgressBar()
 
-        mEntry = intent.getSerializableExtra(EXTRA_ENTRY) as Entry
-        launch(Dispatchers.Main) {
-            try {
-                val cache = bookmarksEntryCache.get()
-                val bookmarksEntry = if (cache?.id != mEntry.id) {
-                    HatenaClient.getBookmarksEntryAsync(mEntry.id).await()
-                }
-                else {
-                    cache
-                }
+            mEntry = intent.getSerializableExtra(EXTRA_ENTRY) as Entry
 
-                val fragment = EntryInformationFragment.createInstance(mEntry, bookmarksEntry, true)
-                showFragment(fragment)
+            launch(Dispatchers.Main) {
+                try {
+                    val cache = bookmarksEntryCache.get()
+                    val bookmarksEntry = if (cache?.id != entry.id) {
+                        HatenaClient.getBookmarksEntryAsync(entry.id).await()
+                    }
+                    else {
+                        cache
+                    }
+
+                    val fragment = EntryInformationFragment.createInstance(entry, bookmarksEntry, true)
+                    showFragment(fragment)
+                }
+                catch (e: Exception) {
+                    Log.e("BookmarkPostActivity", e.message)
+                    showToast("エントリ情報の取得に失敗しました")
+                }
+                finally {
+                    hideProgressBar()
+                }
             }
-            catch (e: Exception) {
-                Log.e("BookmarkPostActivity", e.message)
-                showToast("エントリ情報の取得に失敗しました")
-            }
-            finally {
-                hideProgressBar()
+        }
+        else {
+            savedInstanceState.let {
+                mEntry = it.getSerializable(BUNDLE_ENTRY) as Entry
             }
         }
     }

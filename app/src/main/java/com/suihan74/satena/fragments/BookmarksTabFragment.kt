@@ -32,7 +32,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
     private lateinit var mBookmarksAdapter: BookmarksAdapter
     private lateinit var mParentTabAdapter: BookmarksTabAdapter
-    private lateinit var mTabType : BookmarksTabType
+    private var mTabType : BookmarksTabType = BookmarksTabType.RECENT
 
     private var mBookmarksFragment: BookmarksFragment? = null
 
@@ -41,13 +41,21 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
     companion object {
         fun createInstance(
-            bookmarksFragment: BookmarksFragment,
             parentTabAdapter: BookmarksTabAdapter,
             type: BookmarksTabType
         ) = BookmarksTabFragment().apply {
-            mBookmarksFragment = bookmarksFragment
             mParentTabAdapter = parentTabAdapter
             mTabType = type
+        }
+
+        private const val BUNDLE_BASE = "com.suihan74.satena.fragments.BookmarksTabFragment."
+        private const val BUNDLE_TAB_TYPE = BUNDLE_BASE + "mTabType"
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.run {
+            putInt(BUNDLE_TAB_TYPE, mTabType.int)
         }
     }
 
@@ -67,6 +75,14 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_bookmarks_tab, container, false)
         mView = view
+
+        val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksTabFragment has created from an invalid activity")
+        mBookmarksFragment = activity.bookmarksFragment
+
+        savedInstanceState?.let {
+            mTabType = BookmarksTabType.fromInt(it.getInt(BUNDLE_TAB_TYPE))
+            mParentTabAdapter = mBookmarksFragment!!.bookmarksTabAdapter
+        }
 
         val bookmarks = getBookmarks(mBookmarksFragment!!)
         val bookmarksEntry = mBookmarksFragment!!.bookmarksEntry!!
@@ -88,11 +104,11 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                                 }
                             }
                         }
-                        activity!!.showToast("id:${b.user}を非表示にしました")
+                        activity.showToast("id:${b.user}を非表示にしました")
                     }
                     catch (e: Exception) {
                         Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
-                        activity!!.showToast("id:${b.user}を非表示にできませんでした")
+                        activity.showToast("id:${b.user}を非表示にできませんでした")
                     }
 
                     try {
@@ -108,11 +124,11 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 launch(Dispatchers.Main) {
                     try {
                         HatenaClient.unignoreUserAsync(b.user).await()
-                        activity!!.showToast("id:${b.user}の非表示を解除しました")
+                        activity.showToast("id:${b.user}の非表示を解除しました")
                     }
                     catch (e: Exception) {
                         Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
-                        activity!!.showToast("id:${b.user}の非表示を解除できませんでした")
+                        activity.showToast("id:${b.user}の非表示を解除できませんでした")
                     }
 
                     try {
@@ -127,25 +143,22 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             fun removeBookmark(b: Bookmark) {
                 launch(Dispatchers.Main) {
                     try {
-                        (activity as BookmarksActivity).let {
+                        activity.let {
                             val entry = it.entry
                             HatenaClient.deleteBookmarkAsync(entry.url).await()
                             removeItem(b)
-                            activity!!.showToast("ブクマを削除しました")
+                            activity.showToast("ブクマを削除しました")
                         }
                     }
                     catch (e: Exception) {
                         Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
-                        activity!!.showToast("ブクマを削除できませんでした")
+                        activity.showToast("ブクマを削除できませんでした")
                     }
                 }
             }
 
             override fun onItemClicked(bookmark: Bookmark) {
-                val activity = activity as BookmarksActivity
-
                 val fragment = BookmarkDetailFragment.createInstance(
-                    mBookmarksFragment!!,
                     bookmark
                 )
                 activity.showFragment(fragment, null)
@@ -235,7 +248,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                             }
                             catch (e: Exception) {
                                 Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                                activity?.showToast("ブクマリスト更新失敗")
+                                activity.showToast("ブクマリスト更新失敗")
                             }
                             finally {
                                 loadCompleted(mBookmarksAdapter.itemCount - 1)
@@ -250,22 +263,20 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
 
         // スワイプ更新機能の設定
-        view.findViewById<SwipeRefreshLayout>(R.id.bookmarks_swipe_layout).apply {
-            val swiper = this
-            setProgressBackgroundColorSchemeColor(activity!!.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(activity!!.getThemeColor(R.attr.colorPrimary))
+        view.findViewById<SwipeRefreshLayout>(R.id.bookmarks_swipe_layout).apply swipeLayout@ {
+            setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
+            setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
                 launch(Dispatchers.Main) {
                     try {
-                        val bookmarksActivity = activity as BookmarksActivity
-                        bookmarksActivity.bookmarksFragment?.refreshBookmarksAsync()?.await()
+                        activity.bookmarksFragment?.refreshBookmarksAsync()?.await()
                     }
                     catch (e: Exception) {
-                        activity!!.showToast("ブックマークリスト更新失敗")
+                        activity.showToast("ブックマークリスト更新失敗")
                         Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
                     }
                     finally {
-                        swiper.isRefreshing = false
+                        this@swipeLayout.isRefreshing = false
                     }
                 }
             }

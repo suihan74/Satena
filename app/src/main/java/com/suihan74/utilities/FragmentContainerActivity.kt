@@ -7,15 +7,34 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
 
     fun showFragment(fragment: Fragment, backStackLabel: String?) {
         supportFragmentManager.beginTransaction().apply {
-            addToBackStack(backStackLabel)
-            replace(containerId, fragment)
+            val current = currentFragment
+            if (current != null) {
+                hide(current)
+            }
+
+            add(containerId, fragment)
+
+            if (current != null) {
+                addToBackStack(backStackLabel)
+            }
+
             commit()
         }
     }
 
     fun showFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction().apply {
-            replace(containerId, fragment)
+            val current = currentFragment
+            if (current != null) {
+                hide(current)
+            }
+
+            add(containerId, fragment)
+
+            if (current != null) {
+                addToBackStack(null)
+            }
+
             commit()
         }
     }
@@ -31,6 +50,12 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
 
     override val currentFragment : Fragment?
         get() = supportFragmentManager.findFragmentById(containerId)
+
+    inline fun <reified T> getStackedFragment() =
+        supportFragmentManager.fragments.lastOrNull { it is T } as? T
+
+    inline fun <reified T> getStackedFragment(predicate: (T)->Boolean) =
+        supportFragmentManager.fragments.lastOrNull { it is T && predicate(it) } as? T
 
     override fun onBackPressed() {
         val fragment = currentFragment

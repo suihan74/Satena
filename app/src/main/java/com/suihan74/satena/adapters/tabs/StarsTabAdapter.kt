@@ -11,8 +11,8 @@ import com.suihan74.satena.fragments.StarsTabFragment
 import com.suihan74.utilities.BookmarkCommentDecorator
 
 class StarsTabAdapter(
-    private val bookmarksFragment : BookmarksFragment,
-    private val detailFragment: BookmarkDetailFragment,
+    bookmarksFragment : BookmarksFragment,
+    detailFragment: BookmarkDetailFragment,
     private val bookmark : Bookmark
 ) : FragmentPagerAdapter(detailFragment.childFragmentManager) {
 
@@ -42,10 +42,10 @@ class StarsTabAdapter(
         tabs.apply {
             clear()
             add(Tab.TO_USER to {
-                StarsTabFragment.createInstance(bookmarksFragment, bookmark, StarsAdapter.StarsTabMode.TO_USER)
+                StarsTabFragment.createInstance(bookmark, StarsAdapter.StarsTabMode.TO_USER)
             })
             add(Tab.FROM_USER to {
-                StarsTabFragment.createInstance(bookmarksFragment, bookmark, StarsAdapter.StarsTabMode.FROM_USER)
+                StarsTabFragment.createInstance(bookmark, StarsAdapter.StarsTabMode.FROM_USER)
             })
             if (mentionsToUser.isNotEmpty()) {
                 add(Tab.MENTION_TO_USER to {

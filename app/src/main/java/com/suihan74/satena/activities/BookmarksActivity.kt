@@ -23,7 +23,7 @@ class BookmarksActivity : ActivityBase() {
         val starsEntriesTask : Deferred<List<StarsEntry>>
     )
 
-    private var mEntry : Entry = emptyEntry()
+    private var mEntry : Entry? = null
     private var mBookmarksEntry : BookmarksEntry? = null
 
     private var mPostFragment : BookmarkPostFragment? = null
@@ -34,7 +34,7 @@ class BookmarksActivity : ActivityBase() {
         private set
 
     val entry : Entry
-        get() = mEntry
+        get() = mEntry!!
 
     override val containerId = R.id.bookmarks_layout
     override val progressBarId: Int? = R.id.detail_progress_bar
@@ -105,7 +105,20 @@ class BookmarksActivity : ActivityBase() {
             )
         }
         private var preLoadingTasks : PreLoadingTasks? = null
-        const val EXTRA_ENTRY = "com.suihan74.satena.activities.BookmarksActivity.EXTRA_ENTRY"
+
+        private const val EXTRA_BASE = "com.suihan74.satena.activities.BookmarksActivity."
+        const val EXTRA_ENTRY = EXTRA_BASE + "EXTRA_ENTRY"
+
+        private const val BUNDLE_ENTRY = EXTRA_BASE + "mEntry"
+        private const val BUNDLE_POST_DIALOG_OPENED = EXTRA_BASE + "mIsDialogOpened"
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        outState?.run {
+            putSerializable(BUNDLE_ENTRY, mEntry)
+            putBoolean(BUNDLE_POST_DIALOG_OPENED, mIsDialogOpened)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -124,138 +137,147 @@ class BookmarksActivity : ActivityBase() {
         }
         setContentView(R.layout.activity_bookmarks)
 
-
-        if (savedInstanceState == null) {
-            showProgressBar()
-        }
+        savedInstanceState?.let {
+            mEntry = it.getSerializable(BUNDLE_ENTRY) as Entry
+            mBookmarksEntry = null
+            bookmarksFragment = getStackedFragment<BookmarksFragment>()
+            mPostFragment = getStackedFragment<BookmarkPostFragment>()
+            mIsDialogOpened = it.getBoolean(BUNDLE_POST_DIALOG_OPENED)
+        } ?: showProgressBar()
 
         findViewById<View>(R.id.post_bookmark_background).setOnClickListener {
             closeBookmarkDialog()
         }
 
-        launch(Dispatchers.IO) {
-            val entry = when (intent.action) {
-                // ブラウザから「共有」を使って遷移してきたときの処理
-                Intent.ACTION_SEND -> {
-                    val url = intent.extras?.getCharSequence(Intent.EXTRA_TEXT).toString()
-                    if (!URLUtil.isNetworkUrl(url)) throw RuntimeException("invalid url shared")
-
-                    var entry: Entry? = intent.extras?.getSerializable(EXTRA_ENTRY) as? Entry
-                    AccountLoader.signInAccounts(applicationContext)
-
-                    if (entry == null) {
-                        preLoadingTasks = null
-
-                        try {
-                            entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
-                                .firstOrNull { it.url == url }
-                        }
-                        catch (e: Exception) {
-                            Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
-                        }
-                    }
-
-                    if (entry == null) {
-                        try {
-                            mBookmarksEntry = HatenaClient.getEmptyBookmarksEntryAsync(url).await()
-                        } catch (e: Exception) {
-                            Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
-                        }
-                    }
-
-                    entry ?: Entry(0, mBookmarksEntry?.title ?: "", "", 0, url, url, "", "")
-                }
-
-                // ブコメページのリンクを踏んだときの処理
-                Intent.ACTION_VIEW -> {
-                    val commentUrl = intent.dataString ?: ""
-                    val url = HatenaClient.getEntryUrlFromCommentPageUrl(commentUrl)
-
-                    var entry: Entry? = null
-                    AccountLoader.signInAccounts(applicationContext)
-                    try {
-                        entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
-                            .firstOrNull { it.url == url }
-                    } catch (e: Exception) {
-                        Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
-                    }
-                    entry
-                }
-
-                // MainActivityからの遷移
-                else -> {
-                    preLoadingTasks = null
-
-                    val eid = intent.extras?.getLong("eid") ?: 0L
-                    if (eid == 0L) {
-                        intent.getSerializableExtra("entry")
-                    } else {
-                        HatenaClient.getBookmarksEntryAsync(eid).await()
-                    }
-                }
-            }
-
-            if (entry is Entry) {
-                mEntry = entry
-            }
-            else if (entry is BookmarksEntry) {
-                mEntry = Entry(
-                    id = entry.id,
-                    title = entry.title,
-                    description = "",
-                    count = entry.count,
-                    url = entry.url,
-                    rootUrl = entry.url,
-                    faviconUrl = "",
-                    imageUrl = entry.screenshot,
-                    bookmarkedData = null
-                )
-                mBookmarksEntry = entry
-            }
-
-            // ブクマダイアログの設定
-            if (HatenaClient.signedIn()) {
-                withContext(Dispatchers.Main) {
-                    mPostFragment =
-                        BookmarkPostFragment.createInstance(mEntry, mBookmarksEntry).apply {
-                            setOnPostedListener {
-                                closeBookmarkDialog()
-                            }
-
-                            arguments = Bundle().apply {
-                                putInt(BookmarkPostFragment.INITIAL_VISIBILITY, View.GONE)
-                            }
-                        }
-
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.bookmark_post_layout, mPostFragment!!)
-                        .commit()
-                }
-            }
-
-            // フラグメント表示
-            if (isFragmentShowed()) {
-                val fragment = currentFragment
-                if (fragment is BookmarksFragment) {
-                    bookmarksFragment = fragment
-                }
-            }
-            else {
-                withContext(Dispatchers.Main) {
-                    showProgressBar()
-                    val targetUser = intent.extras?.getString("target_user")
-                    bookmarksFragment =
-                        if (targetUser == null) {
-                            BookmarksFragment.createInstance(mEntry, preLoadingTasks)
-                        } else {
-                            BookmarksFragment.createInstance(targetUser, mEntry, preLoadingTasks)
-                        }
-                    showFragment(bookmarksFragment!!)
-                }
-            }
+        if (savedInstanceState == null) {
+            startInitialize()
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (mIsDialogOpened) {
+            openBookmarkDialog()
+        }
+    }
+
+    private fun startInitialize() = launch(Dispatchers.IO) {
+        val entry = when (intent.action) {
+            // ブラウザから「共有」を使って遷移してきたときの処理
+            Intent.ACTION_SEND -> {
+                val url = intent.extras?.getCharSequence(Intent.EXTRA_TEXT).toString()
+                if (!URLUtil.isNetworkUrl(url)) throw RuntimeException("invalid url shared")
+
+                var entry: Entry? = intent.extras?.getSerializable(EXTRA_ENTRY) as? Entry
+                AccountLoader.signInAccounts(applicationContext)
+
+                if (entry == null) {
+                    preLoadingTasks = null
+
+                    try {
+                        entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
+                            .firstOrNull { it.url == url }
+                    }
+                    catch (e: Exception) {
+                        Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
+                    }
+                }
+
+                if (entry == null) {
+                    try {
+                        mBookmarksEntry = HatenaClient.getEmptyBookmarksEntryAsync(url).await()
+                    } catch (e: Exception) {
+                        Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
+                    }
+                }
+
+                entry ?: Entry(0, mBookmarksEntry?.title ?: "", "", 0, url, url, "", "")
+            }
+
+            // ブコメページのリンクを踏んだときの処理
+            Intent.ACTION_VIEW -> {
+                val commentUrl = intent.dataString ?: ""
+                val url = HatenaClient.getEntryUrlFromCommentPageUrl(commentUrl)
+
+                var entry: Entry? = null
+                AccountLoader.signInAccounts(applicationContext)
+                try {
+                    entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
+                        .firstOrNull { it.url == url }
+                } catch (e: Exception) {
+                    Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
+                }
+                entry
+            }
+
+            // MainActivityからの遷移
+            else -> {
+                preLoadingTasks = null
+
+                val eid = intent.extras?.getLong("eid") ?: 0L
+                if (eid == 0L) {
+                    intent.getSerializableExtra("entry")
+                } else {
+                    HatenaClient.getBookmarksEntryAsync(eid).await()
+                }
+            }
+        }
+
+        if (entry is Entry) {
+            mEntry = entry
+        }
+        else if (entry is BookmarksEntry) {
+            mEntry = Entry(
+                id = entry.id,
+                title = entry.title,
+                description = "",
+                count = entry.count,
+                url = entry.url,
+                rootUrl = entry.url,
+                faviconUrl = "",
+                imageUrl = entry.screenshot,
+                bookmarkedData = null
+            )
+            mBookmarksEntry = entry
+        }
+
+        // ブクマダイアログの設定
+        withContext(Dispatchers.Main) {
+            initializeBookmarkPostFragment()
+        }
+
+        // フラグメント表示
+        withContext(Dispatchers.Main) {
+            showProgressBar()
+            val targetUser = intent.extras?.getString("target_user")
+            bookmarksFragment =
+                if (targetUser == null) {
+                    BookmarksFragment.createInstance(this@BookmarksActivity.entry, preLoadingTasks)
+                } else {
+                    BookmarksFragment.createInstance(targetUser, this@BookmarksActivity.entry, preLoadingTasks)
+                }
+            showFragment(bookmarksFragment!!)
+        }
+    }
+
+    private fun initializeBookmarkPostFragment() {
+        if (HatenaClient.signedIn()) {
+            mPostFragment =
+                BookmarkPostFragment.createInstance(entry, mBookmarksEntry).apply {
+                    setOnPostedListener {
+                        closeBookmarkDialog()
+                    }
+
+                    arguments = Bundle().apply {
+                        putInt(BookmarkPostFragment.INITIAL_VISIBILITY, View.GONE)
+                    }
+                }
+
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.bookmark_post_layout, mPostFragment!!)
+                .commit()
+        }
+    }
 
     fun openBookmarkDialog() {
         mIsDialogOpened = true

@@ -9,15 +9,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.suihan74.HatenaLib.*
+import com.suihan74.HatenaLib.Bookmark
+import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.HatenaLib.Star
+import com.suihan74.satena.R
+import com.suihan74.satena.activities.BookmarksActivity
+import com.suihan74.satena.adapters.StarsAdapter
+import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.FragmentContainerActivity
 import com.suihan74.utilities.showToast
-import com.suihan74.satena.R
-import com.suihan74.satena.adapters.StarsAdapter
-import com.suihan74.utilities.CoroutineScopeFragment
-import kotlinx.coroutines.*
-import kotlin.collections.ArrayList
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 
 class StarsTabFragment : CoroutineScopeFragment() {
     private var mBookmarksFragment : BookmarksFragment? = null
@@ -28,18 +33,37 @@ class StarsTabFragment : CoroutineScopeFragment() {
 
     companion object {
         fun createInstance(
-            fragment: BookmarksFragment,
             b: Bookmark,
             tabMode: StarsAdapter.StarsTabMode
         ) = StarsTabFragment().apply {
-            mBookmarksFragment = fragment
             mBookmark = b
             mStarsTabMode = tabMode
+        }
+
+        private const val BUNDLE_BASE = "com.suihan74.satena.fragments.StarsTabFragment."
+        private const val BUNDLE_BOOKMARK_USER = BUNDLE_BASE + "mBookmark.user"
+        private const val BUNDLE_STARS_TAB_MODE = BUNDLE_BASE + "mStarsTabMode"
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.run {
+            putString(BUNDLE_BOOKMARK_USER, mBookmark.user)
+            putInt(BUNDLE_STARS_TAB_MODE, mStarsTabMode.int)
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_stars_tab, container, false)
+
+        val activity = activity as? BookmarksActivity ?: throw IllegalStateException("StarsTabFragment has created from an invalid activity")
+        mBookmarksFragment = activity.bookmarksFragment
+
+        savedInstanceState?.let {
+            val user = it.getString(BUNDLE_BOOKMARK_USER)
+            mStarsTabMode = StarsAdapter.StarsTabMode.fromInt(it.getInt(BUNDLE_STARS_TAB_MODE))
+            mBookmark = activity.getStackedFragment<BookmarkDetailFragment> { it.bookmark.user == user }!!.bookmark
+        }
 
         val bookmarksEntry = mBookmarksFragment!!.bookmarksEntry!!
         val starsMap = mBookmarksFragment!!.starsMap
@@ -59,7 +83,6 @@ class StarsTabFragment : CoroutineScopeFragment() {
                     (activity as FragmentContainerActivity).apply {
                         showFragment(
                             BookmarkDetailFragment.createInstance(
-                                mBookmarksFragment!!,
                                 target
                             ), null)
                     }
@@ -86,10 +109,10 @@ class StarsTabFragment : CoroutineScopeFragment() {
                                     }
                                     tasks.awaitAll()
                                     removeItem(user)
-                                    activity!!.showToast("${user}へのスターを削除しました")
+                                    activity.showToast("${user}へのスターを削除しました")
                                 }
                                 catch (e: Exception) {
-                                    activity!!.showToast("${user}へのスターの削除に失敗しました")
+                                    activity.showToast("${user}へのスターの削除に失敗しました")
                                     Log.d("failedToDeleteStar", Log.getStackTraceString(e))
                                 }
                             }
