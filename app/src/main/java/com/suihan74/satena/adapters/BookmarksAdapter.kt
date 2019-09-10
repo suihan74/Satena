@@ -14,13 +14,13 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
-import com.suihan74.utilities.*
 import com.suihan74.satena.R
 import com.suihan74.satena.models.*
-import kotlinx.coroutines.*
+import com.suihan74.utilities.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
-import java.lang.StringBuilder
 
 open class BookmarksAdapter(
     private val fragment: CoroutineScopeFragment,
@@ -29,20 +29,23 @@ open class BookmarksAdapter(
     private val tabType: BookmarksTabType
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var states : ArrayList<RecyclerState<Bookmark>>
+    private var mStates : ArrayList<RecyclerState<Bookmark>>
+
+    var loadableFooter : LoadableFooterViewHolder? = null
+        private set
+
+    private val states : List<RecyclerState<Bookmark>>
+        get() =
+            if (searchText.isBlank()) {
+                mStates
+            }
+            else {
+                mStates.filter { RecyclerType.BODY != it.type || isShowable(it.body!!) }
+            }
+
     var searchText = ""
         set(value) {
             field = value
-
-            val list = states
-                .filter { RecyclerType.BODY == it.type }
-                .map { it.body!! }
-                .filter { isShowable(it) }
-                .map { RecyclerState(RecyclerType.BODY, it) }
-            states.removeAll { it.type == RecyclerType.BODY }
-            if (list.isNotEmpty()) {
-                states.addAll(0, list)
-            }
 
             notifyDataSetChanged()
         }
@@ -64,7 +67,7 @@ open class BookmarksAdapter(
             .filter { it.type == IgnoredEntryType.TEXT && it.target contains IgnoreTarget.BOOKMARK }
             .map { it.query }
 
-        states = RecyclerState.makeStatesWithFooter(bookmarks.filter { bookmark ->
+        mStates = RecyclerState.makeStatesWithFooter(bookmarks.filter { bookmark ->
             muteWords.none { word ->
                 bookmark.comment.contains(word) && bookmark.getTagsText().contains(word)
             }
@@ -89,8 +92,8 @@ open class BookmarksAdapter(
     }
 
     fun setBookmarks(bookmarks: List<Bookmark>) {
-        if (RecyclerState.isBodiesEmpty(states)) {
-            states = RecyclerState.makeStatesWithFooter(bookmarks)
+        if (RecyclerState.isBodiesEmpty(mStates)) {
+            mStates = RecyclerState.makeStatesWithFooter(bookmarks)
             notifyDataSetChanged()
         }
         else {
@@ -99,12 +102,15 @@ open class BookmarksAdapter(
             // 新規項目
             indexed
                 .filterNot {
-                    states.any { st -> st.body?.user == it.value.user }
+                    mStates.any { st -> st.body?.user == it.value.user }
                 }
                 .forEach { (_, item) ->
                     if (isShowable(item)) {
-                        val position = states.indexOfFirst { item.timestamp > it.body?.timestamp ?: LocalDateTime.MIN }
-                        states.add(position, RecyclerState(RecyclerType.BODY, item))
+                        val actualPosition = mStates.indexOfFirst { item.timestamp > it.body?.timestamp ?: LocalDateTime.MIN }
+                        val state = RecyclerState(RecyclerType.BODY, item)
+                        mStates.add(actualPosition, state)
+
+                        val position = states.indexOfFirst { it == state }
                         notifyItemInserted(position)
                     }
                 }
@@ -112,7 +118,7 @@ open class BookmarksAdapter(
             // 内容の更新
             indexed
                 .map {
-                    val existedIndex = states.indexOfFirst { state ->
+                    val existedIndex = mStates.indexOfFirst { state ->
                         RecyclerType.BODY == state.type &&
                         state.body!!.user == it.value.user &&
                         (state.body!!.comment != it.value.comment ||
@@ -123,8 +129,10 @@ open class BookmarksAdapter(
                 }
                 .forEach { (existedIndex, item) ->
                     if (existedIndex >= 0 && isShowable(item)) {
-                        states[existedIndex] = RecyclerState(RecyclerType.BODY, item)
-                        notifyItemChanged(existedIndex)
+                        mStates[existedIndex] = RecyclerState(RecyclerType.BODY, item)
+
+                        val position = states.indexOfFirst { it == mStates[existedIndex] }
+                        notifyItemChanged(position)
                     }
                 }
         }
@@ -154,8 +162,9 @@ open class BookmarksAdapter(
             }
 
             RecyclerType.FOOTER -> {
-                val inflate = LayoutInflater.from(parent.context).inflate(R.layout.footer_recycler_view, parent, false)
-                return FooterViewHolder(inflate)
+                val inflate = LayoutInflater.from(parent.context).inflate(R.layout.footer_recycler_view_loadable, parent, false)
+                loadableFooter = LoadableFooterViewHolder(inflate)
+                return loadableFooter!!
             }
 
             else -> throw RuntimeException("invalid RecyclerState")
@@ -184,7 +193,9 @@ open class BookmarksAdapter(
 
     fun removeItem(bookmark: Bookmark) {
         val position = getItemPosition(bookmark.user)
-        states.removeAt(position)
+        val item = states[position]
+        val actualPosition = mStates.indexOf(item)
+        mStates.removeAt(actualPosition)
         notifyItemRemoved(position)
     }
 

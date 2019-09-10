@@ -6,11 +6,12 @@ import android.util.Log
 import android.view.View
 import android.webkit.URLUtil
 import com.suihan74.HatenaLib.*
-import com.suihan74.utilities.*
-import com.suihan74.satena.fragments.BookmarksFragment
-import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.R
 import com.suihan74.satena.fragments.BookmarkPostFragment
+import com.suihan74.satena.fragments.BookmarksFragment
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.*
 
 class BookmarksActivity : ActivityBase() {
@@ -36,7 +37,7 @@ class BookmarksActivity : ActivityBase() {
         get() = mEntry
 
     override val containerId = R.id.bookmarks_layout
-    override fun getProgressBarId(): Int? = R.id.progress_bar
+    override fun getProgressBarId(): Int? = R.id.detail_progress_bar
     override fun getProgressBackgroundId(): Int? = R.id.click_guard
 
     init {
@@ -53,8 +54,8 @@ class BookmarksActivity : ActivityBase() {
                 progressBar.apply {
                     animate()
                         .withEndAction {
-                            visibility = View.GONE
-                            background?.visibility = View.GONE
+                            visibility = View.INVISIBLE
+                            background?.visibility = View.INVISIBLE
                         }
                         .alphaBy(1f)
                         .alpha(0f)
@@ -122,6 +123,7 @@ class BookmarksActivity : ActivityBase() {
             setTheme(R.style.AppTheme_Light)
         }
         setContentView(R.layout.activity_bookmarks)
+
 
         if (savedInstanceState == null) {
             showProgressBar()

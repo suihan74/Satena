@@ -5,10 +5,10 @@ import android.util.Log
 import com.suihan74.satena.models.MigrationData
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
+import com.suihan74.utilities.getMd5Bytes
 import java.io.File
-import java.lang.RuntimeException
+import java.io.InputStream
+import java.io.OutputStream
 import kotlin.experimental.and
 
 class PreferencesMigrator {
@@ -42,18 +42,21 @@ class PreferencesMigrator {
         }
 
         fun write(dest: File) {
+            val headerHash = getMd5Bytes(VERSION.plus(items.size.toByteArray()))
+            val bodyHash = getMd5Bytes(items.flatMap { data ->
+                getMd5Bytes(data.toByteArray()).toList()
+            }.toByteArray())
+
             dest.setReadable(true)
             dest.outputStream().buffered().use { stream ->
                 stream.write(SIGNATURE)
+                stream.write(headerHash)
+                stream.write(bodyHash)
                 stream.write(VERSION)
                 stream.writeInt(items.size)
 
                 items.forEach { data ->
-                    stream.writeString(data.keyName)
-                    stream.writeString(data.fileName)
-                    stream.writeInt(data.version)
-                    stream.writeInt(data.size)
-                    stream.write(data.data!!)
+                    data.write(stream)
                 }
             }
 
@@ -64,35 +67,32 @@ class PreferencesMigrator {
     class Input(private val context: Context) {
         fun read(src: File, onErrorAction: ((MigrationData)->Unit)? = null) {
             src.inputStream().buffered().use { stream ->
-                val signature = ByteArray(8)
-                stream.read(signature)
-                if (!signature.contentEquals(SIGNATURE))
-                    throw RuntimeException("the file is not a settings for Satena")
+                val signature = stream.readByteArray(8)
+                check(signature.contentEquals(SIGNATURE)) { "the file is not a settings for Satena: ${src.absolutePath}" }
 
-                val version = ByteArray(1)
-                stream.read(version)
+                val headerHash = stream.readByteArray(16)
+                val bodyHash = stream.readByteArray(16)
 
+                val version = stream.readByteArray(1)
                 val itemsCount = stream.readInt()
 
+                val actualHeaderHash =
+                    getMd5Bytes(version.plus(itemsCount.toByteArray()))
+                check(actualHeaderHash.contentEquals(headerHash)) { "the file is falsified: ${src.absolutePath}" }
+
+                val items = ArrayList<MigrationData>(itemsCount)
                 for (i in 0 until itemsCount) {
-                    val keyName = stream.readString()
-                    val fileName = stream.readString()
-                    val dataVersion = stream.readInt()
-                    val dataSize = stream.readInt()
-                    val data = ByteArray(dataSize)
-                    stream.read(data, 0, dataSize)
+                    items.add(MigrationData.read(stream))
+                }
 
-                    val md = MigrationData(
-                        keyName = keyName,
-                        fileName = fileName,
-                        version = dataVersion,
-                        size = dataSize,
-                        data = data
-                    )
+                val actualBodyHash =
+                    getMd5Bytes(items.flatMap { getMd5Bytes(it.toByteArray()).toList() }.toByteArray())
+                check(actualBodyHash.contentEquals(bodyHash)) { "the file is falsified: ${src.absolutePath}" }
 
-                    val result = apply(md)
+                for (item in items) {
+                    val result = apply(item)
                     if (!result) {
-                        onErrorAction?.invoke(md)
+                        onErrorAction?.invoke(item)
                     }
                 }
 
@@ -144,7 +144,7 @@ fun Int.toByteArray(): ByteArray {
 }
 
 fun ByteArray.toInt(): Int {
-    var result: Int = 0
+    var result = 0
     val size = minOf(3, this.size)
     for (i in 0..size) {
         val value = (this[i] and 0xFF.toByte()).toInt().let {
@@ -155,26 +155,32 @@ fun ByteArray.toInt(): Int {
     return result
 }
 
-fun BufferedOutputStream.writeInt(value: Int) {
+fun OutputStream.writeInt(value: Int) {
     this.write(value.toByteArray())
 }
 
-fun BufferedOutputStream.writeString(value: String) {
+fun OutputStream.writeString(value: String) {
     value.toByteArray().let {
         writeInt(it.size)
         write(it)
     }
 }
 
-fun BufferedInputStream.readInt(): Int {
+fun InputStream.readInt() : Int {
     val bytes = ByteArray(4)
     this.read(bytes)
     return bytes.toInt()
 }
 
-fun BufferedInputStream.readString(): String {
+fun InputStream.readString() : String {
     val size = readInt()
     val bytes = ByteArray(size)
     this.read(bytes)
     return bytes.toString(Charsets.UTF_8)
+}
+
+fun InputStream.readByteArray(size: Int) : ByteArray {
+    val bytes = ByteArray(size)
+    this.read(bytes, 0, size)
+    return bytes
 }

@@ -10,10 +10,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
-import com.suihan74.utilities.BackPressable
+import com.suihan74.satena.R
+import com.suihan74.satena.activities.PreferencesActivity
 import com.suihan74.satena.adapters.tabs.PreferencesTabAdapter
 import com.suihan74.satena.adapters.tabs.PreferencesTabMode
-import com.suihan74.satena.R
+import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.PermissionRequestable
 
 class PreferencesFragment : Fragment(), BackPressable, PermissionRequestable {
@@ -72,7 +73,7 @@ class PreferencesFragment : Fragment(), BackPressable, PermissionRequestable {
             })
         }
 
-        val tab = activity!!.intent.extras?.getSerializable("current_tab") as? PreferencesTabMode ?: PreferencesTabMode.INFORMATION
+        val tab = activity!!.intent.extras?.getSerializable(PreferencesActivity.EXTRA_CURRENT_TAB) as? PreferencesTabMode ?: PreferencesTabMode.INFORMATION
         val position = tab.int
         mViewPager.setCurrentItem(position, false)
         toolbar.title = "設定 > ${getString(tab.titleId)}"

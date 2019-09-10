@@ -20,7 +20,7 @@
             android:layout_height="match_parent"/>
 
     <ProgressBar
-            android:id="@+id/progress_bar"
+            android:id="@+id/detail_progress_bar"
             android:visibility="invisible"
             style="?android:attr/progressBarStyle"
             android:indeterminateTint="?attr/colorPrimary"

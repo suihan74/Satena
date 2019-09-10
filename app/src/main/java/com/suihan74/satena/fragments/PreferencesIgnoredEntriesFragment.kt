@@ -10,14 +10,14 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.suihan74.utilities.DividerItemDecorator
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.showToast
+import com.suihan74.satena.R
 import com.suihan74.satena.adapters.IgnoredEntriesAdapter
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.IgnoredEntriesKey
 import com.suihan74.satena.models.IgnoredEntry
-import com.suihan74.satena.R
+import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.showToast
 
 class PreferencesIgnoredEntriesFragment : Fragment() {
     private lateinit var mIgnoredEntriesAdapter : IgnoredEntriesAdapter
@@ -36,10 +36,7 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
 
         mIgnoredEntriesAdapter = object: IgnoredEntriesAdapter(mIgnoredEntries) {
             override fun onItemClicked(entry: IgnoredEntry) {
-                val dialog =
-                    IgnoredEntryDialogFragment.createInstance(entry) { ie ->
-                        return@createInstance true
-                    }
+                val dialog = IgnoredEntryDialogFragment.createInstance(entry) { true }
                 dialog.show(fragmentManager, "dialog")
             }
 

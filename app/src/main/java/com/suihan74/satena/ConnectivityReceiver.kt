@@ -27,6 +27,7 @@ class ConnectivityReceiver : BroadcastReceiver() {
     private var mJob : Job? = null
 
     override fun onReceive(context: Context?, intent: Intent?) {
+        @Suppress("DEPRECATION")
         if (context == null || intent?.action != ConnectivityManager.CONNECTIVITY_ACTION) return
 
         val cm = context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

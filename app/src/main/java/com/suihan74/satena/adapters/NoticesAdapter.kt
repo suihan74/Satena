@@ -9,12 +9,12 @@ import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Notice
+import com.suihan74.satena.R
+import com.suihan74.satena.fragments.NoticesFragment
 import com.suihan74.utilities.FooterViewHolder
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
 import com.suihan74.utilities.setHtml
-import com.suihan74.satena.R
-import com.suihan74.satena.fragments.NoticesFragment
 import org.threeten.bp.format.DateTimeFormatter
 
 open class NoticesAdapter
@@ -93,10 +93,8 @@ open class NoticesAdapter
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (RecyclerType.fromInt(holder.itemViewType)) {
             RecyclerType.BODY ->
-            {
-                val holder = holder as ViewHolder
-                holder.notice = states[position].body!!
-            }
+                (holder as ViewHolder).notice = states[position].body!!
+
             else -> {}
         }
     }

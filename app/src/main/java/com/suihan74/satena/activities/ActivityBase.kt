@@ -38,14 +38,13 @@ abstract class ActivityBase(
 
     fun showProgressBar(clickGuard: Boolean = true) {
         val progressBar = getProgressBarId()?.let {
-            findViewById<ProgressBar>(it)?.apply { visibility = View.VISIBLE }
+            findViewById<ProgressBar>(it).apply { visibility = View.VISIBLE }
         }
         val background = if (clickGuard) {
             getProgressBackgroundId()?.let {
-                findViewById<View>(it)?.apply { visibility = View.VISIBLE }
+                findViewById<View>(it).apply { visibility = View.VISIBLE }
             }
-        }
-        else null
+        } else null
 
         showAction?.invoke(progressBar, background)
     }
@@ -59,11 +58,11 @@ abstract class ActivityBase(
         }
 
         if (hideAction == null) {
-            progressBar?.visibility = View.GONE
-            background?.visibility = View.GONE
+            progressBar?.visibility = View.INVISIBLE
+            background?.visibility = View.INVISIBLE
         }
         else {
-            hideAction!!(progressBar, background)
+            hideAction!!.invoke(progressBar, background)
         }
     }
 }

@@ -8,7 +8,6 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.fragments.EntryInformationFragment
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.utilities.FragmentContainerActivity
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +22,7 @@ class BookmarkPostActivity : ActivityBase() {
     }
 
     override val containerId: Int = R.id.content_layout
-    override fun getProgressBarId() = R.id.progress_bar
+    override fun getProgressBarId() = R.id.detail_progress_bar
     override fun getProgressBackgroundId() = R.id.click_guard
 
     private lateinit var mEntry: Entry

@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
+import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Notice
@@ -14,7 +15,9 @@ import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.fragments.NoticesFragment
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.utilities.*
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.makeSpannedfromHtml
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
 import kotlin.coroutines.CoroutineContext
@@ -68,7 +71,16 @@ class NotificationService : Service(), CoroutineScope {
 
             val mainIntent = Intent(applicationContext, MainActivity::class.java)
             val pendingIntent = PendingIntent.getActivity(applicationContext, 0, mainIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-            val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager = getSystemService(NotificationManager::class.java)
+
+            if (notificationManager.getNotificationChannel(channelId) == null) {
+                val channel = NotificationChannel(channelId, title, NotificationManager.IMPORTANCE_HIGH).apply {
+                    enableVibration(false)
+                    enableLights(false)
+                    setShowBadge(false)
+                }
+                notificationManager.createNotificationChannel(channel)
+            }
 
             val notification = NotificationCompat.Builder(applicationContext, channelId)
                 .setStyle(NotificationCompat.BigTextStyle().setSummaryText(description))
@@ -79,14 +91,6 @@ class NotificationService : Service(), CoroutineScope {
                 .setOngoing(true)
                 .build()
 
-            if (notificationManager.getNotificationChannel(channelId) == null) {
-                val channel = NotificationChannel(channelId, title, NotificationManager.IMPORTANCE_DEFAULT).apply {
-                    vibrationPattern = longArrayOf(0L)
-                    enableVibration(false)
-                }
-
-                notificationManager.createNotificationChannel(channel)
-            }
             startForeground(1, notification)
         }
 
@@ -108,8 +112,6 @@ class NotificationService : Service(), CoroutineScope {
     }
 
     private fun startFetchingNotices(context: Context) {
-        context.showToast("常駐してはてなの通知をおしらせします")
-
         if (runningJob != null) {
             runningJob!!.cancel()
         }
@@ -192,10 +194,16 @@ class NotificationService : Service(), CoroutineScope {
         }
 
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NotificationManager::class.java)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && notificationManager.getNotificationChannel(channelId) == null) {
-            val channel = NotificationChannel(channelId, title, NotificationManager.IMPORTANCE_DEFAULT)
+            val channel = NotificationChannel(channelId, title, NotificationManager.IMPORTANCE_DEFAULT).apply {
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                vibrationPattern = longArrayOf(0, 300, 300)
+                enableVibration(true)
+                enableLights(true)
+                setShowBadge(true)
+            }
             notificationManager.createNotificationChannel(channel)
         }
 
@@ -211,7 +219,7 @@ class NotificationService : Service(), CoroutineScope {
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(0, notification)
+        NotificationManagerCompat.from(context).notify(0, notification)
     }
 }
 

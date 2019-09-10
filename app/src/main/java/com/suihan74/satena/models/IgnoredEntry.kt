@@ -39,4 +39,8 @@ data class IgnoredEntry (
         if (other !is IgnoredEntry) return false
         return type == other.type && query == other.query
     }
+
+    override fun hashCode(): Int {
+        return (type.hashCode() + query.hashCode()) * 31
+    }
 }

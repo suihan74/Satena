@@ -10,11 +10,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
-import com.suihan74.utilities.*
 import com.suihan74.satena.R
-import com.suihan74.satena.models.*
-import java.lang.RuntimeException
-import java.lang.StringBuilder
+import com.suihan74.satena.models.IgnoreTarget
+import com.suihan74.satena.models.IgnoredEntriesKey
+import com.suihan74.satena.models.IgnoredEntry
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.utilities.*
 
 open class StarsAdapter(
     private val context : Context,
@@ -145,20 +146,17 @@ open class StarsAdapter(
                 statesModeFrom.removeAt(position)
                 notifyItemRemoved(position)
             }
-            else -> throw RuntimeException("invalid StarsTabMode")
         }
     }
 
     override fun getItemCount() = when (mode) {
         StarsTabMode.TO_USER -> statesModeTo.size
         StarsTabMode.FROM_USER -> statesModeFrom.size
-        else -> throw RuntimeException("invalid StarsTabMode")
     }
 
     override fun getItemViewType(position: Int): Int = when (mode) {
         StarsTabMode.TO_USER -> statesModeTo[position].type.int
         StarsTabMode.FROM_USER -> statesModeFrom[position].type.int
-        else -> throw RuntimeException("invalid StarsTabMode")
     }
 
     open fun onItemClicked(user: String, star: Star?) {}
@@ -192,9 +190,9 @@ open class StarsAdapter(
             }
             val starColor = ContextCompat.getColor(view.context, colorId)
             val starText = if (star.count > 9) "★${star.count}" else {
-                val starBuilder = StringBuilder()
-                for (i in 1..star.count) starBuilder.append("★")
-                starBuilder.toString()
+                buildString {
+                    for (i in 1..star.count) append("★")
+                }
             }
 
             starsCount.setHtml("<font color=\"$starColor\">$starText</font>")

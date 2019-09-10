@@ -30,7 +30,7 @@ open class MutableLinkMovementMethod(
                 when (action) {
                     MotionEvent.ACTION_UP -> {
                         if (link[0] is ClickableSpan && onItemClicked != null) {
-                            onItemClicked!!(buffer.substring(buffer.getSpanStart(link[0]), buffer.getSpanEnd(link[0])))
+                            onItemClicked.invoke(buffer.substring(buffer.getSpanStart(link[0]), buffer.getSpanEnd(link[0])))
                         }
                         else {
                             link[0].onClick(widget)

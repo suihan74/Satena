@@ -8,7 +8,10 @@ import android.os.Build
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.utilities.*
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.ServiceUtility
+import com.suihan74.utilities.lock
+import com.suihan74.utilities.showToast
 import java.util.*
 
 class SatenaApplication : Application() {
@@ -31,6 +34,7 @@ class SatenaApplication : Application() {
 
         // 接続状態を監視
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            @Suppress("DEPRECATION")
             registerReceiver(ConnectivityReceiver(), IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
         }
 
@@ -79,6 +83,8 @@ class SatenaApplication : Application() {
             if (signedIn && isBackgroundCheckingNoticeEnabled && !NotificationService.running) {
                 val intent = Intent(this, NotificationService::class.java)
                 ServiceUtility.start(this, intent)
+
+                showToast("常駐してはてなの通知をおしらせします")
             }
         }
     }

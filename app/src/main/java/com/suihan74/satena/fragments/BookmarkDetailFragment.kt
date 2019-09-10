@@ -5,20 +5,23 @@ import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v4.view.ViewPager
 import android.text.method.LinkMovementMethod
-import android.transition.*
+import android.transition.Fade
+import android.transition.Slide
+import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
-import com.suihan74.utilities.*
 import com.suihan74.satena.R
 import com.suihan74.satena.adapters.tabs.StarsTabAdapter
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.utilities.TextFloatingActionButton
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
 
 class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
     private lateinit var mView : View
@@ -92,7 +95,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                 postStar(StarColor.Purple, mColorStars.purple)
             }
 
-            val showStarsButton = mView.findViewById<TextFloatingActionButton>(R.id.show_stars_button).apply {
+            val showStarsButton = mView.findViewById<View>(R.id.show_stars_button).apply {
                 visibility = View.GONE
             }
 
@@ -122,12 +125,37 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             starMenuButton.hide()
         }
 
-        tabPager.adapter = StarsTabAdapter(
-            mBookmarksFragment!!,
-            this,
-            mBookmark
-        )
-        tabLayout.setupWithViewPager(tabPager)
+        val task = mBookmarksFragment!!.getFetchStarsTask(mBookmark.user)
+        if (task?.isCompleted != false) {
+            tabPager.adapter = StarsTabAdapter(
+                mBookmarksFragment!!,
+                this,
+                mBookmark
+            )
+            tabLayout.setupWithViewPager(tabPager)
+        }
+        else {
+            val progressBar = view.findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
+                visibility = View.VISIBLE
+            }
+            launch(Dispatchers.Main) {
+                try {
+                    task.await()
+                    tabPager.adapter = StarsTabAdapter(
+                        mBookmarksFragment!!,
+                        this@BookmarkDetailFragment,
+                        mBookmark
+                    )
+                    tabLayout.setupWithViewPager(tabPager)
+                }
+                catch (e: Exception) {
+                    Log.d("FailedToFetchStars", e.message)
+                }
+                finally {
+                    progressBar.visibility = View.GONE
+                }
+            }
+        }
 
         val analyzed = BookmarkCommentDecorator.convert(mBookmark.comment)
 
@@ -253,7 +281,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             if (usingDialog) {
                 AlertDialog.Builder(context, R.style.AlertDialogStyle)
                     .setTitle("確認")
-                    .setMessage("${color.name.toUpperCase()}スターをつけます。よろしいですか？")
+                    .setMessage("${color.name.toUpperCase(Locale.ROOT)}スターをつけます。よろしいですか？")
                     .setPositiveButton("OK") { _, _ -> postStarImpl(color, count) }
                     .setNegativeButton("CANCEL", null)
                     .show()
@@ -263,7 +291,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             }
         }
         else {
-            activity?.showToast("${color.name.toUpperCase()}スターを所持していません")
+            activity?.showToast("${color.name.toUpperCase(Locale.ROOT)}スターを所持していません")
         }
     }
 
@@ -288,7 +316,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             }
         }
         else {
-            activity?.showToast("${color.name.toUpperCase()}スターを所持していません")
+            activity?.showToast("${color.name.toUpperCase(Locale.ROOT)}スターを所持していません")
         }
     }
 

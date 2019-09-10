@@ -5,7 +5,10 @@ import android.support.v7.widget.Toolbar
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import android.widget.TextView
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.HatenaLib.Tag
@@ -34,6 +37,7 @@ class UserTagsEntriesFragment : MultipurposeSingleTabEntriesFragment() {
     override fun onRestoreSaveInstanceState(savedInstanceState: Bundle) {
         super.onViewStateRestored(savedInstanceState)
         mUser = savedInstanceState.getString("user")!!
+        @Suppress("UNCHECKED_CAST")
         mTags = savedInstanceState.getSerializable("tags") as List<Tag>
         mSelectedTag = savedInstanceState.getSerializable("selected_tag") as Tag?
     }

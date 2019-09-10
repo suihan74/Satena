@@ -20,8 +20,8 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
-import com.suihan74.satena.adapters.EntriesAdapter
 import com.suihan74.satena.R
+import com.suihan74.satena.adapters.EntriesAdapter
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Deferred
@@ -46,7 +46,7 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mRoot = inflater.inflate(R.layout.fragment_user_entries, container, false).apply {
-            mProgressBar = findViewById<ProgressBar>(R.id.progress_bar).apply {
+            mProgressBar = findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
                 visibility = View.INVISIBLE
             }
 

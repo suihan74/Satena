@@ -52,7 +52,8 @@
                 android:paddingEnd="8dp"
                 android:inputType="text"
                 android:imeOptions="actionSearch"
-                android:hint="検索キーワード"
+                android:hint="@string/search_query_hint"
+                android:importantForAutofill="no"
                 android:textColorHint="@color/bookmarkSearchHintColor"
                 android:background="@color/colorPrimary"
                 android:textColor="@color/colorPrimaryText"
@@ -84,6 +85,7 @@
         <ImageButton
                 android:id="@+id/search_button"
                 android:src="@drawable/ic_baseline_search"
+                android:contentDescription="@null"
                 android:background="@drawable/search_button"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
@@ -92,7 +94,7 @@
     </RelativeLayout>
 
     <ProgressBar
-            android:id="@+id/progress_bar"
+            android:id="@+id/detail_progress_bar"
             android:visibility="invisible"
             style="?android:attr/progressBarStyle"
             android:indeterminateTint="?attr/colorPrimary"

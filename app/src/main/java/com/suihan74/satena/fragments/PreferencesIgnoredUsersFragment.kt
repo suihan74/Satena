@@ -14,13 +14,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-
 import android.widget.ProgressBar
-import com.suihan74.HatenaLib.*
-import com.suihan74.utilities.*
-import com.suihan74.satena.adapters.IgnoredUsersAdapter
+import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
-import kotlinx.coroutines.*
+import com.suihan74.satena.adapters.IgnoredUsersAdapter
+import com.suihan74.utilities.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 
 class PreferencesIgnoredUsersFragment : CoroutineScopeFragment(), BackPressable {
@@ -116,7 +117,7 @@ class PreferencesIgnoredUsersFragment : CoroutineScopeFragment(), BackPressable 
         }
 
         // 非表示ユーザー取得
-        root.findViewById<ProgressBar>(R.id.progress_bar).apply {
+        root.findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
             visibility = View.VISIBLE
         }
         refreshAsync().start()
@@ -135,7 +136,7 @@ class PreferencesIgnoredUsersFragment : CoroutineScopeFragment(), BackPressable 
             Log.d("FailedToUpdateIgnores", Log.getStackTraceString(e))
         }
         finally {
-            mRoot.findViewById<ProgressBar>(R.id.progress_bar).apply {
+            mRoot.findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
                 visibility = View.INVISIBLE
             }
         }

@@ -3,7 +3,6 @@ package com.suihan74.satena.fragments
 import android.Manifest
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,19 +12,22 @@ import android.widget.Button
 import android.widget.TextView
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.suihan74.satena.PreferencesMigrator
-import com.suihan74.satena.activities.PreferencesActivity
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.ActivityBase
+import com.suihan74.satena.activities.PreferencesActivity
 import com.suihan74.satena.adapters.tabs.PreferencesTabMode
 import com.suihan74.satena.dialogs.FilePickerDialog
 import com.suihan74.satena.models.IgnoredEntriesKey
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 import java.io.File
 
-class PreferencesInformationFragment : Fragment(), PermissionRequestable {
+class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionRequestable {
     companion object {
         fun createInstance() = PreferencesInformationFragment()
     }
@@ -127,22 +129,24 @@ class PreferencesInformationFragment : Fragment(), PermissionRequestable {
         val activity = activity!! as ActivityBase
         activity.showProgressBar()
 
-        try {
-            PreferencesMigrator.Output(activity).run {
-                addPreference<PreferenceKey>()
-                addPreference<IgnoredEntriesKey>()
-                addPreference<NoticesKey>()
-                write(file)
-            }
+        launch(Dispatchers.Main) {
+            try {
+                withContext(Dispatchers.IO) {
+                    PreferencesMigrator.Output(activity).run {
+                        addPreference<PreferenceKey>()
+                        addPreference<IgnoredEntriesKey>()
+                        addPreference<NoticesKey>()
+                        write(file)
+                    }
+                }
 
-            activity.showToast("設定を${file.absolutePath}に保存しました")
-        }
-        catch (e: Exception) {
-            Log.e("SavingSettings", e.message)
-            activity.showToast("設定の保存に失敗しました")
-        }
-        finally {
-            activity.hideProgressBar()
+                activity.showToast("設定を${file.absolutePath}に保存しました")
+            } catch (e: Exception) {
+                Log.e("SavingSettings", e.message)
+                activity.showToast("設定の保存に失敗しました")
+            } finally {
+                activity.hideProgressBar()
+            }
         }
     }
 
@@ -150,25 +154,35 @@ class PreferencesInformationFragment : Fragment(), PermissionRequestable {
         val activity = activity!! as ActivityBase
         activity.showProgressBar()
 
-        try {
-            PreferencesMigrator.Input(activity)
-                .read(file)
+        launch(Dispatchers.Main) {
+            try {
+                withContext(Dispatchers.IO) {
+                    PreferencesMigrator.Input(activity)
+                        .read(file)
+                }
 
-            activity.showToast("設定を${file.absolutePath}から読み込みました")
+                activity.showToast("設定を${file.absolutePath}から読み込みました")
 
-            val intent = Intent(activity, PreferencesActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or
-                        Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_NO_ANIMATION
-                putExtra("current_tab", PreferencesTabMode.INFORMATION)
-                putExtra("theme_changed", true)
+                val intent = Intent(activity, PreferencesActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                            Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_NO_ANIMATION
+                    putExtra(PreferencesActivity.EXTRA_CURRENT_TAB, PreferencesTabMode.INFORMATION)
+                    putExtra(PreferencesActivity.EXTRA_THEME_CHANGED, true)
+                    putExtra(PreferencesActivity.EXTRA_RELOAD_ALL_PREFERENCES, true)
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                Log.e("LoadingSettings", e.message)
+                if (e is IllegalStateException) {
+                    activity.showToast("設定の読み込みに失敗しました\n${e.message}")
+                }
+                else {
+                    activity.showToast("設定の読み込みに失敗しました")
+                }
+            } finally {
+                activity.hideProgressBar()
             }
-            startActivity(intent)
-        } catch (e: Exception) {
-            Log.e("LoadingSettings", e.message)
-            activity.showToast("設定の読み込みに失敗しました")
-        } finally {
-            activity.hideProgressBar()
         }
     }
 }

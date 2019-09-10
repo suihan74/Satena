@@ -9,7 +9,6 @@ import com.suihan74.satena.fragments.BookmarksFragment
 import com.suihan74.satena.fragments.MentionedBookmarksTabFragment
 import com.suihan74.satena.fragments.StarsTabFragment
 import com.suihan74.utilities.BookmarkCommentDecorator
-import java.lang.RuntimeException
 
 class StarsTabAdapter(
     private val bookmarksFragment : BookmarksFragment,
@@ -68,7 +67,6 @@ class StarsTabAdapter(
         Tab.FROM_USER -> "${bookmark.user} → ★"
         Tab.MENTION_TO_USER -> "mention → ${bookmark.user}"
         Tab.MENTION_FROM_USER -> "${bookmark.user} → mention"
-        else    -> throw RuntimeException("unknown tab")
     }
 
     override fun getCount() = tabs.size

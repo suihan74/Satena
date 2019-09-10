@@ -80,6 +80,9 @@
     <!-- ブックマーク投稿ダイアログ -->
     <string name="bookmark_comment_edit_text_hint">ブコメ(任意)</string>
 
+    <!-- hints -->
+    <string name="search_query_hint">検索キーワード</string>
+
     <!-- ブコメ詳細activity -->
     <string name="muted_comment_description">※ NGワードを含むコメントです ※</string>
 </resources>

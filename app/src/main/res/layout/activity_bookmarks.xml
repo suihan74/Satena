@@ -41,7 +41,7 @@
             android:layout_height="match_parent"/>
 
     <ProgressBar
-            android:id="@+id/progress_bar"
+            android:id="@+id/detail_progress_bar"
             android:layout_gravity="center"
             android:visibility="invisible"
             android:layout_width="wrap_content"

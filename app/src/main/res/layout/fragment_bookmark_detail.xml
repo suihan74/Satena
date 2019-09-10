@@ -317,4 +317,12 @@
             android:layout_marginEnd="24dp"
             android:layout_marginBottom="24dp"/>
 
+    <ProgressBar
+            android:id="@+id/detail_progress_bar"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_anchor="@id/tab_pager"
+            app:layout_anchorGravity="center"/>
+
 </android.support.design.widget.CoordinatorLayout>
