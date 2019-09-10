@@ -34,9 +34,12 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
         val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context!!)
         mIgnoredEntries = ArrayList(prefs.get<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES))
 
-        mIgnoredEntriesAdapter = object: IgnoredEntriesAdapter(mIgnoredEntries) {
+        mIgnoredEntriesAdapter = object : IgnoredEntriesAdapter(mIgnoredEntries) {
             override fun onItemClicked(entry: IgnoredEntry) {
-                val dialog = IgnoredEntryDialogFragment.createInstance(entry) { true }
+                val dialog = IgnoredEntryDialogFragment.createInstance(entry) { modified ->
+                    mIgnoredEntriesAdapter.modifyItem(entry, modified)
+                    true
+                }
                 dialog.show(fragmentManager, "dialog")
             }
 

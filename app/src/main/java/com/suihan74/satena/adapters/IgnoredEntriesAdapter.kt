@@ -5,28 +5,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.suihan74.satena.R
+import com.suihan74.satena.models.IgnoredEntry
 import com.suihan74.utilities.FooterViewHolder
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
-import com.suihan74.satena.R
-import com.suihan74.satena.models.IgnoredEntry
 
-open class IgnoredEntriesAdapter(private val ignoredEntries: List<IgnoredEntry>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+open class IgnoredEntriesAdapter(
+    ignoredEntries: List<IgnoredEntry>
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
     private val states = RecyclerState.makeStatesWithFooter(ignoredEntries.reversed())
-
-    class ViewHolder(root: View) : RecyclerView.ViewHolder(root) {
-        private val mMode = root.findViewById<TextView>(R.id.mode_text)
-        private val mQuery = root.findViewById<TextView>(R.id.query_text)
-
-        var entry : IgnoredEntry? = null
-            internal set(value) {
-                field = value
-                if (value == null) { return }
-
-                mMode.text = "[${value.type.name}]"
-                mQuery.text = value.query
-            }
-    }
 
     fun addItem(entry: IgnoredEntry) {
         states.add(0, RecyclerState(RecyclerType.BODY, entry))
@@ -37,6 +26,14 @@ open class IgnoredEntriesAdapter(private val ignoredEntries: List<IgnoredEntry>)
         val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body == entry }
         states.removeAt(position)
         notifyItemRemoved(position)
+    }
+
+    fun modifyItem(older: IgnoredEntry, newer: IgnoredEntry) {
+        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body == older }
+        if (position >= 0) {
+            states[position].body = newer
+            notifyItemChanged(position)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder =
@@ -76,4 +73,18 @@ open class IgnoredEntriesAdapter(private val ignoredEntries: List<IgnoredEntry>)
 
     open fun onItemClicked(entry: IgnoredEntry) {}
     open fun onItemLongClicked(entry: IgnoredEntry) : Boolean = true
+
+    class ViewHolder(root: View) : RecyclerView.ViewHolder(root) {
+        private val mMode = root.findViewById<TextView>(R.id.mode_text)
+        private val mQuery = root.findViewById<TextView>(R.id.query_text)
+
+        var entry : IgnoredEntry? = null
+            internal set(value) {
+                field = value
+                if (value == null) { return }
+
+                mMode.text = String.format("[%s]", value.type.name)
+                mQuery.text = value.query
+            }
+    }
 }
