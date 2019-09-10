@@ -12,16 +12,16 @@ import java.net.CookiePolicy
 import java.util.concurrent.TimeUnit
 
 open class BaseClient {
-    protected val mCookieManager = CookieManager().apply {
+    protected val cookieManager = CookieManager().apply {
         setCookiePolicy(CookiePolicy.ACCEPT_ALL)
     }
 
-    protected val mClient = OkHttpClient()
+    protected val client : OkHttpClient =
+        OkHttpClient()
         .newBuilder()
         .connectTimeout(3, TimeUnit.MINUTES)
-        .cookieJar(JavaNetCookieJar(mCookieManager))
+        .cookieJar(JavaNetCookieJar(cookieManager))
         .build()
-
 
     // キャッシュ回避
     protected fun cacheAvoidance() : String = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC).toString()
@@ -30,7 +30,7 @@ open class BaseClient {
         val request = Request.Builder()
             .url(url)
             .build()
-        val call = mClient.newCall(request)
+        val call = client.newCall(request)
         return call.execute()
     }
 
@@ -50,12 +50,12 @@ open class BaseClient {
             .url(url)
             .post(formBody)
             .build()
-        val call = mClient.newCall(request)
+        val call = client.newCall(request)
         return call.execute()
     }
 
     protected fun send(request: Request) : Response {
-        val call = mClient.newCall(request)
+        val call = client.newCall(request)
         return call.execute()
     }
 
@@ -77,9 +77,16 @@ open class BaseClient {
         throw RuntimeException("connection error")
     }
 
-    protected fun <T> send(type: Type, request: Request) : T = send(type, request, GsonBuilder())
+    protected fun <T> send(type: Type, request: Request) : T =
+        send(type, request, GsonBuilder())
 
-    protected fun <T> responseTo(type: Type, response: Response, gsonBuilder: GsonBuilder) : T {
+    protected inline fun <reified T> send(request: Request, gsonBuilder: GsonBuilder) : T =
+        send(T::class.java, request, gsonBuilder)
+
+    protected inline fun <reified T> send(request: Request) : T
+            = send(T::class.java, request, GsonBuilder())
+
+    private fun <T> responseTo(type: Type, response: Response, gsonBuilder: GsonBuilder) : T {
         return if (response.isSuccessful) {
             val json = response.body()!!.charStream()
 
@@ -99,8 +106,8 @@ open class BaseClient {
         }
     }
 
-    protected fun <T> responseTo(type: Type, response: Response, dateFormat: String? = null) : T =
-        responseTo<T>(type, response, GsonBuilder().registerTypeAdapter(LocalDateTime::class.java, TimestampDeserializer(dateFormat)))
+    private fun <T> responseTo(type: Type, response: Response, dateFormat: String? = null) : T =
+        responseTo(type, response, GsonBuilder().registerTypeAdapter(LocalDateTime::class.java, TimestampDeserializer(dateFormat)))
 
     protected fun <T> getJson(type: Type, url: String, gsonBuilder: GsonBuilder) : T {
         val response = get(url)
@@ -111,4 +118,10 @@ open class BaseClient {
         val response = get(url)
         return responseTo(type, response, dateFormat)
     }
+
+    protected inline fun <reified T> getJson(url: String, gsonBuilder: GsonBuilder) =
+        getJson<T>(T::class.java, url, gsonBuilder)
+
+    protected inline fun <reified T> getJson(url: String, dateFormat: String? = null) =
+        getJson<T>(T::class.java, url, dateFormat)
 }

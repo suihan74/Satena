@@ -1,5 +1,6 @@
 package com.suihan74.HatenaLib
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -15,6 +16,7 @@ data class StarsEntry (
         else -> coloredStars?.find { it.color == color } ?.starsCount ?: 0
     }
 
+    @Expose(serialize = false, deserialize = false)
     private var mTotalStarsCount: Int? = null
     val totalStarsCount: Int
         get() {
@@ -24,6 +26,7 @@ data class StarsEntry (
             return mTotalStarsCount!!
         }
 
+    @Expose(serialize = false, deserialize = false)
     private var mAllStars : List<Star>? = null
     val allStars : List<Star>
         get() {

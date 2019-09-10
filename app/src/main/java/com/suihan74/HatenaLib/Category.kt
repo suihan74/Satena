@@ -41,7 +41,5 @@ enum class Category constructor(val int: Int, val requireSignedIn: Boolean = fal
         MyBookmarks -> ""
         MyTags -> ""
         Search -> ""
-
-        else -> throw RuntimeException("unknown category")
     }
 }

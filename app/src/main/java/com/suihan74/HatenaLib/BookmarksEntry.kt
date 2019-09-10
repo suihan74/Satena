@@ -1,5 +1,6 @@
 package com.suihan74.HatenaLib
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -16,6 +17,7 @@ data class BookmarksEntry (
     /**
      * ブクマした全ユーザーが付けたタグをその数と共に集計して返す
      */
+    @Expose(serialize = false, deserialize = false)
     private var mTags : List<Pair<String, Int>>? = null
     val tags : List<Pair<String, Int>>
         get() {

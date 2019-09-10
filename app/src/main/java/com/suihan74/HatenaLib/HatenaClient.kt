@@ -5,14 +5,12 @@ import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
 import okhttp3.*
-import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDateTime
 import java.io.IOException
 import java.lang.Exception
 import java.lang.RuntimeException
-import java.lang.StringBuilder
 import java.net.*
 import java.nio.charset.Charset
 import java.util.*
@@ -56,9 +54,9 @@ object HatenaClient : BaseClient() {
         }
 
     /** 非表示ユーザーリストをある程度の時間キャッシュする */
-    private var ignoredUsersLastUpdated = LocalDateTime.MIN
+    private var mIgnoredUsersLastUpdated = LocalDateTime.MIN
     /** 非表示ユーザーリストのキャッシュを保持する時間 */
-    private val ignoredUsersUpdateIntervals = Duration.ofMinutes(3)
+    private val mIgnoredUsersUpdateIntervals = Duration.ofMinutes(3)
 
 
     /** スター関連のjsonデシリアライザ */
@@ -92,7 +90,7 @@ object HatenaClient : BaseClient() {
             "password" to password
         ))
         if (response.isSuccessful) {
-            val cookies = mCookieManager.cookieStore.cookies
+            val cookies = cookieManager.cookieStore.cookies
             cookies.firstOrNull { it.name == "rk" }?.let {
                 mRk = it
 
@@ -127,17 +125,17 @@ object HatenaClient : BaseClient() {
 
         val url = "$W_BASE_URL/login"
 
-        mCookieManager.cookieStore.add(URI(b.domain), b)
-        mCookieManager.cookieStore.add(URI(rk.domain), rk)
+        cookieManager.cookieStore.add(URI(b.domain), b)
+        cookieManager.cookieStore.add(URI(rk.domain), rk)
 
         val response = get(url)
         if (response.isSuccessful) {
-            val cookies = mCookieManager.cookieStore.cookies
+            val cookies = cookieManager.cookieStore.cookies
             cookies
                 .firstOrNull {
                     it.name == "rk"
                 }
-                .let {
+                ?.let {
                     mRk = it
 
                     response.close()
@@ -150,6 +148,7 @@ object HatenaClient : BaseClient() {
 
                     return@async account!!
                 }
+                ?: throw RuntimeException("failed to sign in")
         }
 
         response.close()
@@ -162,7 +161,7 @@ object HatenaClient : BaseClient() {
     private fun signInStarAsync() : Deferred<Any> = GlobalScope.async {
         if (!signedIn()) throw RuntimeException("need to sign-in to use the star service")
         val url = "$S_BASE_URL/entries.json?${cacheAvoidance()}"
-        val response = getJson<StarsEntries>(StarsEntries::class.java, url)
+        val response = getJson<StarsEntries>(url)
 
         mRksForStar = response.rks ?: throw RuntimeException("connection error: $S_BASE_URL")
     }
@@ -172,7 +171,7 @@ object HatenaClient : BaseClient() {
      * ログアウト
      */
     fun signOut() {
-        mCookieManager.cookieStore.removeAll()
+        cookieManager.cookieStore.removeAll()
         mRk = null
         account = null
         ignoredUsers = emptyList()
@@ -186,7 +185,7 @@ object HatenaClient : BaseClient() {
         if (mRk == null) throw RuntimeException("need to sign-in to get account")
 
         val url = "$B_BASE_URL/my.name"
-        account = getJson<Account>(Account::class.java, url)
+        account = getJson<Account>(url)
         return@async account!!
     }
 
@@ -196,19 +195,21 @@ object HatenaClient : BaseClient() {
     fun getIgnoredUsersAsync(limit: Int?, cursor: String?) : Deferred<IgnoredUsersResponse> = GlobalScope.async {
         if (!signedIn()) throw RuntimeException("need to sign-in to get ignored users")
 
-        val urlBuilder = StringBuilder("$B_BASE_URL/api/my/ignore_users?${cacheAvoidance()}")
-        if (limit == null) {
-            val count = account!!.ignoresRegex.count { it == '|' } * 2
-            urlBuilder.append("&limit=$count")
-        }
-        else {
-            urlBuilder.append("&limit=$limit")
-        }
-        if (cursor != null) {
-            urlBuilder.append("&cursor=$cursor")
+        val url = buildString {
+            append("$B_BASE_URL/api/my/ignore_users?${cacheAvoidance()}")
+            if (limit == null) {
+                val count = account!!.ignoresRegex.count { it == '|' } * 2
+                append("&limit=$count")
+            }
+            else {
+                append("&limit=$limit")
+            }
+            if (cursor != null) {
+                append("&cursor=$cursor")
+            }
         }
 
-        val response = getJson<IgnoredUsersResponse>(IgnoredUsersResponse::class.java, urlBuilder.toString())
+        val response = getJson<IgnoredUsersResponse>(url)
         ignoredUsers = response.users
 
         return@async response
@@ -219,7 +220,7 @@ object HatenaClient : BaseClient() {
      */
     fun getIgnoredUsersAsync(forciblyUpdate: Boolean = false) : Deferred<List<String>> = GlobalScope.async {
         if (forciblyUpdate
-            || Duration.between(ignoredUsersLastUpdated, LocalDateTime.now()) > ignoredUsersUpdateIntervals
+            || Duration.between(mIgnoredUsersLastUpdated, LocalDateTime.now()) > mIgnoredUsersUpdateIntervals
         ) {
             try {
                 getIgnoredUsersAsync(null, null).await()
@@ -231,7 +232,7 @@ object HatenaClient : BaseClient() {
                 throw RuntimeException(e.message)
             }
             finally {
-                ignoredUsersLastUpdated = LocalDateTime.now()
+                mIgnoredUsersLastUpdated = LocalDateTime.now()
             }
         }
         return@async ignoredUsers
@@ -309,17 +310,14 @@ object HatenaClient : BaseClient() {
     ) : Deferred<List<Entry>> = GlobalScope.async {
         if (!signedIn()) throw RuntimeException("need to sign-in to get user's bookmarked entries")
 
-        val urlBuilder = StringBuilder("$B_BASE_URL/api/ipad.mybookmarks?${cacheAvoidance()}")
-
-        if (limit != null) {
-            urlBuilder.append("&limit=$limit")
-        }
-        if (of != null) {
-            urlBuilder.append("&of=$of")
+        val url = buildString {
+            append("$B_BASE_URL/api/ipad.mybookmarks?${cacheAvoidance()}")
+            if (limit != null) append("&limit=$limit")
+            if (of != null) append("&of=$of")
         }
 
         val listType = object : TypeToken<List<Entry>>() {}.type
-        return@async getJson<List<Entry>>(listType, urlBuilder.toString())
+        return@async getJson<List<Entry>>(listType, url)
     }
 
     /**
@@ -332,15 +330,12 @@ object HatenaClient : BaseClient() {
         of: Int? = null) : Deferred<List<Entry>> = GlobalScope.async {
         if (!signedIn()) throw RuntimeException("need to sign-in to search user's bookmarked entries")
 
-        val urlBuilder = StringBuilder("$B_BASE_URL/api/ipad.mysearch/${searchType.name.toLowerCase()}?${cacheAvoidance()}&q=$query")
-        if (limit != null) {
-            urlBuilder.append("&limit=$limit")
-        }
-        if (of != null) {
-            urlBuilder.append("&of=$of")
+        val url = buildString {
+            append("$B_BASE_URL/api/ipad.mysearch/${searchType.name.toLowerCase(Locale.ROOT)}?${cacheAvoidance()}&q=$query")
+            if (limit != null) append("&limit=$limit")
+            if (of != null) append("&of=$of")
         }
 
-        val url = urlBuilder.toString()
         val listType = object : TypeToken<List<Entry>>() {}.type
         return@async getJson<List<Entry>>(listType, url)
     }
@@ -349,11 +344,12 @@ object HatenaClient : BaseClient() {
      * マイホットエントリを取得
      */
     fun getMyHotEntriesAsync(date: String? = null) : Deferred<List<Entry>> = GlobalScope.async {
-        val urlBuilder = StringBuilder("$B_BASE_URL/api/entries/myhotentry.json?include_amp_urls=1")
-        if (!date.isNullOrEmpty()) {
-            urlBuilder.append("&date=$date")
+        val url = buildString {
+            append("$B_BASE_URL/api/entries/myhotentry.json?include_amp_urls=1")
+            if (!date.isNullOrEmpty()) {
+                append("&date=$date")
+            }
         }
-        val url = urlBuilder.toString()
         val listType = object : TypeToken<List<Entry>>() {}.type
         return@async getJson<List<Entry>>(listType, url)
     }
@@ -384,16 +380,20 @@ object HatenaClient : BaseClient() {
                 EntriesType.Recent -> "newentry"
                 EntriesType.Hot -> "hotentry"
             }
-            val urlBuilder = StringBuilder("$B_BASE_URL/api/ipad.$target.json?${cacheAvoidance()}" +
-                    "&category_id=$category" +
-                    "&include_amp_urls=${includeAMPUrls.int}" +
-                    "&include_bookmarked_data=${includeBookmarkedData.int}" +
-                    "&include_bookmarks_of_followings=${includeBookmarksOfFollowings.int}" +
-                    "&ad=${ad.int}")
-            if (limit != null) urlBuilder.append("&limit=$limit")
-            if (of != null) urlBuilder.append("&of=$of")
 
-            val url = urlBuilder.toString()
+            val url = buildString {
+                append(
+                    "$B_BASE_URL/api/ipad.$target.json?${cacheAvoidance()}",
+                    "&category_id=$category",
+                    "&include_amp_urls=${includeAMPUrls.int}",
+                    "&include_bookmarked_data=${includeBookmarkedData.int}",
+                    "&include_bookmarks_of_followings=${includeBookmarksOfFollowings.int}",
+                    "&ad=${ad.int}"
+                )
+                if (limit != null) append("&limit=$limit")
+                if (of != null) append("&of=$of")
+            }
+
             val listType = object : TypeToken<List<Entry>>() {}.type
             return@async getJson<List<Entry>>(listType, url)
         }
@@ -407,16 +407,18 @@ object HatenaClient : BaseClient() {
         limit: Int? = null,
         of: Int? = null
     ) : Deferred<List<Entry>> = GlobalScope.async {
-        val urlBuilder = StringBuilder("$B_BASE_URL/api/internal/user/$user/bookmarks?${cacheAvoidance()}")
-        if (limit != null) {
-            urlBuilder.append("&limit=$limit")
-        }
-        if (of != null) {
-            urlBuilder.append("&offset=$of")
+
+        val url = buildString {
+            append("$B_BASE_URL/api/internal/user/$user/bookmarks?${cacheAvoidance()}")
+            if (limit != null) {
+                append("&limit=$limit")
+            }
+            if (of != null) {
+                append("&offset=$of")
+            }
         }
 
-        val url = urlBuilder.toString()
-        val response = getJson<UserEntryResponse>(UserEntryResponse::class.java, url)
+        val response = getJson<UserEntryResponse>(url)
         return@async response.bookmarks.map { it.toEntry() }
     }
 
@@ -430,19 +432,17 @@ object HatenaClient : BaseClient() {
         limit: Int? = null,
         of: Int? = null
     ) : Deferred<List<Entry>> = GlobalScope.async {
-        val urlBuilder = StringBuilder("$B_BASE_URL/api/ipad.search/${searchType.name.toLowerCase()}?${cacheAvoidance()}").apply {
-            append("&q=${Uri.encode(query)}")
-            append("&sort=${entriesType.name.toLowerCase()}")
-            append("&include_bookmarked_data=1")
-        }
-        if (limit != null) {
-            urlBuilder.append("&limit=$limit")
-        }
-        if (of != null) {
-            urlBuilder.append("&of=$of")
-        }
 
-        val url = urlBuilder.toString()
+        val url = buildString {
+            append(
+                "$B_BASE_URL/api/ipad.search/${searchType.name.toLowerCase(Locale.ROOT)}?${cacheAvoidance()}",
+                "&q=${Uri.encode(query)}",
+                "&sort=${entriesType.name.toLowerCase(Locale.ROOT)}",
+                "&include_bookmarked_data=1"
+            )
+            if (limit != null) append("&limit=$limit")
+            if (of != null) append("&of=$of")
+        }
 
         val listType = object : TypeToken<List<Entry>>() {}.type
         return@async getJson<List<Entry>>(listType, url)
@@ -453,7 +453,7 @@ object HatenaClient : BaseClient() {
      */
     fun getBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = GlobalScope.async {
         val apiUrl = "$B_BASE_URL/entry/jsonlite/?url=${Uri.encode(url)}&${cacheAvoidance()}"
-        return@async getJson<BookmarksEntry>(BookmarksEntry::class.java, apiUrl, "yyyy/MM/dd HH:mm")
+        return@async getJson<BookmarksEntry>(apiUrl, "yyyy/MM/dd HH:mm")
     }
 
     /**
@@ -465,14 +465,14 @@ object HatenaClient : BaseClient() {
             val bodyBytes = response.body()!!.bytes()
 
             // 文字コードを判別してからHTMLを読む
-            val defaultCharsetName = Charset.defaultCharset().name().toLowerCase()
+            val defaultCharsetName = Charset.defaultCharset().name().toLowerCase(Locale.ROOT)
             var charsetName = defaultCharsetName
             var charsetDetected = false
 
             val charsetRegex = Regex("""charset=([a-zA-Z0-9_\-]+)""")
             fun parseCharset(src: String) : String {
                 val matchResult = charsetRegex.find(src)
-                return if (matchResult?.groups?.size ?: 0 >= 2) matchResult!!.groups[1]!!.value.toLowerCase() else ""
+                return if (matchResult?.groups?.size ?: 0 >= 2) matchResult!!.groups[1]!!.value.toLowerCase(Locale.ROOT) else ""
             }
 
             // レスポンスヘッダで判断できる場合
@@ -490,17 +490,17 @@ object HatenaClient : BaseClient() {
 
             if (!charsetDetected) {
                 // HTMLからcharset指定を探す必要がある場合
-                rawDoc.getElementsByTag("meta").let {
+                rawDoc.getElementsByTag("meta").let { elem ->
                     // <meta charset="???">
-                    val charsetMeta = it.find { it.hasAttr("charset") }
+                    val charsetMeta = elem.firstOrNull { it.hasAttr("charset") }
                     if (charsetMeta != null) {
-                        charsetName = charsetMeta.attr("charset").toLowerCase()
+                        charsetName = charsetMeta.attr("charset").toLowerCase(Locale.ROOT)
                         charsetDetected = true
                         return@let
                     }
 
                     // <meta http-equiv="Content-Type" content="text/html; charset=???">
-                    val meta = it.find { it.attr("http-equiv")?.toLowerCase() == "content-type" }
+                    val meta = elem.firstOrNull { it.attr("http-equiv")?.toLowerCase(Locale.ROOT) == "content-type" }
                     meta?.attr("content")?.let {
                         val parsed = parseCharset(it)
                         if (parsed.isNotEmpty()) {
@@ -546,12 +546,10 @@ object HatenaClient : BaseClient() {
         limit: Long? = null,
         of: Long? = null
     ) : Deferred<List<BookmarkWithStarCount>> = GlobalScope.async {
-        var apiUrl = "$B_BASE_URL/api/ipad.entry_bookmarks?${cacheAvoidance()}&url=${Uri.encode(url)}"
-        if (limit != null) {
-            apiUrl += "&limit=$limit"
-        }
-        if (of != null) {
-            apiUrl += "&of=$of"
+        val apiUrl = buildString {
+            append("$B_BASE_URL/api/ipad.entry_bookmarks?${cacheAvoidance()}&url=${Uri.encode(url)}")
+            if (limit != null) append("&limit=$limit")
+            if (of != null) append("&of=$of")
         }
         val listType = object : TypeToken<List<BookmarkWithStarCount>>() {}.type
         return@async getJson<List<BookmarkWithStarCount>>(listType, apiUrl)
@@ -561,11 +559,11 @@ object HatenaClient : BaseClient() {
      * ブックマーク概要を取得する
      */
     fun getDigestBookmarksAsync(url: String, limit: Long? = null) : Deferred<BookmarksDigest> = GlobalScope.async {
-        var apiUrl = "$B_BASE_URL/api/ipad.entry_reactions?url=${Uri.encode(url)}"
-        if (limit != null) {
-            apiUrl += "&limit=$limit"
+        val apiUrl = buildString {
+            append("$B_BASE_URL/api/ipad.entry_reactions?url=${Uri.encode(url)}")
+            if (limit != null) append("&limit=$limit")
         }
-        return@async getJson<BookmarksDigest>(BookmarksDigest::class.java, apiUrl)
+        return@async getJson<BookmarksDigest>(apiUrl)
     }
 
     /**
@@ -574,7 +572,7 @@ object HatenaClient : BaseClient() {
     fun getEntryUrlFromIdAsync(eid: Long) : Deferred<String> = GlobalScope.async {
         val url = "$B_BASE_URL/entry/$eid"
         val request = Request.Builder().url(url).build()
-        val call = mClient.newCall(request)
+        val call = client.newCall(request)
 
         val response = call.execute()
         if (response.isSuccessful) {
@@ -586,8 +584,7 @@ object HatenaClient : BaseClient() {
 
             val isHttps = commentPageUrl.startsWith(headHttps)
             val tail = commentPageUrl.substring(if (isHttps) headHttps.length else head.length)
-            val entryUrl = "${if (isHttps) "https" else "http"}://$tail"
-            return@async entryUrl
+            return@async "${if (isHttps) "https" else "http"}://$tail"
         }
 
         response.close()
@@ -607,7 +604,7 @@ object HatenaClient : BaseClient() {
      */
     fun getDigestBookmarksAsync(eid: Long, limit: Long? = null) : Deferred<BookmarksDigest> = GlobalScope.async {
         val url = getEntryUrlFromIdAsync(eid).await()
-        return@async HatenaClient.getDigestBookmarksAsync(url, limit).await()
+        return@async getDigestBookmarksAsync(url, limit).await()
     }
 
     /**
@@ -631,41 +628,36 @@ object HatenaClient : BaseClient() {
                 if (lastSeparatorIndex < 0) lastSeparatorIndex = left.length
 
                 val curApiUrl = left.substring(0 until lastSeparatorIndex)
-                apiUrl =
-                    apiBaseUrl + (if (lastSeparatorIndex < left.length - 5) left.substring(lastSeparatorIndex + 5) else "") + apiUrl.substring(
-                        limit
-                    )
+                apiUrl = buildString {
+                    append(apiBaseUrl)
+                    if (lastSeparatorIndex < left.length - 5) append(lastSeparatorIndex + 5)
+                    append(apiUrl.substring(limit))
+                }
                 // 5 means "&uri=".length
 
-                tasks.add(async {
-                    try {
-                        return@async getJson<StarsEntries>(StarsEntries::class.java, curApiUrl, gsonBuilder)
-                    }
-                    catch (e: SocketTimeoutException) {
-                        return@async null
-                    }
+                tasks.add(async inner@ {
+                    return@inner try { getJson<StarsEntries>(curApiUrl, gsonBuilder) } catch (e: SocketTimeoutException) { null }
                 })
             }
 
-            tasks.add(async {
-                try {
-                    return@async getJson<StarsEntries>(StarsEntries::class.java, apiUrl, gsonBuilder)
+            tasks.add(async inner@ {
+                return@inner try {
+                    getJson<StarsEntries>(apiUrl, gsonBuilder)
                 }
                 catch (e: SocketTimeoutException) {
                     isSuccess = false
-                    return@async null
+                    null
                 }
             })
 
             if (!isSuccess) throw SocketTimeoutException("timeout")
 
             return@async tasks
-                .map { it.await() }
-                .filter { it != null }
-                .flatMap { it!!.entries }
+                .mapNotNull { it.await() }
+                .flatMap { it.entries }
         }
         else {
-            val response = getJson<StarsEntries>(StarsEntries::class.java, apiUrl, gsonBuilder)
+            val response = getJson<StarsEntries>(apiUrl, gsonBuilder)
             return@async response.entries
         }
     }
@@ -676,8 +668,27 @@ object HatenaClient : BaseClient() {
     fun getStarsEntryAsync(url: String) : Deferred<StarsEntry> = GlobalScope.async {
         val apiUrl = "$S_BASE_URL/entry.json?uri=${Uri.encode(url)}&${cacheAvoidance()}"
         val gsonBuilder = getGsonBuilderForStars()
-        val response = getJson<StarsEntries>(StarsEntries::class.java, apiUrl, gsonBuilder)
+        val response = getJson<StarsEntries>(apiUrl, gsonBuilder)
         return@async response.entries[0]
+    }
+
+    /**
+     * 最近自分が付けたスターを取得する
+     */
+    fun getRecentStarsAsync() : Deferred<List<StarsEntry>> = GlobalScope.async {
+        if (!signedInStar()) throw RuntimeException("need to sign-in to get my stars")
+        val apiUrl = "$S_BASE_URL/${account!!.name}/stars.json"
+        val listType = object : TypeToken<List<StarsEntry>>() {}.type
+        return@async getJson<List<StarsEntry>>(listType, apiUrl)
+    }
+
+    /**
+     * 最近自分に付けられたスターを取得する
+     */
+    fun getRecentStarsReportAsync() : Deferred<StarsEntries> = GlobalScope.async {
+        if (!signedInStar()) throw RuntimeException("need to sign-in to get my stars")
+        val apiUrl = "$S_BASE_URL/${account!!.name}/report.json"
+        return@async getJson<StarsEntries>(apiUrl)
     }
 
     /**
@@ -688,60 +699,23 @@ object HatenaClient : BaseClient() {
         val apiUrl = "$S_BASE_URL/star.add.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
                 "&rks=$mRksForStar" +
-                "&color=${color.name.toLowerCase()}" +
+                "&color=${color.name.toLowerCase(Locale.ROOT)}" +
                 "&quote=${Uri.encode(quote)}"
-        return@async getJson<Star>(Star::class.java, apiUrl)
-
-/*
-
-        if (!signedIn()) throw RuntimeException("need to sign-in to get color stars")
-
-        val apiUrl = "$S_BASE_URL/api/v0/entry/stars"
-
-/*
-        val body = FormBody.Builder()
-            .add("uri", url)
-            .add("quote", quote ?: "")
-            .add("color", if (color == StarColor.Yellow) "" else color.name.toLowerCase())
-            .build()
-*/
-        val obj = JSONObject().apply {
-            put("uri", url)
-            put("quote", quote)
-        }
-        val json = obj.toString()
-
-        val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
-
-        val request = Request.Builder()
-            .url(apiUrl)
-            .header("Content-Type", "application/json")
-            .header("X-Internal-API-Key", "wvlYJXSGDMY161Bbw4TEf8unWl4pDLLB1gy7PGcA")
-            .header("X-Internal-API-RK", mRk!!.value)
-            .header("User-Agent", "Bookmark/4.27 (Android)")
-            .post(body)
-            .build()
-
-        val response = send(request)
-        if (response.isSuccessful) {
-            return@async Star(
-                user = account!!.name,
-                quote = quote,
-                color = color)
-        }
-
-        throw RuntimeException("connection error : ${response.code()} ${response.message()}")
-        */
+        return@async getJson<Star>(apiUrl)
     }
 
+    /**
+     * 一度付けたスターを削除する
+     */
     fun deleteStarAsync(url: String, star: Star) : Deferred<Any> = GlobalScope.async {
         if (!signedInStar()) throw RuntimeException("need to sign-in to delete star")
         val apiUrl = "$S_BASE_URL/star.delete.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
                 "&rks=$mRksForStar" +
                 "&name=${star.user}" +
-                "&color=${star.color.name.toLowerCase()}" +
+                "&color=${star.color.name.toLowerCase(Locale.ROOT)}" +
                 "&quote=${Uri.encode(star.quote)}"
+
         val response = get(apiUrl)
         if (!response.isSuccessful) throw RuntimeException("failed to delete a star")
     }
@@ -762,7 +736,7 @@ object HatenaClient : BaseClient() {
             .header("X-Internal-API-RK", mRk!!.value)
             .build()
 
-        val response = send<UserColorStarsResponse>(UserColorStarsResponse::class.java, request)
+        val response = send<UserColorStarsResponse>(request)
         if (response.success) {
             return@async response.result["counts"] ?: UserColorStarsCount(0, 0, 0, 0)
         }
@@ -776,7 +750,7 @@ object HatenaClient : BaseClient() {
     fun getNoticesAsync() : Deferred<NoticeResponse> = GlobalScope.async {
         if (!signedIn()) throw RuntimeException("need to sign-in to get user's notices")
         val url = "$W_BASE_URL/notify/api/pull?${cacheAvoidance()}"
-        return@async getJson<NoticeResponse>(NoticeResponse::class.java, url)
+        return@async getJson<NoticeResponse>(url)
     }
 
     /**
@@ -802,7 +776,7 @@ object HatenaClient : BaseClient() {
      */
     fun getUserTagsAsync(user: String) : Deferred<List<Tag>> = GlobalScope.async {
         val url = "$B_BASE_URL/$user/tags.json?${cacheAvoidance()}"
-        val response = getJson<TagsResponse>(TagsResponse::class.java, url)
+        val response = getJson<TagsResponse>(url)
         if (response.status != 200) throw RuntimeException("failed to get $user's tags: ${response.status}")
         return@async response.tags
             .map { Tag(it.key, it.value.index, it.value.count, it.value.timestamp) }
@@ -873,7 +847,7 @@ object HatenaClient : BaseClient() {
      * e.g.)  https://b.hatena.ne.jp/entry/s/www.hoge.com/ ==> https://www.hoge.com/
      */
     fun getEntryUrlFromCommentPageUrl(url: String) : String {
-        val regex = Regex("""https?:\/\/b\.hatena\.ne\.jp\/entry\/(https:\/\/|s\/)?(.+)""")
+        val regex = Regex("""https?://b\.hatena\.ne\.jp/entry/(https://|s/)?(.+)""")
         val matches = regex.matchEntire(url) ?: throw RuntimeException("invalid comment page url: $url")
 
         val path = matches.groups[2]?.value ?: throw RuntimeException("invalid comment page url: $url")
@@ -895,15 +869,15 @@ object HatenaClient : BaseClient() {
      * エントリのURLからブコメページのURLを取得する
      * e.g.)  https://www.hoge.com/ ===> https://b.hatena.ne.jp/entry/s/www.hoge.com/
      */
-    fun getCommentPageUrlFromEntryUrl(url: String) : String {
-        return "$B_BASE_URL/entry/" + if (url.startsWith("https://")) {
-            "s/${url.substring("https://".length)}"
+    fun getCommentPageUrlFromEntryUrl(url: String) =
+        buildString {
+            append("$B_BASE_URL/entry/")
+            append(
+                when {
+                    url.startsWith("https://") -> "s/${url.substring("https://".length)}"
+                    url.startsWith("http://") -> url.substring("http://".length)
+                    else -> throw RuntimeException("invalid url: $url")
+                }
+            )
         }
-        else if (url.startsWith("http://")) {
-            url.substring("http://".length)
-        }
-        else {
-            throw RuntimeException("invalid url: $url")
-        }
-    }
 }

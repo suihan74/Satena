@@ -1,5 +1,6 @@
 package com.suihan74.HatenaLib
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.threeten.bp.LocalDateTime
@@ -25,6 +26,7 @@ data class Bookmark (
             starCount = src.starCount.map { it.toStar() })
     }
 
+    @Expose(serialize = false, deserialize = false)
     var mUserIconUrl: String? = null
     val userIconUrl : String
         get() {
