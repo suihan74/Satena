@@ -109,8 +109,8 @@ class BookmarksActivity : ActivityBase() {
         private const val EXTRA_BASE = "com.suihan74.satena.activities.BookmarksActivity."
         const val EXTRA_ENTRY = EXTRA_BASE + "EXTRA_ENTRY"
 
-        private const val BUNDLE_ENTRY = EXTRA_BASE + "mEntry"
-        private const val BUNDLE_POST_DIALOG_OPENED = EXTRA_BASE + "mIsDialogOpened"
+        private const val BUNDLE_ENTRY = "mEntry"
+        private const val BUNDLE_POST_DIALOG_OPENED = "mIsDialogOpened"
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {

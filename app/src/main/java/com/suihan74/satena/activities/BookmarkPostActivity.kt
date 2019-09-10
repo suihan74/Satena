@@ -21,7 +21,7 @@ class BookmarkPostActivity : ActivityBase() {
         private const val EXTRA_BASE = "com.suihan74.satena.activities.BookmarkPostActivity."
         const val EXTRA_ENTRY = EXTRA_BASE + "entry"
 
-        private const val BUNDLE_ENTRY = EXTRA_BASE + "mEntry"
+        private const val BUNDLE_ENTRY = "mEntry"
     }
 
     override val containerId: Int = R.id.content_layout

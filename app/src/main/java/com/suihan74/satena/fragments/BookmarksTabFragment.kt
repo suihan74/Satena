@@ -48,8 +48,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             mTabType = type
         }
 
-        private const val BUNDLE_BASE = "com.suihan74.satena.fragments.BookmarksTabFragment."
-        private const val BUNDLE_TAB_TYPE = BUNDLE_BASE + "mTabType"
+        private const val BUNDLE_TAB_TYPE = "mTabType"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

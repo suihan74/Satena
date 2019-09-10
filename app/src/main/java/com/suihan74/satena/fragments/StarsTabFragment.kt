@@ -40,9 +40,8 @@ class StarsTabFragment : CoroutineScopeFragment() {
             mStarsTabMode = tabMode
         }
 
-        private const val BUNDLE_BASE = "com.suihan74.satena.fragments.StarsTabFragment."
-        private const val BUNDLE_BOOKMARK_USER = BUNDLE_BASE + "mBookmark.user"
-        private const val BUNDLE_STARS_TAB_MODE = BUNDLE_BASE + "mStarsTabMode"
+        private const val BUNDLE_BOOKMARK_USER = "mBookmark.user"
+        private const val BUNDLE_STARS_TAB_MODE = "mStarsTabMode"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

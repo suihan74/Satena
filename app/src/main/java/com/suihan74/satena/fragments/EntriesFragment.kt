@@ -57,9 +57,8 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
             enterTransition = TransitionSet().addTransition(AutoTransition())
         }
 
-        private const val BUNDLE_BASE = "com.suihan74.satena.fragments.EntriesFragment."
-        private const val BUNDLE_CATEGORY = BUNDLE_BASE + "mCategory"
-        private const val BUNDLE_CURRENT_TAB = BUNDLE_BASE + "currentTab"
+        private const val BUNDLE_CATEGORY = "mCategory"
+        private const val BUNDLE_CURRENT_TAB = "currentTab"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

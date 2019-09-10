@@ -41,9 +41,8 @@ class EntriesTabFragment : CoroutineScopeFragment() {
             mCategory = category
         }
 
-        private const val BUNDLE_BASE = "com.suihan74.satena.fragments.EntriesTabFragment."
-        private const val BUNDLE_CATEGORY = BUNDLE_BASE + "mCategory"
-        private const val BUNDLE_TAB_POSITION = BUNDLE_BASE + "mTabPosition"
+        private const val BUNDLE_CATEGORY = "mCategory"
+        private const val BUNDLE_TAB_POSITION = "mTabPosition"
     }
 
     fun setEntries(entriesList: List<Entry>) {

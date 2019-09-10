@@ -46,8 +46,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                 .addTransition(Slide(Gravity.END))
         }
 
-        private const val BUNDLE_BASE = "com.suihan74.satena.fragments.BookmarkDetailFragment."
-        private const val BUNDLE_BOOKMARK = BUNDLE_BASE + "mBookmark"
+        private const val BUNDLE_BOOKMARK = "mBookmark"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
