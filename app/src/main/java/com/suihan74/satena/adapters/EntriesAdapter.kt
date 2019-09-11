@@ -18,12 +18,12 @@ import com.suihan74.HatenaLib.BookmarkResult
 import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.utilities.*
 import com.suihan74.satena.BrowserToolbarManager
-import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.BookmarksActivity
+import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.*
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,8 +54,10 @@ open class EntriesAdapter(
         states.clear()
         entireOffset = e.size
         entries = e.filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
-        entries.forEach { states.add(RecyclerState(RecyclerType.BODY, it)) }
-        states.add(RecyclerState(RecyclerType.FOOTER))
+        states.run {
+            addAll(entries.map { RecyclerState(RecyclerType.BODY, it) })
+            add(RecyclerState(RecyclerType.FOOTER))
+        }
         notifyDataSetChanged()
     }
 
@@ -66,7 +68,7 @@ open class EntriesAdapter(
             .filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
         entireOffset += e.size
         entries = entries.plus(newItems)
-        newItems.forEach { states.add(states.size - 1, RecyclerState(RecyclerType.BODY, it)) }
+        states.addAll(states.size - 1, newItems.map { RecyclerState(RecyclerType.BODY, it) })
         notifyItemRangeInserted(insertStartPosition, newItems.size)
     }
 
