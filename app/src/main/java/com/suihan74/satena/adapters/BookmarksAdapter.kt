@@ -84,9 +84,11 @@ open class BookmarksAdapter(
         list.firstOrNull { it.color == color }?.count ?: 0
 
     private fun equalsStarCount(prev: List<Star>?, cur: List<Star>?) : Boolean {
-        if (prev.isNullOrEmpty() != cur.isNullOrEmpty()) return true
-        return if (prev != null && cur != null) {
-            prev.size != cur.size || StarColor.values().all { getStarCount(prev, it) == getStarCount(cur, it) }
+        val isPrevEmpty = prev.isNullOrEmpty()
+        val isCurEmpty = cur.isNullOrEmpty()
+        if (isPrevEmpty != isCurEmpty) return true
+        return if (!isPrevEmpty && !isCurEmpty) {
+            prev!!.size != cur!!.size || StarColor.values().all { getStarCount(prev, it) == getStarCount(cur, it) }
         }
         else true
     }

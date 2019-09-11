@@ -514,13 +514,14 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                     break
                 }
 
+                recentBookmarks.addAll(response)
+
                 val existedLatest = mBookmarksRecent.first()
                 val responseLast = response.lastOrNull()
                 if ((responseLast?.timestamp ?: LocalDateTime.MIN) <= existedLatest.timestamp) break
                 if (response.isEmpty()) break
 
                 of = response.size - 1L
-                recentBookmarks.addAll(response)
             }
         }
         catch (e: Exception) {
