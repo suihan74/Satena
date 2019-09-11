@@ -164,7 +164,6 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             }
 
             override fun onItemLongClicked(bookmark: Bookmark): Boolean {
-                // TODO: ブコメロングタップ時のメニュー表示
                 val items = arrayListOf("ブクマ済みエントリ一覧を見る" to {
                     val fragment =
                         UserEntriesFragment.createInstance(bookmark.user)

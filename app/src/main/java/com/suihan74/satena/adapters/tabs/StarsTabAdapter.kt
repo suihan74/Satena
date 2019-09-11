@@ -2,6 +2,7 @@ package com.suihan74.satena.adapters.tabs
 
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentPagerAdapter
+import android.support.v4.view.ViewPager
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.adapters.StarsAdapter
 import com.suihan74.satena.fragments.BookmarkDetailFragment
@@ -11,6 +12,7 @@ import com.suihan74.satena.fragments.StarsTabFragment
 import com.suihan74.utilities.BookmarkCommentDecorator
 
 class StarsTabAdapter(
+    private val viewPager: ViewPager,
     bookmarksFragment : BookmarksFragment,
     detailFragment: BookmarkDetailFragment,
     private val bookmark : Bookmark
@@ -70,4 +72,6 @@ class StarsTabAdapter(
     }
 
     override fun getCount() = tabs.size
+
+    fun findFragment(position: Int) = instantiateItem(viewPager, position) as StarsTabFragment
 }

@@ -558,6 +558,11 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         }
     }
 
+    suspend fun updateStar(bookmark: Bookmark) {
+        val starsEntry = HatenaClient.getStarsEntryAsync(bookmark.getBookmarkUrl(mEntry)).await()
+        mStarsMap[bookmark.user] = starsEntry
+    }
+
     private suspend fun startUpdateStarsMap(bookmarks: List<Bookmark>) {
         val list = bookmarks
             .filter {
@@ -572,7 +577,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
         if (urls.isEmpty()) return
 
-        val task = async {
+        val task = async(Dispatchers.IO) {
             for (i in 1..5) {
                 try {
                     val entries = HatenaClient.getStarsEntryAsync(urls).await()

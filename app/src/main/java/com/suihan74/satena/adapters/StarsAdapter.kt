@@ -138,6 +138,7 @@ open class StarsAdapter(
         }
     }
 
+    /*
     fun removeItem(user: String) {
         when(mode) {
             StarsTabMode.TO_USER -> {
@@ -145,13 +146,16 @@ open class StarsAdapter(
                 statesModeTo.removeAt(position)
                 notifyItemRemoved(position)
             }
+
             StarsTabMode.FROM_USER -> {
                 val position = statesModeFrom.indexOfFirst { it.type == RecyclerType.BODY && it.body!!.user == user }
                 statesModeFrom.removeAt(position)
                 notifyItemRemoved(position)
             }
         }
-    }
+    }*/
+
+    open fun removeItem(user: String) {}
 
     override fun getItemCount() = when (mode) {
         StarsTabMode.TO_USER -> statesModeTo.size
@@ -165,7 +169,6 @@ open class StarsAdapter(
 
     open fun onItemClicked(user: String, star: Star?) {}
     open fun onItemLongClicked(user: String, star: Star?) : Boolean = true
-
 
     class ViewHolder(private val view : View, private val muteWords: List<String>) : RecyclerView.ViewHolder(view) {
         private val userName    = view.findViewById<TextView>(R.id.star_user_name)!!

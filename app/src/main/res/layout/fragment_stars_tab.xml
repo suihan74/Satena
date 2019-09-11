@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.RecyclerView
+<android.support.v4.widget.SwipeRefreshLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/stars_list"
+        android:id="@+id/stars_swipe_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
-        android:scrollbarSize="4dp"
         tools:context=".fragments.StarsTabFragment">
-</android.support.v7.widget.RecyclerView>
+
+    <android.support.v7.widget.RecyclerView
+            android:id="@+id/stars_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+            android:scrollbarSize="4dp">
+    </android.support.v7.widget.RecyclerView>
+
+</android.support.v4.widget.SwipeRefreshLayout>

@@ -3,6 +3,7 @@ package com.suihan74.satena.fragments
 import android.app.AlertDialog
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -15,17 +16,17 @@ import com.suihan74.HatenaLib.Star
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.adapters.StarsAdapter
-import com.suihan74.utilities.CoroutineScopeFragment
-import com.suihan74.utilities.DividerItemDecorator
-import com.suihan74.utilities.FragmentContainerActivity
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
 class StarsTabFragment : CoroutineScopeFragment() {
+    private lateinit var mRoot: View
     private var mBookmarksFragment : BookmarksFragment? = null
+    private var mBookmarkDetailFragment : BookmarkDetailFragment? = null
+
     private lateinit var mBookmark : Bookmark
     private lateinit var mStarsTabMode : StarsAdapter.StarsTabMode
 
@@ -54,15 +55,18 @@ class StarsTabFragment : CoroutineScopeFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_stars_tab, container, false)
+        mRoot = view
 
         val activity = activity as? BookmarksActivity ?: throw IllegalStateException("StarsTabFragment has created from an invalid activity")
-        mBookmarksFragment = activity.bookmarksFragment
 
         savedInstanceState?.let {
             val user = it.getString(BUNDLE_BOOKMARK_USER)
             mStarsTabMode = StarsAdapter.StarsTabMode.fromInt(it.getInt(BUNDLE_STARS_TAB_MODE))
             mBookmark = activity.getStackedFragment<BookmarkDetailFragment> { it.bookmark.user == user }!!.bookmark
         }
+
+        mBookmarksFragment = activity.bookmarksFragment
+        mBookmarkDetailFragment = activity.getStackedFragment { it?.bookmark?.user == mBookmark.user }
 
         val bookmarksEntry = mBookmarksFragment!!.bookmarksEntry!!
         val starsMap = mBookmarksFragment!!.starsMap
@@ -76,6 +80,11 @@ class StarsTabFragment : CoroutineScopeFragment() {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             mStarsAdapter = object : StarsAdapter(context, mBookmark, starsMap, allBookmarks, mStarsTabMode) {
+                override fun removeItem(user: String) {
+                    super.removeItem(user)
+                    mBookmarkDetailFragment?.updateStars()
+                }
+
                 override fun onItemClicked(user: String, star: Star?) {
                     val target = allBookmarks.firstOrNull { it.user == user } ?: return
 
@@ -132,26 +141,33 @@ class StarsTabFragment : CoroutineScopeFragment() {
             adapter = mStarsAdapter
         }
 
-        /*
         // スワイプ更新機能の設定
-        val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.bookmarks_swipe_layout)
-        val schemeColor = TypedValue()
-        activity!!.theme.resolveAttribute(android.R.attr.colorPrimary, schemeColor, true)
-        swipeRefreshLayout.setColorSchemeColors(schemeColor.data)
-
-        swipeRefreshLayout.setOnRefreshListener {
-            launch(Dispatchers.Main) {
-                val bookmarksActivity = activity as BookmarksActivity
-
-                bookmarksActivity.bookmarksFragment.refreshBookmarksAsync().await().let {
-                    recyclerView.scrollToPosition(0)
-                    swipeRefreshLayout.isRefreshing = false
+        view.findViewById<SwipeRefreshLayout>(R.id.stars_swipe_layout).apply swipeLayout@ {
+            setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
+            setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
+            setOnRefreshListener {
+                launch(Dispatchers.Main) {
+                    try {
+                        mBookmarkDetailFragment?.updateStars()?.join()
+                    }
+                    catch (e: Exception) {
+                        activity.showToast("スターリスト更新失敗")
+                        Log.d("FailedToUpdateStars", Log.getStackTraceString(e))
+                    }
+                    finally {
+                        this@swipeLayout.isRefreshing = false
+                    }
                 }
             }
         }
-        */
 
         retainInstance = true
         return view
+    }
+
+    fun scrollToTop() {
+        mRoot.findViewById<RecyclerView>(R.id.stars_list).apply {
+            scrollToPosition(0)
+        }
     }
 }

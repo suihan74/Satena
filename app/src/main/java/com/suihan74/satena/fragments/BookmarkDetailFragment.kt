@@ -22,6 +22,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
@@ -150,12 +151,25 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
         val task = mBookmarksFragment!!.getFetchStarsTask(mBookmark.user)
         if (task?.isCompleted != false) {
-            tabPager.adapter = StarsTabAdapter(
+            val adapter = StarsTabAdapter(
+                tabPager,
                 mBookmarksFragment!!,
                 this,
                 mBookmark
             )
-            tabLayout.setupWithViewPager(tabPager)
+            tabPager.adapter = adapter
+
+            tabLayout.run {
+                setupWithViewPager(tabPager)
+                addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                    override fun onTabSelected(p0: TabLayout.Tab?) {}
+                    override fun onTabUnselected(p0: TabLayout.Tab?) {}
+                    override fun onTabReselected(tab: TabLayout.Tab?) {
+                        val fragment = adapter.findFragment(tab!!.position)
+                        fragment.scrollToTop()
+                    }
+                })
+            }
         }
         else {
             val progressBar = view.findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
@@ -165,6 +179,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                 try {
                     task.await()
                     tabPager.adapter = StarsTabAdapter(
+                        tabPager,
                         mBookmarksFragment!!,
                         this@BookmarkDetailFragment,
                         mBookmark
@@ -330,6 +345,16 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                         quote = quote
                     ).await()
 
+                    mBookmarksFragment!!.updateStar(mBookmark)
+
+                    val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
+                    tabPager.adapter = StarsTabAdapter(
+                        tabPager,
+                        mBookmarksFragment!!,
+                        this@BookmarkDetailFragment,
+                        mBookmark
+                    )
+
                     activity?.showToast("${mBookmark.user}のブコメに★をつけました")
                 }
                 catch (e: Exception) {
@@ -340,6 +365,20 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         }
         else {
             activity?.showToast("${color.name.toUpperCase(Locale.ROOT)}スターを所持していません")
+        }
+    }
+
+    fun updateStars() = launch {
+        mBookmarksFragment!!.updateStar(mBookmark)
+
+        withContext(Dispatchers.Main) {
+            val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
+            tabPager.adapter = StarsTabAdapter(
+                tabPager,
+                mBookmarksFragment!!,
+                this@BookmarkDetailFragment,
+                mBookmark
+            )
         }
     }
 

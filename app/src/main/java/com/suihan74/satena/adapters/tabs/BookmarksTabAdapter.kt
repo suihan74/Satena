@@ -21,9 +21,7 @@ open class BookmarksTabAdapter(
 
     override fun getCount() = BookmarksTabType.values().size
 
-    fun findFragment(position: Int) : BookmarksTabFragment {
-        return instantiateItem(viewPager, position) as BookmarksTabFragment
-    }
+    fun findFragment(position: Int) = instantiateItem(viewPager, position) as BookmarksTabFragment
 
     fun update() {
         for (i in 0 until count) {
