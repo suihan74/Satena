@@ -269,6 +269,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 launch(Dispatchers.Main) {
                     try {
                         activity.bookmarksFragment?.refreshBookmarksAsync()?.await()
+                        scrollToTop()
                     }
                     catch (e: Exception) {
                         activity.showToast("ブックマークリスト更新失敗")

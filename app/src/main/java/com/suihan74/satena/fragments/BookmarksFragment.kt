@@ -613,6 +613,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
         ignoredUsers = getIgnoredUsersTask.await().toSet()
         bookmarksEntry = getBookmarksEntryTask.await()
+        mBookmarksDigest = getDigestBookmarksTask.await()
 
         if (bookmarksEntry != null) {
             view?.findViewById<Toolbar>(R.id.bookmarks_toolbar)?.apply {

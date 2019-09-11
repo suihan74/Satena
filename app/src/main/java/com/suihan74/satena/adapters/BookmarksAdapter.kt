@@ -122,15 +122,20 @@ open class BookmarksAdapter(
                 .map {
                     val existedIndex = mStates.indexOfFirst { state ->
                         RecyclerType.BODY == state.type &&
-                        state.body!!.user == it.value.user &&
-                        (state.body!!.comment != it.value.comment ||
-                        state.body!!.getTagsText() != it.value.getTagsText() ||
-                        !equalsStarCount(state.body!!.starCount, it.value.starCount))
+                        state.body!!.user == it.value.user
                     }
                     Pair(existedIndex, it.value)
                 }
+                .filter { (existedIndex, item) ->
+                    if (existedIndex < 0) return@filter false
+                    val existed = mStates[existedIndex].body!!
+
+                    existed.comment != item.comment ||
+                    existed.getTagsText() != item.getTagsText() ||
+                    !equalsStarCount(existed.starCount, item.starCount)
+                }
                 .forEach { (existedIndex, item) ->
-                    if (existedIndex >= 0 && isShowable(item)) {
+                    if (isShowable(item)) {
                         mStates[existedIndex] = RecyclerState(RecyclerType.BODY, item)
 
                         val position = states.indexOfFirst { it == mStates[existedIndex] }
