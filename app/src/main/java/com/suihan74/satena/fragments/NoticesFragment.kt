@@ -18,16 +18,16 @@ import android.view.View
 import android.view.ViewGroup
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Notice
+import com.suihan74.satena.R
+import com.suihan74.satena.activities.ActivityBase
+import com.suihan74.satena.activities.BookmarksActivity
+import com.suihan74.satena.adapters.NoticesAdapter
+import com.suihan74.satena.models.NoticesKey
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
-import com.suihan74.satena.activities.BookmarksActivity
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.adapters.NoticesAdapter
-import com.suihan74.satena.R
-import com.suihan74.satena.activities.ActivityBase
-import com.suihan74.satena.models.NoticesKey
-import com.suihan74.utilities.CoroutineScopeFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
@@ -70,6 +70,9 @@ class NoticesFragment : CoroutineScopeFragment() {
                 Notice.VERB_ADD_FAVORITE ->
                     "${users}があなたのブックマークをお気に入りに追加しました"
 
+                Notice.VERB_BOOKMARK ->
+                    "${users}があなたのエントリをブックマークしました"
+
                 else -> throw NotImplementedError("verb: ${notice.verb}")
             }
         }
@@ -107,10 +110,10 @@ class NoticesFragment : CoroutineScopeFragment() {
                             catch (e: Exception) {
                                 Log.d("FailedToFetchComment", e.message)
                                 activity.showToast("通知対象ブコメの取得失敗")
-                                mClickHandling = false
                             }
                             finally {
                                 activity.hideProgressBar()
+                                mClickHandling = false
                             }
                         }
 
@@ -118,6 +121,37 @@ class NoticesFragment : CoroutineScopeFragment() {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
                         startActivity(intent)
                         mClickHandling = false
+                    }
+
+                    Notice.VERB_BOOKMARK -> {
+                        val baseUrl = "${HatenaClient.B_BASE_URL}/entry?url="
+                        if (notice.link.startsWith(baseUrl)) {
+                            val url = Uri.decode(notice.link.substring(baseUrl.length))
+                            launch(Dispatchers.Main) {
+                                try {
+                                    activity.showProgressBar()
+
+                                    val entry = HatenaClient.getBookmarksEntryAsync(url).await()
+
+                                    val intent =
+                                        Intent(activity, BookmarksActivity::class.java).apply {
+                                            putExtra("entry", entry)
+                                        }
+                                    startActivity(intent)
+                                } catch (e: Exception) {
+                                    Log.d("FailedToFetchComment", e.message)
+                                    activity.showToast("通知対象ブコメの取得失敗")
+                                } finally {
+                                    activity.hideProgressBar()
+                                    mClickHandling = false
+                                }
+                            }
+                        }
+                        else {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
+                            startActivity(intent)
+                            mClickHandling = false
+                        }
                     }
                 }
             }

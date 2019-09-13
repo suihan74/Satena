@@ -28,13 +28,14 @@ data class Notice (
 ) : Serializable {
 
     companion object {
-        const val VERB_STAR = "star"
         const val VERB_ADD_FAVORITE = "add_favorite"
+        const val VERB_BOOKMARK = "bookmark"
+        const val VERB_STAR = "star"
     }
 
     val eid : Long
         get() {
-            if (verb == "star") {
+            if (verb == VERB_STAR) {
                 val idx = link.lastIndexOf('-') + 1
                 return link.substring(idx).toLong()
             }

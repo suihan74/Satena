@@ -143,8 +143,9 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 launch(Dispatchers.Main) {
                     try {
                         activity.let {
-                            val entry = it.bookmarksFragment!!.entry
+                            val entry = mBookmarksFragment!!.entry
                             HatenaClient.deleteBookmarkAsync(entry.url).await()
+                            // TODO: 自分の投稿を削除したあとで再読み込みすると内容が復活する問題を解決する（BookmarksFragmentがキャッシュしているブクマリストを更新する）
                             removeItem(b)
                             activity.showToast("ブクマを削除しました")
                         }
