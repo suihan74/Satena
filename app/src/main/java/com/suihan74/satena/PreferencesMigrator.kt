@@ -135,22 +135,26 @@ class PreferencesMigrator {
 
 fun Int.toByteArray(): ByteArray {
     var value = this
-    val result = ByteArray(4)
-    for (i in 0..3) {
+    val bytes = Int.SIZE_BYTES // 必ず4byteの配列を出力する
+    val result = ByteArray(bytes)
+    for (i in 0 until bytes) {
         result[i] = (value and 0xFF).toByte()
-        value = value shr 8
+        value = value shr Byte.SIZE_BITS
     }
     return result
 }
 
 fun ByteArray.toInt(): Int {
     var result = 0
-    val size = minOf(3, this.size)
-    for (i in 0..size) {
+    val bytes = Int.SIZE_BYTES
+    if (bytes < this.size)
+        throw ArrayIndexOutOfBoundsException("ByteArray overflows when treated as Int")
+
+    for (i in 0 until bytes) {
         val value = (this[i] and 0xFF.toByte()).toInt().let {
             if (it < 0) 256 + it else it
         }
-        result = result or (value shl (i * 8))
+        result = result or (value shl (i * Byte.SIZE_BITS))
     }
     return result
 }
@@ -167,7 +171,7 @@ fun OutputStream.writeString(value: String) {
 }
 
 fun InputStream.readInt() : Int {
-    val bytes = ByteArray(4)
+    val bytes = ByteArray(Int.SIZE_BYTES)
     this.read(bytes)
     return bytes.toInt()
 }
