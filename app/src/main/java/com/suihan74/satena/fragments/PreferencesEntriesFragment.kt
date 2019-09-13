@@ -10,12 +10,12 @@ import android.widget.Button
 import android.widget.ToggleButton
 import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.satena.R
+import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
-import com.suihan74.satena.R
-import com.suihan74.satena.models.BookmarksTabType
-import com.suihan74.satena.models.EntriesTabType
+import com.suihan74.utilities.SafeSharedPreferences
+import java.util.*
 
 class PreferencesEntriesFragment : Fragment() {
     companion object {
@@ -24,51 +24,54 @@ class PreferencesEntriesFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_preferences_entries, container, false)
-
         val prefs = SafeSharedPreferences.create<PreferenceKey>(activity)
-
-        val tapActions = TapEntryAction.values().map { it.title }.toTypedArray()
+        val tapActions = TapEntryAction.values().map { getString(it.titleId) }.toTypedArray()
 
         // シングルタップ時の動作
-        val singleTapEntryActionButton = view.findViewById<Button>(R.id.preferences_entries_single_tap_action)
         var currentSingleTapEntryAction = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
-        singleTapEntryActionButton.text = currentSingleTapEntryAction.title
-        singleTapEntryActionButton.setOnClickListener {
-            AlertDialog.Builder(activity, R.style.AlertDialogStyle)
-                .setTitle(getString(R.string.pref_entries_single_tap_action_desc))
-                .setSingleChoiceItems(tapActions, currentSingleTapEntryAction.int) { dialog, which ->
-                    val act = TapEntryAction.fromInt(which)
-                    prefs.edit {
-                        putInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION, act.int)
+        view.findViewById<Button>(R.id.preferences_entries_single_tap_action).apply {
+            text = getText(currentSingleTapEntryAction.titleId)
+            setOnClickListener {
+                AlertDialog.Builder(activity, R.style.AlertDialogStyle)
+                    .setTitle(getText(R.string.pref_entries_single_tap_action_desc))
+                    .setSingleChoiceItems(tapActions, currentSingleTapEntryAction.int) { dialog, which ->
+                        val act = TapEntryAction.fromInt(which)
+                        prefs.edit {
+                            putInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION, act.int)
+                        }
+                        currentSingleTapEntryAction = act
+                        text = tapActions[which]
+                        dialog.dismiss()
                     }
-                    currentSingleTapEntryAction = act
-                    singleTapEntryActionButton.text = act.title
-                    dialog.dismiss()
-                }
-                .setNegativeButton("Cancel", null)
-                .create()
-                .show()
+                    .setNegativeButton("Cancel", null)
+                    .create()
+                    .show()
+            }
         }
 
         // ロングタップ時の動作
-        val longTapEntryActionButton = view.findViewById<Button>(R.id.preferences_entries_long_tap_action)
         var currentLongTapEntryAction = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
-        longTapEntryActionButton.text = currentLongTapEntryAction.title
-        longTapEntryActionButton.setOnClickListener {
-            AlertDialog.Builder(activity, R.style.AlertDialogStyle)
-                .setTitle(getString(R.string.pref_entries_long_tap_action_desc))
-                .setSingleChoiceItems(tapActions, currentLongTapEntryAction.int) { dialog, which ->
-                    val act = TapEntryAction.fromInt(which)
-                    prefs.edit {
-                        putInt(PreferenceKey.ENTRY_LONG_TAP_ACTION, act.int)
+        view.findViewById<Button>(R.id.preferences_entries_long_tap_action).apply {
+            text = getText(currentLongTapEntryAction.titleId)
+            setOnClickListener {
+                AlertDialog.Builder(activity, R.style.AlertDialogStyle)
+                    .setTitle(getText(R.string.pref_entries_long_tap_action_desc))
+                    .setSingleChoiceItems(
+                        tapActions,
+                        currentLongTapEntryAction.int
+                    ) { dialog, which ->
+                        val act = TapEntryAction.fromInt(which)
+                        prefs.edit {
+                            putInt(PreferenceKey.ENTRY_LONG_TAP_ACTION, act.int)
+                        }
+                        currentLongTapEntryAction = act
+                        text = tapActions[which]
+                        dialog.dismiss()
                     }
-                    currentLongTapEntryAction = act
-                    longTapEntryActionButton.text = act.title
-                    dialog.dismiss()
-                }
-                .setNegativeButton("Cancel", null)
-                .create()
-                .show()
+                    .setNegativeButton("Cancel", null)
+                    .create()
+                    .show()
+            }
         }
 
         // ホームカテゴリ
@@ -84,7 +87,7 @@ class PreferencesEntriesFragment : Fragment() {
 
                 val categoryTexts = categories.map { getCategoryName(it) }.toTypedArray()
                 AlertDialog.Builder(activity, R.style.AlertDialogStyle)
-                    .setTitle(getString(R.string.pref_home_category_desc))
+                    .setTitle(getText(R.string.pref_home_category_desc))
                     .setSingleChoiceItems(categoryTexts, currentHomeCategory.int) { dialog, which ->
                         val cat = Category.fromInt(which)
                         prefs.edit {
@@ -107,7 +110,7 @@ class PreferencesEntriesFragment : Fragment() {
             text = context.getText(currentInitialTab.textId)
             setOnClickListener {
                 AlertDialog.Builder(activity, R.style.AlertDialogStyle)
-                    .setTitle(getString(R.string.pref_entries_initial_tab_desc))
+                    .setTitle(getText(R.string.pref_entries_initial_tab_desc))
                     .setSingleChoiceItems(
                         listOf(EntriesTabType.POPULAR, EntriesTabType.RECENT)
                             .map { context.getText(it.textId) }
@@ -152,7 +155,10 @@ class PreferencesEntriesFragment : Fragment() {
     }
 
     private fun getCategoryName(cat: Category) : String {
-        val id = resources.getIdentifier("category_${cat.name.toLowerCase()}", "string", context!!.packageName)
+        val id = resources.getIdentifier(
+            "category_${cat.name.toLowerCase(Locale.ROOT)}",
+            "string",
+            context!!.packageName)
         return getString(id)
     }
 }

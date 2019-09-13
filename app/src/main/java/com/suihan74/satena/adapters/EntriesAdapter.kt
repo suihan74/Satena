@@ -2,7 +2,6 @@ package com.suihan74.satena.adapters
 
 import android.content.Intent
 import android.net.Uri
-import android.support.customtabs.CustomTabsIntent
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
@@ -18,11 +17,11 @@ import com.suihan74.HatenaLib.BookmarkResult
 import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.satena.BrowserToolbarManager
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.*
+import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -173,30 +172,30 @@ open class EntriesAdapter(
 
     private fun showMenu(entry: Entry) {
         val items = arrayListOf(
-            TapEntryAction.SHOW_COMMENTS.title to { launchBookmarksActivity(entry) },
-            TapEntryAction.SHOW_PAGE.title to { launchTabs(entry) },
-            TapEntryAction.SHOW_PAGE_IN_BROWSER.title to { launchBrowser(entry) }
+            TapEntryAction.SHOW_COMMENTS.titleId to { launchBookmarksActivity(entry) },
+            TapEntryAction.SHOW_PAGE.titleId to { launchTabs(entry) },
+            TapEntryAction.SHOW_PAGE_IN_BROWSER.titleId to { launchBrowser(entry) }
         )
 
         if (HatenaClient.signedIn()) {
             if (entry.bookmarkedData == null) {
-                items.add("あとで読む" to { addToReadLaterEntries(entry) })
+                items.add(R.string.entry_action_read_later to { addToReadLaterEntries(entry) })
             }
             else {
                 if (entry.bookmarkedData.tags.contains("あとで読む")) {
-                    items.add("読んだ" to { bookmarkReadLaterEntry(entry) })
+                    items.add(R.string.entry_action_read to { bookmarkReadLaterEntry(entry) })
                 }
 
-                items.add("ブックマークを削除する" to { deleteBookmark(entry) })
+                items.add(R.string.entry_action_delete_bookmark to { deleteBookmark(entry) })
             }
         }
 
-        items.add("このサイトを非表示にする" to { addEntryToIgnores(entry) })
+        items.add(R.string.entry_action_ignore to { addEntryToIgnores(entry) })
 
         AlertDialog.Builder(fragment.context!!, R.style.AlertDialogStyle)
             .setTitle(entry.title)
             .setNegativeButton("Cancel", null)
-            .setItems(items.map { it.first }.toTypedArray()) { _, which ->
+            .setItems(items.map { fragment.getText(it.first) }.toTypedArray()) { _, which ->
                 items[which].second()
             }
             .show()
