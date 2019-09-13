@@ -5,7 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
-import android.text.Spannable
+import android.text.SpannableString
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -255,15 +256,14 @@ open class BookmarksAdapter(
                     View.VISIBLE
                 }
 
-                setOnTouchListener { view, event ->
-                    val textView = view as TextView
-                    val m = MutableLinkMovementMethod { url ->
-                        if (url.startsWith("http")) {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                val linkMovementMethod = object : MutableLinkMovementMethod() {
+                    override fun onSinglePressed(link: String) {
+                        if (link.startsWith("http")) {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
                             context.startActivity(intent)
                         }
                         else {
-                            val eid = analyzed.entryIds.firstOrNull { url.contains(it.toString()) }
+                            val eid = analyzed.entryIds.firstOrNull { link.contains(it.toString()) }
                             if (eid != null) {
                                 fragment.launch(Dispatchers.Main) {
                                     val entryUrl = HatenaClient.getEntryUrlFromIdAsync(eid).await()
@@ -273,12 +273,18 @@ open class BookmarksAdapter(
                             }
                         }
                     }
-                    textView.movementMethod = m
-                    val mTouched = m.onTouchEvent(textView, textView.text as Spannable, event)
-                    textView.movementMethod = null
-                    textView.isFocusable = false
 
-                    return@setOnTouchListener mTouched
+                    override fun onLongPressed(link: String) {
+                        Log.d("TOUCH", "long pressed: $link")
+                    }
+                }
+
+                setOnTouchListener { view, event ->
+                    val textView = view as TextView
+                    return@setOnTouchListener linkMovementMethod.onTouchEvent(
+                        textView,
+                        SpannableString(textView.text),
+                        event)
                 }
             }
 

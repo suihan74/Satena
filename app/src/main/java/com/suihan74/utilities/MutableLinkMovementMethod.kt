@@ -1,21 +1,37 @@
 package com.suihan74.utilities
 
+import android.os.Handler
 import android.text.Selection
 import android.text.Spannable
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.MotionEvent
+import android.view.ViewConfiguration
 import android.widget.TextView
 
-open class MutableLinkMovementMethod(
-    private val onItemClicked: ((String)->Unit)? = null
-) : LinkMovementMethod() {
-    override fun onTouchEvent(widget: TextView?, buffer: Spannable?, event: MotionEvent?): Boolean {
-        val action = event!!.action
+open class MutableLinkMovementMethod : LinkMovementMethod() {
+    private val mHandler = Handler()
+    private val mLongPressedRunnable = Runnable {
+        if (!mHandled) {
+            mHandled = true
+            onLongPressed(mLink)
+        }
+    }
+    private var mHandled = false
+    private var mLink = ""
 
-        if (action == MotionEvent.ACTION_UP ||
-            action == MotionEvent.ACTION_DOWN
-        ) {
+    open fun onSinglePressed(link: String) {
+    }
+
+    open fun onLongPressed(link: String) {
+    }
+
+    override fun onTouchEvent(widget: TextView?, buffer: Spannable?, event: MotionEvent?): Boolean {
+        widget?.movementMethod = this
+
+        val action = event!!.action
+        var result = false
+        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
             widget!!
             buffer!!
             val x = event.x - widget.totalPaddingLeft + widget.scrollX
@@ -27,30 +43,40 @@ open class MutableLinkMovementMethod(
 
             val link = buffer.getSpans(offset, offset, ClickableSpan::class.java)
             if (link.isNotEmpty()) {
+                mLink = buffer.substring(buffer.getSpanStart(link[0]), buffer.getSpanEnd(link[0]))
                 when (action) {
                     MotionEvent.ACTION_UP -> {
-                        if (link[0] is ClickableSpan && onItemClicked != null) {
-                            onItemClicked.invoke(buffer.substring(buffer.getSpanStart(link[0]), buffer.getSpanEnd(link[0])))
-                        }
-                        else {
-                            link[0].onClick(widget)
+                        mHandler.removeCallbacks(mLongPressedRunnable)
+                        if (!mHandled) {
+                            mHandled = true
+                            onSinglePressed(mLink)
                         }
                     }
 
                     MotionEvent.ACTION_DOWN -> {
+                        mHandled = false
+                        mHandler.postDelayed(mLongPressedRunnable, ViewConfiguration.getLongPressTimeout().toLong())
+
                         Selection.setSelection(
                             buffer,
                             buffer.getSpanStart(link[0]),
                             buffer.getSpanEnd(link[0]))
                     }
                 }
-                return true
+                result = true
             }
             else {
                 Selection.removeSelection(buffer)
             }
         }
+        else {
+            mHandled = true
+            mHandler.removeCallbacks(mLongPressedRunnable)
+        }
 
-        return false
+        widget?.movementMethod = null
+        widget?.isFocusable = false
+
+        return result
     }
 }
