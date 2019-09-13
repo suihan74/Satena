@@ -70,8 +70,10 @@ open class MutableLinkMovementMethod : LinkMovementMethod() {
             }
         }
         else {
-            mHandled = true
-            mHandler.removeCallbacks(mLongPressedRunnable)
+            if (action == MotionEvent.ACTION_CANCEL) {
+                mHandled = true
+                mHandler.removeCallbacks(mLongPressedRunnable)
+            }
         }
 
         widget?.movementMethod = null

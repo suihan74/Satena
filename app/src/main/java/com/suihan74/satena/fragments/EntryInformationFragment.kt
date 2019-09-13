@@ -2,8 +2,6 @@ package com.suihan74.satena.fragments
 
 import android.net.Uri
 import android.os.Bundle
-import android.support.customtabs.CustomTabsIntent
-import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,10 +13,10 @@ import android.widget.TextView
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
-import com.suihan74.satena.BrowserToolbarManager
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.adapters.TagsAdapter
+import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.FragmentContainerActivity
 import com.suihan74.utilities.makeSpannedfromHtml
@@ -63,18 +61,7 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             text = makeSpannedfromHtml("<u>${Uri.decode(mEntry.url)}</u>")
 
             setOnClickListener {
-                val intent = CustomTabsIntent.Builder(null)
-                    .setShowTitle(true)
-                    .enableUrlBarHiding()
-                    .addDefaultShareMenuItem()
-                    .setToolbarColor(ContextCompat.getColor(activity!!, R.color.colorPrimary))
-                    .setSecondaryToolbarViews(
-                        BrowserToolbarManager.createRemoteViews(activity!!, mEntry),
-                        BrowserToolbarManager.getClickableIds(),
-                        BrowserToolbarManager.getOnClickPendingIntent(activity!!)
-                    )
-                    .build()
-                intent.launchUrl(activity, Uri.parse(mEntry.url))
+                activity!!.showCustomTabsIntent(mEntry)
             }
         }
 

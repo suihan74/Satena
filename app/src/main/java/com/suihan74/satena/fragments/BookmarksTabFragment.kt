@@ -1,9 +1,7 @@
 package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
-import android.net.Uri
 import android.os.Bundle
-import android.support.customtabs.CustomTabsIntent
 import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
@@ -14,13 +12,13 @@ import android.view.View
 import android.view.ViewGroup
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.satena.BrowserToolbarManager
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.adapters.BookmarksAdapter
 import com.suihan74.satena.adapters.tabs.BookmarksTabAdapter
 import com.suihan74.satena.models.*
+import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -185,18 +183,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 val analyzedBookmarkComment = BookmarkCommentDecorator.convert(bookmark.comment)
                 for (url in analyzedBookmarkComment.urls) {
                     items.add(url to {
-                        val intent = CustomTabsIntent.Builder(null)
-                            .setShowTitle(true)
-                            .enableUrlBarHiding()
-                            .addDefaultShareMenuItem()
-                            .setToolbarColor(ContextCompat.getColor(context!!, R.color.colorPrimary))
-                            .setSecondaryToolbarViews(
-                                BrowserToolbarManager.createRemoteViews(context!!, null),
-                                BrowserToolbarManager.getClickableIds(),
-                                BrowserToolbarManager.getOnClickPendingIntent(context!!)
-                            )
-                            .build()
-                        intent.launchUrl(activity, Uri.parse(url))
+                        context!!.showCustomTabsIntent(url, this@BookmarksTabFragment)
                     })
                 }
 
