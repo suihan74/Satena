@@ -145,23 +145,7 @@ open class EntriesAdapter(
 
     private fun launchTabs(entry: Entry) {
         val context = fragment.context ?: return
-        val url = entry.ampUrl ?: entry.url
-
-        val intent = CustomTabsIntent.Builder()
-            .setShowTitle(true)
-            .enableUrlBarHiding()
-            .addDefaultShareMenuItem()
-            .setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimary))
-            .setSecondaryToolbarColor(ContextCompat.getColor(context, R.color.colorPrimary))
-            .setSecondaryToolbarViews(
-                BrowserToolbarManager.createRemoteViews(context, entry),
-                BrowserToolbarManager.getClickableIds(),
-                BrowserToolbarManager.getOnClickPendingIntent(context)
-            )
-            .build()
-
-        intent.intent.setPackage("com.android.chrome")
-        intent.launchUrl(context, Uri.parse(url))
+        context.showCustomTabsIntent(entry)
     }
 
     private fun launchBrowser(entry: Entry) {

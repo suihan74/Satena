@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.models.*
+import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -259,8 +260,11 @@ open class BookmarksAdapter(
                 val linkMovementMethod = object : MutableLinkMovementMethod() {
                     override fun onSinglePressed(link: String) {
                         if (link.startsWith("http")) {
+                            fragment.activity!!.showCustomTabsIntent(link, fragment)
+                            /*
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
                             context.startActivity(intent)
+                            */
                         }
                         else {
                             val eid = analyzed.entryIds.firstOrNull { link.contains(it.toString()) }

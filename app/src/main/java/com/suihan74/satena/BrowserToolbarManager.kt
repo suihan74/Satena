@@ -4,19 +4,29 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.support.customtabs.CustomTabsIntent
+import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.widget.RemoteViews
 import com.suihan74.HatenaLib.Entry
+import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.activities.BookmarkPostActivity
 import com.suihan74.satena.activities.BookmarksActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class BrowserToolbarManager : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
+    private fun onReceiveImpl(context: Context, intent: Intent) {
         val clickedId = intent.getIntExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS_CLICKED_ID, -1)
         val bIntent = when (clickedId) {
             R.id.bookmark_button -> {
                 Intent(context, BookmarkPostActivity::class.java).apply {
                     putExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
             }
 
@@ -25,6 +35,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, entry?.url ?: intent.dataString)
                     putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
             }
 
@@ -33,14 +44,57 @@ class BrowserToolbarManager : BroadcastReceiver() {
         context.startActivity(bIntent)
     }
 
+    override fun onReceive(context: Context, intent: Intent) {
+        if (entryLoadingJob != null) {
+            entryLoadingJob!!.invokeOnCompletion {
+                entryLoadingJob = null
+                onReceiveImpl(context, intent)
+            }
+        }
+        else {
+            onReceiveImpl(context, intent)
+        }
+    }
+
     companion object {
         private var entry: Entry? = null
+        private var entryLoadingJob: Job? = null
 
         fun createRemoteViews(context: Context, entry: Entry?): RemoteViews {
             this.entry = entry
             if (entry != null) {
                 BookmarksActivity.startPreLoading(entry)
             }
+            return RemoteViews(context.packageName, R.layout.browser_toolbar)
+        }
+
+        fun createRemoteViews(context: Context, url: String, coroutineScope: CoroutineScope) : RemoteViews {
+            entryLoadingJob = coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
+                        .firstOrNull { it.url == url }
+                }
+                catch (e: Exception) {
+                    Log.d("BrowserToolbarManager", Log.getStackTraceString(e))
+                }
+
+                if (entry == null) {
+                    try {
+                        val bookmarksEntry = HatenaClient.getEmptyBookmarksEntryAsync(url).await()
+                        entry = Entry(0, bookmarksEntry.title, "", 0, url, url, "", "")
+                    } catch (e: Exception) {
+                        Log.d("BrowserToolbarManager", Log.getStackTraceString(e))
+                    }
+                }
+
+                if (entry == null) {
+                    Log.e("BrowserToolbarmanager", "failed to fetch the entry: $url")
+                }
+                else {
+                    BookmarksActivity.startPreLoading(entry!!)
+                }
+            }
+
             return RemoteViews(context.packageName, R.layout.browser_toolbar)
         }
 
@@ -51,4 +105,42 @@ class BrowserToolbarManager : BroadcastReceiver() {
             return PendingIntent.getBroadcast(context, 0, broadcastIntent, 0)
         }
     }
+}
+
+fun Context.showCustomTabsIntent(entry: Entry) {
+    val url = entry.ampUrl ?: entry.url
+
+    val intent = CustomTabsIntent.Builder()
+        .setShowTitle(true)
+        .enableUrlBarHiding()
+        .addDefaultShareMenuItem()
+        .setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
+        .setSecondaryToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
+        .setSecondaryToolbarViews(
+            BrowserToolbarManager.createRemoteViews(this, entry),
+            BrowserToolbarManager.getClickableIds(),
+            BrowserToolbarManager.getOnClickPendingIntent(this)
+        )
+        .build()
+
+    intent.intent.setPackage("com.android.chrome")
+    intent.launchUrl(this, Uri.parse(url))
+}
+
+fun Context.showCustomTabsIntent(url: String, coroutineScope: CoroutineScope) {
+    val intent = CustomTabsIntent.Builder()
+        .setShowTitle(true)
+        .enableUrlBarHiding()
+        .addDefaultShareMenuItem()
+        .setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
+        .setSecondaryToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
+        .setSecondaryToolbarViews(
+            BrowserToolbarManager.createRemoteViews(this, url, coroutineScope),
+            BrowserToolbarManager.getClickableIds(),
+            BrowserToolbarManager.getOnClickPendingIntent(this)
+        )
+        .build()
+
+    intent.intent.setPackage("com.android.chrome")
+    intent.launchUrl(this, Uri.parse(url))
 }

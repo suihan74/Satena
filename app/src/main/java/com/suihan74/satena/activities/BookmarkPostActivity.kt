@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.util.Log
 import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.fragments.EntryInformationFragment
 import com.suihan74.satena.models.PreferenceKey
@@ -64,7 +63,7 @@ class BookmarkPostActivity : ActivityBase() {
                 try {
                     val cache = bookmarksEntryCache.get()
                     val bookmarksEntry = if (cache?.id != entry.id) {
-                        HatenaClient.getBookmarksEntryAsync(entry.id).await()
+                        null//HatenaClient.getBookmarksEntryAsync(entry.id).await()
                     }
                     else {
                         cache
