@@ -88,7 +88,7 @@ class StarsTabFragment : CoroutineScopeFragment() {
                 override fun onItemClicked(user: String, star: Star?) {
                     val target = allBookmarks.firstOrNull { it.user == user } ?: return
 
-                    (activity as FragmentContainerActivity).apply {
+                    activity.apply {
                         showFragment(
                             BookmarkDetailFragment.createInstance(
                                 target

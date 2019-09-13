@@ -30,8 +30,9 @@ class BookmarksActivity : ActivityBase() {
 
     private var mIsDialogOpened = false
 
+    // TODO: 一番上にあるBookmarksFragmentを返す（暫定）
     val bookmarksFragment
-        get() = currentFragment as? BookmarksFragment
+        get() = getStackedFragment<BookmarksFragment>()
 
     override val containerId = R.id.bookmarks_layout
     override val progressBarId: Int? = R.id.detail_progress_bar
@@ -275,7 +276,7 @@ class BookmarksActivity : ActivityBase() {
     }
 
     fun openBookmarkDialog() {
-        val fragment = currentFragment as? BookmarksFragment ?: return
+        val fragment = bookmarksFragment ?: return
         initializeBookmarkPostFragment(fragment.entry, fragment.bookmarksEntry)
 
         mIsDialogOpened = true

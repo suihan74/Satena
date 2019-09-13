@@ -70,13 +70,10 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         mView = view
 
         val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksDetailFragment has created from an invalid activity")
-        mBookmarksFragment = activity.bookmarksFragment
 
         val user = view.findViewById<TextView>(R.id.user_name)
         val icon = view.findViewById<ImageView>(R.id.user_icon)
         val comment = view.findViewById<TextView>(R.id.comment)
-        val tabLayout = view.findViewById<TabLayout>(R.id.tab_layout)
-        val tabPager = view.findViewById<ViewPager>(R.id.tab_pager)
 
         if (mBookmark.tags.isNullOrEmpty()) {
             view.findViewById<View>(R.id.tags_layout).visibility = View.GONE
@@ -149,52 +146,6 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             starMenuButton.hide()
         }
 
-        val task = mBookmarksFragment!!.getFetchStarsTask(mBookmark.user)
-        if (task?.isCompleted != false) {
-            val adapter = StarsTabAdapter(
-                tabPager,
-                mBookmarksFragment!!,
-                this,
-                mBookmark
-            )
-            tabPager.adapter = adapter
-
-            tabLayout.run {
-                setupWithViewPager(tabPager)
-                addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-                    override fun onTabSelected(p0: TabLayout.Tab?) {}
-                    override fun onTabUnselected(p0: TabLayout.Tab?) {}
-                    override fun onTabReselected(tab: TabLayout.Tab?) {
-                        val fragment = adapter.findFragment(tab!!.position)
-                        fragment.scrollToTop()
-                    }
-                })
-            }
-        }
-        else {
-            val progressBar = view.findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
-                visibility = View.VISIBLE
-            }
-            launch(Dispatchers.Main) {
-                try {
-                    task.await()
-                    tabPager.adapter = StarsTabAdapter(
-                        tabPager,
-                        mBookmarksFragment!!,
-                        this@BookmarkDetailFragment,
-                        mBookmark
-                    )
-                    tabLayout.setupWithViewPager(tabPager)
-                }
-                catch (e: Exception) {
-                    Log.d("FailedToFetchStars", e.message)
-                }
-                finally {
-                    progressBar.visibility = View.GONE
-                }
-            }
-        }
-
         val analyzed = BookmarkCommentDecorator.convert(mBookmark.comment)
 
         user.text = mBookmark.user
@@ -230,6 +181,60 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
         retainInstance = true
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val tabLayout = mView.findViewById<TabLayout>(R.id.tab_layout)
+        val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
+
+        launch(Dispatchers.Main) {
+            val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksDetailFragment has created from an invalid activity")
+            mBookmarksFragment = activity.bookmarksFragment
+
+            val task = mBookmarksFragment!!.getFetchStarsTask(mBookmark.user)
+            if (task == null || task.isCompleted) {
+                val adapter = StarsTabAdapter(
+                    tabPager,
+                    mBookmarksFragment!!,
+                    this@BookmarkDetailFragment,
+                    mBookmark
+                )
+                tabPager.adapter = adapter
+
+                tabLayout.run {
+                    setupWithViewPager(tabPager)
+                    addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                        override fun onTabSelected(p0: TabLayout.Tab?) {}
+                        override fun onTabUnselected(p0: TabLayout.Tab?) {}
+                        override fun onTabReselected(tab: TabLayout.Tab?) {
+                            val fragment = adapter.findFragment(tab!!.position)
+                            fragment.scrollToTop()
+                        }
+                    })
+                }
+            } else {
+                val progressBar = mView.findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
+                    visibility = View.VISIBLE
+                }
+
+                try {
+                    task.await()
+                    tabPager.adapter = StarsTabAdapter(
+                        tabPager,
+                        mBookmarksFragment!!,
+                        this@BookmarkDetailFragment,
+                        mBookmark
+                    )
+                    tabLayout.setupWithViewPager(tabPager)
+                } catch (e: Exception) {
+                    Log.d("FailedToFetchStars", e.message)
+                } finally {
+                    progressBar.visibility = View.GONE
+                }
+            }
+        }
     }
 
     private fun showStarButton(layoutId: Int, counterId: Int, dimenId: Int) {
