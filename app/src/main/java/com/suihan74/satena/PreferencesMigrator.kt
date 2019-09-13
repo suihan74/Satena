@@ -15,10 +15,13 @@ class PreferencesMigrator {
     companion object {
         private val SIGNATURE get() = byteArrayOf(0).plus("SATESET".toByteArray())
         private val VERSION get() = byteArrayOf(0)
+
+        private val SIGNATURE_SIZE = SIGNATURE.size
+        private const val HASH_SIZE = 16
     }
 
     class Output(private val context: Context) {
-        val items = ArrayList<MigrationData>()
+        private val items = ArrayList<MigrationData>()
 
         inline fun <reified KeyT> addPreference() where KeyT: SafeSharedPreferences.Key, KeyT: Enum<KeyT> =
             addPreference(KeyT::class.java)
@@ -67,11 +70,11 @@ class PreferencesMigrator {
     class Input(private val context: Context) {
         fun read(src: File, onErrorAction: ((MigrationData)->Unit)? = null) {
             src.inputStream().buffered().use { stream ->
-                val signature = stream.readByteArray(8)
+                val signature = stream.readByteArray(SIGNATURE_SIZE)
                 check(signature.contentEquals(SIGNATURE)) { "the file is not a settings for Satena: ${src.absolutePath}" }
 
-                val headerHash = stream.readByteArray(16)
-                val bodyHash = stream.readByteArray(16)
+                val headerHash = stream.readByteArray(HASH_SIZE)
+                val bodyHash = stream.readByteArray(HASH_SIZE)
 
                 val version = stream.readByteArray(1)
                 val itemsCount = stream.readInt()
