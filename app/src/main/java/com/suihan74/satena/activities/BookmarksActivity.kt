@@ -30,11 +30,8 @@ class BookmarksActivity : ActivityBase() {
 
     private var mIsDialogOpened = false
 
-    var bookmarksFragment : BookmarksFragment? = null
-        private set
-
-    val entry : Entry
-        get() = mEntry!!
+    val bookmarksFragment
+        get() = currentFragment as? BookmarksFragment
 
     override val containerId = R.id.bookmarks_layout
     override val progressBarId: Int? = R.id.detail_progress_bar
@@ -140,7 +137,7 @@ class BookmarksActivity : ActivityBase() {
         savedInstanceState?.let {
             mEntry = it.getSerializable(BUNDLE_ENTRY) as Entry
             mBookmarksEntry = null
-            bookmarksFragment = getStackedFragment<BookmarksFragment>()
+//            bookmarksFragment = getStackedFragment<BookmarksFragment>()
             mPostFragment = getStackedFragment<BookmarkPostFragment>()
             mIsDialogOpened = it.getBoolean(BUNDLE_POST_DIALOG_OPENED)
         } ?: showProgressBar()
@@ -229,7 +226,7 @@ class BookmarksActivity : ActivityBase() {
         else if (entry is BookmarksEntry) {
             mEntry = Entry(
                 id = entry.id,
-                title = entry.title,
+                mTitle = entry.title,
                 description = "",
                 count = entry.count,
                 url = entry.url,
@@ -241,29 +238,27 @@ class BookmarksActivity : ActivityBase() {
             mBookmarksEntry = entry
         }
 
-        // ブクマダイアログの設定
-        withContext(Dispatchers.Main) {
-            initializeBookmarkPostFragment()
-        }
-
         // フラグメント表示
         withContext(Dispatchers.Main) {
             showProgressBar()
             val targetUser = intent.extras?.getString("target_user")
-            bookmarksFragment =
+            val targetEntry = this@BookmarksActivity.mEntry!!
+
+            val bookmarksFragment =
                 if (targetUser == null) {
-                    BookmarksFragment.createInstance(this@BookmarksActivity.entry, preLoadingTasks)
+                    BookmarksFragment.createInstance(targetEntry, preLoadingTasks)
                 } else {
-                    BookmarksFragment.createInstance(targetUser, this@BookmarksActivity.entry, preLoadingTasks)
+                    BookmarksFragment.createInstance(targetUser, targetEntry, preLoadingTasks)
                 }
-            showFragment(bookmarksFragment!!)
+
+            showFragment(bookmarksFragment, targetEntry.url)
         }
     }
 
-    private fun initializeBookmarkPostFragment() {
+    private fun initializeBookmarkPostFragment(entry: Entry, bookmarksEntry: BookmarksEntry?) {
         if (HatenaClient.signedIn()) {
             mPostFragment =
-                BookmarkPostFragment.createInstance(entry, mBookmarksEntry).apply {
+                BookmarkPostFragment.createInstance(entry, bookmarksEntry).apply {
                     setOnPostedListener {
                         closeBookmarkDialog()
                     }
@@ -275,11 +270,14 @@ class BookmarksActivity : ActivityBase() {
 
             supportFragmentManager.beginTransaction()
                 .replace(R.id.bookmark_post_layout, mPostFragment!!)
-                .commit()
+                .commitNow()
         }
     }
 
     fun openBookmarkDialog() {
+        val fragment = currentFragment as? BookmarksFragment ?: return
+        initializeBookmarkPostFragment(fragment.entry, fragment.bookmarksEntry)
+
         mIsDialogOpened = true
 
         val bg = findViewById<View>(R.id.post_bookmark_background)
@@ -327,6 +325,9 @@ class BookmarksActivity : ActivityBase() {
         view.animate()
             .withEndAction {
                 view.visibility = View.INVISIBLE
+                supportFragmentManager.beginTransaction()
+                    .remove(mPostFragment!!)
+                    .commit()
             }
             .translationYBy(0f)
             .translationY(posY)

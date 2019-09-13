@@ -6,7 +6,8 @@ import java.io.Serializable
 data class Entry (
     @SerializedName("eid")
     val id : Long,
-    val title : String,
+    @SerializedName("title")
+    private val mTitle : String,
     val description : String,
     val count : Int,
 
@@ -23,11 +24,24 @@ data class Entry (
 
     // ホットエントリにのみ含まれる情報
     val myhotentryComments : List<BookmarkResult>? = null
-) : Serializable
+) : Serializable {
+
+    val title : String
+        get() {
+            val wrapPosition = mTitle.indexOfFirst { it == '\n' }
+            return if (wrapPosition < 0) {
+                mTitle
+            }
+            else {
+                mTitle.substring(0 until wrapPosition)
+            }
+        }
+
+}
 
 fun emptyEntry() = Entry(
     id = 0,
-    title = "",
+    mTitle = "",
     description = "",
     count = 0,
     url = "",

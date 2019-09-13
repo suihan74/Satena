@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder
 import okhttp3.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneOffset
-import java.lang.RuntimeException
 import java.lang.reflect.Type
 import java.net.CookieManager
 import java.net.CookiePolicy
@@ -101,8 +100,9 @@ open class BaseClient {
             result
         }
         else {
+            val code = response.code()
             response.close()
-            throw RuntimeException("connection error")
+            throw RuntimeException("connection error: $code")
         }
     }
 
@@ -110,13 +110,23 @@ open class BaseClient {
         responseTo(type, response, GsonBuilder().registerTypeAdapter(LocalDateTime::class.java, TimestampDeserializer(dateFormat)))
 
     protected fun <T> getJson(type: Type, url: String, gsonBuilder: GsonBuilder) : T {
-        val response = get(url)
-        return responseTo(type, response, gsonBuilder)
+        try {
+            val response = get(url)
+            return responseTo(type, response, gsonBuilder)
+        }
+        catch (e: Exception) {
+            throw RuntimeException("${e.message}: $url")
+        }
     }
 
     protected fun <T> getJson(type: Type, url: String, dateFormat: String? = null) : T {
-        val response = get(url)
-        return responseTo(type, response, dateFormat)
+        try {
+            val response = get(url)
+            return responseTo(type, response, dateFormat)
+        }
+        catch (e: Exception) {
+            throw RuntimeException("${e.message}: $url")
+        }
     }
 
     protected inline fun <reified T> getJson(url: String, gsonBuilder: GsonBuilder) =

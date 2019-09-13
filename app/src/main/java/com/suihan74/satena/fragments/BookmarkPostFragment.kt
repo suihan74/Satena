@@ -61,7 +61,7 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
         savedInstanceState?.let {
             val activity = activity
             if (activity is BookmarksActivity) {
-                mEntry = activity.entry
+                mEntry = activity.bookmarksFragment!!.entry
             }
             else if (activity is BookmarkPostActivity) {
                 mEntry = activity.entry

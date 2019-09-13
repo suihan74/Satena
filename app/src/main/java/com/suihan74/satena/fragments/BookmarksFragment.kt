@@ -64,6 +64,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
     private var mIsScrollToMyBookmarkButtonEnabled = false
 
+    val entry : Entry
+        get() = mEntry
+
     var bookmarksEntry : BookmarksEntry? = null
         private set
 
@@ -263,7 +266,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                                 BookmarkDetailFragment.createInstance(
                                     bookmark
                                 )
-                            activity.showFragment(detailFragment, null)
+                            activity.showFragment(detailFragment, "detail_id:${bookmark.user}")
                         }
                     }
 

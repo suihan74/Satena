@@ -14,36 +14,21 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
 
             add(containerId, fragment)
 
-            if (current != null) {
+//            if (current != null || backStackLabel != null) {
                 addToBackStack(backStackLabel)
-            }
+//            }
 
             commit()
         }
     }
 
-    fun showFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction().apply {
-            val current = currentFragment
-            if (current != null) {
-                hide(current)
-            }
-
-            add(containerId, fragment)
-
-            if (current != null) {
-                addToBackStack(null)
-            }
-
-            commit()
-        }
-    }
+    fun showFragment(fragment: Fragment) = showFragment(fragment, null)
 
     fun popFragment() =
-        supportFragmentManager.popBackStack()
+        supportFragmentManager.popBackStackImmediate()
 
     fun popFragment(backStackLabel: String?, flag: Int = 0) =
-        supportFragmentManager.popBackStack(backStackLabel, flag)
+        supportFragmentManager.popBackStackImmediate(backStackLabel, flag)
 
     fun isFragmentShowed() = currentFragment != null
     fun isFragmentShowed(fragment: Fragment) = currentFragment == fragment
@@ -57,21 +42,25 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
     inline fun <reified T> getStackedFragment(predicate: (T)->Boolean) =
         supportFragmentManager.fragments.lastOrNull { it is T && predicate(it) } as? T
 
-    override fun onBackPressed() {
-        val fragment = currentFragment
-        if (fragment is BackPressable) {
-            if (fragment.onBackPressed()) { return }
-        }
-        super.onBackPressed()
-    }
+    override fun onBackPressed() = onBackPressed(null)
 
-    fun onBackPressed(alternativeAction: ()->Boolean) {
+    fun onBackPressed(alternativeAction: (()->Boolean)?) {
         val fragment = currentFragment
         if (fragment is BackPressable) {
-            if (fragment.onBackPressed()) { return }
+            if (fragment.onBackPressed()) {
+                return
+            }
         }
-        if (!alternativeAction()) {
-            super.onBackPressed()
+
+        val acted = alternativeAction?.invoke() ?: false
+
+        if (!acted) {
+            if (supportFragmentManager.backStackEntryCount == 1) {
+                finish()
+            }
+            else {
+                super.onBackPressed()
+            }
         }
     }
 

@@ -143,7 +143,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 launch(Dispatchers.Main) {
                     try {
                         activity.let {
-                            val entry = it.entry
+                            val entry = it.bookmarksFragment!!.entry
                             HatenaClient.deleteBookmarkAsync(entry.url).await()
                             removeItem(b)
                             activity.showToast("ブクマを削除しました")
@@ -160,7 +160,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 val fragment = BookmarkDetailFragment.createInstance(
                     bookmark
                 )
-                activity.showFragment(fragment, null)
+                activity.showFragment(fragment, "detail_id:${bookmark.user}")
             }
 
             override fun onItemLongClicked(bookmark: Bookmark): Boolean {

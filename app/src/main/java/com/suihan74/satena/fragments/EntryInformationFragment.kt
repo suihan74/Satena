@@ -15,14 +15,17 @@ import android.widget.TextView
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
-import com.suihan74.utilities.FragmentContainerActivity
-import com.suihan74.utilities.makeSpannedfromHtml
 import com.suihan74.satena.BrowserToolbarManager
 import com.suihan74.satena.R
+import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.adapters.TagsAdapter
 import com.suihan74.utilities.CoroutineScopeFragment
+import com.suihan74.utilities.FragmentContainerActivity
+import com.suihan74.utilities.makeSpannedfromHtml
+import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class EntryInformationFragment : CoroutineScopeFragment() {
     private lateinit var mRoot : View
@@ -128,12 +131,13 @@ class EntryInformationFragment : CoroutineScopeFragment() {
                 }
 
                 setOnClickListener {
-                    isClickable = false
+                    val activity = activity as ActivityBase
+                    activity.showProgressBar()
 
                     launch(Dispatchers.Main) {
                         val url = HatenaClient.getEntryUrlFromCommentPageUrl(mEntry.url)
                         changeFloor(url)
-                        isClickable = true
+                        activity.hideProgressBar()
                     }
                 }
             }
@@ -146,12 +150,13 @@ class EntryInformationFragment : CoroutineScopeFragment() {
                 }
 
                 setOnClickListener {
-                    isClickable = false
+                    val activity = activity as ActivityBase
+                    activity.showProgressBar()
 
                     launch(Dispatchers.Main) {
                         val url = HatenaClient.getCommentPageUrlFromEntryUrl(mEntry.url)
                         changeFloor(url)
-                        isClickable = true
+                        activity.hideProgressBar()
                     }
                 }
             }
@@ -162,21 +167,43 @@ class EntryInformationFragment : CoroutineScopeFragment() {
     }
 
     private suspend fun changeFloor(url: String) {
+        val activity = activity as ActivityBase
+
+        if (null != activity.getStackedFragment<BookmarksFragment> { it.bookmarksEntry?.url == url }) {
+            withContext(Dispatchers.Main) {
+                activity.popFragment(url)
+                activity.hideProgressBar()
+            }
+            return
+        }
+
         var entry : Entry? = null
         try {
             entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
                 .firstOrNull { it.url == url }
         }
         catch (e: Exception) {
-            Log.e("SearchEntries", Log.getStackTraceString(e))
+            Log.d("SearchEntry", e.message)
         }
 
         if (entry == null) {
-            val dummy = HatenaClient.getEmptyBookmarksEntryAsync(url).await()
-            entry = Entry(0, dummy.title, "", 0, url, url, "", "", null)
+            try {
+                val dummy = HatenaClient.getEmptyBookmarksEntryAsync(url).await()
+                entry = Entry(0, dummy.title, "", 0, url, url, "", "", null)
+            }
+            catch (e: Exception) {
+                Log.d("MakeDummyEntry", e.message)
+            }
         }
 
-        val fragment = BookmarksFragment.createInstance(entry)
-        (activity as FragmentContainerActivity).showFragment(fragment)
+        withContext(Dispatchers.Main) {
+            if (entry == null) {
+                activity.showToast("エントリ情報の取得に失敗しました")
+            }
+            else {
+                val fragment = BookmarksFragment.createInstance(entry)
+                activity.showFragment(fragment, url)
+            }
+        }
     }
 }
