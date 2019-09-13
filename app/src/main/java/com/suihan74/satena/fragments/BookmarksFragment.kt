@@ -171,24 +171,37 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
             launch(Dispatchers.Main) {
                 try {
-                    val ignoredUsersTask = HatenaClient.getIgnoredUsersAsync()
-                    val bookmarksEntryTask = mPreLoadingTasks?.bookmarksTask ?: HatenaClient.getBookmarksEntryAsync(mEntry.url)
-                    val digestBookmarksTask = mPreLoadingTasks?.bookmarksDigestTask ?: HatenaClient.getDigestBookmarksAsync(mEntry.url)
-                    val recentBookmarksTask = mPreLoadingTasks?.bookmarksRecentTask ?: HatenaClient.getRecentBookmarksAsync(mEntry.url)
+                    try {
+                        val ignoredUsersTask = HatenaClient.getIgnoredUsersAsync()
+                        val bookmarksEntryTask =
+                            mPreLoadingTasks?.bookmarksTask ?: HatenaClient.getBookmarksEntryAsync(
+                                mEntry.url
+                            )
+                        val digestBookmarksTask = mPreLoadingTasks?.bookmarksDigestTask
+                            ?: HatenaClient.getDigestBookmarksAsync(mEntry.url)
+                        val recentBookmarksTask = mPreLoadingTasks?.bookmarksRecentTask
+                            ?: HatenaClient.getRecentBookmarksAsync(mEntry.url)
 
-                    listOf(
-                        ignoredUsersTask,
-                        digestBookmarksTask,
-                        recentBookmarksTask,
-                        bookmarksEntryTask
-                    ).awaitAll()
+                        listOf(
+                            ignoredUsersTask,
+                            digestBookmarksTask,
+                            recentBookmarksTask,
+                            bookmarksEntryTask
+                        ).awaitAll()
 
-                    ignoredUsers = ignoredUsersTask.await().toSet()
-                    bookmarksEntry = bookmarksEntryTask.await()
-                    mBookmarksDigest = digestBookmarksTask.await()
+                        ignoredUsers = ignoredUsersTask.await().toSet()
+                        bookmarksEntry = bookmarksEntryTask.await()
+                        mBookmarksDigest = digestBookmarksTask.await()
 
-                    val recents = recentBookmarksTask.await()
-                    mBookmarksRecent = makeBookmarksRecent(recents.map { Bookmark.createFrom(it) })
+                        val recents = recentBookmarksTask.await()
+                        mBookmarksRecent = makeBookmarksRecent(recents.map { Bookmark.createFrom(it) })
+                    }
+                    catch (e: Exception) {
+                        Log.d("failedToFetchBookmarks", e.message)
+                        if (bookmarksEntry == null) {
+                            bookmarksEntry = BookmarksEntry(mEntry.id, mEntry.title, mEntry.count, mEntry.url, mEntry.url, mEntry.imageUrl, emptyList())
+                        }
+                    }
 
                     val mBookmarksEntry = bookmarksEntry!!
                     toolbar.title = mBookmarksEntry.title
@@ -230,11 +243,6 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
                         setCurrentItem(initialTabPosition, false)
                     }
-
-                    /*if (mTargetUser != null) {
-                        val tab = adapter.findFragment(initialTabPosition)
-                        tab.scrollTo(mTargetUser!!)
-                    }*/
 
                     val scrollToMyBookmarkButton = root.findViewById<FloatingActionButton>(R.id.bookmarks_scroll_my_bookmark_button)
                     val userName = HatenaClient.account?.name ?: ""
