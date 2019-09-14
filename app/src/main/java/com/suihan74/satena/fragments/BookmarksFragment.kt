@@ -570,8 +570,15 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     }
 
     suspend fun updateStar(bookmark: Bookmark) {
-        val starsEntry = HatenaClient.getStarsEntryAsync(bookmark.getBookmarkUrl(mEntry)).await()
-        mStarsMap[bookmark.user] = starsEntry
+        val url = bookmark.getBookmarkUrl(mEntry)
+        try {
+            val starsEntry =
+                HatenaClient.getStarsEntryAsync(url).await()
+            mStarsMap[bookmark.user] = starsEntry
+        }
+        catch (e: Exception) {
+            Log.d("BookmarksFragment::updateStar", "stars are empty: $url")
+        }
     }
 
     private suspend fun startUpdateStarsMap(bookmarks: List<Bookmark>) {
