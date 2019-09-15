@@ -10,19 +10,15 @@ import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 
 object AccountLoader {
-    suspend fun signInAccounts(context: Context, reSignIn: Boolean = false) = withContext(Dispatchers.IO + SupervisorJob()) {
-        lock(this) {
-            runBlocking {
-                try {
-                    val jobs = listOf(
-                        signInHatenaAsync(context, reSignIn),
-                        signInMastodonAsync(context, reSignIn)
-                    )
-                    jobs.awaitAll()
-                } catch (e: Exception) {
-                    throw RuntimeException("failed to sign in")
-                }
-            }
+    suspend fun signInAccounts(context: Context, reSignIn: Boolean = false) {
+        try {
+            val jobs = listOf(
+                signInHatenaAsync(context, reSignIn),
+                signInMastodonAsync(context, reSignIn)
+            )
+            jobs.awaitAll()
+        } catch (e: Exception) {
+            throw RuntimeException("failed to sign in")
         }
     }
 
@@ -113,6 +109,27 @@ object AccountLoader {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         prefs.edit {
             putString(PreferenceKey.MASTODON_ACCESS_TOKEN, serializer.serialize(encryptedData))
+        }
+    }
+
+    fun deleteHatenaAccount(context: Context) {
+        lock (HatenaClient) {
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            prefs.edit {
+                remove(PreferenceKey.HATENA_USER_NAME)
+                remove(PreferenceKey.HATENA_PASSWORD)
+            }
+            HatenaClient.signOut()
+        }
+    }
+
+    fun deleteMastodonAccount(context: Context) {
+        lock (MastodonClientHolder) {
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            prefs.edit {
+                remove(PreferenceKey.MASTODON_ACCESS_TOKEN)
+            }
+            MastodonClientHolder.signOut()
         }
     }
 

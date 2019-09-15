@@ -24,6 +24,9 @@ import kotlin.coroutines.CoroutineContext
 
 class NotificationService : Service(), CoroutineScope {
     companion object {
+        private const val SERVICE_CHANNEL_ID = "satena_notification_service"
+        private const val NOTICE_CHANNEL_ID = "satena_notification"
+
         var running : Boolean = false
             get() {
                 synchronized(field) {
@@ -65,26 +68,54 @@ class NotificationService : Service(), CoroutineScope {
         Log.d("NotificationService", "starting service...")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = "satena_notification_service"
-            val title = "Satena"
+            val notificationManager = getSystemService(NotificationManager::class.java)
             val description = "はてなの通知を確認します"
+
+            // グループ生成
+            val createGroup = { groupId: String, groupName: String ->
+                NotificationChannelGroup(groupId, groupName)
+            }
+            notificationManager.createNotificationChannelGroups(listOf(
+                createGroup(SERVICE_CHANNEL_ID, "通知確認サービス"),
+                createGroup(NOTICE_CHANNEL_ID, "通知")
+            ))
+
+            // チャンネル生成
+            // 通知確認サービス常駐用
+            if (notificationManager.getNotificationChannel(SERVICE_CHANNEL_ID) != null) {
+                notificationManager.deleteNotificationChannel(SERVICE_CHANNEL_ID)
+            }
+            val serviceChannel = NotificationChannel(SERVICE_CHANNEL_ID, "通知確認サービス", NotificationManager.IMPORTANCE_HIGH).apply {
+                group = SERVICE_CHANNEL_ID
+                enableVibration(false)
+                enableLights(false)
+                setShowBadge(false)
+                lockscreenVisibility = Notification.VISIBILITY_SECRET
+            }
+            notificationManager.createNotificationChannel(serviceChannel)
+
+            // 通知
+            if (notificationManager.getNotificationChannel(NOTICE_CHANNEL_ID) != null) {
+                notificationManager.deleteNotificationChannel(NOTICE_CHANNEL_ID)
+            }
+            val noticeChannel = NotificationChannel(NOTICE_CHANNEL_ID, "通知", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                group = NOTICE_CHANNEL_ID
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                vibrationPattern = longArrayOf(0, 300, 300)
+                enableVibration(true)
+                enableLights(true)
+//                    setShowBadge(true)
+                setShowBadge(false)
+            }
+            notificationManager.createNotificationChannel(noticeChannel)
 
             val mainIntent = Intent(applicationContext, MainActivity::class.java)
             val pendingIntent = PendingIntent.getActivity(applicationContext, 0, mainIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-            val notificationManager = getSystemService(NotificationManager::class.java)
 
-            if (notificationManager.getNotificationChannel(channelId) == null) {
-                val channel = NotificationChannel(channelId, title, NotificationManager.IMPORTANCE_HIGH).apply {
-                    enableVibration(false)
-                    enableLights(false)
-                    setShowBadge(false)
-                }
-                notificationManager.createNotificationChannel(channel)
-            }
-
-            val notification = NotificationCompat.Builder(applicationContext, channelId)
+            val notification = NotificationCompat.Builder(applicationContext, SERVICE_CHANNEL_ID)
+                .setGroup(SERVICE_CHANNEL_ID)
                 .setStyle(NotificationCompat.BigTextStyle().setSummaryText(description))
-                .setSmallIcon(android.R.drawable.ic_media_play)
+                .setSmallIcon(R.drawable.ic_stat_name)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
                 .setWhen(System.currentTimeMillis())
@@ -169,8 +200,7 @@ class NotificationService : Service(), CoroutineScope {
     }
 
     private fun invokeNotice(context: Context, notice: Notice) {
-        val title = "Satena"
-        val channelId = "satena_notification"
+        val title = "通知"
         val message = NoticesFragment.createMessage(notice, context).let {
             makeSpannedfromHtml(it).toString()
         }
@@ -194,25 +224,14 @@ class NotificationService : Service(), CoroutineScope {
         }
 
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && notificationManager.getNotificationChannel(channelId) == null) {
-            val channel = NotificationChannel(channelId, title, NotificationManager.IMPORTANCE_DEFAULT).apply {
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-                vibrationPattern = longArrayOf(0, 300, 300)
-                enableVibration(true)
-                enableLights(true)
-                setShowBadge(true)
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
 
         val style = NotificationCompat.BigTextStyle()
             .bigText(message)
 
-        val notification = NotificationCompat.Builder(context, channelId)
+        val notification = NotificationCompat.Builder(context, NOTICE_CHANNEL_ID)
+            .setGroup(NOTICE_CHANNEL_ID)
             .setStyle(style)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_stat_name)
             .setContentTitle(title)
             .setContentText(message)
             .setContentIntent(pendingIntent)
