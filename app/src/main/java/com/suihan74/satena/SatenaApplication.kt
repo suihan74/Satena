@@ -23,7 +23,6 @@ class SatenaApplication : Application() {
     var currentActivity : ActivityBase? = null
 
     var isFirstLaunch : Boolean = false
-        private set
 
     init {
         instance = this

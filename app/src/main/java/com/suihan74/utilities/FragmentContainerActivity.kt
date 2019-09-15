@@ -5,24 +5,24 @@ import android.support.v7.app.AppCompatActivity
 
 abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContainer {
 
-    fun showFragment(fragment: Fragment, backStackLabel: String?) {
+    fun showFragment(fragment: Fragment, backStackLabel: String? = null) {
         supportFragmentManager.beginTransaction().apply {
             val current = currentFragment
             if (current != null) {
                 hide(current)
             }
-
             add(containerId, fragment)
-
-//            if (current != null || backStackLabel != null) {
-                addToBackStack(backStackLabel)
-//            }
-
+            addToBackStack(backStackLabel)
             commit()
         }
     }
 
-    fun showFragment(fragment: Fragment) = showFragment(fragment, null)
+    fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction().apply {
+            replace(containerId, fragment)
+            commit()
+        }
+    }
 
     fun popFragment() =
         supportFragmentManager.popBackStackImmediate()

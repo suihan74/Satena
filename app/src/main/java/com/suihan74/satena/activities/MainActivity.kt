@@ -55,6 +55,7 @@ class MainActivity : ActivityBase() {
             // 初回起動時にはログインフラグメントを選択
             entriesShowed = false
             showFragment(HatenaAuthenticationFragment.createInstance())
+            SatenaApplication.instance.isFirstLaunch = false
         }
         else if (!isFragmentShowed()) {
             entriesShowed = true

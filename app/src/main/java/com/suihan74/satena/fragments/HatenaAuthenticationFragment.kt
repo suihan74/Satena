@@ -75,7 +75,7 @@ class HatenaAuthenticationFragment : CoroutineScopeFragment() {
             fragmentManager.popBackStack()
         }
         else {
-            activity.showFragment(EntriesFragment.createInstance())
+            activity.replaceFragment(EntriesFragment.createInstance())
         }
     }
 }
