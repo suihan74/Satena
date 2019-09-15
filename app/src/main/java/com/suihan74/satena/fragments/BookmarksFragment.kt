@@ -182,6 +182,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                         val recentBookmarksTask = mPreLoadingTasks?.bookmarksRecentTask
                             ?: HatenaClient.getRecentBookmarksAsync(mEntry.url)
 
+                        // recent bookmarksの取得をここまでロードした分までで中止する
+                        BookmarksActivity.stopPreLoading()
+
                         listOf(
                             ignoredUsersTask,
                             digestBookmarksTask,

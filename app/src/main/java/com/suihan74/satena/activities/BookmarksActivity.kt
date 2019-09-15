@@ -12,6 +12,7 @@ import com.suihan74.satena.fragments.BookmarksFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.lock
 import kotlinx.coroutines.*
 
 class BookmarksActivity : ActivityBase() {
@@ -21,7 +22,25 @@ class BookmarksActivity : ActivityBase() {
         val bookmarksDigestTask : Deferred<BookmarksDigest>,
         val bookmarksRecentTask : Deferred<List<BookmarkWithStarCount>>,
         val starsEntriesTask : Deferred<List<StarsEntry>>
-    )
+    ) {
+        private val monitorTask = GlobalScope.launch(SupervisorJob() + Dispatchers.Default) {
+            try {
+                listOf(bookmarksTask, bookmarksDigestTask, bookmarksRecentTask, starsEntriesTask)
+                    .awaitAll()
+                Log.d("preloading", "completed")
+            }
+            catch (e: Exception) {
+                Log.d("preloading", "canceled")
+            }
+        }
+
+        fun cancel() {
+            bookmarksTask.cancel()
+            bookmarksDigestTask.cancel()
+            bookmarksRecentTask.cancel()
+            starsEntriesTask.cancel()
+        }
+    }
 
     private var mEntry : Entry? = null
     private var mBookmarksEntry : BookmarksEntry? = null
@@ -66,12 +85,52 @@ class BookmarksActivity : ActivityBase() {
     }
 
     companion object {
+        private var mPreloadingStopped = false
+        private var preloadingStopped : Boolean
+            get() {
+                lock(mPreloadingStopped) {
+                    return mPreloadingStopped
+                }
+            }
+            private set(value) {
+                lock(mPreloadingStopped) {
+                    mPreloadingStopped = value
+                }
+            }
+
+        fun stopPreLoading() {
+            preloadingStopped = true
+        }
+
         fun startPreLoading(entry: Entry) {
+            preLoadingTasks?.cancel()
             preLoadingTasks = null
+            preloadingStopped = false
 
             val bookmarksEntryTask = HatenaClient.getBookmarksEntryAsync(entry.url)
             val digestTask = HatenaClient.getDigestBookmarksAsync(entry.url)
-            val recentTask = HatenaClient.getRecentBookmarksAsync(entry.url)
+
+            val recentTask = GlobalScope.async {
+                val list = ArrayList<BookmarkWithStarCount>()
+                while (!preloadingStopped) {
+                    try {
+                        val cur = HatenaClient.getRecentBookmarksAsync(entry.url, of = list.size.toLong()).await()
+
+                        if (cur.isEmpty()) {
+                            break
+                        }
+                        else {
+                            list.addAll(cur.filterNot { c -> list.any { it.user == c.user } })
+                            list.sortByDescending { it.timestamp }
+                        }
+                    }
+                    catch (e: Exception) {
+                        Log.d("preloadingRecentBookmarks", e.message)
+                        break
+                    }
+                }
+                return@async list
+            }
 
             val starsEntriesTask = GlobalScope.async {
                 while (true) {
@@ -85,10 +144,22 @@ class BookmarksActivity : ActivityBase() {
                         .filter { it.comment.isNotBlank() }
                         .map { it.getBookmarkUrl(entry) }
 
-                    val result = HatenaClient.getStarsEntryAsync(urls).await()
-                    Log.d("preLoading", "completed!")
-
-                    result
+                    var result : List<StarsEntry>? = null
+                    for (times in 1..5) {
+                        try {
+                            result = HatenaClient.getStarsEntryAsync(urls).await()
+                        }
+                        catch (e: Exception) {
+                            if (times == 5) {
+                                Log.e("preLoading", "failed to fetch stars")
+                            }
+                            else {
+                                Log.d("preLoading", "failed to fetch stars. retrying...")
+                            }
+                        }
+                        break
+                    }
+                    result ?: emptyList()
                 }
                 else {
                     emptyList()
