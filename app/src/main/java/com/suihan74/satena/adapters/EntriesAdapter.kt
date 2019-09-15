@@ -3,7 +3,6 @@ package com.suihan74.satena.adapters
 import android.content.Intent
 import android.net.Uri
 import android.support.v4.content.ContextCompat
-import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -18,10 +17,10 @@ import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.TappedActionLauncher
 import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.*
-import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -96,14 +95,14 @@ open class EntriesAdapter(
                 holder.itemView.setOnClickListener {
                     val position = holder.adapterPosition
                     val entry = states[position].body!!
-                    launchTappedAction(singleTapAction, entry)
+                    TappedActionLauncher.launch(parent.context, singleTapAction, entry, makeAdditionalMenuItems(entry))
                 }
 
                 holder.itemView.setOnLongClickListener {
                     val position = holder.adapterPosition
                     val entry = states[position].body!!
-                    launchTappedAction(longTapAction, entry)
-                    true
+                    TappedActionLauncher.launch(parent.context, longTapAction, entry, makeAdditionalMenuItems(entry))
+                    return@setOnLongClickListener true
                 }
 
                 return holder
@@ -127,63 +126,22 @@ open class EntriesAdapter(
 
     override fun getItemViewType(position: Int): Int = states[position].type.int
 
-    private fun launchTappedAction(act: TapEntryAction, entry: Entry) {
-        when (act) {
-            TapEntryAction.SHOW_COMMENTS -> launchBookmarksActivity(entry)
-            TapEntryAction.SHOW_PAGE -> launchTabs(entry)
-            TapEntryAction.SHOW_PAGE_IN_BROWSER -> launchBrowser(entry)
-            TapEntryAction.SHOW_MENU -> showMenu(entry)
-        }
-    }
-
-    private fun launchBookmarksActivity(entry: Entry) {
-        val activity = fragment.activity ?: return
-        val intent = Intent(activity, BookmarksActivity::class.java)
-        intent.putExtra("entry", entry)
-        activity.startActivity(intent)
-    }
-
-    private fun launchTabs(entry: Entry) {
-        val context = fragment.context ?: return
-        context.showCustomTabsIntent(entry)
-    }
-
-    private fun launchBrowser(entry: Entry) {
-        val url = entry.ampUrl ?: entry.url
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        fragment.activity!!.startActivity(intent)
-    }
-
-    private fun showMenu(entry: Entry) {
-        val items = arrayListOf(
-            TapEntryAction.SHOW_COMMENTS.titleId to { launchBookmarksActivity(entry) },
-            TapEntryAction.SHOW_PAGE.titleId to { launchTabs(entry) },
-            TapEntryAction.SHOW_PAGE_IN_BROWSER.titleId to { launchBrowser(entry) }
-        )
-
-        if (HatenaClient.signedIn()) {
-            if (entry.bookmarkedData == null) {
-                items.add(R.string.entry_action_read_later to { addToReadLaterEntries(entry) })
-            }
-            else {
-                if (entry.bookmarkedData.tags.contains("あとで読む")) {
-                    items.add(R.string.entry_action_read to { bookmarkReadLaterEntry(entry) })
+    private fun makeAdditionalMenuItems(entry: Entry) : (ArrayList<Pair<Int, ()->Unit>>)->Unit =
+        { items: ArrayList<Pair<Int, ()->Unit>> ->
+            if (HatenaClient.signedIn()) {
+                if (entry.bookmarkedData == null) {
+                    items.add(R.string.entry_action_read_later to { addToReadLaterEntries(entry) })
                 }
+                else {
+                    if (entry.bookmarkedData.tags.contains("あとで読む")) {
+                        items.add(R.string.entry_action_read to { bookmarkReadLaterEntry(entry) })
+                    }
 
-                items.add(R.string.entry_action_delete_bookmark to { deleteBookmark(entry) })
+                    items.add(R.string.entry_action_delete_bookmark to { deleteBookmark(entry) })
+                }
             }
+            items.add(R.string.entry_action_ignore to { addEntryToIgnores(entry) })
         }
-
-        items.add(R.string.entry_action_ignore to { addEntryToIgnores(entry) })
-
-        AlertDialog.Builder(fragment.context!!, R.style.AlertDialogStyle)
-            .setTitle(entry.title)
-            .setNegativeButton("Cancel", null)
-            .setItems(items.map { fragment.getText(it.first) }.toTypedArray()) { _, which ->
-                items[which].second()
-            }
-            .show()
-    }
 
     private fun addToReadLaterEntries(entry: Entry) {
         fragment.launch(Dispatchers.Main) {

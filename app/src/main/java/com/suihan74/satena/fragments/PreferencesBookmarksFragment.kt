@@ -8,10 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ToggleButton
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.satena.R
 import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.R
+import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.utilities.SafeSharedPreferences
 
 class PreferencesBookmarksFragment : Fragment() {
     companion object {
@@ -122,6 +123,43 @@ class PreferencesBookmarksFragment : Fragment() {
                 }
             }
         }
+
+        // タップアクションの設定項目を初期化する処理
+        val initializeTapActionSelector = { viewId: Int, key: PreferenceKey, descId: Int ->
+            val tapActions = TapEntryAction.values().map { getText(it.titleId) }.toTypedArray()
+            var selectedAction = TapEntryAction.fromInt(prefs.getInt(key))
+
+            view.findViewById<Button>(viewId).apply {
+                text = getText(selectedAction.titleId)
+                setOnClickListener {
+                    AlertDialog.Builder(activity, R.style.AlertDialogStyle)
+                        .setTitle(getText(descId))
+                        .setSingleChoiceItems(tapActions, selectedAction.int) { dialog, which ->
+                            selectedAction = TapEntryAction.fromInt(which)
+                            prefs.edit {
+                                putInt(key, selectedAction.int)
+                            }
+                            text = tapActions[which]
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .create()
+                        .show()
+                }
+            }
+        }
+
+        // ブコメ内のリンクをタップしたときの挙動
+        initializeTapActionSelector(
+            R.id.preferences_bookmark_link_single_tap_action,
+            PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION,
+            R.string.pref_bookmark_link_single_tap_action_desc)
+
+        // ブコメ内のリンクを長押ししたときの挙動
+        initializeTapActionSelector(
+            R.id.preferences_bookmark_link_long_tap_action,
+            PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION,
+            R.string.pref_bookmark_link_long_tap_action_desc)
 
         return view
     }

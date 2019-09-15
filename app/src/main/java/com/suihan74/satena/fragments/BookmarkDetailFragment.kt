@@ -1,9 +1,12 @@
 package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v4.view.ViewPager
+import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.transition.Fade
 import android.transition.Slide
@@ -16,9 +19,11 @@ import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
+import com.suihan74.satena.TappedActionLauncher
 import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.adapters.tabs.StarsTabAdapter
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,19 +78,20 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
         val user = view.findViewById<TextView>(R.id.user_name)
         val icon = view.findViewById<ImageView>(R.id.user_icon)
-        val comment = view.findViewById<TextView>(R.id.comment)
 
-        if (mBookmark.tags.isNullOrEmpty()) {
-            view.findViewById<View>(R.id.tags_layout).visibility = View.GONE
-        }
-        else {
-            view.findViewById<View>(R.id.tags_layout).visibility = View.VISIBLE
-            view.findViewById<TextView>(R.id.tags).apply {
-                text = BookmarkCommentDecorator.makeClickableTagsText(mBookmark.tags) { tag ->
-                    val fragment = SearchEntriesFragment.createInstance(tag, SearchType.Tag)
-                    activity.showFragment(fragment, null)
+        view.findViewById<View>(R.id.tags_layout).apply {
+            if (mBookmark.tags.isNullOrEmpty()) {
+                visibility = View.GONE
+            }
+            else {
+                visibility = View.VISIBLE
+                view.findViewById<TextView>(R.id.tags).apply {
+                    text = BookmarkCommentDecorator.makeClickableTagsText(mBookmark.tags) { tag ->
+                        val fragment = SearchEntriesFragment.createInstance(tag, SearchType.Tag)
+                        activity.showFragment(fragment, null)
+                    }
+                    movementMethod = LinkMovementMethod.getInstance()
                 }
-                movementMethod = LinkMovementMethod.getInstance()
             }
         }
 
@@ -149,15 +155,17 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         val analyzed = BookmarkCommentDecorator.convert(mBookmark.comment)
 
         user.text = mBookmark.user
-        comment.apply {
+        view.findViewById<TextView>(R.id.comment).apply {
             text = analyzed.comment
-            movementMethod = LinkMovementMethod.getInstance()
+            val comment = this
+
+            // 選択テキストを画面下部で強調表示，スターを付ける際に引用文とする
             customSelectionActionModeCallback = object : ActionMode.Callback {
                 private val quote = view.findViewById<TextView>(R.id.quote_text_view)
 
                 override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) : Boolean {
-                    val selectedText = comment.text.substring(comment.selectionStart, comment.selectionEnd)
                     quote.apply {
+                        val selectedText = comment.text.substring(comment.selectionStart, comment.selectionEnd)
                         text = String.format("\"%s\"", selectedText)
                         visibility = View.VISIBLE
                     }
@@ -172,6 +180,42 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
                 override fun onCreateActionMode(p0: ActionMode?, p1: Menu?) = true
                 override fun onActionItemClicked(p0: ActionMode?, p1: MenuItem?) = false
+            }
+
+            val linkMovementMethod = object : MutableLinkMovementMethod() {
+                override fun onSinglePressed(link: String) {
+                    if (link.startsWith("http")) {
+                        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                        val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
+                        TappedActionLauncher.launch(context, act, link)
+                    }
+                    else {
+                        val eid = analyzed.entryIds.firstOrNull { link.contains(it.toString()) }
+                        if (eid != null) {
+                            this@BookmarkDetailFragment.launch(Dispatchers.Main) {
+                                val entryUrl = HatenaClient.getEntryUrlFromIdAsync(eid).await()
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(entryUrl))
+                                context.startActivity(intent)
+                            }
+                        }
+                    }
+                }
+
+                override fun onLongPressed(link: String) {
+                    if (link.startsWith("http")) {
+                        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                        val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
+                        TappedActionLauncher.launch(context, act, link)
+                    }
+                }
+            }
+
+            setOnTouchListener { view, event ->
+                val textView = view as TextView
+                return@setOnTouchListener linkMovementMethod.onTouchEvent(
+                    textView,
+                    SpannableString(textView.text),
+                    event)
             }
         }
 

@@ -80,6 +80,8 @@
     <string name="pref_bookmarks_showing_stars_of_ignored_users_desc">ブクマ詳細画面で非表示ユーザーのスターを表示する</string>
     <string name="pref_bookmarks_hiding_toolbar_by_scrolling">スクロールでツールバーを隠す</string>
     <string name="pref_bookmarks_using_post_star_dialog_desc">スターをつける前に確認する</string>
+    <string name="pref_bookmark_link_single_tap_action_desc">ブコメ内のリンクをタップしたときの動作</string>
+    <string name="pref_bookmark_link_long_tap_action_desc">ブコメ内のリンクを長押ししたときの動作</string>
 
     <!-- 非表示エントリ登録ダイアログ -->
     <string name="ignored_entry_dialog_tab_url">URL</string>

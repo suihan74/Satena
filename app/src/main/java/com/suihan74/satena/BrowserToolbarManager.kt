@@ -14,10 +14,7 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.activities.BookmarkPostActivity
 import com.suihan74.satena.activities.BookmarksActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class BrowserToolbarManager : BroadcastReceiver() {
     private fun onReceiveImpl(context: Context, intent: Intent) {
@@ -127,7 +124,7 @@ fun Context.showCustomTabsIntent(entry: Entry) {
     intent.launchUrl(this, Uri.parse(url))
 }
 
-fun Context.showCustomTabsIntent(url: String, coroutineScope: CoroutineScope) {
+fun Context.showCustomTabsIntent(url: String, coroutineScope: CoroutineScope = GlobalScope) {
     val intent = CustomTabsIntent.Builder()
         .setShowTitle(true)
         .enableUrlBarHiding()
