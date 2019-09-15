@@ -2,8 +2,8 @@ package com.suihan74.satena.activities
 
 import android.os.Bundle
 import android.util.Log
-import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.Entry
+import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.fragments.EntryInformationFragment
 import com.suihan74.satena.models.PreferenceKey
@@ -11,12 +11,9 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 
 class BookmarkPostActivity : ActivityBase() {
     companion object {
-        private var bookmarksEntryCache = WeakReference<BookmarksEntry>(null)
-
         private const val EXTRA_BASE = "com.suihan74.satena.activities.BookmarkPostActivity."
         const val EXTRA_ENTRY = EXTRA_BASE + "entry"
 
@@ -60,15 +57,15 @@ class BookmarkPostActivity : ActivityBase() {
             mEntry = intent.getSerializableExtra(EXTRA_ENTRY) as Entry
 
             launch(Dispatchers.Main) {
-                try {
-                    val cache = bookmarksEntryCache.get()
-                    val bookmarksEntry = if (cache?.id != entry.id) {
-                        null//HatenaClient.getBookmarksEntryAsync(entry.id).await()
-                    }
-                    else {
-                        cache
-                    }
+                val bookmarksEntry = try {
+                    val task = BookmarksActivity.preLoadingTasks?.bookmarksTask ?: HatenaClient.getBookmarksEntryAsync(entry.id)
+                    task.await()
+                }
+                catch (e: Exception) {
+                    null
+                }
 
+                try {
                     val fragment = EntryInformationFragment.createInstance(entry, bookmarksEntry, true)
                     showFragment(fragment)
                 }

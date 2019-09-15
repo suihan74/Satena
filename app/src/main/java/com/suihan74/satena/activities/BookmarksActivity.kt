@@ -173,7 +173,8 @@ class BookmarksActivity : ActivityBase() {
                 starsEntriesTask
             )
         }
-        private var preLoadingTasks : PreLoadingTasks? = null
+        var preLoadingTasks : PreLoadingTasks? = null
+            private set
 
         private const val EXTRA_BASE = "com.suihan74.satena.activities.BookmarksActivity."
         const val EXTRA_ENTRY = EXTRA_BASE + "EXTRA_ENTRY"
