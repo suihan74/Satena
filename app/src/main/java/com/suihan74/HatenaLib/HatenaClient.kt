@@ -1,17 +1,21 @@
 package com.suihan74.HatenaLib
 
 import android.net.Uri
-import com.google.gson.*
+import com.google.gson.FieldNamingPolicy
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.*
-import okhttp3.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import okhttp3.Request
 import org.jsoup.Jsoup
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDateTime
 import java.io.IOException
-import java.lang.Exception
-import java.lang.RuntimeException
-import java.net.*
+import java.net.HttpCookie
+import java.net.SocketTimeoutException
+import java.net.URI
 import java.nio.charset.Charset
 import java.util.*
 
@@ -226,7 +230,7 @@ object HatenaClient : BaseClient() {
                 getIgnoredUsersAsync(null, null).await()
             }
             catch (e: RuntimeException) {
-                throw e
+                ignoredUsers = emptyList()
             }
             catch (e: Exception) {
                 throw RuntimeException(e.message)

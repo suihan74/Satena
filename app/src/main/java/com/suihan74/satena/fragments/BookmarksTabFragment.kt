@@ -298,7 +298,9 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
     }
 
     fun update() {
-        mBookmarksAdapter.setBookmarks(getBookmarks(mBookmarksFragment!!))
+        if (this::mBookmarksAdapter.isInitialized) {
+            mBookmarksAdapter.setBookmarks(getBookmarks(mBookmarksFragment!!))
+        }
     }
 
     private fun isBookmarkIgnored(bookmark: Bookmark) =

@@ -27,7 +27,7 @@ object AccountLoader {
     }
 
     fun signInHatenaAsync(context: Context, reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
-        if (HatenaClient.signedIn() && !reSignIn) return@async HatenaClient.account!!
+        if (HatenaClient.signedIn() && !reSignIn) return@async HatenaClient.account
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
@@ -51,12 +51,12 @@ object AccountLoader {
                 throw e
             }
         } else {
-            throw IllegalArgumentException("an invalid account for Hatena")
+            return@async null
         }
     }
 
     fun signInMastodonAsync(context: Context, reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
-        if (MastodonClientHolder.signedIn() && !reSignIn) return@async MastodonClientHolder.account!!
+        if (MastodonClientHolder.signedIn() && !reSignIn) return@async MastodonClientHolder.account
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val mastodonAccessTokenEncryptedStr =
@@ -84,7 +84,7 @@ object AccountLoader {
                 throw e
             }
         } else {
-            throw IllegalArgumentException("invalid account for Mastodon")
+            return@async null
         }
     }
 

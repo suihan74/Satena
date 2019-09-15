@@ -8,13 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ToggleButton
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.satena.activities.PreferencesActivity
-import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.activities.PreferencesActivity
 import com.suihan74.satena.adapters.tabs.PreferencesTabMode
 import com.suihan74.satena.dialogs.NumberPickerDialogFragment
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.utilities.SafeSharedPreferences
 
 class PreferencesGeneralsFragment : Fragment() {
     companion object {
@@ -39,8 +39,8 @@ class PreferencesGeneralsFragment : Fragment() {
 
                 val intent = Intent(activity, PreferencesActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
-                    putExtra("current_tab", PreferencesTabMode.GENERALS)
-                    putExtra("theme_changed", true)
+                    putExtra(PreferencesActivity.EXTRA_CURRENT_TAB, PreferencesTabMode.GENERALS)
+                    putExtra(PreferencesActivity.EXTRA_THEME_CHANGED, true)
                 }
                 startActivity(intent)
             }

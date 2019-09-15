@@ -114,7 +114,18 @@ class PreferencesMigrator {
             val file = File(path)
             val backup = File(backupPath)
 
-            file.copyTo(backup, true)
+            val backupSuccess = if (file.exists()) {
+                try {
+                    file.copyTo(backup, true)
+                    true
+                }
+                catch (e: Exception) {
+                    Log.e("migration", "failed to backup the already existed file: $path")
+                    false
+                }
+            }
+            else false
+
             try {
                 SafeSharedPreferences.delete(context, data.fileName, data.keyName)
 
@@ -125,7 +136,10 @@ class PreferencesMigrator {
             catch (e: Exception) {
                 Log.e("migration", "failed to load: ${data.fileName}")
                 result = false
-                backup.copyTo(file, true)
+
+                if (backupSuccess) {
+                    backup.copyTo(file, true)
+                }
             }
             finally {
                 backup.delete()

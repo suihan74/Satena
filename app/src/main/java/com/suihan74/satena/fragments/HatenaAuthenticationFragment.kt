@@ -1,21 +1,25 @@
 package com.suihan74.satena.fragments
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.transition.AutoTransition
 import android.transition.Slide
 import android.transition.TransitionSet
 import android.util.Log
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.utilities.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.CoroutineScopeFragment
+import com.suihan74.utilities.FragmentContainerActivity
+import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.Exception
 
 class HatenaAuthenticationFragment : CoroutineScopeFragment() {
     companion object {
@@ -65,7 +69,9 @@ class HatenaAuthenticationFragment : CoroutineScopeFragment() {
         val activity = activity as FragmentContainerActivity
         val fragmentManager = activity.supportFragmentManager
 
-        if (fragmentManager.backStackEntryCount > 0) {
+        val prefFragment = activity.getStackedFragment<PreferencesFragment>()
+
+        if (prefFragment != null) {
             fragmentManager.popBackStack()
         }
         else {

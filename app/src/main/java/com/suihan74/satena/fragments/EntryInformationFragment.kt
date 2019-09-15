@@ -96,15 +96,17 @@ class EntryInformationFragment : CoroutineScopeFragment() {
         }
 
         if (mContainsPostFragment) {
-            val fragment = BookmarkPostFragment.createInstance(mEntry, bookmarksEntry).apply {
-                setOnPostedListener {
-                    activity?.onBackPressed()
+            if (HatenaClient.signedIn()) {
+                val fragment = BookmarkPostFragment.createInstance(mEntry, bookmarksEntry).apply {
+                    setOnPostedListener {
+                        activity?.onBackPressed()
+                    }
                 }
-            }
 
-            childFragmentManager.beginTransaction()
-                .replace(R.id.bottom_contents_layout, fragment)
-                .commit()
+                childFragmentManager.beginTransaction()
+                    .replace(R.id.bottom_contents_layout, fragment)
+                    .commit()
+            }
 
             view.findViewById<Button>(R.id.to_lower_floor_button).visibility = View.GONE
             view.findViewById<Button>(R.id.to_upper_floor_button).visibility = View.GONE
