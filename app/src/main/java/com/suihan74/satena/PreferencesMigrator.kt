@@ -36,12 +36,16 @@ class PreferencesMigrator {
                 "${it.substring(0, it.indexOf("/files"))}/shared_prefs/$fileName.xml"
             }
 
-            val bytes = File(path).inputStream().buffered().use {
-                it.readBytes()
-            }
-            val dataSize = bytes.size
+            val file = File(path)
 
-            items.add(MigrationData(keyName, keyVersion, fileName, dataSize, bytes))
+            if (file.exists()) {
+                val bytes = File(path).inputStream().buffered().use {
+                    it.readBytes()
+                }
+                val dataSize = bytes.size
+
+                items.add(MigrationData(keyName, keyVersion, fileName, dataSize, bytes))
+            }
         }
 
         fun write(dest: File) {
