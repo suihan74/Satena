@@ -66,7 +66,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.PreferencesActivity" android:launchMode="singleTop"/>
+        <activity android:name=".activities.PreferencesActivity" android:launchMode="singleTask"/>
 
         <activity android:name=".activities.BookmarkPostActivity" android:launchMode="singleTop"/>
 

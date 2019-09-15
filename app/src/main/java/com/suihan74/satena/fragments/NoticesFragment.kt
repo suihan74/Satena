@@ -44,7 +44,6 @@ class NoticesFragment : CoroutineScopeFragment() {
 
         fun createMessage(notice: Notice, context: Context) : String {
             val nameColor = ContextCompat.getColor(context, R.color.colorPrimary)
-            val starColor = ContextCompat.getColor(context, R.color.starYellow)
 
             val comment = (notice.metadata?.subjectTitle ?: "").toCharArray()
             val sourceComment = comment.joinToString(
@@ -64,8 +63,10 @@ class NoticesFragment : CoroutineScopeFragment() {
                     transform = { "<font color=\"$nameColor\">${it.user}</font>さん" })
 
             return when (notice.verb) {
-                Notice.VERB_STAR ->
+                Notice.VERB_STAR -> {
+                    val starColor = ContextCompat.getColor(context, R.color.starYellow)
                     "${users}があなたのブコメ($sourceComment)に<font color=\"$starColor\">★</font>をつけました"
+                }
 
                 Notice.VERB_ADD_FAVORITE ->
                     "${users}があなたのブックマークをお気に入りに追加しました"
@@ -73,7 +74,8 @@ class NoticesFragment : CoroutineScopeFragment() {
                 Notice.VERB_BOOKMARK ->
                     "${users}があなたのエントリをブックマークしました"
 
-                else -> throw NotImplementedError("verb: ${notice.verb}")
+                else ->
+                    "[sorry, not implemented notice] users: $users , verb: ${notice.verb}"
             }
         }
     }
@@ -152,6 +154,12 @@ class NoticesFragment : CoroutineScopeFragment() {
                             startActivity(intent)
                             mClickHandling = false
                         }
+                    }
+
+                    else -> {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
+                        startActivity(intent)
+                        mClickHandling = false
                     }
                 }
             }
