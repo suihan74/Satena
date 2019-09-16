@@ -5,10 +5,10 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
-import java.lang.NullPointerException
-import java.lang.RuntimeException
 import java.lang.ref.WeakReference
 import java.lang.reflect.Type
 import java.util.*
@@ -217,8 +217,28 @@ class SafeSharedPreferences<KeyT> private constructor (
 
         try {
             action.invoke(editor)
-        } finally {
+        }
+        finally {
             editor.apply()
+        }
+    }
+
+    /**
+     * 値を編集し，変更の反映完了を待機する
+     */
+    suspend fun editSync(action: SafeEditor<KeyT>.()->Unit) = withContext(Dispatchers.IO) {
+        @Suppress("CommitPrefEdits")
+        val editor = if (editorCache.get() == null) {
+            val editor = SafeEditor(rawPrefs.edit(), this@SafeSharedPreferences)
+            editorCache = WeakReference(editor)
+            editor
+        } else editorCache.get()!!
+
+        try {
+            action.invoke(editor)
+        }
+        finally {
+            editor.commit()
         }
     }
 
@@ -336,6 +356,13 @@ class SafeSharedPreferences<KeyT> private constructor (
             lock(safeSharedPreferences) {
                 rawEditor.putInt(INTERNAL_KEY_VERSION, safeSharedPreferences.keyVersion)
                 rawEditor.apply()
+            }
+        }
+
+        internal fun commit() {
+            lock(safeSharedPreferences) {
+                rawEditor.putInt(INTERNAL_KEY_VERSION, safeSharedPreferences.keyVersion)
+                rawEditor.commit()
             }
         }
     }

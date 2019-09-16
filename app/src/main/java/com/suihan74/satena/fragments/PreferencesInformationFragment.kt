@@ -23,7 +23,6 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 import java.io.File
 
@@ -131,20 +130,20 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
 
         launch(Dispatchers.Main) {
             try {
-                withContext(Dispatchers.IO) {
-                    PreferencesMigrator.Output(activity).run {
-                        addPreference<PreferenceKey>()
-                        addPreference<IgnoredEntriesKey>()
-                        addPreference<NoticesKey>()
-                        write(file)
-                    }
+                PreferencesMigrator.Output(activity).run {
+                    addPreference<PreferenceKey>()
+                    addPreference<IgnoredEntriesKey>()
+                    addPreference<NoticesKey>()
+                    write(file)
                 }
 
                 activity.showToast("設定を${file.absolutePath}に保存しました")
-            } catch (e: Exception) {
+            }
+            catch (e: Exception) {
                 Log.e("SavingSettings", e.message)
                 activity.showToast("設定の保存に失敗しました")
-            } finally {
+            }
+            finally {
                 activity.hideProgressBar()
             }
         }
@@ -156,10 +155,8 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
 
         launch(Dispatchers.Main) {
             try {
-                withContext(Dispatchers.IO) {
-                    PreferencesMigrator.Input(activity)
-                        .read(file)
-                }
+                PreferencesMigrator.Input(activity)
+                    .read(file)
 
                 activity.showToast("設定を${file.absolutePath}から読み込みました")
 
@@ -172,7 +169,8 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
                     putExtra(PreferencesActivity.EXTRA_RELOAD_ALL_PREFERENCES, true)
                 }
                 startActivity(intent)
-            } catch (e: Exception) {
+            }
+            catch (e: Exception) {
                 Log.e("LoadingSettings", e.message)
                 if (e is IllegalStateException) {
                     activity.showToast("設定の読み込みに失敗しました\n${e.message}")
@@ -180,7 +178,8 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
                 else {
                     activity.showToast("設定の読み込みに失敗しました")
                 }
-            } finally {
+            }
+            finally {
                 activity.hideProgressBar()
             }
         }

@@ -6,6 +6,8 @@ import com.suihan74.satena.models.MigrationData
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.getMd5Bytes
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -23,10 +25,13 @@ class PreferencesMigrator {
     class Output(private val context: Context) {
         private val items = ArrayList<MigrationData>()
 
-        inline fun <reified KeyT> addPreference() where KeyT: SafeSharedPreferences.Key, KeyT: Enum<KeyT> =
+        suspend inline fun <reified KeyT> addPreference()
+                where KeyT: SafeSharedPreferences.Key, KeyT: Enum<KeyT> =
             addPreference(KeyT::class.java)
 
-        fun <KeyT> addPreference(keyClass: Class<KeyT>) where KeyT: SafeSharedPreferences.Key, KeyT: Enum<KeyT> {
+        suspend fun <KeyT> addPreference(keyClass: Class<KeyT>)
+                where KeyT: SafeSharedPreferences.Key, KeyT: Enum<KeyT> = withContext(Dispatchers.IO) {
+
             val keyAnnotation = keyClass.annotations.firstOrNull { it is SharedPreferencesKey } as? SharedPreferencesKey
             val keyName = keyClass.name
             val fileName = "preferences_${keyAnnotation?.fileName ?: "default"}"
@@ -36,19 +41,22 @@ class PreferencesMigrator {
                 "${it.substring(0, it.indexOf("/files"))}/shared_prefs/$fileName.xml"
             }
 
-            val file = File(path)
-
-            if (file.exists()) {
-                val bytes = File(path).inputStream().buffered().use {
-                    it.readBytes()
+            if (!File(path).exists()) {
+                val prefs = SafeSharedPreferences.create(context, keyClass)
+                prefs.editSync {
+                    /* initialize */
                 }
-                val dataSize = bytes.size
-
-                items.add(MigrationData(keyName, keyVersion, fileName, dataSize, bytes))
             }
+
+            val bytes = File(path).inputStream().buffered().use {
+                it.readBytes()
+            }
+            val dataSize = bytes.size
+
+            items.add(MigrationData(keyName, keyVersion, fileName, dataSize, bytes))
         }
 
-        fun write(dest: File) {
+        suspend fun write(dest: File) = withContext(Dispatchers.IO) {
             val headerHash = getMd5Bytes(VERSION.plus(items.size.toByteArray()))
             val bodyHash = getMd5Bytes(items.flatMap { data ->
                 getMd5Bytes(data.toByteArray()).toList()
@@ -72,7 +80,7 @@ class PreferencesMigrator {
     }
 
     class Input(private val context: Context) {
-        fun read(src: File, onErrorAction: ((MigrationData)->Unit)? = null) {
+        suspend fun read(src: File, onErrorAction: ((MigrationData)->Unit)? = null) = withContext(Dispatchers.IO) {
             src.inputStream().buffered().use { stream ->
                 val signature = stream.readByteArray(SIGNATURE_SIZE)
                 check(signature.contentEquals(SIGNATURE)) { "the file is not a settings for Satena: ${src.absolutePath}" }
@@ -107,7 +115,7 @@ class PreferencesMigrator {
             }
         }
 
-        fun apply(data: MigrationData) : Boolean {
+        private suspend fun apply(data: MigrationData) : Boolean = withContext(Dispatchers.IO) {
             var result = true
 
             val path = context.filesDir.absolutePath.let {
@@ -149,7 +157,7 @@ class PreferencesMigrator {
                 backup.delete()
             }
 
-            return result
+            return@withContext result
         }
     }
 }
