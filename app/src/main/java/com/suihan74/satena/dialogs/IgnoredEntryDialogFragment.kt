@@ -12,11 +12,10 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
 import com.suihan74.satena.R
-import com.suihan74.utilities.showToast
 import com.suihan74.satena.models.IgnoreTarget
 import com.suihan74.satena.models.IgnoredEntry
 import com.suihan74.satena.models.IgnoredEntryType
-import java.lang.RuntimeException
+import com.suihan74.utilities.showToast
 
 class IgnoredEntryDialogFragment : DialogFragment() {
     private lateinit var mPositiveAction : ((IgnoredEntry)->Boolean)
@@ -32,7 +31,10 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
     companion object {
         fun createInstance(url: String, title: String, positiveAction: ((IgnoredEntry)->Boolean)) = IgnoredEntryDialogFragment().apply {
-            mEditingUrl = url
+            mEditingUrl = Regex("""^https?://""").find(url)?.let {
+                url.substring(it.range.last + 1)
+            } ?: url
+
             mEditingText = title
             mPositiveAction = positiveAction
             mIsEditMode = false

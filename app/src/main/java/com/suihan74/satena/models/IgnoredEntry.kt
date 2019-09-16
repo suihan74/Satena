@@ -31,7 +31,7 @@ data class IgnoredEntry (
 ) : Serializable {
 
     fun isMatched(entry: Entry) = when (type) {
-        IgnoredEntryType.URL -> entry.url.startsWith(query)
+        IgnoredEntryType.URL -> entry.url.startsWith("https://$query") || entry.url.startsWith("http://$query")
         IgnoredEntryType.TEXT -> target.contains(IgnoreTarget.ENTRY) && entry.title.contains(query)
     }
 
