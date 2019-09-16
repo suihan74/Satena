@@ -138,7 +138,7 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
 
                 val mEntriesAdapter = mEntriesAdapter!!
                 if (mEntriesScrollingUpdater == null) {
-                    mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter.itemCount) {
+                    mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter) {
                         override fun load() {
                             launch(Dispatchers.Main) {
                                 try {
@@ -148,15 +148,12 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
                                     Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
                                     activity!!.showToast(errorMessage)
                                 } finally {
-                                    loadCompleted(mEntriesAdapter.itemCount)
+                                    loadCompleted()
                                 }
                             }
                         }
                     }
                     addOnScrollListener(mEntriesScrollingUpdater!!)
-                }
-                else {
-                    mEntriesScrollingUpdater!!.refreshInvokingPosition(mEntriesAdapter.itemCount)
                 }
             }
         }

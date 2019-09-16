@@ -50,10 +50,6 @@ class EntriesTabFragment : CoroutineScopeFragment() {
         if (this::mEntriesAdapter.isInitialized) {
             mEntriesAdapter.setEntries(mEntries)
             scrollToTop()
-
-            if (this::mEntriesScrollingUpdater.isInitialized) {
-                mEntriesScrollingUpdater.refreshInvokingPosition(mEntriesAdapter.itemCount)
-            }
         }
     }
 
@@ -98,7 +94,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
             layoutManager = LinearLayoutManager(context)
             mEntriesAdapter = EntriesAdapter(this@EntriesTabFragment, category, mTabPosition, mEntries)
             adapter = mEntriesAdapter
-            mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter.itemCount - 1) {
+            mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter) {
                 override fun load() {
                     launch(Dispatchers.Main) {
                         try {
@@ -111,7 +107,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
                             activity.showToast("エントリーリスト更新失敗")
                         }
                         finally {
-                            loadCompleted(mEntriesAdapter.itemCount - 1)
+                            loadCompleted()
                         }
                     }
                 }
@@ -128,7 +124,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
                     try {
                         mEntriesFragment?.refreshEntriesAsync(mTabPosition)?.await()?.let {
                             mEntriesAdapter.setEntries(it)
-                            mEntriesScrollingUpdater.refreshInvokingPosition(mEntriesAdapter.itemCount)
+//                            mEntriesScrollingUpdater.refreshInvokingPosition(mEntriesAdapter.itemCount)
                         }
                     }
                     catch (e: Exception) {

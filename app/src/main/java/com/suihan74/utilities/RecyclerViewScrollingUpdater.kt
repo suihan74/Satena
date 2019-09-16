@@ -3,8 +3,14 @@ package com.suihan74.utilities
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 
-abstract class RecyclerViewScrollingUpdater(private var invokingPosition: Int) : RecyclerView.OnScrollListener() {
+abstract class RecyclerViewScrollingUpdater(
+    private val adapter: RecyclerView.Adapter<*>
+) : RecyclerView.OnScrollListener() {
+
     private var isLoading : Boolean = false
+
+    private val invokingPosition
+        get() = adapter.itemCount - 1
 
     final override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
         super.onScrolled(recyclerView, dx, dy)
@@ -21,16 +27,11 @@ abstract class RecyclerViewScrollingUpdater(private var invokingPosition: Int) :
     }
 
     private fun checkInvoking(lastInScreen: Int) =
-        invokingPosition != 0 && !isLoading && invokingPosition == lastInScreen
+        invokingPosition != 0 && !isLoading && invokingPosition <= lastInScreen
 
     abstract fun load()
 
-    protected fun loadCompleted(newInvokingPosition: Int = invokingPosition) {
+    protected fun loadCompleted() {
         isLoading = false
-        refreshInvokingPosition(newInvokingPosition)
-    }
-
-    fun refreshInvokingPosition(newInvokingPosition: Int) {
-        invokingPosition = newInvokingPosition
     }
 }

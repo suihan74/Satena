@@ -216,7 +216,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             })
 
             if (BookmarksTabType.POPULAR != mTabType) {
-                val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter.itemCount - 1) {
+                val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter) {
                     override fun load() {
                         val fragment = mBookmarksFragment!!
                         val lastOfAll = fragment.bookmarksEntry!!.bookmarks.lastOrNull()
@@ -237,7 +237,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                                 activity.showToast("ブクマリスト更新失敗")
                             }
                             finally {
-                                loadCompleted(mBookmarksAdapter.itemCount - 1)
+                                loadCompleted()
                                 mBookmarksAdapter.loadableFooter?.hideProgressBar()
                             }
                         }
