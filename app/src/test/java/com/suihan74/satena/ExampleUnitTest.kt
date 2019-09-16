@@ -1,8 +1,7 @@
 package com.suihan74.satena
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
-
-import org.junit.Assert.*
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -11,7 +10,12 @@ import org.junit.Assert.*
  */
 class ExampleUnitTest {
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+    fun removeUrlScheme() {
+        val domain = "www.google.com/"
+        val url = "https://$domain"
+        val schemeRegex = Regex("""^https?://""")
+        val matchResult = schemeRegex.find(url) ?: throw RuntimeException("failed...")
+        val result = url.substring(matchResult.range.last + 1)
+        assertEquals(domain, result)
     }
 }

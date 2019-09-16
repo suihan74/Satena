@@ -7,6 +7,7 @@ import android.net.ConnectivityManager
 import android.os.Build
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.satena.activities.ActivityBase
+import com.suihan74.satena.models.IgnoredEntriesKeyMigrator
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
@@ -59,6 +60,10 @@ class SatenaApplication : Application() {
             prefs.edit {
                 putString(PreferenceKey.ID, UUID.randomUUID().toString())
             }
+        }
+        else {
+            // 各種設定のバージョン移行が必要か確認
+            IgnoredEntriesKeyMigrator.check(applicationContext)
         }
 
         startNotificationService()

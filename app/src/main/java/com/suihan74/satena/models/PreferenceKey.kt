@@ -1,7 +1,6 @@
 package com.suihan74.satena.models
 
 import com.suihan74.HatenaLib.Category
-import com.suihan74.HatenaLib.Notice
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -57,27 +56,3 @@ enum class PreferenceKey(
     BOOKMARK_LINK_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.int)
 }
 
-
-////////////////////////////////////////
-// ignored entries
-////////////////////////////////////////
-@SharedPreferencesKey(fileName = "ignored_entries", version = 0, latest = true)
-enum class IgnoredEntriesKey(
-    override val valueType: Type,
-    override val defaultValue: Any?
-) : SafeSharedPreferences.Key {
-    IGNORED_ENTRIES(typeInfo<List<IgnoredEntry>>(), emptyList<IgnoredEntry>())
-}
-
-
-////////////////////////////////////////
-// notices
-////////////////////////////////////////
-@SharedPreferencesKey(fileName = "notices", version = 0, latest = true)
-enum class NoticesKey(
-    override val valueType: Type,
-    override val defaultValue: Any?
-) : SafeSharedPreferences.Key {
-    NOTICES(typeInfo<List<Notice>>(), emptyList<Notice>()),
-    NOTICES_SIZE(typeInfo<Int>(), 100),
-}
