@@ -20,8 +20,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.adapters.IgnoredUsersAdapter
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class PreferencesIgnoredUsersFragment : CoroutineScopeFragment(), BackPressable {
@@ -110,35 +110,31 @@ class PreferencesIgnoredUsersFragment : CoroutineScopeFragment(), BackPressable 
             setColorSchemeColors(activity!!.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
                 launch(Dispatchers.Main) {
-                    refreshAsync().await()
+                    refresh()
                     swipeLayout.isRefreshing = false
                 }
             }
         }
 
         // 非表示ユーザー取得
-        root.findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
-            visibility = View.VISIBLE
-        }
-        refreshAsync().start()
+        root.findViewById<ProgressBar>(R.id.detail_progress_bar).visibility = View.VISIBLE
+
+        launch { refresh() }
 
         return root
     }
 
-    private fun refreshAsync() = async(Dispatchers.Main) {
+    private suspend fun refresh() = withContext(Dispatchers.Main) {
         try {
-            val ignoredUsers = HatenaClient.getIgnoredUsersAsync().await()
+            val ignoredUsers = HatenaClient.getIgnoredUsersAsync(forciblyUpdate = true).await()
             mIgnoredUsersAdapter!!.setUsers(ignoredUsers)
-            return@async
         }
         catch (e: Exception) {
             activity?.showToast("非表示ユーザーリスト更新失敗")
             Log.d("FailedToUpdateIgnores", Log.getStackTraceString(e))
         }
         finally {
-            mRoot.findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
-                visibility = View.INVISIBLE
-            }
+            mRoot.findViewById<ProgressBar>(R.id.detail_progress_bar).visibility = View.INVISIBLE
         }
     }
 
