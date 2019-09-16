@@ -48,7 +48,7 @@ object IgnoredEntriesKeyMigrator {
         }
     }
 
-    fun migrateFromVersion0(context: Context) {
+    private fun migrateFromVersion0(context: Context) {
         SafeSharedPreferences.migrate<IgnoredEntriesKeyVersion0, IgnoredEntriesKey>(context) { old, latest ->
             val entries = old.getObject<List<IgnoredEntry>>(IgnoredEntriesKeyVersion0.IGNORED_ENTRIES) ?: return@migrate
             val schemeRegex = Regex("""^https?://""")
