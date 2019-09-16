@@ -71,6 +71,8 @@ object IgnoredEntriesKeyMigrator {
                         target = it.target,
                         createdAt = it.createdAt)
                 }
+                .distinctBy { it.query }
+
             val modifiedEntries = texts.plus(urls).sortedByDescending { it.createdAt }
             latest.edit {
                 putObject(IgnoredEntriesKey.IGNORED_ENTRIES, modifiedEntries)
