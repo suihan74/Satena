@@ -42,6 +42,8 @@ open class EntriesAdapter(
 
     var entireOffset : Int = entries.size
         private set
+    // getで動的にentries.size取得しないのは，非表示エントリなどによりentireOffset != entries.sizeになることがあるため
+
 
     init {
         refreshPreferences()

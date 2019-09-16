@@ -137,24 +137,27 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
                 }
 
                 val mEntriesAdapter = mEntriesAdapter!!
-                if (mEntriesScrollingUpdater == null) {
-                    mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter) {
-                        override fun load() {
-                            launch(Dispatchers.Main) {
-                                try {
-                                    val additionalEntries = updater(mEntriesAdapter.entireOffset).await()
-                                    mEntriesAdapter.addEntries(additionalEntries)
-                                } catch (e: Exception) {
-                                    Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                                    activity!!.showToast(errorMessage)
-                                } finally {
-                                    loadCompleted()
-                                }
+                if (mEntriesScrollingUpdater != null) {
+                    removeOnScrollListener(mEntriesScrollingUpdater!!)
+                }
+                mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter) {
+                    override fun load() {
+                        this@MultipurposeSingleTabEntriesFragment.launch(Dispatchers.Main) {
+                            try {
+                                val additionalEntries = updater(mEntriesAdapter.entireOffset).await()
+                                mEntriesAdapter.addEntries(additionalEntries)
+                            }
+                            catch (e: Exception) {
+                                Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
+                                activity!!.showToast(errorMessage)
+                            }
+                            finally {
+                                loadCompleted()
                             }
                         }
                     }
-                    addOnScrollListener(mEntriesScrollingUpdater!!)
                 }
+                addOnScrollListener(mEntriesScrollingUpdater!!)
             }
         }
         catch (e: Exception) {

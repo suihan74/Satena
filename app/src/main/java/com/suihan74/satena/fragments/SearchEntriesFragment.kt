@@ -179,6 +179,8 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         mRoot.findViewById<Toolbar>(R.id.toolbar).apply {
             title = "検索($mSearchType): $mQuery"
         }
-        super.refreshEntries("エントリ検索失敗") { offset -> HatenaClient.searchEntriesAsync(mQuery, mSearchType, mEntriesType, of = offset) }
+        super.refreshEntries("エントリ検索失敗") { offset ->
+            HatenaClient.searchEntriesAsync(mQuery, mSearchType, mEntriesType, of = offset)
+        }
     }
 }
