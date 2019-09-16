@@ -111,8 +111,11 @@ class PreferencesMigrator {
                     }
                 }
 
-                Log.d("migration", "completed loading")
+                // バージョン移行
+                SatenaApplication.instance.updatePreferencesVersion()
             }
+
+            Log.d("migration", "completed loading")
         }
 
         private suspend fun apply(data: MigrationData) : Boolean = withContext(Dispatchers.IO) {

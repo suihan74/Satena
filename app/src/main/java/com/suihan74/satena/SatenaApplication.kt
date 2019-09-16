@@ -62,11 +62,16 @@ class SatenaApplication : Application() {
             }
         }
         else {
-            // 各種設定のバージョン移行が必要か確認
-            IgnoredEntriesKeyMigrator.check(applicationContext)
+            updatePreferencesVersion()
         }
 
         startNotificationService()
+    }
+
+    /** 各種設定のバージョン移行が必要か確認 */
+    fun updatePreferencesVersion() {
+        IgnoredEntriesKeyMigrator.check(applicationContext)
+
     }
 
     fun setConnectionActivatingListener(listener: (()->Unit)?) {
