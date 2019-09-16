@@ -44,7 +44,7 @@ object IgnoredEntriesKeyMigrator {
     fun check(context: Context) {
         val version = SafeSharedPreferences.version<IgnoredEntriesKey>(context)
         when (version) {
-            1 -> migrateFromVersion0(context)
+            0 -> migrateFromVersion0(context)
         }
     }
 
