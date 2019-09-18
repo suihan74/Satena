@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.TabLayout
 import android.support.v4.view.ViewPager
 import android.text.SpannableString
@@ -97,7 +98,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             }
         }
 
-        val starMenuButton = view.findViewById<TextFloatingActionButton>(R.id.show_stars_button)
+        val starMenuButton = view.findViewById<FloatingActionButton>(R.id.show_stars_button)
         if (HatenaClient.signedIn()) {
             starMenuButton.setOnClickListener {
                 starMenuButton.show()
@@ -108,19 +109,19 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                 }
             }
 
-            view.findViewById<TextFloatingActionButton>(R.id.yellow_star_button).setOnClickListener {
+            view.findViewById<FloatingActionButton>(R.id.yellow_star_button).setOnClickListener {
                 postStar(StarColor.Yellow, Int.MAX_VALUE)
             }
-            view.findViewById<TextFloatingActionButton>(R.id.red_star_button).setOnClickListener {
+            view.findViewById<FloatingActionButton>(R.id.red_star_button).setOnClickListener {
                 postStar(StarColor.Red, mColorStars.red)
             }
-            view.findViewById<TextFloatingActionButton>(R.id.green_star_button).setOnClickListener {
+            view.findViewById<FloatingActionButton>(R.id.green_star_button).setOnClickListener {
                 postStar(StarColor.Green, mColorStars.green)
             }
-            view.findViewById<TextFloatingActionButton>(R.id.blue_star_button).setOnClickListener {
+            view.findViewById<FloatingActionButton>(R.id.blue_star_button).setOnClickListener {
                 postStar(StarColor.Blue, mColorStars.blue)
             }
-            view.findViewById<TextFloatingActionButton>(R.id.purple_star_button).setOnClickListener {
+            view.findViewById<FloatingActionButton>(R.id.purple_star_button).setOnClickListener {
                 postStar(StarColor.Purple, mColorStars.purple)
             }
 
@@ -404,7 +405,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             R.dimen.yellow_star_position
         )
 
-        mView.findViewById<TextFloatingActionButton>(R.id.show_stars_button).text = "×"
+        mView.findViewById<FloatingActionButton>(R.id.show_stars_button).setImageResource(R.drawable.ic_close)
     }
 
     private fun closeStarMenu() {
@@ -414,7 +415,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         hideStarButton(R.id.green_star_layout, R.id.green_stars_count)
         hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
 
-        mView.findViewById<TextFloatingActionButton>(R.id.show_stars_button).text = "★"
+        mView.findViewById<FloatingActionButton>(R.id.show_stars_button).setImageResource(R.drawable.ic_star)
     }
 
     private fun postStar(color: StarColor, count: Int) {

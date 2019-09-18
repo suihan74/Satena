@@ -97,4 +97,6 @@
 
     <!-- ブコメ詳細activity -->
     <string name="muted_comment_description">※ NGワードを含むコメントです ※</string>
+    <string name="infinite">∞</string>
+
 </resources>

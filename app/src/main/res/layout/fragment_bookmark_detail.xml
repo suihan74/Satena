@@ -120,7 +120,7 @@
                 android:id="@+id/yellow_stars_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="∞"
+                android:text="@string/infinite"
                 android:textColor="@color/starYellow"
                 android:textStyle="bold"
                 android:background="@drawable/rounded_corner_textview"
@@ -132,14 +132,12 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="8dp"/>
 
-        <com.suihan74.utilities.TextFloatingActionButton
+        <android.support.design.widget.FloatingActionButton
                 android:id="@+id/yellow_star_button"
-                style="@style/Widget.Design.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                app:text="★"
-                app:textColor="#fff"
+                android:src="@drawable/ic_star"
                 app:backgroundTint="@color/starYellow"
                 app:fabSize="mini"/>
     </LinearLayout>
@@ -170,14 +168,12 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="8dp"/>
 
-        <com.suihan74.utilities.TextFloatingActionButton
+        <android.support.design.widget.FloatingActionButton
                 android:id="@+id/green_star_button"
-                style="@style/Widget.Design.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                app:text="★"
-                app:textColor="#fff"
+                android:src="@drawable/ic_star"
                 app:backgroundTint="@color/starGreen"
                 app:fabSize="mini"/>
     </LinearLayout>
@@ -208,14 +204,12 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="8dp"/>
 
-        <com.suihan74.utilities.TextFloatingActionButton
+        <android.support.design.widget.FloatingActionButton
                 android:id="@+id/red_star_button"
-                style="@style/Widget.Design.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                app:text="★"
-                app:textColor="#fff"
+                android:src="@drawable/ic_star"
                 app:backgroundTint="@color/starRed"
                 app:fabSize="mini"/>
     </LinearLayout>
@@ -246,14 +240,12 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="8dp"/>
 
-        <com.suihan74.utilities.TextFloatingActionButton
+        <android.support.design.widget.FloatingActionButton
                 android:id="@+id/blue_star_button"
-                style="@style/Widget.Design.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                app:text="★"
-                app:textColor="#fff"
+                android:src="@drawable/ic_star"
                 app:backgroundTint="@color/starBlue"
                 app:fabSize="mini"/>
     </LinearLayout>
@@ -284,25 +276,21 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="8dp"/>
 
-        <com.suihan74.utilities.TextFloatingActionButton
+        <android.support.design.widget.FloatingActionButton
                 android:id="@+id/purple_star_button"
-                style="@style/Widget.Design.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                app:text="★"
-                app:textColor="#fff"
+                android:src="@drawable/ic_star"
                 app:backgroundTint="@color/starPurple"
                 app:fabSize="mini"/>
     </LinearLayout>
 
-    <com.suihan74.utilities.TextFloatingActionButton
+    <android.support.design.widget.FloatingActionButton
             android:id="@+id/show_stars_button"
-            style="@style/Widget.Design.FloatingActionButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:text="★"
-            app:textColor="#fff"
+            android:src="@drawable/ic_star"
             app:backgroundTint="@color/starMenu"
             app:layout_anchor="@id/bookmark_detail_layout"
             app:layout_anchorGravity="bottom|end|right"
