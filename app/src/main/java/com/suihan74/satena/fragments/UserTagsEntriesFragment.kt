@@ -25,21 +25,25 @@ class UserTagsEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         fun createInstance(user: String) = UserTagsEntriesFragment().apply {
             mUser = user
         }
+
+        private const val BUNDLE_USER = "mUser"
+        private const val BUNDLE_TAGS = "mTags"
+        private const val BUNDLE_SELECTED_TAG = "mSelectedTag"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("user", mUser)
-        outState.putSerializable("tags", ArrayList(mTags))
-        outState.putSerializable("selected_tag", mSelectedTag)
+        outState.putString(BUNDLE_USER, mUser)
+        outState.putSerializable(BUNDLE_TAGS, ArrayList(mTags))
+        outState.putSerializable(BUNDLE_SELECTED_TAG, mSelectedTag)
     }
 
     override fun onRestoreSaveInstanceState(savedInstanceState: Bundle) {
         super.onViewStateRestored(savedInstanceState)
-        mUser = savedInstanceState.getString("user")!!
+        mUser = savedInstanceState.getString(BUNDLE_USER)!!
         @Suppress("UNCHECKED_CAST")
-        mTags = savedInstanceState.getSerializable("tags") as List<Tag>
-        mSelectedTag = savedInstanceState.getSerializable("selected_tag") as Tag?
+        mTags = savedInstanceState.getSerializable(BUNDLE_TAGS) as List<Tag>
+        mSelectedTag = savedInstanceState.getSerializable(BUNDLE_SELECTED_TAG) as Tag?
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

@@ -33,19 +33,23 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
             mQuery = ""
             mSearchType = SearchType.Text
         }
+
+        private const val BUNDLE_QUERY = "mQuery"
+        private const val BUNDLE_SEARCH_TYPE = "mSearchType"
+        private const val BUNDLE_ENTRIES_TYPE = "mEntriesType"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("query", mQuery)
-        outState.putInt("search_type", mSearchType.int)
-        outState.putInt("entries_type", mEntriesType.int)
+        outState.putString(BUNDLE_QUERY, mQuery)
+        outState.putInt(BUNDLE_SEARCH_TYPE, mSearchType.int)
+        outState.putInt(BUNDLE_ENTRIES_TYPE, mEntriesType.int)
     }
 
     override fun onRestoreSaveInstanceState(savedInstanceState: Bundle) {
-        mQuery = savedInstanceState.getString("query")!!
-        mSearchType = SearchType.fromInt(savedInstanceState.getInt("search_type"))
-        mEntriesType = EntriesType.fromInt(savedInstanceState.getInt("entries_type"))
+        mQuery = savedInstanceState.getString(BUNDLE_QUERY)!!
+        mSearchType = SearchType.fromInt(savedInstanceState.getInt(BUNDLE_SEARCH_TYPE))
+        mEntriesType = EntriesType.fromInt(savedInstanceState.getInt(BUNDLE_ENTRIES_TYPE))
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

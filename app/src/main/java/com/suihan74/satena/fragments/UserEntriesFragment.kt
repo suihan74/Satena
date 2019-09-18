@@ -5,7 +5,6 @@ import android.support.v7.widget.Toolbar
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 
@@ -17,16 +16,18 @@ class UserEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         fun createInstance(user: String) = UserEntriesFragment().apply {
             this.mUser = user
         }
+
+        private const val BUNDLE_USER = "mUser"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("user", mUser)
+        outState.putString(BUNDLE_USER, mUser)
     }
 
     override fun onRestoreSaveInstanceState(savedInstanceState: Bundle) {
         super.onViewStateRestored(savedInstanceState)
-        mUser = savedInstanceState.getString("user")!!
+        mUser = savedInstanceState.getString(BUNDLE_USER)!!
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
