@@ -1,9 +1,13 @@
 package com.suihan74.satena.activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.webkit.URLUtil
+import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.fragments.EntryInformationFragment
 import com.suihan74.satena.models.PreferenceKey
@@ -54,9 +58,9 @@ class BookmarkPostActivity : ActivityBase() {
         if (savedInstanceState == null) {
             showProgressBar()
 
-            mEntry = intent.getSerializableExtra(EXTRA_ENTRY) as Entry
-
             launch(Dispatchers.Main) {
+                loadExtras(intent)
+
                 val bookmarksEntry = try {
                     val task = BookmarksActivity.preLoadingTasks?.bookmarksTask ?: HatenaClient.getBookmarksEntryAsync(entry.id)
                     task.await()
@@ -81,6 +85,46 @@ class BookmarkPostActivity : ActivityBase() {
         else {
             savedInstanceState.let {
                 mEntry = it.getSerializable(BUNDLE_ENTRY) as Entry
+            }
+        }
+    }
+
+    private suspend fun loadExtras(intent: Intent) {
+        when (intent.action) {
+            // ブラウザから「共有」を使って遷移してきたときの処理
+            Intent.ACTION_SEND -> {
+                val url = intent.getStringExtra(Intent.EXTRA_TEXT)
+                if (!URLUtil.isNetworkUrl(url)) throw RuntimeException("invalid url shared")
+
+                var entry: Entry? = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
+
+                if (entry == null) {
+                    try {
+                        entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
+                            .firstOrNull { it.url == url }
+                    }
+                    catch (e: Exception) {
+                        Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
+                    }
+                }
+
+                if (entry == null) {
+                    val bookmarksEntry: BookmarksEntry? =
+                        try {
+                            HatenaClient.getEmptyBookmarksEntryAsync(url).await()
+                        }
+                        catch (e: Exception) {
+                            Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
+                            null
+                        }
+                    entry = Entry(0, bookmarksEntry?.title ?: "", "", 0, url, url, "", "")
+                }
+
+                mEntry = entry
+            }
+
+            else -> {
+                mEntry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
             }
         }
     }

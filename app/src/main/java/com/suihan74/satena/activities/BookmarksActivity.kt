@@ -231,7 +231,7 @@ class BookmarksActivity : ActivityBase() {
         }
     }
 
-    private fun startInitialize() = launch(Dispatchers.IO) {
+    private fun startInitialize() = launch(Dispatchers.Default) {
         val entry = when (intent.action) {
             // ブラウザから「共有」を使って遷移してきたときの処理
             Intent.ACTION_SEND -> {

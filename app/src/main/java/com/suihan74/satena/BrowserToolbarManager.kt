@@ -18,11 +18,17 @@ import kotlinx.coroutines.*
 
 class BrowserToolbarManager : BroadcastReceiver() {
     private fun onReceiveImpl(context: Context, intent: Intent) {
+        val url = intent.dataString ?: entry?.url ?: return
+
         val clickedId = intent.getIntExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS_CLICKED_ID, -1)
         val bIntent = when (clickedId) {
             R.id.bookmark_button -> {
                 Intent(context, BookmarkPostActivity::class.java).apply {
-                    putExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, url)
+                    if (url == entry?.url || url == entry?.ampUrl) {
+                        putExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
+                    }
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
             }
@@ -30,8 +36,10 @@ class BrowserToolbarManager : BroadcastReceiver() {
             R.id.show_bookmarks_button -> {
                 Intent(context, BookmarksActivity::class.java).apply {
                     action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, entry?.url ?: intent.dataString)
-                    putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+                    putExtra(Intent.EXTRA_TEXT, url)
+                    if (url == entry?.url || url == entry?.ampUrl) {
+                        putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+                    }
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
             }

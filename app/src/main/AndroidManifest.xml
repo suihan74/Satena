@@ -51,14 +51,14 @@
         </activity>
 
         <activity android:name=".activities.BookmarksActivity">
-            <intent-filter android:label="Satenaでコメントを見る">
+            <intent-filter android:label="ブコメを見る">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:mimeType="text/plain"/>
             </intent-filter>
 
-            <intent-filter android:label="Satenaでブコメページを開く">
+            <intent-filter android:label="Satenaで見る">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>
@@ -68,7 +68,14 @@
 
         <activity android:name=".activities.PreferencesActivity" android:launchMode="singleTask"/>
 
-        <activity android:name=".activities.BookmarkPostActivity" android:launchMode="singleTop"/>
+        <activity android:name=".activities.BookmarkPostActivity">
+            <intent-filter android:label="ブコメを書く">
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+        </activity>
 
 
         <!-- ライセンス一覧 -->
