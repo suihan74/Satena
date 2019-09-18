@@ -1,5 +1,6 @@
 package com.suihan74.satena.activities
 
+import android.content.pm.ActivityInfo
 import android.view.View
 import android.widget.ProgressBar
 import com.suihan74.satena.SatenaApplication
@@ -37,6 +38,9 @@ abstract class ActivityBase(
     }
 
     fun showProgressBar(clickGuard: Boolean = true) {
+        // TODO: なんらかのロード中に画面回転でフラグメントがリロードされると問題が起きやすいのでとりあえず方向固定で対処する
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+
         val progressBar = progressBarId?.let {
             findViewById<ProgressBar>(it).apply { visibility = View.VISIBLE }
         }
@@ -50,6 +54,9 @@ abstract class ActivityBase(
     }
 
     fun hideProgressBar() {
+        // 画面方向の固定を解除
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
         val progressBar = progressBarId?.let {
             findViewById<ProgressBar>(it)
         }
