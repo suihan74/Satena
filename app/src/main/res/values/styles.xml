@@ -98,6 +98,15 @@
         <item name="android:textColor">@color/textColor</item>
     </style>
 
+    <!-- TabLayout -->
+    <style name="TabLayoutStyle" parent="Widget.Design.TabLayout">
+        <item name="tabTextAppearance">@android:style/TextAppearance.Widget.TabWidget</item>
+        <item name="tabSelectedTextColor">?attr/tabSelectedTextColor</item>
+        <item name="tabIndicatorColor">?attr/tabIndicatorColor</item>
+        <item name="tabTextColor">?attr/tabTextColor</item>
+        <item name="tabGravity">fill</item>
+        <item name="tabMaxWidth">0dp</item>
+    </style>
 
     <!-- Spinner -->
     <style name="SpinnerStyle" parent="Widget.AppCompat.Spinner">

@@ -25,12 +25,10 @@
 
             <android.support.design.widget.TabLayout
                     android:id="@+id/bookmarks_tab_layout"
+                    style="@style/TabLayoutStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="?attr/tabBackground"
-                    app:tabSelectedTextColor="?attr/tabSelectedTextColor"
-                    app:tabIndicatorColor="?attr/tabIndicatorColor"
-                    app:tabTextColor="?attr/tabTextColor"
                     tools:ignore="MissingConstraints"/>
         </android.support.design.widget.AppBarLayout>
 

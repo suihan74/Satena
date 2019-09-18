@@ -166,8 +166,6 @@ class StarsTabFragment : CoroutineScopeFragment() {
     }
 
     fun scrollToTop() {
-        mRoot.findViewById<RecyclerView>(R.id.stars_list).apply {
-            scrollToPosition(0)
-        }
+        mRoot.findViewById<RecyclerView>(R.id.stars_list).scrollToPosition(0)
     }
 }

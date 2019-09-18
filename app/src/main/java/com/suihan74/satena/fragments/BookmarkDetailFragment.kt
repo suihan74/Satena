@@ -2,6 +2,7 @@ package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.TabLayout
@@ -254,7 +255,12 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                         override fun onTabUnselected(p0: TabLayout.Tab?) {}
                         override fun onTabReselected(tab: TabLayout.Tab?) {
                             val fragment = adapter.findFragment(tab!!.position)
-                            fragment.scrollToTop()
+                            if (fragment is StarsTabFragment) {
+                                fragment.scrollToTop()
+                            }
+                            else if (fragment is MentionedBookmarksTabFragment) {
+                                fragment.scrollToTop()
+                            }
                         }
                     })
                 }
@@ -281,7 +287,13 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         }
     }
 
-    private fun showStarButton(layoutId: Int, counterId: Int, dimenId: Int) {
+    private fun showStarButton(layoutId: Int, counterId: Int, dimenId: Int) =
+        when (resources.configuration.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> showStarButtonLandscape(layoutId, counterId, dimenId)
+            else -> showStarButtonPortrait(layoutId, counterId, dimenId)
+        }
+
+    private fun showStarButtonPortrait(layoutId: Int, counterId: Int, dimenId: Int) {
         val layout = mView.findViewById<View>(layoutId)
         val counter = mView.findViewById<View>(counterId)
         val pos = context!!.resources.getDimension(dimenId)
@@ -302,7 +314,35 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             .duration = 100
     }
 
-    private fun hideStarButton(layoutId: Int, counterId: Int) {
+    private fun showStarButtonLandscape(layoutId: Int, counterId: Int, dimenId: Int) {
+        val layout = mView.findViewById<View>(layoutId)
+        val counter = mView.findViewById<View>(counterId)
+        val pos = context!!.resources.getDimension(dimenId)
+
+        layout.animate()
+            .withEndAction {
+                counter.animate()
+                    .translationYBy(50f)
+                    .translationY(0f)
+                    .alphaBy(0.0f)
+                    .alpha(1.0f)
+                    .duration = 100
+            }
+            .translationXBy(0f)
+            .translationX(-pos)
+            .alphaBy(0f)
+            .alpha(1f)
+            .duration = 100
+    }
+
+
+    private fun hideStarButton(layoutId: Int, counterId: Int) =
+        when (resources.configuration.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> hideStarButtonLandscape(layoutId, counterId)
+            else -> hideStarButtonPortrait(layoutId, counterId)
+        }
+
+    private fun hideStarButtonPortrait(layoutId: Int, counterId: Int) {
         val layout = mView.findViewById<View>(layoutId)
         val counter = mView.findViewById<View>(counterId)
 
@@ -314,6 +354,23 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                     .duration = 100
             }
             .translationX(100f)
+            .alphaBy(1.0f)
+            .alpha(0.0f)
+            .duration = 100
+    }
+
+    private fun hideStarButtonLandscape(layoutId: Int, counterId: Int) {
+        val layout = mView.findViewById<View>(layoutId)
+        val counter = mView.findViewById<View>(counterId)
+
+        counter.animate()
+            .withEndAction {
+                layout.animate()
+                    .translationX(0f)
+                    .alpha(0f)
+                    .duration = 100
+            }
+            .translationY(50f)
             .alphaBy(1.0f)
             .alpha(0.0f)
             .duration = 100

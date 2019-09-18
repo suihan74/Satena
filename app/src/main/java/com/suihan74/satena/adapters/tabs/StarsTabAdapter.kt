@@ -30,7 +30,24 @@ class StarsTabAdapter(
     }
 
     private val tabs = ArrayList<Pair<Tab, ()->Fragment>>()
-    private val starsMap = bookmarksFragment.starsMap
+
+    companion object {
+        fun getMentionsFromUser(bookmark: Bookmark, bookmarks: List<Bookmark>): List<Bookmark> {
+            val analyzed = BookmarkCommentDecorator.convert(bookmark.comment)
+            return bookmarks.filter { b -> analyzed.ids.contains(b.user) }
+        }
+
+        fun getMentionsToUser(bookmark: Bookmark, bookmarks: List<Bookmark>): List<Bookmark> {
+            val targetUser = bookmark.user
+            return bookmarks.filter { b -> b.comment.contains("id:$targetUser") }
+        }
+
+        fun getMentions(bookmark: Bookmark, bookmarks: List<Bookmark>, tabMode: Tab) = when (tabMode) {
+            Tab.MENTION_FROM_USER -> getMentionsFromUser(bookmark, bookmarks)
+            Tab.MENTION_TO_USER -> getMentionsToUser(bookmark, bookmarks)
+            else -> emptyList()
+        }
+    }
 
     init {
         val analyzed = BookmarkCommentDecorator.convert(bookmark.comment)
@@ -38,8 +55,8 @@ class StarsTabAdapter(
         val targetUser = bookmark.user
 
         val bookmarksEntry = bookmarksFragment.bookmarksEntry!!
-        val mentionsFromUser = bookmarksEntry.bookmarks.filter { b -> ids.contains(b.user) }
-        val mentionsToUser = bookmarksEntry.bookmarks.filter { b -> b.comment.contains("id:$targetUser") }
+        val containsMentionsFromUser = bookmarksEntry.bookmarks.any { b -> ids.contains(b.user) }
+        val containsMentionsToUser = bookmarksEntry.bookmarks.any { b -> b.comment.contains("id:$targetUser") }
 
         tabs.apply {
             clear()
@@ -49,14 +66,14 @@ class StarsTabAdapter(
             add(Tab.FROM_USER to {
                 StarsTabFragment.createInstance(bookmark, StarsAdapter.StarsTabMode.FROM_USER)
             })
-            if (mentionsToUser.isNotEmpty()) {
+            if (containsMentionsToUser) {
                 add(Tab.MENTION_TO_USER to {
-                    MentionedBookmarksTabFragment.createInstance(mentionsToUser, starsMap)
+                    MentionedBookmarksTabFragment.createInstance(bookmarksFragment, bookmark, Tab.MENTION_TO_USER)
                 })
             }
-            if (mentionsFromUser.isNotEmpty()) {
+            if (containsMentionsFromUser) {
                 add(Tab.MENTION_FROM_USER to {
-                    MentionedBookmarksTabFragment.createInstance(mentionsFromUser, starsMap)
+                    MentionedBookmarksTabFragment.createInstance(bookmarksFragment, bookmark, Tab.MENTION_FROM_USER)
                 })
             }
         }
@@ -73,5 +90,6 @@ class StarsTabAdapter(
 
     override fun getCount() = tabs.size
 
-    fun findFragment(position: Int) = instantiateItem(viewPager, position) as StarsTabFragment
+    fun findFragment(position: Int) =
+        instantiateItem(viewPager, position) as Fragment
 }
