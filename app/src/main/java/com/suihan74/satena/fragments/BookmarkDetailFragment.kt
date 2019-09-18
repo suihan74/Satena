@@ -37,7 +37,8 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
     private lateinit var mColorStars : UserColorStarsCount
 
-    private var mIsStarMenuOpened : Boolean = false
+    private val mIsStarMenuOpened : Boolean
+        get() = mView.findViewById<View>(R.id.yellow_star_layout).alpha > 0f
 
     private var mBookmarksFragment: BookmarksFragment? = null
 
@@ -377,7 +378,6 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
     }
 
     private fun openStarMenu() {
-        mIsStarMenuOpened = true
         showStarButton(
             R.id.purple_star_layout,
             R.id.purple_stars_count,
@@ -408,7 +408,6 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
     }
 
     private fun closeStarMenu() {
-        mIsStarMenuOpened = false
         hideStarButton(R.id.purple_star_layout, R.id.purple_stars_count)
         hideStarButton(R.id.blue_star_layout, R.id.blue_stars_count)
         hideStarButton(R.id.red_star_layout, R.id.red_stars_count)
