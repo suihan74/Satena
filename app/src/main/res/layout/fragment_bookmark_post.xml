@@ -55,17 +55,17 @@
             android:layout_height="46dp">
 
         <ToggleButton
+                android:id="@+id/post_bookmark_post_mastodon"
                 android:background="@drawable/toggle_button_post_mastodon"
                 android:textColor="#00000000"
-                android:id="@+id/post_bookmark_post_mastodon"
                 android:layout_gravity="center_vertical"
                 android:layout_width="24dp"
                 android:layout_height="24dp"/>
 
         <ToggleButton
+                android:id="@+id/post_bookmark_post_twitter"
                 android:background="@drawable/toggle_button_post_twitter"
                 android:textColor="#00000000"
-                android:id="@+id/post_bookmark_post_twitter"
                 android:layout_marginStart="16dp"
                 android:layout_gravity="center_vertical"
                 android:layout_width="24dp"
@@ -73,6 +73,8 @@
 
         <ToggleButton
                 android:id="@+id/post_bookmark_post_facebook"
+                android:background="@drawable/toggle_button_post_facebook"
+                android:textColor="#00000000"
                 android:layout_marginStart="16dp"
                 android:layout_gravity="center_vertical"
                 android:layout_width="24dp"
@@ -86,9 +88,9 @@
                 android:layout_height="24dp"/>
 
         <ToggleButton
+                android:id="@+id/post_bookmark_private"
                 android:background="@drawable/toggle_button_private_mode"
                 android:textColor="#00000000"
-                android:id="@+id/post_bookmark_private"
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="16dp"
                 android:layout_width="24dp"
