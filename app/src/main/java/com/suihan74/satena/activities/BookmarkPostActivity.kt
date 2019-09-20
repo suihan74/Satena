@@ -1,7 +1,6 @@
 package com.suihan74.satena.activities
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
@@ -22,6 +21,8 @@ import kotlinx.coroutines.launch
 
 class BookmarkPostActivity : ActivityBase() {
     companion object {
+        private const val DIALOG_WIDTH_RATIO = 0.9
+
         private const val EXTRA_BASE = "com.suihan74.satena.activities.BookmarkPostActivity."
         const val EXTRA_ENTRY = EXTRA_BASE + "entry"
 
@@ -51,11 +52,6 @@ class BookmarkPostActivity : ActivityBase() {
         return point
     }
 
-    private fun px2dp(px: Int, context: Context) : Float {
-        val metrics = context.resources.displayMetrics
-        return px / metrics.density
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -75,7 +71,7 @@ class BookmarkPostActivity : ActivityBase() {
         val displaySize = getDisplaySize(this)
         val content = findViewById<FrameLayout>(R.id.content_layout)
         content.layoutParams = content.layoutParams.apply {
-            width = (displaySize.x * 0.8).toInt()
+            width = (displaySize.x * DIALOG_WIDTH_RATIO).toInt()
         }
 
         if (savedInstanceState == null) {
@@ -85,7 +81,11 @@ class BookmarkPostActivity : ActivityBase() {
                 loadExtras(intent)
 
                 try {
-                    val fragment = BookmarkPostFragment.createInstance(entry, mBookmarksEntry)
+                    val fragment = BookmarkPostFragment.createInstance(entry, mBookmarksEntry).apply {
+                        setOnPostedListener {
+                            onBackPressed() // 投稿完了でアクティビティを閉じる
+                        }
+                    }
                     showFragment(fragment)
                 }
                 catch (e: Exception) {
