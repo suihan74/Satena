@@ -5,22 +5,31 @@
     <string name="drawer_open">開く</string>
     <string name="drawer_close">閉じる</string>
 
+    <!-- ログイン画面 -->
     <string name="cancel">キャンセル</string>
     <string name="signin">ログイン</string>
+    <string name="hatena_title">はてなブックマーク</string>
+    <string name="hint_id">ユーザーID</string>
+    <string name="hint_password">パスワード</string>
+    <string name="hint_mastodon_instance">インスタンス名 (e.g. mstdn.jp)</string>
 
+    <!-- ブコメリストタブ -->
     <string name="bookmarks_tab_popular">人気</string>
     <string name="bookmarks_tab_recent">新着</string>
     <string name="bookmarks_tab_custom">カスタム</string>
     <string name="bookmarks_tab_all">すべて</string>
 
+    <!-- エントリリストタブ -->
     <string name="entries_tab_hot">人気</string>
     <string name="entries_tab_recent">新着</string>
     <string name="entries_tab_mybookmarks">マイブックマーク</string>
     <string name="entries_tab_readlater">あとで読む</string>
 
+    <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
     <string name="search_type_text">テキスト</string>
 
+    <!-- カテゴリ -->
     <string name="category_all">総合</string>
     <string name="category_social">世の中</string>
     <string name="category_economics">政治と経済</string>
@@ -35,6 +44,7 @@
     <string name="category_mytags">タグ</string>
     <string name="category_search">検索</string>
 
+    <!-- メニュー -->
     <string name="notices_desc">通知</string>
     <string name="categories_desc">カテゴリ</string>
     <string name="my_bookmarks_desc">マイブックマーク</string>

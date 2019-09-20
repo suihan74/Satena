@@ -28,7 +28,7 @@
 
         <EditText
                 android:id="@+id/instance_name"
-                android:hint="インスタンス名 (e.g. mstdn.jp)"
+                android:hint="@string/hint_mastodon_instance"
                 style="@style/MastodonLoginEditTextStyle"
                 app:theme="@style/MastodonLoginEditTextStyle"
                 android:nextFocusDown="@id/auth_button"
