@@ -405,7 +405,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             R.dimen.yellow_star_position
         )
 
-        mView.findViewById<FloatingActionButton>(R.id.show_stars_button).setImageResource(R.drawable.ic_close)
+        mView.findViewById<FloatingActionButton>(R.id.show_stars_button).setImageResource(R.drawable.ic_baseline_close)
     }
 
     private fun closeStarMenu() {
