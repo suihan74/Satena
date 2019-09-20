@@ -1,15 +1,19 @@
 package com.suihan74.satena.activities
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.graphics.Point
 import android.os.Bundle
 import android.util.Log
 import android.webkit.URLUtil
+import android.widget.FrameLayout
 import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
-import com.suihan74.satena.fragments.EntryInformationFragment
+import com.suihan74.satena.fragments.BookmarkPostFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
@@ -23,20 +27,33 @@ class BookmarkPostActivity : ActivityBase() {
 
         private const val BUNDLE_ENTRY = "mEntry"
     }
-
-    override val containerId: Int = R.id.content_layout
+    override val containerId = R.id.content_layout
     override val progressBarId = R.id.detail_progress_bar
-    override val progressBackgroundId = R.id.click_guard
+    override val progressBackgroundId: Int? = null
 
-    private var mEntry: Entry? = null
+    private var mEntry : Entry? = null
     val entry
         get() = mEntry!!
+
+    private var mBookmarksEntry : BookmarksEntry? = null
 
     override fun onSaveInstanceState(outState: Bundle?) {
         super.onSaveInstanceState(outState)
         outState?.run {
             putSerializable(BUNDLE_ENTRY, mEntry)
         }
+    }
+
+    private fun getDisplaySize(activity: Activity) : Point {
+        val display = activity.windowManager.defaultDisplay
+        val point = Point()
+        display.getSize(point)
+        return point
+    }
+
+    private fun px2dp(px: Int, context: Context) : Float {
+        val metrics = context.resources.displayMetrics
+        return px / metrics.density
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,12 +65,18 @@ class BookmarkPostActivity : ActivityBase() {
         // テーマの設定
         val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
         if (isThemeDark) {
-            setTheme(R.style.AppTheme_Dark)
+            setTheme(R.style.AppDialogTheme_Dark)
         }
         else {
-            setTheme(R.style.AppTheme_Light)
+            setTheme(R.style.AppDialogTheme_Light)
         }
         setContentView(R.layout.activity_bookmark_post)
+
+        val displaySize = getDisplaySize(this)
+        val content = findViewById<FrameLayout>(R.id.content_layout)
+        content.layoutParams = content.layoutParams.apply {
+            width = (displaySize.x * 0.8).toInt()
+        }
 
         if (savedInstanceState == null) {
             showProgressBar()
@@ -61,16 +84,8 @@ class BookmarkPostActivity : ActivityBase() {
             launch(Dispatchers.Main) {
                 loadExtras(intent)
 
-                val bookmarksEntry = try {
-                    val task = BookmarksActivity.preLoadingTasks?.bookmarksTask ?: HatenaClient.getBookmarksEntryAsync(entry.id)
-                    task.await()
-                }
-                catch (e: Exception) {
-                    null
-                }
-
                 try {
-                    val fragment = EntryInformationFragment.createInstance(entry, bookmarksEntry, true)
+                    val fragment = BookmarkPostFragment.createInstance(entry, mBookmarksEntry)
                     showFragment(fragment)
                 }
                 catch (e: Exception) {
@@ -109,7 +124,7 @@ class BookmarkPostActivity : ActivityBase() {
                 }
 
                 if (entry == null) {
-                    val bookmarksEntry: BookmarksEntry? =
+                    mBookmarksEntry =
                         try {
                             HatenaClient.getEmptyBookmarksEntryAsync(url).await()
                         }
@@ -117,7 +132,7 @@ class BookmarkPostActivity : ActivityBase() {
                             Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
                             null
                         }
-                    entry = Entry(0, bookmarksEntry?.title ?: "", "", 0, url, url, "", "")
+                    entry = Entry(0, mBookmarksEntry?.title ?: "", "", 0, url, url, "", "")
                 }
 
                 mEntry = entry

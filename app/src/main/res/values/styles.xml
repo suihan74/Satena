@@ -1,7 +1,5 @@
 <resources>
     <!-- Base application theme. -->
-
-    <!--Theme.AppCompat.Light.DarkActionBar-->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -61,6 +59,47 @@
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
     </style>
 
+    <!-- ブクマ投稿ダイアログ用 -->
+    <style name="AppDialogTheme" parent="Theme.AppCompat.Dialog">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+
+        <!-- ダイアログのデフォルトスタイル -->
+        <item name="android:alertDialogTheme">@style/AlertDialogStyle</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- enable fragment transition -->
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+
+    <!-- Light Theme -->
+    <style name="AppDialogTheme.Light" parent="AppDialogTheme">
+        <item name="panelBackground">@color/panelBackground</item>
+        <item name="tabBackground">@color/tabBackground</item>
+        <item name="textColor">@color/textColor</item>
+        <item name="textColorHint">@color/textColorHint</item>
+        <item name="dividerColor">@color/dividerColor</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
+        <item name="entryCommentBackground">@color/entryCommentBackground</item>
+    </style>
+
+    <!-- Dark Theme -->
+    <style name="AppDialogTheme.Dark" parent="AppDialogTheme">
+        <item name="panelBackground">@color/panelBackgroundDark</item>
+        <item name="tabBackground">@color/tabBackgroundDark</item>
+        <item name="textColor">@color/textColorDark</item>
+        <item name="textColorHint">@color/textColorHintDark</item>
+        <item name="dividerColor">@color/dividerColorDark</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
+        <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
+    </style>
+
+    <!-- ログイン画面のEditText -->
     <style name="LoginEditTextStyle" parent="Widget.AppCompat.EditText">
         <item name="colorControlNormal">@color/colorControlNormal</item>
         <item name="colorControlActivated">@color/colorPrimary</item>
