@@ -9,9 +9,10 @@
     <string name="cancel">キャンセル</string>
     <string name="signin">ログイン</string>
     <string name="hatena_title">はてなブックマーク</string>
-    <string name="hint_id">ユーザーID</string>
+    <string name="hint_id">はてなID/メールアドレス</string>
     <string name="hint_password">パスワード</string>
     <string name="hint_mastodon_instance">インスタンス名 (e.g. mstdn.jp)</string>
+    <string name="sign_up"><a href="https://www.hatena.ne.jp/register">アカウントを新規作成</a></string>
 
     <!-- ブコメリストタブ -->
     <string name="bookmarks_tab_popular">人気</string>
