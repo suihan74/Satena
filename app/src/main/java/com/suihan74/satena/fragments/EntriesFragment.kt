@@ -87,6 +87,7 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
         mEntriesTabAdapter = EntriesTabAdapter(this, category)
     }
 
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mView = inflater.inflate(R.layout.fragment_entries, container, false)
 
@@ -102,7 +103,7 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
         val toolbar = mView.findViewById<Toolbar>(R.id.main_toolbar).apply {
             title = getString(textId)
         }
-        mainActivity.setSupportActionBar(toolbar)
+/*        mainActivity.setSupportActionBar(toolbar)*/
 
         // DrawerLayoutの設定
         mDrawer = mView.findViewById(R.id.entries_drawer_layout)

@@ -7,7 +7,7 @@
     <color name="disabledColor">#AAA</color>
 
     <!-- 画面背景 -->
-    <color name="panelBackground">#E5E5E5</color>
+    <color name="panelBackground">#EEE</color>
     <color name="panelBackgroundDark">#3F3F40</color>
 
     <!-- TextView / EditText -->
@@ -55,7 +55,7 @@
 
     <!-- スター -->
     <color name="starMenu">#666</color>
-    <color name="starYellow">#FB0</color>
+    <color name="starYellow">#FFBB00</color>
     <color name="starRed">#FD384B</color>
     <color name="starGreen">#1DE74C</color>
     <color name="starBlue">#47B5FF</color>
