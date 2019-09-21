@@ -2,7 +2,7 @@ package com.suihan74.utilities
 
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 
 // RecyclerViewのアイテム間に区切り線を描画する
 // ただし最後の項目(主にFooter)の下端には描画しないようにする(Viewが画面より小さい場合無駄な区切り線が表示されてダサいため)

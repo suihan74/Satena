@@ -1,13 +1,13 @@
 package com.suihan74.satena.fragments
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.adapters.MentionedBookmarksAdapter

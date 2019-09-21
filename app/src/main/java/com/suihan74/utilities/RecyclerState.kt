@@ -1,8 +1,8 @@
 package com.suihan74.utilities
 
-import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ProgressBar
+import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 
 // RecyclerViewでヘッダ・フッタ・セクションを使用するために必要なものたち

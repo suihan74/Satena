@@ -1,10 +1,10 @@
 package com.suihan74.satena.adapters
 
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.models.IgnoredEntry
 import com.suihan74.utilities.FooterViewHolder

@@ -62,7 +62,7 @@
             android:maxLines="1"
             android:layout_marginStart="16dp"/>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/comments_list"
             android:background="?attr/entryCommentBackground"
             android:layout_alignStart="@id/entry_title"

@@ -5,8 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.support.design.widget.FloatingActionButton
 import android.util.AttributeSet
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
 
 class TextFloatingActionButton(context: Context, private val attrs : AttributeSet)

@@ -2,12 +2,6 @@ package com.suihan74.satena.fragments
 
 import android.content.Context
 import android.os.Bundle
-import android.support.design.widget.AppBarLayout
-import android.support.v4.content.ContextCompat
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
 import android.transition.Slide
 import android.transition.TransitionSet
 import android.util.Log
@@ -18,6 +12,12 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ProgressBar
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.satena.R

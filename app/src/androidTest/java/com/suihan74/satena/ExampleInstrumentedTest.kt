@@ -1,17 +1,15 @@
 package com.suihan74.satena
 
-import android.support.test.InstrumentationRegistry
-import android.support.test.runner.AndroidJUnit4
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
+import androidx.test.platform.app.InstrumentationRegistry
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.typeInfo
 import com.suihan74.utilities.SharedPreferencesKey
-
+import com.suihan74.utilities.typeInfo
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.junit.Assert.*
-import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
 
 @SharedPreferencesKey(fileName = "test", version = 11)
@@ -53,10 +51,10 @@ enum class TestKey(
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-@RunWith(AndroidJUnit4::class)
+@RunWith(AndroidJUnit4ClassRunner::class)
 class ExampleInstrumentedTest {
     // Context of the app under test.
-    private val appContext = InstrumentationRegistry.getTargetContext()
+    private val appContext = InstrumentationRegistry.getInstrumentation().targetContext
 
     init {
         AndroidThreeTen.init(appContext)

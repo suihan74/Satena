@@ -3,12 +3,12 @@ package com.suihan74.satena.dialogs
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v4.app.DialogFragment
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.NumberPicker
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.DialogFragment
 import com.suihan74.satena.R
 
 class NumberPickerDialogFragment : DialogFragment() {

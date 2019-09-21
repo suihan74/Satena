@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout
+<androidx.drawerlayout.widget.DrawerLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -8,31 +8,31 @@
         android:id="@+id/bookmarks_drawer_layout"
         tools:context=".activities.BookmarksActivity">
 
-    <android.support.design.widget.CoordinatorLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:background="?attr/panelBackground"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <android.support.design.widget.AppBarLayout
+        <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            <android.support.v7.widget.Toolbar
+            <androidx.appcompat.widget.Toolbar
                     android:id="@+id/bookmarks_toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     android:background="?attr/colorPrimary"/>
 
-            <android.support.design.widget.TabLayout
+            <com.google.android.material.tabs.TabLayout
                     android:id="@+id/bookmarks_tab_layout"
                     style="@style/TabLayoutStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="?attr/tabBackground"
                     tools:ignore="MissingConstraints"/>
-        </android.support.design.widget.AppBarLayout>
+        </com.google.android.material.appbar.AppBarLayout>
 
-        <android.support.v4.view.ViewPager
+        <androidx.viewpager.widget.ViewPager
                 android:id="@+id/bookmarks_tab_pager"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -51,7 +51,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
 
-                <android.support.design.widget.FloatingActionButton
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/search_button"
                         android:src="@drawable/ic_baseline_search"
                         app:fabSize="mini"
@@ -68,7 +68,7 @@
                         android:layout_gravity="bottom"
                         android:orientation="vertical">
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                             android:id="@+id/bookmarks_scroll_top_button"
                             android:src="@drawable/ic_baseline_arrow_upward"
                             app:fabSize="mini"
@@ -79,7 +79,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"/>
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                             android:id="@+id/bookmarks_scroll_my_bookmark_button"
                             android:src="@drawable/ic_baseline_bookmark"
                             app:fabSize="mini"
@@ -90,7 +90,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"/>
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                             android:id="@+id/bookmarks_scroll_bottom_button"
                             android:src="@drawable/ic_baseline_arrow_downward"
                             app:fabSize="mini"
@@ -101,7 +101,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"/>
 
-                    <android.support.design.widget.FloatingActionButton
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
                             android:id="@+id/bookmarks_scroll_menu_button"
                             android:src="@drawable/ic_baseline_menu_white"
                             app:fabSize="mini"
@@ -142,9 +142,9 @@
                     android:layout_height="wrap_content"/>
         </LinearLayout>
 
-    </android.support.design.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <android.support.v7.widget.LinearLayoutCompat
+    <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/entry_information_layout"
             android:background="?attr/panelBackground"
             android:clickable="true"
@@ -154,4 +154,4 @@
             android:layout_width="280dp"
             android:layout_height="match_parent"/>
 
-</android.support.v4.widget.DrawerLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

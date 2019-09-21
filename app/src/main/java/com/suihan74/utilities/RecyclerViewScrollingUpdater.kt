@@ -1,7 +1,7 @@
 package com.suihan74.utilities
 
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 abstract class RecyclerViewScrollingUpdater(
     private val adapter: RecyclerView.Adapter<*>

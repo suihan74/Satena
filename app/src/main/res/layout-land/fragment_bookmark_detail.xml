@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -90,14 +90,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical">
-            <android.support.design.widget.TabLayout
+            <com.google.android.material.tabs.TabLayout
                     android:id="@+id/tab_layout"
                     style="@style/TabLayoutStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-            </android.support.design.widget.TabLayout>
+            </com.google.android.material.tabs.TabLayout>
 
-            <android.support.v4.view.ViewPager
+            <androidx.viewpager.widget.ViewPager
                     android:id="@+id/tab_pager"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
@@ -148,7 +148,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="8dp"/>
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/yellow_star_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -184,7 +184,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="8dp"/>
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/green_star_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -220,7 +220,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="8dp"/>
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/red_star_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -256,7 +256,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="8dp"/>
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/blue_star_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -292,7 +292,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="8dp"/>
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/purple_star_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -302,7 +302,7 @@
                 app:fabSize="mini"/>
     </LinearLayout>
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/show_stars_button"
             style="@style/Widget.Design.FloatingActionButton"
             android:layout_width="wrap_content"
@@ -322,4 +322,4 @@
             app:layout_anchor="@id/tab_pager"
             app:layout_anchorGravity="center"/>
 
-</android.support.design.widget.CoordinatorLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

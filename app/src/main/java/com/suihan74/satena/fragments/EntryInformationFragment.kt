@@ -2,7 +2,6 @@ package com.suihan74.satena.fragments
 
 import android.net.Uri
 import android.os.Bundle
-import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*

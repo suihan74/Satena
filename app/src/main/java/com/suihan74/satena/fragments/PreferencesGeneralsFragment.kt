@@ -2,12 +2,12 @@ package com.suihan74.satena.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ToggleButton
+import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.activities.PreferencesActivity
@@ -106,7 +106,7 @@ class PreferencesGeneralsFragment : Fragment() {
                     }
                     text = String.format("%d分", prefs.get(key))
                 }
-                dialog.show(fragmentManager, "dialog")
+                dialog.show(fragmentManager!!, "dialog")
             }
         }
 

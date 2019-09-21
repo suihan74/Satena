@@ -1,16 +1,18 @@
 package com.suihan74.satena.fragments
 
+import android.content.Intent
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.satena.activities.PreferencesActivity
 import com.suihan74.satena.R
+import com.suihan74.satena.activities.HatenaAuthenticationActivity
+import com.suihan74.satena.activities.MastodonAuthenticationActivity
+import com.suihan74.utilities.MastodonClientHolder
 
 class PreferencesAccountsFragment : Fragment() {
 
@@ -21,11 +23,10 @@ class PreferencesAccountsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_preferences_accounts, container, false)
 
-        val activity = activity as PreferencesActivity
-
         val hatenaSignInButton = view.findViewById<Button>(R.id.preferences_accounts_hatena_signin_button)
         hatenaSignInButton.setOnClickListener {
-            activity.showFragment(HatenaAuthenticationFragment.createInstance(), null)
+            val intent = Intent(context, HatenaAuthenticationActivity::class.java)
+            startActivity(intent)
         }
 
         val hatenaUserName = view.findViewById<TextView>(R.id.preferences_accounts_hatena_name)
@@ -39,7 +40,8 @@ class PreferencesAccountsFragment : Fragment() {
 
         val mastodonSignInButton = view.findViewById<Button>(R.id.preferences_accounts_mastodon_signin_button)
         mastodonSignInButton.setOnClickListener {
-            activity.showFragment(MastodonAuthenticationFragment.createInstance(), null)
+            val intent = Intent(context, MastodonAuthenticationActivity::class.java)
+            startActivity(intent)
         }
 
         val mastodonUserName = view.findViewById<TextView>(R.id.preferences_accounts_mastodon_name)

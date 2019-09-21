@@ -5,9 +5,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.TabLayout
-import android.support.v4.view.ViewPager
 import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.transition.Fade
@@ -18,7 +15,11 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.view.GravityCompat
+import androidx.viewpager.widget.ViewPager
 import com.bumptech.glide.Glide
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.TappedActionLauncher
@@ -52,7 +53,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
             enterTransition = TransitionSet()
                 .addTransition(Fade())
-                .addTransition(Slide(Gravity.END))
+                .addTransition(Slide(GravityCompat.END))
         }
 
         private const val BUNDLE_BOOKMARK = "mBookmark"

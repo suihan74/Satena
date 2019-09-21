@@ -1,8 +1,8 @@
 package com.suihan74.satena.adapters.tabs
 
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentPagerAdapter
-import android.support.v4.view.ViewPager
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentPagerAdapter
+import androidx.viewpager.widget.ViewPager
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.adapters.StarsAdapter
 import com.suihan74.satena.fragments.BookmarkDetailFragment
@@ -16,7 +16,7 @@ class StarsTabAdapter(
     bookmarksFragment : BookmarksFragment,
     detailFragment: BookmarkDetailFragment,
     private val bookmark : Bookmark
-) : FragmentPagerAdapter(detailFragment.childFragmentManager) {
+) : FragmentPagerAdapter(detailFragment.childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     enum class Tab(val int: Int) {
         TO_USER(0),
@@ -29,7 +29,7 @@ class StarsTabAdapter(
         }
     }
 
-    private val tabs = ArrayList<Pair<Tab, ()->Fragment>>()
+    private val tabs = ArrayList<Pair<Tab, () -> Fragment>>()
 
     companion object {
         fun getMentionsFromUser(bookmark: Bookmark, bookmarks: List<Bookmark>): List<Bookmark> {

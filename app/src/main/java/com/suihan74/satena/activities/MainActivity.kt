@@ -7,11 +7,8 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.fragments.EntriesFragment
-import com.suihan74.satena.fragments.HatenaAuthenticationFragment
-import com.suihan74.satena.fragments.MastodonAuthenticationFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
@@ -24,9 +21,9 @@ class MainActivity : ActivityBase() {
     override val progressBarId = R.id.main_progress_bar
     override val progressBackgroundId = R.id.click_guard
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState?.apply {
+        outState.apply {
             putBoolean("entries_showed", entriesShowed)
         }
     }
@@ -54,10 +51,14 @@ class MainActivity : ActivityBase() {
         if ((SatenaApplication.instance.isFirstLaunch && !HatenaClient.signedIn()) || !entriesShowed) {
             // 初回起動時にはログインフラグメントを選択
             entriesShowed = false
-            showFragment(HatenaAuthenticationFragment.createInstance())
+
+            val intent = Intent(this, HatenaAuthenticationActivity::class.java)
+            startActivity(intent)
+
             SatenaApplication.instance.isFirstLaunch = false
         }
-        else if (!isFragmentShowed()) {
+
+        if (!isFragmentShowed()) {
             entriesShowed = true
 
             showProgressBar()
@@ -71,34 +72,6 @@ class MainActivity : ActivityBase() {
                 }
                 finally {
                     showFragment(EntriesFragment.createInstance())
-                }
-            }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        // Mastodon認証
-        when (intent.action) {
-            Intent.ACTION_VIEW -> {
-                val uri = intent.data
-                if (uri?.scheme == "satena-mastodon" && !MastodonClientHolder.signedIn()) {
-                    launch(Dispatchers.Main) {
-                        try {
-                            val instance = uri.host
-
-                            val authFragment =
-                                MastodonAuthenticationFragment.createInstance()
-                            val authCode = uri.getQueryParameter("code") ?: throw Exception("invalid code")
-                            authFragment.continueAuthorizeMastodonAsync(authCode, applicationContext).await()
-                            showToast("$instance にログイン完了")
-                        }
-                        catch (e: Exception) {
-                            Log.d("FailedToSignIn", e.message)
-                            showToast("ログイン失敗")
-                        }
-                    }
                 }
             }
         }

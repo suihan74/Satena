@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <android.support.design.widget.TabLayout
+    <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             app:tabSelectedTextColor="?attr/tabIndicatorColor"
             app:tabIndicatorColor="?attr/tabIndicatorColor"
@@ -17,17 +17,17 @@
             android:layout_marginBottom="4dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <android.support.design.widget.TabItem
+        <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_url"
                 android:text="@string/ignored_entry_dialog_tab_url"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
-        <android.support.design.widget.TabItem
+        <com.google.android.material.tabs.TabItem
                 android:id="@+id/tab_text"
                 android:text="@string/ignored_entry_dialog_tab_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
-    </android.support.design.widget.TabLayout>
+    </com.google.android.material.tabs.TabLayout>
 
     <EditText
             android:id="@+id/query_text"

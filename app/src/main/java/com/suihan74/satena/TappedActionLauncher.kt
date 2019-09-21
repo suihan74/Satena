@@ -1,9 +1,9 @@
 package com.suihan74.satena
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.support.v7.app.AlertDialog
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.activities.BookmarksActivity

@@ -2,15 +2,15 @@ package com.suihan74.satena.adapters
 
 import android.content.Intent
 import android.net.Uri
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.BookmarkResult
 import com.suihan74.HatenaLib.Category
@@ -219,7 +219,7 @@ open class EntriesAdapter(
             context.showToast("${ignoredEntry.query} を非表示にしました")
             return@createInstance true
         }
-        dialog.show(fragment.fragmentManager, "IgnoredEntryDialogFragment")
+        dialog.show(fragment.fragmentManager!!, "IgnoredEntryDialogFragment")
     }
 
     private fun deleteBookmark(entry: Entry) {

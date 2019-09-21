@@ -5,10 +5,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.support.customtabs.CustomTabsIntent
-import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.widget.RemoteViews
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.content.ContextCompat
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType

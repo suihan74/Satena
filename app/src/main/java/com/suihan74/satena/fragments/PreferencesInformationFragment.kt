@@ -117,7 +117,7 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
                 else -> return
             }
 
-            dialog.show(fragmentManager, "FilePicker")
+            dialog.show(fragmentManager!!, "FilePicker")
         }
         else {
             activity!!.showToast("ファイルを入出力するための権限がありません")

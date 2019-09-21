@@ -15,8 +15,9 @@ abstract class ActivityBase(
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : FragmentContainerActivity(), CoroutineScope {
 
-    protected abstract val progressBarId : Int?
-    protected abstract val progressBackgroundId : Int?
+    protected open val progressBarId : Int? = null
+    protected open val progressBackgroundId : Int? = null
+    override val containerId : Int = 0
 
     private var showAction: ((ProgressBar?, View?)->Unit)? = null
     private var hideAction: ((ProgressBar?, View?)->Unit)? = null

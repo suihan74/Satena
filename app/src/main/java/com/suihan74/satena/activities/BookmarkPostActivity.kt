@@ -38,9 +38,9 @@ class BookmarkPostActivity : ActivityBase() {
 
     private var mBookmarksEntry : BookmarksEntry? = null
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState?.run {
+        outState.run {
             putSerializable(BUNDLE_ENTRY, mEntry)
         }
     }

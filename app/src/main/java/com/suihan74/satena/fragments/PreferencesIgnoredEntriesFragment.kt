@@ -2,14 +2,14 @@ package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
 import com.suihan74.satena.adapters.IgnoredEntriesAdapter
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
@@ -40,7 +40,7 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
                     this@PreferencesIgnoredEntriesFragment.modifyItem(entry, modified)
                     true
                 }
-                dialog.show(fragmentManager, "dialog")
+                dialog.show(fragmentManager!!, "dialog")
             }
 
             override fun onItemLongClicked(entry: IgnoredEntry): Boolean {
@@ -91,7 +91,7 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
                     return@createInstance true
                 }
             }
-            dialog.show(fragmentManager, "dialog")
+            dialog.show(fragmentManager!!, "dialog")
         }
 
         return root

@@ -183,9 +183,9 @@ class BookmarksActivity : ActivityBase() {
         private const val BUNDLE_POST_DIALOG_OPENED = "mIsDialogOpened"
     }
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState?.run {
+        outState.run {
             putSerializable(BUNDLE_ENTRY, mEntry)
             putBoolean(BUNDLE_POST_DIALOG_OPENED, mIsDialogOpened)
         }

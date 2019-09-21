@@ -9,7 +9,7 @@
         android:fitsSystemWindows="true"
         tools:context=".activities.PreferencesActivity">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
             android:id="@+id/preferences_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -100,7 +100,7 @@
                 android:layout_width="1dp"
                 android:layout_height="match_parent"/>
 
-        <android.support.v4.view.ViewPager
+        <androidx.viewpager.widget.ViewPager
                 android:id="@+id/preferences_view_pager"
                 android:background="?attr/panelBackground"
                 android:layout_toEndOf="@id/preferences_separator"

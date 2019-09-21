@@ -4,13 +4,13 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.support.design.widget.TabLayout
-import android.support.v4.app.DialogFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
+import androidx.fragment.app.DialogFragment
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.IgnoreTarget
 import com.suihan74.satena.models.IgnoredEntry

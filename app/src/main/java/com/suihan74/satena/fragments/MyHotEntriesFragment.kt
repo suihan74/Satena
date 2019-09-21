@@ -1,10 +1,10 @@
 package com.suihan74.satena.fragments
 
 import android.os.Bundle
-import android.support.v7.widget.Toolbar
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.Toolbar
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 

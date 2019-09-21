@@ -3,7 +3,6 @@ package com.suihan74.satena.fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
-import android.support.v7.widget.Toolbar
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import androidx.appcompat.widget.Toolbar
 import com.suihan74.HatenaLib.EntriesType
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType

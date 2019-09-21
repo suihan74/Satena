@@ -3,27 +3,32 @@ package com.suihan74.satena.fragments
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
-import android.support.design.widget.AppBarLayout
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.TabLayout
-import android.support.v4.view.ViewPager
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
 import android.transition.AutoTransition
 import android.transition.TransitionSet
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager.widget.ViewPager
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.activities.ActivityBase
+import com.suihan74.satena.activities.HatenaAuthenticationActivity
 import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.activities.PreferencesActivity
 import com.suihan74.satena.adapters.CategoriesAdapter
@@ -150,7 +155,7 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
         // カテゴリボタン
         val categoryButton = mView.findViewById<FloatingActionButton>(R.id.entries_menu_categories_button)
         categoryButton.setOnClickListener {
-            mDrawer.openDrawer(Gravity.END)
+            mDrawer.openDrawer(GravityCompat.END)
             closeFABMenu()
         }
 
@@ -193,7 +198,7 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
 
                         else -> refreshEntriesTabs(category)
                     }
-                    mDrawer.closeDrawer(Gravity.END)
+                    mDrawer.closeDrawer(GravityCompat.END)
                 }
             }
             adapter = mCategoriesAdapter
@@ -232,7 +237,7 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
     override fun onBackPressed(): Boolean {
         // 戻るボタンでメニューを閉じる
         if (mIsFABMenuOpened) { closeFABMenu(); return true }
-        if (mDrawer.isDrawerOpen(Gravity.END)) { mDrawer.closeDrawer(Gravity.END); return true }
+        if (mDrawer.isDrawerOpen(GravityCompat.END)) { mDrawer.closeDrawer(GravityCompat.END); return true }
 
         // ホームカテゴリ以外のカテゴリにいる場合はホームに戻る
         if (mEntriesTabAdapter.category != mHomeCategory) {
@@ -325,12 +330,12 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
         mDrawerToggle.syncState()
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration?) {
+    override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         mDrawerToggle.onConfigurationChanged(newConfig)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true
         }
@@ -356,8 +361,8 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
             myBookmarkDesc.text = "ログイン"
             myBookmarkButton.setOnClickListener {
                 closeFABMenu()
-                val fragment = HatenaAuthenticationFragment.createInstance()
-                activity.showFragment(fragment, null)
+                val intent = Intent(activity, HatenaAuthenticationActivity::class.java)
+                startActivity(intent)
             }
         }
     }

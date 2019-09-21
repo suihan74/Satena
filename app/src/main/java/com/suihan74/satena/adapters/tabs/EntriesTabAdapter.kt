@@ -1,23 +1,24 @@
 package com.suihan74.satena.adapters.tabs
 
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentPagerAdapter
-import android.support.v4.view.ViewPager
 import android.util.Log
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentPagerAdapter
+import androidx.viewpager.widget.ViewPager
 import com.suihan74.HatenaLib.*
-import com.suihan74.utilities.showToast
-import com.suihan74.satena.R
 import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.fragments.EntriesFragment
 import com.suihan74.satena.fragments.EntriesTabFragment
 import com.suihan74.satena.models.EntriesTabType
-import kotlinx.coroutines.*
-import java.lang.RuntimeException
+import com.suihan74.utilities.showToast
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 
 class EntriesTabAdapter(
     private val fragment: EntriesFragment,
     var category : Category = Category.All
-) : FragmentPagerAdapter(fragment.childFragmentManager) {
+) : FragmentPagerAdapter(fragment.childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     private var initializedCount = 0
     private var failureToastShowed = false

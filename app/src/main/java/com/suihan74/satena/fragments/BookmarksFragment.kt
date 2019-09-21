@@ -3,25 +3,25 @@ package com.suihan74.satena.fragments
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.support.design.widget.AppBarLayout
-import android.support.design.widget.CoordinatorLayout
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.TabLayout
-import android.support.v4.view.ViewPager
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
 import android.text.Editable
 import android.text.TextWatcher
 import android.transition.Fade
 import android.transition.TransitionSet
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import androidx.appcompat.widget.Toolbar
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager.widget.ViewPager
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.ActivityBase
@@ -668,8 +668,8 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     }
 
     override fun onBackPressed() : Boolean {
-        if (mDrawer.isDrawerOpen(Gravity.END)) {
-            mDrawer.closeDrawer(Gravity.END)
+        if (mDrawer.isDrawerOpen(GravityCompat.END)) {
+            mDrawer.closeDrawer(GravityCompat.END)
             return true
         }
         else if (mAreScrollButtonsVisible && mBookmarksScrollMenuButton.isShown) {

@@ -39,15 +39,6 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="satena-mastodon"/>
-            </intent-filter>
         </activity>
 
         <activity android:name=".activities.BookmarksActivity">
@@ -79,6 +70,18 @@
             </intent-filter>
         </activity>
 
+        <!-- ログイン画面 -->
+        <activity android:name=".activities.HatenaAuthenticationActivity"/>
+        <activity android:name=".activities.MastodonAuthenticationActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="satena-mastodon"/>
+            </intent-filter>
+        </activity>
 
         <!-- ライセンス一覧 -->
         <activity
