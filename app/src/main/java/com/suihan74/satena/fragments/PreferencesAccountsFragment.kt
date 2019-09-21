@@ -15,6 +15,7 @@ import com.suihan74.satena.activities.MastodonAuthenticationActivity
 import com.suihan74.utilities.MastodonClientHolder
 
 class PreferencesAccountsFragment : Fragment() {
+    private lateinit var mRoot: View
 
     companion object {
         fun createInstance() = PreferencesAccountsFragment()
@@ -22,20 +23,12 @@ class PreferencesAccountsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_preferences_accounts, container, false)
+        mRoot = view
 
         val hatenaSignInButton = view.findViewById<Button>(R.id.preferences_accounts_hatena_signin_button)
         hatenaSignInButton.setOnClickListener {
             val intent = Intent(context, HatenaAuthenticationActivity::class.java)
             startActivity(intent)
-        }
-
-        val hatenaUserName = view.findViewById<TextView>(R.id.preferences_accounts_hatena_name)
-        if (HatenaClient.signedIn()) {
-            hatenaUserName.text = HatenaClient.account!!.name
-            hatenaUserName.visibility = View.VISIBLE
-        }
-        else {
-            hatenaUserName.visibility = View.GONE
         }
 
         val mastodonSignInButton = view.findViewById<Button>(R.id.preferences_accounts_mastodon_signin_button)
@@ -44,17 +37,34 @@ class PreferencesAccountsFragment : Fragment() {
             startActivity(intent)
         }
 
-        val mastodonUserName = view.findViewById<TextView>(R.id.preferences_accounts_mastodon_name)
-        if (MastodonClientHolder.signedIn()) {
-            mastodonUserName.text = String.format("%s@%s",
-                MastodonClientHolder.account!!.userName,
-                MastodonClientHolder.client!!.getInstanceName())
-            mastodonUserName.visibility = View.VISIBLE
-        }
-        else {
-            mastodonUserName.visibility = View.GONE
+        return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        mRoot.findViewById<TextView>(R.id.preferences_accounts_hatena_name).apply {
+            if (HatenaClient.signedIn()) {
+                text = HatenaClient.account!!.name
+                visibility = View.VISIBLE
+            }
+            else {
+                visibility = View.GONE
+            }
         }
 
-        return view
+        mRoot.findViewById<TextView>(R.id.preferences_accounts_mastodon_name).apply {
+            if (MastodonClientHolder.signedIn()) {
+                text = String.format(
+                    "%s@%s",
+                    MastodonClientHolder.account!!.userName,
+                    MastodonClientHolder.client!!.getInstanceName()
+                )
+                visibility = View.VISIBLE
+            }
+            else {
+                visibility = View.GONE
+            }
+        }
     }
 }

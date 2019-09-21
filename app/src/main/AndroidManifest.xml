@@ -71,8 +71,8 @@
         </activity>
 
         <!-- ログイン画面 -->
-        <activity android:name=".activities.HatenaAuthenticationActivity"/>
-        <activity android:name=".activities.MastodonAuthenticationActivity">
+        <activity android:name=".activities.HatenaAuthenticationActivity" android:launchMode="singleTask"/>
+        <activity android:name=".activities.MastodonAuthenticationActivity" android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
