@@ -16,6 +16,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.ToggleButton
 import androidx.appcompat.app.AlertDialog
+import com.suihan74.HatenaLib.BookmarkResult
 import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
@@ -28,13 +29,12 @@ import com.sys1yagi.mastodon4j.api.entity.Status
 import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class BookmarkPostFragment : CoroutineScopeFragment() {
 
     private lateinit var mEntry: Entry
     private var mBookmarksEntry: BookmarksEntry? = null
-    private var mOnPostedAction: (()->Unit)? = null
+    private var mOnPostedAction: ((BookmarkResult)->Unit)? = null
 
     private var mRoot: View? = null
     val root: View
@@ -50,8 +50,7 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
         }
     }
 
-
-    fun setOnPostedListener(onPostedAction: (()->Unit)?) {
+    fun setOnPostedListener(onPostedAction: ((BookmarkResult)->Unit)?) {
         mOnPostedAction = onPostedAction
     }
 
@@ -60,20 +59,21 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
 
         savedInstanceState?.let {
             val activity = activity
-            if (activity is BookmarksActivity) {
-                mEntry = activity.bookmarksFragment!!.entry
-            }
-            else if (activity is BookmarkPostActivity) {
-                mEntry = activity.entry
-            }
-            else {
-                throw NotImplementedError()
+            mEntry = when (activity) {
+                is BookmarksActivity -> activity.bookmarksFragment!!.entry
+                is BookmarkPostActivity -> activity.entry
+                else -> throw NotImplementedError()
             }
         }
 
-        initBookmarkDialog(mRoot!!)
+        initBookmarkDialog()
         retainInstance = true
         return mRoot
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setExistedComment()
     }
 
     fun focus() {
@@ -89,7 +89,7 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
         inputMethodManager.hideSoftInputFromWindow(editText.windowToken, InputMethodManager.RESULT_UNCHANGED_SHOWN)
     }
 
-    private fun initBookmarkDialog(root: View) {
+    private fun initBookmarkDialog() {
         val commentEditor = root.findViewById<EditText>(R.id.post_bookmark_comment).apply {
             // 右端で自動折り返しはするが改行は受け付けない
             setHorizontallyScrolling(false)
@@ -107,6 +107,8 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
                     else -> false
                 }
             }
+
+            text.clear()
         }
 
         val commentCounter = root.findViewById<TextView>(R.id.post_bookmark_comment_count)
@@ -149,7 +151,7 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
             val postTwitter = postTwitterButton.isChecked
             val private = privateButton.isChecked
 
-            fun postBookmark() = launch {
+            fun launchPostBookmark() = launch(Dispatchers.Main) {
                 val context = context ?: return@launch
                 try {
                     val result = HatenaClient.postBookmarkAsync(
@@ -182,21 +184,22 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
                         ).execute()
                     }
 
-                    withContext(Dispatchers.Main) {
-                        bookmarkButton.isEnabled = true
-                        commentEditor.isEnabled = true
-                        context.showToast("ブクマ登録完了")
+                    bookmarkButton.isEnabled = true
+                    commentEditor.isEnabled = true
+                    context.showToast("ブクマ登録完了")
 
-                        mOnPostedAction?.invoke()
+                    try {
+                        mOnPostedAction?.invoke(result)
+                    }
+                    catch (e: Exception) {
+                        Log.e("OnPostedAction", e.message)
                     }
                 }
                 catch(e: Exception) {
                     Log.d("PostBookmark", Log.getStackTraceString(e))
-                    withContext(Dispatchers.Main) {
-                        bookmarkButton.isEnabled = true
-                        commentEditor.isEnabled = true
-                        context.showToast("ブクマ登録失敗")
-                    }
+                    bookmarkButton.isEnabled = true
+                    commentEditor.isEnabled = true
+                    context.showToast("ブクマ登録失敗")
                 }
             }
 
@@ -210,11 +213,11 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
                         bookmarkButton.isEnabled = true
                         commentEditor.isEnabled = true
                     }
-                    .setPositiveButton("OK") { _, _ -> postBookmark() }
+                    .setPositiveButton("OK") { _, _ -> launchPostBookmark() }
                     .show()
             }
             else {
-                postBookmark()
+                launchPostBookmark()
             }
         }
         // コメント文字数によって投稿可能かどうかを判定する
@@ -239,16 +242,26 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
                 })
             }
         })
-        // 既にブコメを付けている場合その内容を反映する
-        if (mEntry.bookmarkedData != null) {
-            val b = mEntry.bookmarkedData!!
-            commentEditor.text.clear()
-            commentEditor.text.append(b.commentRaw)
-        }
-        else if (mBookmarksEntry != null && HatenaClient.signedIn()) {
-            val b = mBookmarksEntry!!.bookmarks.firstOrNull { it.user == HatenaClient.account!!.name }
-            commentEditor.text.clear()
-            commentEditor.text.append(b?.comment ?: "")
+    }
+
+    // 既にブコメを付けている場合その内容を反映する
+    private fun setExistedComment() {
+        root.findViewById<EditText>(R.id.post_bookmark_comment).apply {
+            if (text.isBlank()) {
+                val comment = if (mEntry.bookmarkedData != null) {
+                    mEntry.bookmarkedData!!.commentRaw
+                }
+                else if (mBookmarksEntry != null && HatenaClient.signedIn()) {
+                    val b = mBookmarksEntry!!.bookmarks.firstOrNull { it.user == HatenaClient.account!!.name }
+                    b?.comment ?: ""
+                }
+                else {
+                    ""
+                }
+
+                text.clear()
+                text.append(comment)
+            }
         }
     }
 

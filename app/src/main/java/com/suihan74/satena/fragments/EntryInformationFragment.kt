@@ -12,7 +12,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.*
+import com.suihan74.HatenaLib.BookmarksEntry
+import com.suihan74.HatenaLib.Entry
+import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.adapters.TagsAdapter
@@ -27,7 +30,7 @@ import kotlinx.coroutines.withContext
 
 class EntryInformationFragment : CoroutineScopeFragment() {
     private lateinit var mRoot : View
-    private var mEntry : Entry = emptyEntry()
+    private var mEntry : Entry = Entry.createEmpty()
     private var mContainsPostFragment: Boolean = false
 
     var bookmarksEntry : BookmarksEntry? = null

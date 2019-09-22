@@ -37,15 +37,31 @@ data class Entry (
             }
         }
 
+    fun plusBookmarkedData(bookmark: BookmarkResult) = Entry(
+        id = id,
+        mTitle = mTitle,
+        description = description,
+        count = if (bookmarkedData == null) count + 1 else count,
+        url = url,
+        rootUrl = rootUrl,
+        faviconUrl = faviconUrl,
+        imageUrl = imageUrl,
+        ampUrl = ampUrl,
+        bookmarkedData = bookmark,
+        myhotentryComments = myhotentryComments
+    )
+
+    companion object {
+        fun createEmpty() = Entry(
+            id = 0,
+            mTitle = "",
+            description = "",
+            count = 0,
+            url = "",
+            rootUrl = "",
+            faviconUrl = "",
+            imageUrl = ""
+        )
+    }
 }
 
-fun emptyEntry() = Entry(
-    id = 0,
-    mTitle = "",
-    description = "",
-    count = 0,
-    url = "",
-    rootUrl = "",
-    faviconUrl = "",
-    imageUrl = ""
-)

@@ -210,7 +210,6 @@ class BookmarksActivity : ActivityBase() {
         savedInstanceState?.let {
             mEntry = it.getSerializable(BUNDLE_ENTRY) as Entry
             mBookmarksEntry = null
-//            bookmarksFragment = getStackedFragment<BookmarksFragment>()
             mPostFragment = getStackedFragment<BookmarkPostFragment>()
             mIsDialogOpened = it.getBoolean(BUNDLE_POST_DIALOG_OPENED)
         } ?: showProgressBar()
@@ -332,8 +331,13 @@ class BookmarksActivity : ActivityBase() {
         if (HatenaClient.signedIn()) {
             mPostFragment =
                 BookmarkPostFragment.createInstance(entry, bookmarksEntry).apply {
-                    setOnPostedListener {
+                    setOnPostedListener { bookmarkResult ->
                         closeBookmarkDialog()
+                        launch(Dispatchers.Main) {
+                            val bookmarksFragment = bookmarksFragment!!
+                            bookmarksFragment.addBookmark(bookmarkResult)
+                            bookmarksFragment.updateUI()
+                        }
                     }
 
                     arguments = Bundle().apply {
