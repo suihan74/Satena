@@ -26,14 +26,15 @@ open class MutableLinkMovementMethod : LinkMovementMethod() {
     open fun onLongPressed(link: String) {
     }
 
-    override fun onTouchEvent(widget: TextView?, buffer: Spannable?, event: MotionEvent?): Boolean {
-        widget?.movementMethod = this
+    override fun onTouchEvent(widget: TextView, buffer: Spannable, event: MotionEvent): Boolean {
+        val lineSpacingExtra = widget.lineSpacingExtra
+        val lineSpacingMultiplier = widget.lineSpacingMultiplier
 
-        val action = event!!.action
+        widget.movementMethod = this
+
+        val action = event.action
         var result = false
         if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
-            widget!!
-            buffer!!
             val x = event.x - widget.totalPaddingLeft + widget.scrollX
             val y = event.y - widget.totalPaddingTop + widget.scrollY
 
@@ -76,8 +77,9 @@ open class MutableLinkMovementMethod : LinkMovementMethod() {
             }
         }
 
-        widget?.movementMethod = null
-        widget?.isFocusable = false
+        widget.movementMethod = null
+        widget.isFocusable = false
+        widget.setLineSpacing(lineSpacingExtra, lineSpacingMultiplier)
 
         return result
     }

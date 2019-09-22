@@ -1,6 +1,5 @@
 package com.suihan74.HatenaLib
 
-import com.google.gson.annotations.Expose
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.threeten.bp.LocalDateTime
@@ -56,8 +55,7 @@ data class BookmarkWithStarCount (
 }
 
 data class BookmarksDigest (
-    val referredBlogEntries : List<Entry>,
+    val referredBlogEntries : List<Entry>?,
     val scoredBookmarks : List<BookmarkWithStarCount>,
     val favoriteBookmarks : List<BookmarkWithStarCount>
 ) : Serializable
-

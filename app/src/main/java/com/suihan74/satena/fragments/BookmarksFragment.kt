@@ -667,6 +667,31 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         }
     }
 
+    fun removeBookmark(user: String) {
+        if (bookmarksEntry != null) {
+            val be = bookmarksEntry!!
+            bookmarksEntry = BookmarksEntry(
+                id = be.id,
+                title = be.title,
+                count = be.count,
+                url = be.url,
+                entryUrl = be.entryUrl,
+                screenshot = be.screenshot,
+                bookmarks = be.bookmarks.filterNot { it.user == user })
+        }
+
+        if (mBookmarksDigest != null) {
+            val bd = mBookmarksDigest!!
+            mBookmarksDigest = BookmarksDigest(
+                referredBlogEntries = bd.referredBlogEntries,
+                scoredBookmarks = bd.scoredBookmarks.filterNot { it.user == user },
+                favoriteBookmarks = bd.favoriteBookmarks.filterNot { it.user == user }
+            )
+        }
+
+        mBookmarksRecent = mBookmarksRecent.filterNot { it.user == user }
+    }
+
     override fun onBackPressed() : Boolean {
         if (mDrawer.isDrawerOpen(GravityCompat.END)) {
             mDrawer.closeDrawer(GravityCompat.END)

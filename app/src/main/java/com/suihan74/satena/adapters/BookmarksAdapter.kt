@@ -201,15 +201,19 @@ open class BookmarksAdapter(
 
     fun removeItem(bookmark: Bookmark) {
         val position = getItemPosition(bookmark.user)
-        val item = states[position]
-        val actualPosition = mStates.indexOf(item)
-        mStates.removeAt(actualPosition)
-        notifyItemRemoved(position)
+        if (position >= 0) {
+            val item = states[position]
+            val actualPosition = mStates.indexOf(item)
+            mStates.removeAt(actualPosition)
+            notifyItemRemoved(position)
+        }
     }
 
     fun notifyItemChanged(bookmark: Bookmark) {
         val position = getItemPosition(bookmark.user)
-        notifyItemChanged(position)
+        if (position >= 0) {
+            notifyItemChanged(position)
+        }
     }
 
 
@@ -286,16 +290,10 @@ open class BookmarksAdapter(
 
                 setOnTouchListener { view, event ->
                     val textView = view as TextView
-                    val result = linkMovementMethod.onTouchEvent(
+                    return@setOnTouchListener linkMovementMethod.onTouchEvent(
                         textView,
                         SpannableString(textView.text),
                         event)
-
-                    // 行間を再設定しないと初期化されてしまう
-                    val px = 1.2f * resources.displayMetrics.scaledDensity
-                    textView.setLineSpacing(px, 1f)
-
-                    return@setOnTouchListener result
                 }
             }
 

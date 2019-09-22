@@ -92,15 +92,15 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 launch(Dispatchers.Main) {
                     try {
                         HatenaClient.ignoreUserAsync(b.user).await()
+
+                        // リストから削除
                         when (mTabType) {
                             BookmarksTabType.POPULAR,
                             BookmarksTabType.RECENT -> removeItem(b)
-                            BookmarksTabType.ALL -> {
-                                if (!mIsIgnoredUsersShownInAll) {
-                                    removeItem(b)
-                                }
-                            }
+
+                            BookmarksTabType.ALL -> if (!mIsIgnoredUsersShownInAll) { removeItem(b) }
                         }
+
                         activity.showToast("id:${b.user}を非表示にしました")
                     }
                     catch (e: Exception) {
@@ -143,8 +143,13 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                         activity.let {
                             val entry = mBookmarksFragment!!.entry
                             HatenaClient.deleteBookmarkAsync(entry.url).await()
-                            // TODO: 自分の投稿を削除したあとで再読み込みすると内容が復活する問題を解決する（BookmarksFragmentがキャッシュしているブクマリストを更新する）
-                            removeItem(b)
+
+                            // すべてのタブのリストから削除する
+                            mParentTabAdapter.removeBookmark(b)
+
+                            // キャッシュから削除
+                            mBookmarksFragment!!.removeBookmark(b.user)
+
                             activity.showToast("ブクマを削除しました")
                         }
                     }
@@ -300,6 +305,12 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
     fun update() {
         if (this::mBookmarksAdapter.isInitialized) {
             mBookmarksAdapter.setBookmarks(getBookmarks(mBookmarksFragment!!))
+        }
+    }
+
+    fun removeBookmark(bookmark: Bookmark) {
+        if (this::mBookmarksAdapter.isInitialized) {
+            mBookmarksAdapter.removeItem(bookmark)
         }
     }
 
