@@ -286,10 +286,16 @@ open class BookmarksAdapter(
 
                 setOnTouchListener { view, event ->
                     val textView = view as TextView
-                    return@setOnTouchListener linkMovementMethod.onTouchEvent(
+                    val result = linkMovementMethod.onTouchEvent(
                         textView,
                         SpannableString(textView.text),
                         event)
+
+                    // 行間を再設定しないと初期化されてしまう
+                    val px = 1.2f * resources.displayMetrics.scaledDensity
+                    textView.setLineSpacing(px, 1f)
+
+                    return@setOnTouchListener result
                 }
             }
 
