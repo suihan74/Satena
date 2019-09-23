@@ -2,11 +2,15 @@ package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.transition.Fade
+import android.transition.Slide
+import android.transition.TransitionSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +32,10 @@ class TaggedUsersListFragment : Fragment() {
             mParentFragment = parentFragment
             mUserTag = userTag
             mTaggedUsers = taggedUsers
+
+            enterTransition = TransitionSet()
+                .addTransition(Fade())
+                .addTransition(Slide(GravityCompat.END))
         }
     }
 
