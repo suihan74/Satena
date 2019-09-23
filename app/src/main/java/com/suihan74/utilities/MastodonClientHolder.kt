@@ -1,12 +1,12 @@
 package com.suihan74.utilities
 
-import android.util.Log
 import com.google.gson.Gson
 import com.sys1yagi.mastodon4j.MastodonClient
 import com.sys1yagi.mastodon4j.api.entity.Account
 import com.sys1yagi.mastodon4j.extension.fromJson
-import kotlinx.coroutines.*
-import java.lang.RuntimeException
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
 object MastodonClientHolder {
     var client : MastodonClient? = null

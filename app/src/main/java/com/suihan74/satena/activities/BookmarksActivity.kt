@@ -125,7 +125,7 @@ class BookmarksActivity : ActivityBase() {
                         }
                     }
                     catch (e: Exception) {
-                        Log.d("preloadingRecentBookmarks", e.message)
+                        Log.d("preloading", e.message)
                         break
                     }
                 }

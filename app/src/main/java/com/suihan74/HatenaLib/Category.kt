@@ -1,7 +1,5 @@
 package com.suihan74.HatenaLib
 
-import java.lang.RuntimeException
-
 enum class Category constructor(val int: Int, val requireSignedIn: Boolean = false) {
     All(0),
     Social(1),

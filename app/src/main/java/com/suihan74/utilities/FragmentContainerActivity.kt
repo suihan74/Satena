@@ -57,7 +57,7 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
         if (!acted) {
             if (supportFragmentManager.backStackEntryCount == 1) {
                 finish()
-                overridePendingTransition(0, android.R.anim.slide_out_right);
+                overridePendingTransition(0, android.R.anim.slide_out_right)
             }
             else {
                 super.onBackPressed()

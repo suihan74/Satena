@@ -598,7 +598,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             mStarsMap[bookmark.user] = starsEntry
         }
         catch (e: Exception) {
-            Log.d("BookmarksFragment::updateStar", "stars are empty: $url")
+            Log.d("updateStar", "stars are empty: $url")
         }
     }
 
