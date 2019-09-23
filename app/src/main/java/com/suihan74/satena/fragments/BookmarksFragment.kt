@@ -794,6 +794,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
         val searchText = mRoot.findViewById<EditText>(R.id.bookmarks_search_text)
         if (searchText.visibility == View.VISIBLE) {
+            searchText.setText("")
             searchText.visibility = View.GONE
             return true
         }
