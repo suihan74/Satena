@@ -26,7 +26,6 @@ import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
 
 class BookmarksTabFragment : CoroutineScopeFragment() {
     private lateinit var mView : View
@@ -43,55 +42,6 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
     val userTagsContainer
         get() = mBookmarksFragment!!.userTagsContainer
-
-    private var parentTabAdapter : BookmarksTabAdapter
-        get() = mParentTabAdapter
-        set(value) {
-            mParentTabAdapter = value
-            mRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    mParentTabAdapter.onScrolled(recyclerView, dx, dy)
-                    super.onScrolled(recyclerView, dx, dy)
-                }
-            })
-        }
-
-    private var bookmarksAdapter : BookmarksAdapter
-        get() = mBookmarksAdapter
-        set(value) {
-            mBookmarksAdapter = value
-            mRecyclerView.adapter = mBookmarksAdapter
-            if (BookmarksTabType.POPULAR != mTabType) {
-                val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter) {
-                    override fun load() {
-                        val fragment = mBookmarksFragment!!
-                        val lastOfAll = fragment.bookmarksEntry!!.bookmarks.lastOrNull()
-                        val lastOfRecent = fragment.recentBookmarks.lastOrNull()
-                        if (lastOfAll?.user == lastOfRecent?.user) {
-                            loadCompleted()
-                            return
-                        }
-
-                        launch(Dispatchers.Main) {
-                            mBookmarksAdapter.loadableFooter?.showProgressBar()
-                            try {
-                                fragment.getNextBookmarksAsync().await()
-                                mParentTabAdapter.update()
-                            }
-                            catch (e: Exception) {
-                                Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                                context?.showToast("ブクマリスト更新失敗")
-                            }
-                            finally {
-                                loadCompleted()
-                                mBookmarksAdapter.loadableFooter?.hideProgressBar()
-                            }
-                        }
-                    }
-                }
-                mRecyclerView.addOnScrollListener(bookmarksUpdater)
-            }
-        }
 
     companion object {
         fun createInstance(
@@ -123,6 +73,10 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         mIgnoredWords = ignoredEntries
             .filter { IgnoredEntryType.TEXT == it.type && it.target contains IgnoreTarget.BOOKMARK }
             .map { it.query }
+
+        savedInstanceState?.let {
+            mTabType = BookmarksTabType.fromInt(it.getInt(BUNDLE_TAB_TYPE))
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -132,35 +86,58 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksTabFragment has created from an invalid activity")
         mBookmarksFragment = activity.bookmarksFragment
 
-        savedInstanceState?.let {
-            mTabType = BookmarksTabType.fromInt(it.getInt(BUNDLE_TAB_TYPE))
-        }
-
         // initialize mBookmarks list
         val viewManager = LinearLayoutManager(context)
         mRecyclerView = view.findViewById(R.id.bookmarks_list)
 
-        val bookmarksEntry = mBookmarksFragment!!.bookmarksEntry
-        if (bookmarksEntry != null) {
-            bookmarksAdapter = generateBookmarksAdapter(getBookmarks(mBookmarksFragment!!), bookmarksEntry)
-        }
-        else {
-            launch(Dispatchers.Default) {
-                var bookmarksEntry : BookmarksEntry? = null
-                while (bookmarksEntry == null) {
-                    bookmarksEntry = mBookmarksFragment!!.bookmarksEntry
-                    yield()
-                }
-                bookmarksAdapter = generateBookmarksAdapter(getBookmarks(mBookmarksFragment!!), bookmarksEntry)
-            }
-        }
+        mBookmarksAdapter = generateBookmarksAdapter(getBookmarks(mBookmarksFragment!!), mBookmarksFragment!!.bookmarksEntry!!)
 
+        mParentTabAdapter = mBookmarksFragment!!.bookmarksTabAdapter!!
         mRecyclerView.apply {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
                 R.drawable.recycler_view_item_divider
             )!!)
             addItemDecoration(dividerItemDecoration)
             layoutManager = viewManager
+            adapter = mBookmarksAdapter
+
+            if (BookmarksTabType.POPULAR != mTabType) {
+                val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter) {
+                    override fun load() {
+                        val fragment = mBookmarksFragment!!
+                        val lastOfAll = fragment.bookmarksEntry!!.bookmarks.lastOrNull()
+                        val lastOfRecent = fragment.recentBookmarks.lastOrNull()
+                        if (lastOfAll?.user == lastOfRecent?.user) {
+                            loadCompleted()
+                            return
+                        }
+
+                        launch(Dispatchers.Main) {
+                            mBookmarksAdapter.loadableFooter?.showProgressBar()
+                            try {
+                                fragment.getNextBookmarksAsync().await()
+                                mParentTabAdapter.update()
+                            }
+                            catch (e: Exception) {
+                                Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
+                                context?.showToast("ブクマリスト更新失敗")
+                            }
+                            finally {
+                                loadCompleted()
+                                mBookmarksAdapter.loadableFooter?.hideProgressBar()
+                            }
+                        }
+                    }
+                }
+                mRecyclerView.addOnScrollListener(bookmarksUpdater)
+            }
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    mParentTabAdapter.onScrolled(recyclerView, dx, dy)
+                    super.onScrolled(recyclerView, dx, dy)
+                }
+            })
         }
 
 
@@ -189,25 +166,6 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         return view
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        val adapter = mBookmarksFragment!!.bookmarksTabAdapter
-        if (adapter == null) {
-            launch(Dispatchers.Default) {
-                var adapter: BookmarksTabAdapter? = null
-                while (adapter == null) {
-                    adapter = mBookmarksFragment!!.bookmarksTabAdapter
-                    yield()
-                }
-                parentTabAdapter = adapter
-                adapter.update()
-            }
-        }
-        else {
-            parentTabAdapter = adapter
-        }
-    }
 
     fun getBookmarks(fragment: BookmarksFragment) = when(mTabType) {
         BookmarksTabType.POPULAR ->
@@ -259,7 +217,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
     fun isBookmarkShown(bookmark: Bookmark) : Boolean {
         if (isBookmarkIgnored(bookmark)) return false
 
-        val fragment = mBookmarksFragment!!
+        val fragment = mBookmarksFragment ?: return false
         return when (mTabType) {
             BookmarksTabType.POPULAR ->
                 fragment.popularBookmarks.any { it.user == bookmark.user }
