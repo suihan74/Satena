@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/user_tags_list"
+            android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+            android:scrollbarSize="4dp"
+            android:scrollbars="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

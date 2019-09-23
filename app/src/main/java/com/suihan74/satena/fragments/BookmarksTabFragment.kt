@@ -1,5 +1,6 @@
 package com.suihan74.satena.fragments
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
@@ -160,6 +161,43 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 }
             }
 
+            @SuppressLint("UseSparseArrays")
+            fun tagUser(b: Bookmark) {
+                val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
+                val tagsContainer = prefs.get<UserTagsContainer>(UserTagsKey.CONTAINER)
+                val user = tagsContainer.addUser(b.user)
+                val tags = tagsContainer.tags
+                val tagNames = tags.map { it.name }.toTypedArray()
+                val states = tags.map { it.contains(user) }.toBooleanArray()
+                val diffs = HashMap<Int, Boolean>()
+
+                AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                    .setTitle("ユーザータグを選択")
+                    .setMultiChoiceItems(tagNames, states) { _, which, isChecked ->
+                        diffs[which] = isChecked
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("OK") { _, _ ->
+                        if (diffs.isNotEmpty()) {
+                            diffs.forEach {
+                                val name = tagNames[it.key]
+                                val tag = tagsContainer.getTag(name)!!
+                                if (it.value) {
+                                    tagsContainer.tagUser(user, tag)
+                                }
+                                else {
+                                    tagsContainer.unTagUser(user, tag)
+                                }
+                            }
+
+                            prefs.edit {
+                                putObject(UserTagsKey.CONTAINER, tagsContainer)
+                            }
+                        }
+                    }
+                    .show()
+            }
+
             override fun onItemClicked(bookmark: Bookmark) {
                 val fragment = BookmarkDetailFragment.createInstance(
                     bookmark
@@ -184,6 +222,8 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                         items.add("ユーザーを非表示" to { ignoreUser(bookmark) })
                     }
                 }
+
+                items.add("ユーザーにタグをつける" to { tagUser(bookmark) })
 
                 val analyzedBookmarkComment = BookmarkCommentDecorator.convert(bookmark.comment)
                 for (url in analyzedBookmarkComment.urls) {

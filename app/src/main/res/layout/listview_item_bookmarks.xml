@@ -32,11 +32,38 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textSize="14sp"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/bookmark_user_icon"
-            android:layout_alignEnd="@id/bookmark_comment"
             android:layout_marginTop="4dp"/>
+
+    <LinearLayout
+            android:id="@+id/user_tags_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="0dp"
+            android:layout_alignTop="@+id/bookmark_user_name"
+            android:layout_toEndOf="@id/bookmark_user_name"
+            android:layout_alignEnd="@id/bookmark_comment">
+
+        <ImageView
+                android:id="@+id/user_tag_icon"
+                app:srcCompat="@drawable/ic_user_tag"
+                android:layout_marginTop="3dp"
+                android:layout_width="14sp"
+                android:layout_height="14sp"/>
+        <TextView
+                android:id="@+id/user_tags"
+                android:textSize="14sp"
+                android:textColor="@color/tagColor"
+                android:layout_marginStart="2dp"
+                android:lines="1"
+                android:ellipsize="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
 
     <TextView
             android:id="@+id/bookmark_comment"
@@ -92,7 +119,7 @@
             android:id="@+id/bookmark_mention_area"
             android:layout_below="@id/bookmark_timestamp"
             android:layout_alignStart="@id/bookmark_user_name"
-            android:layout_alignEnd="@id/bookmark_user_name"
+            android:layout_alignEnd="@id/bookmark_comment"
             android:paddingTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

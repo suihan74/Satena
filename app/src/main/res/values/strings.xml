@@ -69,6 +69,7 @@
     <string name="pref_title_bookmarks">ブックマーク画面</string>
     <string name="pref_title_ignored_entries">非表示URL/TEXT</string>
     <string name="pref_title_ignored_users">非表示ユーザー</string>
+    <string name="pref_title_user_tags">ユーザータグ</string>
     <!-- generals -->
     <string name="pref_generals_theme_desc">テーマ</string>
     <string name="pref_generals_using_termination_dialog_desc">終了確認ダイアログを表示する</string>
@@ -105,6 +106,8 @@
 
     <!-- hints -->
     <string name="search_query_hint">検索キーワード</string>
+    <string name="user_tag_dialog_name_hint">ユーザータグ名</string>
+    <string name="tagged_user_dialog_name_hint">はてなID</string>
 
     <!-- ブコメ詳細activity -->
     <string name="muted_comment_description">※ NGワードを含むコメントです ※</string>

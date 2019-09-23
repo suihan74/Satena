@@ -32,6 +32,12 @@ open class BookmarksAdapter(
 
     private var mStates : ArrayList<RecyclerState<Bookmark>>
 
+    private val showIgnoredUsersMention : Boolean
+    private val showIgnoredUsersInAll : Boolean
+    private val muteWords : List<String>
+
+    private val mUserTagsContainer: UserTagsContainer
+
     var loadableFooter : LoadableFooterViewHolder? = null
         private set
 
@@ -51,10 +57,6 @@ open class BookmarksAdapter(
             notifyDataSetChanged()
         }
 
-    private val showIgnoredUsersMention : Boolean
-    private val showIgnoredUsersInAll : Boolean
-    private val muteWords : List<String>
-
     init {
         val context = fragment.context!!
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
@@ -73,6 +75,9 @@ open class BookmarksAdapter(
                 bookmark.comment.contains(word) && bookmark.getTagsText().contains(word)
             }
         })
+
+        val userTagsPrefs = SafeSharedPreferences.create<UserTagsKey>(context)
+        mUserTagsContainer = userTagsPrefs.get<UserTagsContainer>(UserTagsKey.CONTAINER)
     }
 
     private fun isShowable(b: Bookmark) =
@@ -154,7 +159,8 @@ open class BookmarksAdapter(
                     inflate,
                     fragment,
                     showIgnoredUsersMention,
-                    showIgnoredUsersInAll && tabType == BookmarksTabType.ALL
+                    showIgnoredUsersInAll && tabType == BookmarksTabType.ALL,
+                    mUserTagsContainer
                 ).apply {
 
                     itemView.setOnClickListener {
@@ -221,7 +227,8 @@ open class BookmarksAdapter(
         private val view : View,
         private val fragment : CoroutineScopeFragment,
         private val showIgnoredUsersMention : Boolean,
-        private val showIgnoredUsersInAll : Boolean
+        private val showIgnoredUsersInAll : Boolean,
+        private val userTagsContainer: UserTagsContainer
     ) : RecyclerView.ViewHolder(view) {
 
         private val userName    = view.findViewById<TextView>(R.id.bookmark_user_name)!!
@@ -297,12 +304,26 @@ open class BookmarksAdapter(
                 }
             }
 
+            // タグの表示
             tags.text = bookmark.getTagsText()
             if (tags.text.isEmpty()) {
                 tagsLayout.visibility = View.GONE
             }
             else {
                 tagsLayout.visibility = View.VISIBLE
+            }
+
+            // ユーザーにつけられたタグの表示
+            val user = userTagsContainer.getUser(bookmark.user)
+            val userTagsLayout = view.findViewById<View>(R.id.user_tags_layout)
+            if (user == null) {
+                userTagsLayout.visibility = View.GONE
+            }
+            else {
+                val tags = userTagsContainer.getTagsOfUser(user)
+                val userTagsText = view.findViewById<TextView>(R.id.user_tags)
+                userTagsText.text = tags.joinToString(", ") { it.name }
+                userTagsLayout.visibility = View.VISIBLE
             }
 
             val builder = StringBuilder()
