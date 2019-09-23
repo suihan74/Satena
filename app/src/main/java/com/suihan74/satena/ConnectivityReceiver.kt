@@ -10,19 +10,24 @@ import kotlinx.coroutines.*
 
 class ConnectivityReceiver : BroadcastReceiver() {
     companion object {
-        lateinit var instance : ConnectivityReceiver
-    }
+        private var mActivatingListener : (()->Unit)? = null
+        private var mActivatedListener : (()->Unit)? = null
+        private var mDeactivatedListener : (()->Unit)? = null
 
-    init {
-        instance = this
+        fun setConnectionActivatingListener(listener: (()->Unit)?) {
+            mActivatingListener = listener
+        }
+
+        fun setConnectionActivatedListener(listener: (()->Unit)?) {
+            mActivatedListener = listener
+        }
+
+        fun setConnectionDeactivatedListener(listener: (()->Unit)?) {
+            mDeactivatedListener = listener
+        }
     }
 
     private var mPreviousState : Boolean? = null
-
-    private var mActivatingListener : (()->Unit)? = null
-
-    private var mActivatedListener : (()->Unit)? = null
-    private var mDeactivatedListener : (()->Unit)? = null
 
     private var mJob : Job? = null
 
@@ -72,17 +77,5 @@ class ConnectivityReceiver : BroadcastReceiver() {
         else if (mPreviousState == null) {
             mPreviousState = isConnected
         }
-    }
-
-    fun setConnectionActivatingListener(listener: (()->Unit)?) {
-        mActivatingListener = listener
-    }
-
-    fun setConnectionActivatedListener(listener: (()->Unit)?) {
-        mActivatedListener = listener
-    }
-
-    fun setConnectionDeactivatedListener(listener: (()->Unit)?) {
-        mDeactivatedListener = listener
     }
 }

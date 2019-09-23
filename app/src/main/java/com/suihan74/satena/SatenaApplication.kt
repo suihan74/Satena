@@ -75,15 +75,15 @@ class SatenaApplication : Application() {
     }
 
     fun setConnectionActivatingListener(listener: (()->Unit)?) {
-        ConnectivityReceiver.instance.setConnectionActivatingListener(listener)
+        ConnectivityReceiver.setConnectionActivatingListener(listener)
     }
 
     fun setConnectionActivatedListener(listener: (()->Unit)?) {
-        ConnectivityReceiver.instance.setConnectionActivatedListener(listener)
+        ConnectivityReceiver.setConnectionActivatedListener(listener)
     }
 
     fun setConnectionDeactivatedListener(listener: (()->Unit)?) {
-        ConnectivityReceiver.instance.setConnectionDeactivatedListener(listener)
+        ConnectivityReceiver.setConnectionDeactivatedListener(listener)
     }
 
     /** 通知サービスを開始 */
