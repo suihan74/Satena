@@ -53,7 +53,6 @@ open class BookmarksAdapter(
     var searchText = ""
         set(value) {
             field = value
-
             notifyDataSetChanged()
         }
 
@@ -77,14 +76,18 @@ open class BookmarksAdapter(
         })
 
         val userTagsPrefs = SafeSharedPreferences.create<UserTagsKey>(context)
-        mUserTagsContainer = userTagsPrefs.get<UserTagsContainer>(UserTagsKey.CONTAINER)
+        mUserTagsContainer = userTagsPrefs.get(UserTagsKey.CONTAINER)
     }
 
-    private fun isShowable(b: Bookmark) =
-        searchText.isBlank()
-        || b.user.contains(searchText)
-        || b.comment.contains(searchText)
-        || b.tags.find { it.contains(searchText) } != null
+    private fun isShowable(b: Bookmark) : Boolean {
+        val tags = mUserTagsContainer.getTagsOfUser(b.user)
+
+        return searchText.isBlank()
+                || b.user.contains(searchText)
+                || b.comment.contains(searchText)
+                || b.tags.find { it.contains(searchText) } != null
+                || tags.any { it.name.contains(searchText) }
+    }
 
     private fun getStarCount(list: List<Star>, color: StarColor) =
         list.firstOrNull { it.color == color }?.count ?: 0

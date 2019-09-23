@@ -21,7 +21,7 @@ import okhttp3.Request
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
-class AddTaggedUserDialogFragment : DialogFragment(), CoroutineScope {
+class TaggedUserDialogFragment : DialogFragment(), CoroutineScope {
     private val mJob: Job = SupervisorJob()
     override val coroutineContext: CoroutineContext
         get() = mJob
@@ -32,11 +32,10 @@ class AddTaggedUserDialogFragment : DialogFragment(), CoroutineScope {
     }
 
     private lateinit var mPositiveAction : ((String)->Boolean)
-    private var mIsEditMode = false
     private var mIsUserExisted = false
 
     companion object {
-        fun createInstance(positiveAction: ((String)->Boolean)) = AddTaggedUserDialogFragment().apply {
+        fun createInstance(positiveAction: ((String)->Boolean)) = TaggedUserDialogFragment().apply {
             mPositiveAction = positiveAction
         }
     }
@@ -68,17 +67,17 @@ class AddTaggedUserDialogFragment : DialogFragment(), CoroutineScope {
                                 .build()
                             val call = client.newCall(request)
                             call.execute().use { response ->
-                                lock(this@AddTaggedUserDialogFragment) {
-                                    this@AddTaggedUserDialogFragment.mIsUserExisted =
+                                lock(this@TaggedUserDialogFragment) {
+                                    this@TaggedUserDialogFragment.mIsUserExisted =
                                         200 == response.code()
                                 }
                             }
                         }
                         catch (e: Exception) {
-                            this@AddTaggedUserDialogFragment.mIsUserExisted = false
+                            this@TaggedUserDialogFragment.mIsUserExisted = false
                         }
 
-                        if (this@AddTaggedUserDialogFragment.mIsUserExisted) {
+                        if (this@TaggedUserDialogFragment.mIsUserExisted) {
                             val iconUrl = HatenaClient.getUserIconUrl(text)
                             withContext(Dispatchers.Main) {
                                 Glide.with(content)
@@ -99,7 +98,7 @@ class AddTaggedUserDialogFragment : DialogFragment(), CoroutineScope {
 
         return AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setView(content)
-            .setMessage("ユーザーにタグをつける")
+            .setMessage("ユーザーを追加")
             .setPositiveButton("登録", null)
             .setNegativeButton("Cancel", null)
             .show()
@@ -111,7 +110,7 @@ class AddTaggedUserDialogFragment : DialogFragment(), CoroutineScope {
                     }
 
                     // ユーザーが存在しない
-                    lock (this@AddTaggedUserDialogFragment) {
+                    lock (this@TaggedUserDialogFragment) {
                         if (!mIsUserExisted) {
                             context.showToast("ユーザーが見つかりません")
                             return@setOnClickListener

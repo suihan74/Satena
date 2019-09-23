@@ -51,6 +51,9 @@ class UserTagsContainer : Serializable {
         mTags.remove(tag.id)
     }
 
+    fun changeTagName(tag: UserTag, name: String) {
+        tag.name = name
+    }
 
     fun getUser(name: String) : TaggedUser? =
         mUsers.values.firstOrNull { it.name == name }
@@ -111,8 +114,8 @@ class UserTagsContainer : Serializable {
 /** タグ情報 */
 data class UserTag (
     val id: Long,
-    val name: String,
-    val color: Int
+    var name: String,
+    var color: Int
 ) : Serializable {
 
     private val mUsers = HashSet<Long>()

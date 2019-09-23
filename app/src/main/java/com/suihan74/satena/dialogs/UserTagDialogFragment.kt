@@ -8,15 +8,23 @@ import android.view.LayoutInflater
 import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import com.suihan74.satena.R
+import com.suihan74.satena.models.UserTag
 import com.suihan74.utilities.showToast
 
-class NewUserTagDialogFragment : DialogFragment() {
+class UserTagDialogFragment : DialogFragment() {
     private lateinit var mPositiveAction : ((String, Int)->Boolean)
-    private var mIsEditMode = false
+    private var mEditingUserTag : UserTag? = null
+    private val isEditMode
+        get() = mEditingUserTag != null
 
     companion object {
-        fun createInstance(positiveAction: ((String, Int)->Boolean)) = NewUserTagDialogFragment().apply {
+        fun createInstance(positiveAction: ((String, Int)->Boolean)) = UserTagDialogFragment().apply {
             mPositiveAction = positiveAction
+        }
+
+        fun createInstance(tag: UserTag, positiveAction: ((String, Int)->Boolean)) = UserTagDialogFragment().apply {
+            mPositiveAction = positiveAction
+            mEditingUserTag = tag
         }
     }
 
@@ -26,10 +34,18 @@ class NewUserTagDialogFragment : DialogFragment() {
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
 
         val tagName = content.findViewById<EditText>(R.id.tag_name)
+        val dialogTitle = if (isEditMode) {
+            tagName.setText(mEditingUserTag!!.name)
+            "ユーザータグを編集"
+        }
+        else {
+            "ユーザータグを作成"
+        }
+
 
         return AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setView(content)
-            .setMessage("ユーザータグを作成")
+            .setMessage(dialogTitle)
             .setPositiveButton("登録", null)
             .setNegativeButton("Cancel", null)
             .show()

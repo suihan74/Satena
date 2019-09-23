@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
-import com.suihan74.satena.dialogs.AddTaggedUserDialogFragment
-import com.suihan74.satena.dialogs.NewUserTagDialogFragment
+import com.suihan74.satena.dialogs.TaggedUserDialogFragment
+import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.TaggedUser
 import com.suihan74.satena.models.UserTag
 import com.suihan74.satena.models.UserTagsContainer
@@ -89,7 +89,7 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
     }
 
     private fun showNewUserTagDialog(fragment: UserTagsListFragment) {
-        val dialog = NewUserTagDialogFragment.createInstance { name, color ->
+        val dialog = UserTagDialogFragment.createInstance { name, color ->
             if (mUserTagsContainer.containsTag(name)) {
                 context!!.showToast("既に存在するタグです")
                 return@createInstance false
@@ -108,7 +108,7 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
     }
 
     private fun showNewTaggedUserDialog(fragment: TaggedUsersListFragment) {
-        val dialog = AddTaggedUserDialogFragment.createInstance { name ->
+        val dialog = TaggedUserDialogFragment.createInstance { name ->
             val tag = mDisplayedUserTag!!
 
             if (!mUserTagsContainer.containsUser(name)) {

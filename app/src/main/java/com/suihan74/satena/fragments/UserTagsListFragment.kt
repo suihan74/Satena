@@ -11,8 +11,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.adapters.UserTagsAdapter
+import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.UserTag
 import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.showToast
 
 class UserTagsListFragment : Fragment() {
     private lateinit var mUserTagsAdapter : UserTagsAdapter
@@ -37,7 +39,7 @@ class UserTagsListFragment : Fragment() {
 
             override fun onItemLongClicked(tag: UserTag): Boolean {
                 val items = arrayOf(
-/*                    "編集" to {  },*/
+                    "編集" to { this@UserTagsListFragment.modifyItem(tag) },
                     "削除" to { this@UserTagsListFragment.removeItem(tag) }
                 )
 
@@ -73,6 +75,24 @@ class UserTagsListFragment : Fragment() {
 
     fun addItem(tag: UserTag) {
         mUserTagsAdapter.addItem(tag)
+    }
+
+    private fun modifyItem(tag: UserTag) {
+        val dialog = UserTagDialogFragment.createInstance(tag) { name, _ ->
+            if (tag.name != name) {
+                if (mUserTags.any { it.name == name }) {
+                    activity?.showToast("既に存在するタグ名です")
+                    return@createInstance false
+                }
+                else {
+                    tag.name = name
+                    updateItem(tag)
+                    mParentFragment?.updatePrefs()
+                }
+            }
+            return@createInstance true
+        }
+        dialog.show(fragmentManager!!, "dialog")
     }
 
     fun updateItem(tag: UserTag) {

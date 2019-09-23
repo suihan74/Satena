@@ -223,7 +223,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                     }
                 }
 
-                items.add("ユーザーにタグをつける" to { tagUser(bookmark) })
+                items.add("ユーザータグ" to { tagUser(bookmark) })
 
                 val analyzedBookmarkComment = BookmarkCommentDecorator.convert(bookmark.comment)
                 for (url in analyzedBookmarkComment.urls) {
