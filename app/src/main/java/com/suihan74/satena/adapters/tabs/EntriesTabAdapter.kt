@@ -61,7 +61,7 @@ class EntriesTabAdapter(
         this.category = category
         for (position in 0 until count) {
             val fragment = findFragment(viewPager, position)
-            fragment.category = category
+            fragment?.category = category
         }
     }
 
@@ -70,7 +70,9 @@ class EntriesTabAdapter(
         val tasks = ArrayList<Deferred<Unit>>()
         for (position in 0 until count) {
             val fragment = findFragment(viewPager, position)
-            tasks.add(refreshTabAsync(fragment, position))
+            if (fragment != null) {
+                tasks.add(refreshTabAsync(fragment, position))
+            }
         }
         tasks.awaitAll()
     }
@@ -83,8 +85,13 @@ class EntriesTabAdapter(
         return entriesTabFragment
     }
 
-    fun findFragment(viewPager: ViewPager, position: Int) : EntriesTabFragment {
-        return instantiateItem(viewPager, position) as EntriesTabFragment
+    fun findFragment(viewPager: ViewPager, position: Int) : EntriesTabFragment? {
+        return try {
+            instantiateItem(viewPager, position) as? EntriesTabFragment
+        }
+        catch (e: Exception) {
+            null
+        }
     }
 
     override fun getPageTitle(position: Int): CharSequence? {

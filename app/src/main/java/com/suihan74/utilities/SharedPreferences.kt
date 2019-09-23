@@ -2,6 +2,7 @@ package com.suihan74.utilities
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
 import android.util.Log
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
@@ -120,7 +121,9 @@ class SafeSharedPreferences<KeyT> private constructor (
             val cacheKey = "${keyClassName},${context!!.hashCode()}"
             instancesCache.remove(cacheKey)
 
-            context.deleteSharedPreferences(fileName)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                context.deleteSharedPreferences(fileName)
+            }
         }
 
         /** 設定セットのバージョンを取得 */
@@ -200,7 +203,9 @@ class SafeSharedPreferences<KeyT> private constructor (
                 }
             }
             else {
-                context!!.deleteSharedPreferences(old.fileName)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    context!!.deleteSharedPreferences(old.fileName)
+                }
             }
         }
 

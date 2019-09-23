@@ -86,6 +86,7 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
             rp.request(activity)
         }
 
+        retainInstance = true
         return root
     }
 

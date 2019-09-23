@@ -215,7 +215,7 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
                 override fun onTabUnselected(p0: TabLayout.Tab?) {}
                 override fun onTabReselected(tab: TabLayout.Tab?) {
                     val fragment = mEntriesTabAdapter.findFragment(mEntriesTabPager, tab!!.position)
-                    fragment.scrollToTop()
+                    fragment?.scrollToTop()
                 }
             })
         }
@@ -226,12 +226,12 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
         else {
             val restoreTab = savedInstanceState.getInt(BUNDLE_CURRENT_TAB)
             mEntriesTabPager.currentItem = restoreTab
-            launch {
+            launch(Dispatchers.Main) {
                 mEntriesTabAdapter.refreshAllTab(mEntriesTabPager)
             }
         }
 
-        retainInstance = true
+//        retainInstance = true
         return mView
     }
 
@@ -395,14 +395,14 @@ class EntriesFragment : CoroutineScopeFragment(), BackPressable {
                 try {
                     if (isActive) {
                         val entries = refreshEntriesAsync(tabPosition).await()
-                        tabFragment.setEntries(entries)
+                        tabFragment?.setEntries(entries)
                     }
                     return@async
                 }
                 catch (e: Exception) {
                     Log.d("FailedToRefreshEntries", Log.getStackTraceString(e))
                     if (categoryChanged) {
-                        tabFragment.clear()
+                        tabFragment?.clear()
                     }
                 }
             }
