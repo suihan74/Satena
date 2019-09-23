@@ -56,7 +56,7 @@
                 android:layout_height="14sp"/>
         <TextView
                 android:id="@+id/user_tags"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textColor="@color/tagColor"
                 android:layout_marginStart="2dp"
                 android:lines="1"

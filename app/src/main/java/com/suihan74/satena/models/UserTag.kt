@@ -29,7 +29,7 @@ class UserTagsContainer : Serializable {
         if (existed == null) {
             val id = mNextTagId++
             val newItem = UserTag(id, name, color)
-            mTags[id] = UserTag(id, name, color)
+            mTags[id] = newItem
             return newItem
         }
         else {

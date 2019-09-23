@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.TappedActionLauncher
+import com.suihan74.satena.fragments.BookmarksTabFragment
 import com.suihan74.satena.models.*
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +25,7 @@ import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
 open class BookmarksAdapter(
-    private val fragment: CoroutineScopeFragment,
+    private val fragment: BookmarksTabFragment,
     bookmarks : List<Bookmark>,
     private val bookmarksEntry: BookmarksEntry,
     private val tabType: BookmarksTabType
@@ -35,8 +36,6 @@ open class BookmarksAdapter(
     private val showIgnoredUsersMention : Boolean
     private val showIgnoredUsersInAll : Boolean
     private val muteWords : List<String>
-
-    private val mUserTagsContainer: UserTagsContainer
 
     var loadableFooter : LoadableFooterViewHolder? = null
         private set
@@ -74,13 +73,10 @@ open class BookmarksAdapter(
                 bookmark.comment.contains(word) && bookmark.getTagsText().contains(word)
             }
         })
-
-        val userTagsPrefs = SafeSharedPreferences.create<UserTagsKey>(context)
-        mUserTagsContainer = userTagsPrefs.get(UserTagsKey.CONTAINER)
     }
 
     private fun isShowable(b: Bookmark) : Boolean {
-        val tags = mUserTagsContainer.getTagsOfUser(b.user)
+        val tags = fragment.userTagsContainer.getTagsOfUser(b.user)
 
         return searchText.isBlank()
                 || b.user.contains(searchText)
@@ -163,7 +159,7 @@ open class BookmarksAdapter(
                     fragment,
                     showIgnoredUsersMention,
                     showIgnoredUsersInAll && tabType == BookmarksTabType.ALL,
-                    mUserTagsContainer
+                    fragment.userTagsContainer
                 ).apply {
 
                     itemView.setOnClickListener {
@@ -325,8 +321,13 @@ open class BookmarksAdapter(
             else {
                 val tags = userTagsContainer.getTagsOfUser(user)
                 val userTagsText = view.findViewById<TextView>(R.id.user_tags)
-                userTagsText.text = tags.joinToString(", ") { it.name }
-                userTagsLayout.visibility = View.VISIBLE
+                if (tags.isEmpty()) {
+                    userTagsLayout.visibility = View.GONE
+                }
+                else {
+                    userTagsText.text = tags.joinToString(", ") { it.name }
+                    userTagsLayout.visibility = View.VISIBLE
+                }
             }
 
             val builder = StringBuilder()

@@ -18,6 +18,7 @@ import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.adapters.BookmarksAdapter
 import com.suihan74.satena.adapters.tabs.BookmarksTabAdapter
+import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
@@ -37,6 +38,9 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
     private var mIsIgnoredUsersShownInAll : Boolean = false
     private var mIgnoredWords : List<String> = emptyList()
+
+    val userTagsContainer
+        get() = mBookmarksFragment!!.userTagsContainer
 
     companion object {
         fun createInstance(
@@ -164,9 +168,9 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             @SuppressLint("UseSparseArrays")
             fun tagUser(b: Bookmark) {
                 val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
-                val tagsContainer = prefs.get<UserTagsContainer>(UserTagsKey.CONTAINER)
-                val user = tagsContainer.addUser(b.user)
-                val tags = tagsContainer.tags
+                val userTagsContainer = userTagsContainer
+                val user = userTagsContainer.addUser(b.user)
+                val tags = userTagsContainer.tags
                 val tagNames = tags.map { it.name }.toTypedArray()
                 val states = tags.map { it.contains(user) }.toBooleanArray()
                 val diffs = HashMap<Int, Boolean>()
@@ -176,23 +180,47 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                     .setMultiChoiceItems(tagNames, states) { _, which, isChecked ->
                         diffs[which] = isChecked
                     }
+                    .setNeutralButton("新規タグに登録") { _, _ ->
+                        val dialog = UserTagDialogFragment.createInstance { name, _ ->
+                            if (userTagsContainer.containsTag(name)) {
+                                context!!.showToast("既に存在するタグです")
+                                return@createInstance false
+                            }
+                            else {
+                                val tag = userTagsContainer.addTag(name)
+                                userTagsContainer.tagUser(user, tag)
+
+                                prefs.edit {
+                                    putObject(UserTagsKey.CONTAINER, userTagsContainer)
+                                }
+
+                                mParentTabAdapter.notifyItemChanged(b)
+                                context!!.showToast("タグ: $name を作成して id:${b.user} を追加しました")
+                                return@createInstance true
+                            }
+                        }
+                        dialog.show(fragmentManager!!, "dialog")
+                    }
                     .setNegativeButton("Cancel", null)
                     .setPositiveButton("OK") { _, _ ->
                         if (diffs.isNotEmpty()) {
                             diffs.forEach {
                                 val name = tagNames[it.key]
-                                val tag = tagsContainer.getTag(name)!!
+                                val tag = userTagsContainer.getTag(name)!!
                                 if (it.value) {
-                                    tagsContainer.tagUser(user, tag)
+                                    userTagsContainer.tagUser(user, tag)
                                 }
                                 else {
-                                    tagsContainer.unTagUser(user, tag)
+                                    userTagsContainer.unTagUser(user, tag)
                                 }
                             }
 
                             prefs.edit {
-                                putObject(UserTagsKey.CONTAINER, tagsContainer)
+                                putObject(UserTagsKey.CONTAINER, userTagsContainer)
                             }
+
+                            context!!.showToast("id:${b.user} に${user.tags.size}個のタグを設定しました")
+                            mParentTabAdapter.notifyItemChanged(b)
                         }
                     }
                     .show()
@@ -351,6 +379,12 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
     fun removeBookmark(bookmark: Bookmark) {
         if (this::mBookmarksAdapter.isInitialized) {
             mBookmarksAdapter.removeItem(bookmark)
+        }
+    }
+
+    fun notifyItemChanged(bookmark: Bookmark) {
+        if (this::mBookmarksAdapter.isInitialized) {
+            mBookmarksAdapter.notifyItemChanged(bookmark)
         }
     }
 

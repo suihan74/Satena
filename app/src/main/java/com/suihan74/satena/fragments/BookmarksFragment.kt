@@ -29,6 +29,8 @@ import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.adapters.tabs.BookmarksTabAdapter
 import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.UserTagsContainer
+import com.suihan74.satena.models.UserTagsKey
 import com.suihan74.utilities.*
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
@@ -54,6 +56,8 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     private val mStarsMap = HashMap<String, StarsEntry>()
     private var mBookmarksDigest : BookmarksDigest? = null
     private var mBookmarksRecent : List<Bookmark> = emptyList()
+
+    private lateinit var mUserTagsContainer : UserTagsContainer
 
     // ロード完了と同時に詳細画面に遷移する場合の対象ユーザー
     private var mTargetUser : String? = null
@@ -85,6 +89,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     var ignoredUsers : Set<String> = emptySet()
         private set
 
+    val userTagsContainer
+        get() = mUserTagsContainer
+
     fun getFetchStarsTask(user: String) = mFetchStarsTasks[user]
 
     companion object {
@@ -115,9 +122,13 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
         val activity = activity!! as BookmarksActivity
 
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(activity)
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val initialTabPosition = prefs.getInt(PreferenceKey.BOOKMARKS_INITIAL_TAB)
         mIsHidingButtonsByScrollEnabled = prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
+
+        // ユーザータグをロード
+        val userTagsPrefs = SafeSharedPreferences.create<UserTagsKey>(context)
+        mUserTagsContainer = userTagsPrefs.get(UserTagsKey.CONTAINER)
 
         // ツールバーの設定
         val toolbar = root.findViewById<Toolbar>(R.id.bookmarks_toolbar).apply {

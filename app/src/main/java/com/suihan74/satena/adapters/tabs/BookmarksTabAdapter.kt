@@ -24,19 +24,21 @@ open class BookmarksTabAdapter(
 
     fun findFragment(position: Int) = instantiateItem(viewPager, position) as BookmarksTabFragment
 
-    fun update() {
+    inline fun forEachFragment(action: (BookmarksTabFragment) -> Unit) {
         for (i in 0 until count) {
             val fragment = findFragment(i)
-            fragment.update()
+            action(fragment)
         }
     }
 
-    fun removeBookmark(bookmark: Bookmark) {
-        for (i in 0 until count) {
-            val fragment = findFragment(i)
-            fragment.removeBookmark(bookmark)
-        }
-    }
+    fun update() =
+        forEachFragment { it.update() }
+
+    fun notifyItemChanged(bookmark: Bookmark) =
+        forEachFragment { it.notifyItemChanged(bookmark) }
+
+    fun removeBookmark(bookmark: Bookmark) =
+        forEachFragment { it.removeBookmark(bookmark) }
 
     open fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
     }
