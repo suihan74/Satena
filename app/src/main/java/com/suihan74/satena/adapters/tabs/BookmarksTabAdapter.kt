@@ -22,12 +22,20 @@ open class BookmarksTabAdapter(
 
     override fun getCount() = BookmarksTabType.values().size
 
-    fun findFragment(position: Int) = instantiateItem(viewPager, position) as BookmarksTabFragment
+    fun findFragment(position: Int) =
+        try {
+            instantiateItem(viewPager, position) as? BookmarksTabFragment
+        }
+        catch (e: Exception) {
+            null
+        }
 
     inline fun forEachFragment(action: (BookmarksTabFragment) -> Unit) {
         for (i in 0 until count) {
             val fragment = findFragment(i)
-            action(fragment)
+            if (fragment != null) {
+                action(fragment)
+            }
         }
     }
 

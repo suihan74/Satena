@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.HatenaLib.Bookmark
+import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.ActivityBase
@@ -25,6 +26,7 @@ import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 
 class BookmarksTabFragment : CoroutineScopeFragment() {
     private lateinit var mView : View
@@ -41,6 +43,55 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
     val userTagsContainer
         get() = mBookmarksFragment!!.userTagsContainer
+
+    private var parentTabAdapter : BookmarksTabAdapter
+        get() = mParentTabAdapter
+        set(value) {
+            mParentTabAdapter = value
+            mRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    mParentTabAdapter.onScrolled(recyclerView, dx, dy)
+                    super.onScrolled(recyclerView, dx, dy)
+                }
+            })
+        }
+
+    private var bookmarksAdapter : BookmarksAdapter
+        get() = mBookmarksAdapter
+        set(value) {
+            mBookmarksAdapter = value
+            mRecyclerView.adapter = mBookmarksAdapter
+            if (BookmarksTabType.POPULAR != mTabType) {
+                val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter) {
+                    override fun load() {
+                        val fragment = mBookmarksFragment!!
+                        val lastOfAll = fragment.bookmarksEntry!!.bookmarks.lastOrNull()
+                        val lastOfRecent = fragment.recentBookmarks.lastOrNull()
+                        if (lastOfAll?.user == lastOfRecent?.user) {
+                            loadCompleted()
+                            return
+                        }
+
+                        launch(Dispatchers.Main) {
+                            mBookmarksAdapter.loadableFooter?.showProgressBar()
+                            try {
+                                fragment.getNextBookmarksAsync().await()
+                                mParentTabAdapter.update()
+                            }
+                            catch (e: Exception) {
+                                Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
+                                context?.showToast("ブクマリスト更新失敗")
+                            }
+                            finally {
+                                loadCompleted()
+                                mBookmarksAdapter.loadableFooter?.hideProgressBar()
+                            }
+                        }
+                    }
+                }
+                mRecyclerView.addOnScrollListener(bookmarksUpdater)
+            }
+        }
 
     companion object {
         fun createInstance(
@@ -83,16 +134,222 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
         savedInstanceState?.let {
             mTabType = BookmarksTabType.fromInt(it.getInt(BUNDLE_TAB_TYPE))
-            mParentTabAdapter = mBookmarksFragment!!.bookmarksTabAdapter
         }
-
-        val bookmarks = getBookmarks(mBookmarksFragment!!)
-        val bookmarksEntry = mBookmarksFragment!!.bookmarksEntry!!
 
         // initialize mBookmarks list
         val viewManager = LinearLayoutManager(context)
         mRecyclerView = view.findViewById(R.id.bookmarks_list)
-        mBookmarksAdapter = object : BookmarksAdapter(this, bookmarks, bookmarksEntry, mTabType) {
+
+        val bookmarksEntry = mBookmarksFragment!!.bookmarksEntry
+        if (bookmarksEntry != null) {
+            bookmarksAdapter = generateBookmarksAdapter(getBookmarks(mBookmarksFragment!!), bookmarksEntry)
+        }
+        else {
+            launch(Dispatchers.Default) {
+                var bookmarksEntry : BookmarksEntry? = null
+                while (bookmarksEntry == null) {
+                    bookmarksEntry = mBookmarksFragment!!.bookmarksEntry
+                    yield()
+                }
+                bookmarksAdapter = generateBookmarksAdapter(getBookmarks(mBookmarksFragment!!), bookmarksEntry)
+            }
+        }
+
+        mRecyclerView.apply {
+            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
+                R.drawable.recycler_view_item_divider
+            )!!)
+            addItemDecoration(dividerItemDecoration)
+            layoutManager = viewManager
+        }
+
+
+        // スワイプ更新機能の設定
+        view.findViewById<SwipeRefreshLayout>(R.id.bookmarks_swipe_layout).apply swipeLayout@ {
+            setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
+            setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
+            setOnRefreshListener {
+                launch(Dispatchers.Main) {
+                    try {
+                        activity.bookmarksFragment?.refreshBookmarksAsync()?.await()
+                        scrollToTop()
+                    }
+                    catch (e: Exception) {
+                        activity.showToast("ブックマークリスト更新失敗")
+                        Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
+                    }
+                    finally {
+                        this@swipeLayout.isRefreshing = false
+                    }
+                }
+            }
+        }
+
+        retainInstance = true
+        return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val adapter = mBookmarksFragment!!.bookmarksTabAdapter
+        if (adapter == null) {
+            launch(Dispatchers.Default) {
+                var adapter: BookmarksTabAdapter? = null
+                while (adapter == null) {
+                    adapter = mBookmarksFragment!!.bookmarksTabAdapter
+                    yield()
+                }
+                parentTabAdapter = adapter
+                adapter.update()
+            }
+        }
+        else {
+            parentTabAdapter = adapter
+        }
+    }
+
+    fun getBookmarks(fragment: BookmarksFragment) = when(mTabType) {
+        BookmarksTabType.POPULAR ->
+            fragment.popularBookmarks.filter {
+                !isBookmarkIgnored(it) && !fragment.ignoredUsers.contains(it.user)
+            }
+
+        BookmarksTabType.RECENT ->
+            fragment.recentBookmarks.filter {
+                !it.comment.isBlank() && !isBookmarkIgnored(it) && !fragment.ignoredUsers.contains(it.user)
+            }
+
+        BookmarksTabType.ALL -> {
+            val bookmarks = fragment.recentBookmarks
+            if (mIsIgnoredUsersShownInAll) {
+                bookmarks
+            }
+            else {
+                bookmarks.filterNot {
+                    fragment.ignoredUsers.contains(it.user)
+                }
+            }.filterNot { isBookmarkIgnored(it) }
+        }
+    }
+
+    fun update() {
+        if (this::mBookmarksAdapter.isInitialized) {
+            mBookmarksAdapter.setBookmarks(getBookmarks(mBookmarksFragment!!))
+        }
+    }
+
+    fun removeBookmark(bookmark: Bookmark) {
+        if (this::mBookmarksAdapter.isInitialized) {
+            mBookmarksAdapter.removeItem(bookmark)
+        }
+    }
+
+    fun notifyItemChanged(bookmark: Bookmark) {
+        if (this::mBookmarksAdapter.isInitialized) {
+            mBookmarksAdapter.notifyItemChanged(bookmark)
+        }
+    }
+
+    private fun isBookmarkIgnored(bookmark: Bookmark) =
+        mIgnoredWords.any {
+            bookmark.user.contains(it) || bookmark.comment.contains(it) || bookmark.getTagsText(",").contains(it)
+        }
+
+    fun isBookmarkShown(bookmark: Bookmark) : Boolean {
+        if (isBookmarkIgnored(bookmark)) return false
+
+        val fragment = mBookmarksFragment!!
+        return when (mTabType) {
+            BookmarksTabType.POPULAR ->
+                fragment.popularBookmarks.any { it.user == bookmark.user }
+
+            BookmarksTabType.RECENT ->
+                !bookmark.comment.isBlank() && !fragment.ignoredUsers.contains(bookmark.user)
+
+            BookmarksTabType.ALL -> {
+                val contains = fragment.bookmarksEntry?.bookmarks?.any { it.user == bookmark.user } == true
+                contains && (!fragment.ignoredUsers.contains(bookmark.user) || mIsIgnoredUsersShownInAll)
+            }
+        }
+    }
+
+    fun setSearchText(text : String) {
+        if (this::mBookmarksAdapter.isInitialized) {
+            mBookmarksAdapter.searchText = text
+        }
+    }
+
+    fun scrollToTop() {
+        mRecyclerView.scrollToPosition(0)
+    }
+
+    fun scrollToBottom() {
+        if (!this::mBookmarksAdapter.isInitialized) return
+        mBookmarksFragment!!.launch {
+            val allBookmarks = mBookmarksFragment?.bookmarksEntry?.bookmarks ?: return@launch
+            val lastItem = allBookmarks.lastOrNull { isBookmarkShown(it) }
+            if (lastItem != null) {
+                scrollAfterLoading(lastItem.user)
+            }
+        }
+    }
+
+    fun scrollTo(user: String) {
+        if (!this::mBookmarksAdapter.isInitialized) return
+        mBookmarksFragment!!.launch {
+            val allBookmarks = mBookmarksFragment?.bookmarksEntry?.bookmarks ?: emptyList()
+            val item = allBookmarks.firstOrNull { it.user == user }
+            if (item == null || !isBookmarkShown(item)) return@launch
+
+            scrollAfterLoading(user)
+        }
+    }
+
+    private suspend fun scrollAfterLoading(user: String) {
+        val layoutManager = mRecyclerView.layoutManager as LinearLayoutManager
+        val position = mBookmarksAdapter.getItemPosition(user)
+        if (position >= 0) {
+            withContext(Dispatchers.Main) {
+                layoutManager.scrollToPositionWithOffset(position, 0)
+            }
+        }
+        else {
+            val activity = mBookmarksFragment!!.activity as ActivityBase
+            withContext(Dispatchers.Main) {
+                activity.showProgressBar(true)
+            }
+            try {
+                while (true) {
+                    val diff = mBookmarksFragment!!.getNextBookmarksAsync().await()
+                    withContext(Dispatchers.Main) {
+                        mParentTabAdapter.update()
+                    }
+                    if (diff.isEmpty() || diff.any { it.user == user }) {
+                        break
+                    }
+                }
+                val pos = mBookmarksAdapter.getItemPosition(user)
+                if (pos >= 0) {
+                    withContext(Dispatchers.Main) {
+                        layoutManager.scrollToPositionWithOffset(pos, 0)
+                    }
+                }
+            }
+            catch (e: Exception) {
+                Log.e("FailedToScroll", e.message)
+            }
+            finally {
+                withContext(Dispatchers.Main) {
+                    activity.hideProgressBar()
+                }
+            }
+        }
+    }
+
+    private fun generateBookmarksAdapter(bookmarks: List<Bookmark>, bookmarksEntry: BookmarksEntry) : BookmarksAdapter {
+        val activity = activity as BookmarksActivity
+        return object : BookmarksAdapter(this, bookmarks, bookmarksEntry, mTabType) {
             fun ignoreUser(b: Bookmark) {
                 launch(Dispatchers.Main) {
                     try {
@@ -103,7 +360,9 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                             BookmarksTabType.POPULAR,
                             BookmarksTabType.RECENT -> removeItem(b)
 
-                            BookmarksTabType.ALL -> if (!mIsIgnoredUsersShownInAll) { removeItem(b) }
+                            BookmarksTabType.ALL -> if (!mIsIgnoredUsersShownInAll) {
+                                removeItem(b)
+                            }
                         }
 
                         activity.showToast("id:${b.user}を非表示にしました")
@@ -270,216 +529,6 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                     .show()
 
                 return super.onItemLongClicked(bookmark)
-            }
-        }
-
-        mRecyclerView.apply {
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
-                R.drawable.recycler_view_item_divider
-            )!!)
-            addItemDecoration(dividerItemDecoration)
-            layoutManager = viewManager
-            adapter = mBookmarksAdapter
-
-            addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    mParentTabAdapter.onScrolled(recyclerView, dx, dy)
-                    super.onScrolled(recyclerView, dx, dy)
-                }
-            })
-
-            if (BookmarksTabType.POPULAR != mTabType) {
-                val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter) {
-                    override fun load() {
-                        val fragment = mBookmarksFragment!!
-                        val lastOfAll = fragment.bookmarksEntry!!.bookmarks.lastOrNull()
-                        val lastOfRecent = fragment.recentBookmarks.lastOrNull()
-                        if (lastOfAll?.user == lastOfRecent?.user) {
-                            loadCompleted()
-                            return
-                        }
-
-                        launch(Dispatchers.Main) {
-                            mBookmarksAdapter.loadableFooter?.showProgressBar()
-                            try {
-                                fragment.getNextBookmarksAsync().await()
-                                mParentTabAdapter.update()
-                            }
-                            catch (e: Exception) {
-                                Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                                activity.showToast("ブクマリスト更新失敗")
-                            }
-                            finally {
-                                loadCompleted()
-                                mBookmarksAdapter.loadableFooter?.hideProgressBar()
-                            }
-                        }
-                    }
-                }
-                addOnScrollListener(bookmarksUpdater)
-            }
-        }
-
-
-        // スワイプ更新機能の設定
-        view.findViewById<SwipeRefreshLayout>(R.id.bookmarks_swipe_layout).apply swipeLayout@ {
-            setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
-            setOnRefreshListener {
-                launch(Dispatchers.Main) {
-                    try {
-                        activity.bookmarksFragment?.refreshBookmarksAsync()?.await()
-                        scrollToTop()
-                    }
-                    catch (e: Exception) {
-                        activity.showToast("ブックマークリスト更新失敗")
-                        Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
-                    }
-                    finally {
-                        this@swipeLayout.isRefreshing = false
-                    }
-                }
-            }
-        }
-
-        retainInstance = true
-        return view
-    }
-
-    fun getBookmarks(fragment: BookmarksFragment) = when(mTabType) {
-        BookmarksTabType.POPULAR ->
-            fragment.popularBookmarks.filter {
-                !isBookmarkIgnored(it) && !fragment.ignoredUsers.contains(it.user)
-            }
-
-        BookmarksTabType.RECENT ->
-            fragment.recentBookmarks.filter {
-                !it.comment.isBlank() && !isBookmarkIgnored(it) && !fragment.ignoredUsers.contains(it.user)
-            }
-
-        BookmarksTabType.ALL -> {
-            val bookmarks = fragment.recentBookmarks
-            if (mIsIgnoredUsersShownInAll) {
-                bookmarks
-            }
-            else {
-                bookmarks.filterNot {
-                    fragment.ignoredUsers.contains(it.user)
-                }
-            }.filterNot { isBookmarkIgnored(it) }
-        }
-    }
-
-    fun update() {
-        if (this::mBookmarksAdapter.isInitialized) {
-            mBookmarksAdapter.setBookmarks(getBookmarks(mBookmarksFragment!!))
-        }
-    }
-
-    fun removeBookmark(bookmark: Bookmark) {
-        if (this::mBookmarksAdapter.isInitialized) {
-            mBookmarksAdapter.removeItem(bookmark)
-        }
-    }
-
-    fun notifyItemChanged(bookmark: Bookmark) {
-        if (this::mBookmarksAdapter.isInitialized) {
-            mBookmarksAdapter.notifyItemChanged(bookmark)
-        }
-    }
-
-    private fun isBookmarkIgnored(bookmark: Bookmark) =
-        mIgnoredWords.any {
-            bookmark.user.contains(it) || bookmark.comment.contains(it) || bookmark.getTagsText(",").contains(it)
-        }
-
-    fun isBookmarkShown(bookmark: Bookmark) : Boolean {
-        if (isBookmarkIgnored(bookmark)) return false
-
-        val fragment = mBookmarksFragment!!
-        return when (mTabType) {
-            BookmarksTabType.POPULAR ->
-                fragment.popularBookmarks.any { it.user == bookmark.user }
-
-            BookmarksTabType.RECENT ->
-                !bookmark.comment.isBlank() && !fragment.ignoredUsers.contains(bookmark.user)
-
-            BookmarksTabType.ALL -> {
-                val contains = fragment.bookmarksEntry?.bookmarks?.any { it.user == bookmark.user } == true
-                contains && (!fragment.ignoredUsers.contains(bookmark.user) || mIsIgnoredUsersShownInAll)
-            }
-        }
-    }
-
-    fun setSearchText(text : String) {
-        if (this::mBookmarksAdapter.isInitialized) {
-            mBookmarksAdapter.searchText = text
-        }
-    }
-
-    fun scrollToTop() {
-        mRecyclerView.scrollToPosition(0)
-    }
-
-    fun scrollToBottom() {
-        if (!this::mBookmarksAdapter.isInitialized) return
-        mBookmarksFragment!!.launch {
-            val allBookmarks = mBookmarksFragment?.bookmarksEntry?.bookmarks ?: return@launch
-            val lastItem = allBookmarks.lastOrNull { isBookmarkShown(it) }
-            if (lastItem != null) {
-                scrollAfterLoading(lastItem.user)
-            }
-        }
-    }
-
-    fun scrollTo(user: String) {
-        if (!this::mBookmarksAdapter.isInitialized) return
-        mBookmarksFragment!!.launch {
-            val allBookmarks = mBookmarksFragment?.bookmarksEntry?.bookmarks ?: emptyList()
-            val item = allBookmarks.firstOrNull { it.user == user }
-            if (item == null || !isBookmarkShown(item)) return@launch
-
-            scrollAfterLoading(user)
-        }
-    }
-
-    private suspend fun scrollAfterLoading(user: String) {
-        val layoutManager = mRecyclerView.layoutManager as LinearLayoutManager
-        val position = mBookmarksAdapter.getItemPosition(user)
-        if (position >= 0) {
-            withContext(Dispatchers.Main) {
-                layoutManager.scrollToPositionWithOffset(position, 0)
-            }
-        }
-        else {
-            val activity = mBookmarksFragment!!.activity as ActivityBase
-            withContext(Dispatchers.Main) {
-                activity.showProgressBar(true)
-            }
-            try {
-                while (true) {
-                    val diff = mBookmarksFragment!!.getNextBookmarksAsync().await()
-                    withContext(Dispatchers.Main) {
-                        mParentTabAdapter.update()
-                    }
-                    if (diff.isEmpty() || diff.any { it.user == user }) {
-                        break
-                    }
-                }
-                val pos = mBookmarksAdapter.getItemPosition(user)
-                if (pos >= 0) {
-                    withContext(Dispatchers.Main) {
-                        layoutManager.scrollToPositionWithOffset(pos, 0)
-                    }
-                }
-            }
-            catch (e: Exception) {
-                Log.e("FailedToScroll", e.message)
-            }
-            finally {
-                withContext(Dispatchers.Main) {
-                    activity.hideProgressBar()
-                }
             }
         }
     }
