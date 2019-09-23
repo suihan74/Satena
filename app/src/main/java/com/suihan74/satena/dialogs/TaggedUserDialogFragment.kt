@@ -44,6 +44,7 @@ class TaggedUserDialogFragment : DialogFragment(), CoroutineScope {
         val inflater = LayoutInflater.from(context)
         val content = inflater.inflate(R.layout.fragment_dialog_tagged_user, null)
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
+        retainInstance = true
 
         val client = OkHttpClient()
             .newBuilder()

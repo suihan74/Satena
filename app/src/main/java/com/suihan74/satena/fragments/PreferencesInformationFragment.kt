@@ -20,6 +20,7 @@ import com.suihan74.satena.dialogs.FilePickerDialog
 import com.suihan74.satena.models.IgnoredEntriesKey
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.UserTagsKey
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -134,6 +135,7 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
                     addPreference<PreferenceKey>()
                     addPreference<IgnoredEntriesKey>()
                     addPreference<NoticesKey>()
+                    addPreference<UserTagsKey>()
                     write(file)
                 }
 

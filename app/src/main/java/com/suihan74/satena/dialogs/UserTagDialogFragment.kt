@@ -32,6 +32,7 @@ class UserTagDialogFragment : DialogFragment() {
         val inflater = LayoutInflater.from(context)
         val content = inflater.inflate(R.layout.fragment_dialog_user_tag, null)
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
+        retainInstance = true
 
         val tagName = content.findViewById<EditText>(R.id.tag_name)
         val dialogTitle = if (isEditMode) {
