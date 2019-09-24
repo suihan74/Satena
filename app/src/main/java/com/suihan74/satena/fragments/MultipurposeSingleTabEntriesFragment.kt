@@ -2,10 +2,9 @@ package com.suihan74.satena.fragments
 
 import android.content.Context
 import android.os.Bundle
-import android.transition.Slide
+import android.transition.Fade
 import android.transition.TransitionSet
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,7 +38,8 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
     private var mEntriesScrollingUpdater: RecyclerViewScrollingUpdater? = null
 
     init {
-        enterTransition = TransitionSet().addTransition(Slide(Gravity.BOTTOM))
+        enterTransition = TransitionSet().addTransition(Fade())
+//        enterTransition = TransitionSet().addTransition(Slide(Gravity.END))
     }
 
     open fun onRestoreSaveInstanceState(savedInstanceState: Bundle) {}
