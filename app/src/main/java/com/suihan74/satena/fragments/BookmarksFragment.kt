@@ -48,7 +48,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     private lateinit var mBookmarksScrollMenuButton : FloatingActionButton
     private lateinit var mSearchButton : FloatingActionButton
 
-    private lateinit var mScrollButtons : Array<FloatingActionButton>
+    //    private lateinit var mScrollButtons : Array<FloatingActionButton>
     private var mAreScrollButtonsVisible = false
     private var mIsHidingButtonsByScrollEnabled : Boolean = true
 
@@ -65,8 +65,6 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     // プリロード中のブクマ・スター
     private var mPreLoadingTasks : BookmarksActivity.PreLoadingTasks? = null
     private var mFetchStarsTasks = WeakHashMap<String, Deferred<Unit>>()
-
-    private var mIsScrollToMyBookmarkButtonEnabled = false
 
     val entry : Entry
         get() = mEntry
@@ -91,6 +89,13 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
     val userTagsContainer
         get() = mUserTagsContainer
+
+    val bookmarked : Boolean
+        get() {
+            val user = HatenaClient.account?.name
+            if (user.isNullOrBlank()) { return false }
+            return bookmarksEntry?.bookmarks?.any { it.user == user } == true
+        }
 
     fun getFetchStarsTask(user: String) = mFetchStarsTasks[user]
 
@@ -119,7 +124,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     private fun getSubTitle(bookmarks: List<Bookmark>) : String {
         val commentsCount = bookmarks.count { it.comment.isNotBlank() }
         return if (bookmarks.isEmpty()) "0 users"
-               else "${bookmarks.size} user${if (bookmarks.size == 1) "" else "s"}  ($commentsCount comment${if (commentsCount == 1) "" else "s"})"
+        else "${bookmarks.size} user${if (bookmarks.size == 1) "" else "s"}  ($commentsCount comment${if (commentsCount == 1) "" else "s"})"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -234,7 +239,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             })
         }
 
-        mScrollButtons = arrayOf(
+        val mScrollButtons = arrayOf(
             root.findViewById<FloatingActionButton>(R.id.bookmarks_scroll_top_button).apply {
                 setOnClickListener {
                     val adapter = mTabPager.adapter as BookmarksTabAdapter
@@ -266,7 +271,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         mScrollButtons.forEachIndexed { i, fab ->
             fab.translationY = (mScrollButtons.size - i) * (size + dp18) - size
             fab.visibility = View.GONE
-    }
+        }
         mAreScrollButtonsVisible = false
 
         retainInstance = true
@@ -296,20 +301,62 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         mIsHidingButtonsByScrollEnabled = prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
     }
 
+    private val scrollButtons : Array<FloatingActionButton>
+        get() {
+            val displayMyBookmarkButton = if (mTabPager.currentItem == BookmarksTabType.POPULAR.int) {
+                val user = HatenaClient.account?.name
+                if (user.isNullOrBlank()) {
+                    false
+                }
+                else {
+                    mBookmarksDigest?.scoredBookmarks?.any { it.user == user } ?: false
+                }
+            }
+            else {
+                bookmarked
+            }
+
+            return if (displayMyBookmarkButton) {
+                arrayOf(
+                    mRoot.findViewById(R.id.bookmarks_scroll_top_button),
+                    mRoot.findViewById(R.id.bookmarks_scroll_my_bookmark_button),
+                    mRoot.findViewById(R.id.bookmarks_scroll_bottom_button)
+                )
+            }
+            else {
+                arrayOf(
+                    mRoot.findViewById(R.id.bookmarks_scroll_top_button),
+                    mRoot.findViewById(R.id.bookmarks_scroll_bottom_button)
+                )
+            }
+        }
+
+    private val displayedScrollButtons : Array<FloatingActionButton>
+        get() =
+            listOf<FloatingActionButton>(
+                mRoot.findViewById(R.id.bookmarks_scroll_top_button),
+                mRoot.findViewById(R.id.bookmarks_scroll_my_bookmark_button),
+                mRoot.findViewById(R.id.bookmarks_scroll_bottom_button)
+            )
+                .filter { it.visibility == View.VISIBLE }
+                .toTypedArray()
+
     // スクロールでFABを表示切替
     private fun onScrolled(dy: Int) {
         if (!mIsHidingButtonsByScrollEnabled) return
 
         if (dy > 2) {
+            val buttons = scrollButtons
             mFABs.forEach { it.hide() }
-            if (mScrollButtons[0].visibility == View.VISIBLE && mAreScrollButtonsVisible) {
-                mScrollButtons.forEach { it.hide() }
+            if (buttons[0].visibility == View.VISIBLE && mAreScrollButtonsVisible) {
+                buttons.forEach { it.hide() }
             }
         }
         else if (dy < -2) {
+            val buttons = scrollButtons
             mFABs.forEach { it.show() }
             if (mAreScrollButtonsVisible) {
-                mScrollButtons.forEach { it.show() }
+                buttons.forEach { it.show() }
             }
         }
     }
@@ -343,8 +390,10 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         val size = mBookmarksScrollMenuButton.layoutParams.height.toFloat()
         val dp18 = resources.getDimension(R.dimen.dp_18)
 
-        mScrollButtons.forEachIndexed { i, fab ->
-            val dy = (mScrollButtons.size - i) * (size + dp18) - size
+        val buttons = displayedScrollButtons
+
+        buttons.forEachIndexed { i, fab ->
+            val dy = (buttons.size - i) * (size + dp18) - size
             fab.animate()
                 .withEndAction {
                     mAreScrollButtonsVisible = false
@@ -363,14 +412,10 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         val size = mBookmarksScrollMenuButton.layoutParams.height.toFloat()
         val dp18 = resources.getDimension(R.dimen.dp_18)
 
-        val myBookmarksButton = mRoot.findViewById<View>(R.id.bookmarks_scroll_my_bookmark_button)
-
-        val buttons = mScrollButtons.filter {
-            it != myBookmarksButton || mIsScrollToMyBookmarkButtonEnabled
-        }
+        val buttons = scrollButtons
 
         buttons.forEachIndexed { i, fab ->
-            val dy = (mScrollButtons.size - i) * (size + dp18) - size
+            val dy = (buttons.size - i) * (size + dp18) - size
             fab.animate()
                 .withStartAction {
                     mAreScrollButtonsVisible = true
@@ -493,6 +538,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 this.adapter = adapter
                 addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
                     override fun onPageSelected(position: Int) {
+/*
                         val tabFragment = adapter.findFragment(position)
                         val user = HatenaClient.account?.name
                         if (user == null) {
@@ -510,7 +556,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                                 changeScrollButtonVisibility(View.GONE)
                             }
                         }
-
+*/
                         if (mAreScrollButtonsVisible) {
                             hideScrollButtons()
                         }
@@ -520,6 +566,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 setCurrentItem(initialTabPosition, false)
             }
 
+            /*
             val scrollToMyBookmarkButton = mRoot.findViewById<FloatingActionButton>(R.id.bookmarks_scroll_my_bookmark_button)
             val userName = HatenaClient.account?.name ?: ""
 
@@ -530,7 +577,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
             if (!HatenaClient.signedIn() || userBookmarkExists) {
                 mScrollButtons = mScrollButtons.filterNot { it == scrollToMyBookmarkButton }.toTypedArray()
-            }
+            }*/
         }
         catch (e: IllegalStateException) {
             Log.d("Cancelled", Log.getStackTraceString(e))
@@ -587,24 +634,6 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             this.adapter = adapter
             addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
                 override fun onPageSelected(position: Int) {
-                    val tabFragment = adapter.findFragment(position)
-                    val user = HatenaClient.account?.name
-                    if (user == null) {
-                        changeScrollButtonVisibility(View.GONE)
-                    }
-                    else {
-                        val bookmarks = when (BookmarksTabType.fromInt(position)) {
-                            BookmarksTabType.POPULAR -> popularBookmarks
-                            else -> bookmarksEntry!!.bookmarks.filter { tabFragment?.isBookmarkShown(it) ?: false }
-                        }
-                        if (bookmarks.any { it.user == user }) {
-                            changeScrollButtonVisibility(View.VISIBLE)
-                        }
-                        else {
-                            changeScrollButtonVisibility(View.GONE)
-                        }
-                    }
-
                     if (mAreScrollButtonsVisible) {
                         hideScrollButtons()
                     }
@@ -696,9 +725,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         val list = bookmarks
             .filter {
                 it.comment.isNotEmpty() &&
-                it.starCount?.isEmpty() != true &&
-                !mStarsMap.contains(it.user) &&
-                !mFetchStarsTasks.contains(it.user)
+                        it.starCount?.isEmpty() != true &&
+                        !mStarsMap.contains(it.user) &&
+                        !mFetchStarsTasks.contains(it.user)
             }
 
         val urls = list
@@ -757,22 +786,6 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
         val adapter = mTabPager.adapter as BookmarksTabAdapter
         adapter.update()
-    }
-
-    fun changeScrollButtonVisibility(visibility: Int) {
-        /*if (mAreScrollButtonsVisible) {
-            mRoot.findViewById<View>(R.id.bookmarks_scroll_my_bookmark_button).apply {
-                this.visibility = visibility
-                if (View.VISIBLE == visibility) {
-                    (this as FloatingActionButton).show()
-                }
-            }
-        }*/
-
-        mIsScrollToMyBookmarkButtonEnabled = when (visibility) {
-            View.VISIBLE -> true
-            else -> false
-        }
     }
 
     private fun plusBookmarkToList(bookmark: Bookmark, list: List<Bookmark>) : List<Bookmark> {
