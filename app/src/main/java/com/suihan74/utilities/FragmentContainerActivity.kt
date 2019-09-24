@@ -1,5 +1,6 @@
 package com.suihan74.utilities
 
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 
@@ -44,24 +45,34 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
 
     override fun onBackPressed() = onBackPressed(null)
 
+    private fun backActivity() {
+        if (supportFragmentManager.backStackEntryCount == 1) {
+            finish()
+            overridePendingTransition(0, android.R.anim.slide_out_right)
+        }
+        else {
+            super.onBackPressed()
+        }
+    }
+
     fun onBackPressed(alternativeAction: (()->Boolean)?) {
-        val fragment = currentFragment
-        if (fragment is BackPressable) {
-            if (fragment.onBackPressed()) {
-                return
+        try {
+            val fragment = currentFragment
+            if (fragment is BackPressable) {
+                if (fragment.onBackPressed()) {
+                    return
+                }
+            }
+
+            val acted = alternativeAction?.invoke() ?: false
+
+            if (!acted) {
+                backActivity()
             }
         }
-
-        val acted = alternativeAction?.invoke() ?: false
-
-        if (!acted) {
-            if (supportFragmentManager.backStackEntryCount == 1) {
-                finish()
-                overridePendingTransition(0, android.R.anim.slide_out_right)
-            }
-            else {
-                super.onBackPressed()
-            }
+        catch (e: Exception) {
+            Log.e("onBackPressed", Log.getStackTraceString(e))
+            backActivity()
         }
     }
 

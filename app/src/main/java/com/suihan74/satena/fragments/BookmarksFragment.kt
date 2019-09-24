@@ -468,6 +468,11 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
             val entryInfoFragment = EntryInformationFragment.createInstance(mEntry, bookmarksEntry)
             mDrawer = mRoot.findViewById(R.id.bookmarks_drawer_layout)
+
+            if (!coroutineContext.isActive) {
+                return@withContext
+            }
+
             // ページ情報をDrawerに表示
             childFragmentManager.beginTransaction().apply {
                 replace(R.id.entry_information_layout, entryInfoFragment)
@@ -527,8 +532,12 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 mScrollButtons = mScrollButtons.filterNot { it == scrollToMyBookmarkButton }.toTypedArray()
             }
         }
+        catch (e: IllegalStateException) {
+            Log.d("Cancelled", Log.getStackTraceString(e))
+            return@withContext
+        }
         catch (e: Exception) {
-            Log.d("FailedToFetchBookmarks", Log.getStackTraceString(e))
+            Log.d("FailedToFetchBookmarks", e.message)
             activity.showToast("ブックマークリスト取得失敗")
         }
         finally {
