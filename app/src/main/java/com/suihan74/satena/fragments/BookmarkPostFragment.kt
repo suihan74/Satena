@@ -40,7 +40,6 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
     val root: View
         get() = mRoot!!
 
-
     companion object {
         const val INITIAL_VISIBILITY = "initial_visibility"
 
@@ -48,10 +47,17 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
             mEntry = entry
             mBookmarksEntry = bookmarksEntry
         }
+
+        private var savedComment : String? = null
     }
 
     fun setOnPostedListener(onPostedAction: ((BookmarkResult)->Unit)?) {
         mOnPostedAction = onPostedAction
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        savedComment = root.findViewById<EditText>(R.id.post_bookmark_comment).text.toString()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -67,6 +73,7 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
         }
 
         initBookmarkDialog()
+
         retainInstance = true
         return mRoot
     }
@@ -248,7 +255,10 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
     private fun setExistedComment() {
         root.findViewById<EditText>(R.id.post_bookmark_comment).apply {
             if (text.isBlank()) {
-                val comment = if (mEntry.bookmarkedData != null) {
+                val comment = if (savedComment != null) {
+                    savedComment!!
+                }
+                else if (mEntry.bookmarkedData != null) {
                     mEntry.bookmarkedData!!.commentRaw
                 }
                 else if (mBookmarksEntry != null && HatenaClient.signedIn()) {
@@ -261,6 +271,7 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
 
                 text.clear()
                 text.append(comment)
+                savedComment = null
             }
         }
     }
