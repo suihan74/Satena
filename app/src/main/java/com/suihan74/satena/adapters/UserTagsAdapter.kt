@@ -32,6 +32,7 @@ open class UserTagsAdapter(tags : Collection<UserTag>) : RecyclerView.Adapter<Re
     fun updateItem(tag: UserTag) {
         val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body?.id == tag.id }
         if (position >= 0) {
+            states[position].body = tag
             notifyItemChanged(position)
         }
     }

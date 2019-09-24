@@ -68,7 +68,7 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
 
     fun showTaggedUsersList(tag: UserTag) {
         mDisplayedUserTag = tag
-        val fragment = TaggedUsersListFragment.createInstance(this, mUserTagsContainer.getUsersOfTag(tag), tag)
+        val fragment = TaggedUsersListFragment.createInstance(this, mUserTagsContainer, tag)
         childFragmentManager.beginTransaction()
             .replace(R.id.content_layout, fragment)
             .addToBackStack(null)
@@ -76,7 +76,7 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
     }
 
     private fun showUserTagsList() {
-        val fragment = UserTagsListFragment.createInstance(this, mUserTagsContainer.tags)
+        val fragment = UserTagsListFragment.createInstance(this, mUserTagsContainer)
         childFragmentManager.beginTransaction()
             .replace(R.id.content_layout, fragment)
             .commit()

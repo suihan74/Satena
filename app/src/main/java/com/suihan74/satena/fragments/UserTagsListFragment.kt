@@ -13,26 +13,27 @@ import com.suihan74.satena.R
 import com.suihan74.satena.adapters.UserTagsAdapter
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.UserTag
+import com.suihan74.satena.models.UserTagsContainer
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.showToast
 
 class UserTagsListFragment : Fragment() {
     private lateinit var mUserTagsAdapter : UserTagsAdapter
-    private lateinit var mUserTags : Collection<UserTag>
+    private lateinit var mContainer : UserTagsContainer
 
     private var mParentFragment: PreferencesUserTagsFragment? = null
 
     companion object {
-        fun createInstance(parentFragment: PreferencesUserTagsFragment, tags: Collection<UserTag>) = UserTagsListFragment().apply {
+        fun createInstance(parentFragment: PreferencesUserTagsFragment, container: UserTagsContainer) = UserTagsListFragment().apply {
             mParentFragment = parentFragment
-            mUserTags = tags
+            mContainer = container
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_user_tags_list, container, false)
 
-        mUserTagsAdapter = object : UserTagsAdapter(mUserTags) {
+        mUserTagsAdapter = object : UserTagsAdapter(mContainer.tags) {
             override fun onItemClicked(tag: UserTag) {
                 mParentFragment?.showTaggedUsersList(tag)
             }
@@ -80,13 +81,13 @@ class UserTagsListFragment : Fragment() {
     private fun modifyItem(tag: UserTag) {
         val dialog = UserTagDialogFragment.createInstance(tag) { name, _ ->
             if (tag.name != name) {
-                if (mUserTags.any { it.name == name }) {
+                if (mContainer.getTag(name) != null) {
                     activity?.showToast("既に存在するタグ名です")
                     return@createInstance false
                 }
                 else {
-                    tag.name = name
-                    updateItem(tag)
+                    val modifiedTag = mContainer.changeTagName(tag, name)
+                    updateItem(modifiedTag)
                     mParentFragment?.updatePrefs()
                 }
             }

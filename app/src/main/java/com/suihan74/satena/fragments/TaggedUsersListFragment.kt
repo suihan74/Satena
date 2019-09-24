@@ -18,6 +18,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.adapters.TaggedUsersAdapter
 import com.suihan74.satena.models.TaggedUser
 import com.suihan74.satena.models.UserTag
+import com.suihan74.satena.models.UserTagsContainer
 import com.suihan74.utilities.DividerItemDecorator
 
 class TaggedUsersListFragment : Fragment() {
@@ -25,13 +26,13 @@ class TaggedUsersListFragment : Fragment() {
     private var mParentFragment: PreferencesUserTagsFragment? = null
     private lateinit var mTaggedUsersAdapter : TaggedUsersAdapter
     private lateinit var mUserTag : UserTag
-    private lateinit var mTaggedUsers : List<TaggedUser>
+    private lateinit var mContainer : UserTagsContainer
 
     companion object {
-        fun createInstance(parentFragment: PreferencesUserTagsFragment, taggedUsers: List<TaggedUser>, userTag: UserTag) = TaggedUsersListFragment().apply {
+        fun createInstance(parentFragment: PreferencesUserTagsFragment, container: UserTagsContainer, userTag: UserTag) = TaggedUsersListFragment().apply {
             mParentFragment = parentFragment
             mUserTag = userTag
-            mTaggedUsers = taggedUsers
+            mContainer = container
 
             enterTransition = TransitionSet()
                 .addTransition(Fade())
@@ -46,7 +47,7 @@ class TaggedUsersListFragment : Fragment() {
         root.findViewById<TextView>(R.id.tag_name).text = mUserTag.name
         updateCounter()
 
-        mTaggedUsersAdapter = object : TaggedUsersAdapter(mTaggedUsers) {
+        mTaggedUsersAdapter = object : TaggedUsersAdapter(mContainer.getUsersOfTag(mUserTag)) {
             override fun onItemClicked(user: TaggedUser) {
             }
 

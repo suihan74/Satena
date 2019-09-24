@@ -5,24 +5,35 @@ import java.io.Serializable
 /** ユーザーをタグ付けするやつ */
 class UserTagsContainer : Serializable {
     @Suppress("UseSparseArrays")
-    private val mTags = HashMap<Long, UserTag>()
+    private val mTags = HashMap<Int, UserTag>()
     @Suppress("UseSparseArrays")
-    private val mUsers = HashMap<Long, TaggedUser>()
-    private var mNextTagId = 0L
-    private var mNextUserId = 0L
+    private val mUsers = HashMap<Int, TaggedUser>()
+    private var mNextTagId = 0
+    private var mNextUserId = 0
 
+    /** コンテナに存在する全タグデータ */
     val tags : Collection<UserTag>
         get() = mTags.values
 
+    /** コンテナに存在する全ユーザーデータ */
     val users : Collection<TaggedUser>
         get() = mUsers.values
 
+    /**
+     * タグデータを取得する
+     * タグが存在しない場合null
+     */
     fun getTag(name: String) : UserTag? =
         mTags.values.firstOrNull { it.name == name }
 
+    /** 指定した名前を持つタグが存在するか確認する */
     fun containsTag(name: String) =
         getTag(name) != null
 
+    /**
+     * タグデータを作成してインスタンスを返す
+     * 既に存在する場合はそのインスタンスを返す
+     */
     fun addTag(name: String, color: Int = 0) : UserTag {
         val existed = getTag(name)
 
@@ -37,6 +48,7 @@ class UserTagsContainer : Serializable {
         }
     }
 
+    /** タグを削除する */
     fun removeTag(name: String) {
         val value = getTag(name)
         if (value != null) {
@@ -44,6 +56,7 @@ class UserTagsContainer : Serializable {
         }
     }
 
+    /** タグを削除する */
     fun removeTag(tag: UserTag) {
         getUsersOfTag(tag).forEach {
             it.removeTag(tag)
@@ -51,16 +64,30 @@ class UserTagsContainer : Serializable {
         mTags.remove(tag.id)
     }
 
-    fun changeTagName(tag: UserTag, name: String) {
-        tag.name = name
+    /** タグの名前を変更 */
+    fun changeTagName(tag: UserTag, name: String) : UserTag {
+        if (tag.name == name) return tag
+
+        val modified = tag.newInstance(name = name)
+        mTags[tag.id] = modified
+        return modified
     }
 
+    /**
+     * ユーザーデータを取得
+     * 存在しない場合はnullが返る
+     */
     fun getUser(name: String) : TaggedUser? =
         mUsers.values.firstOrNull { it.name == name }
 
+    /** ユーザーデータが存在するか確認 */
     fun containsUser(name: String) =
         getUser(name) != null
 
+    /**
+     * ユーザーデータを作成してインスタンスを返す
+     * 既にユーザーが存在する場合はそのインスタンスを返す
+     */
     fun addUser(name: String) : TaggedUser {
         val existed = getUser(name)
         if (existed == null) {
@@ -74,6 +101,7 @@ class UserTagsContainer : Serializable {
         }
     }
 
+    /** ユーザーを削除する */
     fun removeUser(name: String) {
         val value = getUser(name)
         if (value != null) {
@@ -81,45 +109,108 @@ class UserTagsContainer : Serializable {
         }
     }
 
+    /** ユーザーを削除する */
     fun removeUser(user: TaggedUser) {
         getTagsOfUser(user).forEach {
-            it.remove(user)
+            it.removeUser(user)
         }
         mUsers.remove(user.id)
     }
 
+    /** ユーザーにタグをつける */
     fun tagUser(user: TaggedUser, tag: UserTag) {
         user.addTag(tag)
-        tag.add(user)
+        tag.addUser(user)
     }
 
+    /** ユーザーのタグを外す */
     fun unTagUser(user: TaggedUser, tag: UserTag) {
         user.removeTag(tag)
-        tag.remove(user)
+        tag.removeUser(user)
     }
 
+    /** ユーザーについたタグのリストを取得 */
     fun getTagsOfUser(user: TaggedUser?) =
         user?.tags?.map { mTags[it]!! } ?: emptyList()
 
+    /** ユーザーについたタグのリストを取得 */
     fun getTagsOfUser(name: String) =
         getTagsOfUser(getUser(name))
 
+    /** 指定タグがついたユーザーのリストを取得 */
     fun getUsersOfTag(tag: UserTag?) =
         tag?.users?.map { mUsers[it]!! } ?: emptyList()
 
+    /** 指定タグがついたユーザーのリストを取得 */
     fun getUsersOfTag(name: String) =
         getUsersOfTag(getTag(name))
+
+    /**
+     * コンテナの状態を最適化
+     * <<< optimize前に取得したタグ/ユーザーのインスタンスはoptimize後に使用しないよう注意 >>>
+     */
+    fun optimize() {
+        removeEmptyUsers()
+        makeTagIdsCompact()
+        makeUserIdsCompact()
+    }
+
+    /** ひとつもタグがついていないユーザーデータを削除する */
+    private fun removeEmptyUsers() {
+        users.filter { it.tags.isEmpty() }
+            .forEach { mUsers.remove(it.id) }
+    }
+
+    /** タグデータのIDを連番に並べ直す */
+    private fun makeTagIdsCompact() {
+        val modifiedTags = tags.mapIndexed { index, tag ->
+            if (index == tag.id) {
+                tag
+            }
+            else {
+                tag.newInstance(id = index).apply {
+                    getUsersOfTag(tag).forEach { user ->
+                        user.removeTag(tag)
+                        user.addTag(this)
+                    }
+                }
+            }
+        }
+        mTags.clear()
+        mTags.putAll(modifiedTags.map { Pair(it.id, it) })
+        mNextTagId = tags.size
+    }
+
+    /** ユーザーデータのIDを連番に並べ直す */
+    private fun makeUserIdsCompact() {
+        val modifiedUsers = users.mapIndexed { index, user ->
+            if (index == user.id) {
+                user
+            }
+            else {
+                user.newInstance(id = index).apply {
+                    getTagsOfUser(user).forEach { tag ->
+                        tag.removeUser(user)
+                        tag.addUser(this)
+                    }
+                }
+            }
+        }
+        mUsers.clear()
+        mUsers.putAll(modifiedUsers.map { Pair(it.id, it) })
+        mNextUserId = users.size
+    }
 }
 
 /** タグ情報 */
 data class UserTag (
-    val id: Long,
-    var name: String,
-    var color: Int
+    val id: Int,
+    val name: String,
+    val color: Int
 ) : Serializable {
 
-    private val mUsers = HashSet<Long>()
-    val users : Set<Long>
+    private val mUsers = HashSet<Int>()
+    val users : Set<Int>
         get() = mUsers
 
     val count
@@ -127,19 +218,24 @@ data class UserTag (
 
     fun contains(user: TaggedUser) = users.contains(user.id)
 
-    internal fun add(user: TaggedUser) = mUsers.add(user.id)
+    internal fun addUser(user: TaggedUser) = mUsers.add(user.id)
 
-    internal fun remove(user: TaggedUser) = mUsers.remove(user.id)
+    internal fun removeUser(user: TaggedUser) = mUsers.remove(user.id)
+
+    internal fun newInstance(id: Int = this.id, name: String = this.name, color: Int = this.color) =
+        UserTag(id, name, color).also {
+            it.mUsers.addAll(this.mUsers)
+        }
 }
 
 /** ユーザー情報 */
 data class TaggedUser (
-    val id: Long,
+    val id: Int,
     val name: String
 ) : Serializable {
 
-    private val mTags = HashSet<Long>()
-    val tags : Set<Long>
+    private val mTags = HashSet<Int>()
+    val tags : Set<Int>
         get() = mTags
 
     fun containsTag(tag: UserTag) = mTags.contains(tag.id)
@@ -147,4 +243,9 @@ data class TaggedUser (
     internal fun addTag(tag: UserTag) = mTags.add(tag.id)
 
     internal fun removeTag(tag: UserTag) = mTags.remove(tag.id)
+
+    internal fun newInstance(id: Int = this.id, name: String = this.name) =
+        TaggedUser(id, name).also {
+            it.mTags.addAll(this.mTags)
+        }
 }
