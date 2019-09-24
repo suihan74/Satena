@@ -11,42 +11,35 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/contentLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-        <androidx.coordinatorlayout.widget.CoordinatorLayout
+        <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            <com.google.android.material.appbar.AppBarLayout
+                android:layout_height="wrap_content">
+            <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/main_toolbar"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                <androidx.appcompat.widget.Toolbar
-                        android:id="@+id/main_toolbar"
-                        android:layout_width="match_parent"
-                        android:layout_height="?attr/actionBarSize"
-                        app:titleTextColor="?android:attr/textColorSecondary"
-                        android:background="?attr/colorPrimary"
-                        app:layout_scrollFlags="scroll|enterAlways"/>
+                    android:layout_height="?attr/actionBarSize"
+                    app:titleTextColor="?android:attr/textColorSecondary"
+                    android:background="?attr/colorPrimary"
+                    app:layout_scrollFlags="scroll|enterAlways"/>
 
-                <com.google.android.material.tabs.TabLayout
-                        android:id="@+id/main_tab_layout"
-                        style="@style/TabLayoutStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/tabBackground"/>
-            </com.google.android.material.appbar.AppBarLayout>
-
-            <androidx.viewpager.widget.ViewPager
-                    android:id="@+id/entries_tab_pager"
-                    android:background="?attr/panelBackground"
+            <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/main_tab_layout"
+                    style="@style/TabLayoutStyle"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:scrollbars="vertical"
-                    app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+                    android:layout_height="wrap_content"
+                    android:background="?attr/tabBackground"/>
+        </com.google.android.material.appbar.AppBarLayout>
 
-        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <androidx.viewpager.widget.ViewPager
+                android:id="@+id/entries_tab_pager"
+                android:background="?attr/panelBackground"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:scrollbars="vertical"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
         <!-- メニュー表示中に他の領域をタップできなくする(設定がONになっているときに表示する) -->
         <View
