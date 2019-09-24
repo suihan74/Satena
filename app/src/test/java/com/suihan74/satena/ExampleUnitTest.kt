@@ -1,9 +1,5 @@
 package com.suihan74.satena
 
-import android.graphics.Color
-import com.google.gson.GsonBuilder
-import com.suihan74.satena.models.TaggedUser
-import com.suihan74.satena.models.UserTag
 import com.suihan74.satena.models.UserTagsContainer
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -25,33 +21,7 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun userTags() {
-        val user0 = TaggedUser(0, "suihan")
-        val user1 = TaggedUser(1, "hoge")
-        val user2 = TaggedUser(2, "hage")
-
-        val group = UserTag(
-            0,
-            "test",
-            Color.BLACK
-        ).apply {
-            add(user0)
-            add(user1)
-            add(user2)
-        }
-
-        val gson = GsonBuilder().create()
-        val json = gson.toJson(group)
-
-        val dest = gson.fromJson(json, UserTag::class.java)
-        assertEquals(group.name, dest.name)
-        assertEquals(true, dest.contains(user0))
-        assertEquals(true, dest.contains(user1))
-        assertEquals(true, dest.contains(user2))
-    }
-
-    @Test
-    fun userTagsContainer() {
+    fun copyUserTag() {
         val container = UserTagsContainer()
         container.apply {
             addUser("suihan74")
@@ -60,21 +30,52 @@ class ExampleUnitTest {
         }
 
         container.apply {
-            addTag("ネトウヨ")
-            addTag("はてサ")
+            addTag("aaa")
+            addTag("bbb")
         }
+
+        val suihan = container.getUser("suihan74")!!
+        val tag0 = container.getTag("aaa")!!
 
         container.apply {
-            tagUser(getUser("suihan74")!!, getTag("ネトウヨ")!!)
+            tagUser(suihan, tag0)
         }
 
-        val gson = GsonBuilder().create()
-        val json = gson.toJson(container)
+        val tag0Copy = container.changeTagName(tag0, "ccc")
+        assertEquals(true, tag0Copy.contains(suihan))
+        assertEquals("ccc", tag0Copy.name)
+    }
 
-        val dest = gson.fromJson(json, UserTagsContainer::class.java)
-        assertEquals(true, dest.containsUser("suihan74"))
-        assertEquals(true, dest.containsUser("hoge"))
-        assertEquals(true, dest.containsUser("john"))
-        assertEquals(true, dest.getTagsOfUser("suihan74").any { it.name == "ネトウヨ" })
+    @Test
+    fun UserTagContainerCompaction() {
+        val container = UserTagsContainer()
+        val suihan = container.addUser("suihan")
+        val hoge = container.addUser("hoge")
+        val hage = container.addUser("hage")
+        val john = container.addUser("john")
+        val johnny = container.addUser("johnny")
+
+        val tag0 = container.addTag("aaa")
+        val tag1 = container.addTag("bbb")
+
+        container.apply {
+            tagUser(suihan, tag0)
+            tagUser(hage, tag0)
+            tagUser(john, tag1)
+            tagUser(johnny, tag0)
+            tagUser(johnny, tag1)
+        }
+
+        container.optimize()
+
+        val newTag0 = container.getTag("aaa")!!
+        val newJohnny = container.getUser("johnny")!!
+
+        assertEquals(false, johnny == newJohnny)
+        assertEquals(true, newJohnny.containsTag(newTag0))
     }
 }
+
+
+
+

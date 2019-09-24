@@ -13,11 +13,12 @@ import com.suihan74.utilities.RecyclerType
 
 open class UserTagsAdapter(tags : Collection<UserTag>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states = RecyclerState.makeStatesWithFooter(tags.reversed())
+    private val states = RecyclerState.makeStatesWithFooter(tags.toList())
 
     fun addItem(tag: UserTag) {
-        states.add(0, RecyclerState(RecyclerType.BODY, tag))
-        notifyItemInserted(0)
+        val position = states.size - 1
+        states.add(position, RecyclerState(RecyclerType.BODY, tag))
+        notifyItemInserted(position)
     }
 
     fun removeItem(tag: UserTag) {
