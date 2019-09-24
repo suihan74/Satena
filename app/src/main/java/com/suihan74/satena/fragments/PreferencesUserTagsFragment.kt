@@ -23,6 +23,9 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
 
     private var mDisplayedUserTag : UserTag? = null
 
+    val userTagsContainer
+        get() = mUserTagsContainer
+
     companion object {
         fun createInstance() = PreferencesUserTagsFragment()
 
@@ -34,11 +37,19 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
         outState.putSerializable(BUNDLE_DISPLAYED_USER_TAG, mDisplayedUserTag)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_preferences_user_tags, container, false)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
         mPrefs = SafeSharedPreferences.create(context!!)
         mUserTagsContainer = mPrefs.get(UserTagsKey.CONTAINER)
+        mUserTagsContainer.optimize()
+        mPrefs.edit {
+            putObject(UserTagsKey.CONTAINER, mUserTagsContainer)
+        }
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val root = inflater.inflate(R.layout.fragment_preferences_user_tags, container, false)
 
         // タグ一覧を表示
         showUserTagsList()
@@ -68,7 +79,7 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
 
     fun showTaggedUsersList(tag: UserTag) {
         mDisplayedUserTag = tag
-        val fragment = TaggedUsersListFragment.createInstance(this, mUserTagsContainer, tag)
+        val fragment = TaggedUsersListFragment.createInstance(this, tag)
         childFragmentManager.beginTransaction()
             .replace(R.id.content_layout, fragment)
             .addToBackStack(null)
@@ -76,7 +87,7 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
     }
 
     private fun showUserTagsList() {
-        val fragment = UserTagsListFragment.createInstance(this, mUserTagsContainer)
+        val fragment = UserTagsListFragment.createInstance(this)
         childFragmentManager.beginTransaction()
             .replace(R.id.content_layout, fragment)
             .commit()

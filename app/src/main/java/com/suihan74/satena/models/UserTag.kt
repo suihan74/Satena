@@ -131,7 +131,7 @@ class UserTagsContainer : Serializable {
 
     /** ユーザーについたタグのリストを取得 */
     fun getTagsOfUser(user: TaggedUser?) =
-        user?.tags?.map { mTags[it]!! } ?: emptyList()
+        user?.tags?.mapNotNull { mTags[it] ?: removeIllegalTagId(user, it) } ?: emptyList()
 
     /** ユーザーについたタグのリストを取得 */
     fun getTagsOfUser(name: String) =
@@ -139,11 +139,29 @@ class UserTagsContainer : Serializable {
 
     /** 指定タグがついたユーザーのリストを取得 */
     fun getUsersOfTag(tag: UserTag?) =
-        tag?.users?.map { mUsers[it]!! } ?: emptyList()
+        tag?.users?.mapNotNull { mUsers[it] ?: removeIllegalUserId(tag, it) } ?: emptyList()
 
     /** 指定タグがついたユーザーのリストを取得 */
     fun getUsersOfTag(name: String) =
         getUsersOfTag(getTag(name))
+
+    /**
+     * ユーザーデータが何らかの不具合で存在しないタグIDを参照している場合そのIDを除去する
+     * getTagsOfUser()で使用する都合上常にnullを返す
+     */
+    private fun removeIllegalTagId(user: TaggedUser, tagId: Int) : UserTag? {
+        user.removeTag(tagId)
+        return null
+    }
+
+    /**
+     * タグデータが何らかの不具合で存在しないユーザーIDを参照している場合そのIDを除去する
+     * getUsersOfTag()で使用する都合上常にnullを返す
+     */
+    private fun removeIllegalUserId(tag: UserTag, userId: Int) : TaggedUser? {
+        tag.removeUser(userId)
+        return null
+    }
 
     /**
      * コンテナの状態を最適化
@@ -163,7 +181,9 @@ class UserTagsContainer : Serializable {
 
     /** タグデータのIDを連番に並べ直す */
     private fun makeTagIdsCompact() {
-        val modifiedTags = tags.mapIndexed { index, tag ->
+        if (mNextTagId == mTags.size) return
+
+        val modifiedTags = mTags.values.mapIndexed { index, tag ->
             if (index == tag.id) {
                 tag
             }
@@ -178,12 +198,14 @@ class UserTagsContainer : Serializable {
         }
         mTags.clear()
         mTags.putAll(modifiedTags.map { Pair(it.id, it) })
-        mNextTagId = tags.size
+        mNextTagId = mTags.size
     }
 
     /** ユーザーデータのIDを連番に並べ直す */
     private fun makeUserIdsCompact() {
-        val modifiedUsers = users.mapIndexed { index, user ->
+        if (mNextUserId == mUsers.size) return
+
+        val modifiedUsers = mUsers.values.mapIndexed { index, user ->
             if (index == user.id) {
                 user
             }
@@ -198,7 +220,7 @@ class UserTagsContainer : Serializable {
         }
         mUsers.clear()
         mUsers.putAll(modifiedUsers.map { Pair(it.id, it) })
-        mNextUserId = users.size
+        mNextUserId = mUsers.size
     }
 }
 
@@ -220,7 +242,8 @@ data class UserTag (
 
     internal fun addUser(user: TaggedUser) = mUsers.add(user.id)
 
-    internal fun removeUser(user: TaggedUser) = mUsers.remove(user.id)
+    internal fun removeUser(user: TaggedUser) = removeUser(user.id)
+    internal fun removeUser(id: Int) = mUsers.remove(id)
 
     internal fun newInstance(id: Int = this.id, name: String = this.name, color: Int = this.color) =
         UserTag(id, name, color).also {
@@ -242,7 +265,8 @@ data class TaggedUser (
 
     internal fun addTag(tag: UserTag) = mTags.add(tag.id)
 
-    internal fun removeTag(tag: UserTag) = mTags.remove(tag.id)
+    internal fun removeTag(tag: UserTag) = removeTag(tag.id)
+    internal fun removeTag(id: Int) = mTags.remove(id)
 
     internal fun newInstance(id: Int = this.id, name: String = this.name) =
         TaggedUser(id, name).also {
