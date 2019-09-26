@@ -70,7 +70,7 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
     override fun onBackPressed() = onBackPressed(null)
 
     private fun backActivity() {
-        if (supportFragmentManager.backStackEntryCount == 1) {
+        if (supportFragmentManager.backStackEntryCount <= 1) {
             finish()
             overridePendingTransition(0, android.R.anim.slide_out_right)
         }
