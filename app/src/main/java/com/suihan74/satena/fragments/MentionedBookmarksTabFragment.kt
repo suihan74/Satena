@@ -75,7 +75,7 @@ class MentionedBookmarksTabFragment : Fragment() {
             }
         }
 
-        retainInstance = true
+        //retainInstance = true
         return root
     }
 

@@ -1,11 +1,8 @@
 package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
-import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.transition.Fade
 import android.transition.Slide
@@ -22,11 +19,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
-import com.suihan74.satena.TappedActionLauncher
 import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.adapters.tabs.StarsTabAdapter
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,7 +37,11 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
     private val mIsStarMenuOpened : Boolean
         get() = mView.findViewById<View>(R.id.yellow_star_layout).alpha > 0f
 
-    private var mBookmarksFragment: BookmarksFragment? = null
+    private val bookmarksFragment : BookmarksFragment?
+        get() {
+            val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksDetailFragment has created from an invalid activity")
+            return activity.bookmarksFragment
+        }
 
     val bookmark
         get() = mBookmark
@@ -186,6 +185,9 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                 override fun onActionItemClicked(p0: ActionMode?, p1: MenuItem?) = false
             }
 
+            movementMethod = LinkMovementMethod.getInstance()
+
+            /*
             val linkMovementMethod = object : MutableLinkMovementMethod() {
                 override fun onSinglePressed(link: String) {
                     if (link.startsWith("http")) {
@@ -220,6 +222,18 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                     textView,
                     SpannableString(textView.text),
                     event)
+            }*/
+        }
+
+        val userTagsContainer = bookmarksFragment?.userTagsContainer
+        userTagsContainer?.let { c ->
+            val tags = c.getTagsOfUser(mBookmark.user)
+            val v = tags.isNotEmpty().toVisibility(View.INVISIBLE)
+            view.findViewById<View>(R.id.user_tags_icon)?.visibility = v
+            view.findViewById<TextView>(R.id.user_tags)?.run {
+                visibility = v
+                text = tags.joinToString(",") { it.name }
+                setHorizontallyScrolling(false)
             }
         }
 
@@ -227,7 +241,6 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             .load(mBookmark.userIconUrl)
             .into(icon)
 
-        retainInstance = true
         return view
     }
 
@@ -238,14 +251,12 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
 
         launch(Dispatchers.Main) {
-            val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksDetailFragment has created from an invalid activity")
-            mBookmarksFragment = activity.bookmarksFragment
 
-            val task = mBookmarksFragment!!.getFetchStarsTask(mBookmark.user)
+            val task = bookmarksFragment!!.getFetchStarsTask(mBookmark.user)
             if (task == null || task.isCompleted) {
                 val adapter = StarsTabAdapter(
                     tabPager,
-                    mBookmarksFragment!!,
+                    bookmarksFragment!!,
                     this@BookmarkDetailFragment,
                     mBookmark
                 )
@@ -276,7 +287,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                     task.await()
                     tabPager.adapter = StarsTabAdapter(
                         tabPager,
-                        mBookmarksFragment!!,
+                        bookmarksFragment!!,
                         this@BookmarkDetailFragment,
                         mBookmark
                     )
@@ -447,17 +458,17 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                     val quote = mView.findViewById<TextView>(R.id.quote_text_view).text.toString()
 
                     HatenaClient.postStarAsync(
-                        url = mBookmark.getBookmarkUrl(mBookmarksFragment!!.bookmarksEntry!!),
+                        url = mBookmark.getBookmarkUrl(bookmarksFragment!!.bookmarksEntry!!),
                         color = color,
                         quote = quote
                     ).await()
 
-                    mBookmarksFragment!!.updateStar(mBookmark)
+                    bookmarksFragment!!.updateStar(mBookmark)
 
                     val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
                     tabPager.adapter = StarsTabAdapter(
                         tabPager,
-                        mBookmarksFragment!!,
+                        bookmarksFragment!!,
                         this@BookmarkDetailFragment,
                         mBookmark
                     )
@@ -476,13 +487,13 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
     }
 
     fun updateStars() = launch {
-        mBookmarksFragment!!.updateStar(mBookmark)
+        bookmarksFragment!!.updateStar(mBookmark)
 
         withContext(Dispatchers.Main) {
             val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
             tabPager.adapter = StarsTabAdapter(
                 tabPager,
-                mBookmarksFragment!!,
+                bookmarksFragment!!,
                 this@BookmarkDetailFragment,
                 mBookmark
             )

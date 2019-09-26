@@ -1,6 +1,5 @@
 package com.suihan74.satena.fragments
 
-import android.content.Context
 import android.os.Bundle
 import android.transition.Fade
 import android.transition.TransitionSet
@@ -8,20 +7,16 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.ProgressBar
-import androidx.appcompat.widget.Toolbar
+import android.widget.Spinner
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.satena.R
+import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.adapters.EntriesAdapter
-import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -29,9 +24,7 @@ import kotlinx.coroutines.launch
 
 abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
     private lateinit var mRoot : View
-    private lateinit var mProgressBar : ProgressBar
-    private lateinit var mSearchLayout : View
-    private lateinit var mSearchEditText : View
+    private lateinit var mSpinner : Spinner
     private lateinit var mSwipeRefreshLayout : SwipeRefreshLayout
 
     private var mEntriesAdapter : EntriesAdapter? = null
@@ -46,15 +39,7 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mRoot = inflater.inflate(R.layout.fragment_user_entries, container, false).apply {
-            mProgressBar = findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
-                visibility = View.INVISIBLE
-            }
-
-            mSearchLayout = findViewById<View>(R.id.search_layout).apply {
-                visibility = View.INVISIBLE
-            }
-
-            mSearchEditText = findViewById<View>(R.id.search_query).apply {
+            mSpinner = findViewById<Spinner>(R.id.spinner).apply {
                 visibility = View.GONE
             }
 
@@ -74,41 +59,15 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
         return mRoot
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context!!)
-        mRoot.findViewById<Toolbar>(R.id.toolbar).apply {
-            layoutParams = (layoutParams as AppBarLayout.LayoutParams).apply {
-                val switchToolbarDisplay = prefs.getBoolean(PreferenceKey.ENTRIES_HIDING_TOOLBAR_BY_SCROLLING)
-                scrollFlags =
-                    if (switchToolbarDisplay)
-                        AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
-                    else 0
-            }
-        }
-
-        val editText = mRoot.findViewById<EditText>(R.id.search_query)
-        val context = context
-        if (context != null && editText.isFocusable && editText.visibility == View.VISIBLE) {
-            editText.requestFocus()
-            val im = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            im.showSoftInput(editText, 0)
-            editText.setSelection(editText.text.length)
-        }
-    }
-
-    fun showSearchLayout() {
-        mSearchLayout.visibility = View.VISIBLE
-        mSearchEditText.visibility = View.VISIBLE
-    }
+    fun showSpinner() : Spinner =
+        mSpinner.apply { visibility = View.VISIBLE }
 
     fun showProgressBar() {
-        mProgressBar.visibility = View.VISIBLE
+        (activity as? ActivityBase)?.showProgressBar()
     }
 
     fun hideProgressBar() {
-        mProgressBar.visibility = View.INVISIBLE
+        (activity as? ActivityBase)?.hideProgressBar()
     }
 
     fun refreshEntries(updater: (Int?)->Deferred<List<Entry>>) = refreshEntries("エントリ取得失敗", updater)

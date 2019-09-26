@@ -2,6 +2,7 @@ package com.suihan74.satena.fragments
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,8 +16,10 @@ import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.activities.BookmarksActivity
+import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.adapters.BookmarksAdapter
 import com.suihan74.satena.adapters.tabs.BookmarksTabAdapter
 import com.suihan74.satena.dialogs.UserTagDialogFragment
@@ -162,7 +165,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             }
         }
 
-        retainInstance = true
+        //retainInstance = true
         return view
     }
 
@@ -398,7 +401,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                         diffs[which] = isChecked
                     }
                     .setNeutralButton("新規タグに登録") { _, _ ->
-                        val dialog = UserTagDialogFragment.createInstance { name, _ ->
+                        val dialog = UserTagDialogFragment.createInstance { _, name, _ ->
                             if (userTagsContainer.containsTag(name)) {
                                 context!!.showToast("既に存在するタグです")
                                 return@createInstance false
@@ -451,10 +454,11 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             }
 
             override fun onItemLongClicked(bookmark: Bookmark): Boolean {
-                val items = arrayListOf("ブクマ済みエントリ一覧を見る" to {
-                    val fragment =
-                        UserEntriesFragment.createInstance(bookmark.user)
-                    (activity as FragmentContainerActivity).showFragment(fragment, null)
+                val items = arrayListOf("最近のブックマークを見る" to {
+                    val intent = Intent(SatenaApplication.instance, MainActivity::class.java).apply {
+                        putExtra(MainActivity.EXTRA_DISPLAY_USER, bookmark.user)
+                    }
+                    startActivity(intent)
                 })
                 if (HatenaClient.account?.name == bookmark.user) {
                     items.add("ブックマークを削除" to { removeBookmark(bookmark) })

@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
@@ -28,32 +29,72 @@ import java.io.File
 
 class FilePickerDialog : DialogFragment() {
     companion object {
-        fun createInstance(title: String, message: String?, action: (File)->Unit) = FilePickerDialog().apply {
+        fun createInstance(title: String, message: String?, action: (FragmentManager, File)->Unit): FilePickerDialog = FilePickerDialog().apply {
             this.title = title
             this.message = message
             this.action = action
         }
 
-        fun createInstance(title: String, action: (File)->Unit) = FilePickerDialog().apply {
+        fun createInstance(title: String, action: (FragmentManager, File)->Unit) = FilePickerDialog().apply {
             this.title = title
             this.message = null
             this.action = action
         }
+
+        private var savedTitle : String? = null
+        private var savedMessage : String? = null
+        private var savedAction : ((FragmentManager, File)->Unit)? = null
+        private var savedDirectoryOnly : Boolean? = null
+        private var savedCurrentDirectory : File? = null
     }
 
     private var title : String? = null
     private var message: String? = null
-    private lateinit var action: (File)->Unit
+    private lateinit var action: (FragmentManager, File)->Unit
     var directoryOnly: Boolean = true
+
+    private lateinit var mItemsAdapter: ItemsAdapter
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        savedTitle = title
+        savedMessage = message
+        savedAction = action
+        savedDirectoryOnly = directoryOnly
+        savedCurrentDirectory = mItemsAdapter.currentDirectory
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = activity as Context
 
+        savedTitle?.let {
+            title = it
+            savedTitle = null
+        }
+
+        savedMessage?.let {
+            message = it
+            savedMessage = null
+        }
+
+        savedAction?.let {
+            action = it
+            savedAction = null
+        }
+
+        savedDirectoryOnly?.let {
+            directoryOnly = it
+            savedDirectoryOnly = null
+        }
+
+        val externalStorage = savedCurrentDirectory?.let { it } ?: Environment.getExternalStorageDirectory()
+        savedCurrentDirectory = null
+
         val inflater = LayoutInflater.from(context)
         val root = inflater.inflate(R.layout.fragment_dialog_filepicker, null)
 
-        val externalStorage = Environment.getExternalStorageDirectory()
         val itemsAdapter = ItemsAdapter(externalStorage, directoryOnly, root.findViewById(R.id.current_path))
+        mItemsAdapter = itemsAdapter
 
         root.findViewById<RecyclerView>(R.id.file_list).apply {
             val dividerItemDecoration = DividerItemDecorator(
@@ -67,7 +108,7 @@ class FilePickerDialog : DialogFragment() {
         builder
             .setTitle(title)
             .setPositiveButton("開く") { _, _ ->
-                action(itemsAdapter.currentFile)
+                action(fragmentManager!!, itemsAdapter.currentFile)
             }
             .setNegativeButton("CANCEL", null)
             .setView(root)
@@ -87,6 +128,9 @@ class FilePickerDialog : DialogFragment() {
 
         val fullPath: String
             get() = (selectedFile ?: mCurrentFile).absolutePath
+
+        val currentDirectory: File
+            get() = mCurrentFile
 
         val currentFile: File
             get() = selectedFile ?: mCurrentFile

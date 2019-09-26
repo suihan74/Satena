@@ -22,6 +22,8 @@
         <item name="android:statusBarColor">@color/colorPrimary</item>
         <item name="android:textColorPrimary">@color/colorPrimaryText</item>
 
+        <item name="searchViewStyle">@style/SearchViewStyle</item>
+
         <!-- TabLayout -->
         <item name="tabSelectedTextColor">@color/colorPrimary</item>
         <item name="tabTextColor">@color/disabledColor</item>
@@ -155,6 +157,7 @@
         <item name="android:textSize">18sp</item>
         <item name="android:textColor">@color/colorPrimaryText</item>
         <item name="android:dropDownSelector">@color/colorPrimaryText</item>
+        <item name="backgroundTint">@color/colorPrimaryText</item>
     </style>
 
     <style name="SpinnerStyle.Light" parent="SpinnerStyle">
@@ -165,6 +168,16 @@
         <item name="android:popupBackground">@color/panelBackgroundDark</item>
     </style>
 
+    <!-- SearchView -->
+    <style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
+        <item name="queryBackground">@android:color/transparent</item>
+        <item name="submitBackground">@android:color/transparent</item>
+        <item name="closeIcon">@drawable/ic_baseline_close</item>
+        <item name="searchIcon">@drawable/ic_baseline_search</item>
+        <item name="commitIcon">@drawable/ic_baseline_search</item>
+        <item name="goIcon">@drawable/ic_baseline_search</item>
+        <item name="textColor">@color/colorPrimaryText</item>
+    </style>
 
     <!-- IgnoreTarget @ IgnoredEntryDialog -->
     <style name="IgnoreTargetCheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">

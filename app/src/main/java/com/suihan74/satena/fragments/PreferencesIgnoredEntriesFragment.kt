@@ -11,13 +11,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.adapters.IgnoredEntriesAdapter
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.IgnoredEntriesKey
 import com.suihan74.satena.models.IgnoredEntry
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.get
 
 class PreferencesIgnoredEntriesFragment : Fragment() {
     private lateinit var mIgnoredEntriesAdapter : IgnoredEntriesAdapter
@@ -35,9 +36,8 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
 
         mIgnoredEntriesAdapter = object : IgnoredEntriesAdapter(mIgnoredEntries) {
             override fun onItemClicked(entry: IgnoredEntry) {
-                val dialog = IgnoredEntryDialogFragment.createInstance(entry) { modified ->
-                    mIgnoredEntriesAdapter.modifyItem(entry, modified)
-                    this@PreferencesIgnoredEntriesFragment.modifyItem(entry, modified)
+                val dialog = IgnoredEntryDialogFragment.createInstance(entry) { fm, modified ->
+                    fm.get<PreferencesIgnoredEntriesFragment>()?.modifyItem(entry, modified)
                     true
                 }
                 dialog.show(fragmentManager!!, "dialog")
@@ -74,20 +74,14 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
             val dialog = IgnoredEntryDialogFragment.createInstance(
                 "",
                 ""
-            ) { ignoredEntry ->
+            ) { fm, ignoredEntry ->
                 if (mIgnoredEntries.contains(ignoredEntry)) {
-                    context!!.showToast("既に存在する非表示設定です")
+                    SatenaApplication.showToast("既に存在する非表示設定です")
                     return@createInstance false
                 } else {
-                    mIgnoredEntries.add(ignoredEntry)
+                    fm.get<PreferencesIgnoredEntriesFragment>()?.addItem(ignoredEntry)
 
-                    prefs.edit {
-                        putObject(IgnoredEntriesKey.IGNORED_ENTRIES, mIgnoredEntries)
-                    }
-
-                    mIgnoredEntriesAdapter.addItem(ignoredEntry)
-
-                    context!!.showToast("${ignoredEntry.query} を非表示にしました")
+                    SatenaApplication.showToast("${ignoredEntry.query} を非表示にしました")
                     return@createInstance true
                 }
             }
@@ -97,10 +91,18 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
         return root
     }
 
+    fun addItem(entry: IgnoredEntry) {
+        mIgnoredEntries.add(entry)
+        mIgnoredEntriesAdapter.addItem(entry)
+        val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context!!)
+        prefs.edit {
+            putObject(IgnoredEntriesKey.IGNORED_ENTRIES, mIgnoredEntries)
+        }
+    }
+
     fun removeItem(entry: IgnoredEntry) {
         mIgnoredEntries.remove(entry)
         mIgnoredEntriesAdapter.removeItem(entry)
-
         val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context!!)
         prefs.edit {
             put(IgnoredEntriesKey.IGNORED_ENTRIES, mIgnoredEntries)
@@ -110,7 +112,7 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
     fun modifyItem(older: IgnoredEntry, newer: IgnoredEntry) {
         val position = mIgnoredEntries.indexOf(older)
         mIgnoredEntries[position] = newer
-
+        mIgnoredEntriesAdapter.modifyItem(older, newer)
         val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context!!)
         prefs.edit {
             put(IgnoredEntriesKey.IGNORED_ENTRIES, mIgnoredEntries)

@@ -11,6 +11,7 @@
             android:id="@+id/user_name"
             android:textColor="@color/textColor"
             android:inputType="text"
+            android:importantForAutofill="no"
             android:singleLine="true"
             android:hint="@string/tagged_user_dialog_name_hint"
             android:layout_toStartOf="@id/user_icon"

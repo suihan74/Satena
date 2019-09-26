@@ -1,12 +1,11 @@
 package com.suihan74.utilities
 
-import androidx.fragment.app.Fragment
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 abstract class CoroutineScopeFragment(
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
-): Fragment(), CoroutineScope {
+): FragmentBase(), CoroutineScope {
 
     private val mJob: Job = SupervisorJob()
 

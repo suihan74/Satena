@@ -1,5 +1,6 @@
 package com.suihan74.satena.fragments
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -18,10 +19,10 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.ActivityBase
+import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.adapters.TagsAdapter
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.CoroutineScopeFragment
-import com.suihan74.utilities.FragmentContainerActivity
 import com.suihan74.utilities.makeSpannedfromHtml
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
@@ -91,9 +92,10 @@ class EntryInformationFragment : CoroutineScopeFragment() {
                 }
             ) {
                 override fun onItemClicked(tag: String) {
-                    val fragment =
-                        SearchEntriesFragment.createInstance(tag, SearchType.Tag)
-                    (activity as FragmentContainerActivity).showFragment(fragment, null)
+                    val intent = Intent(activity, MainActivity::class.java).apply {
+                        putExtra(MainActivity.EXTRA_DISPLAY_TAG, tag)
+                    }
+                    startActivity(intent)
                 }
             }
         }
@@ -154,7 +156,7 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             }
         }
 
-        retainInstance = true
+        //retainInstance = true
         return view
     }
 

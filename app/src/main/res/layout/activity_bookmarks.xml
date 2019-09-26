@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:background="?attr/panelBackground"
         android:configChanges="orientation|screenSize"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="false"
-        tools:context=".activities.BookmarksActivity">
+        android:fitsSystemWindows="false">
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+<!--    <include layout="@layout/actionbar_default" android:id="@+id/action_bar"/>
+-->
+    <!-- メインコンテンツ -->
+    <FrameLayout
             android:id="@+id/bookmarks_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
-    <!-- 以下ブクマ投稿ダイアログ -->
-
+    <!-- ブクマ投稿ダイアログ用の領域 -->
     <View
             android:id="@+id/post_bookmark_background"
             android:clickable="true"
@@ -30,6 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
+    <!-- プログレスバー -->
     <View
             android:id="@+id/click_guard"
             android:visibility="gone"

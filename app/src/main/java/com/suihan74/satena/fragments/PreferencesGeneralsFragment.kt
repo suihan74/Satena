@@ -15,14 +15,18 @@ import com.suihan74.satena.adapters.tabs.PreferencesTabMode
 import com.suihan74.satena.dialogs.NumberPickerDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.get
 
 class PreferencesGeneralsFragment : Fragment() {
+    private lateinit var mRoot : View
+
     companion object {
         fun createInstance() = PreferencesGeneralsFragment()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_preferences_generals, container, false)
+        mRoot = view
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context!!)
 
@@ -100,11 +104,14 @@ class PreferencesGeneralsFragment : Fragment() {
                     minValue = 1,
                     maxValue = 180,
                     defaultValue = currentValue.toInt()
-                ) { value ->
+                ) { fm, value ->
                     prefs.edit {
                         putLong(key, value.toLong())
                     }
-                    text = String.format("%d分", prefs.get(key))
+
+                    fm.get<PreferencesGeneralsFragment>()?.findViewById<Button>(R.id.preferences_generals_checking_notices_interval)?.let {
+                        it.text = String.format("%d分", value)
+                    }
                 }
                 dialog.show(fragmentManager!!, "dialog")
             }
@@ -112,4 +119,7 @@ class PreferencesGeneralsFragment : Fragment() {
 
         return view
     }
+
+    fun <T : View> findViewById(id: Int) =
+        mRoot.findViewById<T>(id)!!
 }

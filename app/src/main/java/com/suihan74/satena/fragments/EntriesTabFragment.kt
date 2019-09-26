@@ -19,20 +19,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class EntriesTabFragment : CoroutineScopeFragment() {
+    private var mView : View? = null
+    private var mEntriesAdapter : EntriesAdapter? = null
+    private var mEntriesScrollingUpdater : RecyclerViewScrollingUpdater? = null
+
     private var mTabPosition: Int = -1
     private var mEntries : List<Entry> = emptyList()
-    private lateinit var mEntriesAdapter : EntriesAdapter
-    private lateinit var mEntriesScrollingUpdater : RecyclerViewScrollingUpdater
-    private lateinit var mView : View
-    private lateinit var mCategory: Category
+    private var mCategory: Category? = null
 
     private var mEntriesFragment: EntriesFragment? = null
 
     var category: Category
-        get() = mCategory
+        get() = mCategory!!
+
         set(value) {
             mCategory = value
-            mEntriesAdapter.category = value
+            mEntriesAdapter?.category = value
         }
 
     companion object {
@@ -47,16 +49,14 @@ class EntriesTabFragment : CoroutineScopeFragment() {
 
     fun setEntries(entriesList: List<Entry>) {
         mEntries = entriesList
-        if (this::mEntriesAdapter.isInitialized) {
-            mEntriesAdapter.setEntries(mEntries)
-            scrollToTop()
-        }
+        mEntriesAdapter?.setEntries(mEntries)
+        scrollToTop()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.run {
-            putInt(BUNDLE_CATEGORY, mCategory.int)
+            putInt(BUNDLE_CATEGORY, mCategory?.int ?: 0)
             putInt(BUNDLE_TAB_POSITION, mTabPosition)
         }
     }
@@ -70,7 +70,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
 
     override fun onResume() {
         super.onResume()
-        mEntriesAdapter.onResume()
+        mEntriesAdapter?.onResume()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -94,12 +94,12 @@ class EntriesTabFragment : CoroutineScopeFragment() {
             layoutManager = LinearLayoutManager(context)
             mEntriesAdapter = EntriesAdapter(this@EntriesTabFragment, category, mTabPosition, mEntries)
             adapter = mEntriesAdapter
-            mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter) {
+            mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter!!) {
                 override fun load() {
                     launch(Dispatchers.Main) {
                         try {
-                            mEntriesFragment?.refreshEntriesAsync(mTabPosition, mEntriesAdapter.entireOffset)?.await()?.let {
-                                mEntriesAdapter.addEntries(it)
+                            mEntriesFragment?.refreshEntriesAsync(mTabPosition, mEntriesAdapter!!.entireOffset)?.await()?.let {
+                                mEntriesAdapter!!.addEntries(it)
                             }
                         }
                         catch (e: Exception) {
@@ -112,7 +112,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
                     }
                 }
             }
-            addOnScrollListener(mEntriesScrollingUpdater)
+            addOnScrollListener(mEntriesScrollingUpdater!!)
         }
 
         // スワイプ更新機能の設定
@@ -123,7 +123,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
                 launch(Dispatchers.Main) {
                     try {
                         mEntriesFragment?.refreshEntriesAsync(mTabPosition)?.await()?.let {
-                            mEntriesAdapter.setEntries(it)
+                            mEntriesAdapter?.setEntries(it)
 //                            mEntriesScrollingUpdater.refreshInvokingPosition(mEntriesAdapter.itemCount)
                         }
                     }
@@ -138,14 +138,13 @@ class EntriesTabFragment : CoroutineScopeFragment() {
             }
         }
 
-        retainInstance = true
         return view
     }
 
 
     fun scrollToTop() = launch(Dispatchers.Main) {
-        val recyclerView = mView.findViewById<RecyclerView>(R.id.entries_list)
-        recyclerView.scrollToPosition(0)
+        val recyclerView = mView?.findViewById<RecyclerView>(R.id.entries_list)
+        recyclerView?.scrollToPosition(0)
     }
 
     fun clear() {

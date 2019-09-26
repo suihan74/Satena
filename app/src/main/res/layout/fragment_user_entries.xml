@@ -5,21 +5,21 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/panelBackground"
-        android:orientation="vertical">
+        android:background="?attr/panelBackground">
 
     <com.google.android.material.appbar.AppBarLayout
+            android:background="?attr/colorPrimary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-        <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
+        <Spinner
+                android:id="@+id/spinner"
+                app:layout_scrollFlags="enterAlways"
+                android:backgroundTint="@color/colorPrimaryText"
+                android:paddingStart="8dp"
+                android:paddingEnd="0dp"
+                android:layout_marginBottom="4dp"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:layout_alignParentTop="true"
-                app:titleTextColor="#fff"
-                android:background="?attr/colorPrimary"/>
-
+                android:layout_height="wrap_content"/>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -38,68 +38,5 @@
                 android:scrollbars="vertical"/>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <RelativeLayout
-            android:id="@+id/search_layout"
-            android:layout_gravity="bottom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-        <EditText
-                android:id="@+id/search_query"
-                android:singleLine="true"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:inputType="text"
-                android:imeOptions="actionSearch"
-                android:hint="@string/search_query_hint"
-                android:importantForAutofill="no"
-                android:textColorHint="@color/bookmarkSearchHintColor"
-                android:background="@color/colorPrimary"
-                android:textColor="@color/colorPrimaryText"
-                android:layout_alignParentBottom="true"
-                android:layout_toStartOf="@id/search_type_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
-        <Button
-                android:id="@+id/search_type_button"
-                android:text="@string/search_type_tag"
-                android:background="@color/colorPrimary"
-                android:layout_toStartOf="@id/search_order_button"
-                android:layout_alignTop="@id/search_query"
-                android:layout_alignParentBottom="true"
-                android:layout_width="72sp"
-                android:layout_height="wrap_content"/>
-
-        <Button
-                android:id="@+id/search_order_button"
-                android:text="@string/entries_tab_recent"
-                android:background="@color/colorPrimary"
-                android:layout_toStartOf="@id/search_button"
-                android:layout_alignTop="@id/search_query"
-                android:layout_alignParentBottom="true"
-                android:layout_width="48sp"
-                android:layout_height="wrap_content"/>
-
-        <ImageButton
-                android:id="@+id/search_button"
-                android:src="@drawable/ic_baseline_search"
-                android:contentDescription="@null"
-                android:background="@drawable/search_button"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentEnd="true"
-                android:layout_width="56dp"
-                android:layout_height="56dp"/>
-    </RelativeLayout>
-
-    <ProgressBar
-            android:id="@+id/detail_progress_bar"
-            android:visibility="invisible"
-            style="?android:attr/progressBarStyle"
-            android:indeterminateTint="?attr/colorPrimary"
-            android:layout_gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

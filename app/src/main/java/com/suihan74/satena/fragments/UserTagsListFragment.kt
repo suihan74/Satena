@@ -10,29 +10,27 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.adapters.UserTagsAdapter
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.UserTag
 import com.suihan74.utilities.DividerItemDecorator
-import com.suihan74.utilities.showToast
 
 class UserTagsListFragment : Fragment() {
     private lateinit var mUserTagsAdapter : UserTagsAdapter
-    private var mParentFragment: PreferencesUserTagsFragment? = null
 
     companion object {
-        fun createInstance(parentFragment: PreferencesUserTagsFragment) = UserTagsListFragment().apply {
-            mParentFragment = parentFragment
-        }
+        fun createInstance() = UserTagsListFragment()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_user_tags_list, container, false)
 
-        val userTagsContainer = mParentFragment!!.userTagsContainer
+        val parentFragment = parentFragment as PreferencesUserTagsFragment
+        val userTagsContainer = parentFragment.userTagsContainer
         mUserTagsAdapter = object : UserTagsAdapter(userTagsContainer.tags) {
             override fun onItemClicked(tag: UserTag) {
-                mParentFragment?.showTaggedUsersList(tag)
+                parentFragment.showTaggedUsersList(tag)
             }
 
             override fun onItemLongClicked(tag: UserTag): Boolean {
@@ -62,13 +60,13 @@ class UserTagsListFragment : Fragment() {
             adapter = mUserTagsAdapter
         }
 
-        retainInstance = true
         return root
     }
 
     private fun removeItem(tag: UserTag) {
+        val parentFragment = parentFragment as PreferencesUserTagsFragment
         mUserTagsAdapter.removeItem(tag)
-        mParentFragment?.removeTag(tag)
+        parentFragment.removeTag(tag)
     }
 
     fun addItem(tag: UserTag) {
@@ -76,17 +74,19 @@ class UserTagsListFragment : Fragment() {
     }
 
     private fun modifyItem(tag: UserTag) {
-        val dialog = UserTagDialogFragment.createInstance(tag) { name, _ ->
+        val parentFragment = parentFragment as PreferencesUserTagsFragment
+        val dialog = UserTagDialogFragment.createInstance(tag) { fragment, name, _ ->
             if (tag.name != name) {
-                val userTagsContainer = mParentFragment!!.userTagsContainer
+                val userTagsContainer = parentFragment.userTagsContainer
                 if (userTagsContainer.getTag(name) != null) {
-                    activity?.showToast("既に存在するタグ名です")
+                    SatenaApplication.showToast("既に存在するタグ名です")
                     return@createInstance false
                 }
                 else {
+                    fragment as UserTagsListFragment
                     val modifiedTag = userTagsContainer.changeTagName(tag, name)
-                    updateItem(modifiedTag)
-                    mParentFragment?.updatePrefs()
+                    fragment.updateItem(modifiedTag)
+                    parentFragment.updatePrefs()
                 }
             }
             return@createInstance true

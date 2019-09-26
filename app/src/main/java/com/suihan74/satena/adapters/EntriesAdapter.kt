@@ -202,7 +202,7 @@ open class EntriesAdapter(
         val dialog = IgnoredEntryDialogFragment.createInstance(
             entry.url,
             entry.title
-        ) { ignoredEntry ->
+        ) { fm, ignoredEntry ->
             if (ignoredEntries.contains(ignoredEntry)) {
                 context.showToast("既に存在する非表示設定です")
                 return@createInstance false

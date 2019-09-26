@@ -1,6 +1,7 @@
 package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,9 +15,14 @@ import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Star
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.activities.BookmarksActivity
+import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.adapters.StarsAdapter
-import com.suihan74.utilities.*
+import com.suihan74.utilities.CoroutineScopeFragment
+import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.getThemeColor
+import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitAll
@@ -98,13 +104,11 @@ class StarsTabFragment : CoroutineScopeFragment() {
 
                 override fun onItemLongClicked(user: String, star: Star?): Boolean {
                     val items = arrayListOf<Pair<String, ()->Any>>(
-                        "ブクマしたエントリを見る" to {
-                            (activity as FragmentContainerActivity).apply {
-                                showFragment(
-                                    UserEntriesFragment.createInstance(
-                                        user
-                                    ), null)
+                        "最近のブックマークを見る" to {
+                            val intent = Intent(SatenaApplication.instance, MainActivity::class.java).apply {
+                                putExtra(MainActivity.EXTRA_DISPLAY_USER, user)
                             }
+                            startActivity(intent)
                         })
 
                     if (mStarsTabMode == StarsTabMode.TO_USER && HatenaClient.account?.name == user) {
@@ -161,7 +165,7 @@ class StarsTabFragment : CoroutineScopeFragment() {
             }
         }
 
-        retainInstance = true
+        //retainInstance = true
         return view
     }
 

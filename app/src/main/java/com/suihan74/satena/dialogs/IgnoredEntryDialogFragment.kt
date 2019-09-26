@@ -10,44 +10,57 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.IgnoreTarget
 import com.suihan74.satena.models.IgnoredEntry
 import com.suihan74.satena.models.IgnoredEntryType
 import com.suihan74.utilities.showToast
+import com.suihan74.utilities.toVisibility
 
 class IgnoredEntryDialogFragment : DialogFragment() {
-    private lateinit var mPositiveAction : ((IgnoredEntry)->Boolean)
+    private class Members {
+        var positiveAction : ((FragmentManager, IgnoredEntry)->Boolean)? = null
 
-    private var mEditingUrl = ""
-    private var mEditingText = ""
+        var editingUrl = ""
+        var editingText = ""
 
-    private var mSelectedTab : String? = null
-    private var mIsEditMode = false
+        var selectedTab : String? = null
+        var isEditMode = false
 
-    private var mInitialTarget = IgnoreTarget.ENTRY
-    private var mIgnoredEntry : IgnoredEntry? = null
+        var initialTarget = IgnoreTarget.ENTRY
+        var ignoredEntry : IgnoredEntry? = null
+    }
+
+    private var members = Members()
 
     companion object {
-        fun createInstance(url: String, title: String, positiveAction: ((IgnoredEntry)->Boolean)) = IgnoredEntryDialogFragment().apply {
-            mEditingUrl = Regex("""^https?://""").find(url)?.let {
+        fun createInstance(url: String, title: String, positiveAction: ((FragmentManager, IgnoredEntry)->Boolean)) = IgnoredEntryDialogFragment().apply {
+            members.editingUrl = Regex("""^https?://""").find(url)?.let {
                 url.substring(it.range.last + 1)
             } ?: url
 
-            mEditingText = title
-            mPositiveAction = positiveAction
-            mIsEditMode = false
+            members.editingText = title
+            members.positiveAction = positiveAction
+            members.isEditMode = false
         }
 
-        fun createInstance(ignoredEntry: IgnoredEntry, positiveAction: ((IgnoredEntry) -> Boolean)) = IgnoredEntryDialogFragment().apply {
-            mEditingUrl = ignoredEntry.query
-            mEditingText = ignoredEntry.query
-            mPositiveAction = positiveAction
-            mIgnoredEntry = ignoredEntry
-            mInitialTarget = ignoredEntry.target
-            mIsEditMode = true
+        fun createInstance(ignoredEntry: IgnoredEntry, positiveAction: ((FragmentManager, IgnoredEntry) -> Boolean)) = IgnoredEntryDialogFragment().apply {
+            members.editingUrl = ignoredEntry.query
+            members.editingText = ignoredEntry.query
+            members.positiveAction = positiveAction
+            members.ignoredEntry = ignoredEntry
+            members.initialTarget = ignoredEntry.target
+            members.isEditMode = true
         }
+
+        private var savedMembers : Members? = null
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        savedMembers = members
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -55,8 +68,13 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         val content = inflater.inflate(R.layout.fragment_dialog_ignored_entry, null)
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
 
-        if (mIgnoredEntry != null) {
-            mSelectedTab = when (mIgnoredEntry!!.type) {
+        savedMembers?.let {
+            members = it
+            savedMembers = null
+        }
+
+        if (members.ignoredEntry != null) {
+            members.selectedTab = when (members.ignoredEntry!!.type) {
                 IgnoredEntryType.URL -> context!!.getString(R.string.ignored_entry_dialog_tab_url)
                 IgnoredEntryType.TEXT -> context!!.getString(R.string.ignored_entry_dialog_tab_text)
             }
@@ -64,46 +82,52 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
         val urlTab = getString(R.string.ignored_entry_dialog_tab_url)
         val textTab = getString(R.string.ignored_entry_dialog_tab_text)
-        mSelectedTab = if (mIsEditMode) mSelectedTab else urlTab
+        members.selectedTab = members.selectedTab
+            ?: if (members.isEditMode) members.selectedTab else urlTab
 
         val queryText = content.findViewById<EditText>(R.id.query_text).apply {
-            setText(mEditingUrl)
-            hint = mSelectedTab
+            setText(members.editingUrl)
+            hint = members.selectedTab
 
             setHorizontallyScrolling(false)
             maxLines = Int.MAX_VALUE
         }
 
         val descText = content.findViewById<TextView>(R.id.desc_text).apply {
-            when (mSelectedTab) {
+            when (members.selectedTab) {
                 urlTab -> setText(R.string.ignored_entry_dialog_desc_url)
                 textTab -> setText(R.string.ignored_entry_dialog_desc_text)
             }
         }
 
         content.findViewById<TabLayout>(R.id.tab_layout).apply {
-            visibility = if (mIsEditMode) View.GONE else View.VISIBLE
+            visibility = (!members.isEditMode).toVisibility()
+
+            if (members.selectedTab != null) {
+                val idx = if (members.selectedTab == urlTab) 0 else 1
+                getTabAt(idx)?.select()
+            }
 
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabReselected(tab: TabLayout.Tab?) {}
                 override fun onTabUnselected(tab: TabLayout.Tab?) {
                     when (tab!!.text) {
-                        urlTab -> mEditingUrl = queryText.text.toString()
-                        textTab -> mEditingText = queryText.text.toString()
+                        urlTab -> members.editingUrl = queryText.text.toString()
+                        textTab -> members.editingText = queryText.text.toString()
                     }
                 }
 
                 override fun onTabSelected(tab: TabLayout.Tab?) {
-                    mSelectedTab = tab!!.text.toString()
-                    queryText.hint = mSelectedTab
-                    when (mSelectedTab) {
+                    members.selectedTab = tab!!.text.toString()
+                    queryText.hint = members.selectedTab
+                    when (members.selectedTab) {
                         urlTab -> {
-                            queryText.setText(mEditingUrl)
+                            queryText.setText(members.editingUrl)
                             descText.setText(R.string.ignored_entry_dialog_desc_url)
                             hideIgnoreTargetArea(content)
                         }
                         textTab -> {
-                            queryText.setText(mEditingText)
+                            queryText.setText(members.editingText)
                             descText.setText(R.string.ignored_entry_dialog_desc_text)
                             showIgnoreTargetArea(content)
                         }
@@ -112,9 +136,9 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             })
         }
 
-        when (mSelectedTab) {
+        when (members.selectedTab) {
             textTab -> {
-                setIgnoreTarget(content, mInitialTarget)
+                setIgnoreTarget(content, members.initialTarget)
                 showIgnoreTargetArea(content)
             }
             else -> hideIgnoreTargetArea(content)
@@ -134,7 +158,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                     }
 
                     val ignoredEntry = IgnoredEntry(
-                        type = when (mSelectedTab) {
+                        type = when (members.selectedTab) {
                             urlTab -> IgnoredEntryType.URL
                             textTab -> IgnoredEntryType.TEXT
                             else -> throw RuntimeException("invalid tab")
@@ -142,7 +166,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                         query = queryText.text.toString(),
                         target = getIgnoreTarget(content)
                     )
-                    if (mPositiveAction.invoke(ignoredEntry)) {
+                    if (members.positiveAction?.invoke(fragmentManager!!, ignoredEntry) != false) {
                         this.dismiss()
                     }
                 }

@@ -10,6 +10,7 @@
 
     <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
+            style="@style/TabLayoutStyle"
             app:tabSelectedTextColor="?attr/tabIndicatorColor"
             app:tabIndicatorColor="?attr/tabIndicatorColor"
             app:tabTextColor="?attr/tabTextColor"
@@ -33,6 +34,7 @@
             android:id="@+id/query_text"
             android:textColor="@color/textColor"
             android:inputType="text"
+            android:importantForAutofill="no"
             android:singleLine="true"
             android:hint="@string/ignored_entry_dialog_tab_url"
             android:layout_below="@id/tab_layout"

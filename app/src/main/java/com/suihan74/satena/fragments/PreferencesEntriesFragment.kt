@@ -15,6 +15,7 @@ import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.toVisibility
 import java.util.*
 
 class PreferencesEntriesFragment : Fragment() {
@@ -24,6 +25,7 @@ class PreferencesEntriesFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_preferences_entries, container, false)
+
         val prefs = SafeSharedPreferences.create<PreferenceKey>(activity)
         val tapActions = TapEntryAction.values().map { getString(it.titleId) }.toTypedArray()
 
@@ -75,8 +77,8 @@ class PreferencesEntriesFragment : Fragment() {
         }
 
         // ホームカテゴリ
+        var currentHomeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
         view.findViewById<Button>(R.id.preferences_home_category).apply {
-            var currentHomeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
             text = getCategoryName(currentHomeCategory)
             setOnClickListener {
                 val categories =
@@ -95,6 +97,17 @@ class PreferencesEntriesFragment : Fragment() {
                         }
                         text = categoryTexts[which]
                         currentHomeCategory = cat
+
+                        val v = (!cat.singleColumns).toVisibility()
+                        view.findViewById<View>(R.id.preferences_entries_initial_tab_desc).visibility = v
+                        view.findViewById<Button>(R.id.preferences_entries_initial_tab).apply {
+                            this@apply.visibility = v
+                            val tabOffset = if (cat == Category.MyBookmarks) 2 else 0
+                            val key = PreferenceKey.ENTRIES_INITIAL_TAB
+                            val currentInitialTab = EntriesTabType.fromInt(prefs.getInt(key) + tabOffset)
+                            this@apply.text = context.getText(currentInitialTab.textId)
+                        }
+
                         dialog.dismiss()
                     }
                     .setNegativeButton("Cancel", null)
@@ -104,22 +117,33 @@ class PreferencesEntriesFragment : Fragment() {
         }
 
         // 最初に表示するタブ
+        val initialTabItemVisibility = (!currentHomeCategory.singleColumns).toVisibility()
+        view.findViewById<View>(R.id.preferences_entries_initial_tab_desc).visibility = initialTabItemVisibility
         view.findViewById<Button>(R.id.preferences_entries_initial_tab).apply {
             val key = PreferenceKey.ENTRIES_INITIAL_TAB
-            var currentInitialTab = EntriesTabType.fromInt(prefs.getInt(key))
+            val tabOffset = if (currentHomeCategory == Category.MyBookmarks) 2 else 0
+            var currentInitialTab = EntriesTabType.fromInt(prefs.getInt(key) + tabOffset)
             text = context.getText(currentInitialTab.textId)
+            visibility = initialTabItemVisibility
             setOnClickListener {
+                val items = if (currentHomeCategory == Category.MyBookmarks) {
+                    listOf(EntriesTabType.MYBOOKMARKS, EntriesTabType.READLATER)
+                }
+                else {
+                    listOf(EntriesTabType.POPULAR, EntriesTabType.RECENT)
+                }
+
                 AlertDialog.Builder(activity, R.style.AlertDialogStyle)
                     .setTitle(getText(R.string.pref_entries_initial_tab_desc))
                     .setSingleChoiceItems(
-                        listOf(EntriesTabType.POPULAR, EntriesTabType.RECENT)
+                        items
                             .map { context.getText(it.textId) }
                             .toTypedArray(),
-                        currentInitialTab.int
+                        currentInitialTab.int - tabOffset
                     ) { dialog, which ->
-                        val tab = EntriesTabType.fromInt(which)
+                        val tab = items[which]
                         prefs.edit {
-                            putInt(key, tab.int)
+                            putInt(key, which)
                         }
                         currentInitialTab = tab
                         this.text = context.getText(tab.textId)

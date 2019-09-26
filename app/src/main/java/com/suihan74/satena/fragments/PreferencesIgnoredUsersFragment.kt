@@ -38,7 +38,7 @@ class PreferencesIgnoredUsersFragment : CoroutineScopeFragment(), BackPressable 
 
         // ID検索テキストボックス
         val searchEditText = root.findViewById<EditText>(R.id.search_text).apply {
-            visibility = if (mIgnoredUsersAdapter?.searchText.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
+            visibility = (!mIgnoredUsersAdapter?.searchText.isNullOrEmpty()).toVisibility(View.INVISIBLE)
             addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                 override fun afterTextChanged(s: Editable?) {}

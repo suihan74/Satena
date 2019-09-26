@@ -58,6 +58,7 @@
                 android:layout_height="wrap_content"/>
 
         <TextView
+                android:id="@+id/preferences_entries_initial_tab_desc"
                 android:text="@string/pref_entries_initial_tab_desc"
                 android:textColor="?attr/textColor"
                 android:layout_marginTop="24dp"

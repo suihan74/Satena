@@ -13,6 +13,7 @@ import android.widget.TextView
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.suihan74.satena.PreferencesMigrator
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.activities.PreferencesActivity
 import com.suihan74.satena.adapters.tabs.PreferencesTabMode
@@ -86,7 +87,7 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
             rp.request(activity)
         }
 
-        retainInstance = true
+        //retainInstance = true
         return root
     }
 
@@ -96,21 +97,21 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
         if (granted) {
             val dialog = when (mFilePickerMode) {
                 FilePickerMode.SAVE -> {
-                    FilePickerDialog.createInstance("出力先") { dir ->
+                    FilePickerDialog.createInstance("出力先") { fm, dir ->
                         Log.d("FilePickerDialog", dir.absolutePath)
                         val file = File(dir, "${LocalDateTime.now()}.satena-settings")
-                        savePreferencesToFile(file)
-
+                        val fragment = fm.get<PreferencesInformationFragment>()
+                        fragment?.savePreferencesToFile(file)
                     }.apply {
                         directoryOnly = true
                     }
                 }
 
                 FilePickerMode.LOAD -> {
-                    FilePickerDialog.createInstance("設定ファイルを選択") { file ->
+                    FilePickerDialog.createInstance("設定ファイルを選択") { fm, file ->
                         Log.d("FilePickerDialog", file.absolutePath)
-                        loadPreferencesFromFile(file)
-
+                        val fragment = fm.get<PreferencesInformationFragment>()
+                        fragment?.loadPreferencesFromFile(file)
                     }.apply {
                         directoryOnly = false
                     }
@@ -127,12 +128,13 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
     }
 
     private fun savePreferencesToFile(file: File) {
-        val activity = activity!! as ActivityBase
-        activity.showProgressBar()
+        val activity = activity as? ActivityBase
+        activity?.showProgressBar()
 
         launch(Dispatchers.Main) {
+            val context = SatenaApplication.instance.applicationContext
             try {
-                PreferencesMigrator.Output(activity).run {
+                PreferencesMigrator.Output(context).run {
                     addPreference<PreferenceKey>()
                     addPreference<IgnoredEntriesKey>()
                     addPreference<NoticesKey>()
@@ -140,30 +142,31 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
                     write(file)
                 }
 
-                activity.showToast("設定を${file.absolutePath}に保存しました")
+                context.showToast("設定を${file.absolutePath}に保存しました")
             }
             catch (e: Exception) {
                 Log.e("SavingSettings", e.message)
-                activity.showToast("設定の保存に失敗しました")
+                context.showToast("設定の保存に失敗しました")
             }
             finally {
-                activity.hideProgressBar()
+                activity?.hideProgressBar()
             }
         }
     }
 
     private fun loadPreferencesFromFile(file: File) {
-        val activity = activity!! as ActivityBase
-        activity.showProgressBar()
+        val activity = activity as? ActivityBase
+        activity?.showProgressBar()
 
         launch(Dispatchers.Main) {
+            val context = SatenaApplication.instance.applicationContext
             try {
-                PreferencesMigrator.Input(activity)
+                PreferencesMigrator.Input(context)
                     .read(file)
 
-                activity.showToast("設定を${file.absolutePath}から読み込みました")
+                context.showToast("設定を${file.absolutePath}から読み込みました")
 
-                val intent = Intent(activity, PreferencesActivity::class.java).apply {
+                val intent = Intent(context, PreferencesActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or
                             Intent.FLAG_ACTIVITY_NEW_TASK or
                             Intent.FLAG_ACTIVITY_NO_ANIMATION
@@ -176,14 +179,14 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
             catch (e: Exception) {
                 Log.e("LoadingSettings", e.message)
                 if (e is IllegalStateException) {
-                    activity.showToast("設定の読み込みに失敗しました\n${e.message}")
+                    context.showToast("設定の読み込みに失敗しました\n${e.message}")
                 }
                 else {
-                    activity.showToast("設定の読み込みに失敗しました")
+                    context.showToast("設定の読み込みに失敗しました")
                 }
             }
             finally {
-                activity.hideProgressBar()
+                activity?.hideProgressBar()
             }
         }
     }

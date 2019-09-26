@@ -13,7 +13,7 @@
             android:textColor="?attr/textColor"
             android:gravity="top"
             android:hint="@string/bookmark_comment_edit_text_hint"
-            android:autofillHints=""
+            android:importantForAutofill="no"
             android:textColorHint="?attr/textColorHint"
 
             android:inputType="text"

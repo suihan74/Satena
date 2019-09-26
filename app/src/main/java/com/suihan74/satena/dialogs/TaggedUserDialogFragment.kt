@@ -13,6 +13,7 @@ import androidx.fragment.app.DialogFragment
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.fragments.TaggedUsersListFragment
 import com.suihan74.utilities.lock
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.*
@@ -31,20 +32,33 @@ class TaggedUserDialogFragment : DialogFragment(), CoroutineScope {
         mJob.cancel()
     }
 
-    private lateinit var mPositiveAction : ((String)->Boolean)
+    private lateinit var mPositiveAction : ((TaggedUsersListFragment, String)->Boolean)
     private var mIsUserExisted = false
 
     companion object {
-        fun createInstance(positiveAction: ((String)->Boolean)) = TaggedUserDialogFragment().apply {
+        fun createInstance(positiveAction: ((TaggedUsersListFragment, String)->Boolean)) = TaggedUserDialogFragment().apply {
             mPositiveAction = positiveAction
         }
+
+        private var savedPositiveAction : ((TaggedUsersListFragment, String)->Boolean)? = null
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        savedPositiveAction = mPositiveAction
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
         val content = inflater.inflate(R.layout.fragment_dialog_tagged_user, null)
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
-        retainInstance = true
+
+        savedInstanceState?.run {
+            if (savedPositiveAction != null) {
+                mPositiveAction = savedPositiveAction!!
+                savedPositiveAction = null
+            }
+        }
 
         val client = OkHttpClient()
             .newBuilder()
@@ -105,7 +119,9 @@ class TaggedUserDialogFragment : DialogFragment(), CoroutineScope {
             .show()
             .apply {
                 getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                    if (name.text.isNullOrBlank()) {
+                    val nameEditor = content.findViewById<EditText>(R.id.user_name)
+
+                    if (nameEditor.text.isNullOrBlank()) {
                         context.showToast("はてなIDを入力してください")
                         return@setOnClickListener
                     }
@@ -118,7 +134,8 @@ class TaggedUserDialogFragment : DialogFragment(), CoroutineScope {
                         }
                     }
 
-                    if (mPositiveAction.invoke(name.text.toString())) {
+                    val fragment = fragmentManager?.fragments?.lastOrNull { it is TaggedUsersListFragment } as? TaggedUsersListFragment
+                    if (fragment != null && mPositiveAction.invoke(fragment, nameEditor.text.toString())) {
                         this.dismiss()
                     }
                 }

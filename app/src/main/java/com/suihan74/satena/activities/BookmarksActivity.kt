@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.webkit.URLUtil
+import androidx.fragment.app.Fragment
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.fragments.BookmarkPostFragment
@@ -207,6 +208,9 @@ class BookmarksActivity : ActivityBase() {
         }
         setContentView(R.layout.activity_bookmarks)
 
+        setSupportActionBar(toolbar)
+        supportActionBar?.hide()
+
         savedInstanceState?.let {
             mEntry = it.getSerializable(BUNDLE_ENTRY) as Entry
             mBookmarksEntry = null
@@ -225,9 +229,15 @@ class BookmarksActivity : ActivityBase() {
 
     override fun onResume() {
         super.onResume()
+
         if (mIsDialogOpened) {
             openBookmarkDialog()
         }
+    }
+
+    override fun onAttachFragment(fragment: Fragment) {
+        super.onAttachFragment(fragment)
+        updateToolbar(fragment)
     }
 
     private fun startInitialize() = launch(Dispatchers.Default) {

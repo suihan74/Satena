@@ -58,12 +58,10 @@ open class MutableLinkMovementMethod : LinkMovementMethod() {
                         mHandled = false
                         mHandler.postDelayed(mLongPressedRunnable, ViewConfiguration.getLongPressTimeout().toLong())
 
-                        /*
                         Selection.setSelection(
                             buffer,
                             buffer.getSpanStart(link[0]),
                             buffer.getSpanEnd(link[0]))
-                         */
                     }
                 }
                 result = true

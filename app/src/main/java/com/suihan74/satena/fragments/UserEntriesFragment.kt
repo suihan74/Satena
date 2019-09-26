@@ -4,13 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.satena.R
 
 class UserEntriesFragment : MultipurposeSingleTabEntriesFragment() {
 
     private lateinit var mUser : String
+    override val title: String
+        get() = "${mUser}のブックマーク"
 
     companion object {
         fun createInstance(user: String) = UserEntriesFragment().apply {
@@ -25,18 +25,15 @@ class UserEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         outState.putString(BUNDLE_USER, mUser)
     }
 
-    override fun onRestoreSaveInstanceState(savedInstanceState: Bundle) {
-        super.onViewStateRestored(savedInstanceState)
-        mUser = savedInstanceState.getString(BUNDLE_USER)!!
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        savedInstanceState?.let {
+            mUser = it.getString(BUNDLE_USER)!!
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = super.onCreateView(inflater, container, savedInstanceState)!!
-
-        root.findViewById<Toolbar>(R.id.toolbar).apply {
-            title = "${mUser}のブックマーク"
-        }
-
         refreshEntries()
         return root
     }

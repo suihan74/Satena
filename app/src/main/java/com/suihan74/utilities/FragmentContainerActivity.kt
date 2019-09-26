@@ -3,8 +3,12 @@ package com.suihan74.utilities
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 
 abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContainer {
+
+    open fun onFragmentShown(fragment: Fragment) {
+    }
 
     fun showFragment(fragment: Fragment, backStackLabel: String? = null) {
         supportFragmentManager.beginTransaction().apply {
@@ -14,22 +18,42 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
             }
             add(containerId, fragment)
             addToBackStack(backStackLabel)
-            commit()
+            commitAllowingStateLoss()
         }
+
+        onFragmentShown(fragment)
     }
 
     fun replaceFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction().apply {
+            val current = currentFragment
+            if (current == null) {
+                addToBackStack(null)
+            }
             replace(containerId, fragment)
-            commit()
+            commitAllowingStateLoss()
+        }
+
+        onFragmentShown(fragment)
+    }
+
+    fun popFragment() {
+        supportFragmentManager.popBackStackImmediate()
+        currentFragment?.let {
+            it.onStart()
+            it.onResume()
+            onFragmentShown(it)
         }
     }
 
-    fun popFragment() =
-        supportFragmentManager.popBackStackImmediate()
-
-    fun popFragment(backStackLabel: String?, flag: Int = 0) =
+    fun popFragment(backStackLabel: String?, flag: Int = 0) {
         supportFragmentManager.popBackStackImmediate(backStackLabel, flag)
+        currentFragment?.let {
+            it.onStart()
+            it.onResume()
+            onFragmentShown(it)
+        }
+    }
 
     fun isFragmentShowed() = currentFragment != null
     fun isFragmentShowed(fragment: Fragment) = currentFragment == fragment
@@ -51,7 +75,8 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
             overridePendingTransition(0, android.R.anim.slide_out_right)
         }
         else {
-            super.onBackPressed()
+            popFragment()
+//            super.onBackPressed()
         }
     }
 
@@ -96,3 +121,10 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
         }
     }
 }
+
+
+inline fun <reified T> FragmentManager.get() : T? =
+    this.fragments.lastOrNull { it is T } as? T
+
+inline fun <reified T> FragmentManager.get(predicate: (Fragment) -> Boolean) : T? =
+    this.fragments.lastOrNull(predicate) as? T

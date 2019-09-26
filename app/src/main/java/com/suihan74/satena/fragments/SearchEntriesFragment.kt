@@ -1,27 +1,24 @@
 package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
-import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import androidx.appcompat.widget.Toolbar
+import android.view.*
+import androidx.appcompat.widget.SearchView
 import com.suihan74.HatenaLib.EntriesType
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
+import com.suihan74.satena.activities.MainActivity
 
 class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
     private lateinit var mRoot : View
     private lateinit var mQuery : String
     private lateinit var mSearchType : SearchType
     private var mEntriesType : EntriesType = EntriesType.Recent
+
+    override val title: String
+        get() = mQuery
+    override val isSearchViewVisible: Boolean = true
 
     companion object {
         fun createInstance(query: String, searchType: SearchType) = SearchEntriesFragment().apply {
@@ -46,69 +43,70 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         outState.putInt(BUNDLE_ENTRIES_TYPE, mEntriesType.int)
     }
 
-    override fun onRestoreSaveInstanceState(savedInstanceState: Bundle) {
-        mQuery = savedInstanceState.getString(BUNDLE_QUERY)!!
-        mSearchType = SearchType.fromInt(savedInstanceState.getInt(BUNDLE_SEARCH_TYPE))
-        mEntriesType = EntriesType.fromInt(savedInstanceState.getInt(BUNDLE_ENTRIES_TYPE))
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mRoot = super.onCreateView(inflater, container, savedInstanceState)!!
 
-        showSearchLayout()
+        savedInstanceState?.let {
+            mQuery = it.getString(BUNDLE_QUERY)!!
+            mSearchType = SearchType.fromInt(it.getInt(BUNDLE_SEARCH_TYPE))
+            mEntriesType = EntriesType.fromInt(it.getInt(BUNDLE_ENTRIES_TYPE))
+        }
 
-        mRoot.findViewById<EditText>(R.id.search_query).apply {
+        setHasOptionsMenu(true)
+        if (mQuery.isNotBlank()) {
+            refreshEntries()
+        }
+
+        return mRoot
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.search_entries, menu)
+
+        val activity = activity as? MainActivity
+
+        // 検索クエリエディタ
+        activity?.searchView?.apply {
+            val defaultQuery = "検索クエリ"
             visibility = View.VISIBLE
-            text.clear()
-            text.append(mQuery)
-
-            if (savedInstanceState == null) {
-                if (!mQuery.isBlank()) {
-                    isFocusable = false
-                    isFocusableInTouchMode = false
+            queryHint = defaultQuery
+            isSubmitButtonEnabled = false
+            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    return false
                 }
-            }
-            else {
-                isFocusable = false
-                isFocusableInTouchMode = false
 
-                setOnClickListener {
-                    it.isFocusable = true
-                    it.isFocusableInTouchMode = true
-                    it.requestFocus()
-
-                    val im = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    im.showSoftInput(it, 0)
-                    setSelection(text.length)
-
-                    setOnClickListener(null)
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    if (search(query)) {
+                        queryHint = query ?: defaultQuery
+                    }
+                    return false
                 }
-            }
+            })
 
-            setOnEditorActionListener { _, action, _ ->
-                when (action) {
-                    EditorInfo.IME_ACTION_SEARCH -> search()
-                    else -> false
-                }
+            if (mQuery.isNotBlank()) {
+                setQuery(mQuery, true)
             }
         }
 
-        // 検索対象(tag/text)を切り替え
-        fun setSearchTypeText(s: SearchType) : String = when (s) {
-            SearchType.Text -> getString(R.string.search_type_text)
-            SearchType.Tag -> getString(R.string.search_type_tag)
-        }
+        // テキスト/タグ
+        menu.findItem(R.id.search_type)?.apply {
+            // 検索対象(tag/text)を切り替え
+            fun setSearchTypeText(s: SearchType) : String = when (s) {
+                SearchType.Text -> getString(R.string.search_type_text)
+                SearchType.Tag -> getString(R.string.search_type_tag)
+            }
 
-        mRoot.findViewById<Button>(R.id.search_type_button).apply {
-            text = setSearchTypeText(mSearchType)
-            setOnClickListener {
+            title = setSearchTypeText(mSearchType)
+            setOnMenuItemClickListener {
                 val items = SearchType.values().map { setSearchTypeText(it) }.toTypedArray()
                 AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
                     .setTitle("検索対象")
                     .setNegativeButton("Cancel", null)
                     .setSingleChoiceItems(items, SearchType.values().indexOf(mSearchType)) { dialog, which ->
                         val newSearchType = SearchType.values()[which]
-                        text = setSearchTypeText(newSearchType)
+                        title = setSearchTypeText(newSearchType)
                         if (newSearchType != mSearchType) {
                             mSearchType = newSearchType
                             refreshEntries()
@@ -119,25 +117,26 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
                         dialog.dismiss()
                     }
                     .show()
+                return@setOnMenuItemClickListener true
             }
         }
 
-        // 検索順(hot/recent)を切り替え
-        fun setEntriesTypeText(e: EntriesType) : String = when (e) {
-            EntriesType.Recent -> getString(R.string.entries_tab_recent)
-            EntriesType.Hot -> getString(R.string.entries_tab_hot)
-        }
+        // 新着/人気
+        menu.findItem(R.id.search_order)?.apply {
+            fun setEntriesTypeText(e: EntriesType) : String = when (e) {
+                EntriesType.Recent -> getString(R.string.entries_tab_recent)
+                EntriesType.Hot -> getString(R.string.entries_tab_hot)
+            }
 
-        mRoot.findViewById<Button>(R.id.search_order_button).apply {
-            text = setEntriesTypeText(mEntriesType)
-            setOnClickListener {
+            title = setEntriesTypeText(mEntriesType)
+            setOnMenuItemClickListener {
                 val items = EntriesType.values().map { setEntriesTypeText(it) }.toTypedArray()
                 AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
                     .setTitle("検索順")
                     .setNegativeButton("Cancel", null)
                     .setSingleChoiceItems(items, EntriesType.values().indexOf(mEntriesType)) { dialog, which ->
                         val newEntriesType = EntriesType.values()[which]
-                        text = setEntriesTypeText(newEntriesType)
+                        title = setEntriesTypeText(newEntriesType)
                         if (newEntriesType != mEntriesType) {
                             mEntriesType = newEntriesType
                             refreshEntries()
@@ -148,41 +147,29 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
                         dialog.dismiss()
                     }
                     .show()
+                return@setOnMenuItemClickListener true
             }
         }
-
-        mRoot.findViewById<ImageButton>(R.id.search_button).apply {
-            setOnClickListener {
-                search()
-            }
-        }
-
-        refreshEntries()
-
-        return mRoot
     }
 
-    private fun search() : Boolean {
-        val imm = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        if (imm.isActive) {
-            imm.hideSoftInputFromWindow(activity!!.currentFocus!!.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-        }
+    private fun search(query: String? = null) : Boolean {
+/*
+        val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        val currentFocus = activity?.currentFocus
 
-        val editText = mRoot.findViewById<EditText>(R.id.search_query)
-        val newQuery = editText.text.toString()
-
-        return if (newQuery == mQuery) false
-        else {
-            mQuery = newQuery
-            refreshEntries()
-            true
+        if (imm?.isActive == true && currentFocus != null) {
+            imm.hideSoftInputFromWindow(currentFocus.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
         }
+*/
+        if (query == null) return false
+
+        mQuery = query
+        refreshEntries()
+        return true
     }
 
     override fun refreshEntries() {
-        mRoot.findViewById<Toolbar>(R.id.toolbar).apply {
-            title = "検索($mSearchType): $mQuery"
-        }
+        (activity as? MainActivity)?.updateToolbar()
         super.refreshEntries("エントリ検索失敗") { offset ->
             HatenaClient.searchEntriesAsync(mQuery, mSearchType, mEntriesType, of = offset)
         }

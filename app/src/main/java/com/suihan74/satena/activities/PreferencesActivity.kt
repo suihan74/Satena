@@ -43,8 +43,14 @@ class PreferencesActivity : ActivityBase() {
         themeChanged = intent.getBooleanExtra(EXTRA_THEME_CHANGED, false)
 
         val showFragment = {
-            mPrefsFragment = PreferencesFragment.createInstance(themeChanged)
-            showFragment(mPrefsFragment)
+            mPrefsFragment = if (currentFragment is PreferencesFragment) {
+                currentFragment as PreferencesFragment
+            }
+            else {
+                val fragment = PreferencesFragment.createInstance(themeChanged)
+                showFragment(fragment)
+                fragment
+            }
         }
 
         val invokeReload = intent.getBooleanExtra(EXTRA_RELOAD_ALL_PREFERENCES, false)

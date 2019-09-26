@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.TaggedUserDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.TaggedUser
@@ -15,11 +16,10 @@ import com.suihan74.satena.models.UserTagsContainer
 import com.suihan74.satena.models.UserTagsKey
 import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.get
 
 class PreferencesUserTagsFragment : Fragment(), BackPressable {
     private lateinit var mUserTagsContainer : UserTagsContainer
-    private lateinit var mPrefs : SafeSharedPreferences<UserTagsKey>
 
     private var mDisplayedUserTag : UserTag? = null
 
@@ -29,23 +29,29 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
     companion object {
         fun createInstance() = PreferencesUserTagsFragment()
 
-        private const val BUNDLE_DISPLAYED_USER_TAG = "mDisplayedUserTag"
+        private const val BUNDLE_DISPLAYED_USER_TAG_NAME = "mDisplayedUserTag.name"
+        private var savedUserTagsContainer : UserTagsContainer? = null
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putSerializable(BUNDLE_DISPLAYED_USER_TAG, mDisplayedUserTag)
+        outState.putString(BUNDLE_DISPLAYED_USER_TAG_NAME, mDisplayedUserTag?.name ?: "")
+        savedUserTagsContainer = mUserTagsContainer
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mPrefs = SafeSharedPreferences.create(context!!)
-        mUserTagsContainer = mPrefs.get(UserTagsKey.CONTAINER)
+        val prefs = SafeSharedPreferences.create<UserTagsKey>(context!!)
+        mUserTagsContainer = savedInstanceState?.run {
+            savedUserTagsContainer
+        } ?: prefs.get(UserTagsKey.CONTAINER)
         mUserTagsContainer.optimize()
-        mPrefs.edit {
+        prefs.edit {
             putObject(UserTagsKey.CONTAINER, mUserTagsContainer)
         }
+
+        savedUserTagsContainer = null
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -54,7 +60,8 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
         // タグ一覧を表示
         showUserTagsList()
         savedInstanceState?.run {
-            val tag = getSerializable(BUNDLE_DISPLAYED_USER_TAG) as? UserTag
+            val name = getString(BUNDLE_DISPLAYED_USER_TAG_NAME)
+            val tag = mUserTagsContainer.getTag(name!!)
             if (tag != null) {
                 showTaggedUsersList(tag)
             }
@@ -63,23 +70,22 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
         root.findViewById<FloatingActionButton>(R.id.add_button).setOnClickListener {
             val userTagsList = getCurrentFragment<UserTagsListFragment>()
             if (userTagsList != null) {
-                showNewUserTagDialog(userTagsList)
+                showNewUserTagDialog()
             }
             else {
                 val taggedUsersList = getCurrentFragment<TaggedUsersListFragment>()
                 if (taggedUsersList != null) {
-                    showNewTaggedUserDialog(taggedUsersList)
+                    showNewTaggedUserDialog()
                 }
             }
         }
 
-        retainInstance = true
         return root
     }
 
     fun showTaggedUsersList(tag: UserTag) {
         mDisplayedUserTag = tag
-        val fragment = TaggedUsersListFragment.createInstance(this, tag)
+        val fragment = TaggedUsersListFragment.createInstance(tag)
         childFragmentManager.beginTransaction()
             .replace(R.id.content_layout, fragment)
             .addToBackStack(null)
@@ -87,7 +93,7 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
     }
 
     private fun showUserTagsList() {
-        val fragment = UserTagsListFragment.createInstance(this)
+        val fragment = UserTagsListFragment.createInstance()
         childFragmentManager.beginTransaction()
             .replace(R.id.content_layout, fragment)
             .commit()
@@ -99,27 +105,28 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
         return fragment as? T
     }
 
-    private fun showNewUserTagDialog(fragment: UserTagsListFragment) {
-        val dialog = UserTagDialogFragment.createInstance { name, color ->
+    private fun showNewUserTagDialog() {
+        val dialog = UserTagDialogFragment.createInstance { fm, name, color ->
             if (mUserTagsContainer.containsTag(name)) {
-                context!!.showToast("既に存在するタグです")
+                SatenaApplication.showToast("既に存在するタグです")
                 return@createInstance false
             }
             else {
+                val fragment = fm.get<UserTagsListFragment>()
                 val item = mUserTagsContainer.addTag(name)
 
                 updatePrefs()
-                fragment.addItem(item)
+                fragment?.addItem(item)
 
-                context!!.showToast("タグ: $name を作成した")
+                SatenaApplication.showToast("タグ: $name を作成した")
                 return@createInstance true
             }
         }
-        dialog.show(fragmentManager!!, "dialog")
+        dialog.show(childFragmentManager, "dialog")
     }
 
-    private fun showNewTaggedUserDialog(fragment: TaggedUsersListFragment) {
-        val dialog = TaggedUserDialogFragment.createInstance { name ->
+    private fun showNewTaggedUserDialog() {
+        val dialog = TaggedUserDialogFragment.createInstance { fragment, name ->
             val tag = mDisplayedUserTag!!
 
             if (!mUserTagsContainer.containsUser(name)) {
@@ -128,7 +135,7 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
             val user = mUserTagsContainer.getUser(name)!!
 
             if (tag.contains(user)) {
-                context!!.showToast("既に存在するユーザーです")
+                SatenaApplication.showToast("既に存在するユーザーです")
                 return@createInstance false
             }
             else {
@@ -137,15 +144,17 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
                 updatePrefs()
                 fragment.addItem(user)
 
-                context!!.showToast("id:${name}にタグをつけました")
+                SatenaApplication.showToast("id:${name}にタグをつけました")
                 return@createInstance true
             }
         }
-        dialog.show(fragmentManager!!, "dialog")
+        dialog.show(childFragmentManager, "dialog")
     }
 
     fun updatePrefs() {
-        mPrefs.edit {
+        val context = SatenaApplication.instance.applicationContext
+        val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
+        prefs.edit {
             putObject(UserTagsKey.CONTAINER, mUserTagsContainer)
         }
     }

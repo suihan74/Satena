@@ -19,6 +19,10 @@ class SatenaApplication : Application() {
     companion object {
         lateinit var instance : SatenaApplication
             private set
+
+        fun showToast(msg: String) {
+            instance.applicationContext.showToast(msg)
+        }
     }
 
     var currentActivity : ActivityBase? = null

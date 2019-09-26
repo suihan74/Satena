@@ -1,25 +1,29 @@
 package com.suihan74.satena.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import android.widget.TextView
-import androidx.appcompat.widget.Toolbar
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.HatenaLib.Tag
 import com.suihan74.satena.R
+import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class UserTagsEntriesFragment : MultipurposeSingleTabEntriesFragment() {
     private lateinit var mUser : String
     private var mTags : List<Tag> = emptyList()
     private var mSelectedTag : Tag? = null
+
+    override val title: String
+        get() = String.format("%sのタグ", mUser)
 
     companion object {
         fun createInstance(user: String) = UserTagsEntriesFragment().apply {
@@ -48,62 +52,86 @@ class UserTagsEntriesFragment : MultipurposeSingleTabEntriesFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = super.onCreateView(inflater, container, savedInstanceState)!!
-
-        val toolbar = root.findViewById<Toolbar>(R.id.toolbar)
-
-        val spinnerContainer = inflater.inflate(R.layout.actionbar_spinner, toolbar, false)
-        toolbar.addView(spinnerContainer)
-
-        spinnerContainer.findViewById<TextView>(R.id.title).apply {
-            text = String.format("%s/", mUser)
+//        setHasOptionsMenu(true)
+        val spinner = showSpinner()
+        launch(Dispatchers.Main) {
+            initializeSpinnerItems(spinner)
         }
-        val spinner = spinnerContainer.findViewById<Spinner>(R.id.spinner)
+        return root
+    }
 
-        showProgressBar()
+    /*
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.spinner_tags, menu)
+        val item = menu.findItem(R.id.spinner)
+        val spinner = item.actionView as Spinner
 
         launch(Dispatchers.Main) {
-            if (mTags.isEmpty()) {
+            initializeSpinnerItems(spinner)
+        }
+    }*/
+
+    private suspend fun initializeSpinnerItems(spinner: Spinner) = withContext(Dispatchers.Main) {
+        if (mTags.isEmpty()) {
+            showProgressBar()
+            try {
                 mTags = HatenaClient.getUserTagsAsync(mUser).await()
             }
+            catch(e: Exception) {
+                Log.e("InitializeSpinner", e.message)
+                activity?.showToast("タグリストの取得に失敗しました")
+            }
+        }
 
-            if (mTags.isNotEmpty()) {
-                mSelectedTag = mSelectedTag ?: mTags[0]
+        if (mTags.isNotEmpty()) {
+            val needToRefreshEntries = mSelectedTag == null
+            mSelectedTag = mSelectedTag ?: mTags[0]
 
-                spinner.apply {
-                    adapter = ArrayAdapter(
-                        context!!,
-                        android.R.layout.simple_spinner_item,
-                        mTags.map { "${it.text}  (${it.count})" }.toTypedArray()
-                    ).apply {
-                        setDropDownViewResource(R.layout.spinner_drop_down_item)
-                    }
-
-                    if (mSelectedTag != null) {
-                        val pos = mTags.indexOfFirst { it.text == mSelectedTag!!.text }
-                        setSelection(pos, false)
-                    }
-
-                    onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                            val newSelectedTag = mTags[position]
-                            if (newSelectedTag != mSelectedTag) {
-                                mSelectedTag = newSelectedTag
-                                refreshEntries()
-                            }
-                            else {
-                                mSelectedTag = newSelectedTag
-                            }
-                        }
-
-                        override fun onNothingSelected(parent: AdapterView<*>?) {
-                        }
-                    }
+            spinner.apply {
+                adapter = ArrayAdapter(
+                    context!!,
+                    android.R.layout.simple_spinner_item,
+                    mTags.map { "${it.text}  (${it.count})" }.toTypedArray()
+                ).apply {
+                    setDropDownViewResource(R.layout.spinner_drop_down_item)
                 }
 
+                if (mSelectedTag != null) {
+                    val pos = mTags.indexOfFirst { it.text == mSelectedTag!!.text }
+                    setSelection(pos, false)
+                }
+
+                onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        val newSelectedTag = mTags[position]
+                        if (newSelectedTag != mSelectedTag) {
+                            mSelectedTag = newSelectedTag
+                            refreshEntries()
+                        }
+                        else {
+                            mSelectedTag = newSelectedTag
+                        }
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
+                    }
+                }
+            }
+
+            if (needToRefreshEntries) {
                 refreshEntries()
             }
         }
-        return root
+
+        hideProgressBar()
+
+        return@withContext
     }
 
     override fun refreshEntries() =

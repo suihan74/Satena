@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- アクティビティに含めるデフォルトのアクションバー -->
+<com.google.android.material.appbar.AppBarLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:elevation="0dp"
+        android:stateListAnimator="@null"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="?android:attr/textColorSecondary"
+            android:background="?attr/colorPrimary"
+            android:contentInsetStart="8dp"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+        <androidx.appcompat.widget.SearchView
+                android:id="@+id/toolbar_search_view"
+                android:visibility="gone"
+                app:iconifiedByDefault="false"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+    </androidx.appcompat.widget.Toolbar>
+</com.google.android.material.appbar.AppBarLayout>

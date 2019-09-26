@@ -9,15 +9,20 @@ import android.widget.EditText
 import android.widget.NumberPicker
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import com.suihan74.satena.R
 
 class NumberPickerDialogFragment : DialogFragment() {
-    private var title : String? = null
-    private var message : String? = null
-    private var minValue : Int = 0
-    private var maxValue : Int = 100
-    private var defaultValue : Int = 0
-    private var onCompleted : ((Int)->Unit)? = null
+    private class Members {
+        var title : String? = null
+        var message : String? = null
+        var minValue : Int = 0
+        var maxValue : Int = 100
+        var defaultValue : Int = 0
+        var onCompleted : ((FragmentManager, Int)->Unit)? = null
+    }
+
+    private var members = Members()
 
     companion object {
         fun createInstance(
@@ -26,18 +31,32 @@ class NumberPickerDialogFragment : DialogFragment() {
             minValue: Int,
             maxValue: Int,
             defaultValue: Int = minValue,
-            onCompleted: ((Int)->Unit)? = null
+            onCompleted: ((FragmentManager, Int)->Unit)? = null
         ) = NumberPickerDialogFragment().apply {
-            this.title = title
-            this.message = message
-            this.minValue = minValue
-            this.maxValue = maxValue
-            this.defaultValue = defaultValue
-            this.onCompleted = onCompleted
+            members.run {
+                this.title = title
+                this.message = message
+                this.minValue = minValue
+                this.maxValue = maxValue
+                this.defaultValue = defaultValue
+                this.onCompleted = onCompleted
+            }
         }
+
+        private var savedMembers : Members? = null
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        savedMembers = members
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        savedMembers?.let {
+            members = it
+            savedMembers = null
+        }
+
         val numberPicker = object : NumberPicker(context) {
             override fun addView(child: View?, index: Int, params: ViewGroup.LayoutParams?) {
                 super.addView(child, index, params)
@@ -46,17 +65,17 @@ class NumberPickerDialogFragment : DialogFragment() {
                 }
             }
         }.apply {
-            minValue = this@NumberPickerDialogFragment.minValue
-            maxValue = this@NumberPickerDialogFragment.maxValue
-            value = defaultValue
+            minValue = members.minValue
+            maxValue = members.maxValue
+            value = members.defaultValue
         }
 
         return AlertDialog.Builder(activity, R.style.AlertDialogStyle)
-            .setTitle(title)
-            .setMessage(message)
+            .setTitle(members.title)
+            .setMessage(members.message)
             .setPositiveButton("OK") { _, _ ->
                 val value = numberPicker.value
-                onCompleted?.invoke(value)
+                members.onCompleted?.invoke(fragmentManager!!, value)
             }
             .setNegativeButton("CANCEL", null)
             .setView(numberPicker)

@@ -1,6 +1,10 @@
 package com.suihan74.HatenaLib
 
-enum class Category constructor(val int: Int, val requireSignedIn: Boolean = false) {
+enum class Category(
+    val int: Int,
+    val requireSignedIn: Boolean = false,
+    val singleColumns : Boolean = false
+) {
     All(0),
     Social(1),
     Economics(2),
@@ -12,11 +16,11 @@ enum class Category constructor(val int: Int, val requireSignedIn: Boolean = fal
     Fun(8),
 //    CurrentEvents(9),
 
-    MyHotEntries(9, true),
+    MyHotEntries(9, true, true),
     MyBookmarks(10, true),
-    MyTags(11, true),
+    MyTags(11, true, true),
 
-    Search(12);
+    Search(12, singleColumns = true);
 
     companion object {
         fun fromInt(i: Int) : Category = values().getOrNull(i) ?: All

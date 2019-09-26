@@ -28,6 +28,17 @@ class PreferencesFragment : Fragment(), BackPressable, PermissionRequestable {
         fun createInstance(themeChanged: Boolean = false) : PreferencesFragment = PreferencesFragment().apply {
             mThemeChanged = themeChanged
         }
+
+        private const val BUNDLE_CURRENT_TAB = "currentTab"
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (this::mViewPager.isInitialized) {
+            outState.run {
+                putSerializable(BUNDLE_CURRENT_TAB, mViewPager.currentItem)
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -73,12 +84,14 @@ class PreferencesFragment : Fragment(), BackPressable, PermissionRequestable {
             })
         }
 
-        val tab = activity!!.intent.extras?.getSerializable(PreferencesActivity.EXTRA_CURRENT_TAB) as? PreferencesTabMode ?: PreferencesTabMode.INFORMATION
+        val tab = savedInstanceState?.run { PreferencesTabMode.fromInt(getInt(BUNDLE_CURRENT_TAB)) }
+            ?: activity!!.intent.getSerializableExtra(PreferencesActivity.EXTRA_CURRENT_TAB) as? PreferencesTabMode
+            ?: PreferencesTabMode.INFORMATION
+
         val position = tab.int
         mViewPager.setCurrentItem(position, false)
         toolbar.title = "設定 > ${getString(tab.titleId)}"
 
-        retainInstance = true
         return root
     }
 

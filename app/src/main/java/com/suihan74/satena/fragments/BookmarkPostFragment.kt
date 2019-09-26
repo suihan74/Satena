@@ -29,6 +29,7 @@ import com.sys1yagi.mastodon4j.api.entity.Status
 import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BookmarkPostFragment : CoroutineScopeFragment() {
 
@@ -74,7 +75,7 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
 
         initBookmarkDialog()
 
-        retainInstance = true
+        //retainInstance = true
         return mRoot
     }
 
@@ -180,15 +181,17 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
                                 "${result.comment} / \"${mEntry.title}\" ${mEntry.url}"
                             }
 
-                        val client = MastodonClientHolder.client!!
-                        Statuses(client).postStatus(
-                            status = status,
-                            inReplyToId = null,
-                            sensitive = false,
-                            visibility = Status.Visibility.Public,
-                            mediaIds = null,
-                            spoilerText = null
-                        ).execute()
+                        withContext(Dispatchers.IO) {
+                            val client = MastodonClientHolder.client!!
+                            Statuses(client).postStatus(
+                                status = status,
+                                inReplyToId = null,
+                                sensitive = false,
+                                visibility = Status.Visibility.Public,
+                                mediaIds = null,
+                                spoilerText = null
+                            ).execute()
+                        }
                     }
 
                     bookmarkButton.isEnabled = true

@@ -1,6 +1,7 @@
 package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.transition.Fade
 import android.transition.Slide
@@ -15,6 +16,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.adapters.TaggedUsersAdapter
 import com.suihan74.satena.models.TaggedUser
 import com.suihan74.satena.models.UserTag
@@ -22,18 +25,25 @@ import com.suihan74.utilities.DividerItemDecorator
 
 class TaggedUsersListFragment : Fragment() {
     private lateinit var mRoot: View
-    private var mParentFragment: PreferencesUserTagsFragment? = null
     private lateinit var mTaggedUsersAdapter : TaggedUsersAdapter
     private lateinit var mUserTag : UserTag
 
     companion object {
-        fun createInstance(parentFragment: PreferencesUserTagsFragment, userTag: UserTag) = TaggedUsersListFragment().apply {
-            mParentFragment = parentFragment
+        fun createInstance(userTag: UserTag) = TaggedUsersListFragment().apply {
             mUserTag = userTag
 
             enterTransition = TransitionSet()
                 .addTransition(Fade())
                 .addTransition(Slide(GravityCompat.END))
+        }
+
+        private const val BUNDLE_USER_TAG_NAME = "mUserTag.name"
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (this::mUserTag.isInitialized) {
+            outState.putString(BUNDLE_USER_TAG_NAME, mUserTag.name)
         }
     }
 
@@ -41,17 +51,22 @@ class TaggedUsersListFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_tagged_users_list, container, false)
         mRoot = root
 
+        val parentFragment = parentFragment as PreferencesUserTagsFragment
+
+        savedInstanceState?.run {
+            val name = getString(BUNDLE_USER_TAG_NAME)!!
+            mUserTag = parentFragment.userTagsContainer.getTag(name)!!
+        }
+
         root.findViewById<TextView>(R.id.tag_name).text = mUserTag.name
         updateCounter()
 
-        val userTagsContainer = mParentFragment!!.userTagsContainer
+        val userTagsContainer = parentFragment.userTagsContainer
         mTaggedUsersAdapter = object : TaggedUsersAdapter(userTagsContainer.getUsersOfTag(mUserTag)) {
             override fun onItemClicked(user: TaggedUser) {
-            }
-
-            override fun onItemLongClicked(user: TaggedUser): Boolean {
                 val items = arrayOf(
 /*                    "編集" to {  },*/
+                    "ブクマークをみる" to { this@TaggedUsersListFragment.showBookmarks(user) },
                     "削除" to { this@TaggedUsersListFragment.removeItem(user) }
                 )
 
@@ -62,8 +77,6 @@ class TaggedUsersListFragment : Fragment() {
                     }
                     .setNegativeButton("Cancel", null)
                     .show()
-
-                return true
             }
         }
 
@@ -76,13 +89,13 @@ class TaggedUsersListFragment : Fragment() {
             adapter = mTaggedUsersAdapter
         }
 
-        retainInstance = true
         return root
     }
 
     private fun removeItem(user: TaggedUser) {
+        val parentFragment = parentFragment as PreferencesUserTagsFragment
         mTaggedUsersAdapter.removeItem(user)
-        mParentFragment?.removeUserFromTag(mUserTag, user)
+        parentFragment.removeUserFromTag(mUserTag, user)
         updateCounter()
     }
 
@@ -93,5 +106,12 @@ class TaggedUsersListFragment : Fragment() {
 
     fun updateCounter() {
         mRoot.findViewById<TextView>(R.id.users_count).text = String.format("%d users", mUserTag.count)
+    }
+
+    private fun showBookmarks(user: TaggedUser) {
+        val intent = Intent(SatenaApplication.instance, MainActivity::class.java).apply {
+            putExtra(MainActivity.EXTRA_DISPLAY_USER, user.name)
+        }
+        startActivity(intent)
     }
 }

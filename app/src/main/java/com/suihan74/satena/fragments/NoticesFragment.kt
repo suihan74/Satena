@@ -12,7 +12,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,6 +33,9 @@ import org.threeten.bp.LocalDateTime
 
 class NoticesFragment : CoroutineScopeFragment() {
     private var mClickHandling = false
+
+    override val title: String
+        get() = "通知 > ${HatenaClient.account?.name ?: "?"}"
 
     companion object {
         fun createInstance() : NoticesFragment = NoticesFragment().apply {
@@ -85,10 +87,6 @@ class NoticesFragment : CoroutineScopeFragment() {
 
         val activity = activity as ActivityBase
         activity.showProgressBar()
-
-        // ツールバーの設定
-        val toolbar = view.findViewById<Toolbar>(R.id.notices_toolbar)
-        toolbar.title = "通知 > " + HatenaClient.account!!.name
 
         val noticesAdapter = object : NoticesAdapter() {
             override fun onItemClicked(notice: Notice) {
