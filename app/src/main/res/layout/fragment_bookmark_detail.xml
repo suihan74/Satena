@@ -21,16 +21,6 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"/>
 
-        <LinearLayout
-                android:id="@+id/user_tags_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="16dp"
-                android:layout_alignTop="@id/user_icon"
-                android:layout_toEndOf="@id/user_icon">
-
             <TextView
                     android:id="@+id/user_name"
                     android:textStyle="bold"
@@ -38,29 +28,12 @@
                     android:textColor="?attr/textColor"
                     android:lines="1"
                     android:ellipsize="end"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_alignTop="@id/user_icon"
+                    android:layout_toEndOf="@id/user_icon"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
-
-            <ImageView
-                    android:id="@+id/user_tags_icon"
-                    app:srcCompat="@drawable/ic_user_tag"
-                    android:layout_marginStart="8dp"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="14sp"
-                    android:layout_height="14sp"/>
-
-            <TextView
-                    android:id="@+id/user_tags"
-                    android:textSize="13sp"
-                    android:textColor="@color/tagColor"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginStart="2dp"
-                    android:lines="1"
-                    android:ellipsize="end"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-        </LinearLayout>
 
         <TextView
                 android:id="@+id/comment"
@@ -70,9 +43,9 @@
                 android:textIsSelectable="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/user_tags_layout"
-                android:layout_alignStart="@id/user_tags_layout"
-                android:layout_alignEnd="@id/user_tags_layout"/>
+                android:layout_below="@id/user_name"
+                android:layout_alignStart="@id/user_name"
+                android:layout_alignEnd="@id/user_name"/>
 
         <LinearLayout
                 android:id="@+id/tags_layout"
@@ -80,7 +53,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:layout_below="@id/comment"
-                android:layout_alignStart="@id/user_tags_layout"
+                android:layout_alignStart="@id/user_name"
                 android:layout_alignEnd="@id/comment"
                 android:orientation="horizontal">
 

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.text.SpannableString
+import android.text.style.ImageSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -234,7 +235,6 @@ open class BookmarksAdapter(
         private val userIcon    = view.findViewById<ImageView>(R.id.bookmark_user_icon)!!
         private val comment     = view.findViewById<TextView>(R.id.bookmark_comment)!!
         private val tags        = view.findViewById<TextView>(R.id.bookmark_tags)!!
-        private val tagsLayout  = view.findViewById<ViewGroup>(R.id.bookmark_tags_layout)!!
         private val timestamp   = view.findViewById<TextView>(R.id.bookmark_timestamp)!!
         private val ignoredMark = view.findViewById<ImageView>(R.id.ignored_user_mark)!!
 
@@ -304,29 +304,47 @@ open class BookmarksAdapter(
             }
 
             // タグの表示
-            tags.text = bookmark.getTagsText()
-            if (tags.text.isEmpty()) {
-                tagsLayout.visibility = View.GONE
-            }
-            else {
-                tagsLayout.visibility = View.VISIBLE
+            tags.apply {
+                val tagsText = bookmark.getTagsText()
+                if (tagsText.isEmpty()) {
+                    visibility = View.GONE
+                }
+                else {
+                    visibility = View.VISIBLE
+                    text = SpannableString("_$tagsText").apply {
+                        val icon = resources.getDrawable(R.drawable.ic_tag, null).apply {
+                            setBounds(0, 0, lineHeight, lineHeight)
+                            setTint(resources.getColor(R.color.tagColor, null))
+                        }
+                        setSpan(ImageSpan(icon), 0, 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                }
             }
 
             // ユーザーにつけられたタグの表示
             val user = userTagsContainer.getUser(bookmark.user)
-            val userTagsLayout = view.findViewById<View>(R.id.user_tags_layout)
+            val userTagsText = view.findViewById<TextView>(R.id.user_tags)
             if (user == null) {
-                userTagsLayout.visibility = View.GONE
+                userTagsText.visibility = View.GONE
             }
             else {
                 val tags = userTagsContainer.getTagsOfUser(user)
-                val userTagsText = view.findViewById<TextView>(R.id.user_tags)
                 if (tags.isEmpty()) {
-                    userTagsLayout.visibility = View.GONE
+                    //drawable/ic_user_tag
+                    userTagsText.visibility = View.GONE
                 }
                 else {
-                    userTagsText.text = tags.joinToString(", ") { it.name }
-                    userTagsLayout.visibility = View.VISIBLE
+                    userTagsText.apply {
+                        val icon = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
+                            val size = textSize.toInt()
+                            setBounds(0, 0, size, size)
+                            setTint(resources.getColor(R.color.tagColor, null))
+                        }
+                        setCompoundDrawablesRelative(icon, null, null, null)
+
+                        text = tags.joinToString(", ") { it.name }
+                        visibility = View.VISIBLE
+                    }
                 }
             }
 

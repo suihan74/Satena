@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="6dp"
@@ -37,33 +35,20 @@
             android:layout_toEndOf="@id/bookmark_user_icon"
             android:layout_marginTop="4dp"/>
 
-    <LinearLayout
-            android:id="@+id/user_tags_layout"
+    <TextView
+            android:id="@+id/user_tags"
+            android:textSize="13sp"
+            android:textColor="@color/tagColor"
+            android:layout_marginStart="2dp"
+            android:lines="1"
+            android:ellipsize="end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:paddingStart="8dp"
             android:paddingEnd="0dp"
-            android:layout_alignTop="@+id/bookmark_user_name"
+            android:layout_alignBaseline="@+id/bookmark_user_name"
             android:layout_toEndOf="@id/bookmark_user_name"
-            android:layout_alignEnd="@id/bookmark_comment">
-
-        <ImageView
-                android:id="@+id/user_tag_icon"
-                app:srcCompat="@drawable/ic_user_tag"
-                android:layout_marginTop="3dp"
-                android:layout_width="14sp"
-                android:layout_height="14sp"/>
-        <TextView
-                android:id="@+id/user_tags"
-                android:textSize="13sp"
-                android:textColor="@color/tagColor"
-                android:layout_marginStart="2dp"
-                android:lines="1"
-                android:ellipsize="end"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-    </LinearLayout>
+            android:layout_alignEnd="@id/bookmark_comment"/>
 
     <TextView
             android:id="@+id/bookmark_comment"
@@ -78,29 +63,16 @@
             android:layout_toEndOf="@id/bookmark_user_icon"
             android:layout_below="@id/bookmark_user_name"/>
 
-    <LinearLayout
-            android:id="@+id/bookmark_tags_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
+
+    <TextView
+            android:id="@+id/bookmark_tags"
+            android:textSize="14sp"
+            android:textColor="@color/tagColor"
             android:layout_toEndOf="@id/bookmark_user_icon"
             android:layout_below="@id/bookmark_comment"
-            android:layout_marginTop="2dp">
-
-        <ImageView
-                android:id="@+id/bookmark_tag_icon"
-                app:srcCompat="@drawable/ic_tag"
-                android:layout_marginTop="3dp"
-                android:layout_width="14sp"
-                android:layout_height="14sp"/>
-        <TextView
-                android:id="@+id/bookmark_tags"
-                android:textSize="14sp"
-                android:textColor="@color/tagColor"
-                android:layout_marginStart="2dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-    </LinearLayout>
+            android:layout_marginTop="2dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
     <TextView
             android:id="@+id/bookmark_timestamp"
@@ -108,7 +80,7 @@
             android:textColor="@color/timestampColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/bookmark_tags_layout"
+            android:layout_below="@id/bookmark_tags"
             android:layout_toEndOf="@id/bookmark_user_icon"
             android:layout_marginTop="2dp"/>
 

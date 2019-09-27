@@ -2,9 +2,14 @@ package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.SpannableString
 import android.text.method.LinkMovementMethod
+import android.text.style.ImageSpan
+import android.text.style.TextAppearanceSpan
 import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
@@ -165,7 +170,32 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
         val analyzed = BookmarkCommentDecorator.convert(mBookmark.comment)
 
-        user.text = mBookmark.user
+        user.apply {
+            val tags = bookmarksFragment?.userTagsContainer?.getTagsOfUser(mBookmark.user)
+            text = if (tags.isNullOrEmpty()) {
+                mBookmark.user
+            }
+            else {
+                val tagsText = tags.joinToString(",") { it.name }
+                val tagColor = resources.getColor(R.color.tagColor, null)
+                val st = "${mBookmark.user} _$tagsText"
+                val density = resources.displayMetrics.scaledDensity
+                val size = (13 * density).toInt()
+
+                SpannableString(st).apply {
+                    val drawable = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
+                        setBounds(0, 0, lineHeight, lineHeight)
+                        setTint(tagColor)
+                    }
+                    val pos = mBookmark.user.length + 1
+                    setSpan(ImageSpan(drawable), pos, pos + 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    setSpan(TextAppearanceSpan(null, Typeface.DEFAULT.style, size, ColorStateList.valueOf(tagColor), null),
+                        mBookmark.user.length + 1, st.length, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+            }
+        }
+
+
         view.findViewById<TextView>(R.id.comment).apply {
             text = analyzed.comment
             val comment = this
@@ -231,18 +261,6 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                     SpannableString(textView.text),
                     event)
             }*/
-        }
-
-        val userTagsContainer = bookmarksFragment?.userTagsContainer
-        userTagsContainer?.let { c ->
-            val tags = c.getTagsOfUser(mBookmark.user)
-            val v = tags.isNotEmpty().toVisibility(View.INVISIBLE)
-            view.findViewById<View>(R.id.user_tags_icon)?.visibility = v
-            view.findViewById<TextView>(R.id.user_tags)?.run {
-                visibility = v
-                text = tags.joinToString(",") { it.name }
-                setHorizontallyScrolling(false)
-            }
         }
 
         Glide.with(view)
