@@ -6,9 +6,6 @@
     <dimen name="dp_180">180dp</dimen>
     <dimen name="dp_238">238dp</dimen>
 
-    <!-- MainActivity側のクリックガードサイズ -->
-    <dimen name="bg_guard_top_height">112dp</dimen>
-
     <!-- ブクマ登録ダイアログの表示位置調整用 -->
     <dimen name="dp_80">80dp</dimen>
 
@@ -17,8 +14,6 @@
 
     <!-- エントリー項目のサイズ -->
     <dimen name="dp_18">18dp</dimen>
-    <dimen name="entry_item_with_bookmarked_data">134dp</dimen>
-    <dimen name="entry_item_normal">116dp</dimen>
 
     <!-- 右下スターボタンの位置指定用 -->
     <dimen name="yellow_star_position">72dp</dimen>
