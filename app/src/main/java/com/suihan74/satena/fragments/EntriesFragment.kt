@@ -4,9 +4,8 @@ import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionSet
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import androidx.appcompat.widget.SearchView
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.Category
@@ -15,6 +14,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.adapters.tabs.EntriesTabAdapter
+import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.SafeSharedPreferences
@@ -43,6 +43,11 @@ class EntriesFragment : CoroutineScopeFragment() {
     private lateinit var mView : View
 
     private var mCurrentCategory : Category? = null
+
+    // マイブックマークの検索クエリ
+    private var mSearchQuery : String? = null
+    val searchQuery: String?
+        get() = mSearchQuery
 
     private val mTasks = ArrayList<Deferred<Any>>()
 
@@ -78,6 +83,9 @@ class EntriesFragment : CoroutineScopeFragment() {
 
         mCurrentCategory = category
 
+        // マイブックマーク画面ではツールバーに検索ボタンを表示する
+        setHasOptionsMenu(category == Category.MyBookmarks)
+
         // エントリリスト用アダプタ作成
         mEntriesTabAdapter = EntriesTabAdapter(this, category)
     }
@@ -94,7 +102,19 @@ class EntriesFragment : CoroutineScopeFragment() {
         mEntriesTabLayout = mView.findViewById<TabLayout>(R.id.main_tab_layout).apply {
             setupWithViewPager(mEntriesTabPager)
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-                override fun onTabSelected(p0: TabLayout.Tab?) {}
+                override fun onTabSelected(tab: TabLayout.Tab?) {
+                    if (mCurrentCategory == Category.MyBookmarks && tab != null) {
+                        when(EntriesTabType.MYBOOKMARKS.int + tab.position) {
+                            EntriesTabType.MYBOOKMARKS.int -> {
+                                setHasOptionsMenu(true)
+                            }
+
+                            EntriesTabType.READLATER.int -> {
+                                setHasOptionsMenu(false)
+                            }
+                        }
+                    }
+                }
                 override fun onTabUnselected(p0: TabLayout.Tab?) {}
                 override fun onTabReselected(tab: TabLayout.Tab?) {
                     val fragment = mEntriesTabAdapter.findFragment(mEntriesTabPager, tab!!.position)
@@ -117,6 +137,37 @@ class EntriesFragment : CoroutineScopeFragment() {
         return mView
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.search_my_entries, menu)
+
+        // 検索クエリ
+        (menu.findItem(R.id.search_view)?.actionView as? SearchView)?.run {
+            isSubmitButtonEnabled = true
+            queryHint = "検索クエリ"
+
+            if (mSearchQuery != null) {
+                setQuery(mSearchQuery, false)
+                isIconified = false
+            }
+
+            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextChange(newText: String?): Boolean = false
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    mSearchQuery = query
+                    refreshEntriesTabs(Category.MyBookmarks)
+                    return false
+                }
+            })
+
+            setOnCloseListener {
+                mSearchQuery = null
+                refreshEntriesTabs(Category.MyBookmarks)
+                return@setOnCloseListener false
+            }
+        }
+    }
+
     fun refreshEntriesAsync(tabPosition: Int? = null, offset: Int? = null) : Deferred<List<Entry>> =
         mEntriesTabAdapter.getEntriesAsync(tabPosition ?: mEntriesTabLayout.selectedTabPosition, offset)
 
@@ -128,6 +179,10 @@ class EntriesFragment : CoroutineScopeFragment() {
         val categoryChanged = mCurrentCategory != category
         mCurrentCategory = category
         mEntriesTabAdapter.setCategory(mEntriesTabPager, category)
+
+        if (categoryChanged) {
+            setHasOptionsMenu(category == Category.MyBookmarks)
+        }
 
         for (tabPosition in 0 until mEntriesTabAdapter.count) {
             val tabFragment = mEntriesTabAdapter.findFragment(mEntriesTabPager, tabPosition)

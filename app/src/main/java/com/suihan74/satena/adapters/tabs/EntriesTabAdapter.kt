@@ -107,7 +107,20 @@ class EntriesTabAdapter(
         return when (EntriesTabType.fromInt(pos)) {
             EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category, of = offset)
             EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category, of = offset)
-            EntriesTabType.MYBOOKMARKS -> HatenaClient.getMyBookmarkedEntriesAsync(of = offset)
+            EntriesTabType.MYBOOKMARKS -> {
+                val searchQuery = fragment.searchQuery
+                if (searchQuery.isNullOrBlank()) {
+                    HatenaClient.getMyBookmarkedEntriesAsync(of = offset)
+                }
+                else {
+                    val regexBoundary = Regex("""^%s+|%s+$""")
+                    val regex = Regex("""%s+""")
+                    val query = searchQuery
+                        .replace(regexBoundary, "")
+                        .replace(regex, "+")
+                    HatenaClient.searchMyEntriesAsync(query, SearchType.Text, of = offset)
+                }
+            }
             EntriesTabType.READLATER -> HatenaClient.searchMyEntriesAsync("あとで読む", SearchType.Tag, of = offset)
         }
     }

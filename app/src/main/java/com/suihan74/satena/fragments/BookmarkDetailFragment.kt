@@ -1,6 +1,7 @@
 package com.suihan74.satena.fragments
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
@@ -17,9 +18,14 @@ import androidx.viewpager.widget.ViewPager
 import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
-import com.suihan74.HatenaLib.*
+import com.suihan74.HatenaLib.Bookmark
+import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.HatenaLib.StarColor
+import com.suihan74.HatenaLib.UserColorStarsCount
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.activities.BookmarksActivity
+import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.adapters.tabs.StarsTabAdapter
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
@@ -90,8 +96,10 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                 visibility = View.VISIBLE
                 view.findViewById<TextView>(R.id.tags).apply {
                     text = BookmarkCommentDecorator.makeClickableTagsText(mBookmark.tags) { tag ->
-                        val fragment = SearchEntriesFragment.createInstance(tag, SearchType.Tag)
-                        activity.showFragment(fragment, null)
+                        val intent = Intent(SatenaApplication.instance, MainActivity::class.java).apply {
+                            putExtra(MainActivity.EXTRA_DISPLAY_TAG, tag)
+                        }
+                        startActivity(intent)
                     }
                     movementMethod = LinkMovementMethod.getInstance()
                 }
@@ -251,7 +259,6 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
 
         launch(Dispatchers.Main) {
-
             val task = bookmarksFragment!!.getFetchStarsTask(mBookmark.user)
             if (task == null || task.isCompleted) {
                 val adapter = StarsTabAdapter(
