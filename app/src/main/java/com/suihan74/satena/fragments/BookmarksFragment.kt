@@ -24,6 +24,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.adapters.tabs.BookmarksTabAdapter
@@ -183,12 +184,10 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         mUserTagsContainer = userTagsPrefs.get(UserTagsKey.CONTAINER)
 
         // ツールバーの設定
-        val toolbar = root.findViewById<Toolbar>(R.id.bookmarks_toolbar).apply {
-            title = mEntry.title
-        }
+        root.findViewById<Toolbar>(R.id.bookmarks_toolbar).title = mEntry.title
 
         // メインコンテンツの設定
-        mTabPager = root.findViewById<ViewPager>(R.id.bookmarks_tab_pager)
+        mTabPager = root.findViewById(R.id.bookmarks_tab_pager)
         mTabLayout = root.findViewById<TabLayout>(R.id.bookmarks_tab_layout).apply {
             setupWithViewPager(mTabPager)
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -201,6 +200,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 }
             })
         }
+        // ブックマークの読み込みが終わってからアダプタをセットしないと子フラグメントで問題が起きるのでここではセットしない
         mTabAdapter = object : BookmarksTabAdapter(activity, mTabPager) {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = onScrolled(dy)
         }
@@ -546,25 +546,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 adapter = mTabAdapter
                 addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
                     override fun onPageSelected(position: Int) {
-/*
-                        val tabFragment = adapter.findFragment(position)
-                        val user = HatenaClient.account?.name
-                        if (user == null) {
-                            changeScrollButtonVisibility(View.GONE)
-                        }
-                        else {
-                            val bookmarks = when (BookmarksTabType.fromInt(position)) {
-                                BookmarksTabType.POPULAR -> popularBookmarks
-                                else -> bookmarksEntry.bookmarks.filter { tabFragment?.isBookmarkShown(it) ?: false }
-                            }
-                            if (bookmarks.any { it.user == user }) {
-                                changeScrollButtonVisibility(View.VISIBLE)
-                            }
-                            else {
-                                changeScrollButtonVisibility(View.GONE)
-                            }
-                        }
-*/
+                        // タブを切り替えたらスクロールボタンを隠す
+                        // タブによって「自分のブコメまでスクロール」の表示切替が必要なため
+                        // TODO: 全部隠さないでアニメーションするようにしたい
                         if (mAreScrollButtonsVisible) {
                             hideScrollButtons()
                         }
@@ -574,18 +558,19 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 setCurrentItem(initialTabPosition, false)
             }
 
-            /*
-            val scrollToMyBookmarkButton = mRoot.findViewById<FloatingActionButton>(R.id.bookmarks_scroll_my_bookmark_button)
-            val userName = HatenaClient.account?.name ?: ""
-
-            // ブクマ数に比例してUIスレッド停止時間が割と大きくなるので，バックグラウンドで探させて待機する
-            val userBookmarkExists = withContext(Dispatchers.Default) {
-                bookmarksEntry.bookmarks.none { it.user == userName }
+            // タブを長押しでデフォルトタブの設定を変更する
+            mTabLayout.setOnTabLongClickListener { idx ->
+                val context = SatenaApplication.instance.applicationContext
+                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                val key = PreferenceKey.BOOKMARKS_INITIAL_TAB
+                if (prefs.getInt(key) != idx) {
+                    prefs.edit {
+                        put(key, idx)
+                    }
+                    context.showToast("${BookmarksTabType.fromInt(idx).toString(context)}タブを最初に表示するようにしました")
+                }
+                return@setOnTabLongClickListener true
             }
-
-            if (!HatenaClient.signedIn() || userBookmarkExists) {
-                mScrollButtons = mScrollButtons.filterNot { it == scrollToMyBookmarkButton }.toTypedArray()
-            }*/
         }
         catch (e: IllegalStateException) {
             Log.d("Cancelled", Log.getStackTraceString(e))

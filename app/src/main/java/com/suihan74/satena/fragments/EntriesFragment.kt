@@ -18,6 +18,7 @@ import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.setOnTabLongClickListener
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.*
 import java.util.*
@@ -121,6 +122,24 @@ class EntriesFragment : CoroutineScopeFragment() {
                     fragment?.scrollToTop()
                 }
             })
+
+            // タブを長押しで最初に表示するカテゴリ・タブを設定
+            setOnTabLongClickListener { idx ->
+                val currentCategory = mCurrentCategory ?: return@setOnTabLongClickListener true
+                val catKey = PreferenceKey.ENTRIES_HOME_CATEGORY
+                val tabKey = PreferenceKey.ENTRIES_INITIAL_TAB
+                if (prefs.getInt(catKey) != currentCategory.int || prefs.getInt(tabKey) != idx) {
+                    prefs.edit {
+                        put(catKey, currentCategory.int)
+                        put(tabKey, idx)
+                    }
+
+                    val catText = title
+                    val tabText = context.getString(EntriesTabType.fromInt(idx).textId)
+                    context.showToast("${catText}カテゴリの${tabText}タブを最初に表示するようにしました")
+                }
+                return@setOnTabLongClickListener true
+            }
         }
 
         if (savedInstanceState == null) {
