@@ -2,9 +2,13 @@ package com.suihan74.satena.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Typeface
 import android.net.Uri
 import android.text.SpannableString
+import android.text.Spanned
 import android.text.style.ImageSpan
+import android.text.style.TextAppearanceSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +26,7 @@ import com.suihan74.satena.models.*
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -157,6 +162,7 @@ open class BookmarksAdapter(
                 val inflate = LayoutInflater.from(parent.context).inflate(R.layout.listview_item_bookmarks, parent, false)
                 return ViewHolder(
                     inflate,
+                    this,
                     fragment,
                     showIgnoredUsersMention,
                     showIgnoredUsersInAll && tabType == BookmarksTabType.ALL,
@@ -220,11 +226,28 @@ open class BookmarksAdapter(
         if (position >= 0) {
             notifyItemChanged(position)
         }
+
+        // メンション表示も更新する
+        fragment.launch(Dispatchers.Default) {
+            states.filter { it.type == RecyclerType.BODY }
+                .filter {
+                    BookmarkCommentDecorator.convert(it.body!!.comment).ids.contains(bookmark.user)
+                }
+                .forEach {
+                    withContext(Dispatchers.Main) {
+                        val pos = getItemPosition(it.body!!.user)
+                        if (pos >= 0) {
+                            notifyItemChanged(pos)
+                        }
+                    }
+                }
+        }
     }
 
 
     class ViewHolder(
         private val view : View,
+        private val adapter: BookmarksAdapter,
         private val fragment : CoroutineScopeFragment,
         private val showIgnoredUsersMention : Boolean,
         private val showIgnoredUsersInAll : Boolean,
@@ -330,7 +353,6 @@ open class BookmarksAdapter(
             else {
                 val tags = userTagsContainer.getTagsOfUser(user)
                 if (tags.isEmpty()) {
-                    //drawable/ic_user_tag
                     userTagsText.visibility = View.GONE
                 }
                 else {
@@ -376,14 +398,46 @@ open class BookmarksAdapter(
             if (analyzed.ids.isNotEmpty()) {
                 val mentionUser = analyzed.ids.first()
 
-                if (showIgnoredUsersMention ||
-                    showIgnoredUsersInAll ||
-                    !HatenaClient.ignoredUsers.contains(mentionUser)
+                if (showIgnoredUsersMention
+                    || showIgnoredUsersInAll
+                    || !HatenaClient.ignoredUsers.contains(mentionUser)
                 ) {
                     val mentionBookmark = bookmarksEntry.bookmarks.firstOrNull { it.user == mentionUser }
                     if (mentionBookmark != null) {
-                        mentionLayout.visibility = View.VISIBLE
-                        mentionUserName.text = mentionBookmark.user
+                        mentionLayout.apply {
+                            visibility = View.VISIBLE
+                            setOnClickListener {
+                                adapter.onItemClicked(mentionBookmark)
+                            }
+                            setOnLongClickListener {
+                                adapter.onItemLongClicked(mentionBookmark)
+                            }
+                        }
+
+                        val userTags = userTagsContainer.getTagsOfUser(mentionBookmark.user)
+                        mentionUserName.apply {
+                            text = if (userTags.isNotEmpty()) {
+                                val st = "${mentionBookmark.user} _${userTags.joinToString(",") { it.name }}"
+                                val pos = mentionBookmark.user.length + 1
+                                val tagColor = resources.getColor(R.color.tagColor, null)
+                                val scaledDensity = resources.displayMetrics.scaledDensity
+                                val size = (11.5f * scaledDensity).toInt()
+
+                                SpannableString(st).apply {
+                                    val icon =
+                                        resources.getDrawable(R.drawable.ic_user_tag, null).apply {
+                                            setBounds(0, 0, lineHeight, lineHeight)
+                                        }
+                                    setSpan(ImageSpan(icon), pos, pos + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                    setSpan(TextAppearanceSpan(null, Typeface.DEFAULT.style, size, ColorStateList.valueOf(tagColor), null),
+                                        pos + 1, st.length, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                }
+                            }
+                            else {
+                                mentionBookmark.user
+                            }
+                        }
+
                         mentionComment.text = BookmarkCommentDecorator.convert(mentionBookmark.comment).comment
                         Glide.with(view)
                             .load(mentionBookmark.userIconUrl)

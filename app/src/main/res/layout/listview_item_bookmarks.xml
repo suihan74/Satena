@@ -92,16 +92,15 @@
             android:layout_below="@id/bookmark_timestamp"
             android:layout_alignStart="@id/bookmark_user_name"
             android:layout_alignEnd="@id/bookmark_comment"
-            android:paddingTop="8dp"
+            android:layout_marginTop="8dp"
+            android:padding="4dp"
+            android:background="?attr/entryCommentBackground"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
         <ImageView
                 android:id="@+id/bookmark_mention_user_icon"
-                android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="4dp"
                 android:layout_width="28dp"
                 android:layout_height="28dp"/>
 
@@ -112,6 +111,8 @@
                 android:textStyle="bold"
                 android:textColor="?attr/textColor"
                 android:textSize="12sp"
+                android:singleLine="true"
+                android:ellipsize="end"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
