@@ -42,11 +42,11 @@ internal class StarColorDeserializer : JsonDeserializer<StarColor> {
         typeOfT: Type?,
         context: JsonDeserializationContext?
     ): StarColor {
-        if (json?.isJsonNull != false) {
-            return StarColor.Yellow
+        return if (json == null || json.isJsonNull) {
+            StarColor.Yellow
         }
         else {
-            return when (json.asString) {
+            when (json.asString) {
                 "normal", "yellow" -> StarColor.Yellow
                 "red" -> StarColor.Red
                 "green" -> StarColor.Green

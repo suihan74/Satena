@@ -8,8 +8,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.BookmarkResult
+import com.suihan74.HatenaLib.StarColor
 import com.suihan74.satena.R
+import com.suihan74.utilities.appendStarText
 import com.suihan74.utilities.getThemeColor
+import com.suihan74.utilities.setHtml
 import com.suihan74.utilities.toVisibility
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -42,8 +45,24 @@ open class EntryCommentsAdapter(
                     }
                 }
 
+                val commentBuilder = StringBuilder(v.commentRaw)
+                val starsCount = value.starsCount
+                if (starsCount != null) {
+                    val yellowStarCount = starsCount.firstOrNull { it.color == StarColor.Yellow }?.count ?: 0
+                    val redStarCount = starsCount.firstOrNull { it.color == StarColor.Red }?.count ?: 0
+                    val greenStarCount = starsCount.firstOrNull { it.color == StarColor.Green }?.count ?: 0
+                    val blueStarCount = starsCount.firstOrNull { it.color == StarColor.Blue }?.count ?: 0
+                    val purpleStarCount = starsCount.firstOrNull { it.color == StarColor.Purple }?.count ?: 0
+
+                    commentBuilder.append(" ")
+                    appendStarText(commentBuilder, purpleStarCount, root.context, R.color.starPurple)
+                    appendStarText(commentBuilder, blueStarCount, root.context, R.color.starBlue)
+                    appendStarText(commentBuilder, redStarCount, root.context, R.color.starRed)
+                    appendStarText(commentBuilder, greenStarCount, root.context, R.color.starGreen)
+                    appendStarText(commentBuilder, yellowStarCount, root.context, R.color.starYellow)
+                }
                 comment.apply {
-                    text = v.commentRaw
+                    setHtml(commentBuilder.toString())
                     visibility = v.commentRaw.isNotBlank().toVisibility()
                 }
 

@@ -80,11 +80,13 @@ data class BookmarkResult (
     // 以下、ブクマリザルトとして扱われる場合のみ含まれる
 
     @JsonAdapter(BooleanDeserializer::class)
-    val success : Boolean?,
+    val success : Boolean? = null,
 
     @JsonAdapter(BooleanDeserializer::class)
-    val private : Boolean?,
-    val eid : Long?
+    val private : Boolean? = null,
+    val eid : Long? = null,
+
+    val starsCount : List<Star>? = null
 ) : Serializable
 
 

@@ -1,6 +1,5 @@
 package com.suihan74.satena.adapters
 
-import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Typeface
@@ -15,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
@@ -445,18 +443,6 @@ open class BookmarksAdapter(
                     }
                 }
             }
-        }
-
-        private fun appendStarText(builder: StringBuilder, count: Int, context: Context, colorId: Int) {
-            val color = ContextCompat.getColor(context, colorId)
-            builder.append("<font color=\"$color\">")
-            if (count > 10) {
-                builder.append("★$count")
-            }
-            else {
-                for (i in 1..count) builder.append("★")
-            }
-            builder.append("</font>")
         }
     }
 }
