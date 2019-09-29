@@ -4,17 +4,21 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 data class Entry (
-    @SerializedName("eid")
+    @SerializedName("eid", alternate = ["entry_id"])
     val id : Long,
     @SerializedName("title")
     private val mTitle : String,
+
+    @SerializedName("description", alternate = ["content"])
     val description : String,
+
+    @SerializedName("count", alternate = ["total_bookmarks"])
     val count : Int,
 
     val url : String,
     val rootUrl : String,
     val faviconUrl : String?,
-    @SerializedName("image")
+    @SerializedName("image", alternate = ["image_url"])
     val imageUrl : String,
 
     val ampUrl : String? = null,

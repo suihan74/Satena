@@ -21,20 +21,10 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.setOnTabLongClickListener
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.*
-import java.util.*
-import kotlin.collections.ArrayList
 
 class EntriesFragment : CoroutineScopeFragment() {
     override val title: String
-        get() {
-            val app = SatenaApplication.instance
-            val textId = app.resources.getIdentifier(
-                "category_${mCurrentCategory?.name?.toLowerCase(Locale.ROOT) ?: ""}",
-                "string",
-                app.packageName
-            )
-            return app.getString(textId)
-        }
+        get() = SatenaApplication.instance.getString(mCurrentCategory?.textId ?: 0)
 
     private lateinit var mEntriesTabPager : ViewPager
 

@@ -65,6 +65,18 @@ enum class Category(
     Search(12,
         R.string.category_search,
         R.drawable.ic_category_search,
+        singleColumns = true),
+
+    MyStars(13,
+        R.string.category_mystars,
+        R.drawable.ic_star,
+        requireSignedIn = true,
+        singleColumns = true),
+
+    StarsReport(14,
+        R.string.category_stars_report,
+        R.drawable.ic_star,
+        requireSignedIn = true,
         singleColumns = true);
 
     companion object {

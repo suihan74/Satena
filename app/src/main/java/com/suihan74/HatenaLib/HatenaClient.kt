@@ -397,7 +397,7 @@ object HatenaClient : BaseClient() {
     }
 
     /**
-     * 指定ユーザーがブクマしたエントリを取得する
+     * 指定ユーザがブクマしたエントリを取得する
      */
     fun getUserEntriesAsync(
         user: String,
@@ -417,6 +417,16 @@ object HatenaClient : BaseClient() {
 
         val response = getJson<UserEntryResponse>(url)
         return@async response.bookmarks.map { it.toEntry() }
+    }
+
+    /**
+     * 指定ユーザがeidのエントリにつけたブクマのブクマページ情報を取得する
+     * （ブクマページURLからEntryを取得するのに使用）
+     */
+    fun getBookmarkPageAsync(eid: Long, user: String) : Deferred<BookmarkPage> = GlobalScope.async {
+        val url = "$B_BASE_URL/api/internal/cambridge/entry/$eid/comment/$user"
+        val response = getJson<BookmarkPageResponse>(url)
+        return@async response.bookmark
     }
 
     /**
@@ -682,10 +692,11 @@ object HatenaClient : BaseClient() {
     /**
      * 最近自分に付けられたスターを取得する
      */
-    fun getRecentStarsReportAsync() : Deferred<StarsEntries> = GlobalScope.async {
+    fun getRecentStarsReportAsync() : Deferred<List<StarsEntry>> = GlobalScope.async {
         if (!signedInStar()) throw RuntimeException("need to sign-in to get my stars")
         val apiUrl = "$S_BASE_URL/${account!!.name}/report.json"
-        return@async getJson<StarsEntries>(apiUrl)
+        val response = getJson<StarsEntries>(apiUrl)
+        return@async response.entries
     }
 
     /**

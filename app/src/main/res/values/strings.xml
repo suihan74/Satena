@@ -44,6 +44,8 @@
     <string name="category_mybookmarks">マイブックマーク</string>
     <string name="category_mytags">タグ</string>
     <string name="category_search">検索</string>
+    <string name="category_mystars">最近つけたスター</string>
+    <string name="category_stars_report">スターレポート</string>
 
     <!-- メニュー -->
     <string name="notices_desc">通知</string>

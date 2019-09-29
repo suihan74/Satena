@@ -16,7 +16,6 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.toVisibility
-import java.util.*
 
 class PreferencesEntriesFragment : Fragment() {
     companion object {
@@ -178,11 +177,5 @@ class PreferencesEntriesFragment : Fragment() {
         return view
     }
 
-    private fun getCategoryName(cat: Category) : String {
-        val id = resources.getIdentifier(
-            "category_${cat.name.toLowerCase(Locale.ROOT)}",
-            "string",
-            context!!.packageName)
-        return getString(id)
-    }
+    private fun getCategoryName(cat: Category) = getString(cat.textId)
 }

@@ -479,6 +479,18 @@ class MainActivity : ActivityBase() {
                 fragment
             }
 
+            Category.MyStars -> {
+                val fragment = MyStarsFragment.createInstance()
+                replaceFragment(fragment)
+                fragment
+            }
+
+            Category.StarsReport -> {
+                val fragment = StarsReportFragment.createInstance()
+                replaceFragment(fragment)
+                fragment
+            }
+
             else -> {
                 val fragment = currentFragment
                 when (fragment) {

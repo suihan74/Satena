@@ -5,13 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.satena.R
 
 class MyHotEntriesFragment : MultipurposeSingleTabEntriesFragment() {
     companion object {
         fun createInstance() = MyHotEntriesFragment()
     }
 
-    override val title = "マイホットエントリ"
+    override val title = getString(R.string.category_myhotentries)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = super.onCreateView(inflater, container, savedInstanceState)!!
