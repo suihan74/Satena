@@ -8,12 +8,12 @@ import android.view.*
 import androidx.appcompat.widget.SearchView
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
-import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.adapters.tabs.EntriesTabAdapter
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.CoroutineScopeFragment

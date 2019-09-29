@@ -12,11 +12,11 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.adapters.EntriesAdapter
+import com.suihan74.satena.models.Category
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers

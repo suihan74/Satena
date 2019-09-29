@@ -8,9 +8,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ToggleButton
 import androidx.fragment.app.Fragment
-import com.suihan74.HatenaLib.Category
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction

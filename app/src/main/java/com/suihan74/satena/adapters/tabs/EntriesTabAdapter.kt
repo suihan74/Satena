@@ -4,10 +4,14 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.suihan74.HatenaLib.*
+import com.suihan74.HatenaLib.EntriesType
+import com.suihan74.HatenaLib.Entry
+import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.fragments.EntriesFragment
 import com.suihan74.satena.fragments.EntriesTabFragment
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Deferred
@@ -34,8 +38,8 @@ class EntriesTabAdapter(
                 }
 
                 else -> when (EntriesTabType.fromInt(tabPosition)) {
-                    EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category).await()
-                    EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category).await()
+                    EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category.toApiCategory()).await()
+                    EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category.toApiCategory()).await()
                     else -> throw RuntimeException("unknown tab")
                 }
             }
@@ -105,8 +109,8 @@ class EntriesTabAdapter(
     fun getEntriesAsync(tabPosition: Int, offset: Int? = null) : Deferred<List<Entry>> {
         val pos = tabPosition + if (category == Category.MyBookmarks) EntriesTabType.MYBOOKMARKS.int else 0
         return when (EntriesTabType.fromInt(pos)) {
-            EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category, of = offset)
-            EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category, of = offset)
+            EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category.toApiCategory(), of = offset)
+            EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category.toApiCategory(), of = offset)
             EntriesTabType.MYBOOKMARKS -> {
                 val searchQuery = fragment.searchQuery
                 if (searchQuery.isNullOrBlank()) {

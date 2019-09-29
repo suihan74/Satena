@@ -1,6 +1,5 @@
 package com.suihan74.satena.models
 
-import com.suihan74.HatenaLib.Category
 import com.suihan74.satena.R
 
 enum class EntriesTabType(val int: Int, val textId: Int) {

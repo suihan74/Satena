@@ -8,9 +8,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.suihan74.HatenaLib.Category
 import com.suihan74.satena.R
-
+import com.suihan74.satena.models.Category
 
 open class CategoriesAdapter(
     private var categories: Array<Category>
@@ -31,23 +30,16 @@ open class CategoriesAdapter(
 
                 if (value != null) {
                     val context = view.context
-                    val name = value.name.toLowerCase()
 
-                    val textId = context.resources.getIdentifier("category_$name", "string", context.packageName)
-                    if (textId != 0x0) {
-                        title.text = context.getString(textId)
-                    }
+                    title.text = context.getString(value.textId)
 
-                    val drawableId = context.resources.getIdentifier("ic_category_$name", "drawable", context.packageName)
-                    if (drawableId != 0x0) {
-                        val requestOptions = RequestOptions()
-                            .placeholder(drawableId)
+                    val requestOptions = RequestOptions()
+                        .placeholder(value.iconId)
 
-                        Glide.with(view)
-                            .load("")
-                            .apply(requestOptions)
-                            .into(icon)
-                    }
+                    Glide.with(view)
+                        .load("")
+                        .apply(requestOptions)
+                        .into(icon)
                 }
             }
     }

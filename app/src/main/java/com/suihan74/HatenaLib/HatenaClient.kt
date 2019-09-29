@@ -372,13 +372,6 @@ object HatenaClient : BaseClient() {
         ad: Boolean = false
     ) : Deferred<List<Entry>> {
 
-        if (category == Category.MyBookmarks) {
-            return getMyBookmarkedEntriesAsync(limit ?: 50, of ?: 0)
-        }
-        if (category == Category.MyHotEntries) {
-            return getMyHotEntriesAsync()
-        }
-
         return GlobalScope.async {
             val target = when (entriesType) {
                 EntriesType.Recent -> "newentry"
@@ -388,7 +381,7 @@ object HatenaClient : BaseClient() {
             val url = buildString {
                 append(
                     "$B_BASE_URL/api/ipad.$target.json?${cacheAvoidance()}",
-                    "&category_id=$category",
+                    "&category_id=${category.code}",
                     "&include_amp_urls=${includeAMPUrls.int}",
                     "&include_bookmarked_data=${includeBookmarkedData.int}",
                     "&include_bookmarks_of_followings=${includeBookmarksOfFollowings.int}",
