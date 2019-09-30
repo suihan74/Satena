@@ -26,9 +26,8 @@ data class StarCount (
 
 }
 
-data class BookmarkWithStarCount (
-    @SerializedName("user")
-    private val mUser : User,
+class BookmarkWithStarCount (
+    user : User,
     val comment : String,
 
     val isPrivate : Boolean,
@@ -39,6 +38,9 @@ data class BookmarkWithStarCount (
     val timestamp : LocalDateTime,
     val starCount : List<StarCount>
 ) : Serializable {
+
+    @SerializedName("user")
+    private val mUser : User = user
 
     val user: String
         get() = mUser.name

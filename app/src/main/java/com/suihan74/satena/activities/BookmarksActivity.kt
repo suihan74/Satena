@@ -308,7 +308,7 @@ class BookmarksActivity : ActivityBase() {
         else if (entry is BookmarksEntry) {
             mEntry = Entry(
                 id = entry.id,
-                mTitle = entry.title,
+                title = entry.title,
                 description = "",
                 count = entry.count,
                 url = entry.url,

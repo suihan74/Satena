@@ -809,7 +809,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             list.mapIndexed { index, b ->
                 if (index == position) {
                     BookmarkWithStarCount(
-                        mUser = User(b.user, b.userIconUrl),
+                        user = User(b.user, b.userIconUrl),
                         comment = bookmark.comment,
                         isPrivate = b.isPrivate,
                         link = b.link,

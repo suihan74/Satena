@@ -74,7 +74,6 @@ dependencies {
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.0'
 
     // show licenses
-    // これより上げると問題が発生する
     implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
 
     // Google Sign-in

@@ -4,10 +4,7 @@ import android.net.Uri
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.*
 import okhttp3.Request
 import org.jsoup.Jsoup
 import org.threeten.bp.Duration
@@ -18,13 +15,18 @@ import java.net.SocketTimeoutException
 import java.net.URI
 import java.nio.charset.Charset
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 
 /////////////////////////////////////////////////////////////////
 
-object HatenaClient : BaseClient() {
+object HatenaClient : BaseClient(), CoroutineScope {
     internal const val W_BASE_URL = "https://www.hatena.ne.jp"
     internal const val B_BASE_URL = "https://b.hatena.ne.jp"
     internal const val S_BASE_URL = "https://s.hatena.ne.jp"
+
+    private val mJob = SupervisorJob()
+    override val coroutineContext: CoroutineContext
+        get() = mJob + Dispatchers.IO
 
     /** はてなブックマークの情報取得にログイン情報が必要なリクエストに付加するクッキー */
     private var mRk : HttpCookie? = null
@@ -82,7 +84,7 @@ object HatenaClient : BaseClient() {
     /**
      * ログイン
      */
-    fun signInAsync(name: String, password: String) : Deferred<Account> = GlobalScope.async {
+    fun signInAsync(name: String, password: String) : Deferred<Account> = async {
         if (signedIn()) {
             signOut()
         }
@@ -122,7 +124,7 @@ object HatenaClient : BaseClient() {
     /**
      * クッキーを使って再ログイン
      */
-    fun signInAsync(b: HttpCookie, rk: HttpCookie) : Deferred<Account> = GlobalScope.async {
+    fun signInAsync(b: HttpCookie, rk: HttpCookie) : Deferred<Account> = async {
         if (signedIn()) {
             signOut()
         }
@@ -162,7 +164,7 @@ object HatenaClient : BaseClient() {
     /**
      * はてなスターのサービスを利用するためのキーを取得する
      */
-    private fun signInStarAsync() : Deferred<Any> = GlobalScope.async {
+    private fun signInStarAsync() : Deferred<Any> = async {
         if (!signedIn()) throw RuntimeException("need to sign-in to use the star service")
         val url = "$S_BASE_URL/entries.json?${cacheAvoidance()}"
         val response = getJson<StarsEntries>(url)
@@ -184,7 +186,7 @@ object HatenaClient : BaseClient() {
     /**
      * アカウント情報を取得
      */
-    fun getAccountAsync() : Deferred<Account> = GlobalScope.async {
+    fun getAccountAsync() : Deferred<Account> = async {
         // signedIn() = mRk != null && account != null
         if (mRk == null) throw RuntimeException("need to sign-in to get account")
 
@@ -196,7 +198,7 @@ object HatenaClient : BaseClient() {
     /**
      * 非表示ユーザーリストを取得（部分的に取得可能）
      */
-    fun getIgnoredUsersAsync(limit: Int?, cursor: String?) : Deferred<IgnoredUsersResponse> = GlobalScope.async {
+    fun getIgnoredUsersAsync(limit: Int?, cursor: String?) : Deferred<IgnoredUsersResponse> = async {
         if (!signedIn()) throw RuntimeException("need to sign-in to get ignored users")
 
         val url = buildString {
@@ -222,7 +224,7 @@ object HatenaClient : BaseClient() {
     /**
      * 非表示ユーザーリストを取得
      */
-    fun getIgnoredUsersAsync(forciblyUpdate: Boolean = false) : Deferred<List<String>> = GlobalScope.async {
+    fun getIgnoredUsersAsync(forciblyUpdate: Boolean = false) : Deferred<List<String>> = async {
         if (forciblyUpdate
             || Duration.between(mIgnoredUsersLastUpdated, LocalDateTime.now()) > mIgnoredUsersUpdateIntervals
         ) {
@@ -253,7 +255,7 @@ object HatenaClient : BaseClient() {
         postEvernote: Boolean = false,
         readLater: Boolean = false,
         isPrivate: Boolean = false
-    ) : Deferred<BookmarkResult> = GlobalScope.async {
+    ) : Deferred<BookmarkResult> = async {
         if (!signedIn()) throw RuntimeException("need to login for bookmarking")
 
         val apiUrl = "$B_BASE_URL/${account!!.name}/add.edit.json?with_status_op=1&from=android-app"
@@ -289,7 +291,7 @@ object HatenaClient : BaseClient() {
     /**
      * 対象urlのブックマークを削除する
      */
-    fun deleteBookmarkAsync(url: String) : Deferred<Any> = GlobalScope.async {
+    fun deleteBookmarkAsync(url: String) : Deferred<Any> = async {
         if (!signedIn()) throw RuntimeException("need to login for deleting bookmarks")
         val account = account!!
         val apiUrl = "$B_BASE_URL/${account.name}/api.delete_bookmark.json"
@@ -311,7 +313,7 @@ object HatenaClient : BaseClient() {
     fun getMyBookmarkedEntriesAsync(
         limit: Int? = null,
         of: Int? = null
-    ) : Deferred<List<Entry>> = GlobalScope.async {
+    ) : Deferred<List<Entry>> = async {
         if (!signedIn()) throw RuntimeException("need to sign-in to get user's bookmarked entries")
 
         val url = buildString {
@@ -331,7 +333,7 @@ object HatenaClient : BaseClient() {
         query: String,
         searchType: SearchType,
         limit: Int? = null,
-        of: Int? = null) : Deferred<List<Entry>> = GlobalScope.async {
+        of: Int? = null) : Deferred<List<Entry>> = async {
         if (!signedIn()) throw RuntimeException("need to sign-in to search user's bookmarked entries")
 
         val url = buildString {
@@ -347,7 +349,7 @@ object HatenaClient : BaseClient() {
     /**
      * マイホットエントリを取得
      */
-    fun getMyHotEntriesAsync(date: String? = null) : Deferred<List<Entry>> = GlobalScope.async {
+    fun getMyHotEntriesAsync(date: String? = null) : Deferred<List<Entry>> = async {
         val url = buildString {
             append("$B_BASE_URL/api/entries/myhotentry.json?include_amp_urls=1")
             if (!date.isNullOrEmpty()) {
@@ -372,7 +374,7 @@ object HatenaClient : BaseClient() {
         ad: Boolean = false
     ) : Deferred<List<Entry>> {
 
-        return GlobalScope.async {
+        return async {
             val target = when (entriesType) {
                 EntriesType.Recent -> "newentry"
                 EntriesType.Hot -> "hotentry"
@@ -403,7 +405,7 @@ object HatenaClient : BaseClient() {
         user: String,
         limit: Int? = null,
         of: Int? = null
-    ) : Deferred<List<Entry>> = GlobalScope.async {
+    ) : Deferred<List<Entry>> = async {
 
         val url = buildString {
             append("$B_BASE_URL/api/internal/user/$user/bookmarks?${cacheAvoidance()}")
@@ -423,7 +425,7 @@ object HatenaClient : BaseClient() {
      * 指定ユーザがeidのエントリにつけたブクマのブクマページ情報を取得する
      * （ブクマページURLからEntryを取得するのに使用）
      */
-    fun getBookmarkPageAsync(eid: Long, user: String) : Deferred<BookmarkPage> = GlobalScope.async {
+    fun getBookmarkPageAsync(eid: Long, user: String) : Deferred<BookmarkPage> = async {
         val url = "$B_BASE_URL/api/internal/cambridge/entry/$eid/comment/$user"
         val response = getJson<BookmarkPageResponse>(url)
         return@async response.bookmark
@@ -438,7 +440,7 @@ object HatenaClient : BaseClient() {
         entriesType: EntriesType = EntriesType.Recent,
         limit: Int? = null,
         of: Int? = null
-    ) : Deferred<List<Entry>> = GlobalScope.async {
+    ) : Deferred<List<Entry>> = async {
 
         val url = buildString {
             append(
@@ -458,7 +460,7 @@ object HatenaClient : BaseClient() {
     /**
      * ブックマーク情報を取得する
      */
-    fun getBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = GlobalScope.async {
+    fun getBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = async {
         val apiUrl = "$B_BASE_URL/entry/jsonlite/?url=${Uri.encode(url)}&${cacheAvoidance()}"
         return@async getJson<BookmarksEntry>(apiUrl, "yyyy/MM/dd HH:mm")
     }
@@ -466,7 +468,7 @@ object HatenaClient : BaseClient() {
     /**
      * まだ誰にもブックマークされていないページのダミーブックマーク情報を作成する
      */
-    fun getEmptyBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = GlobalScope.async {
+    fun getEmptyBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = async {
         val response = get(url)
         val title = if (response.isSuccessful) {
             val bodyBytes = response.body()!!.bytes()
@@ -552,7 +554,7 @@ object HatenaClient : BaseClient() {
         url: String,
         limit: Long? = null,
         of: Long? = null
-    ) : Deferred<List<BookmarkWithStarCount>> = GlobalScope.async {
+    ) : Deferred<List<BookmarkWithStarCount>> = async {
         val apiUrl = buildString {
             append("$B_BASE_URL/api/ipad.entry_bookmarks?${cacheAvoidance()}&url=${Uri.encode(url)}")
             if (limit != null) append("&limit=$limit")
@@ -565,7 +567,7 @@ object HatenaClient : BaseClient() {
     /**
      * ブックマーク概要を取得する
      */
-    fun getDigestBookmarksAsync(url: String, limit: Long? = null) : Deferred<BookmarksDigest> = GlobalScope.async {
+    fun getDigestBookmarksAsync(url: String, limit: Long? = null) : Deferred<BookmarksDigest> = async {
         val apiUrl = buildString {
             append("$B_BASE_URL/api/ipad.entry_reactions?url=${Uri.encode(url)}")
             if (limit != null) append("&limit=$limit")
@@ -576,7 +578,7 @@ object HatenaClient : BaseClient() {
     /**
      * エントリーIDから元の記事のURLを取得する
      */
-    fun getEntryUrlFromIdAsync(eid: Long) : Deferred<String> = GlobalScope.async {
+    fun getEntryUrlFromIdAsync(eid: Long) : Deferred<String> = async {
         val url = "$B_BASE_URL/entry/$eid"
         val request = Request.Builder().url(url).build()
         val call = client.newCall(request)
@@ -601,7 +603,7 @@ object HatenaClient : BaseClient() {
     /**
      * エントリーIDからブックマーク情報を取得する
      */
-    fun getBookmarksEntryAsync(eid: Long) : Deferred<BookmarksEntry> = GlobalScope.async {
+    fun getBookmarksEntryAsync(eid: Long) : Deferred<BookmarksEntry> = async {
         val url = getEntryUrlFromIdAsync(eid).await()
         return@async getBookmarksEntryAsync(url).await()
     }
@@ -609,7 +611,7 @@ object HatenaClient : BaseClient() {
     /**
      * ブックマーク概要を取得する
      */
-    fun getDigestBookmarksAsync(eid: Long, limit: Long? = null) : Deferred<BookmarksDigest> = GlobalScope.async {
+    fun getDigestBookmarksAsync(eid: Long, limit: Long? = null) : Deferred<BookmarksDigest> = async {
         val url = getEntryUrlFromIdAsync(eid).await()
         return@async getDigestBookmarksAsync(url, limit).await()
     }
@@ -617,7 +619,7 @@ object HatenaClient : BaseClient() {
     /**
      * スター情報を複数一括で取得する
      */
-    fun getStarsEntryAsync(urls: Iterable<String>) : Deferred<List<StarsEntry>> = GlobalScope.async {
+    fun getStarsEntryAsync(urls: Iterable<String>) : Deferred<List<StarsEntry>> = async {
         val apiBaseUrl = "$S_BASE_URL/entry.json?${cacheAvoidance()}&uri="
         val params = urls.map { Uri.encode(it) }.joinToString("&uri=")
         var apiUrl = apiBaseUrl + params
@@ -672,7 +674,7 @@ object HatenaClient : BaseClient() {
     /**
      * スター情報を取得する
      */
-    fun getStarsEntryAsync(url: String) : Deferred<StarsEntry> = GlobalScope.async {
+    fun getStarsEntryAsync(url: String) : Deferred<StarsEntry> = async {
         val apiUrl = "$S_BASE_URL/entry.json?uri=${Uri.encode(url)}&${cacheAvoidance()}"
         val gsonBuilder = getGsonBuilderForStars()
         val response = getJson<StarsEntries>(apiUrl, gsonBuilder)
@@ -682,7 +684,7 @@ object HatenaClient : BaseClient() {
     /**
      * 最近自分が付けたスターを取得する
      */
-    fun getRecentStarsAsync() : Deferred<List<StarsEntry>> = GlobalScope.async {
+    fun getRecentStarsAsync() : Deferred<List<StarsEntry>> = async {
         if (!signedInStar()) throw RuntimeException("need to sign-in to get my stars")
         val apiUrl = "$S_BASE_URL/${account!!.name}/stars.json"
         val listType = object : TypeToken<List<StarsEntry>>() {}.type
@@ -692,7 +694,7 @@ object HatenaClient : BaseClient() {
     /**
      * 最近自分に付けられたスターを取得する
      */
-    fun getRecentStarsReportAsync() : Deferred<List<StarsEntry>> = GlobalScope.async {
+    fun getRecentStarsReportAsync() : Deferred<List<StarsEntry>> = async {
         if (!signedInStar()) throw RuntimeException("need to sign-in to get my stars")
         val apiUrl = "$S_BASE_URL/${account!!.name}/report.json"
         val response = getJson<StarsEntries>(apiUrl)
@@ -702,7 +704,7 @@ object HatenaClient : BaseClient() {
     /**
      * 対象URLにスターをつける
      */
-    fun postStarAsync(url: String, color: StarColor = StarColor.Yellow, quote: String = "") : Deferred<Star> = GlobalScope.async {
+    fun postStarAsync(url: String, color: StarColor = StarColor.Yellow, quote: String = "") : Deferred<Star> = async {
         if (!signedInStar()) throw RuntimeException("need to sign-in to post star")
         val apiUrl = "$S_BASE_URL/star.add.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
@@ -715,7 +717,7 @@ object HatenaClient : BaseClient() {
     /**
      * 一度付けたスターを削除する
      */
-    fun deleteStarAsync(url: String, star: Star) : Deferred<Any> = GlobalScope.async {
+    fun deleteStarAsync(url: String, star: Star) : Deferred<Any> = async {
         if (!signedInStar()) throw RuntimeException("need to sign-in to delete star")
         val apiUrl = "$S_BASE_URL/star.delete.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
@@ -731,7 +733,7 @@ object HatenaClient : BaseClient() {
     /**
      *  ログインユーザーが持っているカラースターの情報を取得する
      */
-    fun getMyColorStarsAsync() : Deferred<UserColorStarsCount> = GlobalScope.async {
+    fun getMyColorStarsAsync() : Deferred<UserColorStarsCount> = async {
         if (!signedIn()) throw RuntimeException("need to sign-in to get color stars")
 
         val url = "$S_BASE_URL/api/v0/me/colorstars"
@@ -755,7 +757,7 @@ object HatenaClient : BaseClient() {
     /**
      * 通知を取得する
      */
-    fun getNoticesAsync() : Deferred<NoticeResponse> = GlobalScope.async {
+    fun getNoticesAsync() : Deferred<NoticeResponse> = async {
         if (!signedIn()) throw RuntimeException("need to sign-in to get user's notices")
         val url = "$W_BASE_URL/notify/api/pull?${cacheAvoidance()}"
         return@async getJson<NoticeResponse>(url)
@@ -764,7 +766,7 @@ object HatenaClient : BaseClient() {
     /**
      * 通知既読状態を更新する
      */
-    fun updateNoticesLastSeenAsync() : Deferred<Any> = GlobalScope.async {
+    fun updateNoticesLastSeenAsync() : Deferred<Any> = async {
         if (!signedIn()) throw RuntimeException("need to sign-in to update notices last seen")
         val url = "$W_BASE_URL/notify/api/read"
 
@@ -782,7 +784,7 @@ object HatenaClient : BaseClient() {
     /**
      * 指定ユーザーが使用しているタグを取得する
      */
-    fun getUserTagsAsync(user: String) : Deferred<List<Tag>> = GlobalScope.async {
+    fun getUserTagsAsync(user: String) : Deferred<List<Tag>> = async {
         val url = "$B_BASE_URL/$user/tags.json?${cacheAvoidance()}"
         val response = getJson<TagsResponse>(url)
         if (response.status != 200) throw RuntimeException("failed to get $user's tags: ${response.status}")
@@ -795,7 +797,7 @@ object HatenaClient : BaseClient() {
     /**
      * 指定したユーザーのブコメを非表示にする
      */
-    fun ignoreUserAsync(user: String) : Deferred<Any> = GlobalScope.async {
+    fun ignoreUserAsync(user: String) : Deferred<Any> = async {
         if (!signedIn()) throw RuntimeException("need to sign-in to mute users")
         val url = "$B_BASE_URL/${account!!.name}/api.ignore.json"
         try {
@@ -816,7 +818,7 @@ object HatenaClient : BaseClient() {
     /**
      * 指定したユーザーのブコメ非表示を解除する
      */
-    fun unignoreUserAsync(user: String) : Deferred<Any> = GlobalScope.async {
+    fun unignoreUserAsync(user: String) : Deferred<Any> = async {
         if (!signedIn()) throw RuntimeException("need to sign-in to mute users")
         val url = "$B_BASE_URL/${account!!.name}/api.unignore.json"
         try {

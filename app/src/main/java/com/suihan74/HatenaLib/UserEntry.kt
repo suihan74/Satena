@@ -32,7 +32,7 @@ data class UserEntry (
 
     fun toEntry() : Entry = Entry(
         id = entryId,
-        mTitle = entry.title,
+        title = entry.title,
         description = entry.content,
         count = entry.totalBookmarks,
         url = entry.url,

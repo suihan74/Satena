@@ -268,7 +268,7 @@ open class EntriesAdapter(
         myhotentryComments: List<BookmarkResult>?
     ) = Entry(
             id = id ?: src.id,
-            mTitle = title ?: src.title,
+            title = title ?: src.title,
             description = description ?: src.description,
             count = count ?: src.count,
             url = url ?: src.url,
