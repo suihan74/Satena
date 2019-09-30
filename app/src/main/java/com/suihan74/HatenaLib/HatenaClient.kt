@@ -165,7 +165,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * はてなスターのサービスを利用するためのキーを取得する
      */
     private fun signInStarAsync() : Deferred<Any> = async {
-        if (!signedIn()) throw RuntimeException("need to sign-in to use the star service")
+        require(signedIn()) { "need to sign-in to use the star service" }
         val url = "$S_BASE_URL/entries.json?${cacheAvoidance()}"
         val response = getJson<StarsEntries>(url)
 
@@ -199,7 +199,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 非表示ユーザーリストを取得（部分的に取得可能）
      */
     fun getIgnoredUsersAsync(limit: Int?, cursor: String?) : Deferred<IgnoredUsersResponse> = async {
-        if (!signedIn()) throw RuntimeException("need to sign-in to get ignored users")
+        require(signedIn()) { "need to sign-in to get ignored users" }
 
         val url = buildString {
             append("$B_BASE_URL/api/my/ignore_users?${cacheAvoidance()}")
@@ -256,7 +256,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
         readLater: Boolean = false,
         isPrivate: Boolean = false
     ) : Deferred<BookmarkResult> = async {
-        if (!signedIn()) throw RuntimeException("need to login for bookmarking")
+
+        require(signedIn()) { "need to login for bookmarking" }
 
         val apiUrl = "$B_BASE_URL/${account!!.name}/add.edit.json?with_status_op=1&from=android-app"
         val params = mapOf(
@@ -292,7 +293,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 対象urlのブックマークを削除する
      */
     fun deleteBookmarkAsync(url: String) : Deferred<Any> = async {
-        if (!signedIn()) throw RuntimeException("need to login for deleting bookmarks")
+        require(signedIn()) { "need to login for deleting bookmarks" }
         val account = account!!
         val apiUrl = "$B_BASE_URL/${account.name}/api.delete_bookmark.json"
 
@@ -314,7 +315,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
         limit: Int? = null,
         of: Int? = null
     ) : Deferred<List<Entry>> = async {
-        if (!signedIn()) throw RuntimeException("need to sign-in to get user's bookmarked entries")
+
+        require(signedIn()) { "need to sign-in to get user's bookmarked entries" }
 
         val url = buildString {
             append("$B_BASE_URL/api/ipad.mybookmarks?${cacheAvoidance()}")
@@ -334,7 +336,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
         searchType: SearchType,
         limit: Int? = null,
         of: Int? = null) : Deferred<List<Entry>> = async {
-        if (!signedIn()) throw RuntimeException("need to sign-in to search user's bookmarked entries")
+
+        require (signedIn()) { "need to sign-in to search user's bookmarked entries" }
 
         val url = buildString {
             append("$B_BASE_URL/api/ipad.mysearch/${searchType.name.toLowerCase(Locale.ROOT)}?${cacheAvoidance()}&q=$query")
@@ -349,9 +352,15 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * マイホットエントリを取得
      */
-    fun getMyHotEntriesAsync(date: String? = null) : Deferred<List<Entry>> = async {
+    fun getMyHotEntriesAsync(
+        date: String? = null,
+        includeAmpUrls: Boolean = true
+    ) : Deferred<List<Entry>> = async {
+
+        require(signedIn()) { "need to sign-in to get myhotentries" }
+
         val url = buildString {
-            append("$B_BASE_URL/api/entries/myhotentry.json?include_amp_urls=1")
+            append("$B_BASE_URL/api/entries/myhotentry.json?include_amp_urls=${includeAmpUrls.int}")
             if (!date.isNullOrEmpty()) {
                 append("&date=$date")
             }
@@ -654,9 +663,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * お気に入りユーザーの最近のブクマを取得する
      */
-    fun getFollowingBookmarksAsync() : Deferred<List<BookmarkPage>> = async {
+    fun getFollowingBookmarksAsync(includeAmpUrls: Boolean = true) : Deferred<List<BookmarkPage>> = async {
         require (signedIn()) { "need to sign-in to get bookmarks of followings" }
-        val url = "$B_BASE_URL/api/internal/cambridge/user/my/feed/following/bookmarks?include_amp_urls=1"
+        val url = "$B_BASE_URL/api/internal/cambridge/user/my/feed/following/bookmarks?include_amp_urls=${includeAmpUrls.int}"
         val response = getJson<FollowingBookmarksResponse>(url)
         return@async response.bookmarks
     }
@@ -731,7 +740,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 最近自分が付けたスターを取得する
      */
     fun getRecentStarsAsync() : Deferred<List<StarsEntry>> = async {
-        if (!signedInStar()) throw RuntimeException("need to sign-in to get my stars")
+        require(signedInStar()) { "need to sign-in to get my stars" }
         val apiUrl = "$S_BASE_URL/${account!!.name}/stars.json"
         val listType = object : TypeToken<List<StarsEntry>>() {}.type
         return@async getJson<List<StarsEntry>>(listType, apiUrl)
@@ -741,7 +750,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 最近自分に付けられたスターを取得する
      */
     fun getRecentStarsReportAsync() : Deferred<List<StarsEntry>> = async {
-        if (!signedInStar()) throw RuntimeException("need to sign-in to get my stars")
+        require(signedInStar()) { "need to sign-in to get my stars" }
         val apiUrl = "$S_BASE_URL/${account!!.name}/report.json"
         val response = getJson<StarsEntries>(apiUrl)
         return@async response.entries
@@ -751,7 +760,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 対象URLにスターをつける
      */
     fun postStarAsync(url: String, color: StarColor = StarColor.Yellow, quote: String = "") : Deferred<Star> = async {
-        if (!signedInStar()) throw RuntimeException("need to sign-in to post star")
+        require(signedInStar()) { "need to sign-in to post star" }
         val apiUrl = "$S_BASE_URL/star.add.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
                 "&rks=$mRksForStar" +
@@ -764,7 +773,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 一度付けたスターを削除する
      */
     fun deleteStarAsync(url: String, star: Star) : Deferred<Any> = async {
-        if (!signedInStar()) throw RuntimeException("need to sign-in to delete star")
+        require(signedInStar()) { "need to sign-in to delete star" }
         val apiUrl = "$S_BASE_URL/star.delete.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
                 "&rks=$mRksForStar" +
@@ -780,7 +789,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      *  ログインユーザーが持っているカラースターの情報を取得する
      */
     fun getMyColorStarsAsync() : Deferred<UserColorStarsCount> = async {
-        if (!signedIn()) throw RuntimeException("need to sign-in to get color stars")
+        require(signedIn()) { "need to sign-in to get color stars" }
 
         val url = "$S_BASE_URL/api/v0/me/colorstars"
 
@@ -804,7 +813,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 通知を取得する
      */
     fun getNoticesAsync() : Deferred<NoticeResponse> = async {
-        if (!signedIn()) throw RuntimeException("need to sign-in to get user's notices")
+        require(signedIn()) { "need to sign-in to get user's notices" }
         val url = "$W_BASE_URL/notify/api/pull?${cacheAvoidance()}"
         return@async getJson<NoticeResponse>(url)
     }
@@ -813,7 +822,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 通知既読状態を更新する
      */
     fun updateNoticesLastSeenAsync() : Deferred<Any> = async {
-        if (!signedIn()) throw RuntimeException("need to sign-in to update notices last seen")
+        require(signedIn()) { "need to sign-in to update notices last seen" }
         val url = "$W_BASE_URL/notify/api/read"
 
         try {
@@ -844,7 +853,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 指定したユーザーのブコメを非表示にする
      */
     fun ignoreUserAsync(user: String) : Deferred<Any> = async {
-        if (!signedIn()) throw RuntimeException("need to sign-in to mute users")
+        require(signedIn()) { "need to sign-in to mute users" }
         val url = "$B_BASE_URL/${account!!.name}/api.ignore.json"
         try {
             val response = post(url, mapOf(
@@ -865,7 +874,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 指定したユーザーのブコメ非表示を解除する
      */
     fun unignoreUserAsync(user: String) : Deferred<Any> = async {
-        if (!signedIn()) throw RuntimeException("need to sign-in to mute users")
+        require(signedIn()) { "need to sign-in to mute users" }
         val url = "$B_BASE_URL/${account!!.name}/api.unignore.json"
         try {
             val response = post(url, mapOf(
@@ -884,7 +893,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * ログインユーザーが使用しているタグを取得する
      */
     fun getUserTagsAsync() : Deferred<List<Tag>> {
-        if (!signedIn()) throw RuntimeException("need to sign-in to get user's tags")
+        require(signedIn()) { "need to sign-in to get user's tags" }
         return getUserTagsAsync(account!!.name)
     }
 
