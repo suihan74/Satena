@@ -616,6 +616,51 @@ object HatenaClient : BaseClient(), CoroutineScope {
         return@async getDigestBookmarksAsync(url, limit).await()
     }
 
+
+    /**
+     * お気に入りユーザーの一覧を取得する
+     */
+    fun getFollowingsAsync() : Deferred<List<String>> {
+        require (signedIn()) { "need to sign-in to get following users" }
+        return getFollowingsAsync(account!!.name)
+    }
+
+    /**
+     * 指定ユーザーのお気に入りリストを取得する
+     */
+    fun getFollowingsAsync(user: String) : Deferred<List<String>> = async {
+        val url = "$B_BASE_URL/$user/follow.json"
+        val response = getJson<FollowUserResponse>(url)
+        return@async response.followings.map { it.name }
+    }
+
+    /**
+     * フォロワーリストを取得する
+     */
+    fun getFollowersAsync() : Deferred<List<String>> {
+        require (signedIn()) { "need to sign-in to get followers" }
+        return getFollowersAsync(account!!.name)
+    }
+
+    /**
+     * 指定ユーザーのフォロワーリストを取得する
+     */
+    fun getFollowersAsync(user: String) : Deferred<List<String>> = async {
+        val url = "$B_BASE_URL/api/internal/cambridge/user/$user/followers"
+        val response = getJson<FollowUserResponse>(url)
+        return@async response.followings.map { it.name }
+    }
+
+    /**
+     * お気に入りユーザーの最近のブクマを取得する
+     */
+    fun getFollowingBookmarksAsync() : Deferred<List<BookmarkPage>> = async {
+        require (signedIn()) { "need to sign-in to get bookmarks of followings" }
+        val url = "$B_BASE_URL/api/internal/cambridge/user/my/feed/following/bookmarks?include_amp_urls=1"
+        val response = getJson<FollowingBookmarksResponse>(url)
+        return@async response.bookmarks
+    }
+
     /**
      * スター情報を複数一括で取得する
      */

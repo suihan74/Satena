@@ -8,6 +8,10 @@ data class BookmarkPageResponse (
     val bookmark : BookmarkPage
 )
 
+data class FollowingBookmarksResponse (
+    val bookmarks : List<BookmarkPage>
+)
+
 data class BookmarkPage (
     @SerializedName("entry_id")
     val id : Long,
