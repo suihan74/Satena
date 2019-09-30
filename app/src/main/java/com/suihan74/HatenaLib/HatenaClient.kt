@@ -665,29 +665,30 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * スター情報を複数一括で取得する
      */
     fun getStarsEntryAsync(urls: Iterable<String>) : Deferred<List<StarsEntry>> = async {
-        val apiBaseUrl = "$S_BASE_URL/entry.json?${cacheAvoidance()}&uri="
-        val params = urls.map { Uri.encode(it) }.joinToString("&uri=")
+        val uriParamKey = "&uri="
+        val apiBaseUrl = "$S_BASE_URL/entry.json?${cacheAvoidance()}${uriParamKey}"
+        val params = urls.map { Uri.encode(it) }.joinToString(uriParamKey)
         var apiUrl = apiBaseUrl + params
 
         val gsonBuilder = getGsonBuilderForStars()
         var isSuccess = true
 
-        val limit = 2000
+        // urlの長さは2048を超えてはいけない
+        val urlLengthLimit = 2000
 
-        if (apiUrl.length > limit) {
+        if (apiUrl.length > urlLengthLimit) {
             val tasks = ArrayList<Deferred<StarsEntries?>>()
-            while (apiUrl.length > limit) {
-                val left = apiUrl.substring(0 until limit)
+            while (apiUrl.length > urlLengthLimit) {
+                val left = apiUrl.substring(0 until urlLengthLimit)
                 var lastSeparatorIndex = left.lastIndexOf('&')
                 if (lastSeparatorIndex < 0) lastSeparatorIndex = left.length
 
                 val curApiUrl = left.substring(0 until lastSeparatorIndex)
                 apiUrl = buildString {
                     append(apiBaseUrl)
-                    if (lastSeparatorIndex < left.length - 5) append(lastSeparatorIndex + 5)
-                    append(apiUrl.substring(limit))
+                    if (lastSeparatorIndex < left.length - uriParamKey.length) append(lastSeparatorIndex + uriParamKey.length)
+                    append(apiUrl.substring(urlLengthLimit))
                 }
-                // 5 means "&uri=".length
 
                 tasks.add(async inner@ {
                     return@inner try { getJson<StarsEntries>(curApiUrl, gsonBuilder) } catch (e: SocketTimeoutException) { null }
