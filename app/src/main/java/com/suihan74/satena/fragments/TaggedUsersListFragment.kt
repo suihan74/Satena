@@ -66,7 +66,7 @@ class TaggedUsersListFragment : Fragment() {
             override fun onItemClicked(user: TaggedUser) {
                 val items = arrayOf(
 /*                    "編集" to {  },*/
-                    "ブクマークをみる" to { this@TaggedUsersListFragment.showBookmarks(user) },
+                    "ブックマークをみる" to { this@TaggedUsersListFragment.showBookmarks(user) },
                     "削除" to { this@TaggedUsersListFragment.removeItem(user) }
                 )
 
