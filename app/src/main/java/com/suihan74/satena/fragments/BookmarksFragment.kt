@@ -3,6 +3,7 @@ package com.suihan74.satena.fragments
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import android.os.Parcelable
 import android.text.Editable
 import android.text.TextWatcher
 import android.transition.Fade
@@ -33,29 +34,42 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.UserTagsContainer
 import com.suihan74.satena.models.UserTagsKey
 import com.suihan74.utilities.*
+import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
 import java.net.SocketTimeoutException
 import java.util.*
 
 class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
+
+    @Parcelize
+    private data class SavableData (
+        val entry: Entry,
+        val bookmarksEntry: BookmarksEntry?,
+        val bookmarksDigest: BookmarksDigest?,
+        val bookmarksRecent: List<Bookmark>,
+        val starsMap: HashMap<String, StarsEntry>,
+        val tabPosition: Int,
+        val searchModeEnabled: Boolean
+    ) : Parcelable
+
     private lateinit var mRoot : View
-    private lateinit var mTabPager : ViewPager
-    private lateinit var mTabLayout : TabLayout
-    private var mTabAdapter : BookmarksTabAdapter? = null
     private lateinit var mDrawer : DrawerLayout
+    private lateinit var mTabLayout : TabLayout
+    private var mTabPager : ViewPager? = null
+    private var mCurrentTabPosition : Int = 0
+    private var mSearchModeEnabled : Boolean = false
 
     private lateinit var mFABs : Array<FloatingActionButton>
     private lateinit var mBookmarkButton : TextFloatingActionButton
     private lateinit var mBookmarksScrollMenuButton : FloatingActionButton
     private lateinit var mSearchButton : FloatingActionButton
 
-    //    private lateinit var mScrollButtons : Array<FloatingActionButton>
     private var mAreScrollButtonsVisible = false
     private var mIsHidingButtonsByScrollEnabled : Boolean = true
 
     private var mEntry : Entry = Entry.createEmpty()
-    private val mStarsMap = HashMap<String, StarsEntry>()
+    private var mStarsMap : HashMap<String, StarsEntry>? = null
     private var mBookmarksDigest : BookmarksDigest? = null
     private var mBookmarksRecent : List<Bookmark> = emptyList()
 
@@ -75,7 +89,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         private set
 
     val bookmarksTabAdapter : BookmarksTabAdapter?
-        get() = mTabAdapter
+        get() = mTabPager?.adapter as? BookmarksTabAdapter
 
     val popularBookmarks
         get() = mBookmarksDigest?.scoredBookmarks?.map { Bookmark.createFrom(it) } ?: emptyList()
@@ -84,7 +98,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         get() = mBookmarksRecent
 
     val starsMap : Map<String, StarsEntry>
-        get() = lock(mStarsMap) { mStarsMap }
+        get() = lock(mStarsMap) { mStarsMap!! }
 
     var ignoredUsers : Set<String> = emptySet()
         private set
@@ -105,22 +119,15 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         fun createInstance(entry: Entry, preLoadingTasks: BookmarksActivity.PreLoadingTasks? = null) = BookmarksFragment().apply {
             mEntry = entry
             mPreLoadingTasks = preLoadingTasks
-            enterTransition = TransitionSet().addTransition(Fade())
         }
 
         fun createInstance(targetUser: String, entry: Entry, preLoadingTasks: BookmarksActivity.PreLoadingTasks? = null) = BookmarksFragment().apply {
             mEntry = entry
             mTargetUser = targetUser
             mPreLoadingTasks = preLoadingTasks
-            enterTransition = TransitionSet().addTransition(Fade())
         }
 
-        private const val BUNDLE_TAB_POSITION = "tabPosition"
-        private var savedEntry : Entry? = null
-        private var savedBookmarksEntry : BookmarksEntry? = null
-        private var savedBookmarksRecent : List<Bookmark>? = null
-        private var savedBookmarksDigest : BookmarksDigest? = null
-        private var savedStarsMap : HashMap<String, StarsEntry>? = null
+        private const val BUNDLE_SAVABLE_DATA = "savableData"
     }
 
     private fun getSubTitle(bookmarks: List<Bookmark>) : String {
@@ -131,32 +138,48 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        val data = SavableData(
+            entry = mEntry,
+            bookmarksEntry = bookmarksEntry,
+            bookmarksDigest = mBookmarksDigest,
+            bookmarksRecent = mBookmarksRecent,
+            starsMap = mStarsMap ?: HashMap(),
+            tabPosition = mCurrentTabPosition,
+            searchModeEnabled = mSearchModeEnabled
+        )
         outState.apply {
-            putInt(BUNDLE_TAB_POSITION, mTabPager.currentItem)
+            putParcelable(BUNDLE_SAVABLE_DATA, data)
         }
-        savedEntry = mEntry
-        savedBookmarksEntry = bookmarksEntry
-        savedBookmarksRecent = mBookmarksRecent
-        savedBookmarksDigest = mBookmarksDigest
-        savedStarsMap = mStarsMap
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enterTransition = TransitionSet().addTransition(Fade())
 
+        // ユーザータグをロード
+        val userTagsPrefs = SafeSharedPreferences.create<UserTagsKey>(context)
+        mUserTagsContainer = userTagsPrefs.get(UserTagsKey.CONTAINER)
+
+        // 設定のロード
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        mIsHidingButtonsByScrollEnabled = prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
+
+        var starsMap: HashMap<String, StarsEntry>? = null
+        var currentTabPosition: Int? = null
         savedInstanceState?.run {
-            mEntry = savedEntry!!
-            bookmarksEntry = savedBookmarksEntry
-            mBookmarksRecent = savedBookmarksRecent!!
-            mBookmarksDigest = savedBookmarksDigest
-            mStarsMap.putAll(savedStarsMap!!)
-
-            savedEntry = null
-            savedBookmarksEntry = null
-            savedBookmarksRecent = null
-            savedBookmarksDigest = null
-            savedStarsMap = null
+            getParcelable<SavableData>(BUNDLE_SAVABLE_DATA)!!.let {
+                mEntry = it.entry
+                bookmarksEntry = it.bookmarksEntry
+                mBookmarksRecent = it.bookmarksRecent
+                mBookmarksDigest = it.bookmarksDigest
+                starsMap = it.starsMap
+                currentTabPosition = it.tabPosition
+                mSearchModeEnabled = it.searchModeEnabled
+            }
         }
+
+        mStarsMap = starsMap ?: HashMap()
+        mCurrentTabPosition = currentTabPosition ?: prefs.getInt(PreferenceKey.BOOKMARKS_INITIAL_TAB)
     }
 
     @SuppressLint("RestrictedApi")
@@ -164,45 +187,25 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         val root = inflater.inflate(R.layout.fragment_bookmarks, container, false)
         mRoot = root
 
-        val activity = activity!! as BookmarksActivity
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        mIsHidingButtonsByScrollEnabled = prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
-
-        val initialTabPosition =
-            if (this::mTabPager.isInitialized) {
-                mTabPager.currentItem
-            }
-            else {
-                savedInstanceState?.run {
-                    getInt(BUNDLE_TAB_POSITION)
-                } ?: prefs.getInt(PreferenceKey.BOOKMARKS_INITIAL_TAB)
-            }
-
-        // ユーザータグをロード
-        val userTagsPrefs = SafeSharedPreferences.create<UserTagsKey>(context)
-        mUserTagsContainer = userTagsPrefs.get(UserTagsKey.CONTAINER)
-
         // ツールバーの設定
         root.findViewById<Toolbar>(R.id.bookmarks_toolbar).title = mEntry.title
 
         // メインコンテンツの設定
-        mTabPager = root.findViewById(R.id.bookmarks_tab_pager)
+        val tabPager = root.findViewById<ViewPager>(R.id.bookmarks_tab_pager)
+        mTabPager = tabPager
         mTabLayout = root.findViewById<TabLayout>(R.id.bookmarks_tab_layout).apply {
-            setupWithViewPager(mTabPager)
+            setupWithViewPager(tabPager)
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-                override fun onTabSelected(p0: TabLayout.Tab?) {}
+                override fun onTabSelected(tab: TabLayout.Tab?) {
+                    mCurrentTabPosition = tab!!.position
+                }
                 override fun onTabUnselected(p0: TabLayout.Tab?) {}
                 override fun onTabReselected(tab: TabLayout.Tab?) {
-                    val adapter = mTabPager.adapter as BookmarksTabAdapter
-                    val fragment = adapter.findFragment(tab!!.position)
+                    val adapter = tabPager.adapter as? BookmarksTabAdapter
+                    val fragment = adapter?.findFragment(tab!!.position)
                     fragment?.scrollToTop()
                 }
             })
-        }
-        // ブックマークの読み込みが終わってからアダプタをセットしないと子フラグメントで問題が起きるのでここではセットしない
-        mTabAdapter = object : BookmarksTabAdapter(activity, mTabPager) {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = onScrolled(dy)
         }
 
         mBookmarkButton = root.findViewById(R.id.bookmark_button)
@@ -224,17 +227,6 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             mBookmarkButton.visibility = View.GONE
         }
 
-        if (savedInstanceState == null) {
-            showProgressBar()
-            launch(Dispatchers.Main) {
-                initializeBookmarks(initialTabPosition)
-            }
-        }
-        else {
-            restoreBookmarks(initialTabPosition)
-            hideProgressBar()
-        }
-
         // 検索クエリ入力ボックス
         root.findViewById<EditText>(R.id.bookmarks_search_text).apply {
             visibility = View.GONE
@@ -242,8 +234,8 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                 override fun afterTextChanged(s: Editable?) {}
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    val tabAdapter = mTabPager.adapter as BookmarksTabAdapter?
-                    tabAdapter?.forEachFragment {
+                    val adapter = tabPager.adapter as? BookmarksTabAdapter
+                    adapter?.forEachFragment {
                         it.setSearchText(text.toString())
                     }
                 }
@@ -253,24 +245,24 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         val mScrollButtons = arrayOf(
             root.findViewById<FloatingActionButton>(R.id.bookmarks_scroll_top_button).apply {
                 setOnClickListener {
-                    val adapter = mTabPager.adapter as BookmarksTabAdapter
-                    val tab = adapter.findFragment(mTabPager.currentItem)
+                    val adapter = tabPager.adapter as? BookmarksTabAdapter
+                    val tab = adapter?.findFragment(tabPager.currentItem)
                     tab?.scrollToTop()
                     hideScrollButtons()
                 }
             },
             root.findViewById<FloatingActionButton>(R.id.bookmarks_scroll_my_bookmark_button).apply {
                 setOnClickListener {
-                    val adapter = mTabPager.adapter as BookmarksTabAdapter
-                    val tab = adapter.findFragment(mTabPager.currentItem)
+                    val adapter = tabPager.adapter as? BookmarksTabAdapter
+                    val tab = adapter?.findFragment(tabPager.currentItem)
                     tab?.scrollTo(HatenaClient.account?.name ?: "")
                     hideScrollButtons()
                 }
             },
             root.findViewById<FloatingActionButton>(R.id.bookmarks_scroll_bottom_button).apply {
                 setOnClickListener {
-                    val adapter = mTabPager.adapter as BookmarksTabAdapter
-                    val tab = adapter.findFragment(mTabPager.currentItem)
+                    val adapter = tabPager.adapter as? BookmarksTabAdapter
+                    val tab = adapter?.findFragment(tabPager.currentItem)
                     tab?.scrollToBottom()
                     hideScrollButtons()
                 }
@@ -285,7 +277,18 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         }
         mAreScrollButtonsVisible = false
 
-        //retainInstance = true
+        // ブコメリストの初期化
+        if (savedInstanceState == null && bookmarksEntry == null) {
+            showProgressBar()
+            launch(Dispatchers.Main) {
+                initializeBookmarks(mCurrentTabPosition)
+            }
+        }
+        else {
+            hideProgressBar(withAnimation = false)
+            restoreBookmarks(mCurrentTabPosition)
+        }
+
         return root
     }
 
@@ -306,15 +309,14 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         }
 
         if (bookmarksEntry != null) {
-            hideProgressBar()
+            hideProgressBar(withAnimation = false)
         }
 
-        mIsHidingButtonsByScrollEnabled = prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
     }
 
     private val scrollButtons : Array<FloatingActionButton>
         get() {
-            val displayMyBookmarkButton = if (mTabPager.currentItem == BookmarksTabType.POPULAR.int) {
+            val displayMyBookmarkButton = if (mTabPager?.currentItem == BookmarksTabType.POPULAR.int) {
                 val user = HatenaClient.account?.name
                 if (user.isNullOrBlank()) {
                     false
@@ -381,7 +383,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         (activity as? ActivityBase)?.showProgressBar()
     }
 
-    private fun hideProgressBar() {
+    private fun hideProgressBar(withAnimation: Boolean = true) {
         try {
             mFABs.forEach {
                 it.animate()
@@ -394,7 +396,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             Log.d("CanceledLoading", e.message)
         }
 
-        (activity as? ActivityBase)?.hideProgressBar()
+        (activity as? ActivityBase)?.hideProgressBar(withAnimation)
     }
 
     private fun hideScrollButtons() {
@@ -443,15 +445,21 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
     @SuppressLint("RestrictedApi")
     private fun initializeFABs() {
+        val searchEditText = mRoot.findViewById<EditText>(R.id.bookmarks_search_text).apply {
+            visibility = mSearchModeEnabled.toVisibility()
+        }
+
         mSearchButton.setOnClickListener {
-            val searchEditText = mRoot.findViewById<EditText>(R.id.bookmarks_search_text)
-            searchEditText.visibility = (searchEditText.visibility == View.GONE).toVisibility()
+            mSearchModeEnabled = !mSearchModeEnabled
+            searchEditText.visibility = mSearchModeEnabled.toVisibility()
+
             if (searchEditText.visibility == View.GONE) {
                 searchEditText.text.clear()
             }
             else {
                 searchEditText.requestFocus()
-                val imm = context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                val imm =
+                    context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.showSoftInput(searchEditText, 0)
             }
         }
@@ -542,8 +550,10 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
             mPreLoadingTasks = null
 
-            mTabPager.apply {
-                adapter = mTabAdapter
+            mTabPager?.apply {
+                adapter = object : BookmarksTabAdapter(activity, this) {
+                    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = onScrolled(dy)
+                }
                 addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
                     override fun onPageSelected(position: Int) {
                         // タブを切り替えたらスクロールボタンを隠す
@@ -620,11 +630,10 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         toolbar.title = bookmarksEntry!!.title
         entryInfoFragment.bookmarksEntry = bookmarksEntry
 
-        val adapter = object : BookmarksTabAdapter(activity, mTabPager) {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = onScrolled(dy)
-        }
-        mTabPager.apply {
-            this.adapter = adapter
+        mTabPager?.apply {
+            adapter = object : BookmarksTabAdapter(activity, this) {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = onScrolled(dy)
+            }
             addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
                 override fun onPageSelected(position: Int) {
                     if (mAreScrollButtonsVisible) {
@@ -705,9 +714,11 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     suspend fun updateStar(bookmark: Bookmark) {
         val url = bookmark.getBookmarkUrl(mEntry)
         try {
-            val starsEntry =
-                HatenaClient.getStarsEntryAsync(url).await()
-            mStarsMap[bookmark.user] = starsEntry
+            val starsEntry = HatenaClient.getStarsEntryAsync(url).await()
+            lock(mStarsMap) {
+                val starsMap = mStarsMap!!
+                starsMap[bookmark.user] = starsEntry
+            }
         }
         catch (e: Exception) {
             Log.d("updateStar", "stars are empty: $url")
@@ -719,7 +730,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             .filter {
                 it.comment.isNotEmpty() &&
                         it.starCount?.isEmpty() != true &&
-                        !mStarsMap.contains(it.user) &&
+                        !starsMap.contains(it.user) &&
                         !mFetchStarsTasks.contains(it.user)
             }
 
@@ -733,8 +744,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 try {
                     val entries = HatenaClient.getStarsEntryAsync(urls).await()
                     lock(mStarsMap) {
+                        val starsMap = mStarsMap!!
                         for (b in bookmarks) {
-                            mStarsMap[b.user] =
+                            starsMap[b.user] =
                                 entries.firstOrNull { it.url == b.getBookmarkUrl(mEntry) }
                                     ?: continue
                         }
@@ -777,8 +789,8 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             }
         }
 
-        val adapter = mTabPager.adapter as BookmarksTabAdapter
-        adapter.update()
+        val adapter = mTabPager?.adapter as? BookmarksTabAdapter
+        adapter?.update()
     }
 
     private fun plusBookmarkToList(bookmark: Bookmark, list: List<Bookmark>) : List<Bookmark> {

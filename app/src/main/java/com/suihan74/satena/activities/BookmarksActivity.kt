@@ -52,7 +52,7 @@ class BookmarksActivity : ActivityBase() {
 
     // TODO: 一番上にあるBookmarksFragmentを返す（暫定）
     val bookmarksFragment
-        get() = getStackedFragment<BookmarksFragment>()
+        get() = getStackedFragment<BookmarksFragment>(FRAGMENT_TAG_MAIN_CONTENT)
 
     override val containerId = R.id.bookmarks_layout
     override val progressBarId: Int? = R.id.detail_progress_bar
@@ -182,6 +182,9 @@ class BookmarksActivity : ActivityBase() {
 
         private const val BUNDLE_ENTRY = "mEntry"
         private const val BUNDLE_POST_DIALOG_OPENED = "mIsDialogOpened"
+
+        const val FRAGMENT_TAG_MAIN_CONTENT = "bookmarks_main_content"
+        const val FRAGMENT_TAG_POST = "bookmark_post_fragment"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -214,7 +217,7 @@ class BookmarksActivity : ActivityBase() {
         savedInstanceState?.let {
             mEntry = it.getSerializable(BUNDLE_ENTRY) as Entry
             mBookmarksEntry = null
-            mPostFragment = getStackedFragment<BookmarkPostFragment>()
+            mPostFragment = getStackedFragment<BookmarkPostFragment>(FRAGMENT_TAG_POST)
             mIsDialogOpened = it.getBoolean(BUNDLE_POST_DIALOG_OPENED)
         } ?: showProgressBar()
 
@@ -333,7 +336,7 @@ class BookmarksActivity : ActivityBase() {
                     BookmarksFragment.createInstance(targetUser, targetEntry, preLoadingTasks)
                 }
 
-            showFragment(bookmarksFragment, targetEntry.url)
+            showFragment(bookmarksFragment, FRAGMENT_TAG_MAIN_CONTENT)
         }
     }
 

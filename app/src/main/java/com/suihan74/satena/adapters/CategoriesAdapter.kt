@@ -7,9 +7,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
+import com.suihan74.utilities.getThemeColor
 
 open class CategoriesAdapter(
     private var categories: Array<Category>
@@ -33,12 +33,12 @@ open class CategoriesAdapter(
 
                     title.text = context.getString(value.textId)
 
-                    val requestOptions = RequestOptions()
-                        .placeholder(value.iconId)
+                    val drawable = context.getDrawable(value.iconId)?.apply {
+                        setTint(context.getThemeColor(R.attr.textColor))
+                    }
 
                     Glide.with(view)
-                        .load("")
-                        .apply(requestOptions)
+                        .load(drawable)
                         .into(icon)
                 }
             }

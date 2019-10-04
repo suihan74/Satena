@@ -21,7 +21,6 @@ import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.adapters.BookmarksAdapter
-import com.suihan74.satena.adapters.tabs.BookmarksTabAdapter
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.showCustomTabsIntent
@@ -35,34 +34,26 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
     private lateinit var mRecyclerView: RecyclerView
 
     private lateinit var mBookmarksAdapter: BookmarksAdapter
-    private lateinit var mParentTabAdapter: BookmarksTabAdapter
     private var mTabType : BookmarksTabType = BookmarksTabType.RECENT
 
-    private var mBookmarksFragment: BookmarksFragment? = null
 
     private var mIsIgnoredUsersShownInAll : Boolean = false
     private var mIgnoredWords : List<String> = emptyList()
 
+    val bookmarksFragment
+        get() = (activity as? BookmarksActivity)?.bookmarksFragment
+
     val userTagsContainer
-        get() = mBookmarksFragment!!.userTagsContainer
+        get() = bookmarksFragment!!.userTagsContainer
 
     companion object {
-        fun createInstance(
-            parentTabAdapter: BookmarksTabAdapter,
-            type: BookmarksTabType
-        ) = BookmarksTabFragment().apply {
-            mParentTabAdapter = parentTabAdapter
-            mTabType = type
+        fun createInstance(type: BookmarksTabType) = BookmarksTabFragment().apply {
+            arguments = Bundle().apply {
+                putInt(ARGS_KEY_TAB_TYPE, type.int)
+            }
         }
 
-        private const val BUNDLE_TAB_TYPE = "mTabType"
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.run {
-            putInt(BUNDLE_TAB_TYPE, mTabType.int)
-        }
+        private const val ARGS_KEY_TAB_TYPE = "mTabType"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,8 +68,8 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             .filter { IgnoredEntryType.TEXT == it.type && it.target contains IgnoreTarget.BOOKMARK }
             .map { it.query }
 
-        savedInstanceState?.let {
-            mTabType = BookmarksTabType.fromInt(it.getInt(BUNDLE_TAB_TYPE))
+        arguments!!.let {
+            mTabType = BookmarksTabType.fromInt(it.getInt(ARGS_KEY_TAB_TYPE))
         }
     }
 
@@ -87,15 +78,13 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         mView = view
 
         val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksTabFragment has created from an invalid activity")
-        mBookmarksFragment = activity.bookmarksFragment
 
         // initialize mBookmarks list
         val viewManager = LinearLayoutManager(context)
         mRecyclerView = view.findViewById(R.id.bookmarks_list)
 
-        mBookmarksAdapter = generateBookmarksAdapter(getBookmarks(mBookmarksFragment!!), mBookmarksFragment!!.bookmarksEntry!!)
+        mBookmarksAdapter = generateBookmarksAdapter(getBookmarks(bookmarksFragment!!), bookmarksFragment!!.bookmarksEntry!!)
 
-        mParentTabAdapter = mBookmarksFragment!!.bookmarksTabAdapter!!
         mRecyclerView.apply {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
                 R.drawable.recycler_view_item_divider
@@ -107,7 +96,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             if (BookmarksTabType.POPULAR != mTabType) {
                 val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter) {
                     override fun load() {
-                        val fragment = mBookmarksFragment!!
+                        val fragment = bookmarksFragment!!
                         val lastOfAll = fragment.bookmarksEntry!!.bookmarks.lastOrNull()
                         val lastOfRecent = fragment.recentBookmarks.lastOrNull()
                         if (lastOfAll?.user == lastOfRecent?.user) {
@@ -119,7 +108,9 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                             mBookmarksAdapter.loadableFooter?.showProgressBar()
                             try {
                                 fragment.getNextBookmarksAsync().await()
-                                mParentTabAdapter.update()
+
+                                val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+                                parentTabAdapter?.update()
                             }
                             catch (e: Exception) {
                                 Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
@@ -137,7 +128,8 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    mParentTabAdapter.onScrolled(recyclerView, dx, dy)
+                    val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+                    parentTabAdapter?.onScrolled(recyclerView, dx, dy)
                     super.onScrolled(recyclerView, dx, dy)
                 }
             })
@@ -165,7 +157,6 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             }
         }
 
-        //retainInstance = true
         return view
     }
 
@@ -196,7 +187,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
     fun update() {
         if (this::mBookmarksAdapter.isInitialized) {
-            mBookmarksAdapter.setBookmarks(getBookmarks(mBookmarksFragment!!))
+            mBookmarksAdapter.setBookmarks(getBookmarks(bookmarksFragment!!))
         }
     }
 
@@ -220,7 +211,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
     fun isBookmarkShown(bookmark: Bookmark) : Boolean {
         if (isBookmarkIgnored(bookmark)) return false
 
-        val fragment = mBookmarksFragment ?: return false
+        val fragment = bookmarksFragment ?: return false
         return when (mTabType) {
             BookmarksTabType.POPULAR ->
                 fragment.popularBookmarks.any { it.user == bookmark.user }
@@ -247,8 +238,8 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
     fun scrollToBottom() {
         if (!this::mBookmarksAdapter.isInitialized) return
-        mBookmarksFragment!!.launch {
-            val allBookmarks = mBookmarksFragment?.bookmarksEntry?.bookmarks ?: return@launch
+        bookmarksFragment!!.launch {
+            val allBookmarks = bookmarksFragment?.bookmarksEntry?.bookmarks ?: return@launch
             val lastItem = allBookmarks.lastOrNull { isBookmarkShown(it) }
             if (lastItem != null) {
                 scrollAfterLoading(lastItem.user)
@@ -258,8 +249,8 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
 
     fun scrollTo(user: String) {
         if (!this::mBookmarksAdapter.isInitialized) return
-        mBookmarksFragment!!.launch {
-            val allBookmarks = mBookmarksFragment?.bookmarksEntry?.bookmarks ?: emptyList()
+        bookmarksFragment!!.launch {
+            val allBookmarks = bookmarksFragment?.bookmarksEntry?.bookmarks ?: emptyList()
             val item = allBookmarks.firstOrNull { it.user == user }
             if (item == null || !isBookmarkShown(item)) return@launch
 
@@ -276,15 +267,17 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             }
         }
         else {
-            val activity = mBookmarksFragment!!.activity as ActivityBase
+            val activity = bookmarksFragment!!.activity as ActivityBase
             withContext(Dispatchers.Main) {
                 activity.showProgressBar(true)
             }
             try {
+                val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+
                 while (true) {
-                    val diff = mBookmarksFragment!!.getNextBookmarksAsync().await()
+                    val diff = bookmarksFragment!!.getNextBookmarksAsync().await()
                     withContext(Dispatchers.Main) {
-                        mParentTabAdapter.update()
+                        parentTabAdapter?.update()
                     }
                     if (diff.isEmpty() || diff.any { it.user == user }) {
                         break
@@ -365,18 +358,17 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             fun removeBookmark(b: Bookmark) {
                 launch(Dispatchers.Main) {
                     try {
-                        activity.let {
-                            val entry = mBookmarksFragment!!.entry
-                            HatenaClient.deleteBookmarkAsync(entry.url).await()
+                        val entry = bookmarksFragment?.entry ?: return@launch
+                        HatenaClient.deleteBookmarkAsync(entry.url).await()
 
-                            // すべてのタブのリストから削除する
-                            mParentTabAdapter.removeBookmark(b)
+                        // すべてのタブのリストから削除する
+                        val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+                        parentTabAdapter?.removeBookmark(b)
 
-                            // キャッシュから削除
-                            mBookmarksFragment!!.removeBookmark(b.user)
+                        // キャッシュから削除
+                        bookmarksFragment?.removeBookmark(b.user)
 
-                            activity.showToast("ブクマを削除しました")
-                        }
+                        activity.showToast("ブクマを削除しました")
                     }
                     catch (e: Exception) {
                         Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
@@ -414,7 +406,8 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                                     putObject(UserTagsKey.CONTAINER, userTagsContainer)
                                 }
 
-                                mParentTabAdapter.notifyItemChanged(b)
+                                val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+                                parentTabAdapter?.notifyItemChanged(b)
                                 context!!.showToast("タグ: $name を作成して id:${b.user} を追加しました")
                                 return@createInstance true
                             }
@@ -440,7 +433,8 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                             }
 
                             context!!.showToast("id:${b.user} に${user.tags.size}個のタグを設定しました")
-                            mParentTabAdapter.notifyItemChanged(b)
+                            val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+                            parentTabAdapter?.notifyItemChanged(b)
                         }
                     }
                     .show()

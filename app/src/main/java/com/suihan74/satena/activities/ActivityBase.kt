@@ -73,7 +73,7 @@ abstract class ActivityBase(
         hideAction = action
     }
 
-    fun showProgressBar(clickGuard: Boolean = true) {
+    fun showProgressBar(clickGuard: Boolean = true, withAction: Boolean = true) {
         // TODO: なんらかのロード中に画面回転でフラグメントがリロードされると問題が起きやすいのでとりあえず方向固定で対処する
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
 
@@ -86,10 +86,12 @@ abstract class ActivityBase(
             }
         } else null
 
-        showAction?.invoke(progressBar, background)
+        if (withAction) {
+            showAction?.invoke(progressBar, background)
+        }
     }
 
-    fun hideProgressBar() {
+    fun hideProgressBar(withAction: Boolean = true) {
         // 画面方向の固定を解除
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
@@ -100,7 +102,7 @@ abstract class ActivityBase(
             findViewById<View>(it)
         }
 
-        if (hideAction == null) {
+        if (hideAction == null || !withAction) {
             progressBar?.visibility = View.INVISIBLE
             background?.visibility = View.INVISIBLE
         }

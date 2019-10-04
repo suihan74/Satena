@@ -60,10 +60,6 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
     companion object {
         fun createInstance(b: Bookmark) = BookmarkDetailFragment().apply {
             mBookmark = b
-
-            enterTransition = TransitionSet()
-                .addTransition(Fade())
-                .addTransition(Slide(GravityCompat.END))
         }
 
         private const val BUNDLE_BOOKMARK = "mBookmark"
@@ -78,6 +74,9 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enterTransition = TransitionSet()
+            .addTransition(Fade())
+            .addTransition(Slide(GravityCompat.END))
 
         savedInstanceState?.let {
             mBookmark = it.getSerializable(BUNDLE_BOOKMARK) as Bookmark
@@ -310,6 +309,10 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
                 try {
                     task.await()
+                    if (isStateSaved) {
+                        return@launch
+                    }
+
                     tabPager.adapter = StarsTabAdapter(
                         tabPager,
                         bookmarksFragment!!,
@@ -317,9 +320,11 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                         mBookmark
                     )
                     tabLayout.setupWithViewPager(tabPager)
-                } catch (e: Exception) {
+                }
+                catch (e: Exception) {
                     Log.d("FailedToFetchStars", e.message)
-                } finally {
+                }
+                finally {
                     progressBar.visibility = View.GONE
                 }
             }

@@ -11,13 +11,11 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
     }
 
     fun showFragment(fragment: Fragment, backStackLabel: String? = null) {
+        fragment.retainInstance = false
+
         supportFragmentManager.beginTransaction().apply {
-            val current = currentFragment
-            if (current != null) {
-                hide(current)
-            }
-            add(containerId, fragment)
             addToBackStack(backStackLabel)
+            replace(containerId, fragment, backStackLabel)
             commitAllowingStateLoss()
         }
 
@@ -25,12 +23,14 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
     }
 
     fun replaceFragment(fragment: Fragment) {
+        fragment.retainInstance = false
+
         supportFragmentManager.beginTransaction().apply {
             val current = currentFragment
             if (current == null) {
                 addToBackStack(null)
             }
-            replace(containerId, fragment)
+            replace(containerId, fragment, null)
             commitAllowingStateLoss()
         }
 
@@ -40,8 +40,6 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
     fun popFragment() {
         supportFragmentManager.popBackStackImmediate()
         currentFragment?.let {
-            it.onStart()
-            it.onResume()
             onFragmentShown(it)
         }
     }
@@ -49,8 +47,6 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
     fun popFragment(backStackLabel: String?, flag: Int = 0) {
         supportFragmentManager.popBackStackImmediate(backStackLabel, flag)
         currentFragment?.let {
-            it.onStart()
-            it.onResume()
             onFragmentShown(it)
         }
     }
@@ -61,11 +57,8 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
     override val currentFragment : Fragment?
         get() = supportFragmentManager.findFragmentById(containerId)
 
-    inline fun <reified T> getStackedFragment() =
-        supportFragmentManager.fragments.lastOrNull { it is T } as? T
-
-    inline fun <reified T> getStackedFragment(predicate: (T)->Boolean) =
-        supportFragmentManager.fragments.lastOrNull { it is T && predicate(it) } as? T
+    inline fun <reified T> getStackedFragment(tag: String) =
+        supportFragmentManager.findFragmentByTag(tag) as? T
 
     override fun onBackPressed() = onBackPressed(null)
 

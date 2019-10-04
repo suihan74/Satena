@@ -16,8 +16,9 @@ open class BaseClient {
     }
 
     protected val client : OkHttpClient =
-        OkHttpClient()
-        .newBuilder()
+        OkHttpClient().newBuilder()
+        .readTimeout(3, TimeUnit.MINUTES)
+        .writeTimeout(3, TimeUnit.MINUTES)
         .connectTimeout(3, TimeUnit.MINUTES)
         .cookieJar(JavaNetCookieJar(cookieManager))
         .build()

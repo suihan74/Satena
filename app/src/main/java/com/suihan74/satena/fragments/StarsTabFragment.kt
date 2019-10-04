@@ -43,19 +43,21 @@ class StarsTabFragment : CoroutineScopeFragment() {
             b: Bookmark,
             tabMode: StarsAdapter.StarsTabMode
         ) = StarsTabFragment().apply {
-            mBookmark = b
-            mStarsTabMode = tabMode
+            arguments = Bundle().apply {
+                putSerializable(ARGS_KEY_BOOKMARK, b)
+                putSerializable(ARGS_KEY_STARS_TAB_MODE, tabMode)
+            }
         }
 
-        private const val BUNDLE_BOOKMARK_USER = "mBookmark.user"
-        private const val BUNDLE_STARS_TAB_MODE = "mStarsTabMode"
+        private const val ARGS_KEY_BOOKMARK = "mBookmark"
+        private const val ARGS_KEY_STARS_TAB_MODE = "mStarsTabMode"
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.run {
-            putString(BUNDLE_BOOKMARK_USER, mBookmark.user)
-            putInt(BUNDLE_STARS_TAB_MODE, mStarsTabMode.int)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments!!.let {
+            mBookmark = it.getSerializable(ARGS_KEY_BOOKMARK) as Bookmark
+            mStarsTabMode = it.getSerializable(ARGS_KEY_STARS_TAB_MODE) as StarsAdapter.StarsTabMode
         }
     }
 
@@ -65,14 +67,8 @@ class StarsTabFragment : CoroutineScopeFragment() {
 
         val activity = activity as? BookmarksActivity ?: throw IllegalStateException("StarsTabFragment has created from an invalid activity")
 
-        savedInstanceState?.let {
-            val user = it.getString(BUNDLE_BOOKMARK_USER)
-            mStarsTabMode = StarsAdapter.StarsTabMode.fromInt(it.getInt(BUNDLE_STARS_TAB_MODE))
-            mBookmark = activity.getStackedFragment<BookmarkDetailFragment> { it.bookmark.user == user }!!.bookmark
-        }
-
         mBookmarksFragment = activity.bookmarksFragment
-        mBookmarkDetailFragment = activity.getStackedFragment { it?.bookmark?.user == mBookmark.user }
+        mBookmarkDetailFragment = activity.getStackedFragment<BookmarkDetailFragment>("detail_id:${mBookmark.user}")
 
         val bookmarksEntry = mBookmarksFragment!!.bookmarksEntry!!
         val starsMap = mBookmarksFragment!!.starsMap
@@ -98,7 +94,7 @@ class StarsTabFragment : CoroutineScopeFragment() {
                         showFragment(
                             BookmarkDetailFragment.createInstance(
                                 target
-                            ), null)
+                            ), "detail_id:${target.user}")
                     }
                 }
 

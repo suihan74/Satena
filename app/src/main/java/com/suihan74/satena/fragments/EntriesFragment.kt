@@ -45,7 +45,6 @@ class EntriesFragment : CoroutineScopeFragment() {
     companion object {
         fun createInstance(category: Category) = EntriesFragment().apply {
             mCurrentCategory = category
-            enterTransition = TransitionSet().addTransition(AutoTransition())
         }
 
         private const val BUNDLE_CATEGORY = "mCategory"
@@ -66,6 +65,7 @@ class EntriesFragment : CoroutineScopeFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enterTransition = TransitionSet().addTransition(AutoTransition())
 
         val activity = activity as MainActivity
         val category = mCurrentCategory

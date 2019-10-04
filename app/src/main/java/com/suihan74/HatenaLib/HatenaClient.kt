@@ -714,7 +714,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 }
             })
 
-            if (!isSuccess) throw SocketTimeoutException("timeout")
+            tasks.awaitAll()
+
+//            if (!isSuccess) throw SocketTimeoutException("timeout")
 
             return@async tasks
                 .mapNotNull { it.await() }

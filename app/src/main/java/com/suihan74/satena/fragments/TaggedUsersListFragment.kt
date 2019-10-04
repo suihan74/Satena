@@ -31,10 +31,6 @@ class TaggedUsersListFragment : Fragment() {
     companion object {
         fun createInstance(userTag: UserTag) = TaggedUsersListFragment().apply {
             mUserTag = userTag
-
-            enterTransition = TransitionSet()
-                .addTransition(Fade())
-                .addTransition(Slide(GravityCompat.END))
         }
 
         private const val BUNDLE_USER_TAG_NAME = "mUserTag.name"
@@ -45,6 +41,13 @@ class TaggedUsersListFragment : Fragment() {
         if (this::mUserTag.isInitialized) {
             outState.putString(BUNDLE_USER_TAG_NAME, mUserTag.name)
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enterTransition = TransitionSet()
+            .addTransition(Fade())
+            .addTransition(Slide(GravityCompat.END))
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

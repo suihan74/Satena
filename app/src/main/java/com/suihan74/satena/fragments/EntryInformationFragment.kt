@@ -19,6 +19,7 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.ActivityBase
+import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.adapters.TagsAdapter
 import com.suihan74.satena.showCustomTabsIntent
@@ -163,14 +164,6 @@ class EntryInformationFragment : CoroutineScopeFragment() {
     private suspend fun changeFloor(url: String) {
         val activity = activity as ActivityBase
 
-        if (null != activity.getStackedFragment<BookmarksFragment> { it.bookmarksEntry?.url == url }) {
-            withContext(Dispatchers.Main) {
-                activity.popFragment(url)
-                activity.hideProgressBar()
-            }
-            return
-        }
-
         var entry : Entry? = null
         try {
             entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
@@ -196,7 +189,7 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             }
             else {
                 val fragment = BookmarksFragment.createInstance(entry)
-                activity.showFragment(fragment, url)
+                activity.showFragment(fragment, BookmarksActivity.FRAGMENT_TAG_MAIN_CONTENT)
             }
         }
     }

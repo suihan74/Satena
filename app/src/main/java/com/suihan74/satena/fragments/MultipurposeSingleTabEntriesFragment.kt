@@ -30,12 +30,12 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
     private var mEntriesAdapter : EntriesAdapter? = null
     private var mEntriesScrollingUpdater: RecyclerViewScrollingUpdater? = null
 
-    init {
-        enterTransition = TransitionSet().addTransition(Fade())
-//        enterTransition = TransitionSet().addTransition(Slide(Gravity.END))
-    }
-
     open fun onRestoreSaveInstanceState(savedInstanceState: Bundle) {}
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enterTransition = TransitionSet().addTransition(Fade())
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mRoot = inflater.inflate(R.layout.fragment_user_entries, container, false).apply {

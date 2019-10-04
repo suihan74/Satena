@@ -15,7 +15,7 @@
         <ImageView
                 android:id="@+id/title"
                 android:src="@drawable/ic_mstdn_logo_full"
-                android:layout_centerInParent="true"
+                android:layout_centerHorizontal="true"
                 android:layout_width="256dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"/>
@@ -29,7 +29,7 @@
                 android:layout_below="@id/title"
                 android:layout_alignStart="@id/title"
                 android:layout_alignEnd="@id/title"
-                android:layout_marginTop="48dp"
+                android:layout_marginTop="24dp"
                 android:inputType="text"
                 android:importantForAutofill="no"
                 android:maxLines="1"

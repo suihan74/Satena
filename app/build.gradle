@@ -4,14 +4,18 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.google.gms.oss.licenses.plugin'
 
+androidExtensions {
+    experimental = true
+}
+
 android {
     compileSdkVersion 28
 
     defaultConfig {
         applicationId "com.suihan74.satena"
         // バージョン情報
-        versionCode 26
-        versionName "1.5"
+        versionCode 30
+        versionName "1.7"
 
         minSdkVersion 23
         targetSdkVersion 28
@@ -31,6 +35,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
+
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

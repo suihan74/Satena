@@ -38,11 +38,7 @@ class NoticesFragment : CoroutineScopeFragment() {
         get() = "通知 > ${HatenaClient.account?.name ?: "?"}"
 
     companion object {
-        fun createInstance() : NoticesFragment = NoticesFragment().apply {
-            enterTransition = TransitionSet()
-                .addTransition(Fade())
-                .addTransition(Slide(Gravity.TOP))
-        }
+        fun createInstance() : NoticesFragment = NoticesFragment()
 
         fun createMessage(notice: Notice, context: Context) : String {
             val nameColor = ContextCompat.getColor(context, R.color.colorPrimary)
@@ -80,6 +76,13 @@ class NoticesFragment : CoroutineScopeFragment() {
                     "[sorry, not implemented notice] users: $users , verb: ${notice.verb}"
             }
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enterTransition = TransitionSet()
+            .addTransition(Fade())
+            .addTransition(Slide(Gravity.TOP))
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
