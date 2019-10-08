@@ -341,9 +341,11 @@ class BookmarksActivity : ActivityBase() {
     }
 
     private fun initializeBookmarkPostFragment(entry: Entry, bookmarksEntry: BookmarksEntry?) {
-        if (HatenaClient.signedIn()) {
-            mPostFragment =
-                BookmarkPostFragment.createInstance(entry, bookmarksEntry).apply {
+        // 復元時に同じく復元したPostFragmentを探してくる
+        mPostFragment = mPostFragment ?: supportFragmentManager.findFragmentByTag("postFragment") as? BookmarkPostFragment
+
+        if (HatenaClient.signedIn() && mPostFragment == null) {
+            mPostFragment = BookmarkPostFragment.createInstance(entry, bookmarksEntry, initialVisibility = View.GONE).apply {
                     setOnPostedListener { bookmarkResult ->
                         closeBookmarkDialog()
                         launch(Dispatchers.Main) {
@@ -352,14 +354,10 @@ class BookmarksActivity : ActivityBase() {
                             bookmarksFragment.updateUI()
                         }
                     }
-
-                    arguments = Bundle().apply {
-                        putInt(BookmarkPostFragment.INITIAL_VISIBILITY, View.GONE)
-                    }
                 }
 
             supportFragmentManager.beginTransaction()
-                .replace(R.id.bookmark_post_layout, mPostFragment!!)
+                .replace(R.id.bookmark_post_layout, mPostFragment!!, "postFragment")
                 .commitNow()
         }
     }
@@ -415,9 +413,11 @@ class BookmarksActivity : ActivityBase() {
         view.animate()
             .withEndAction {
                 view.visibility = View.INVISIBLE
+                /*
                 supportFragmentManager.beginTransaction()
                     .remove(mPostFragment!!)
                     .commit()
+                 */
             }
             .translationYBy(0f)
             .translationY(posY)

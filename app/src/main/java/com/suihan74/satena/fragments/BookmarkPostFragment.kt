@@ -42,14 +42,16 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
         get() = mRoot!!
 
     companion object {
-        const val INITIAL_VISIBILITY = "initial_visibility"
-
-        fun createInstance(entry: Entry, bookmarksEntry: BookmarksEntry? = null) = BookmarkPostFragment().apply {
+        fun createInstance(entry: Entry, bookmarksEntry: BookmarksEntry? = null, initialVisibility: Int = View.VISIBLE) = BookmarkPostFragment().apply {
             mEntry = entry
             mBookmarksEntry = bookmarksEntry
+            arguments = Bundle().apply {
+                putInt(ARG_INITIAL_VISIBILITY, initialVisibility)
+            }
         }
 
-        private var savedComment : String? = null
+        private const val ARG_INITIAL_VISIBILITY = "initialVisibility"
+        private const val BUNDLE_EDITING_COMMENT = "editingComment"
     }
 
     fun setOnPostedListener(onPostedAction: ((BookmarkResult)->Unit)?) {
@@ -58,7 +60,12 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        savedComment = root.findViewById<EditText>(R.id.post_bookmark_comment).text.toString()
+        if (mRoot != null) {
+            outState.putString(
+                BUNDLE_EDITING_COMMENT,
+                root.findViewById<EditText>(R.id.post_bookmark_comment).text.toString()
+            )
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -75,7 +82,12 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
 
         initBookmarkDialog()
 
-        //retainInstance = true
+        savedInstanceState?.let {
+            it.getString(BUNDLE_EDITING_COMMENT)?.let { comment ->
+                root.findViewById<EditText>(R.id.post_bookmark_comment).setText(comment)
+            }
+        }
+
         return mRoot
     }
 
@@ -128,7 +140,7 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
         val postEvernoteButton = root.findViewById<ToggleButton>(R.id.post_bookmark_post_evernote)
         val privateButton = root.findViewById<ToggleButton>(R.id.post_bookmark_private)
 
-        val visibility = arguments?.getInt(INITIAL_VISIBILITY) ?: View.VISIBLE
+        val visibility = arguments?.getInt(ARG_INITIAL_VISIBILITY) ?: View.VISIBLE
         root.findViewById<View>(R.id.bookmark_post_layout).visibility = visibility
 
         val account = HatenaClient.account!!
@@ -258,10 +270,7 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
     private fun setExistedComment() {
         root.findViewById<EditText>(R.id.post_bookmark_comment).apply {
             if (text.isBlank()) {
-                val comment = if (savedComment != null) {
-                    savedComment!!
-                }
-                else if (mEntry.bookmarkedData != null) {
+                val comment = if (mEntry.bookmarkedData != null) {
                     mEntry.bookmarkedData!!.commentRaw
                 }
                 else if (mBookmarksEntry != null && HatenaClient.signedIn()) {
@@ -274,7 +283,6 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
 
                 text.clear()
                 text.append(comment)
-                savedComment = null
             }
         }
     }
