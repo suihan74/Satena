@@ -15,6 +15,7 @@ import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.activities.BookmarkPostActivity
 import com.suihan74.satena.activities.BookmarksActivity
 import kotlinx.coroutines.*
+import org.chromium.customtabsclient.shared.CustomTabsHelper
 
 class BrowserToolbarManager : BroadcastReceiver() {
     private fun onReceiveImpl(context: Context, intent: Intent) {
@@ -128,7 +129,8 @@ fun Context.showCustomTabsIntent(entry: Entry) {
         )
         .build()
 
-    intent.intent.setPackage("com.android.chrome")
+    val packageName = CustomTabsHelper.getPackageNameToUse(this)
+    intent.intent.setPackage(packageName)
     intent.launchUrl(this, Uri.parse(url))
 }
 
@@ -146,6 +148,7 @@ fun Context.showCustomTabsIntent(url: String, coroutineScope: CoroutineScope = G
         )
         .build()
 
-    intent.intent.setPackage("com.android.chrome")
+    val packageName = CustomTabsHelper.getPackageNameToUse(this)
+    intent.intent.setPackage(packageName)
     intent.launchUrl(this, Uri.parse(url))
 }

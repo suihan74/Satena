@@ -68,6 +68,7 @@ dependencies {
 
     // chrome custom tabs
     implementation 'androidx.browser:browser:1.0.0'
+    implementation project(':shared')
 
     // using GIF on ImageView
     implementation 'com.github.bumptech.glide:glide:4.9.0'
