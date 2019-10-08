@@ -1,0 +1,7 @@
+The following points have been changed from the original source codes.
+
+* Changed dependency from Support Library to AndroidX
+* Changed the version of SDK and dependent libraries to the latest in build.gradle
+
+original ->
+https://github.com/GoogleChrome/custom-tabs-client
