@@ -8,6 +8,12 @@
         android:layout_height="wrap_content"
         android:padding="8dp">
 
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/tags_list"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
     <EditText
             android:id="@+id/post_bookmark_comment"
             android:textColor="?attr/textColor"
@@ -20,6 +26,7 @@
             android:singleLine="true"
             android:imeOptions="actionDone"
 
+            android:layout_below="@id/tags_list"
             android:layout_width="match_parent"
             android:layout_height="152dp"/>
 

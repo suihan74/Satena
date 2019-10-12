@@ -140,6 +140,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:src="@drawable/ic_star"
+                android:tint="@android:color/white"
                 app:backgroundTint="@color/starYellow"
                 app:fabSize="mini"/>
     </LinearLayout>
@@ -176,6 +177,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:src="@drawable/ic_star"
+                android:tint="@android:color/white"
                 app:backgroundTint="@color/starGreen"
                 app:fabSize="mini"/>
     </LinearLayout>
@@ -212,6 +214,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:src="@drawable/ic_star"
+                android:tint="@android:color/white"
                 app:backgroundTint="@color/starRed"
                 app:fabSize="mini"/>
     </LinearLayout>
@@ -248,6 +251,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:src="@drawable/ic_star"
+                android:tint="@android:color/white"
                 app:backgroundTint="@color/starBlue"
                 app:fabSize="mini"/>
     </LinearLayout>
@@ -284,6 +288,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:src="@drawable/ic_star"
+                android:tint="@android:color/white"
                 app:backgroundTint="@color/starPurple"
                 app:fabSize="mini"/>
     </LinearLayout>
@@ -293,6 +298,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_star"
+            android:tint="@android:color/white"
             app:backgroundTint="@color/starMenu"
             app:layout_anchor="@id/bookmark_detail_layout"
             app:layout_anchorGravity="bottom|end|right"

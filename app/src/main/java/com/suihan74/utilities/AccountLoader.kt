@@ -10,6 +10,9 @@ import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 
 object AccountLoader {
+    class HatenaSignInException(message: String? = null) : Exception(message)
+    class MastodonSignInException(message: String? = null) : Exception(message)
+
     suspend fun signInAccounts(context: Context, reSignIn: Boolean = false) {
         try {
             val jobs = listOf(
@@ -44,7 +47,7 @@ object AccountLoader {
                 HatenaClient.signInAsync(name, password).await()
             } catch (e: Exception) {
                 Log.d("HatenaLogin", Log.getStackTraceString(e))
-                throw e
+                throw HatenaSignInException(e.message)
             }
         } else {
             return@async null
@@ -77,7 +80,7 @@ object AccountLoader {
                 MastodonClientHolder.signInAsync(client).await()
             } catch (e: Exception) {
                 Log.d("MastodonLogin", Log.getStackTraceString(e))
-                throw e
+                throw MastodonSignInException(e.message)
             }
         } else {
             return@async null

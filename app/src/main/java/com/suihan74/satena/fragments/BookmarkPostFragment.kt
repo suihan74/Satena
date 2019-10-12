@@ -16,6 +16,8 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.ToggleButton
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.HatenaLib.BookmarkResult
 import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.Entry
@@ -23,6 +25,7 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.activities.BookmarkPostActivity
 import com.suihan74.satena.activities.BookmarksActivity
+import com.suihan74.satena.adapters.PostTagsListAdapter
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
 import com.sys1yagi.mastodon4j.api.entity.Status
@@ -264,6 +267,9 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
                 })
             }
         })
+
+        // タグサジェストリストの初期化
+        initializeTagsList()
     }
 
     // 既にブコメを付けている場合その内容を反映する
@@ -287,4 +293,35 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
         }
     }
 
+    // タグサジェストリストの初期化
+    private fun initializeTagsList() {
+        val list = root.findViewById<RecyclerView>(R.id.tags_list).apply {
+            visibility = View.GONE
+        }
+
+        launch(Dispatchers.Main) {
+            val tags = HatenaClient.getUserTagsAsync().await()
+            if (tags.isEmpty()) return@launch
+
+            list.run {
+                visibility = View.VISIBLE
+                layoutManager = LinearLayoutManager(context).apply {
+                    orientation = LinearLayoutManager.HORIZONTAL
+                }
+                adapter = object : PostTagsListAdapter(tags.map { it.text }) {
+                    override fun onItemClicked(tag: String) {
+                        val tagText = "[$tag]"
+                        val tagRegex = Regex("""\[.+]""")
+                        val editor = root.findViewById<EditText>(R.id.post_bookmark_comment)
+                        if (!editor.text.contains(tagText)) {
+                            val matches = tagRegex.findAll(editor.text)
+                            val lastExisted = matches.lastOrNull()
+                            val pos = lastExisted?.range?.endInclusive?.plus(1) ?: 0
+                            editor.text.insert(pos, tagText)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

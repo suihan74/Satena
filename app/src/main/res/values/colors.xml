@@ -47,7 +47,8 @@
 
     <!-- タグ テキスト -->
     <color name="tagColor">#888</color>
-    <color name="tagBackground">#2FB0BC</color>
+    <color name="tagBackground">#00b4be</color>
+    <color name="tagBackgroundPressed">#009CA5</color>
 
     <!-- ToggleButton -->
     <color name="toggleOn">@color/colorPrimary</color>

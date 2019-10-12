@@ -14,6 +14,7 @@ import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.fragments.BookmarkPostFragment
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
@@ -78,6 +79,24 @@ class BookmarkPostActivity : ActivityBase() {
             showProgressBar()
 
             launch(Dispatchers.Main) {
+                // 投稿用アカウントの確認
+                try {
+                    if (!HatenaClient.signedIn()) {
+                        throw RuntimeException()
+                    }
+                    AccountLoader.signInHatenaAsync(this@BookmarkPostActivity).await()
+                    AccountLoader.signInMastodonAsync(this@BookmarkPostActivity).await()
+                }
+                catch (e: AccountLoader.HatenaSignInException) {
+                    showToast("サインインに失敗しました")
+                    finish()
+                    return@launch
+                }
+                catch (e: AccountLoader.MastodonSignInException) {
+                    showToast("Mastodonへのサインインに失敗しました")
+                }
+
+                // エントリ情報を取得
                 loadExtras(intent)
 
                 try {
