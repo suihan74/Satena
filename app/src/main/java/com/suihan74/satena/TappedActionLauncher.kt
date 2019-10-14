@@ -10,34 +10,25 @@ import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.models.TapEntryAction
 
 object TappedActionLauncher {
-    fun launch(context: Context, act: TapEntryAction, url: String) = when (act) {
-        TapEntryAction.SHOW_COMMENTS -> launchBookmarksActivity(context, url)
-        TapEntryAction.SHOW_PAGE -> launchTabs(context, url)
-        TapEntryAction.SHOW_PAGE_IN_BROWSER -> launchBrowser(context, url)
-        TapEntryAction.SHOW_MENU -> showMenu(context, url, null)
-    }
-
-    fun launch(context: Context, act: TapEntryAction, url: String, additionalItemsAdder: (ArrayList<Pair<Int, () -> Unit>>)->Unit) = when (act) {
+    fun launch(context: Context, act: TapEntryAction, url: String, additionalItemsAdder: ((ArrayList<Pair<Int, () -> Unit>>)->Unit)?) = when (act) {
         TapEntryAction.SHOW_COMMENTS -> launchBookmarksActivity(context, url)
         TapEntryAction.SHOW_PAGE -> launchTabs(context, url)
         TapEntryAction.SHOW_PAGE_IN_BROWSER -> launchBrowser(context, url)
         TapEntryAction.SHOW_MENU -> showMenu(context, url, additionalItemsAdder)
     }
 
+    fun launch(context: Context, act: TapEntryAction, url: String) =
+        launch(context, act, url, null)
 
-    fun launch(context: Context, act: TapEntryAction, entry: Entry) = when (act) {
-        TapEntryAction.SHOW_COMMENTS -> launchBookmarksActivity(context, entry)
-        TapEntryAction.SHOW_PAGE -> launchTabs(context, entry)
-        TapEntryAction.SHOW_PAGE_IN_BROWSER -> launchBrowser(context, entry)
-        TapEntryAction.SHOW_MENU -> showMenu(context, entry, null)
-    }
-
-    fun launch(context: Context, act: TapEntryAction, entry: Entry, additionalItemsAdder: (ArrayList<Pair<Int, () -> Unit>>)->Unit) = when (act) {
+    fun launch(context: Context, act: TapEntryAction, entry: Entry, additionalItemsAdder: ((ArrayList<Pair<Int, () -> Unit>>)->Unit)?) = when (act) {
         TapEntryAction.SHOW_COMMENTS -> launchBookmarksActivity(context, entry)
         TapEntryAction.SHOW_PAGE -> launchTabs(context, entry)
         TapEntryAction.SHOW_PAGE_IN_BROWSER -> launchBrowser(context, entry)
         TapEntryAction.SHOW_MENU -> showMenu(context, entry, additionalItemsAdder)
     }
+
+    fun launch(context: Context, act: TapEntryAction, entry: Entry) =
+        launch(context, act, entry, null)
 
     private fun launchBookmarksActivity(context: Context, url: String) {
         val entryUrl = HatenaClient.getCommentPageUrlFromEntryUrl(url)

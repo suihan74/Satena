@@ -1,19 +1,16 @@
 package com.suihan74.satena.adapters
 
 import android.content.Intent
-import android.content.res.ColorStateList
-import android.graphics.Typeface
 import android.net.Uri
 import android.text.SpannableString
-import android.text.Spanned
 import android.text.style.ImageSpan
-import android.text.style.TextAppearanceSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
@@ -259,11 +256,13 @@ open class BookmarksAdapter(
         private val timestamp   = view.findViewById<TextView>(R.id.bookmark_timestamp)!!
         private val ignoredMark = view.findViewById<ImageView>(R.id.ignored_user_mark)!!
 
+        private val mentionsList = view.findViewById<RecyclerView>(R.id.bookmark_mentions)!!
+/*
         private val mentionLayout   = view.findViewById<RelativeLayout>(R.id.bookmark_mention_area)!!
         private val mentionUserIcon = view.findViewById<ImageView>(R.id.bookmark_mention_user_icon)!!
         private val mentionUserName = view.findViewById<TextView>(R.id.bookmark_mention_user_name)!!
         private val mentionComment  = view.findViewById<TextView>(R.id.bookmark_mention_comment)!!
-
+*/
         private var bookmark : Bookmark? = null
 
         fun setBookmark(bookmark : Bookmark, bookmarksEntry : BookmarksEntry) {
@@ -392,55 +391,43 @@ open class BookmarksAdapter(
                 .load(bookmark.userIconUrl)
                 .into(userIcon)
 
-            mentionLayout.visibility = View.GONE
-            if (analyzed.ids.isNotEmpty()) {
-                val mentionUser = analyzed.ids.first()
-
+            val mentions = analyzed.ids.mapNotNull { userId ->
                 if (showIgnoredUsersMention
                     || showIgnoredUsersInAll
-                    || !HatenaClient.ignoredUsers.contains(mentionUser)
+                    || !HatenaClient.ignoredUsers.contains(userId)
                 ) {
-                    val mentionBookmark = bookmarksEntry.bookmarks.firstOrNull { it.user == mentionUser }
-                    if (mentionBookmark != null) {
-                        mentionLayout.apply {
-                            visibility = View.VISIBLE
-                            setOnClickListener {
-                                adapter.onItemClicked(mentionBookmark)
-                            }
-                            setOnLongClickListener {
-                                adapter.onItemLongClicked(mentionBookmark)
-                            }
+                    bookmarksEntry.bookmarks.firstOrNull { it.user == userId }
+                }
+                else null
+            }
+
+            // 言及先リスト
+            mentionsList.apply {
+                if (mentions.isEmpty()) {
+                    visibility = View.GONE
+                    adapter = null
+                }
+                else {
+                    visibility = View.VISIBLE
+                    layoutManager = LinearLayoutManager(context)
+                    adapter = object : MentionsAdapter(mentions) {
+                        override fun onItemClicked(item: Bookmark) {
+                            this@ViewHolder.adapter.onItemClicked(item)
                         }
 
-                        val userTags = userTagsContainer.getTagsOfUser(mentionBookmark.user)
-                        mentionUserName.apply {
-                            text = if (userTags.isNotEmpty()) {
-                                val st = "${mentionBookmark.user} _${userTags.joinToString(",") { it.name }}"
-                                val pos = mentionBookmark.user.length + 1
-                                val tagColor = resources.getColor(R.color.tagColor, null)
-                                val scaledDensity = resources.displayMetrics.scaledDensity
-                                val size = (11.5f * scaledDensity).toInt()
-
-                                SpannableString(st).apply {
-                                    val icon =
-                                        resources.getDrawable(R.drawable.ic_user_tag, null).apply {
-                                            setBounds(0, 0, lineHeight, lineHeight)
-                                        }
-                                    setSpan(ImageSpan(icon), pos, pos + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                                    setSpan(TextAppearanceSpan(null, Typeface.DEFAULT.style, size, ColorStateList.valueOf(tagColor), null),
-                                        pos + 1, st.length, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
-                                }
-                            }
-                            else {
-                                mentionBookmark.user
-                            }
+                        override fun onItemLongClicked(item: Bookmark): Boolean {
+                            this@ViewHolder.adapter.onItemLongClicked(item)
+                            return true
                         }
-
-                        mentionComment.text = BookmarkCommentDecorator.convert(mentionBookmark.comment).comment
-                        Glide.with(view)
-                            .load(mentionBookmark.userIconUrl)
-                            .into(mentionUserIcon)
                     }
+
+                    repeat(itemDecorationCount) {
+                        removeItemDecorationAt(0)
+                    }
+
+                    val dividerItemDecoration = DividerItemDecorator(
+                        ContextCompat.getDrawable(context, R.drawable.recycler_view_item_divider)!!)
+                    addItemDecoration(dividerItemDecoration)
                 }
             }
         }

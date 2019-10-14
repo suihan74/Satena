@@ -12,15 +12,16 @@ import com.suihan74.satena.R
 class TextFloatingActionButton(context: Context, private val attrs : AttributeSet)
     : FloatingActionButton(context, attrs) {
 
+    private val typedArray = context.obtainStyledAttributes(
+        attrs,
+        R.styleable.TextFloatingActionButton,
+        0, 0
+    )
+
     var text : String = ""
         set(value) {
             field = value
 
-            val typedArray = context.obtainStyledAttributes(
-                attrs,
-                R.styleable.TextFloatingActionButton,
-                0, 0
-            )
             try {
                 val textColor = typedArray.getColor(R.styleable.TextFloatingActionButton_textColor, Color.WHITE)
                 this.setImageBitmap(textToBitmap(value, 40f, textColor))
@@ -32,12 +33,6 @@ class TextFloatingActionButton(context: Context, private val attrs : AttributeSe
 
 
     init {
-        val typedArray = context.obtainStyledAttributes(
-            attrs,
-            R.styleable.TextFloatingActionButton,
-            0, 0
-        )
-
         try {
             val text = typedArray.getString(R.styleable.TextFloatingActionButton_text) ?: ""
             val textColor = typedArray.getColor(R.styleable.TextFloatingActionButton_textColor, Color.WHITE)

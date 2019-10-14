@@ -325,25 +325,30 @@ open class EntriesAdapter(
                 else {
                     commentsList.apply {
                         visibility = View.VISIBLE
-                        val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(root.context!!,
-                            R.drawable.recycler_view_item_divider
-                        )!!)
-                        addItemDecoration(dividerItemDecoration)
-                        layoutManager = LinearLayoutManager(commentsList.context)
+                        layoutManager = LinearLayoutManager(context)
                         adapter = object : EntryCommentsAdapter(comments) {
                             override fun onItemClicked(item: BookmarkResult) {
                                 if (item.eid == null) {
                                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.permalink))
-                                    root.context.startActivity(intent)
+                                    context.startActivity(intent)
                                 }
                                 else {
-                                    val intent = Intent(root.context, BookmarksActivity::class.java)
+                                    val intent = Intent(context, BookmarksActivity::class.java)
                                     intent.putExtra("entry", value)
                                     intent.putExtra("target_user", item.user)
-                                    root.context.startActivity(intent)
+                                    context.startActivity(intent)
                                 }
                             }
                         }
+
+                        repeat(itemDecorationCount) {
+                            removeItemDecorationAt(0)
+                        }
+
+                        val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context,
+                            R.drawable.recycler_view_item_divider
+                        )!!)
+                        addItemDecoration(dividerItemDecoration)
                     }
                 }
             }
