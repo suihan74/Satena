@@ -89,6 +89,7 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
                 setQuery(mQuery, true)
             }
 
+            setQuery("", false)
             isIconified = false
             requestFocus()
             requestFocusFromTouch()
