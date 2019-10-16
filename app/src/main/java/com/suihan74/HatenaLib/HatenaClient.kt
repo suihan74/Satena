@@ -7,8 +7,10 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
 import okhttp3.Request
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.format.DateTimeFormatter
 import java.io.IOException
 import java.net.HttpCookie
 import java.net.SocketTimeoutException
@@ -947,4 +949,58 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 }
             )
         }
+
+
+    /**
+     * 障害情報を取得する
+     */
+    fun getMaintenanceEntriesAsync() : Deferred<List<MaintenanceEntry>> = async {
+        val url = "https://maintenance.hatena.ne.jp"
+        try {
+            get(url).use { response ->
+                require(response.isSuccessful) { "connection failure" }
+
+                val brRegex = Regex("""<br/?>""")
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+
+                fun getTimestamp(header: Element, className: String) : LocalDateTime? =
+                    header.getElementsByClass(className).firstOrNull()?.let {
+                        val timestampString = it.getElementsByTag("time").firstOrNull()?.wholeText() ?: return null
+                        LocalDateTime.parse(timestampString, dateTimeFormatter)
+                    }
+
+                val body = response.body()!!.string()
+                val documentRoot = Jsoup.parse(body)
+
+                return@async documentRoot.getElementsByTag("article").mapNotNull { article ->
+                    val titleTag = article.getElementsByTag("h2").firstOrNull() ?: return@mapNotNull null
+                    val titleLinkTag = titleTag.getElementsByTag("a").firstOrNull() ?: return@mapNotNull null
+                    val link = titleLinkTag.attr("href")
+                    val title = titleTag.wholeText()
+                    val id = titleTag.id()
+                    if (id.isNullOrBlank()) return@mapNotNull null
+
+                    val paragraphs = article.getElementsByTag("p")
+
+                    val header = paragraphs.firstOrNull { it.hasClass("sectionheader") } ?: return@mapNotNull null
+                    val timestamp = getTimestamp(header, "timestamp") ?: return@mapNotNull null
+                    val timestampUpdated = getTimestamp(header, "timestamp updated") ?: timestamp
+
+                    val paragraph = paragraphs.firstOrNull { !it.hasClass("sectionheader") } ?: return@mapNotNull null
+
+                    return@mapNotNull MaintenanceEntry(
+                        id = id,
+                        title = title,
+                        body = paragraph.html().replace(brRegex, "\n"),
+                        url = url + link,
+                        timestamp = timestamp,
+                        timestampUpdated = timestampUpdated
+                    )
+                }
+            }
+        }
+        catch (e: Exception) {
+            throw RuntimeException("failed to get maintenance entries: ${e.message}")
+        }
+    }
 }
