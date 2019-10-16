@@ -88,6 +88,11 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
             if (mQuery.isNotBlank()) {
                 setQuery(mQuery, true)
             }
+
+            isIconified = false
+            requestFocus()
+            requestFocusFromTouch()
+
         }
 
         // テキスト/タグ
