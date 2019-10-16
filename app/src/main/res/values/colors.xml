@@ -34,6 +34,10 @@
     <color name="tabBackground">#F0F0F0</color>
     <color name="tabBackgroundDark">#535354</color>
 
+    <!-- BookmarkDetailFragment#portraitの上部分 -->
+    <color name="BookmarkDetailTopBackground">#F0F0F0</color>
+    <color name="BookmarkDetailTopBackgroundDark">#333333</color>
+
     <!-- ユーザーカウンタ -->
     <color name="bookmarkUsersCountText">#FF0707</color>
     <color name="bookmarkUsersCountBackground">#FBDFE0</color>

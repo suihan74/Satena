@@ -6,6 +6,7 @@
         <attr name="bookmarkDialogBackground" format="color"/>
         <attr name="entryCommentBackground" format="color"/>
         <attr name="textColorHint" format="color"/>
+        <attr name="bookmarkDetailTopBackground" format="color"/>
     </declare-styleable>
 
     <declare-styleable name="TextFloatingActionButton">
