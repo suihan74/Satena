@@ -46,6 +46,7 @@
     <string name="category_search">検索</string>
     <string name="category_mystars">最近つけたスター</string>
     <string name="category_stars_report">スターレポート</string>
+    <string name="category_maintenance">障害・メンテナンス情報</string>
 
     <!-- メニュー -->
     <string name="notices_desc">通知</string>

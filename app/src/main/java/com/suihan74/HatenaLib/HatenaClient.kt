@@ -977,6 +977,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     val titleLinkTag = titleTag.getElementsByTag("a").firstOrNull() ?: return@mapNotNull null
                     val link = titleLinkTag.attr("href")
                     val title = titleTag.wholeText()
+                    val resolved = title.contains("復旧済")
                     val id = titleTag.id()
                     if (id.isNullOrBlank()) return@mapNotNull null
 
@@ -992,6 +993,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                         id = id,
                         title = title,
                         body = paragraph.html().replace(brRegex, "\n"),
+                        resolved = resolved,
                         url = url + link,
                         timestamp = timestamp,
                         timestampUpdated = timestampUpdated

@@ -77,6 +77,12 @@ enum class Category(
         R.string.category_stars_report,
         R.drawable.ic_star,
         requireSignedIn = true,
+        singleColumns = true),
+
+    Maintenance(15,
+        R.string.category_maintenance,
+        R.drawable.ic_category_maintenance,
+        requireSignedIn = false,
         singleColumns = true);
 
     companion object {

@@ -464,45 +464,44 @@ class MainActivity : ActivityBase() {
                     HatenaClient.account!!.name
                 )
                 replaceFragment(fragment)
-                fragment
             }
 
             Category.Search -> {
                 val fragment = SearchEntriesFragment.createInstance()
                 replaceFragment(fragment)
-                fragment
             }
 
             Category.MyHotEntries -> {
                 val fragment = MyHotEntriesFragment.createInstance()
                 replaceFragment(fragment)
-                fragment
             }
 
             Category.MyStars -> {
                 val fragment = MyStarsFragment.createInstance()
                 replaceFragment(fragment)
-                fragment
             }
 
             Category.StarsReport -> {
                 val fragment = StarsReportFragment.createInstance()
                 replaceFragment(fragment)
-                fragment
+            }
+
+            Category.Maintenance -> {
+                val fragment = MaintenanceInformationFragment.createInstance()
+                replaceFragment(fragment)
             }
 
             else -> {
-                val fragment = currentFragment
-                when (fragment) {
+                when (val fragment = currentFragment) {
                     is EntriesFragment -> {
-                        fragment.refreshEntriesTabs(category)
-                        fragment
+                        fragment.apply {
+                            refreshEntriesTabs(category)
+                        }
                     }
 
                     else -> {
                         val entriesFragment = EntriesFragment.createInstance(category)
                         replaceFragment(entriesFragment)
-                        entriesFragment
                     }
                 }
             }

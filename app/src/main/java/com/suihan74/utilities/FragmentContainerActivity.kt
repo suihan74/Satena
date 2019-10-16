@@ -10,7 +10,7 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
     open fun onFragmentShown(fragment: Fragment) {
     }
 
-    fun showFragment(fragment: Fragment, backStackLabel: String? = null) {
+    fun showFragment(fragment: Fragment, backStackLabel: String? = null) : Fragment {
         fragment.retainInstance = false
 
         supportFragmentManager.beginTransaction().apply {
@@ -20,9 +20,11 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
         }
 
         onFragmentShown(fragment)
+
+        return fragment
     }
 
-    fun replaceFragment(fragment: Fragment) {
+    fun replaceFragment(fragment: Fragment) : Fragment {
         fragment.retainInstance = false
 
         supportFragmentManager.beginTransaction().apply {
@@ -35,6 +37,8 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
         }
 
         onFragmentShown(fragment)
+
+        return fragment
     }
 
     fun popFragment() {

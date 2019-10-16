@@ -7,6 +7,7 @@ data class MaintenanceEntry (
     val id: String,
     val title: String,
     val body: String,
+    val resolved: Boolean,
     val url: String,
     val timestamp: LocalDateTime,
     val timestampUpdated: LocalDateTime

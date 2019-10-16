@@ -73,4 +73,7 @@
     <!-- EntryCommentの背景色 -->
     <color name="entryCommentBackground">#11000000</color>
     <color name="entryCommentBackgroundDark">#22FFFFFF</color>
+
+    <!-- 障害情報 -->
+    <color name="maintenanceResolved">#19BD3F</color>
 </resources>
