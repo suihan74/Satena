@@ -116,4 +116,8 @@
     <string name="muted_comment_description">※ NGワードを含むコメントです ※</string>
     <string name="infinite">∞</string>
 
+    <!-- ブコメ通報ダイアログ -->
+    <string name="report_dialog_text_hint">このブコメを通報する理由など(任意)</string>
+    <string name="report_dialog_description">通報内容</string>
+
 </resources>

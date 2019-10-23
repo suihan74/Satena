@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
+import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -21,6 +22,7 @@ import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.activities.MainActivity
 import com.suihan74.satena.adapters.BookmarksAdapter
+import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.showCustomTabsIntent
@@ -304,7 +306,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
     private fun generateBookmarksAdapter(bookmarks: List<Bookmark>, bookmarksEntry: BookmarksEntry) : BookmarksAdapter {
         val activity = activity as BookmarksActivity
         return object : BookmarksAdapter(this, bookmarks, bookmarksEntry, mTabType) {
-            fun ignoreUser(b: Bookmark) {
+            private fun ignoreUser(b: Bookmark) {
                 launch(Dispatchers.Main) {
                     try {
                         HatenaClient.ignoreUserAsync(b.user).await()
@@ -325,17 +327,10 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                         Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
                         activity.showToast("id:${b.user}を非表示にできませんでした")
                     }
-
-                    try {
-                        HatenaClient.getIgnoredUsersAsync().await()
-                    }
-                    catch (e: Exception) {
-                        Log.d("FailedToUpdateIgnores", Log.getStackTraceString(e))
-                    }
                 }
             }
 
-            fun unignoreUser(b: Bookmark) {
+            private fun unignoreUser(b: Bookmark) {
                 launch(Dispatchers.Main) {
                     try {
                         HatenaClient.unignoreUserAsync(b.user).await()
@@ -355,7 +350,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                 }
             }
 
-            fun removeBookmark(b: Bookmark) {
+            private fun removeBookmark(b: Bookmark) {
                 launch(Dispatchers.Main) {
                     try {
                         val entry = bookmarksFragment?.entry ?: return@launch
@@ -378,7 +373,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             }
 
             @SuppressLint("UseSparseArrays")
-            fun tagUser(b: Bookmark) {
+            private fun tagUser(b: Bookmark) {
                 val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
                 val userTagsContainer = userTagsContainer
                 val user = userTagsContainer.addUser(b.user)
@@ -440,6 +435,12 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                     .show()
             }
 
+
+            private fun reportUser(entry: Entry, bookmark: Bookmark) {
+                val dialog = ReportDialogFragment.createInstance(entry, bookmark)
+                dialog.show(fragmentManager!!, "report_dialog")
+            }
+
             override fun onItemClicked(bookmark: Bookmark) {
                 val fragment = BookmarkDetailFragment.createInstance(
                     bookmark
@@ -464,6 +465,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                     else {
                         items.add("ユーザーを非表示" to { ignoreUser(bookmark) })
                     }
+                    items.add("通報する" to { reportUser(bookmarksFragment!!.entry, bookmark) })
                 }
 
                 items.add("ユーザータグ" to { tagUser(bookmark) })

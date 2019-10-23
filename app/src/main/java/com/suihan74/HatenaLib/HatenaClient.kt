@@ -1005,4 +1005,28 @@ object HatenaClient : BaseClient(), CoroutineScope {
             throw RuntimeException("failed to get maintenance entries: ${e.message}")
         }
     }
+
+    /**
+     * ユーザーを通報する
+     */
+    fun reportAsync(
+        entry: Entry,
+        bookmark: Bookmark,
+        category: ReportCategory,
+        text: String = ""
+    ) : Deferred<Boolean> = async {
+        require(signedIn()) { "need to sign-in for reporting user" }
+        val url = "$B_BASE_URL/-/report/bookmark"
+        val params = mapOf(
+            "rks" to account!!.rks,
+            "url" to entry.url,
+            "user_name" to bookmark.user,
+            "category" to category.name.toLowerCase(Locale.ROOT),
+            "text" to text
+        )
+
+        post(url, params).use { response ->
+            return@async response.isSuccessful
+        }
+    }
 }
