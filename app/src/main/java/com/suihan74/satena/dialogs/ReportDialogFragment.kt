@@ -2,10 +2,13 @@ package com.suihan74.satena.dialogs
 
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.fragment.app.DialogFragment
 import com.bumptech.glide.Glide
@@ -80,9 +83,34 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
             .load(mBookmark.userIconUrl)
             .into(icon)
 
-        content.findViewById<EditText>(R.id.text).setText(
-            savedInstanceState?.getString(BUNDLE_TEXT) ?: ""
-        )
+        content.findViewById<EditText>(R.id.text).run {
+            setText(
+                savedInstanceState?.getString(BUNDLE_TEXT) ?: ""
+            )
+
+            // 右端で自動折り返しはするが改行は受け付けない
+            setHorizontallyScrolling(false)
+            maxLines = Int.MAX_VALUE
+
+            // Doneボタン押下でIME隠す
+            setOnEditorActionListener { _, action, _ ->
+                activity?.currentFocus?.let {
+                    when (action) {
+                        EditorInfo.IME_ACTION_DONE -> {
+                            val im = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            try {
+                                im.hideSoftInputFromWindow(
+                                    it.windowToken,
+                                    InputMethodManager.HIDE_NOT_ALWAYS
+                                )
+                            }
+                            catch (e: Exception) { false }
+                        }
+                        else -> false
+                    }
+                } ?: false
+            }
+        }
 
         content.findViewById<Spinner>(R.id.category_spinner).apply {
             adapter = ArrayAdapter(
@@ -122,23 +150,31 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
         val category = ReportCategory.values()[spinner.selectedItemPosition]
         val text = editText.text.toString()
 
-        launch(Dispatchers.Main) {
-            try {
-                HatenaClient.reportAsync(mEntry, mBookmark, category, text).await()
-                if (withMuting) {
-                    HatenaClient.ignoreUserAsync(mBookmark.user).await()
-                    activity?.showToast("id:${mBookmark.user}を通報して非表示しました")
+        AlertDialog.Builder(context, R.style.AlertDialogStyle)
+            .setTitle("確認")
+            .setIcon(R.drawable.ic_baseline_help)
+            .setMessage("id:${mBookmark.user}を「${category.description}」のため通報します。よろしいですか？")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("OK") { _, _ ->
+                launch(Dispatchers.Main) {
+                    try {
+                        HatenaClient.reportAsync(mEntry, mBookmark, category, text).await()
+                        if (withMuting) {
+                            HatenaClient.ignoreUserAsync(mBookmark.user).await()
+                            activity?.showToast("id:${mBookmark.user}を通報して非表示しました")
+                        }
+                        else {
+                            activity?.showToast("id:${mBookmark.user}を通報しました")
+                        }
+                    }
+                    catch (e: Exception) {
+                        activity?.showToast("通報失敗")
+                    }
+                    finally {
+                        dialog.dismiss()
+                    }
                 }
-                else {
-                    activity?.showToast("id:${mBookmark.user}を通報しました")
-                }
             }
-            catch (e: Exception) {
-                activity?.showToast("通報失敗")
-            }
-            finally {
-                dialog.dismiss()
-            }
-        }
+            .show()
     }
 }
