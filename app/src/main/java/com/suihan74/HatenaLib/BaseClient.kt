@@ -66,7 +66,7 @@ open class BaseClient {
                 .serializeNulls()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .create()
-            val json = response.body()!!.string()
+            val json = response.body!!.string()
             val result = gson.fromJson<T>(json, type)
 
             response.close()
@@ -88,7 +88,7 @@ open class BaseClient {
 
     private fun <T> responseTo(type: Type, response: Response, gsonBuilder: GsonBuilder) : T {
         return if (response.isSuccessful) {
-            val json = response.body()!!.charStream()
+            val json = response.body!!.charStream()
 
             val result = gsonBuilder
                 .serializeNulls()
@@ -101,7 +101,7 @@ open class BaseClient {
             result
         }
         else {
-            val code = response.code()
+            val code = response.code
             response.close()
             throw RuntimeException("connection error: $code")
         }

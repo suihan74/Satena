@@ -280,7 +280,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .registerTypeAdapter(Boolean::class.java, BooleanDeserializer())
                 .create()
-            val json = response.body()!!.string()
+            val json = response.body!!.string()
             val result = gson.fromJson<BookmarkResult>(json, BookmarkResult::class.java)
 
             response.close()
@@ -482,7 +482,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
     fun getEmptyBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = async {
         val response = get(url)
         val title = if (response.isSuccessful) {
-            val bodyBytes = response.body()!!.bytes()
+            val bodyBytes = response.body!!.bytes()
 
             // 文字コードを判別してからHTMLを読む
             val defaultCharsetName = Charset.defaultCharset().name().toLowerCase(Locale.ROOT)
@@ -596,7 +596,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
         val response = call.execute()
         if (response.isSuccessful) {
-            val commentPageUrl = response.request().url().toString()
+            val commentPageUrl = response.request.url.toString()
             response.close()
 
             val headHttps = "$B_BASE_URL/entry/s/"
@@ -969,7 +969,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                         LocalDateTime.parse(timestampString, dateTimeFormatter)
                     }
 
-                val body = response.body()!!.string()
+                val body = response.body!!.string()
                 val documentRoot = Jsoup.parse(body)
 
                 return@async documentRoot.getElementsByTag("article").mapNotNull { article ->

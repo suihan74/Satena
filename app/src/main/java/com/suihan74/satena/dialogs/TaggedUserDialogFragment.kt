@@ -84,7 +84,7 @@ class TaggedUserDialogFragment : DialogFragment(), CoroutineScope {
                             call.execute().use { response ->
                                 lock(this@TaggedUserDialogFragment) {
                                     this@TaggedUserDialogFragment.mIsUserExisted =
-                                        200 == response.code()
+                                        200 == response.code
                                 }
                             }
                         }
