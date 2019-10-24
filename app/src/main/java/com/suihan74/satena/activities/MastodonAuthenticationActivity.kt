@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.content.ContextCompat
 import com.google.gson.Gson
 import com.suihan74.satena.R
 import com.suihan74.utilities.AccountLoader
@@ -20,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import org.chromium.customtabsclient.shared.CustomTabsHelper
 
 class MastodonAuthenticationActivity : ActivityBase() {
     override val progressBackgroundId: Int? = R.id.click_guard
@@ -108,8 +111,19 @@ class MastodonAuthenticationActivity : ActivityBase() {
         )
 
         withContext(Dispatchers.Main) {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            startActivity(intent)
+            val context = this@MastodonAuthenticationActivity
+
+            val intent = CustomTabsIntent.Builder()
+                .setShowTitle(true)
+                .enableUrlBarHiding()
+                .setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimary))
+                .build()
+                .apply {
+                    val packageName = CustomTabsHelper.getPackageNameToUse(context)
+                    intent.setPackage(packageName)
+                }
+
+            intent.launchUrl(context, Uri.parse(url))
         }
     }
 
