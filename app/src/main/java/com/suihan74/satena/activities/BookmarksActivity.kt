@@ -284,6 +284,8 @@ class BookmarksActivity : ActivityBase() {
 
             // ブコメページのリンクを踏んだときの処理
             Intent.ACTION_VIEW -> {
+                preLoadingTasks = null
+
                 val commentUrl = intent.dataString ?: ""
                 val url = HatenaClient.getEntryUrlFromCommentPageUrl(commentUrl)
 
