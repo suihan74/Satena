@@ -338,9 +338,10 @@ class BookmarksActivity : ActivityBase() {
             val targetEntry = this@BookmarksActivity.mEntry!!
 
             val bookmarksFragment =
-                if (targetUser == null) {
+                if (targetUser.isNullOrBlank()) {
                     BookmarksFragment.createInstance(targetEntry, preLoadingTasks)
-                } else {
+                }
+                else {
                     BookmarksFragment.createInstance(targetUser, targetEntry, preLoadingTasks)
                 }
 
