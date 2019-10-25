@@ -101,6 +101,7 @@ class BookmarksActivity : ActivityBase() {
 
         fun stopPreLoading() {
             preloadingStopped = true
+            preLoadingTasks = null
         }
 
         fun startPreLoading(entry: Entry) {
@@ -224,6 +225,10 @@ class BookmarksActivity : ActivityBase() {
         findViewById<View>(R.id.post_bookmark_background).setOnClickListener {
             closeBookmarkDialog()
         }
+    }
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
             startInitialize()
@@ -268,7 +273,8 @@ class BookmarksActivity : ActivityBase() {
                 if (entry == null) {
                     try {
                         mBookmarksEntry = HatenaClient.getEmptyBookmarksEntryAsync(url).await()
-                    } catch (e: Exception) {
+                    }
+                    catch (e: Exception) {
                         Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
                     }
                 }
@@ -281,15 +287,14 @@ class BookmarksActivity : ActivityBase() {
                 val commentUrl = intent.dataString ?: ""
                 val url = HatenaClient.getEntryUrlFromCommentPageUrl(commentUrl)
 
-                var entry: Entry? = null
                 AccountLoader.signInAccounts(applicationContext)
                 try {
-                    entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
+                    HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
                         .firstOrNull { it.url == url }
-                } catch (e: Exception) {
+                }
+                catch (e: Exception) {
                     Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
                 }
-                entry
             }
 
             // MainActivityからの遷移
@@ -299,7 +304,8 @@ class BookmarksActivity : ActivityBase() {
                 val eid = intent.extras?.getLong("eid") ?: 0L
                 if (eid == 0L) {
                     intent.getSerializableExtra("entry")
-                } else {
+                }
+                else {
                     HatenaClient.getBookmarksEntryAsync(eid).await()
                 }
             }
