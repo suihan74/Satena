@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/bookmarks_drawer_layout"
-        tools:context=".activities.BookmarksActivity">
+        tools:context=".scenes.bookmarks.BookmarksActivity">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:background="?attr/panelBackground"

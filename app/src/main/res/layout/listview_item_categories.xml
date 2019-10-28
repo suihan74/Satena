@@ -10,7 +10,7 @@
         android:clickable="true"
         android:focusable="true"
         android:background="?android:attr/selectableItemBackground"
-        tools:context=".activities.MainActivity">
+        tools:context=".scenes.entries.EntriesActivity">
 
     <ImageView
             android:id="@+id/category_icon"

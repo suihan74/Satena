@@ -9,8 +9,8 @@ import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import com.suihan74.satena.R
-import com.suihan74.satena.fragments.PreferencesUserTagsFragment
 import com.suihan74.satena.models.UserTag
+import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.showToast
 
 class UserTagDialogFragment : DialogFragment() {

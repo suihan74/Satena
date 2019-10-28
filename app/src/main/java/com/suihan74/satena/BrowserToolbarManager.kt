@@ -12,8 +12,8 @@ import androidx.core.content.ContextCompat
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
-import com.suihan74.satena.activities.BookmarkPostActivity
-import com.suihan74.satena.activities.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import kotlinx.coroutines.*
 import org.chromium.customtabsclient.shared.CustomTabsHelper
 

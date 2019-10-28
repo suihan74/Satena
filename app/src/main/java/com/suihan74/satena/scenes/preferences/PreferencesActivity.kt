@@ -1,0 +1,110 @@
+package com.suihan74.satena.scenes.preferences
+
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
+import android.view.View
+import com.suihan74.satena.ActivityBase
+import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.SafeSharedPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+class PreferencesActivity : ActivityBase() {
+    override val containerId = R.id.preferences_layout
+    override val progressBarId: Int? = R.id.detail_progress_bar
+    override val progressBackgroundId: Int? = R.id.click_guard
+
+    private lateinit var mPrefsFragment : PreferencesFragment
+    private var themeChanged : Boolean = false
+
+    companion object {
+        const val EXTRA_THEME_CHANGED = "com.suihan74.statena.activities.PreferencesActivity.theme_changed"
+        const val EXTRA_CURRENT_TAB = "com.suihan74.statena.activities.PreferencesActivity.current_tab"
+        const val EXTRA_RELOAD_ALL_PREFERENCES = "com.suihan74.statena.activities.PreferencesActivity.reload_all_preferences"
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
+        if (isThemeDark) {
+            setTheme(R.style.AppTheme_Dark)
+        }
+        else {
+            setTheme(R.style.AppTheme_Light)
+        }
+        setContentView(R.layout.activity_preferences)
+
+        themeChanged = intent.getBooleanExtra(EXTRA_THEME_CHANGED, false)
+
+        val showFragment = {
+            mPrefsFragment = if (currentFragment is PreferencesFragment) {
+                currentFragment as PreferencesFragment
+            }
+            else {
+                val fragment = PreferencesFragment.createInstance(themeChanged)
+                showFragment(fragment)
+                fragment
+            }
+        }
+
+        val invokeReload = intent.getBooleanExtra(EXTRA_RELOAD_ALL_PREFERENCES, false)
+        if (invokeReload) {
+            showProgressBar()
+            launch(Dispatchers.Main) {
+                reloadAllPreferences()
+
+                showFragment()
+                hideProgressBar()
+            }
+        }
+        else {
+            showFragment()
+        }
+    }
+
+    fun onClickedTab(view: View) = mPrefsFragment.onClickedTab(view)
+
+    /** ファイルから設定を読み込んだ場合，このメソッドを使用して変更内容を適用する */
+    private suspend fun reloadAllPreferences() {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+
+        try {
+            // 再ログイン
+            AccountLoader.signInAccounts(this, true)
+        }
+        catch (e: Exception) {
+            Log.e("FailedToReloadAccounts", e.message)
+        }
+
+        // 通知サービス開始
+        val isNoticeServiceEnabled = prefs.getBoolean(PreferenceKey.BACKGROUND_CHECKING_NOTICES)
+        if (isNoticeServiceEnabled) {
+            SatenaApplication.instance.startNotificationService()
+        }
+        else {
+            SatenaApplication.instance.stopNotificationService()
+        }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed {
+            if (themeChanged) {
+                val intent = Intent(this, EntriesActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(intent)
+                true
+            }
+            else {
+                false
+            }
+        }
+    }
+}

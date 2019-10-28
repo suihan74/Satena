@@ -6,7 +6,6 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Build
 import com.jakewharton.threetenabp.AndroidThreeTen
-import com.suihan74.satena.activities.ActivityBase
 import com.suihan74.satena.models.IgnoredEntriesKeyMigrator
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.SafeSharedPreferences

@@ -6,8 +6,8 @@ import android.content.Intent
 import android.net.Uri
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.satena.activities.BookmarksActivity
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 
 object TappedActionLauncher {
     fun launch(context: Context, act: TapEntryAction, url: String, additionalItemsAdder: ((ArrayList<Pair<Int, () -> Unit>>)->Unit)?) = when (act) {

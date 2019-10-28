@@ -5,7 +5,7 @@
         android:id="@+id/stars_swipe_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".fragments.StarsTabFragment">
+        tools:context=".scenes.bookmarks.detail.StarsTabFragment">
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/stars_list"

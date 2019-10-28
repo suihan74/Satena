@@ -34,14 +34,14 @@
         <receiver android:name=".BrowserToolbarManager"/>
 
         <!-- Activities -->
-        <activity android:name=".activities.MainActivity">
+        <activity android:name=".scenes.entries.EntriesActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.BookmarksActivity">
+        <activity android:name=".scenes.bookmarks.BookmarksActivity">
             <intent-filter android:label="ブコメを見る">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT" />
@@ -57,10 +57,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.PreferencesActivity" android:launchMode="singleTask"/>
+        <activity android:name=".scenes.preferences.PreferencesActivity" android:launchMode="singleTask"/>
 
         <activity
-                android:name=".activities.BookmarkPostActivity"
+                android:name=".scenes.post.BookmarkPostActivity"
                 android:theme="@style/AppDialogTheme">
             <intent-filter android:label="ブコメを書く">
                 <action android:name="android.intent.action.SEND"/>
@@ -71,8 +71,8 @@
         </activity>
 
         <!-- ログイン画面 -->
-        <activity android:name=".activities.HatenaAuthenticationActivity" android:launchMode="singleTask"/>
-        <activity android:name=".activities.MastodonAuthenticationActivity" android:launchMode="singleTask">
+        <activity android:name=".scenes.authentication.HatenaAuthenticationActivity" android:launchMode="singleTask"/>
+        <activity android:name=".scenes.authentication.MastodonAuthenticationActivity" android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

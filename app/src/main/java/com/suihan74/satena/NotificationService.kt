@@ -11,10 +11,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Notice
-import com.suihan74.satena.activities.BookmarksActivity
-import com.suihan74.satena.activities.MainActivity
-import com.suihan74.satena.fragments.NoticesFragment
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.scenes.entries.notices.NoticesFragment
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.makeSpannedfromHtml
@@ -109,7 +109,7 @@ class NotificationService : Service(), CoroutineScope {
             }
             notificationManager.createNotificationChannel(noticeChannel)
 
-            val mainIntent = Intent(applicationContext, MainActivity::class.java)
+            val mainIntent = Intent(applicationContext, EntriesActivity::class.java)
             val pendingIntent = PendingIntent.getActivity(applicationContext, 0, mainIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
             val notification = NotificationCompat.Builder(applicationContext, SERVICE_CHANNEL_ID)
@@ -217,7 +217,7 @@ class NotificationService : Service(), CoroutineScope {
             }
 
             else -> {
-                Intent(context, MainActivity::class.java).apply {
+                Intent(context, EntriesActivity::class.java).apply {
                     putExtra("fragment", NoticesFragment::class.java)
                 }
             }

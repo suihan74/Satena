@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:fitsSystemWindows="true"
-        tools:context=".activities.PreferencesActivity">
+        tools:context=".scenes.preferences.PreferencesActivity">
 
     <androidx.appcompat.widget.Toolbar
             android:id="@+id/preferences_toolbar"

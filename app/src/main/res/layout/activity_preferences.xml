@@ -5,7 +5,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:configChanges="orientation|screenSize"
-        tools:context=".activities.PreferencesActivity">
+        tools:context=".scenes.preferences.PreferencesActivity">
 
     <FrameLayout
             android:id="@+id/preferences_layout"

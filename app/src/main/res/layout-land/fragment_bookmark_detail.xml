@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/panelBackground"
-        tools:context=".activities.BookmarksActivity">
+        tools:context=".scenes.bookmarks.BookmarksActivity">
 
     <LinearLayout
             android:id="@+id/parent_layout"
