@@ -1,4 +1,9 @@
 # Satena
+## なにこれ
+[はてなブックマーク](https://b.hatena.ne.jp/)をいい感じに閲覧するためのAndroidアプリです．
+Playストアのページは[こちら](https://play.google.com/store/apps/details?id=com.suihan74.satena)
+
+Androidの要求バージョンは6.0(M)以上としています．
 
 ## ファイルの場所など
 * Kotlinコード
