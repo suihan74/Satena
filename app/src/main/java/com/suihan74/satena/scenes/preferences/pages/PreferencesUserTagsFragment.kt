@@ -10,10 +10,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.TaggedUserDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
-import com.suihan74.satena.models.TaggedUser
-import com.suihan74.satena.models.UserTag
-import com.suihan74.satena.models.UserTagsContainer
-import com.suihan74.satena.models.UserTagsKey
+import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.SafeSharedPreferences
@@ -48,7 +45,10 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
         mUserTagsContainer = savedInstanceState?.run {
             savedUserTagsContainer
         } ?: prefs.get(UserTagsKey.CONTAINER)
-        mUserTagsContainer.optimize()
+
+        // タグデータを最適化する
+        optimize()
+
         prefs.edit {
             putObject(UserTagsKey.CONTAINER, mUserTagsContainer)
         }
@@ -83,6 +83,23 @@ class PreferencesUserTagsFragment : Fragment(), BackPressable {
         }
 
         return root
+    }
+
+    private fun optimize() {
+        // カスタムブコメタブの設定にも変更を反映する
+        // タグIDが変更される可能性があるので，タグ名で記録しておき，最適化後にIDリストを再生成する
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val activeTagIds = prefs.get<List<Int>>(PreferenceKey.CUSTOM_BOOKMARKS_ACTIVE_TAG_IDS)
+        val activeTagNames = activeTagIds.mapNotNull { id -> mUserTagsContainer.tags.firstOrNull { it.id == id }?.name }
+
+        mUserTagsContainer.optimize()
+
+        val optimizedTagIds = mUserTagsContainer.tags
+            .filter { activeTagNames.contains(it.name) }
+            .map { it.id }
+        prefs.edit {
+            put(PreferenceKey.CUSTOM_BOOKMARKS_ACTIVE_TAG_IDS, optimizedTagIds)
+        }
     }
 
     fun showTaggedUsersList(tag: UserTag) {

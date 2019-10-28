@@ -84,6 +84,10 @@ class UserTagsContainer : Serializable {
     fun containsUser(name: String) =
         getUser(name) != null
 
+    /** ユーザーにタグが付いているかを確認 */
+    fun checkUserTagged(name: String) =
+        getUser(name)?.tags?.isNotEmpty() ?: false
+
     /**
      * ユーザーデータを作成してインスタンスを返す
      * 既にユーザーが存在する場合はそのインスタンスを返す

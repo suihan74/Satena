@@ -61,7 +61,7 @@ class CustomBookmarksTabFragment : BookmarksTabFragment() {
     private fun getActiveTaggedUsers(fragment: BookmarksFragment) : List<String> {
         val tagsContainer = fragment.userTagsContainer
         return mActiveTagIds
-            .map { id ->
+            .mapNotNull { id ->
                 tagsContainer.tags.firstOrNull { it.id == id }
             }
             .flatMap { tag ->
@@ -82,7 +82,7 @@ class CustomBookmarksTabFragment : BookmarksTabFragment() {
             if (!mIsMutedUsersActive && ignoredUsers.contains(bookmark.user)) return@filter false
 
             return@filter activeUsers.contains(bookmark.user) ||
-                    mIsUnaffiliatedUsersActive && !tagsContainer.containsUser(bookmark.user)
+                    mIsUnaffiliatedUsersActive && !tagsContainer.checkUserTagged(bookmark.user)
         }
     }
 
