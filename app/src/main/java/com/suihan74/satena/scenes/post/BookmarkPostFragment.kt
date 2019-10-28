@@ -31,6 +31,7 @@ import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.ceil
 
 class BookmarkPostFragment : CoroutineScopeFragment() {
 
@@ -244,18 +245,28 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
             }
         }
         // コメント文字数によって投稿可能かどうかを判定する
-        val tagRegex = Regex("""\[.+]""")
         val validCounterColor = context!!.getThemeColor(R.attr.textColor)
         val invalidCounterColor = Color.rgb(0xff, 0x22, 0x22)
         commentEditor.addTextChangedListener(object : TextWatcher {
+            private val tagRegex = Regex("""\[[^%/:\[\]]+]""")
+
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // 文字数を数える
+                // どうやら文字のバイト数をもとに計算しているっぽいので可能な限り再現する
                 val text = commentEditor.text.toString()
-                val rawText = text.replace(tagRegex, "")
+                val textLength = ceil(text.replace(tagRegex, "").sumBy { c ->
+                    val code = c.toInt()
+                    when (code / 255) {
+                        0 -> 1
+                        1 -> if (code <= 0xc3bf) 1 else 3
+                        else -> 3
+                    }
+                } / 3f).toInt()
 
-                commentCounter.text = rawText.length.toString()
-                bookmarkButton.isEnabled = rawText.length <= 100
+                commentCounter.text = textLength.toString()
+                bookmarkButton.isEnabled = textLength <= 100
 
                 commentCounter.setTextColor(if (bookmarkButton.isEnabled) {
                     validCounterColor
