@@ -57,6 +57,8 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
     val bookmark
         get() = mBookmark
 
+    override val isToolbarVisible: Boolean = false
+
     companion object {
         fun createInstance(b: Bookmark) = BookmarkDetailFragment().apply {
             mBookmark = b

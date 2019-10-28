@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.activities.BookmarksActivity
-import com.suihan74.satena.fragments.BookmarksTabFragment
+import com.suihan74.satena.fragments.*
 import com.suihan74.satena.models.BookmarksTabType
 
 open class BookmarksTabAdapter (
@@ -15,7 +15,12 @@ open class BookmarksTabAdapter (
 ) : FragmentPagerAdapter(bookmarksActivity.bookmarksFragment!!.childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     override fun getItem(position: Int): Fragment {
-        return BookmarksTabFragment.createInstance(BookmarksTabType.fromInt(position))
+        return when (BookmarksTabType.fromInt(position)) {
+            BookmarksTabType.POPULAR -> PopularBookmarksTabFragment.createInstance()
+            BookmarksTabType.RECENT -> RecentBookmarksTabFragment.createInstance()
+            BookmarksTabType.CUSTOM -> CustomBookmarksTabFragment.createInstance()
+            BookmarksTabType.ALL -> AllBookmarksTabFragment.createInstance()
+        }
     }
 
     override fun getPageTitle(position: Int): CharSequence? = BookmarksTabType.fromInt(position).toString(bookmarksActivity.bookmarksFragment!!.context!!)

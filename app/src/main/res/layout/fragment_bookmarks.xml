@@ -17,7 +17,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            <androidx.appcompat.widget.Toolbar
+            <Toolbar
                     android:id="@+id/bookmarks_toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
@@ -52,6 +52,17 @@
                     android:layout_height="wrap_content">
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/custom_settings_button"
+                        android:src="@drawable/ic_baseline_settings"
+                        app:fabSize="mini"
+                        app:backgroundTint="@color/colorPrimary"
+                        android:layout_gravity="bottom"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginBottom="24dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/search_button"
                         android:src="@drawable/ic_baseline_search"
                         app:fabSize="mini"
@@ -74,7 +85,8 @@
                             app:fabSize="mini"
                             app:backgroundTint="@color/colorPrimary"
                             android:layout_gravity="bottom"
-                            android:layout_marginStart="18dp"
+                            android:layout_marginTop="18dp"
+                            android:layout_marginStart="24dp"
                             android:layout_marginBottom="18dp"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"/>
@@ -85,7 +97,7 @@
                             app:fabSize="mini"
                             app:backgroundTint="@color/colorPrimary"
                             android:layout_gravity="bottom"
-                            android:layout_marginStart="18dp"
+                            android:layout_marginStart="24dp"
                             android:layout_marginBottom="18dp"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"/>
@@ -96,7 +108,7 @@
                             app:fabSize="mini"
                             app:backgroundTint="@color/colorPrimary"
                             android:layout_gravity="bottom"
-                            android:layout_marginStart="18dp"
+                            android:layout_marginStart="24dp"
                             android:layout_marginBottom="18dp"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"/>
@@ -108,8 +120,8 @@
                             app:backgroundTint="@color/colorPrimary"
                             android:layout_gravity="bottom"
                             android:layout_marginBottom="24dp"
-                            android:layout_marginStart="18dp"
-                            android:layout_marginEnd="18dp"
+                            android:layout_marginStart="24dp"
+                            android:layout_marginEnd="24dp"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"/>
                 </LinearLayout>

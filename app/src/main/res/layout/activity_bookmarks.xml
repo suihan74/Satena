@@ -6,8 +6,6 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="false">
 
-<!--    <include layout="@layout/actionbar_default" android:id="@+id/action_bar"/>
--->
     <!-- メインコンテンツ -->
     <FrameLayout
             android:id="@+id/bookmarks_layout"

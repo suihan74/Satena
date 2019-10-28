@@ -14,7 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import androidx.appcompat.widget.Toolbar
+import android.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -64,6 +64,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     private lateinit var mBookmarkButton : TextFloatingActionButton
     private lateinit var mBookmarksScrollMenuButton : FloatingActionButton
     private lateinit var mSearchButton : FloatingActionButton
+    private lateinit var mSettingsButton : FloatingActionButton
 
     private var mAreScrollButtonsVisible = false
     private var mIsHidingButtonsByScrollEnabled : Boolean = true
@@ -114,6 +115,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         }
 
     fun getFetchStarsTask(user: String) = mFetchStarsTasks[user]
+
+    override val title: String
+        get() = mEntry.title
 
     companion object {
         fun createInstance(entry: Entry, preLoadingTasks: BookmarksActivity.PreLoadingTasks? = null) = BookmarksFragment().apply {
@@ -188,7 +192,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         mRoot = root
 
         // ツールバーの設定
-        root.findViewById<Toolbar>(R.id.bookmarks_toolbar).title = mEntry.title
+        root.findViewById<Toolbar>(R.id.bookmarks_toolbar).apply {
+            title = mEntry.title
+        }
 
         // メインコンテンツの設定
         val tabPager = root.findViewById<ViewPager>(R.id.bookmarks_tab_pager)
@@ -198,6 +204,8 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
                     mCurrentTabPosition = tab!!.position
+
+                    mSettingsButton.visibility = (mCurrentTabPosition == BookmarksTabType.CUSTOM.int).toVisibility()
                 }
                 override fun onTabUnselected(p0: TabLayout.Tab?) {}
                 override fun onTabReselected(tab: TabLayout.Tab?) {
@@ -211,18 +219,21 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         mBookmarkButton = root.findViewById(R.id.bookmark_button)
         mBookmarksScrollMenuButton = root.findViewById(R.id.bookmarks_scroll_menu_button)
         mSearchButton = root.findViewById(R.id.search_button)
+        mSettingsButton = root.findViewById<FloatingActionButton>(R.id.custom_settings_button)
 
         if (HatenaClient.signedIn()) {
             mFABs = arrayOf(
                 mBookmarkButton,
                 mBookmarksScrollMenuButton,
-                mSearchButton
+                mSearchButton,
+                mSettingsButton
             )
         }
         else {
             mFABs = arrayOf(
                 mBookmarksScrollMenuButton,
-                mSearchButton
+                mSearchButton,
+                mSettingsButton
             )
             mBookmarkButton.visibility = View.GONE
         }
@@ -473,6 +484,15 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             }
         }
 
+        mSettingsButton.apply {
+            visibility = (mCurrentTabPosition == BookmarksTabType.CUSTOM.int).toVisibility()
+
+            setOnClickListener {
+                val adapter = mTabPager?.adapter as? BookmarksTabAdapter
+                val fragment = adapter?.findFragment(BookmarksTabType.CUSTOM.int) as? CustomBookmarksTabFragment
+                fragment?.openSettingsDialog(this@BookmarksFragment)
+            }
+        }
 
         if (HatenaClient.signedIn()) {
             mBookmarkButton.setOnClickListener {
@@ -784,6 +804,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         mBookmarksDigest = getDigestBookmarksTask.await()
 
         if (bookmarksEntry != null) {
+//            val activity = activity as ActivityBase
+//            activity.toolbar!!.subtitle = getSubTitle(bookmarksEntry?.bookmarks ?: ArrayList())
+
             view?.findViewById<Toolbar>(R.id.bookmarks_toolbar)?.apply {
                 subtitle = getSubTitle(bookmarksEntry?.bookmarks ?: ArrayList())
             }

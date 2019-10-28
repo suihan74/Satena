@@ -31,15 +31,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class BookmarksTabFragment : CoroutineScopeFragment() {
+abstract class BookmarksTabFragment : CoroutineScopeFragment() {
+    protected abstract fun getBookmarks(fragment: BookmarksFragment) : List<Bookmark>
+    protected abstract fun isBookmarkShown(bookmark: Bookmark, fragment: BookmarksFragment) : Boolean
+    protected abstract fun hideIgnoredBookmark(adapter: BookmarksAdapter, bookmark: Bookmark)
+
     private lateinit var mView : View
     private lateinit var mRecyclerView: RecyclerView
 
     private lateinit var mBookmarksAdapter: BookmarksAdapter
     private var mTabType : BookmarksTabType = BookmarksTabType.RECENT
 
-
-    private var mIsIgnoredUsersShownInAll : Boolean = false
     private var mIgnoredWords : List<String> = emptyList()
 
     val bookmarksFragment
@@ -49,20 +51,11 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         get() = bookmarksFragment!!.userTagsContainer
 
     companion object {
-        fun createInstance(type: BookmarksTabType) = BookmarksTabFragment().apply {
-            arguments = Bundle().apply {
-                putInt(ARGS_KEY_TAB_TYPE, type.int)
-            }
-        }
-
-        private const val ARGS_KEY_TAB_TYPE = "mTabType"
+        const val ARGS_KEY_TAB_TYPE = "mTabType"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        mIsIgnoredUsersShownInAll = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS)
 
         val ignoredEntriesPrefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
         val ignoredEntries = ignoredEntriesPrefs.getNullable<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES) ?: emptyList()
@@ -75,6 +68,8 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         }
     }
 
+    protected open val isScrollingUpdaterEnabled = true
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_bookmarks_tab, container, false)
         mView = view
@@ -82,12 +77,9 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksTabFragment has created from an invalid activity")
 
         // initialize mBookmarks list
+        refreshBookmarksAdapter()
         val viewManager = LinearLayoutManager(context)
-        mRecyclerView = view.findViewById(R.id.bookmarks_list)
-
-        mBookmarksAdapter = generateBookmarksAdapter(getBookmarks(bookmarksFragment!!), bookmarksFragment!!.bookmarksEntry!!)
-
-        mRecyclerView.apply {
+        mRecyclerView = view.findViewById<RecyclerView>(R.id.bookmarks_list).apply {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
                 R.drawable.recycler_view_item_divider
             )!!)
@@ -95,7 +87,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
             layoutManager = viewManager
             adapter = mBookmarksAdapter
 
-            if (BookmarksTabType.POPULAR != mTabType) {
+            if (isScrollingUpdaterEnabled) {
                 val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter) {
                     override fun load() {
                         val fragment = bookmarksFragment!!
@@ -125,7 +117,7 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
                         }
                     }
                 }
-                mRecyclerView.addOnScrollListener(bookmarksUpdater)
+                addOnScrollListener(bookmarksUpdater)
             }
 
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -163,30 +155,6 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
     }
 
 
-    fun getBookmarks(fragment: BookmarksFragment) = when(mTabType) {
-        BookmarksTabType.POPULAR ->
-            fragment.popularBookmarks.filter {
-                !isBookmarkIgnored(it) && !fragment.ignoredUsers.contains(it.user)
-            }
-
-        BookmarksTabType.RECENT ->
-            fragment.recentBookmarks.filter {
-                !it.comment.isBlank() && !isBookmarkIgnored(it) && !fragment.ignoredUsers.contains(it.user)
-            }
-
-        BookmarksTabType.ALL -> {
-            val bookmarks = fragment.recentBookmarks
-            if (mIsIgnoredUsersShownInAll) {
-                bookmarks
-            }
-            else {
-                bookmarks.filterNot {
-                    fragment.ignoredUsers.contains(it.user)
-                }
-            }.filterNot { isBookmarkIgnored(it) }
-        }
-    }
-
     fun update() {
         if (this::mBookmarksAdapter.isInitialized) {
             mBookmarksAdapter.setBookmarks(getBookmarks(bookmarksFragment!!))
@@ -205,27 +173,16 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         }
     }
 
-    private fun isBookmarkIgnored(bookmark: Bookmark) =
+    protected fun isBookmarkIgnored(bookmark: Bookmark) =
         mIgnoredWords.any {
             bookmark.user.contains(it) || bookmark.comment.contains(it) || bookmark.getTagsText(",").contains(it)
         }
 
-    fun isBookmarkShown(bookmark: Bookmark) : Boolean {
+    private fun isBookmarkShown(bookmark: Bookmark) : Boolean {
         if (isBookmarkIgnored(bookmark)) return false
 
         val fragment = bookmarksFragment ?: return false
-        return when (mTabType) {
-            BookmarksTabType.POPULAR ->
-                fragment.popularBookmarks.any { it.user == bookmark.user }
-
-            BookmarksTabType.RECENT ->
-                !bookmark.comment.isBlank() && !fragment.ignoredUsers.contains(bookmark.user)
-
-            BookmarksTabType.ALL -> {
-                val contains = fragment.bookmarksEntry?.bookmarks?.any { it.user == bookmark.user } == true
-                contains && (!fragment.ignoredUsers.contains(bookmark.user) || mIsIgnoredUsersShownInAll)
-            }
-        }
+        return isBookmarkShown(bookmark, fragment)
     }
 
     fun setSearchText(text : String) {
@@ -303,23 +260,25 @@ class BookmarksTabFragment : CoroutineScopeFragment() {
         }
     }
 
+    protected fun refreshBookmarksAdapter() {
+        mBookmarksAdapter = generateBookmarksAdapter(getBookmarks(bookmarksFragment!!), bookmarksFragment!!.bookmarksEntry!!)
+        if (this::mRecyclerView.isInitialized) {
+            mRecyclerView.adapter = mBookmarksAdapter
+        }
+    }
+
     private fun generateBookmarksAdapter(bookmarks: List<Bookmark>, bookmarksEntry: BookmarksEntry) : BookmarksAdapter {
         val activity = activity as BookmarksActivity
         return object : BookmarksAdapter(this, bookmarks, bookmarksEntry, mTabType) {
             private fun ignoreUser(b: Bookmark) {
+                val adapter = this
+
                 launch(Dispatchers.Main) {
                     try {
                         HatenaClient.ignoreUserAsync(b.user).await()
 
                         // リストから削除
-                        when (mTabType) {
-                            BookmarksTabType.POPULAR,
-                            BookmarksTabType.RECENT -> removeItem(b)
-
-                            BookmarksTabType.ALL -> if (!mIsIgnoredUsersShownInAll) {
-                                removeItem(b)
-                            }
-                        }
+                        hideIgnoredBookmark(adapter, b)
 
                         activity.showToast("id:${b.user}を非表示にしました")
                     }
