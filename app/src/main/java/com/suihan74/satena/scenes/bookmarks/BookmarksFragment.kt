@@ -206,7 +206,13 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
                     mCurrentTabPosition = tab!!.position
 
-                    mSettingsButton.visibility = (mCurrentTabPosition == BookmarksTabType.CUSTOM.int).toVisibility()
+
+                    if (mCurrentTabPosition == BookmarksTabType.CUSTOM.int && mBookmarksScrollMenuButton.isShown) {
+                        mSettingsButton.show()
+                    }
+                    else {
+                        mSettingsButton.hide()
+                    }
                 }
                 override fun onTabUnselected(p0: TabLayout.Tab?) {}
                 override fun onTabReselected(tab: TabLayout.Tab?) {
@@ -220,7 +226,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         mBookmarkButton = root.findViewById(R.id.bookmark_button)
         mBookmarksScrollMenuButton = root.findViewById(R.id.bookmarks_scroll_menu_button)
         mSearchButton = root.findViewById(R.id.search_button)
-        mSettingsButton = root.findViewById<FloatingActionButton>(R.id.custom_settings_button)
+        mSettingsButton = root.findViewById(R.id.custom_settings_button)
 
         if (HatenaClient.signedIn()) {
             mFABs = arrayOf(
@@ -379,7 +385,11 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         }
         else if (dy < -2) {
             val buttons = scrollButtons
-            mFABs.forEach { it.show() }
+            mFABs.forEach {
+                if (it != mSettingsButton || mCurrentTabPosition == BookmarksTabType.CUSTOM.int) {
+                    it.show()
+                }
+            }
             if (mAreScrollButtonsVisible) {
                 buttons.forEach { it.show() }
             }
@@ -486,7 +496,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         }
 
         mSettingsButton.apply {
-            visibility = (mCurrentTabPosition == BookmarksTabType.CUSTOM.int).toVisibility()
+            if (mCurrentTabPosition != BookmarksTabType.CUSTOM.int) {
+                hide()
+            }
 
             setOnClickListener {
                 val adapter = mTabPager?.adapter as? BookmarksTabAdapter
