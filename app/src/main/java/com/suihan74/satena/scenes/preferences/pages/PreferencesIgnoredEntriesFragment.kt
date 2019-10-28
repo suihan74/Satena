@@ -21,6 +21,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.get
 
 class PreferencesIgnoredEntriesFragment : Fragment() {
+    private lateinit var mIgnoredEntriesList : RecyclerView
     private lateinit var mIgnoredEntriesAdapter : IgnoredEntriesAdapter
     private lateinit var mIgnoredEntries : ArrayList<IgnoredEntry>
 
@@ -62,7 +63,7 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
             }
         }
 
-        root.findViewById<RecyclerView>(R.id.ignored_entries_list).apply {
+        mIgnoredEntriesList = root.findViewById<RecyclerView>(R.id.ignored_entries_list).apply {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
                 R.drawable.recycler_view_item_divider
             )!!)
@@ -92,13 +93,15 @@ class PreferencesIgnoredEntriesFragment : Fragment() {
         return root
     }
 
-    fun addItem(entry: IgnoredEntry) {
+    private fun addItem(entry: IgnoredEntry) {
         mIgnoredEntries.add(entry)
         mIgnoredEntriesAdapter.addItem(entry)
         val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context!!)
         prefs.edit {
             putObject(IgnoredEntriesKey.IGNORED_ENTRIES, mIgnoredEntries)
         }
+
+        mIgnoredEntriesList.scrollToPosition(0)
     }
 
     fun removeItem(entry: IgnoredEntry) {
