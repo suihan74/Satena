@@ -15,7 +15,7 @@ data class AnalyzedBookmarkComment(
 )
 
 object BookmarkCommentDecorator {
-    private val mUrlRegex = Regex("""http(s)?://([\w-]+\.)+[\w-]+(/[\w-+./!?%&=|^~#@*;:,<>()\[\]{}]*)?""")
+    private val mUrlRegex = Regex("""http(s)?://([\w-]+\.)+[\w-]+(/[a-zA-Z0-9_\-+./!?%&=|^~#@*;:,<>()\[\]{}]*)?""")
     private val mEntryIdRegex = Regex("""(b:)?id:entry:([0-9]+)""")
     private val mIdRegex = Regex("""(b:)?id:(?!entry:)([a-zA-Z0-9_\-]+)""")
 
