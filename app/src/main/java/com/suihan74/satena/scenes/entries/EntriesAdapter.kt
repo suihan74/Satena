@@ -334,8 +334,8 @@ open class EntriesAdapter(
                                 }
                                 else {
                                     val intent = Intent(context, BookmarksActivity::class.java)
-                                    intent.putExtra("entry", value)
-                                    intent.putExtra("target_user", item.user)
+                                    intent.putExtra(BookmarksActivity.EXTRA_ENTRY, value)
+                                    intent.putExtra(BookmarksActivity.EXTRA_TARGET_USER, item.user)
                                     context.startActivity(intent)
                                 }
                             }

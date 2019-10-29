@@ -24,8 +24,7 @@ class BookmarkPostActivity : ActivityBase() {
     companion object {
         private const val DIALOG_WIDTH_RATIO = 0.9
 
-        private const val EXTRA_BASE = "com.suihan74.satena.scenes.post.BookmarkPostActivity."
-        const val EXTRA_ENTRY = EXTRA_BASE + "entry"
+        const val EXTRA_ENTRY = "EXTRA_ENTRY"
 
         private const val BUNDLE_ENTRY = "mEntry"
     }

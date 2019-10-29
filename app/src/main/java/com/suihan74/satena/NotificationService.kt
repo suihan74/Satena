@@ -28,11 +28,7 @@ class NotificationService : Service(), CoroutineScope {
         private const val NOTICE_CHANNEL_ID = "satena_notification"
 
         var running : Boolean = false
-            get() {
-                synchronized(field) {
-                    return field
-                }
-            }
+            get() = synchronized(field) { field }
             private set(value) {
                 synchronized(field) {
                     field = value
@@ -40,11 +36,7 @@ class NotificationService : Service(), CoroutineScope {
             }
 
         private var runningJob : Job? = null
-            get() {
-                synchronized(this) {
-                    return field
-                }
-            }
+            get() = synchronized(this) { field }
             private set(value) {
                 synchronized(this) {
                     field = value
@@ -101,7 +93,7 @@ class NotificationService : Service(), CoroutineScope {
             val noticeChannel = NotificationChannel(NOTICE_CHANNEL_ID, "通知", NotificationManager.IMPORTANCE_DEFAULT).apply {
                 group = NOTICE_CHANNEL_ID
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-                vibrationPattern = longArrayOf(0, 300, 300)
+//                vibrationPattern = longArrayOf(0, 300, 300)
                 enableVibration(true)
                 enableLights(true)
 //                    setShowBadge(true)
@@ -125,7 +117,7 @@ class NotificationService : Service(), CoroutineScope {
             startForeground(1, notification)
         }
 
-        startFetchingNotices(applicationContext)
+        startFetchingNotices()
 
         return START_STICKY
     }
@@ -142,17 +134,17 @@ class NotificationService : Service(), CoroutineScope {
         return null
     }
 
-    private fun startFetchingNotices(context: Context) {
+    private fun startFetchingNotices() {
         if (runningJob != null) {
             runningJob!!.cancel()
         }
 
-        runningJob = launch {
+        runningJob = launch (Dispatchers.IO) {
             while (true) {
-                fetchNotices(context)
+                fetchNotices(applicationContext)
                 Log.d("NotificationService", "fetched")
 
-                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                val prefs = SafeSharedPreferences.create<PreferenceKey>(applicationContext)
                 val minutes = prefs.getLong(PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS)
 
                 delay(1000 * 60 * minutes)
@@ -205,11 +197,31 @@ class NotificationService : Service(), CoroutineScope {
             makeSpannedfromHtml(it).toString()
         }
 
+        var actions : List<NotificationCompat.Action>? = null
         val intent = when (notice.verb) {
             Notice.VERB_STAR -> {
-                Intent(context, BookmarksActivity::class.java).apply {
-                    putExtra("eid", notice.eid)
+                val openEntryIntent = Intent(context, BookmarksActivity::class.java).apply {
+                    putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
                 }
+
+                val openBookmarkIntent = Intent(context, BookmarksActivity::class.java).apply {
+                    putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
+                    putExtra(BookmarksActivity.EXTRA_TARGET_USER, HatenaClient.account!!.name)
+                }
+
+                val openNoticesIntent = Intent(context, EntriesActivity::class.java).apply {
+                    putExtra(EntriesActivity.EXTRA_DISPLAY_NOTICES, true)
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+
+                actions = listOf(
+                    NotificationCompat.Action(0, "エントリを開く", PendingIntent.getActivity(context, 1, openEntryIntent, PendingIntent.FLAG_UPDATE_CURRENT)),
+                    NotificationCompat.Action(0, "ブコメを見る", PendingIntent.getActivity(context, 2, openBookmarkIntent, PendingIntent.FLAG_UPDATE_CURRENT)),
+                    NotificationCompat.Action(0, "通知一覧", PendingIntent.getActivity(context, 3, openNoticesIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                )
+
+                // デフォルトで開くのはブコメ詳細
+                openBookmarkIntent
             }
 
             Notice.VERB_ADD_FAVORITE -> {
@@ -218,7 +230,8 @@ class NotificationService : Service(), CoroutineScope {
 
             else -> {
                 Intent(context, EntriesActivity::class.java).apply {
-                    putExtra("fragment", NoticesFragment::class.java)
+                    putExtra(EntriesActivity.EXTRA_DISPLAY_NOTICES, true)
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 }
             }
         }
@@ -228,7 +241,7 @@ class NotificationService : Service(), CoroutineScope {
         val style = NotificationCompat.BigTextStyle()
             .bigText(message)
 
-        val notification = NotificationCompat.Builder(context, NOTICE_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, NOTICE_CHANNEL_ID)
             .setGroup(NOTICE_CHANNEL_ID)
             .setStyle(style)
             .setSmallIcon(R.drawable.ic_stat_name)
@@ -236,9 +249,12 @@ class NotificationService : Service(), CoroutineScope {
             .setContentText(message)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-            .build()
 
-        NotificationManagerCompat.from(context).notify(0, notification)
+        actions?.forEach {
+            builder.addAction(it)
+        }
+
+        NotificationManagerCompat.from(context).notify(0, builder.build())
     }
 }
 

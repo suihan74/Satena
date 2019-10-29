@@ -178,8 +178,9 @@ class BookmarksActivity : ActivityBase() {
         var preLoadingTasks : PreLoadingTasks? = null
             private set
 
-        private const val EXTRA_BASE = "com.suihan74.satena.scenes.bookmarks.BookmarksActivity."
-        const val EXTRA_ENTRY = EXTRA_BASE + "EXTRA_ENTRY"
+        const val EXTRA_ENTRY = "EXTRA_ENTRY"
+        const val EXTRA_ENTRY_ID = "EXTRA_ENTRY_ID"
+        const val EXTRA_TARGET_USER = "EXTRA_TARGET_USER"
 
         private const val BUNDLE_ENTRY = "mEntry"
         private const val BUNDLE_POST_DIALOG_OPENED = "mIsDialogOpened"
@@ -245,10 +246,10 @@ class BookmarksActivity : ActivityBase() {
         val entry = when (intent.action) {
             // ブラウザから「共有」を使って遷移してきたときの処理
             Intent.ACTION_SEND -> {
-                val url = intent.extras?.getCharSequence(Intent.EXTRA_TEXT).toString()
+                val url = intent.getStringExtra(Intent.EXTRA_TEXT)
                 if (!URLUtil.isNetworkUrl(url)) throw RuntimeException("invalid url shared")
 
-                var entry: Entry? = intent.extras?.getSerializable(EXTRA_ENTRY) as? Entry
+                var entry: Entry? = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
                 AccountLoader.signInAccounts(applicationContext)
 
                 if (entry == null) {
@@ -296,9 +297,9 @@ class BookmarksActivity : ActivityBase() {
             else -> {
                 preLoadingTasks = null
 
-                val eid = intent.extras?.getLong("eid") ?: 0L
-                if (eid == 0L) {
-                    intent.getSerializableExtra("entry")
+                val eid = intent.getLongExtra(EXTRA_ENTRY_ID, -1L)
+                if (eid == -1L) {
+                    intent.getSerializableExtra(EXTRA_ENTRY)
                 }
                 else {
                     HatenaClient.getBookmarksEntryAsync(eid).await()
@@ -327,24 +328,10 @@ class BookmarksActivity : ActivityBase() {
         // フラグメント表示
         withContext(Dispatchers.Main) {
             showProgressBar()
-            val targetUser = intent.extras?.getString("target_user")
+            val targetUser = intent.getStringExtra(EXTRA_TARGET_USER)
             val targetEntry = this@BookmarksActivity.mEntry!!
-
-            val bookmarksFragment =
-                if (targetUser.isNullOrBlank()) {
-                    BookmarksFragment.createInstance(targetEntry,
-                        preLoadingTasks
-                    )
-                }
-                else {
-                    BookmarksFragment.createInstance(targetUser, targetEntry,
-                        preLoadingTasks
-                    )
-                }
-
-            showFragment(bookmarksFragment,
-                FRAGMENT_TAG_MAIN_CONTENT
-            )
+            val bookmarksFragment =  BookmarksFragment.createInstance(targetEntry, targetUser, preLoadingTasks)
+            showFragment(bookmarksFragment, FRAGMENT_TAG_MAIN_CONTENT)
         }
     }
 
@@ -354,15 +341,15 @@ class BookmarksActivity : ActivityBase() {
 
         if (HatenaClient.signedIn() && mPostFragment == null) {
             mPostFragment = BookmarkPostFragment.createInstance(entry, bookmarksEntry, initialVisibility = View.GONE).apply {
-                    setOnPostedListener { bookmarkResult ->
-                        closeBookmarkDialog()
-                        launch(Dispatchers.Main) {
-                            val bookmarksFragment = bookmarksFragment!!
-                            bookmarksFragment.addBookmark(bookmarkResult)
-                            bookmarksFragment.updateUI()
-                        }
+                setOnPostedListener { bookmarkResult ->
+                    closeBookmarkDialog()
+                    launch(Dispatchers.Main) {
+                        val bookmarksFragment = bookmarksFragment!!
+                        bookmarksFragment.addBookmark(bookmarkResult)
+                        bookmarksFragment.updateUI()
                     }
                 }
+            }
 
             supportFragmentManager.beginTransaction()
                 .replace(R.id.bookmark_post_layout, mPostFragment!!, "postFragment")
@@ -421,11 +408,6 @@ class BookmarksActivity : ActivityBase() {
         view.animate()
             .withEndAction {
                 view.visibility = View.INVISIBLE
-                /*
-                supportFragmentManager.beginTransaction()
-                    .remove(mPostFragment!!)
-                    .commit()
-                 */
             }
             .translationYBy(0f)
             .translationY(posY)

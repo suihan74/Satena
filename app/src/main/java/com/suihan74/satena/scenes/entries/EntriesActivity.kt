@@ -67,9 +67,9 @@ class EntriesActivity : ActivityBase() {
         }
 
     companion object {
-        private const val EXTRA_BASE = "com.suihan74.satena.scenes.entries.EntriesActivity."
-        const val EXTRA_DISPLAY_USER = EXTRA_BASE + "displayUser"
-        const val EXTRA_DISPLAY_TAG = EXTRA_BASE + "displayTag"
+        const val EXTRA_DISPLAY_USER = "EXTRA_DISPLAY_USER"
+        const val EXTRA_DISPLAY_TAG = "EXTRA_DISPLAY_TAG"
+        const val EXTRA_DISPLAY_NOTICES = "EXTRA_DISPLAY_NOTICES"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -246,10 +246,18 @@ class EntriesActivity : ActivityBase() {
 
                         else -> {
                             refreshEntriesFragment(category, true)
+                            checkNoticeTransition(intent)
                         }
                     }
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent != null) {
+            checkNoticeTransition(intent)
         }
     }
 
@@ -512,6 +520,14 @@ class EntriesActivity : ActivityBase() {
 
         updateToolbar(fragment)
         currentCategory = category
+    }
+
+    /** 通知サービスから「通知一覧」アクションで起動したとき，通知フラグメントを表示する */
+    private fun checkNoticeTransition(intent: Intent) {
+        if (intent.getBooleanExtra(EXTRA_DISPLAY_NOTICES, false)) {
+            intent.putExtra(EXTRA_DISPLAY_NOTICES, false)
+            showFragment(NoticesFragment.createInstance(), null)
+        }
     }
 
     override fun onBackPressed() {

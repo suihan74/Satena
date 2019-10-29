@@ -41,7 +41,7 @@ object TappedActionLauncher {
 
     private fun launchBookmarksActivity(context: Context, entry: Entry) {
         val intent = Intent(context, BookmarksActivity::class.java)
-        intent.putExtra("entry", entry)
+        intent.putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
         context.startActivity(intent)
     }
 

@@ -126,7 +126,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             mPreLoadingTasks = preLoadingTasks
         }
 
-        fun createInstance(targetUser: String, entry: Entry, preLoadingTasks: BookmarksActivity.PreLoadingTasks? = null) = BookmarksFragment().apply {
+        fun createInstance(entry: Entry, targetUser: String? = null, preLoadingTasks: BookmarksActivity.PreLoadingTasks? = null) = BookmarksFragment().apply {
             mEntry = entry
             mTargetUser = targetUser
             mPreLoadingTasks = preLoadingTasks

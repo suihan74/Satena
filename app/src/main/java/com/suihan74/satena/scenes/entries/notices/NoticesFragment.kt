@@ -105,8 +105,8 @@ class NoticesFragment : CoroutineScopeFragment() {
                                 val entry = HatenaClient.getBookmarksEntryAsync(notice.eid).await()
 
                                 val intent = Intent(activity, BookmarksActivity::class.java).apply {
-                                    putExtra("entry", entry)
-                                    putExtra("target_user", HatenaClient.account!!.name)
+                                    putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+                                    putExtra(BookmarksActivity.EXTRA_TARGET_USER, HatenaClient.account!!.name)
                                 }
                                 startActivity(intent)
                             }
@@ -138,7 +138,7 @@ class NoticesFragment : CoroutineScopeFragment() {
 
                                     val intent =
                                         Intent(activity, BookmarksActivity::class.java).apply {
-                                            putExtra("entry", entry)
+                                            putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
                                         }
                                     startActivity(intent)
                                 } catch (e: Exception) {

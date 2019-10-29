@@ -34,7 +34,7 @@
         <receiver android:name=".BrowserToolbarManager"/>
 
         <!-- Activities -->
-        <activity android:name=".scenes.entries.EntriesActivity">
+        <activity android:name=".scenes.entries.EntriesActivity" android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
