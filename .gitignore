@@ -11,3 +11,11 @@
 /build
 /captures
 .externalNativeBuild
+
+app/release/*.aab
+/*.jpg
+/*.png
+/*.svg
+*.pepk
+*.jks
+/*.zip
