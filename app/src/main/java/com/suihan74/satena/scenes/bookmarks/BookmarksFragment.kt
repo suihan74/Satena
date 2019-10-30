@@ -731,8 +731,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         mBookmarksRecent = makeBookmarksRecent(bookmarks)
     }
 
-    fun getNextBookmarksAsync() : Deferred<List<Bookmark>> = async {
-        if (mBookmarksRecent.isEmpty()) return@async emptyList<Bookmark>()
+    suspend fun getNextBookmarks() : List<Bookmark> {
+        if (mBookmarksRecent.isEmpty()) return emptyList()
+        if (mBookmarksRecent.last().timestamp <= bookmarksEntry!!.bookmarks.last().timestamp) return emptyList()
 
         try {
             val of = mBookmarksRecent.size - 1L
@@ -744,11 +745,11 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
             mBookmarksRecent = makeBookmarksRecent(newer)
 
-            return@async newer
+            return newer
         }
         catch (e: Exception) {
             Log.e("FailedToFetchBookmarks", e.message)
-            return@async emptyList<Bookmark>()
+            return emptyList()
         }
     }
 

@@ -202,6 +202,9 @@ open class BookmarksAdapter(
     override fun getItemViewType(position: Int): Int = states[position].type.int
     fun getItemPosition(user: String) : Int = states.indexOfFirst { it.type == RecyclerType.BODY && it.body!!.user == user }
 
+    val bookmarksCount : Int
+        get() = states.count { it.type == RecyclerType.BODY }
+
     open fun onItemClicked(bookmark: Bookmark) {}
     open fun onItemLongClicked(bookmark: Bookmark) : Boolean = true
 
@@ -256,12 +259,6 @@ open class BookmarksAdapter(
         private val ignoredMark = view.findViewById<ImageView>(R.id.ignored_user_mark)!!
 
         private val mentionsList = view.findViewById<RecyclerView>(R.id.bookmark_mentions)!!
-/*
-        private val mentionLayout   = view.findViewById<RelativeLayout>(R.id.bookmark_mention_area)!!
-        private val mentionUserIcon = view.findViewById<ImageView>(R.id.bookmark_mention_user_icon)!!
-        private val mentionUserName = view.findViewById<TextView>(R.id.bookmark_mention_user_name)!!
-        private val mentionComment  = view.findViewById<TextView>(R.id.bookmark_mention_comment)!!
-*/
         private var bookmark : Bookmark? = null
 
         fun setBookmark(bookmark : Bookmark, bookmarksEntry : BookmarksEntry) {

@@ -23,6 +23,7 @@ import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
+import com.suihan74.satena.scenes.bookmarks.tabs.CustomBookmarksTabFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
@@ -38,10 +39,12 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
     private lateinit var mView : View
     private lateinit var mRecyclerView: RecyclerView
 
-    private lateinit var mBookmarksAdapter: BookmarksAdapter
+    private var mBookmarksAdapter: BookmarksAdapter? = null
     private var mTabType : BookmarksTabType = BookmarksTabType.RECENT
 
     private var mIgnoredWords : List<String> = emptyList()
+
+    private var mBookmarksUpdater : RecyclerViewScrollingUpdater? = null
 
     val bookmarksFragment
         get() = (activity as? BookmarksActivity)?.bookmarksFragment
@@ -77,6 +80,51 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
 
         // initialize mBookmarks list
         refreshBookmarksAdapter()
+
+        // スクロールで追加分をロード
+        val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter!!) {
+            override fun load() {
+                if (!isScrollingUpdaterEnabled) {
+                    loadCompleted()
+                    return
+                }
+                val fragment = bookmarksFragment!!
+                val lastOfAll = fragment.bookmarksEntry!!.bookmarks.lastOrNull()
+                val lastOfRecent = fragment.recentBookmarks.lastOrNull()
+                if (lastOfAll?.user == lastOfRecent?.user) {
+                    loadCompleted()
+                    return
+                }
+
+                launch(Dispatchers.Main) {
+                    mBookmarksAdapter?.loadableFooter?.showProgressBar()
+                    try {
+                        val mustToLoad = withContext(Dispatchers.Default) {
+                            fragment.bookmarksEntry?.bookmarks?.any { isBookmarkShown(it) } ?: false
+                        }
+                        if (mustToLoad) {
+                            while (true) {
+                                val diff = fragment.getNextBookmarks()
+                                if (diff.isEmpty() || diff.any { isBookmarkShown(it) }) break
+                            }
+
+                            val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+                            parentTabAdapter?.update()
+                        }
+                    }
+                    catch (e: Exception) {
+                        Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
+                        context?.showToast("ブクマリスト更新失敗")
+                    }
+                    finally {
+                        loadCompleted()
+                        mBookmarksAdapter?.loadableFooter?.hideProgressBar()
+                    }
+                }
+            }
+        }
+        mBookmarksUpdater = bookmarksUpdater
+
         val viewManager = LinearLayoutManager(context)
         mRecyclerView = view.findViewById<RecyclerView>(R.id.bookmarks_list).apply {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
@@ -86,39 +134,7 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
             layoutManager = viewManager
             adapter = mBookmarksAdapter
 
-            if (isScrollingUpdaterEnabled) {
-                val bookmarksUpdater = object : RecyclerViewScrollingUpdater(mBookmarksAdapter) {
-                    override fun load() {
-                        val fragment = bookmarksFragment!!
-                        val lastOfAll = fragment.bookmarksEntry!!.bookmarks.lastOrNull()
-                        val lastOfRecent = fragment.recentBookmarks.lastOrNull()
-                        if (lastOfAll?.user == lastOfRecent?.user) {
-                            loadCompleted()
-                            return
-                        }
-
-                        launch(Dispatchers.Main) {
-                            mBookmarksAdapter.loadableFooter?.showProgressBar()
-                            try {
-                                fragment.getNextBookmarksAsync().await()
-
-                                val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
-                                parentTabAdapter?.update()
-                            }
-                            catch (e: Exception) {
-                                Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                                context?.showToast("ブクマリスト更新失敗")
-                            }
-                            finally {
-                                loadCompleted()
-                                mBookmarksAdapter.loadableFooter?.hideProgressBar()
-                            }
-                        }
-                    }
-                }
-                addOnScrollListener(bookmarksUpdater)
-            }
-
+            addOnScrollListener(bookmarksUpdater)
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
@@ -134,10 +150,19 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
             setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
+                if (bookmarksUpdater.isLoading) {
+                    isRefreshing = false
+                    return@setOnRefreshListener
+                }
+
                 launch(Dispatchers.Main) {
                     try {
                         activity.bookmarksFragment?.refreshBookmarksAsync()?.await()
                         scrollToTop()
+
+                        if (mBookmarksAdapter?.bookmarksCount == 0) {
+                            bookmarksUpdater.invokeLoading()
+                        }
                     }
                     catch (e: Exception) {
                         activity.showToast("ブックマークリスト更新失敗")
@@ -153,23 +178,25 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
         return view
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        if (mBookmarksAdapter?.bookmarksCount == 0) {
+            mBookmarksUpdater?.invokeLoading()
+        }
+    }
+
 
     fun update() {
-        if (this::mBookmarksAdapter.isInitialized) {
-            mBookmarksAdapter.setBookmarks(getBookmarks(bookmarksFragment!!))
-        }
+        mBookmarksAdapter?.setBookmarks(getBookmarks(bookmarksFragment!!))
     }
 
     fun removeBookmark(bookmark: Bookmark) {
-        if (this::mBookmarksAdapter.isInitialized) {
-            mBookmarksAdapter.removeItem(bookmark)
-        }
+        mBookmarksAdapter?.removeItem(bookmark)
     }
 
     fun notifyItemChanged(bookmark: Bookmark) {
-        if (this::mBookmarksAdapter.isInitialized) {
-            mBookmarksAdapter.notifyItemChanged(bookmark)
-        }
+        mBookmarksAdapter?.notifyItemChanged(bookmark)
     }
 
     protected fun isBookmarkIgnored(bookmark: Bookmark) =
@@ -185,9 +212,7 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
     }
 
     fun setSearchText(text : String) {
-        if (this::mBookmarksAdapter.isInitialized) {
-            mBookmarksAdapter.searchText = text
-        }
+        mBookmarksAdapter?.searchText = text
     }
 
     fun scrollToTop() {
@@ -195,7 +220,7 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
     }
 
     fun scrollToBottom() {
-        if (!this::mBookmarksAdapter.isInitialized) return
+        if (mBookmarksAdapter == null) return
         bookmarksFragment!!.launch {
             val allBookmarks = bookmarksFragment?.bookmarksEntry?.bookmarks ?: return@launch
             val lastItem = allBookmarks.lastOrNull { isBookmarkShown(it) }
@@ -206,7 +231,7 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
     }
 
     fun scrollTo(user: String) {
-        if (!this::mBookmarksAdapter.isInitialized) return
+        if (mBookmarksAdapter == null) return
         bookmarksFragment!!.launch {
             val allBookmarks = bookmarksFragment?.bookmarksEntry?.bookmarks ?: emptyList()
             val item = allBookmarks.firstOrNull { it.user == user }
@@ -216,9 +241,33 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
         }
     }
 
+    suspend fun loadUntil(user: String) : Int {
+        val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+        val bookmarksAdapter = mBookmarksAdapter ?: throw RuntimeException("views are not initialized")
+
+        val position = bookmarksAdapter.getItemPosition(user)
+        if (position >= 0) {
+            return position
+        }
+
+        while (true) {
+            val diff = bookmarksFragment!!.getNextBookmarks()
+            withContext(Dispatchers.Main) {
+                parentTabAdapter?.update()
+            }
+            if (diff.isEmpty() || diff.any { it.user == user }) {
+                break
+            }
+        }
+
+        return bookmarksAdapter.getItemPosition(user)
+    }
+
     private suspend fun scrollAfterLoading(user: String) {
         val layoutManager = mRecyclerView.layoutManager as LinearLayoutManager
-        val position = mBookmarksAdapter.getItemPosition(user)
+        val bookmarksAdapter = mBookmarksAdapter ?: return
+
+        val position = bookmarksAdapter.getItemPosition(user)
         if (position >= 0) {
             withContext(Dispatchers.Main) {
                 layoutManager.scrollToPositionWithOffset(position, 0)
@@ -230,18 +279,7 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
                 activity.showProgressBar(true)
             }
             try {
-                val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
-
-                while (true) {
-                    val diff = bookmarksFragment!!.getNextBookmarksAsync().await()
-                    withContext(Dispatchers.Main) {
-                        parentTabAdapter?.update()
-                    }
-                    if (diff.isEmpty() || diff.any { it.user == user }) {
-                        break
-                    }
-                }
-                val pos = mBookmarksAdapter.getItemPosition(user)
+                val pos = loadUntil(user)
                 if (pos >= 0) {
                     withContext(Dispatchers.Main) {
                         layoutManager.scrollToPositionWithOffset(pos, 0)

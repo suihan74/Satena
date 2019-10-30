@@ -7,7 +7,8 @@ abstract class RecyclerViewScrollingUpdater(
     private val adapter: RecyclerView.Adapter<*>
 ) : RecyclerView.OnScrollListener() {
 
-    private var isLoading : Boolean = false
+    var isLoading : Boolean = false
+        private set
 
     private val invokingPosition
         get() = adapter.itemCount - 1
@@ -21,15 +22,21 @@ abstract class RecyclerViewScrollingUpdater(
         val lastInScreen = firstVisibleItem + visibleItemCount
 
         if (checkInvoking(lastInScreen)) {
-            isLoading = true
-            load()
+            invokeLoading()
         }
     }
 
     private fun checkInvoking(lastInScreen: Int) =
         invokingPosition != 0 && !isLoading && invokingPosition <= lastInScreen
 
-    abstract fun load()
+    protected abstract fun load()
+
+    fun invokeLoading() {
+        if (!isLoading) {
+            isLoading = true
+            load()
+        }
+    }
 
     protected fun loadCompleted() {
         isLoading = false
