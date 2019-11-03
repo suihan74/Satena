@@ -51,7 +51,11 @@ object BookmarkCommentDecorator {
                 "<a href=\"$url\">$url</a>"
             }
 
-        return AnalyzedBookmarkComment(makeSpannedfromHtml(html), ids, entryIds, urls)
+        return AnalyzedBookmarkComment(
+            makeSpannedfromHtml(html),
+            ids.distinct(),
+            entryIds.distinct(),
+            urls.distinct())
     }
 
     fun makeClickableTagsText(tags: List<String>, onItemClicked: (String)->Unit) : Spanned {
