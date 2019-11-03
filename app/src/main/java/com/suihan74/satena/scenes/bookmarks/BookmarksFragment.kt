@@ -206,13 +206,9 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
                     mCurrentTabPosition = tab!!.position
 
-
-                    if (mCurrentTabPosition == BookmarksTabType.CUSTOM.int && mBookmarksScrollMenuButton.isShown) {
-                        mSettingsButton.show()
-                    }
-                    else {
-                        mSettingsButton.hide()
-                    }
+                    // 以下の事象を防ぐため，タブ切り替え時に必ずFABを表示する
+                    // case: スクロールでFABを隠した後，スクロールできないタブに切り替えるとそのタブでFABが表示できなくなる
+                    showFabs()
                 }
                 override fun onTabUnselected(p0: TabLayout.Tab?) {}
                 override fun onTabReselected(tab: TabLayout.Tab?) {
@@ -372,27 +368,39 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                 .filter { it.visibility == View.VISIBLE }
                 .toTypedArray()
 
+    private fun showFabs() {
+        val buttons = scrollButtons
+        mFABs.forEach {
+            if (it != mSettingsButton || mCurrentTabPosition == BookmarksTabType.CUSTOM.int) {
+                it.show()
+            }
+            else {
+                // 「カスタム」タブ以外では「カスタム」タブの設定ボタンを隠す
+                it.hide()
+            }
+        }
+        if (mAreScrollButtonsVisible) {
+            buttons.forEach { it.show() }
+        }
+    }
+
+    private fun hideFabs() {
+        val buttons = scrollButtons
+        mFABs.forEach { it.hide() }
+        if (buttons[0].visibility == View.VISIBLE && mAreScrollButtonsVisible) {
+            buttons.forEach { it.hide() }
+        }
+    }
+
     // スクロールでFABを表示切替
     private fun onScrolled(dy: Int) {
         if (!mIsHidingButtonsByScrollEnabled) return
 
         if (dy > 2) {
-            val buttons = scrollButtons
-            mFABs.forEach { it.hide() }
-            if (buttons[0].visibility == View.VISIBLE && mAreScrollButtonsVisible) {
-                buttons.forEach { it.hide() }
-            }
+            hideFabs()
         }
         else if (dy < -2) {
-            val buttons = scrollButtons
-            mFABs.forEach {
-                if (it != mSettingsButton || mCurrentTabPosition == BookmarksTabType.CUSTOM.int) {
-                    it.show()
-                }
-            }
-            if (mAreScrollButtonsVisible) {
-                buttons.forEach { it.show() }
-            }
+            showFabs()
         }
     }
 
