@@ -80,11 +80,11 @@ class BookmarkPostActivity : ActivityBase() {
             launch(Dispatchers.Main) {
                 // 投稿用アカウントの確認
                 try {
-                    if (!HatenaClient.signedIn()) {
-                        throw RuntimeException()
-                    }
                     AccountLoader.signInHatenaAsync(this@BookmarkPostActivity).await()
                     AccountLoader.signInMastodonAsync(this@BookmarkPostActivity).await()
+                    if (!HatenaClient.signedIn()) {
+                        throw AccountLoader.HatenaSignInException()
+                    }
                 }
                 catch (e: AccountLoader.HatenaSignInException) {
                     showToast("サインインに失敗しました")
