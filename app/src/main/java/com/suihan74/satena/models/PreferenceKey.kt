@@ -80,7 +80,7 @@ enum class PreferenceKey(
 
 object PreferenceKeyMigrator {
     fun check(context: Context) {
-        val version = SafeSharedPreferences.version<IgnoredEntriesKey>(context)
+        val version = SafeSharedPreferences.version<PreferenceKey>(context)
         when (version) {
             1 -> migrateFromVersion1(context)
         }
