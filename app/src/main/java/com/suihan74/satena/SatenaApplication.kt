@@ -8,6 +8,7 @@ import android.os.Build
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.satena.models.IgnoredEntriesKeyMigrator
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.PreferenceKeyMigrator
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
 import com.suihan74.utilities.lock
@@ -73,8 +74,8 @@ class SatenaApplication : Application() {
 
     /** 各種設定のバージョン移行が必要か確認 */
     fun updatePreferencesVersion() {
+        PreferenceKeyMigrator.check(applicationContext)
         IgnoredEntriesKeyMigrator.check(applicationContext)
-
     }
 
     fun setConnectionActivatingListener(listener: (()->Unit)?) {
