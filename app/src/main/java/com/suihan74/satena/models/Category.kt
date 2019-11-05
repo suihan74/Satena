@@ -7,7 +7,8 @@ enum class Category(
     val textId: Int,
     val iconId: Int,
     val requireSignedIn: Boolean = false,
-    val singleColumns : Boolean = false
+    val singleColumns : Boolean = false,
+    val hasIssues: Boolean = false
 ) {
     All(0,
         R.string.category_all,
@@ -19,35 +20,43 @@ enum class Category(
 
     Social(2,
         R.string.category_social,
-        R.drawable.ic_category_social),
+        R.drawable.ic_category_social,
+        hasIssues = true),
 
     Economics(3,
         R.string.category_economics,
-        R.drawable.ic_category_economics),
+        R.drawable.ic_category_economics,
+        hasIssues = true),
 
     Life(4,
         R.string.category_life,
-        R.drawable.ic_category_life),
+        R.drawable.ic_category_life,
+        hasIssues = true),
 
     Knowledge(5,
         R.string.category_knowledge,
-        R.drawable.ic_category_knowledge),
+        R.drawable.ic_category_knowledge,
+        hasIssues = true),
 
     It(6,
         R.string.category_it,
-        R.drawable.ic_category_it),
+        R.drawable.ic_category_it,
+        hasIssues = true),
 
     Entertainment(7,
         R.string.category_entertainment,
-        R.drawable.ic_category_entertainment),
+        R.drawable.ic_category_entertainment,
+        hasIssues = true),
 
     Game(8,
         R.string.category_game,
-        R.drawable.ic_category_game),
+        R.drawable.ic_category_game,
+        hasIssues = true),
 
     Fun(9,
         R.string.category_fun,
-        R.drawable.ic_category_fun),
+        R.drawable.ic_category_fun,
+        hasIssues = true),
 
     MyHotEntries(10,
         R.string.category_myhotentries,

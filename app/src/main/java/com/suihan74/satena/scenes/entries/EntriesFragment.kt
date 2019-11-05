@@ -5,6 +5,7 @@ import android.transition.AutoTransition
 import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
+import android.widget.Spinner
 import androidx.appcompat.widget.SearchView
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
@@ -73,7 +74,7 @@ class EntriesFragment : CoroutineScopeFragment() {
         mCurrentCategory = category
 
         // マイブックマーク画面ではツールバーに検索ボタンを表示する
-        setHasOptionsMenu(category == Category.MyBookmarks)
+        setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
 
         // エントリリスト用アダプタ作成
         mEntriesTabAdapter = EntriesTabAdapter(this, category)
@@ -146,6 +147,14 @@ class EntriesFragment : CoroutineScopeFragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
+        when {
+            mCurrentCategory == Category.MyBookmarks -> inflateSearchMyEntriesMenu(menu, inflater)
+            mCurrentCategory?.hasIssues == true -> inflateIssuesMenu(menu, inflater)
+        }
+    }
+
+    /** マイブックマークを検索する追加メニュー */
+    private fun inflateSearchMyEntriesMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.search_my_entries, menu)
 
         // 検索クエリ
@@ -175,6 +184,14 @@ class EntriesFragment : CoroutineScopeFragment() {
         }
     }
 
+    /** カテゴリごとの特集を選択する追加メニュー */
+    private fun inflateIssuesMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.spinner_tags, menu)
+
+        (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
+        }
+    }
+
     fun refreshEntriesAsync(tabPosition: Int? = null, offset: Int? = null) : Deferred<List<Entry>> =
         mEntriesTabAdapter.getEntriesAsync(tabPosition ?: mEntriesTabLayout.selectedTabPosition, offset)
 
@@ -188,7 +205,7 @@ class EntriesFragment : CoroutineScopeFragment() {
         mEntriesTabAdapter.setCategory(mEntriesTabPager, category)
 
         if (categoryChanged) {
-            setHasOptionsMenu(category == Category.MyBookmarks)
+            setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
         }
 
         for (tabPosition in 0 until mEntriesTabAdapter.count) {
