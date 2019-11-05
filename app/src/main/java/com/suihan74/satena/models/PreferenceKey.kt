@@ -1,12 +1,13 @@
 package com.suihan74.satena.models
 
+import android.content.Context
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
 
-@SharedPreferencesKey(fileName = "default", version = 1, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 2, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -63,3 +64,35 @@ enum class PreferenceKey(
     CUSTOM_BOOKMARKS_IS_MUTED_USERS_ACTIVE(typeInfo<Boolean>(), false)
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// previous versions
+////////////////////////////////////////////////////////////////////////////////
+
+/**************************************
+ * version 1 -> 2 での変更
+ * Category.GeneralをCategory.AllとCategory.Socialの間に挿入したことによる変更を
+ * ENTRIES_HOME_CATEGORYにも適用するための変更
+ **************************************/
+
+////////////////////////////////////////////////////////////////////////////////
+// version migration
+////////////////////////////////////////////////////////////////////////////////
+
+object PreferenceKeyMigrator {
+    fun check(context: Context) {
+        val version = SafeSharedPreferences.version<IgnoredEntriesKey>(context)
+        when (version) {
+            1 -> migrateFromVersion1(context)
+        }
+    }
+
+    private fun migrateFromVersion1(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val homeCategory = prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY)
+        prefs.edit {
+            if (homeCategory > 0) {
+                putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, homeCategory + 1)
+            }
+        }
+    }
+}
