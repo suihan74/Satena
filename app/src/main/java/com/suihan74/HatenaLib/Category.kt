@@ -1,5 +1,8 @@
 package com.suihan74.HatenaLib
 
+import com.google.gson.annotations.SerializedName
+import java.io.Serializable
+
 enum class Category (
     val int: Int,
     val code: String
@@ -20,3 +23,26 @@ enum class Category (
         fun fromInt(i: Int) : Category = values().firstOrNull { it.int == i } ?: All
     }
 }
+
+data class Issue (
+    val name: String,
+
+    @SerializedName("issue_id")
+    val code: String,
+
+    val imageUrl: String? = null,
+    val entry: Entry? = null
+) : Serializable
+
+data class CategoryEntry (
+    val name: String,
+    @SerializedName("category_id")
+    val code: String,
+    val imageUrl: String,
+    val pickupEntry: Entry,
+    val issues: List<Issue>
+) : Serializable
+
+data class IssueEntry (
+    val issues: List<Issue>
+) : Serializable

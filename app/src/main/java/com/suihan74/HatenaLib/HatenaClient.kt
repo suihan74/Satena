@@ -372,6 +372,24 @@ object HatenaClient : BaseClient(), CoroutineScope {
     }
 
     /**
+     * カテゴリ情報を取得する
+     */
+    fun getCategoryEntriesAsync() : Deferred<List<CategoryEntry>> = async {
+        val url = "$B_BASE_URL/api/ipad.categories.json"
+        val listType = object : TypeToken<List<CategoryEntry>>() {}.type
+        return@async getJson<List<CategoryEntry>>(listType, url)
+    }
+
+    /**
+     * 指定カテゴリの特集を取得する
+     */
+    fun getIssuesAsync(category: Category) : Deferred<List<Issue>> = async {
+        val url = "$B_BASE_URL/api/internal/cambridge/category/${category.code}/issues"
+        val issueEntry = getJson<IssueEntry>(IssueEntry::class.java, url)
+        return@async issueEntry.issues
+    }
+
+    /**
      * カテゴリを指定してエントリを取得する
      */
     fun getEntriesAsync(
@@ -399,6 +417,43 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     "&include_bookmarked_data=${includeBookmarkedData.int}",
                     "&include_bookmarks_of_followings=${includeBookmarksOfFollowings.int}",
                     "&ad=${ad.int}"
+                )
+                if (limit != null) append("&limit=$limit")
+                if (of != null) append("&of=$of")
+            }
+
+            val listType = object : TypeToken<List<Entry>>() {}.type
+            return@async getJson<List<Entry>>(listType, url)
+        }
+    }
+
+    /**
+     * 特集を指定してエントリを取得する
+     */
+    fun getEntriesAsync(
+        entriesType: EntriesType,
+        issue: Issue,
+        limit: Int? = null,
+        of: Int? = null,
+        includeAMPUrls: Boolean = true,
+        includeBookmarksOfFollowings: Boolean = true,
+        includeBookmarkedData: Boolean = true,
+        includeBookmarksByVisitor: Boolean = true
+    ) : Deferred<List<Entry>> {
+
+        return async {
+            val target = when (entriesType) {
+                EntriesType.Recent -> "newentries"
+                EntriesType.Hot -> "hotentries"
+            }
+
+            val url = buildString {
+                append(
+                    "$B_BASE_URL/api/internal/cambridge/issue/${issue.code}/$target?${cacheAvoidance()}",
+                    "&include_amp_urls=${includeAMPUrls.int}",
+                    "&include_bookmarked_data=${includeBookmarkedData.int}",
+                    "&include_bookmarks_by_visitor=${includeBookmarksByVisitor.int}",
+                    "&include_bookmarks_of_followings=${includeBookmarksOfFollowings.int}"
                 )
                 if (limit != null) append("&limit=$limit")
                 if (of != null) append("&of=$of")
