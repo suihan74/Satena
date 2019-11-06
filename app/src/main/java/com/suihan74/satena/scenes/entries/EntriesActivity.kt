@@ -132,13 +132,11 @@ class EntriesActivity : ActivityBase() {
             override fun onDrawerClosed(drawerView: View) {
                 super.onDrawerClosed(drawerView)
                 actionBar?.title = title
-                invalidateOptionsMenu()
             }
 
             override fun onDrawerOpened(drawerView: View) {
                 super.onDrawerOpened(drawerView)
                 actionBar?.title = title
-                invalidateOptionsMenu()
             }
         }
         mDrawer.addDrawerListener(mDrawerToggle)
