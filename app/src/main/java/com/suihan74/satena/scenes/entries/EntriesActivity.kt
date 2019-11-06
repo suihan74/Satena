@@ -196,6 +196,9 @@ class EntriesActivity : ActivityBase() {
             layoutManager = LinearLayoutManager(context)
             mCategoriesAdapter = object : CategoriesAdapter(categories) {
                 override fun onItemClicked(category: Category) {
+                    if (category != mCurrentCategory) {
+                        invalidateOptionsMenu()
+                    }
                     refreshEntriesFragment(category)
                     mDrawer.closeDrawer(GravityCompat.END)
                 }
