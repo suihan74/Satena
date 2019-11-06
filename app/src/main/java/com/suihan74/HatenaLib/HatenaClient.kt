@@ -376,8 +376,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getCategoryEntriesAsync() : Deferred<List<CategoryEntry>> = async {
         val url = "$B_BASE_URL/api/ipad.categories.json"
-        val listType = object : TypeToken<List<CategoryEntry>>() {}.type
-        return@async getJson<List<CategoryEntry>>(listType, url)
+        val response = getJson<CategoryEntriesResponse>(CategoryEntriesResponse::class.java, url)
+        return@async response.categories
     }
 
     /**
@@ -385,8 +385,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getIssuesAsync(category: Category) : Deferred<List<Issue>> = async {
         val url = "$B_BASE_URL/api/internal/cambridge/category/${category.code}/issues"
-        val issueEntry = getJson<IssueEntry>(IssueEntry::class.java, url)
-        return@async issueEntry.issues
+        val response = getJson<IssuesResponse>(IssuesResponse::class.java, url)
+        return@async response.issues
     }
 
     /**
@@ -459,8 +459,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 if (of != null) append("&of=$of")
             }
 
-            val listType = object : TypeToken<List<Entry>>() {}.type
-            return@async getJson<List<Entry>>(listType, url)
+            val response = getJson<EntriesWithIssue>(EntriesWithIssue::class.java, url)
+            return@async response.entries
         }
     }
 

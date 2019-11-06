@@ -38,11 +38,15 @@ data class CategoryEntry (
     val name: String,
     @SerializedName("category_id")
     val code: String,
-    val imageUrl: String,
-    val pickupEntry: Entry,
+    val imageUrl: String?,
+    val pickupEntry: Entry?,
     val issues: List<Issue>
 ) : Serializable
 
-data class IssueEntry (
+internal data class CategoryEntriesResponse (
+    val categories : List<CategoryEntry>
+) : Serializable
+
+internal data class IssuesResponse (
     val issues: List<Issue>
 ) : Serializable

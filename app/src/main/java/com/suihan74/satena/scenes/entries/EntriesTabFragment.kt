@@ -102,7 +102,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
                 override fun load() {
                     launch(Dispatchers.Main) {
                         try {
-                            mEntriesFragment?.refreshEntriesAsync(mTabPosition, mEntriesAdapter!!.entireOffset)?.await()?.let {
+                            mEntriesFragment?.refreshEntries(mTabPosition, mEntriesAdapter!!.entireOffset)?.let {
                                 mEntriesAdapter!!.addEntries(it)
                             }
                         }
@@ -126,7 +126,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
             setOnRefreshListener {
                 launch(Dispatchers.Main) {
                     try {
-                        mEntriesFragment?.refreshEntriesAsync(mTabPosition)?.await()?.let {
+                        mEntriesFragment?.refreshEntries(mTabPosition)?.let {
                             mEntriesAdapter?.setEntries(it)
 //                            mEntriesScrollingUpdater.refreshInvokingPosition(mEntriesAdapter.itemCount)
                         }

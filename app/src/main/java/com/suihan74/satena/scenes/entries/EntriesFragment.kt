@@ -1,15 +1,21 @@
 package com.suihan74.satena.scenes.entries
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.TextView
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.GravityCompat
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.Entry
+import com.suihan74.HatenaLib.Issue
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.Category
@@ -33,13 +39,12 @@ class EntriesFragment : CoroutineScopeFragment() {
     private lateinit var mView : View
 
     private var mCurrentCategory : Category? = null
+    private var mCurrentIssue : Issue? = null
 
     // マイブックマークの検索クエリ
     private var mSearchQuery : String? = null
     val searchQuery: String?
         get() = mSearchQuery
-
-    private val mTasks = ArrayList<Deferred<Any>>()
 
     companion object {
         fun createInstance(category: Category) = EntriesFragment().apply {
@@ -73,9 +78,6 @@ class EntriesFragment : CoroutineScopeFragment() {
 
         mCurrentCategory = category
 
-        // マイブックマーク画面ではツールバーに検索ボタンを表示する
-        setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
-
         // エントリリスト用アダプタ作成
         mEntriesTabAdapter = EntriesTabAdapter(this, category)
     }
@@ -83,6 +85,9 @@ class EntriesFragment : CoroutineScopeFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mView = inflater.inflate(R.layout.fragment_entries, container, false)
+
+        // マイブックマーク画面ではツールバーに検索ボタンを表示する
+        setHasOptionsMenu(mCurrentCategory == Category.MyBookmarks || mCurrentCategory?.hasIssues == true)
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context!!)
 
@@ -157,7 +162,6 @@ class EntriesFragment : CoroutineScopeFragment() {
     private fun inflateSearchMyEntriesMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.search_my_entries, menu)
 
-        // 検索クエリ
         (menu.findItem(R.id.search_view)?.actionView as? SearchView)?.run {
             isSubmitButtonEnabled = true
             queryHint = "検索クエリ"
@@ -186,14 +190,74 @@ class EntriesFragment : CoroutineScopeFragment() {
 
     /** カテゴリごとの特集を選択する追加メニュー */
     private fun inflateIssuesMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.spinner_tags, menu)
+        val activity = activity as EntriesActivity
+        val issues = activity.categoryEntries
+            .firstOrNull { it.code == mCurrentCategory!!.code }
+            ?.issues
+            ?: return
+        val spinnerItems = listOf("特集").plus(issues.map { it.name })
+
+        inflater.inflate(R.menu.spinner_issues, menu)
 
         (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
+            gravity = GravityCompat.END
+            backgroundTintList = ColorStateList.valueOf(activity.getColor(R.color.colorPrimaryText))
+            adapter = object : ArrayAdapter<String>(
+                context!!,
+                android.R.layout.simple_spinner_item,
+                spinnerItems
+            ) {
+                override fun getDropDownView(
+                    position: Int,
+                    convertView: View?,
+                    parent: ViewGroup
+                ): View {
+                    val view = super.getDropDownView(position, convertView, parent)
+                    if (position == 0) {
+                        (view as TextView).text = "指定なし"
+                    }
+                    return view
+                }
+            }.apply {
+                setDropDownViewResource(R.layout.spinner_drop_down_item)
+            }
+
+            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    val prevIssue = mCurrentIssue
+                    mCurrentIssue = if (position == 0) {
+                        null
+                    }
+                    else {
+                        val item = spinnerItems[position]
+                        issues.firstOrNull { it.name == item }
+                    }
+
+                    if (prevIssue != mCurrentIssue) {
+                        refreshEntriesTabs(mCurrentCategory!!)
+                    }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    mCurrentIssue = null
+                }
+            }
         }
     }
 
-    fun refreshEntriesAsync(tabPosition: Int? = null, offset: Int? = null) : Deferred<List<Entry>> =
-        mEntriesTabAdapter.getEntriesAsync(tabPosition ?: mEntriesTabLayout.selectedTabPosition, offset)
+    suspend fun refreshEntries(tabPosition: Int? = null, offset: Int? = null) : List<Entry> =
+        when {
+            mCurrentIssue != null ->
+                mEntriesTabAdapter.getEntries(mCurrentIssue!!, tabPosition ?: mEntriesTabLayout.selectedTabPosition, offset)
+
+            else ->
+                mEntriesTabAdapter.getEntries(tabPosition ?: mEntriesTabLayout.selectedTabPosition, offset)
+        }
 
     fun refreshEntriesTabs(category: Category) {
         val mainActivity = activity as EntriesActivity
@@ -208,17 +272,17 @@ class EntriesFragment : CoroutineScopeFragment() {
             setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
         }
 
-        for (tabPosition in 0 until mEntriesTabAdapter.count) {
+        val tasks = (0 until mEntriesTabAdapter.count).map { tabPosition ->
             val tabFragment = mEntriesTabAdapter.findFragment(mEntriesTabPager, tabPosition)
             val tab = mEntriesTabLayout.getTabAt(tabPosition)!!
 
             mEntriesTabAdapter.setCategory(mEntriesTabPager, category)
             tab.text = mEntriesTabAdapter.getPageTitle(tabPosition)
 
-            val deferred = async(Dispatchers.Main) {
+            return@map async(Dispatchers.Main) {
                 try {
                     if (isActive) {
-                        val entries = refreshEntriesAsync(tabPosition).await()
+                        val entries = refreshEntries(tabPosition)
                         tabFragment?.setEntries(entries)
                     }
                     return@async
@@ -230,18 +294,16 @@ class EntriesFragment : CoroutineScopeFragment() {
                     }
                 }
             }
-            mTasks.add(deferred)
         }
 
         launch(Dispatchers.Main) {
             try {
-                mTasks.awaitAll()
+                tasks.awaitAll()
             }
             catch (e: Exception) {
                 activity!!.showToast("エントリーリスト更新失敗")
             }
             finally {
-                mTasks.clear()
                 mainActivity.hideProgressBar()
             }
         }

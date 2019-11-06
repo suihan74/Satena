@@ -4,10 +4,7 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.suihan74.HatenaLib.EntriesType
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.SearchType
+import com.suihan74.HatenaLib.*
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.utilities.showToast
@@ -103,15 +100,15 @@ class EntriesTabAdapter(
 
     override fun getCount() = 2
 
-    fun getEntriesAsync(tabPosition: Int, offset: Int? = null) : Deferred<List<Entry>> {
+    suspend fun getEntries(tabPosition: Int, offset: Int? = null) : List<Entry> {
         val pos = tabPosition + if (category == Category.MyBookmarks) EntriesTabType.MYBOOKMARKS.int else 0
         return when (EntriesTabType.fromInt(pos)) {
-            EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category.toApiCategory(), of = offset)
-            EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category.toApiCategory(), of = offset)
+            EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category.toApiCategory(), of = offset).await()
+            EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category.toApiCategory(), of = offset).await()
             EntriesTabType.MYBOOKMARKS -> {
                 val searchQuery = fragment.searchQuery
                 if (searchQuery.isNullOrBlank()) {
-                    HatenaClient.getMyBookmarkedEntriesAsync(of = offset)
+                    HatenaClient.getMyBookmarkedEntriesAsync(of = offset).await()
                 }
                 else {
                     val regexBoundary = Regex("""^%s+|%s+$""")
@@ -119,10 +116,23 @@ class EntriesTabAdapter(
                     val query = searchQuery
                         .replace(regexBoundary, "")
                         .replace(regex, "+")
-                    HatenaClient.searchMyEntriesAsync(query, SearchType.Text, of = offset)
+                    HatenaClient.searchMyEntriesAsync(query, SearchType.Text, of = offset).await()
                 }
             }
-            EntriesTabType.READLATER -> HatenaClient.searchMyEntriesAsync("あとで読む", SearchType.Tag, of = offset)
+            EntriesTabType.READLATER -> HatenaClient.searchMyEntriesAsync("あとで読む", SearchType.Tag, of = offset).await()
+        }
+    }
+
+    suspend fun getEntries(issue: Issue, tabPosition: Int, offset: Int? = null) : List<Entry> {
+        val pos = tabPosition + if (category == Category.MyBookmarks) EntriesTabType.MYBOOKMARKS.int else 0
+        return when (EntriesTabType.fromInt(pos)) {
+            EntriesTabType.POPULAR ->
+                HatenaClient.getEntriesAsync(EntriesType.Hot, issue, of = offset).await()
+
+            EntriesTabType.RECENT ->
+                HatenaClient.getEntriesAsync(EntriesType.Recent, issue, of = offset).await()
+
+            else -> throw IllegalStateException()
         }
     }
 }

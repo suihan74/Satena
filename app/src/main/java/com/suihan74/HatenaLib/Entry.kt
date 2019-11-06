@@ -88,3 +88,7 @@ class Entry (
     }
 }
 
+internal data class EntriesWithIssue(
+    val issue: Issue,
+    val entries: List<Entry>
+) : Serializable

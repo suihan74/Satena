@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.suihan74.HatenaLib.CategoryEntry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.ActivityBase
@@ -31,6 +32,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
 
 class EntriesActivity : ActivityBase() {
     private var entriesShowed = true
@@ -66,10 +68,16 @@ class EntriesActivity : ActivityBase() {
             mCurrentCategory = value
         }
 
+    /** はてなから取得したカテゴリ情報 */
+    var categoryEntries : List<CategoryEntry> = emptyList()
+        private set
+
     companion object {
         const val EXTRA_DISPLAY_USER = "EXTRA_DISPLAY_USER"
         const val EXTRA_DISPLAY_TAG = "EXTRA_DISPLAY_TAG"
         const val EXTRA_DISPLAY_NOTICES = "EXTRA_DISPLAY_NOTICES"
+
+        private var savedCategoryEntries : List<CategoryEntry>? = null
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -78,6 +86,7 @@ class EntriesActivity : ActivityBase() {
             putBoolean("entries_showed", entriesShowed)
             putInt("mCurrentCategory", currentCategory.int)
         }
+        savedCategoryEntries = categoryEntries
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,6 +107,11 @@ class EntriesActivity : ActivityBase() {
 
         setSupportActionBar(toolbar)
         supportActionBar?.hide()
+
+        if (savedCategoryEntries != null) {
+            categoryEntries = savedCategoryEntries!!
+            savedCategoryEntries = null
+        }
 
         if ((SatenaApplication.instance.isFirstLaunch && !HatenaClient.signedIn()) || !entriesShowed) {
             // 初回起動時にはログイン画面に遷移
@@ -196,6 +210,26 @@ class EntriesActivity : ActivityBase() {
 
             showProgressBar()
             launch(Dispatchers.Main) {
+                // カテゴリ情報を取得
+                try {
+                    categoryEntries = HatenaClient.getCategoryEntriesAsync().await()
+                }
+                catch (e: Exception) {
+                    Log.e("CategoryEntry", Log.getStackTraceString(e))
+                    showToast("カテゴリ・特集情報の取得に失敗しました")
+                    categoryEntries = com.suihan74.HatenaLib.Category.values().map {
+                        val nameId = resources.getIdentifier("category_${it.name.toLowerCase(Locale.ROOT)}", "string", packageName)
+                        CategoryEntry(
+                            name = if (nameId == 0) it.name else getString(nameId),
+                            code = it.code,
+                            imageUrl = null,
+                            pickupEntry = null,
+                            issues = emptyList()
+                        )
+                    }
+                }
+
+                // アカウント情報を取得
                 try {
                     AccountLoader.signInAccounts(applicationContext)
                 }

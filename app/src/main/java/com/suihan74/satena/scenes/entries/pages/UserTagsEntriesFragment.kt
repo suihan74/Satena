@@ -53,25 +53,12 @@ class UserTagsEntriesFragment : MultipurposeSingleTabEntriesFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = super.onCreateView(inflater, container, savedInstanceState)!!
-//        setHasOptionsMenu(true)
         val spinner = showSpinner()
         launch(Dispatchers.Main) {
             initializeSpinnerItems(spinner)
         }
         return root
     }
-
-    /*
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.spinner_tags, menu)
-        val item = menu.findItem(R.id.spinner)
-        val spinner = item.actionView as Spinner
-
-        launch(Dispatchers.Main) {
-            initializeSpinnerItems(spinner)
-        }
-    }*/
 
     private suspend fun initializeSpinnerItems(spinner: Spinner) = withContext(Dispatchers.Main) {
         if (mTags.isEmpty()) {
