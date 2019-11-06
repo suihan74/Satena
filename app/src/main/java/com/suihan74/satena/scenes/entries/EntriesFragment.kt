@@ -77,6 +77,7 @@ class EntriesFragment : CoroutineScopeFragment() {
                     ?: activity.homeCategory
 
         mCurrentCategory = category
+        mCurrentIssue = null
 
         // エントリリスト用アダプタ作成
         mEntriesTabAdapter = EntriesTabAdapter(this, category)
@@ -269,6 +270,7 @@ class EntriesFragment : CoroutineScopeFragment() {
         mEntriesTabAdapter.setCategory(mEntriesTabPager, category)
 
         if (categoryChanged) {
+            mCurrentIssue = null
             setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
         }
 
