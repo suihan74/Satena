@@ -23,20 +23,15 @@ class EntriesTabAdapter(
 
     fun refreshTabAsync(fragment: EntriesTabFragment, tabPosition: Int) = fragment.async(Dispatchers.Main) {
         val context = fragment.context ?: return@async
+        val issue = this@EntriesTabAdapter.fragment.currentIssue
         try {
-            val entries = when (category) {
-                Category.MyBookmarks -> when (EntriesTabType.fromInt(tabPosition + EntriesTabType.MYBOOKMARKS.int)) {
-                    EntriesTabType.MYBOOKMARKS -> HatenaClient.getMyBookmarkedEntriesAsync().await()
-                    EntriesTabType.READLATER -> HatenaClient.searchMyEntriesAsync("あとで読む", SearchType.Tag).await()
-                    else -> throw RuntimeException("unknown tab")
+            val entries =
+                if (issue == null) {
+                    getEntries(tabPosition)
                 }
-
-                else -> when (EntriesTabType.fromInt(tabPosition)) {
-                    EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category.toApiCategory()).await()
-                    EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category.toApiCategory()).await()
-                    else -> throw RuntimeException("unknown tab")
+                else {
+                    getEntries(issue, tabPosition)
                 }
-            }
             fragment.setEntries(entries)
         }
         catch (e: Exception) {

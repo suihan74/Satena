@@ -29,7 +29,7 @@ import kotlinx.coroutines.*
 
 class EntriesFragment : CoroutineScopeFragment() {
     override val title: String
-        get() = SatenaApplication.instance.getString(mCurrentCategory?.textId ?: 0)
+        get() = SatenaApplication.instance.getString(currentCategory?.textId ?: 0)
 
     private lateinit var mEntriesTabPager : ViewPager
 
@@ -38,21 +38,26 @@ class EntriesFragment : CoroutineScopeFragment() {
 
     private lateinit var mView : View
 
-    private var mCurrentCategory : Category? = null
-    private var mCurrentIssue : Issue? = null
+    /** 表示中のカテゴリ */
+    var currentCategory : Category? = null
+        private set
 
-    // マイブックマークの検索クエリ
-    private var mSearchQuery : String? = null
-    val searchQuery: String?
-        get() = mSearchQuery
+    /** 表示中の特集 */
+    var currentIssue : Issue? = null
+        private set
+
+    /** マイブックマークの検索クエリ */
+    var searchQuery : String? = null
+        private set
 
     companion object {
         fun createInstance(category: Category) = EntriesFragment().apply {
-            mCurrentCategory = category
+            currentCategory = category
         }
 
-        private const val BUNDLE_CATEGORY = "mCategory"
-        private const val BUNDLE_CURRENT_TAB = "currentTab"
+        private const val BUNDLE_CATEGORY = "BUNDLE_CATEGORY"
+        private const val BUNDLE_ISSUE = "BUNDLE_ISSUE"
+        private const val BUNDLE_CURRENT_TAB = "BUNDLE_CURRENT_TAB"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -60,6 +65,7 @@ class EntriesFragment : CoroutineScopeFragment() {
         outState.putInt(BUNDLE_CATEGORY, mEntriesTabAdapter.category.int)
         if (this::mEntriesTabPager.isInitialized) {
             outState.putInt(BUNDLE_CURRENT_TAB, mEntriesTabPager.currentItem)
+            outState.putSerializable(BUNDLE_ISSUE, currentIssue)
         }
         else {
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context!!)
@@ -72,12 +78,11 @@ class EntriesFragment : CoroutineScopeFragment() {
         enterTransition = TransitionSet().addTransition(AutoTransition())
 
         val activity = activity as EntriesActivity
-        val category = mCurrentCategory
+        val category = currentCategory
                     ?: savedInstanceState?.let { Category.fromInt(it.getInt(BUNDLE_CATEGORY)) }
                     ?: activity.homeCategory
 
-        mCurrentCategory = category
-        mCurrentIssue = null
+        currentCategory = category
 
         // エントリリスト用アダプタ作成
         mEntriesTabAdapter = EntriesTabAdapter(this, category)
@@ -88,7 +93,7 @@ class EntriesFragment : CoroutineScopeFragment() {
         mView = inflater.inflate(R.layout.fragment_entries, container, false)
 
         // マイブックマーク画面ではツールバーに検索ボタンを表示する
-        setHasOptionsMenu(mCurrentCategory == Category.MyBookmarks || mCurrentCategory?.hasIssues == true)
+        setHasOptionsMenu(currentCategory == Category.MyBookmarks || currentCategory?.hasIssues == true)
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context!!)
 
@@ -99,7 +104,7 @@ class EntriesFragment : CoroutineScopeFragment() {
             setupWithViewPager(mEntriesTabPager)
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
-                    if (mCurrentCategory == Category.MyBookmarks && tab != null) {
+                    if (currentCategory == Category.MyBookmarks && tab != null) {
                         when(EntriesTabType.MYBOOKMARKS.int + tab.position) {
                             EntriesTabType.MYBOOKMARKS.int -> {
                                 setHasOptionsMenu(true)
@@ -120,7 +125,7 @@ class EntriesFragment : CoroutineScopeFragment() {
 
             // タブを長押しで最初に表示するカテゴリ・タブを設定
             setOnTabLongClickListener { idx ->
-                val currentCategory = mCurrentCategory ?: return@setOnTabLongClickListener true
+                val currentCategory = currentCategory ?: return@setOnTabLongClickListener true
                 val catKey = PreferenceKey.ENTRIES_HOME_CATEGORY
                 val tabKey = PreferenceKey.ENTRIES_INITIAL_TAB
                 if (prefs.getInt(catKey) != currentCategory.int || prefs.getInt(tabKey) != idx) {
@@ -143,6 +148,8 @@ class EntriesFragment : CoroutineScopeFragment() {
         else {
             val restoreTab = savedInstanceState.getInt(BUNDLE_CURRENT_TAB)
             mEntriesTabPager.currentItem = restoreTab
+            currentIssue = savedInstanceState.getSerializable(BUNDLE_ISSUE) as? Issue
+
             launch(Dispatchers.Main) {
                 mEntriesTabAdapter.refreshAllTab(mEntriesTabPager)
             }
@@ -154,8 +161,8 @@ class EntriesFragment : CoroutineScopeFragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         when {
-            mCurrentCategory == Category.MyBookmarks -> inflateSearchMyEntriesMenu(menu, inflater)
-            mCurrentCategory?.hasIssues == true -> inflateIssuesMenu(menu, inflater)
+            currentCategory == Category.MyBookmarks -> inflateSearchMyEntriesMenu(menu, inflater)
+            currentCategory?.hasIssues == true -> inflateIssuesMenu(menu, inflater)
         }
     }
 
@@ -167,22 +174,22 @@ class EntriesFragment : CoroutineScopeFragment() {
             isSubmitButtonEnabled = true
             queryHint = "検索クエリ"
 
-            if (mSearchQuery != null) {
-                setQuery(mSearchQuery, false)
+            if (searchQuery != null) {
+                setQuery(searchQuery, false)
                 isIconified = false
             }
 
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextChange(newText: String?): Boolean = false
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    mSearchQuery = query
+                    searchQuery = query
                     refreshEntriesTabs(Category.MyBookmarks)
                     return false
                 }
             })
 
             setOnCloseListener {
-                mSearchQuery = null
+                searchQuery = null
                 refreshEntriesTabs(Category.MyBookmarks)
                 return@setOnCloseListener false
             }
@@ -193,7 +200,7 @@ class EntriesFragment : CoroutineScopeFragment() {
     private fun inflateIssuesMenu(menu: Menu, inflater: MenuInflater) {
         val activity = activity as EntriesActivity
         val issues = activity.categoryEntries
-            .firstOrNull { it.code == mCurrentCategory!!.code }
+            .firstOrNull { it.code == currentCategory!!.code }
             ?.issues
             ?: return
         val spinnerItems = listOf("特集").plus(issues.map { it.name })
@@ -230,8 +237,8 @@ class EntriesFragment : CoroutineScopeFragment() {
                     position: Int,
                     id: Long
                 ) {
-                    val prevIssue = mCurrentIssue
-                    mCurrentIssue = if (position == 0) {
+                    val prevIssue = currentIssue
+                    currentIssue = if (position == 0) {
                         null
                     }
                     else {
@@ -239,13 +246,21 @@ class EntriesFragment : CoroutineScopeFragment() {
                         issues.firstOrNull { it.name == item }
                     }
 
-                    if (prevIssue != mCurrentIssue) {
-                        refreshEntriesTabs(mCurrentCategory!!)
+                    if (prevIssue != currentIssue) {
+                        refreshEntriesTabs(currentCategory!!)
                     }
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
-                    mCurrentIssue = null
+                    currentIssue = null
+                }
+            }
+
+            if (currentIssue != null) {
+                val currentIssueName = currentIssue!!.name
+                val position = spinnerItems.indexOfFirst { it == currentIssueName }
+                if (position >= 0) {
+                    setSelection(position)
                 }
             }
         }
@@ -253,8 +268,8 @@ class EntriesFragment : CoroutineScopeFragment() {
 
     suspend fun refreshEntries(tabPosition: Int? = null, offset: Int? = null) : List<Entry> =
         when {
-            mCurrentIssue != null ->
-                mEntriesTabAdapter.getEntries(mCurrentIssue!!, tabPosition ?: mEntriesTabLayout.selectedTabPosition, offset)
+            currentIssue != null ->
+                mEntriesTabAdapter.getEntries(currentIssue!!, tabPosition ?: mEntriesTabLayout.selectedTabPosition, offset)
 
             else ->
                 mEntriesTabAdapter.getEntries(tabPosition ?: mEntriesTabLayout.selectedTabPosition, offset)
@@ -265,12 +280,12 @@ class EntriesFragment : CoroutineScopeFragment() {
         mainActivity.showProgressBar()
         mainActivity.updateToolbar()
 
-        val categoryChanged = mCurrentCategory != category
-        mCurrentCategory = category
+        val categoryChanged = currentCategory != category
+        currentCategory = category
         mEntriesTabAdapter.setCategory(mEntriesTabPager, category)
 
         if (categoryChanged) {
-            mCurrentIssue = null
+            currentIssue = null
             setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
         }
 
