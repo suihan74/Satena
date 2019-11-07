@@ -38,10 +38,24 @@ abstract class ActivityBase(
     open val searchView : SearchView?
         get() = findViewById(R.id.toolbar_search_view)
 
+    override fun setTitle(title: CharSequence?) {
+        super.setTitle(title)
+        supportActionBar?.title = title
+    }
+
+    var subtitle: String? = null
+        set(value) {
+            field = value
+            supportActionBar?.subtitle = value
+        }
+
+
     open fun updateToolbar(fragment: Fragment? = null) {
         val currentFragment = fragment ?: currentFragment
         if (currentFragment is FragmentBase) {
             title = currentFragment.title
+            subtitle = currentFragment.subtitle
+
             searchView?.visibility = currentFragment.isSearchViewVisible.toVisibility()
             if (currentFragment.isToolbarVisible) {
                 supportActionBar?.show()

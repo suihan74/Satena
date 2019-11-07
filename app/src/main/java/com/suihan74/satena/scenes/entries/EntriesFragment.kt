@@ -50,6 +50,9 @@ class EntriesFragment : CoroutineScopeFragment() {
     var searchQuery : String? = null
         private set
 
+    override val subtitle: String?
+        get() = currentIssue?.name
+
     companion object {
         fun createInstance(category: Category) = EntriesFragment().apply {
             currentCategory = category
@@ -209,12 +212,21 @@ class EntriesFragment : CoroutineScopeFragment() {
 
         (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
             gravity = GravityCompat.END
+            background = activity.getDrawable(R.drawable.spinner_allow_issues)
             backgroundTintList = ColorStateList.valueOf(activity.getColor(R.color.colorPrimaryText))
             adapter = object : ArrayAdapter<String>(
                 context!!,
                 android.R.layout.simple_spinner_item,
                 spinnerItems
             ) {
+                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                    return super.getView(position, convertView, parent).apply {
+                        if (this is TextView) {
+                            this.text = ""
+                        }
+                    }
+                }
+
                 override fun getDropDownView(
                     position: Int,
                     convertView: View?,
@@ -222,12 +234,17 @@ class EntriesFragment : CoroutineScopeFragment() {
                 ): View {
                     val view = super.getDropDownView(position, convertView, parent)
                     if (position == 0) {
-                        (view as TextView).text = "指定なし"
+                        (view as TextView).text = "特集指定なし"
                     }
                     return view
                 }
             }.apply {
                 setDropDownViewResource(R.layout.spinner_drop_down_item)
+            }
+
+            setOnLongClickListener {
+                activity.showToast("特集を選択します")
+                return@setOnLongClickListener true
             }
 
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -238,13 +255,14 @@ class EntriesFragment : CoroutineScopeFragment() {
                     id: Long
                 ) {
                     val prevIssue = currentIssue
-                    currentIssue = if (position == 0) {
-                        null
-                    }
-                    else {
-                        val item = spinnerItems[position]
-                        issues.firstOrNull { it.name == item }
-                    }
+                    currentIssue =
+                        if (position == 0) {
+                            null
+                        }
+                        else {
+                            val item = spinnerItems[position]
+                            issues.firstOrNull { it.name == item }
+                        }
 
                     if (prevIssue != currentIssue) {
                         refreshEntriesTabs(currentCategory!!)
@@ -276,9 +294,9 @@ class EntriesFragment : CoroutineScopeFragment() {
         }
 
     fun refreshEntriesTabs(category: Category) {
-        val mainActivity = activity as EntriesActivity
-        mainActivity.showProgressBar()
-        mainActivity.updateToolbar()
+        val activity = activity as EntriesActivity
+        activity.showProgressBar()
+        activity.updateToolbar()
 
         val categoryChanged = currentCategory != category
         currentCategory = category
@@ -318,10 +336,10 @@ class EntriesFragment : CoroutineScopeFragment() {
                 tasks.awaitAll()
             }
             catch (e: Exception) {
-                activity!!.showToast("エントリーリスト更新失敗")
+                activity.showToast("エントリーリスト更新失敗")
             }
             finally {
-                mainActivity.hideProgressBar()
+                activity.hideProgressBar()
             }
         }
     }

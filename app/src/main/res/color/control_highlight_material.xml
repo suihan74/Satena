@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true"
+            android:state_enabled="true"
+            android:alpha="@dimen/highlight_alpha_material_colored_for_custom_spinner"
+            android:color="?attr/colorControlActivated" />
+    <item android:color="?attr/colorControlHighlight" />
+</selector>

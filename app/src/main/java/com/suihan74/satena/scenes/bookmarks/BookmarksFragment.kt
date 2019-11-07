@@ -835,7 +835,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
         if (bookmarksEntry != null) {
 //            val activity = activity as ActivityBase
-//            activity.toolbar!!.subtitle = getSubTitle(bookmarksEntry?.bookmarks ?: ArrayList())
+//            activity.toolbar!!.subtitle = getSubtitle(bookmarksEntry?.bookmarks ?: ArrayList())
 
             view?.findViewById<Toolbar>(R.id.bookmarks_toolbar)?.apply {
                 subtitle = getSubTitle(bookmarksEntry?.bookmarks ?: ArrayList())

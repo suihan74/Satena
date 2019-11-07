@@ -6,6 +6,7 @@ import java.util.*
 
 abstract class FragmentBase : Fragment() {
     open val title : String = ""
+    open val subtitle : String? = null
     open val isToolbarVisible : Boolean = true
     open val isSearchViewVisible : Boolean = false
 

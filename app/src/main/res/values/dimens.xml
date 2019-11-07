@@ -25,4 +25,7 @@
     <!-- ダイアログサイズ -->
     <dimen name="dialog_width_major">95%</dimen>
     <dimen name="dialog_width_minor">95%</dimen>
+
+    <!-- アローアイコンを差し替えたSpinnerの背景用 -->
+    <item name="highlight_alpha_material_colored_for_custom_spinner" format="float" type="dimen">0.10</item>
 </resources>
