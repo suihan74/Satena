@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:fitsSystemWindows="false"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -33,7 +32,7 @@
                 android:id="@+id/user_name"
                 android:hint="@string/hint_id"
                 style="@style/LoginEditTextStyle"
-                app:theme="@style/LoginEditTextStyle"
+                android:theme="@style/LoginEditTextStyle"
                 android:nextFocusDown="@id/password"
                 android:textColor="?attr/textColor"
                 android:inputType="text"
@@ -49,7 +48,7 @@
                 android:id="@+id/password"
                 android:hint="@string/hint_password"
                 style="@style/LoginEditTextStyle"
-                app:theme="@style/LoginEditTextStyle"
+                android:theme="@style/LoginEditTextStyle"
                 android:nextFocusDown="@id/auth_button"
                 android:textColor="?attr/textColor"
                 android:inputType="textPassword"

@@ -87,8 +87,6 @@ class MastodonAuthenticationActivity : ActivityBase() {
     }
 
     private suspend fun startAuthorizeMastodon(instance: String) = withContext(Dispatchers.IO) {
-        MastodonClientHolder.signOut()
-
         val client = MastodonClient.Builder(
             instance,
             OkHttpClient.Builder(),

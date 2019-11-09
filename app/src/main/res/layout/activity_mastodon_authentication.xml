@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/mastodonBackground">
@@ -24,7 +23,7 @@
                 android:id="@+id/instance_name"
                 android:hint="@string/hint_mastodon_instance"
                 style="@style/MastodonLoginEditTextStyle"
-                app:theme="@style/MastodonLoginEditTextStyle"
+                android:theme="@style/MastodonLoginEditTextStyle"
                 android:nextFocusDown="@id/auth_button"
                 android:layout_below="@id/title"
                 android:layout_alignStart="@id/title"
