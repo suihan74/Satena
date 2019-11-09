@@ -49,6 +49,10 @@ class UserTagsEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         @Suppress("UNCHECKED_CAST")
         mTags = savedInstanceState.getSerializable(BUNDLE_TAGS) as List<Tag>
         mSelectedTag = savedInstanceState.getSerializable(BUNDLE_SELECTED_TAG) as Tag?
+
+        if (mSelectedTag != null) {
+            refreshEntries()
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
