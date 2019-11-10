@@ -14,6 +14,7 @@ import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
@@ -126,7 +127,7 @@ class BookmarkPostActivity : ActivityBase() {
         when (intent.action) {
             // ブラウザから「共有」を使って遷移してきたときの処理
             Intent.ACTION_SEND -> {
-                val url = intent.getStringExtra(Intent.EXTRA_TEXT)
+                val url = modifySpecificUrls(intent.getStringExtra(Intent.EXTRA_TEXT))!!
                 if (!URLUtil.isNetworkUrl(url)) throw RuntimeException("invalid url shared")
 
                 var entry: Entry? = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry

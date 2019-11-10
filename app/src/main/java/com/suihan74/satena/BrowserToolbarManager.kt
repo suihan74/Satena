@@ -19,7 +19,9 @@ import org.chromium.customtabsclient.shared.CustomTabsHelper
 
 class BrowserToolbarManager : BroadcastReceiver() {
     private fun onReceiveImpl(context: Context, intent: Intent) {
-        val url = intent.dataString ?: entry?.url ?: return
+        val url = intent.dataString
+            ?: entry?.url
+            ?: return
 
         val clickedId = intent.getIntExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS_CLICKED_ID, -1)
         val bIntent = when (clickedId) {
