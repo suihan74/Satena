@@ -11,6 +11,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.TaggedUserDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
+import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersListFragment
 import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.SafeSharedPreferences

@@ -23,9 +23,9 @@ class PreferencesActivity : ActivityBase() {
     private var themeChanged : Boolean = false
 
     companion object {
-        const val EXTRA_THEME_CHANGED = "com.suihan74.statena.activities.PreferencesActivity.theme_changed"
-        const val EXTRA_CURRENT_TAB = "com.suihan74.statena.activities.PreferencesActivity.current_tab"
-        const val EXTRA_RELOAD_ALL_PREFERENCES = "com.suihan74.statena.activities.PreferencesActivity.reload_all_preferences"
+        const val EXTRA_THEME_CHANGED = "theme_changed"
+        const val EXTRA_CURRENT_TAB = "current_tab"
+        const val EXTRA_RELOAD_ALL_PREFERENCES = "reload_all_preferences"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,7 +80,7 @@ class PreferencesActivity : ActivityBase() {
             AccountLoader.signInAccounts(this, true)
         }
         catch (e: Exception) {
-            Log.e("FailedToReloadAccounts", e.message)
+            Log.e("FailedToReload", e.message)
         }
 
         // 通知サービス開始

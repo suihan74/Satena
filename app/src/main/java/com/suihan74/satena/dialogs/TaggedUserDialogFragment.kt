@@ -13,7 +13,7 @@ import androidx.fragment.app.DialogFragment
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
-import com.suihan74.satena.scenes.preferences.pages.TaggedUsersListFragment
+import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersListFragment
 import com.suihan74.utilities.lock
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.*

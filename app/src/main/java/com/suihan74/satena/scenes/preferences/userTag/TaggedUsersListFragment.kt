@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.preferences.pages
+package com.suihan74.satena.scenes.preferences.userTag
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -20,7 +20,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.TaggedUser
 import com.suihan74.satena.models.UserTag
 import com.suihan74.satena.scenes.entries.EntriesActivity
-import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersAdapter
+import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.DividerItemDecorator
 
 class TaggedUsersListFragment : Fragment() {
