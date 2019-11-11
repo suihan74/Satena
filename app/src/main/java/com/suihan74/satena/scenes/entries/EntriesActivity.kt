@@ -21,6 +21,7 @@ import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
@@ -335,6 +336,23 @@ class EntriesActivity : ActivityBase() {
 
             refreshEntriesFragment(currentCategory)
             hideProgressBar()
+        }
+
+        // アプリのバージョン名を取得
+        val packageInfo = packageManager.getPackageInfo(packageName, 0)
+        val versionName = packageInfo.versionName
+
+        val lastVersionName = prefs.getString(PreferenceKey.APP_VERSION_LAST_LAUNCH)
+        val showReleaseNotes = prefs.getBoolean(PreferenceKey.SHOW_RELEASE_NOTES_AFTER_UPDATE)
+
+        prefs.edit {
+            putString(PreferenceKey.APP_VERSION_LAST_LAUNCH, versionName)
+        }
+
+        // アップデート後最初の起動時に更新履歴ダイアログを表示する
+        if (showReleaseNotes && lastVersionName != versionName) {
+            val dialog = ReleaseNotesDialogFragment.createInstance()
+            dialog.show(supportFragmentManager, "release_notes")
         }
     }
 

@@ -30,6 +30,8 @@ enum class PreferenceKey(
     BACKGROUND_CHECKING_NOTICES(typeInfo<Boolean>(), true),
     BACKGROUND_CHECKING_NOTICES_INTERVALS(typeInfo<Long>(), 3L),
     NOTICES_LAST_SEEN(typeInfo<LocalDateTime>(), null),
+    APP_VERSION_LAST_LAUNCH(typeInfo<String>(), "0"),
+    SHOW_RELEASE_NOTES_AFTER_UPDATE(typeInfo<Boolean>(), true),
 
     ////////////////////////////////////////
     // entries

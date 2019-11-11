@@ -125,8 +125,13 @@
 
     <!-- AlertDialog -->
     <style name="AlertDialogStyle" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:background">@color/panelBackground</item>
+        <item name="android:textColor">@color/textColor</item>
+
         <item name="colorAccent">@color/colorPrimary</item>
         <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
+        <item name="android:buttonBarButtonStyle">@style/ButtonBarButtonStyle</item>
+
         <item name="android:windowMinWidthMajor">@dimen/dialog_width_major</item>
         <item name="android:windowMinWidthMinor">@dimen/dialog_width_minor</item>
 
@@ -139,6 +144,10 @@
 
     <style name="AlertDialogTitleStyle" parent="TextAppearance.AppCompat.Title">
         <item name="android:textColor">@color/textColor</item>
+    </style>
+
+    <style name="ButtonBarButtonStyle" parent="Widget.AppCompat.Button.Borderless.Colored">
+        <item name="android:textColor">@color/colorPrimary</item>
     </style>
 
     <!-- TabLayout -->

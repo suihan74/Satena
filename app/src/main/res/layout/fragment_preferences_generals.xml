@@ -87,6 +87,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
+        <TextView
+                android:text="@string/pref_generals_show_release_notes_after_update_desc"
+                android:textColor="?attr/textColor"
+                android:layout_marginTop="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ToggleButton
+                android:id="@+id/preferences_generals_show_release_notes_after_update"
+                style="@style/Widget.AppCompat.Button"
+                android:textColor="@color/textColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
     </LinearLayout>
 </ScrollView>

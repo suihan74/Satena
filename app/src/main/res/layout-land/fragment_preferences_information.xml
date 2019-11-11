@@ -55,15 +55,29 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="4dp"/>
 
-        <Button
-                android:id="@+id/show_licenses_button"
-                android:text="ライセンス情報"
-                android:textColor="@color/textColor"
+        <LinearLayout
                 android:layout_below="@id/copyright"
                 android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"/>
+                android:layout_height="wrap_content">
+
+            <Button
+                    android:id="@+id/show_release_notes_button"
+                    android:text="@string/pref_information_release_notes_desc"
+                    android:textColor="@color/textColor"
+                    android:layout_marginEnd="20dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <Button
+                    android:id="@+id/show_licenses_button"
+                    android:text="@string/pref_information_licenses_desc"
+                    android:textColor="@color/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+        </LinearLayout>
     </RelativeLayout>
 
 

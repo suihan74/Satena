@@ -74,12 +74,18 @@
     <string name="pref_title_ignored_entries">非表示URL/TEXT</string>
     <string name="pref_title_ignored_users">非表示ユーザー</string>
     <string name="pref_title_user_tags">ユーザータグ</string>
+    <!-- information -->
+    <string name="pref_information_release_notes_desc">更新履歴</string>
+    <string name="pref_information_licenses_desc">ライセンス</string>
+    <string name="pref_information_save_settings_desc">設定をファイルに保存</string>
+    <string name="pref_information_load_settings_desc">ファイルから設定を読み込む</string>
     <!-- generals -->
     <string name="pref_generals_theme_desc">テーマ</string>
     <string name="pref_generals_using_termination_dialog_desc">終了確認ダイアログを表示する</string>
     <string name="pref_generals_notices_last_seen_updatable_desc">通知の既読状態をアプリから更新する</string>
     <string name="pref_generals_background_checking_notices_desc">常駐して通知を確認する</string>
     <string name="pref_generals_checking_notices_intervals_desc">通知を確認する間隔</string>
+    <string name="pref_generals_show_release_notes_after_update_desc">アプリ更新後の初回起動時に更新履歴を表示する</string>
     <!-- entries -->
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>

@@ -16,6 +16,7 @@ import com.suihan74.satena.PreferencesMigrator
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.FilePickerDialog
+import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.IgnoredEntriesKey
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.models.PreferenceKey
@@ -61,6 +62,12 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
             movementMethod = LinkMovementMethod.getInstance()
         }
 
+        // 更新履歴ダイアログ
+        root.findViewById<Button>(R.id.show_release_notes_button).setOnClickListener {
+            val dialog = ReleaseNotesDialogFragment.createInstance()
+            dialog.show(fragmentManager!!, "release_notes")
+        }
+
         // ライセンス表示アクティビティ
         root.findViewById<Button>(R.id.show_licenses_button).setOnClickListener {
             val intent = Intent(activity, OssLicensesMenuActivity::class.java)
@@ -90,7 +97,6 @@ class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionReque
             rp.request(activity)
         }
 
-        //retainInstance = true
         return root
     }
 

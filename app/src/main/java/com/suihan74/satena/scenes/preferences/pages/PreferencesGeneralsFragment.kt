@@ -121,6 +121,17 @@ class PreferencesGeneralsFragment : Fragment() {
             }
         }
 
+        // アプリ更新後の初回起動時に更新履歴を表示する
+        view.findViewById<ToggleButton>(R.id.preferences_generals_show_release_notes_after_update).apply {
+            val key = PreferenceKey.SHOW_RELEASE_NOTES_AFTER_UPDATE
+            isChecked = prefs.getBoolean(key)
+            setOnCheckedChangeListener { _, isChecked ->
+                prefs.edit {
+                    putBoolean(key, isChecked)
+                }
+            }
+        }
+
         return view
     }
 
