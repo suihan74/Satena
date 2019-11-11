@@ -98,6 +98,8 @@
     <string name="pref_bookmarks_using_post_star_dialog_desc">スターをつける前に確認する</string>
     <string name="pref_bookmark_link_single_tap_action_desc">ブコメ内のリンクをタップしたときの動作</string>
     <string name="pref_bookmark_link_long_tap_action_desc">ブコメ内のリンクを長押ししたときの動作</string>
+    <!-- user tags -->
+    <string name="pref_user_tags_back_button_desc">ユーザータグ一覧に戻る</string>
 
     <!-- 非表示エントリ登録ダイアログ -->
     <string name="ignored_entry_dialog_tab_url">URL</string>

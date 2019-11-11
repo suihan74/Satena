@@ -2,14 +2,14 @@ package com.suihan74.satena.scenes.preferences.userTag
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.TextView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
@@ -55,6 +55,7 @@ class TaggedUsersListFragment : Fragment() {
         mRoot = root
 
         val parentFragment = parentFragment as PreferencesUserTagsFragment
+        setHasOptionsMenu(true)
 
         savedInstanceState?.run {
             val name = getString(BUNDLE_USER_TAG_NAME)!!
@@ -93,6 +94,22 @@ class TaggedUsersListFragment : Fragment() {
         }
 
         return root
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+
+        inflater.inflate(R.menu.tagged_users_list, menu)
+
+        menu.findItem(R.id.button).apply {
+            val color = ActivityCompat.getColor(activity!!, R.color.colorPrimaryText)
+            icon.mutate().setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
+
+            setOnMenuItemClickListener {
+                activity?.onBackPressed()
+                true
+            }
+        }
     }
 
     private fun removeItem(user: TaggedUser) {
