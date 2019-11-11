@@ -1062,7 +1062,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
     }
 
     /**
-     * ユーザーを通報する
+     * ユーザーを通報する(b.hatena)
      */
     fun reportAsync(
         entry: Entry,
@@ -1078,6 +1078,35 @@ object HatenaClient : BaseClient(), CoroutineScope {
             "user_name" to bookmark.user,
             "category" to category.name.toLowerCase(Locale.ROOT),
             "text" to text
+        )
+
+        post(url, params).use { response ->
+            return@async response.isSuccessful
+        }
+    }
+
+    /**
+     * ユーザーを通報する(www.hatena)
+     */
+    fun reportAsync(
+        user: String,
+        category: ReportCategory,
+        text: String = ""
+    ) : Deferred<Boolean> = async {
+        val url = "$W_BASE_URL/faq/report"
+        val location = "$B_BASE_URL/${user}/"
+        val params = mapOf(
+            "location" to location,
+            "referer" to location,
+            "c" to "190190366613968214",
+            "target_url" to location,
+            "target_label" to "id:$user",
+            "object_local_id" to "",
+            "object_data_category" to "",
+            "object_hash" to "",
+            "object_permalink_url" to "",
+            "report_type" to category.type,
+            "content" to text
         )
 
         post(url, params).use { response ->

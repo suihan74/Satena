@@ -40,6 +40,18 @@ open class NoticesAdapter
         notifyDataSetChanged()
     }
 
+    fun removeNotice(notice: Notice) {
+        val position = states.indexOfFirst {
+            it.type == RecyclerType.BODY
+                    && it.body?.verb == notice.verb
+                    && it.body?.created == notice.created }
+
+        if (position >= 0) {
+            states.removeAt(position)
+            notifyItemRemoved(position)
+        }
+    }
+
     class ViewHolder(private val view : View) : RecyclerView.ViewHolder(view) {
         private val icon      = view.findViewById<ImageView>(R.id.notice_icon)!!
         private val message   = view.findViewById<TextView>(R.id.notice_message)!!
@@ -50,12 +62,7 @@ open class NoticesAdapter
                 field = value
 
                 if (value != null) {
-                    message.setHtml(
-                        NoticesFragment.createMessage(
-                            value,
-                            view.context
-                        )
-                    )
+                    message.setHtml(value.message(view.context))
                     timestamp.text = value.modified.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"))
 
                     val url = HatenaClient.getUserIconUrl(value.objects.last().user)

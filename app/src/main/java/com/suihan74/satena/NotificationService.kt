@@ -14,7 +14,7 @@ import com.suihan74.HatenaLib.Notice
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesActivity
-import com.suihan74.satena.scenes.entries.notices.NoticesFragment
+import com.suihan74.satena.scenes.entries.notices.message
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.makeSpannedfromHtml
@@ -193,7 +193,7 @@ class NotificationService : Service(), CoroutineScope {
 
     private fun invokeNotice(context: Context, notice: Notice) {
         val title = "通知"
-        val message = NoticesFragment.createMessage(notice, context).let {
+        val message = notice.message(context).let {
             makeSpannedfromHtml(it).toString()
         }
 

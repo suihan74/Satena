@@ -1,6 +1,6 @@
 package com.suihan74.satena.scenes.entries.notices
 
-import android.content.Context
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -19,6 +19,8 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Notice
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.ReportDialogFragment
+import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
@@ -32,6 +34,7 @@ import org.threeten.bp.LocalDateTime
 
 class NoticesFragment : CoroutineScopeFragment() {
     private var mClickHandling = false
+    private lateinit var mNoticesAdapter: NoticesAdapter
 
     override val title: String
         get() = "通知 > ${HatenaClient.account?.name ?: "?"}"
@@ -39,43 +42,6 @@ class NoticesFragment : CoroutineScopeFragment() {
     companion object {
         fun createInstance() : NoticesFragment =
             NoticesFragment()
-
-        fun createMessage(notice: Notice, context: Context) : String {
-            val nameColor = ContextCompat.getColor(context, R.color.colorPrimary)
-
-            val comment = (notice.metadata?.subjectTitle ?: "").toCharArray()
-            val sourceComment = comment.joinToString(
-                separator = "",
-                limit = 9,
-                truncated = "..."
-            )
-
-            val users = notice.objects
-                .groupBy { it.user }
-                .map { it.value.first() }
-                .reversed()
-                .joinToString(
-                    separator = "、",
-                    limit = 3,
-                    truncated = "ほか${notice.objects.count() - 3}人",
-                    transform = { "<font color=\"$nameColor\">${it.user}</font>さん" })
-
-            return when (notice.verb) {
-                Notice.VERB_STAR -> {
-                    val starColor = ContextCompat.getColor(context, R.color.starYellow)
-                    "${users}があなたのブコメ($sourceComment)に<font color=\"$starColor\">★</font>をつけました"
-                }
-
-                Notice.VERB_ADD_FAVORITE ->
-                    "${users}があなたのブックマークをお気に入りに追加しました"
-
-                Notice.VERB_BOOKMARK ->
-                    "${users}があなたのエントリをブックマークしました"
-
-                else ->
-                    "[sorry, not implemented notice] users: $users , verb: ${notice.verb}"
-            }
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -164,7 +130,23 @@ class NoticesFragment : CoroutineScopeFragment() {
                     }
                 }
             }
+
+            override fun onItemLongClicked(notice: Notice): Boolean {
+                val items = notice.users
+                    .map { "id:${it}を通報" to { reportUser(it) } }
+                    .plus("通知を削除" to { this@NoticesFragment.removeNotice(notice) })
+
+                AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                    .setItems(items.map { it.first }.toTypedArray()) { _, which ->
+                        items[which].second.invoke()
+                    }
+                    .setNegativeButton("CANCEL", null)
+                    .show()
+
+                return true
+            }
         }
+        mNoticesAdapter = noticesAdapter
 
         view.findViewById<RecyclerView>(R.id.notices_list).apply {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
@@ -196,6 +178,7 @@ class NoticesFragment : CoroutineScopeFragment() {
                 val noticesPrefs = SafeSharedPreferences.create<NoticesKey>(context)
                 val savedNotices = noticesPrefs.get<List<Notice>>(NoticesKey.NOTICES)
                 val noticesSize = noticesPrefs.getInt(NoticesKey.NOTICES_SIZE)
+                val removedNotices = noticesPrefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
 
                 val response = HatenaClient.getNoticesAsync().await()
                 val fetchedNotices = response.notices
@@ -204,12 +187,27 @@ class NoticesFragment : CoroutineScopeFragment() {
                     newer.created == existed.created
                 } }
 
+                var oldestMatched = LocalDateTime.MAX
                 val notices = oldNotices.plus(fetchedNotices)
+                    .filterNot { n ->
+                        removedNotices.any { it.created == n.created && it.modified == n.modified }.also { result ->
+                            if (result) {
+                                oldestMatched = minOf(n.modified, oldestMatched)
+                            }
+                        }
+                    }
                     .sortedByDescending { it.modified }
                     .take(noticesSize)
 
                 noticesPrefs.edit {
                     put(NoticesKey.NOTICES, notices)
+
+                    // 古い削除済み通知設定を消去する
+                    if (oldestMatched < LocalDateTime.MAX) {
+                        put(NoticesKey.REMOVED_NOTICE_TIMESTAMPS, removedNotices.filter {
+                            it.modified >= oldestMatched
+                        })
+                    }
                 }
 
                 noticesAdapter.setNotices(notices)
@@ -229,5 +227,22 @@ class NoticesFragment : CoroutineScopeFragment() {
     override fun onResume() {
         super.onResume()
         mClickHandling = false
+    }
+
+    private fun removeNotice(notice: Notice) {
+        val prefs = SafeSharedPreferences.create<NoticesKey>(context)
+        val removedNotices = prefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
+            .plus(NoticeTimestamp(notice.created, notice.modified))
+
+        prefs.edit {
+            put(NoticesKey.REMOVED_NOTICE_TIMESTAMPS, removedNotices)
+        }
+
+        mNoticesAdapter.removeNotice(notice)
+    }
+
+    private fun reportUser(user: String) {
+        val dialog = ReportDialogFragment.createInstance(user)
+        dialog.show(fragmentManager!!, "report_dialog")
     }
 }

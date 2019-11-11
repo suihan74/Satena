@@ -32,8 +32,12 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
     }
 
     private var mRoot: View? = null
-    private lateinit var mEntry: Entry
-    private lateinit var mBookmark: Bookmark
+
+    private var mEntry: Entry? = null
+    private var mBookmark: Bookmark? = null
+
+    /** ユーザー名だけで通報する場合，値が入る */
+    private var mUser: String? = null
 
     companion object {
         fun createInstance(entry: Entry, bookmark: Bookmark) = ReportDialogFragment().apply {
@@ -43,8 +47,15 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
             }
         }
 
+        fun createInstance(user: String) = ReportDialogFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARG_KEY_USER, user)
+            }
+        }
+
         private const val ARG_KEY_ENTRY = "mEntry"
         private const val ARG_KEY_BOOKMARK = "mBookmark"
+        private const val ARG_KEY_USER = "mUser"
 
         private const val BUNDLE_CATEGORY = "category"
         private const val BUNDLE_TEXT = "text"
@@ -66,8 +77,9 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mEntry = arguments!!.getSerializable(ARG_KEY_ENTRY) as Entry
-        mBookmark = arguments!!.getSerializable(ARG_KEY_BOOKMARK) as Bookmark
+        mEntry = arguments!!.getSerializable(ARG_KEY_ENTRY) as? Entry
+        mBookmark = arguments!!.getSerializable(ARG_KEY_BOOKMARK) as? Bookmark
+        mUser = arguments!!.getString(ARG_KEY_USER)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -76,11 +88,13 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
         mRoot = content
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
 
-        content.findViewById<TextView>(R.id.user_name).text = mBookmark.user
-        content.findViewById<TextView>(R.id.bookmark_comment).text = mBookmark.comment
+        val user = mBookmark?.user ?: mUser ?: throw RuntimeException("invalid user")
+
+        content.findViewById<TextView>(R.id.user_name).text = user
+        content.findViewById<TextView>(R.id.bookmark_comment).text = mBookmark?.comment ?: ""
         val icon = content.findViewById<ImageView>(R.id.user_icon)
         Glide.with(requireContext())
-            .load(mBookmark.userIconUrl)
+            .load(HatenaClient.getUserIconUrl(user))
             .into(icon)
 
         content.findViewById<EditText>(R.id.text).run {
@@ -150,21 +164,32 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
         val category = ReportCategory.values()[spinner.selectedItemPosition]
         val text = editText.text.toString()
 
+        val user = mBookmark?.user ?: mUser ?: throw RuntimeException("invalid user")
+
         AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setTitle("確認")
             .setIcon(R.drawable.ic_baseline_help)
-            .setMessage("id:${mBookmark.user}を「${category.description}」のため通報します。よろしいですか？")
+            .setMessage("id:${user}を「${category.description}」のため通報します。よろしいですか？")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("OK") { _, _ ->
                 launch(Dispatchers.Main) {
                     try {
-                        HatenaClient.reportAsync(mEntry, mBookmark, category, text).await()
-                        if (withMuting) {
-                            HatenaClient.ignoreUserAsync(mBookmark.user).await()
-                            activity?.showToast("id:${mBookmark.user}を通報して非表示しました")
+                        if (mEntry != null && mBookmark != null) {
+                            HatenaClient.reportAsync(mEntry!!, mBookmark!!, category, text).await()
+                        }
+                        else if (mUser != null) {
+                            HatenaClient.reportAsync(mUser!!, category, text).await()
                         }
                         else {
-                            activity?.showToast("id:${mBookmark.user}を通報しました")
+                            throw RuntimeException()
+                        }
+
+                        if (withMuting) {
+                            HatenaClient.ignoreUserAsync(user).await()
+                            activity?.showToast("id:${user}を通報して非表示しました")
+                        }
+                        else {
+                            activity?.showToast("id:${user}を通報しました")
                         }
                     }
                     catch (e: Exception) {
