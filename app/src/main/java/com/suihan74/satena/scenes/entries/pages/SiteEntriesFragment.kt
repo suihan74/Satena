@@ -62,7 +62,10 @@ class SiteEntriesFragment : MultipurposeSingleTabEntriesFragment() {
 
     override fun onResume() {
         super.onResume()
-        refreshEntries()
+
+        if (entriesCount == 0) {
+            refreshEntries()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
