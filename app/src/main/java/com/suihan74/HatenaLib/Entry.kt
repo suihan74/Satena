@@ -1,5 +1,6 @@
 package com.suihan74.HatenaLib
 
+import android.net.Uri
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -16,7 +17,9 @@ class Entry (
     val count : Int,
 
     val url : String,
-    val rootUrl : String,
+
+    rootUrl : String?,
+
     val faviconUrl : String?,
     @SerializedName("image", alternate = ["image_url"])
     val imageUrl : String,
@@ -41,6 +44,24 @@ class Entry (
             else {
                 mTitle.substring(0 until it)
             }
+        }
+
+
+    @SerializedName("root_url")
+    private var mRootUrl : String? = rootUrl
+
+    val rootUrl : String
+        get() {
+            val rootUrl = mRootUrl
+            return if (rootUrl.isNullOrBlank()) {
+                val uri = Uri.parse(url)
+                val scheme = uri.scheme
+                val authority = uri.authority
+
+                mRootUrl = if (scheme != null && authority != null) "$scheme://$authority/" else ""
+                mRootUrl!!
+            }
+            else rootUrl
         }
 
     fun plusBookmarkedData(bookmark: BookmarkResult) = copy(

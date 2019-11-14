@@ -368,17 +368,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             }
         }
         val listType = object : TypeToken<List<Entry>>() {}.type
-        val entries = getJson<List<Entry>>(listType, url)
-
-        return@async entries.mapNotNull {
-            if (it.rootUrl.isNullOrBlank()) {
-                val uri = Uri.parse(it.url)
-                val scheme = uri.scheme ?: return@mapNotNull null
-                val authority = uri.authority ?: return@mapNotNull null
-                it.copy(rootUrl = "$scheme//$authority/")
-            }
-            else it
-        }
+        return@async getJson<List<Entry>>(listType, url)
     }
 
     /**
