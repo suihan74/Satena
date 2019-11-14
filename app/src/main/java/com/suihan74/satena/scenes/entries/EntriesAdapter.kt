@@ -130,7 +130,9 @@ open class EntriesAdapter(
 
     private fun makeAdditionalMenuItems(entry: Entry) : (ArrayList<Pair<Int, ()->Unit>>)->Unit =
         { items: ArrayList<Pair<Int, ()->Unit>> ->
-            items.add(R.string.entry_action_show_entries to { showEntries(entry) })
+            if (fragment !is SiteEntriesFragment) {
+                items.add(R.string.entry_action_show_entries to { showEntries(entry) })
+            }
             if (HatenaClient.signedIn()) {
                 if (entry.bookmarkedData == null) {
                     items.add(R.string.entry_action_read_later to { addToReadLaterEntries(entry) })
