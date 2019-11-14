@@ -35,20 +35,22 @@ abstract class StarsFragmentBase : MultipurposeSingleTabEntriesFragment() {
                 val urlRegex =
                     Regex("""https?://b\.hatena\.ne\.jp/(.+)/(\d+)#bookmark\-(\d+)""")
                 val entries = fetchingTask.await()
-                val data = entries.mapNotNull {
-                    val match = urlRegex.matchEntire(it.url) ?: return@mapNotNull null
-                    val user = match.groups[1]?.value ?: return@mapNotNull null
-                    val timestamp = match.groups[2]?.value ?: return@mapNotNull null
-                    val eid = match.groups[3]?.value ?: return@mapNotNull null
-                    val starsCount = it.allStars.groupBy { s -> s.color }.map { s -> Star("", "", s.key, s.value.size) }
-                    BookmarkCommentUrl(
-                        it.url,
-                        user,
-                        timestamp,
-                        eid.toLong(),
-                        starsCount
-                    )
-                }
+                val data =
+                    entries.mapNotNull {
+                        val match = urlRegex.matchEntire(it.url) ?: return@mapNotNull null
+                        val user = match.groups[1]?.value ?: return@mapNotNull null
+                        val timestamp = match.groups[2]?.value ?: return@mapNotNull null
+                        val eid = match.groups[3]?.value ?: return@mapNotNull null
+                        val starsCount = it.allStars.groupBy { s -> s.color }.map { s -> Star("", "", s.key, s.value.size) }
+                        BookmarkCommentUrl(
+                            it.url,
+                            user,
+                            timestamp,
+                            eid.toLong(),
+                            starsCount
+                        )
+                    }
+                    .distinctBy { it.eid }
 
                 val tasks = data.map { HatenaClient.getBookmarkPageAsync(it.eid, it.user) }
                 tasks.awaitAll()

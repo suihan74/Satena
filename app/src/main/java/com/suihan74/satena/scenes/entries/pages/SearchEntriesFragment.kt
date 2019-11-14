@@ -21,9 +21,6 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         get() = mQuery
     override val isSearchViewVisible : Boolean = true
 
-    /** 次に読み込むページ（サイトのエントリ一覧取得時に使用） */
-    private var nextPage = 1
-
     companion object {
         fun createInstance(query: String? = null, searchType: SearchType = SearchType.Text) = SearchEntriesFragment().apply {
             mQuery = query ?: ""
@@ -52,11 +49,16 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         }
 
         setHasOptionsMenu(true)
-        if (mQuery.isNotBlank()) {
-            refreshEntries()
-        }
 
         return mRoot
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (entriesCount == 0 && mQuery.isNotBlank()) {
+            refreshEntries()
+        }
     }
 
     override fun onDetach() {
@@ -171,7 +173,6 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         if (query.isNullOrBlank()) return false
 
         mQuery = query
-        nextPage = 2
         refreshEntries()
         return true
     }
@@ -179,17 +180,7 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
     override fun refreshEntries() {
         (activity as? EntriesActivity)?.updateToolbar()
         super.refreshEntries("エントリ検索失敗") { offset ->
-            if (mQuery.startsWith("http://") || mQuery.startsWith("https://")) {
-                val page = if (offset == null) 1 else nextPage
-                HatenaClient.getEntriesAsync(mQuery, mEntriesType, allMode = false, page = page).apply {
-                    invokeOnCompletion {
-                        nextPage = page + 1
-                    }
-                }
-            }
-            else {
-                HatenaClient.searchEntriesAsync(mQuery, mSearchType, mEntriesType, of = offset)
-            }
+            HatenaClient.searchEntriesAsync(mQuery, mSearchType, mEntriesType, of = offset)
         }
     }
 }

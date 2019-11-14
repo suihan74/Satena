@@ -603,6 +603,9 @@ class EntriesActivity : ActivityBase() {
             currentFragment is NoticesFragment ->
                 popFragment()
 
+            currentFragment is SiteEntriesFragment->
+                popFragment()
+
             mCurrentCategory != mHomeCategory -> // ホームカテゴリ以外のカテゴリにいる場合はホームに戻る
                 refreshEntriesFragment(mHomeCategory)
 
@@ -624,7 +627,7 @@ class EntriesActivity : ActivityBase() {
     /**
      * AppBarを表示する（スクロールによる非表示を解除する）
      */
-    private fun expandAppBar() {
+    fun expandAppBar() {
         findViewById<AppBarLayout>(R.id.action_bar)?.run {
             setExpanded(true, true)
         }
@@ -633,7 +636,7 @@ class EntriesActivity : ActivityBase() {
     /**
      * AppBarを非表示状態にする（スクロールによる非表示の動作をプログラム側から着火する）
      */
-    private fun collapseAppBar() {
+    fun collapseAppBar() {
         findViewById<AppBarLayout>(R.id.action_bar)?.run {
             setExpanded(false, true)
         }

@@ -20,6 +20,7 @@ import com.suihan74.satena.TappedActionLauncher
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.entries.pages.SiteEntriesFragment
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -147,7 +148,8 @@ open class EntriesAdapter(
 
     private fun showEntries(entry: Entry) {
         val activity = fragment.activity as? EntriesActivity ?: throw RuntimeException("activity error")
-        activity.refreshEntriesFragment(Category.Search, query = entry.rootUrl, forceUpdate = true)
+        val fragment = SiteEntriesFragment.createInstance(entry.rootUrl)
+        activity.showFragment(fragment, entry.rootUrl)
     }
 
     private fun addToReadLaterEntries(entry: Entry) {
@@ -300,9 +302,10 @@ open class EntriesAdapter(
                 if (value == null) return
 
                 val rootUrlRegex = Regex("""https?://(.+)/$""")
+                val rootUrl = rootUrlRegex.find(value.rootUrl)?.groupValues?.get(1) ?: Uri.parse(value.url).host
 
                 title.text = value.title
-                domain.text = rootUrlRegex.find(value.rootUrl)?.groupValues?.get(1) ?: Uri.parse(value.url).host
+                domain.text = rootUrl
                 count.text = "${value.count} users"
 
                 if (value.faviconUrl.isNullOrEmpty()) {

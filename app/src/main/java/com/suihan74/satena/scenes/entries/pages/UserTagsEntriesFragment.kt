@@ -77,7 +77,6 @@ class UserTagsEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         }
 
         if (mTags.isNotEmpty()) {
-            val needToRefreshEntries = mSelectedTag == null
             mSelectedTag = mSelectedTag ?: mTags[0]
 
             spinner.apply {
@@ -116,9 +115,7 @@ class UserTagsEntriesFragment : MultipurposeSingleTabEntriesFragment() {
                 }
             }
 
-            if (needToRefreshEntries) {
-                refreshEntries()
-            }
+            refreshEntries()
         }
 
         hideProgressBar()

@@ -59,6 +59,21 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
         return mRoot
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        if (mEntriesAdapter != null) {
+            mRoot.findViewById<RecyclerView>(R.id.entries_list).apply {
+                adapter = mEntriesAdapter
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        hideProgressBar()
+        super.onDestroyView()
+    }
+
     fun showSpinner() : Spinner =
         mSpinner.apply { visibility = View.VISIBLE }
 
@@ -133,6 +148,9 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
             mSwipeRefreshLayout.isRefreshing = false
         }
     }
+
+    protected val entriesCount : Int
+        get() = mEntriesAdapter?.itemCount ?: 0
 
     abstract fun refreshEntries() : Any
 }
