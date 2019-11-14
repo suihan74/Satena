@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -312,13 +313,14 @@ class BookmarksActivity : ActivityBase() {
             mEntry = entry
         }
         else if (entry is BookmarksEntry) {
+            val uri = Uri.parse(entry.url)
             mEntry = Entry(
                 id = entry.id,
                 title = entry.title,
                 description = "",
                 count = entry.count,
                 url = entry.url,
-                rootUrl = entry.url,
+                rootUrl = uri.scheme?.plus("//${uri.authority}") ?: entry.url,
                 faviconUrl = "",
                 imageUrl = entry.screenshot,
                 bookmarkedData = null

@@ -465,6 +465,32 @@ object HatenaClient : BaseClient(), CoroutineScope {
     }
 
     /**
+     * 指定サイトの既にブクマが付いているエントリ一覧を取得
+     */
+    fun getEntriesAsync(
+        url: String,
+        entriesType: EntriesType,
+        allMode: Boolean = false,
+        page: Int? = null
+    ) : Deferred<List<Entry>> = async {
+
+        val sort = when (entriesType) {
+            EntriesType.Recent -> if (allMode) "eid" else "recent"
+            EntriesType.Hot -> "count"
+        }
+
+        val apiUrl = buildString {
+            append("$B_BASE_URL/api/ipad.entrylist?${cacheAvoidance()}&url=${Uri.encode(url)}")
+            append("&sort=$sort")
+            if (page != null) append("&page=$page")
+        }
+
+        val listType = object : TypeToken<List<Entry>>() {}.type
+
+        return@async getJson<List<Entry>>(listType, apiUrl)
+    }
+
+    /**
      * 指定ユーザがブクマしたエントリを取得する
      */
     fun getUserEntriesAsync(

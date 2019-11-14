@@ -129,6 +129,7 @@ open class EntriesAdapter(
 
     private fun makeAdditionalMenuItems(entry: Entry) : (ArrayList<Pair<Int, ()->Unit>>)->Unit =
         { items: ArrayList<Pair<Int, ()->Unit>> ->
+            items.add(R.string.entry_action_show_entries to { showEntries(entry) })
             if (HatenaClient.signedIn()) {
                 if (entry.bookmarkedData == null) {
                     items.add(R.string.entry_action_read_later to { addToReadLaterEntries(entry) })
@@ -143,6 +144,11 @@ open class EntriesAdapter(
             }
             items.add(R.string.entry_action_ignore to { addEntryToIgnores(entry) })
         }
+
+    private fun showEntries(entry: Entry) {
+        val activity = fragment.activity as? EntriesActivity ?: throw RuntimeException("activity error")
+        activity.refreshEntriesFragment(Category.Search, query = entry.rootUrl, forceUpdate = true)
+    }
 
     private fun addToReadLaterEntries(entry: Entry) {
         fragment.launch(Dispatchers.Main) {
@@ -293,8 +299,10 @@ open class EntriesAdapter(
                 field = value
                 if (value == null) return
 
+                val rootUrlRegex = Regex("""https?://(.+)/$""")
+
                 title.text = value.title
-                domain.text = Uri.parse(value.url).host
+                domain.text = rootUrlRegex.find(value.rootUrl)?.groupValues?.get(1) ?: Uri.parse(value.url).host
                 count.text = "${value.count} users"
 
                 if (value.faviconUrl.isNullOrEmpty()) {

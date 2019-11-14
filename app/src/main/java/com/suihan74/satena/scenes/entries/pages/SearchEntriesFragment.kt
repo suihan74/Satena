@@ -22,14 +22,9 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
     override val isSearchViewVisible: Boolean = true
 
     companion object {
-        fun createInstance(query: String, searchType: SearchType) = SearchEntriesFragment().apply {
-            mQuery = query
+        fun createInstance(query: String? = null, searchType: SearchType = SearchType.Text) = SearchEntriesFragment().apply {
+            mQuery = query ?: ""
             mSearchType = searchType
-        }
-
-        fun createInstance() = SearchEntriesFragment().apply {
-            mQuery = ""
-            mSearchType = SearchType.Text
         }
 
         private const val BUNDLE_QUERY = "mQuery"
@@ -61,6 +56,15 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         return mRoot
     }
 
+    override fun onDetach() {
+        val activity = activity as? EntriesActivity
+        activity?.searchView?.apply {
+            setQuery("", true)
+        }
+
+        super.onDetach()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.search_entries, menu)
@@ -73,6 +77,8 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
             visibility = View.VISIBLE
             queryHint = defaultQuery
             isSubmitButtonEnabled = false
+            isIconified = false
+
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextChange(newText: String?): Boolean {
                     return false
@@ -86,15 +92,14 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
                 }
             })
 
-            if (mQuery.isNotBlank()) {
+            if (mQuery.isBlank()) {
+                requestFocus()
+                requestFocusFromTouch()
+            }
+            else {
+                clearFocus()
                 setQuery(mQuery, true)
             }
-
-            setQuery("", false)
-            isIconified = false
-            requestFocus()
-            requestFocusFromTouch()
-
         }
 
         // テキスト/タグ
@@ -159,16 +164,8 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
         }
     }
 
-    private fun search(query: String? = null) : Boolean {
-/*
-        val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-        val currentFocus = activity?.currentFocus
-
-        if (imm?.isActive == true && currentFocus != null) {
-            imm.hideSoftInputFromWindow(currentFocus.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-        }
-*/
-        if (query == null) return false
+    fun search(query: String? = null) : Boolean {
+        if (query.isNullOrBlank()) return false
 
         mQuery = query
         refreshEntries()
@@ -178,7 +175,12 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
     override fun refreshEntries() {
         (activity as? EntriesActivity)?.updateToolbar()
         super.refreshEntries("エントリ検索失敗") { offset ->
-            HatenaClient.searchEntriesAsync(mQuery, mSearchType, mEntriesType, of = offset)
+            if (mQuery.startsWith("http://") || mQuery.startsWith("https://")) {
+                HatenaClient.getEntriesAsync(mQuery, mEntriesType, allMode = false)
+            }
+            else {
+                HatenaClient.searchEntriesAsync(mQuery, mSearchType, mEntriesType, of = offset)
+            }
         }
     }
 }

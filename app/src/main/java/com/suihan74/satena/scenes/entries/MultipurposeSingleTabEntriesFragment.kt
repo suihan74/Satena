@@ -15,6 +15,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Deferred
@@ -112,7 +113,7 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
                             }
                             catch (e: Exception) {
                                 Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                                activity!!.showToast(errorMessage)
+                                SatenaApplication.showToast(errorMessage)
                             }
                             finally {
                                 loadCompleted()

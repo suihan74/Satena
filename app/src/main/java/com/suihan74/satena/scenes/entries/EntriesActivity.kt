@@ -281,7 +281,7 @@ class EntriesActivity : ActivityBase() {
                         }
 
                         else -> {
-                            refreshEntriesFragment(category, true)
+                            refreshEntriesFragment(category, forceUpdate = true)
                             checkNoticeTransition(intent)
                         }
                     }
@@ -519,8 +519,9 @@ class EntriesActivity : ActivityBase() {
         menuButton.setImageResource(R.drawable.ic_baseline_menu_white)
     }
 
-    private fun refreshEntriesFragment(category: Category, forceUpdate: Boolean = false) {
+    fun refreshEntriesFragment(category: Category, query: String? = null, forceUpdate: Boolean = false) {
         if (mCurrentCategory == category && !forceUpdate) return
+        expandAppBar()
 
         val fragment = when (category) {
             Category.MyTags -> {
@@ -531,8 +532,15 @@ class EntriesActivity : ActivityBase() {
             }
 
             Category.Search -> {
-                val fragment = SearchEntriesFragment.createInstance()
-                replaceFragment(fragment)
+                if (mCurrentCategory == category) {
+                    (currentFragment as? SearchEntriesFragment)?.also {
+                        it.search(query)
+                    }
+                }
+                else {
+                    val fragment = SearchEntriesFragment.createInstance(query)
+                    replaceFragment(fragment)
+                }
             }
 
             Category.MyHotEntries -> {
@@ -610,6 +618,24 @@ class EntriesActivity : ActivityBase() {
 
             else ->
                 super.onBackPressed()
+        }
+    }
+
+    /**
+     * AppBarを表示する（スクロールによる非表示を解除する）
+     */
+    private fun expandAppBar() {
+        findViewById<AppBarLayout>(R.id.action_bar)?.run {
+            setExpanded(true, true)
+        }
+    }
+
+    /**
+     * AppBarを非表示状態にする（スクロールによる非表示の動作をプログラム側から着火する）
+     */
+    private fun collapseAppBar() {
+        findViewById<AppBarLayout>(R.id.action_bar)?.run {
+            setExpanded(false, true)
         }
     }
 }
