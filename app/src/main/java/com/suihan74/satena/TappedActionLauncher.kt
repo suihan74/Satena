@@ -4,6 +4,9 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.view.LayoutInflater
+import android.widget.TextView
+import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.models.TapEntryAction
@@ -88,8 +91,19 @@ object TappedActionLauncher {
 
         additionalItemsAdder?.invoke(items)
 
+        val rootUrlRegex = Regex("""https?://(.+)/$""")
+        val rootUrl = rootUrlRegex.find(entry.rootUrl)?.groupValues?.get(1) ?: Uri.parse(entry.rootUrl).host ?: ""
+
+        val titleView = LayoutInflater.from(context).inflate(R.layout.dialog_title_entry, null).apply {
+            findViewById<TextView>(R.id.title).text = entry.title
+            findViewById<TextView>(R.id.domain).text = rootUrl
+            Glide.with(context)
+                .load(Uri.parse(entry.faviconUrl))
+                .into(findViewById(R.id.favicon))
+        }
+
         AlertDialog.Builder(context, R.style.AlertDialogStyle)
-            .setTitle(entry.title)
+            .setCustomTitle(titleView)
             .setNegativeButton("Cancel", null)
             .setItems(items.map { context.getText(it.first) }.toTypedArray()) { _, which ->
                 items[which].second()

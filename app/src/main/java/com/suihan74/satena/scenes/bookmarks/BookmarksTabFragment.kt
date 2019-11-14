@@ -23,7 +23,6 @@ import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
-import com.suihan74.satena.scenes.bookmarks.tabs.CustomBookmarksTabFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
@@ -383,7 +382,7 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
                     .setMultiChoiceItems(tagNames, states) { _, which, isChecked ->
                         diffs[which] = isChecked
                     }
-                    .setNeutralButton("新規タグに登録") { _, _ ->
+                    .setNeutralButton("新規タグ") { _, _ ->
                         val dialog = UserTagDialogFragment.createInstance { _, name, _ ->
                             if (userTagsContainer.containsTag(name)) {
                                 context!!.showToast("既に存在するタグです")

@@ -60,7 +60,7 @@
     <string name="entry_action_show_page">ページを開く</string>
     <string name="entry_action_show_page_in_browser">ページを外部ブラウザで開く</string>
     <string name="entry_action_show_menu">メニューダイアログを開く</string>
-    <string name="entry_action_show_entries">このサイトのエントリ一覧</string>
+    <string name="entry_action_show_entries">このサイトのエントリ</string>
     <string name="entry_action_read_later">あとで読む</string>
     <string name="entry_action_read">読んだ</string>
     <string name="entry_action_delete_bookmark">ブックマークを削除する</string>

@@ -471,23 +471,97 @@ object HatenaClient : BaseClient(), CoroutineScope {
         url: String,
         entriesType: EntriesType,
         allMode: Boolean = false,
-        page: Int? = null
+        page: Int = 1
     ) : Deferred<List<Entry>> = async {
 
         val sort = when (entriesType) {
-            EntriesType.Recent -> if (allMode) "eid" else "recent"
+            EntriesType.Recent -> if (allMode) "eid" else ""
             EntriesType.Hot -> "count"
         }
 
         val apiUrl = buildString {
-            append("$B_BASE_URL/api/ipad.entrylist?${cacheAvoidance()}&url=${Uri.encode(url)}")
-            append("&sort=$sort")
-            if (page != null) append("&page=$page")
+            append(
+                "$B_BASE_URL/entrylist?${cacheAvoidance()}&url=${Uri.encode(url)}",
+                "&page=$page",
+                "&sort=$sort")
         }
 
-        val listType = object : TypeToken<List<Entry>>() {}.type
+        val anondRootUrl = "https://anond.hatelabo.jp/"
+        val anondImageUrl = "https://cdn-ak-scissors.b.st-hatena.com/image/square/abf4f339344e96f39ffb9c18856eca5d454e63f8/height=280;version=1;width=400/https%3A%2F%2Fanond.hatelabo.jp%2Fimages%2Fog-image-1500.gif"
 
-        return@async getJson<List<Entry>>(listType, apiUrl)
+        val countRegex = Regex("""(\d+)\s*users""")
+        val thumbnailRegex = Regex("""background-image:url\('(.+)'\);""")
+        val classNamePrefix = "entrylist-contents"
+
+        // エントリIDは個別のブクマページを取得しないと分からないので取得タスクをまとめて待機する
+        val entryIdsTasks = ArrayList<Deferred<Long?>>()
+
+        val entries = get(apiUrl).use { response ->
+            val responseStr = response.body?.string() ?: throw RuntimeException("failed to get entries: $url")
+            val html = Jsoup.parse(responseStr)
+            html.body().getElementsByClass("$classNamePrefix-main").mapNotNull m@ { entry ->
+                val (title, entryUrl) = entry.getElementsByClass("$classNamePrefix-title").firstOrNull()?.let {
+                    it.getElementsByTag("a").firstOrNull()?.let { link ->
+                        link.attr("title") to link.attr("href")
+                    }
+                } ?: return@m null
+
+                val count = entry.getElementsByClass("$classNamePrefix-users").firstOrNull()?.let {
+                    countRegex.find(it.wholeText())?.groupValues?.get(1)?.toIntOrNull()
+                } ?: return@m null
+
+                val (rootUrl, faviconUrl) = entry.getElementsByClass("$classNamePrefix-detail").firstOrNull()?.let {
+                    val rootUrl = it.getElementsByAttributeValue("data-gtm-click-label", "entry-info-root-url").firstOrNull()?.attr("href")?.let { path ->
+                        Uri.decode(path.replace("/entrylist?url=", ""))
+                    } ?: entryUrl
+                    val faviconUrl = it.getElementsByClass("favicon").firstOrNull()?.attr("src") ?: ""
+
+                    rootUrl to faviconUrl
+                } ?: return@m null
+
+                val (description, imageUrl) = entry.getElementsByClass("$classNamePrefix-body").firstOrNull()?.let {
+                    val description = it.wholeText() ?: ""
+                    val imageUrl = it.getElementsByAttributeValue("data-gtm-click-label", "entry-info-thumbnail").firstOrNull()?.attr("style")?.let { style ->
+                        thumbnailRegex.find(style)?.groupValues?.get(1)
+                    } ?: if (rootUrl == anondRootUrl) anondImageUrl else ""
+
+                    description to imageUrl
+                } ?: ("" to "")
+
+                val tempId = entryIdsTasks.size.toLong()
+                entryIdsTasks.add(getEntryIdAsync(entryUrl))
+
+                Entry(
+                    id = tempId,
+                    title = title,
+                    description = description,
+                    count = count,
+                    url = entryUrl,
+                    rootUrl = rootUrl,
+                    faviconUrl = faviconUrl,
+                    imageUrl = imageUrl
+                )
+            }
+        }
+
+        entryIdsTasks.awaitAll()
+
+        return@async entries.mapNotNull {
+            it.copy(id = entryIdsTasks[it.id.toInt()].await() ?: return@mapNotNull null)
+        }
+    }
+
+    /**
+     * ページのエントリIDを取得する（ブックマークが存在しない場合nullが返る）
+     */
+    fun getEntryIdAsync(url: String) : Deferred<Long?> = async {
+        val bookmarkUrl = getCommentPageUrlFromEntryUrl(url)
+        return@async get(bookmarkUrl).use { response ->
+            if (response.code != 200) return@use null
+
+            val html = Jsoup.parse(response.body!!.string())
+            html.getElementsByTag("html")?.firstOrNull()?.attr("data-entry-eid")?.toLongOrNull()
+        }
     }
 
     /**
