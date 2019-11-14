@@ -167,6 +167,9 @@ class EntriesActivity : ActivityBase() {
         val noticesButton = findViewById<FloatingActionButton>(R.id.entries_menu_notices_button)
         noticesButton.setOnClickListener {
             closeFABMenu()
+            when (currentFragment) {
+                is SiteEntriesFragment -> popFragment()
+            }
             showFragment(NoticesFragment.createInstance(), null)
         }
 
@@ -522,6 +525,11 @@ class EntriesActivity : ActivityBase() {
     fun refreshEntriesFragment(category: Category, query: String? = null, forceUpdate: Boolean = false) {
         if (mCurrentCategory == category && !forceUpdate) return
         expandAppBar()
+
+        when (currentFragment) {
+            is NoticesFragment -> popFragment()
+            is SiteEntriesFragment -> popFragment()
+        }
 
         val fragment = when (category) {
             Category.MyTags -> {
