@@ -70,18 +70,17 @@ class BookmarksActivity : ActivityBase() {
 
         setHidingProgressBarAction { progressBar, background ->
             if (progressBar?.visibility == View.VISIBLE) {
-                progressBar.apply {
-                    animate()
-                        .withEndAction {
-                            visibility = View.INVISIBLE
-                            background?.visibility = View.INVISIBLE
-                        }
-                        .alphaBy(1f)
-                        .alpha(0f)
-                        .scaleX(4f)
-                        .scaleY(4f)
-                        .duration = 250
-                }
+                progressBar
+                    .animate()
+                    .withEndAction {
+                        progressBar.visibility = View.INVISIBLE
+                        background?.visibility = View.INVISIBLE
+                    }
+                    .alphaBy(1f)
+                    .alpha(0f)
+                    .scaleX(4f)
+                    .scaleY(4f)
+                    .duration = 250
             }
         }
     }
@@ -89,16 +88,12 @@ class BookmarksActivity : ActivityBase() {
     companion object {
         private var mPreloadingStopped = false
         private var preloadingStopped : Boolean
-            get() {
-                lock(mPreloadingStopped) {
-                    return mPreloadingStopped
-                }
-            }
-            private set(value) {
+            get() = lock(mPreloadingStopped) { mPreloadingStopped }
+
+            private set(value) =
                 lock(mPreloadingStopped) {
                     mPreloadingStopped = value
                 }
-            }
 
         fun stopPreLoading() {
             preloadingStopped = true
@@ -141,6 +136,7 @@ class BookmarksActivity : ActivityBase() {
                     yield()
                 }
 
+                val retryLimit = 5
                 if (bookmarksEntryTask.isCompleted) {
                     val bookmarksEntry = bookmarksEntryTask.await()
                     val urls = bookmarksEntry.bookmarks
@@ -148,12 +144,12 @@ class BookmarksActivity : ActivityBase() {
                         .map { it.getBookmarkUrl(entry) }
 
                     var result : List<StarsEntry>? = null
-                    for (times in 1..5) {
+                    for (times in 1..retryLimit) {
                         try {
                             result = HatenaClient.getStarsEntryAsync(urls).await()
                         }
                         catch (e: Exception) {
-                            if (times == 5) {
+                            if (times == retryLimit) {
                                 Log.e("preLoading", "failed to fetch stars")
                             }
                             else {

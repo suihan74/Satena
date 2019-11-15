@@ -106,23 +106,21 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
             maxLines = Int.MAX_VALUE
 
             // Doneボタン押下でIME隠す
-            setOnEditorActionListener { _, action, _ ->
-                activity?.currentFocus?.let {
-                    when (action) {
-                        EditorInfo.IME_ACTION_DONE -> {
-                            val im = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                            try {
-                                im.hideSoftInputFromWindow(
-                                    it.windowToken,
-                                    InputMethodManager.HIDE_NOT_ALWAYS
-                                )
-                            }
-                            catch (e: Exception) { false }
+            setOnEditorActionListener { _, action, _ -> activity?.currentFocus?.let {
+                when (action) {
+                    EditorInfo.IME_ACTION_DONE -> {
+                        try {
+                            val im = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                            im?.hideSoftInputFromWindow(
+                                it.windowToken,
+                                InputMethodManager.HIDE_NOT_ALWAYS
+                            )
                         }
-                        else -> false
+                        catch (e: Exception) { false }
                     }
-                } ?: false
-            }
+                    else -> false
+                }
+            } ?: false }
         }
 
         content.findViewById<Spinner>(R.id.category_spinner).apply {
@@ -173,14 +171,14 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
             .setPositiveButton("OK") { _, _ ->
                 launch(Dispatchers.Main) {
                     try {
-                        if (mEntry != null && mBookmark != null) {
-                            HatenaClient.reportAsync(mEntry!!, mBookmark!!, category, text).await()
-                        }
-                        else if (mUser != null) {
-                            HatenaClient.reportAsync(mUser!!, category, text).await()
-                        }
-                        else {
-                            throw RuntimeException()
+                        when {
+                            mEntry != null && mBookmark != null ->
+                                HatenaClient.reportAsync(mEntry!!, mBookmark!!, category, text).await()
+
+                            mUser != null ->
+                                HatenaClient.reportAsync(mUser!!, category, text).await()
+
+                            else -> throw RuntimeException()
                         }
 
                         if (withMuting) {
