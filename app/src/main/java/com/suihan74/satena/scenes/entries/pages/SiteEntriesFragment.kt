@@ -7,6 +7,7 @@ import android.view.*
 import com.suihan74.HatenaLib.EntriesType
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
@@ -28,6 +29,8 @@ class SiteEntriesFragment : SingleTabEntriesFragmentBase() {
 
     override val title : String
         get() = "「${Regex("""https?://(.+)/$""").find(mRootUrl)?.groupValues?.get(1) ?: Uri.parse(mRootUrl).host}」のエントリ"
+
+    override val currentCategory = Category.Site
 
     /** 次に読み込むページ */
     private var nextPage = 1

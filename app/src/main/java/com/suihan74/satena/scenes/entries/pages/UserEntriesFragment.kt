@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
 class UserEntriesFragment : SingleTabEntriesFragmentBase() {
@@ -12,6 +13,8 @@ class UserEntriesFragment : SingleTabEntriesFragmentBase() {
     private lateinit var mUser : String
     override val title: String
         get() = "${mUser}のブックマーク"
+
+    override val currentCategory = Category.User
 
     companion object {
         fun createInstance(user: String) = UserEntriesFragment().apply {

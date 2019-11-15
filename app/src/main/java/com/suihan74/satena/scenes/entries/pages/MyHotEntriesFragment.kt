@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
 class MyHotEntriesFragment : SingleTabEntriesFragmentBase() {
@@ -15,6 +16,8 @@ class MyHotEntriesFragment : SingleTabEntriesFragmentBase() {
     }
 
     override val title = SatenaApplication.instance.getString(R.string.category_myhotentries)
+
+    override val currentCategory = Category.MyHotEntries
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = super.onCreateView(inflater, container, savedInstanceState)!!

@@ -100,12 +100,12 @@ class PreferencesEntriesFragment : Fragment() {
 
                         val v = (!cat.singleColumns).toVisibility()
                         view.findViewById<View>(R.id.preferences_entries_initial_tab_desc).visibility = v
-                        view.findViewById<Button>(R.id.preferences_entries_initial_tab).apply {
-                            this@apply.visibility = v
+                        view.findViewById<Button>(R.id.preferences_entries_initial_tab).apply initialTab@ {
+                            this@initialTab.visibility = v
                             val tabOffset = if (cat == Category.MyBookmarks) 2 else 0
                             val key = PreferenceKey.ENTRIES_INITIAL_TAB
                             val currentInitialTab = EntriesTabType.fromInt(prefs.getInt(key) + tabOffset)
-                            this@apply.text = context.getText(currentInitialTab.textId)
+                            this@initialTab.text = context.getText(currentInitialTab.textId)
                         }
 
                         dialog.dismiss()

@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toolbar
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -485,6 +486,12 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
             if (searchEditText.visibility == View.GONE) {
                 searchEditText.text.clear()
+                val im = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                im?.hideSoftInputFromWindow(
+                    mRoot.windowToken,
+                    InputMethodManager.HIDE_NOT_ALWAYS
+                )
+                searchEditText.clearFocus()
             }
             else {
                 searchEditText.requestFocus()
@@ -577,6 +584,27 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                     bookmarksEntry
                 )
             mDrawer = mRoot.findViewById(R.id.bookmarks_drawer_layout)
+            val drawerToggle = object : ActionBarDrawerToggle(activity, mDrawer, activity.toolbar,
+                R.string.drawer_open,
+                R.string.drawer_close
+            ) {
+                override fun onDrawerOpened(drawerView: View) {
+                    super.onDrawerOpened(drawerView)
+
+                    val focusedView = activity.currentFocus
+                    if (focusedView != null) {
+                        val im = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                        im?.hideSoftInputFromWindow(
+                            focusedView.windowToken,
+                            InputMethodManager.HIDE_NOT_ALWAYS
+                        )
+                        focusedView.clearFocus()
+                    }
+                }
+            }
+            mDrawer.addDrawerListener(drawerToggle)
+            drawerToggle.isDrawerIndicatorEnabled = false
+            drawerToggle.syncState()
 
             if (!coroutineContext.isActive) {
                 return@withContext
@@ -968,6 +996,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         if (searchText.visibility == View.VISIBLE) {
             searchText.setText("")
             searchText.visibility = View.GONE
+            mSearchModeEnabled = false
             return true
         }
 

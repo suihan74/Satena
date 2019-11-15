@@ -1,11 +1,13 @@
 package com.suihan74.satena.scenes.entries
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
@@ -68,6 +70,8 @@ class EntriesActivity : ActivityBase() {
         set(value) {
             mCurrentCategory = value
         }
+
+    private var isLauncherActivity = true
 
     /** はてなから取得したカテゴリ情報 */
     var categoryEntries : List<CategoryEntry> = emptyList()
@@ -137,6 +141,17 @@ class EntriesActivity : ActivityBase() {
 
             override fun onDrawerOpened(drawerView: View) {
                 super.onDrawerOpened(drawerView)
+
+                val focusedView = this@EntriesActivity.currentFocus
+                if (focusedView != null) {
+                    val im = this@EntriesActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    im?.hideSoftInputFromWindow(
+                        focusedView.windowToken,
+                        InputMethodManager.HIDE_NOT_ALWAYS
+                    )
+                    focusedView.clearFocus()
+                }
+
                 actionBar?.title = title
             }
         }
@@ -167,9 +182,6 @@ class EntriesActivity : ActivityBase() {
         val noticesButton = findViewById<FloatingActionButton>(R.id.entries_menu_notices_button)
         noticesButton.setOnClickListener {
             closeFABMenu()
-            when (currentFragment) {
-                is SiteEntriesFragment -> popFragment()
-            }
             showFragment(NoticesFragment.createInstance(), null)
         }
 
@@ -274,11 +286,15 @@ class EntriesActivity : ActivityBase() {
 
                     when {
                         displayUser != null -> {
+                            currentCategory = Category.User
+                            isLauncherActivity = false
                             val fragment = UserEntriesFragment.createInstance(displayUser)
                             showFragment(fragment)
                         }
 
                         displayTag != null -> {
+                            currentCategory = Category.Search
+                            isLauncherActivity = false
                             val fragment = SearchEntriesFragment.createInstance(displayTag, SearchType.Tag)
                             showFragment(fragment)
                         }
@@ -551,6 +567,11 @@ class EntriesActivity : ActivityBase() {
                 }
             }
 
+            Category.Site -> {
+                val fragment = SiteEntriesFragment.createInstance(query!!)
+                showFragment(fragment)
+            }
+
             Category.MyHotEntries -> {
                 val fragment = MyHotEntriesFragment.createInstance()
                 replaceFragment(fragment)
@@ -611,10 +632,22 @@ class EntriesActivity : ActivityBase() {
             currentFragment is NoticesFragment ->
                 popFragment()
 
-            currentFragment is SiteEntriesFragment->
+            currentFragment is SiteEntriesFragment-> {
                 popFragment()
+                val currentFragment = currentFragment
+                currentCategory = when(currentFragment) {
+                    is EntriesFragment -> currentFragment.currentCategory!!
+                    is SingleTabEntriesFragmentBase -> currentFragment.currentCategory
+                    is MaintenanceInformationFragment -> currentFragment.currentCategory
+                    else -> throw RuntimeException("invalid category")
+                }
+            }
 
-            mCurrentCategory != mHomeCategory -> // ホームカテゴリ以外のカテゴリにいる場合はホームに戻る
+            // BookmarksActivityなどから呼ばれたインスタンスの場合はすぐに戻る
+            !this.isLauncherActivity ->
+                super.onBackPressed()
+
+            currentCategory != mHomeCategory -> // ホームカテゴリ以外のカテゴリにいる場合はホームに戻る
                 refreshEntriesFragment(mHomeCategory)
 
             mUsingTerminationDialog ->

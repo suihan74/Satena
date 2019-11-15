@@ -12,6 +12,7 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.HatenaLib.Tag
 import com.suihan74.satena.R
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,8 @@ class UserTagsEntriesFragment : SingleTabEntriesFragmentBase() {
 
     override val title: String
         get() = String.format("%sのタグ", mUser)
+
+    override val currentCategory = Category.MyTags
 
     companion object {
         fun createInstance(user: String) = UserTagsEntriesFragment().apply {

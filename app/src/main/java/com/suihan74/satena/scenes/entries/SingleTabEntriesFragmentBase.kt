@@ -30,6 +30,8 @@ abstract class SingleTabEntriesFragmentBase : CoroutineScopeFragment() {
     private var mEntriesAdapter : EntriesAdapter? = null
     private var mEntriesScrollingUpdater: RecyclerViewScrollingUpdater? = null
 
+    abstract val currentCategory: Category
+
     open fun onRestoreSaveInstanceState(savedInstanceState: Bundle) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {

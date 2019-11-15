@@ -15,6 +15,7 @@ import com.suihan74.HatenaLib.MaintenanceEntry
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.MaintenanceEntriesAdapter
 import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.DividerItemDecorator
@@ -36,6 +37,8 @@ class MaintenanceInformationFragment : CoroutineScopeFragment() {
 
     override val title: String
         get() = SatenaApplication.instance.getString(R.string.category_maintenance)
+
+    val currentCategory = Category.Maintenance
 
     companion object {
         fun createInstance() =

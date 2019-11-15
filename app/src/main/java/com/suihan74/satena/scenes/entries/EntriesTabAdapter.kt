@@ -98,8 +98,8 @@ class EntriesTabAdapter(
     suspend fun getEntries(tabPosition: Int, offset: Int? = null) : List<Entry> {
         val pos = tabPosition + if (category == Category.MyBookmarks) EntriesTabType.MYBOOKMARKS.int else 0
         return when (EntriesTabType.fromInt(pos)) {
-            EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category.toApiCategory(), of = offset).await()
-            EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category.toApiCategory(), of = offset).await()
+            EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category.categoryInApi!!, of = offset).await()
+            EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category.categoryInApi!!, of = offset).await()
             EntriesTabType.MYBOOKMARKS -> {
                 val searchQuery = fragment.searchQuery
                 if (searchQuery.isNullOrBlank()) {

@@ -8,6 +8,7 @@ import com.suihan74.HatenaLib.EntriesType
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
@@ -19,6 +20,9 @@ class SearchEntriesFragment : SingleTabEntriesFragmentBase() {
 
     override val title : String
         get() = mQuery
+
+    override val currentCategory = Category.Search
+
     override val isSearchViewVisible : Boolean = true
 
     companion object {
@@ -55,19 +59,6 @@ class SearchEntriesFragment : SingleTabEntriesFragmentBase() {
 
     override fun onResume() {
         super.onResume()
-
-        val activity = activity as? EntriesActivity
-
-        // 検索クエリエディタ
-        activity?.searchView?.apply {
-            if (mQuery.isBlank()) {
-                requestFocus()
-                requestFocusFromTouch()
-            }
-            else {
-                clearFocus()
-            }
-        }
 
         if (entriesCount == 0 && mQuery.isNotBlank()) {
             refreshEntries()
@@ -109,6 +100,14 @@ class SearchEntriesFragment : SingleTabEntriesFragmentBase() {
                     return false
                 }
             })
+
+            if (mQuery.isBlank()) {
+                requestFocus()
+                requestFocusFromTouch()
+            }
+            else {
+                clearFocus()
+            }
 
             setQuery(mQuery, false)
         }

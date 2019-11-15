@@ -150,8 +150,10 @@ open class EntriesAdapter(
 
     private fun showEntries(entry: Entry) {
         val activity = fragment.activity as? EntriesActivity ?: throw RuntimeException("activity error")
-        val fragment = SiteEntriesFragment.createInstance(entry.rootUrl)
+        activity.refreshEntriesFragment(Category.Site, entry.rootUrl)
+/*        val fragment = SiteEntriesFragment.createInstance(entry.rootUrl)
         activity.showFragment(fragment, entry.rootUrl)
+        */
     }
 
     private fun addToReadLaterEntries(entry: Entry) {
@@ -211,7 +213,7 @@ open class EntriesAdapter(
         val dialog = IgnoredEntryDialogFragment.createInstance(
             entry.url,
             entry.title
-        ) { fm, ignoredEntry ->
+        ) { _, ignoredEntry ->
             if (ignoredEntries.contains(ignoredEntry)) {
                 context.showToast("既に存在する非表示設定です")
                 return@createInstance false
