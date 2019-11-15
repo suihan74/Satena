@@ -9,9 +9,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.Spinner
 import androidx.fragment.app.DialogFragment
-import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
@@ -88,14 +89,12 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
         mRoot = content
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
 
-        val user = mBookmark?.user ?: mUser ?: throw RuntimeException("invalid user")
-
-        content.findViewById<TextView>(R.id.user_name).text = user
-        content.findViewById<TextView>(R.id.bookmark_comment).text = mBookmark?.comment ?: ""
-        val icon = content.findViewById<ImageView>(R.id.user_icon)
-        Glide.with(requireContext())
-            .load(HatenaClient.getUserIconUrl(user))
-            .into(icon)
+        if (mBookmark != null) {
+            content.setCustomTitle(mBookmark!!)
+        }
+        else {
+            content.setCustomTitle(mUser!!)
+        }
 
         content.findViewById<EditText>(R.id.text).run {
             setText(

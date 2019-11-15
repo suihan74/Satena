@@ -25,7 +25,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
 
         val clickedId = intent.getIntExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS_CLICKED_ID, -1)
         val bIntent = when (clickedId) {
-            R.id.bookmark_button -> {
+            R.id.bookmark_button ->
                 Intent(context, BookmarkPostActivity::class.java).apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, url)
@@ -34,9 +34,8 @@ class BrowserToolbarManager : BroadcastReceiver() {
                     }
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
-            }
 
-            R.id.show_bookmarks_button -> {
+            R.id.show_bookmarks_button ->
                 Intent(context, BookmarksActivity::class.java).apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, url)
@@ -45,7 +44,6 @@ class BrowserToolbarManager : BroadcastReceiver() {
                     }
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
-            }
 
             else -> throw NotImplementedError()
         }
@@ -53,15 +51,10 @@ class BrowserToolbarManager : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (entryLoadingJob != null) {
-            entryLoadingJob!!.invokeOnCompletion {
-                entryLoadingJob = null
-                onReceiveImpl(context, intent)
-            }
-        }
-        else {
+        entryLoadingJob?.invokeOnCompletion {
+            entryLoadingJob = null
             onReceiveImpl(context, intent)
-        }
+        } ?: onReceiveImpl(context, intent)
     }
 
     companion object {
@@ -115,42 +108,33 @@ class BrowserToolbarManager : BroadcastReceiver() {
     }
 }
 
-fun Context.showCustomTabsIntent(entry: Entry) {
-    val url = entry.ampUrl ?: entry.url
+private fun Context.showCustomTabsIntent(remoteViews: RemoteViews, url: String) = CustomTabsIntent
+    .Builder()
+    .setShowTitle(true)
+    .enableUrlBarHiding()
+    .addDefaultShareMenuItem()
+    .setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
+    .setSecondaryToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
+    .setSecondaryToolbarViews(
+        remoteViews,
+        BrowserToolbarManager.getClickableIds(),
+        BrowserToolbarManager.getOnClickPendingIntent(this)
+    )
+    .build()
+    .let {
+        val packageName = CustomTabsHelper.getPackageNameToUse(this)
+        it.intent.setPackage(packageName)
+        it.launchUrl(this, Uri.parse(url))
+    }
 
-    val intent = CustomTabsIntent.Builder()
-        .setShowTitle(true)
-        .enableUrlBarHiding()
-        .addDefaultShareMenuItem()
-        .setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
-        .setSecondaryToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
-        .setSecondaryToolbarViews(
-            BrowserToolbarManager.createRemoteViews(this, entry),
-            BrowserToolbarManager.getClickableIds(),
-            BrowserToolbarManager.getOnClickPendingIntent(this)
-        )
-        .build()
+fun Context.showCustomTabsIntent(entry: Entry) =
+    showCustomTabsIntent(
+        BrowserToolbarManager.createRemoteViews(this, entry),
+        entry.ampUrl ?: entry.url
+    )
 
-    val packageName = CustomTabsHelper.getPackageNameToUse(this)
-    intent.intent.setPackage(packageName)
-    intent.launchUrl(this, Uri.parse(url))
-}
-
-fun Context.showCustomTabsIntent(url: String, coroutineScope: CoroutineScope = GlobalScope) {
-    val intent = CustomTabsIntent.Builder()
-        .setShowTitle(true)
-        .enableUrlBarHiding()
-        .addDefaultShareMenuItem()
-        .setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
-        .setSecondaryToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
-        .setSecondaryToolbarViews(
-            BrowserToolbarManager.createRemoteViews(this, url, coroutineScope),
-            BrowserToolbarManager.getClickableIds(),
-            BrowserToolbarManager.getOnClickPendingIntent(this)
-        )
-        .build()
-
-    val packageName = CustomTabsHelper.getPackageNameToUse(this)
-    intent.intent.setPackage(packageName)
-    intent.launchUrl(this, Uri.parse(url))
-}
+fun Context.showCustomTabsIntent(url: String, coroutineScope: CoroutineScope = GlobalScope) =
+    showCustomTabsIntent(
+        BrowserToolbarManager.createRemoteViews(this, url, coroutineScope),
+        url
+    )

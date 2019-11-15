@@ -9,36 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <ImageView
-                android:id="@+id/user_icon"
-                android:contentDescription="@null"
-                android:layout_width="48dp"
-                android:layout_height="48dp"/>
-
-        <TextView
-                android:id="@+id/user_name"
-                android:textStyle="bold"
-                android:textColor="@color/textColor"
-                android:singleLine="true"
-                android:ellipsize="end"
-                android:layout_toEndOf="@id/user_icon"
-                android:layout_alignTop="@id/user_icon"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="-2dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
-        <TextView
-                android:id="@+id/bookmark_comment"
-                android:textColor="@color/textColor"
-                android:layout_alignStart="@id/user_name"
-                android:layout_below="@id/user_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-    </RelativeLayout>
+    <include layout="@layout/dialog_title_bookmark"/>
 
     <TextView
             android:id="@+id/description"

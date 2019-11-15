@@ -21,6 +21,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
+import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
@@ -473,8 +474,12 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
                     })
                 }
 
+                val titleView = LayoutInflater.from(context).inflate(R.layout.dialog_title_bookmark, null).apply {
+                    setCustomTitle(bookmark)
+                }
+
                 AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setTitle("id:${bookmark.user}")
+                    .setCustomTitle(titleView)
                     .setNegativeButton("Cancel", null)
                     .setItems(items.map { it.first }.toTypedArray()) { _, which ->
                         items[which].second()
