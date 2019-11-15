@@ -12,13 +12,13 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.HatenaLib.Tag
 import com.suihan74.satena.R
-import com.suihan74.satena.scenes.entries.MultipurposeSingleTabEntriesFragment
+import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class UserTagsEntriesFragment : MultipurposeSingleTabEntriesFragment() {
+class UserTagsEntriesFragment : SingleTabEntriesFragmentBase() {
     private lateinit var mUser : String
     private var mTags : List<Tag> = emptyList()
     private var mSelectedTag : Tag? = null

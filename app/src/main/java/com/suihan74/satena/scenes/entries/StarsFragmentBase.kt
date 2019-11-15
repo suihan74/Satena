@@ -14,7 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 
-abstract class StarsFragmentBase : MultipurposeSingleTabEntriesFragment() {
+abstract class StarsFragmentBase : SingleTabEntriesFragmentBase() {
     data class BookmarkCommentUrl (
         val url : String,
         val user : String,

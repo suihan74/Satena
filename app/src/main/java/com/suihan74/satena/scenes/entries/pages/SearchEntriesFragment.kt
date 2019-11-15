@@ -9,9 +9,9 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries.EntriesActivity
-import com.suihan74.satena.scenes.entries.MultipurposeSingleTabEntriesFragment
+import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
-class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
+class SearchEntriesFragment : SingleTabEntriesFragmentBase() {
     private lateinit var mRoot : View
     private lateinit var mQuery : String
     private lateinit var mSearchType : SearchType
@@ -56,6 +56,19 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
     override fun onResume() {
         super.onResume()
 
+        val activity = activity as? EntriesActivity
+
+        // 検索クエリエディタ
+        activity?.searchView?.apply {
+            if (mQuery.isBlank()) {
+                requestFocus()
+                requestFocusFromTouch()
+            }
+            else {
+                clearFocus()
+            }
+        }
+
         if (entriesCount == 0 && mQuery.isNotBlank()) {
             refreshEntries()
         }
@@ -64,9 +77,9 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
     override fun onDetach() {
         val activity = activity as? EntriesActivity
         activity?.searchView?.apply {
-            setQuery("", true)
+            setQuery("", false)
+            visibility = View.GONE
         }
-
         super.onDetach()
     }
 
@@ -97,14 +110,7 @@ class SearchEntriesFragment : MultipurposeSingleTabEntriesFragment() {
                 }
             })
 
-            if (mQuery.isBlank()) {
-                requestFocus()
-                requestFocusFromTouch()
-            }
-            else {
-                clearFocus()
-                setQuery(mQuery, true)
-            }
+            setQuery(mQuery, false)
         }
 
         // テキスト/タグ

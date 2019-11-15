@@ -5,9 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.satena.scenes.entries.MultipurposeSingleTabEntriesFragment
+import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
-class UserEntriesFragment : MultipurposeSingleTabEntriesFragment() {
+class UserEntriesFragment : SingleTabEntriesFragmentBase() {
 
     private lateinit var mUser : String
     override val title: String

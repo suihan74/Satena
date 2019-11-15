@@ -22,7 +22,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
+abstract class SingleTabEntriesFragmentBase : CoroutineScopeFragment() {
     private lateinit var mRoot : View
     private lateinit var mSpinner : Spinner
     private lateinit var mSwipeRefreshLayout : SwipeRefreshLayout
@@ -64,7 +64,15 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
 
         if (mEntriesAdapter != null) {
             mRoot.findViewById<RecyclerView>(R.id.entries_list).apply {
+                val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
+                    R.drawable.recycler_view_item_divider
+                )!!)
+                addItemDecoration(dividerItemDecoration)
+                layoutManager = LinearLayoutManager(context)
                 adapter = mEntriesAdapter
+                if (mEntriesScrollingUpdater != null) {
+                    addOnScrollListener(mEntriesScrollingUpdater!!)
+                }
             }
         }
     }
@@ -104,7 +112,7 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
 
                 if (mEntriesAdapter == null) {
                     mEntriesAdapter = EntriesAdapter(
-                        this@MultipurposeSingleTabEntriesFragment,
+                        this@SingleTabEntriesFragmentBase,
                         Category.All,
                         0,
                         entries
@@ -121,7 +129,7 @@ abstract class MultipurposeSingleTabEntriesFragment : CoroutineScopeFragment() {
                 }
                 mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter) {
                     override fun load() {
-                        this@MultipurposeSingleTabEntriesFragment.launch(Dispatchers.Main) {
+                        this@SingleTabEntriesFragmentBase.launch(Dispatchers.Main) {
                             try {
                                 val additionalEntries = updater(mEntriesAdapter.entireOffset).await()
                                 mEntriesAdapter.addEntries(additionalEntries)

@@ -8,9 +8,9 @@ import com.suihan74.HatenaLib.EntriesType
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries.EntriesActivity
-import com.suihan74.satena.scenes.entries.MultipurposeSingleTabEntriesFragment
+import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
-class SiteEntriesFragment : MultipurposeSingleTabEntriesFragment() {
+class SiteEntriesFragment : SingleTabEntriesFragmentBase() {
     /** 表示順 */
     private enum class EntriesOrder(
         val description: String,

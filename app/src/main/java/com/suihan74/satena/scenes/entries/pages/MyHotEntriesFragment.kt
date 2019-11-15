@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.scenes.entries.MultipurposeSingleTabEntriesFragment
+import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
-class MyHotEntriesFragment : MultipurposeSingleTabEntriesFragment() {
+class MyHotEntriesFragment : SingleTabEntriesFragmentBase() {
     companion object {
         fun createInstance() = MyHotEntriesFragment()
     }
