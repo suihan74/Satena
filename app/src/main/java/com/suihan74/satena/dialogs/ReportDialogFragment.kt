@@ -2,13 +2,11 @@ package com.suihan74.satena.dialogs
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
@@ -18,6 +16,7 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.ReportCategory
 import com.suihan74.satena.R
+import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
@@ -106,21 +105,12 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
             maxLines = Int.MAX_VALUE
 
             // Doneボタン押下でIME隠す
-            setOnEditorActionListener { _, action, _ -> activity?.currentFocus?.let {
+            setOnEditorActionListener { _, action, _ ->
                 when (action) {
-                    EditorInfo.IME_ACTION_DONE -> {
-                        try {
-                            val im = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-                            im?.hideSoftInputFromWindow(
-                                it.windowToken,
-                                InputMethodManager.HIDE_NOT_ALWAYS
-                            )
-                        }
-                        catch (e: Exception) { false }
-                    }
+                    EditorInfo.IME_ACTION_DONE -> activity?.hideSoftInputMethod() ?: false
                     else -> false
                 }
-            } ?: false }
+            }
         }
 
         content.findViewById<Spinner>(R.id.category_spinner).apply {

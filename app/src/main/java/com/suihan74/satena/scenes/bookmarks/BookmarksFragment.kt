@@ -486,12 +486,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
             if (searchEditText.visibility == View.GONE) {
                 searchEditText.text.clear()
-                val im = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-                im?.hideSoftInputFromWindow(
-                    mRoot.windowToken,
-                    InputMethodManager.HIDE_NOT_ALWAYS
-                )
-                searchEditText.clearFocus()
+                activity?.hideSoftInputMethod()
             }
             else {
                 searchEditText.requestFocus()
@@ -590,16 +585,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
             ) {
                 override fun onDrawerOpened(drawerView: View) {
                     super.onDrawerOpened(drawerView)
-
-                    val focusedView = activity.currentFocus
-                    if (focusedView != null) {
-                        val im = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-                        im?.hideSoftInputFromWindow(
-                            focusedView.windowToken,
-                            InputMethodManager.HIDE_NOT_ALWAYS
-                        )
-                        focusedView.clearFocus()
-                    }
+                    activity.hideSoftInputMethod()
                 }
             }
             mDrawer.addDrawerListener(drawerToggle)

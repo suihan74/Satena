@@ -1,13 +1,11 @@
 package com.suihan74.satena.scenes.entries
 
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
@@ -32,6 +30,7 @@ import com.suihan74.satena.scenes.entries.pages.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -141,17 +140,7 @@ class EntriesActivity : ActivityBase() {
 
             override fun onDrawerOpened(drawerView: View) {
                 super.onDrawerOpened(drawerView)
-
-                val focusedView = this@EntriesActivity.currentFocus
-                if (focusedView != null) {
-                    val im = this@EntriesActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-                    im?.hideSoftInputFromWindow(
-                        focusedView.windowToken,
-                        InputMethodManager.HIDE_NOT_ALWAYS
-                    )
-                    focusedView.clearFocus()
-                }
-
+                hideSoftInputMethod()
                 actionBar?.title = title
             }
         }
