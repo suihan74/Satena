@@ -7,14 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ToggleButton
-import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
 import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 
-class PreferencesBookmarksFragment : Fragment() {
+class PreferencesBookmarksFragment : PreferencesFragmentBase() {
     companion object {
         fun createInstance() : PreferencesBookmarksFragment =
             PreferencesBookmarksFragment()

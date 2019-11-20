@@ -7,14 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import androidx.fragment.app.Fragment
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.authentication.MastodonAuthenticationActivity
+import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.MastodonClientHolder
 
-class PreferencesAccountsFragment : Fragment() {
+class PreferencesAccountsFragment : PreferencesFragmentBase() {
     private lateinit var mRoot: View
 
     companion object {

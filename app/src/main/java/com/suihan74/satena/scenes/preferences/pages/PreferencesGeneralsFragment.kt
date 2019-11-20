@@ -7,17 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ToggleButton
-import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.NumberPickerDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
+import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.get
 
-class PreferencesGeneralsFragment : Fragment() {
+class PreferencesGeneralsFragment : PreferencesFragmentBase() {
     private lateinit var mRoot : View
 
     companion object {

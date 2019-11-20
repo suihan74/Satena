@@ -114,6 +114,7 @@ class PreferencesActivity : ActivityBase() {
                     val btn = findViewById<ImageButton>(mTabAdapter.getIconId(fixedPosition))
                     btn?.setBackgroundColor(ContextCompat.getColor(this@PreferencesActivity, R.color.colorPrimary))
                     title = "設定 > ${getString(mTabAdapter.getPageTitleId(fixedPosition))}"
+                    invalidateOptionsMenu()
                 }
             })
         }

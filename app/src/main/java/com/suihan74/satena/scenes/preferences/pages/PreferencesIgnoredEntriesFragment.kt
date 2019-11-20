@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -15,12 +14,13 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.IgnoredEntriesKey
 import com.suihan74.satena.models.IgnoredEntry
+import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesAdapter
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.get
 
-class PreferencesIgnoredEntriesFragment : Fragment() {
+class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
     private lateinit var mIgnoredEntriesList : RecyclerView
     private lateinit var mIgnoredEntriesAdapter : IgnoredEntriesAdapter
     private lateinit var mIgnoredEntries : ArrayList<IgnoredEntry>

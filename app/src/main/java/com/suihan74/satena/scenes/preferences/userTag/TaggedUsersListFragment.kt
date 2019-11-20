@@ -45,6 +45,7 @@ class TaggedUsersListFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
         enterTransition = TransitionSet()
             .addTransition(Fade())
             .addTransition(Slide(GravityCompat.END))
@@ -55,7 +56,6 @@ class TaggedUsersListFragment : Fragment() {
         mRoot = root
 
         val parentFragment = parentFragment as PreferencesUserTagsFragment
-        setHasOptionsMenu(true)
 
         savedInstanceState?.run {
             val name = getString(BUNDLE_USER_TAG_NAME)!!
@@ -94,6 +94,11 @@ class TaggedUsersListFragment : Fragment() {
         }
 
         return root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        activity?.invalidateOptionsMenu()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

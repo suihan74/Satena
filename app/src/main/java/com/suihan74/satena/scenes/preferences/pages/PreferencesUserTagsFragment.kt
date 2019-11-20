@@ -4,20 +4,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.TaggedUserDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
+import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersListFragment
 import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.get
 
-class PreferencesUserTagsFragment : Fragment(), BackPressable {
+class PreferencesUserTagsFragment : PreferencesFragmentBase(), BackPressable {
     private lateinit var mUserTagsContainer : UserTagsContainer
 
     private var mDisplayedUserTag : UserTag? = null

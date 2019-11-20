@@ -22,6 +22,7 @@ import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.UserTagsKey
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
+import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,7 @@ import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
 import java.io.File
 
-class PreferencesInformationFragment : CoroutineScopeFragment(), PermissionRequestable {
+class PreferencesInformationFragment : PreferencesFragmentBase(), PermissionRequestable {
     companion object {
         fun createInstance() =
             PreferencesInformationFragment()
