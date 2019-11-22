@@ -1,17 +1,12 @@
 package com.suihan74.satena.scenes.entries
 
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Spinner
-import android.widget.TextView
 import androidx.appcompat.widget.SearchView
-import androidx.core.view.GravityCompat
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.Entry
@@ -206,71 +201,24 @@ class EntriesFragment : CoroutineScopeFragment() {
             .firstOrNull { it.code == currentCategory!!.code }
             ?.issues
             ?: return
-        val spinnerItems = listOf("特集").plus(issues.map { it.name })
+        val spinnerItems = issues.map { it.name }
 
         inflater.inflate(R.menu.spinner_issues, menu)
 
         (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
-            gravity = GravityCompat.END
-            background = activity.getDrawable(R.drawable.spinner_allow_issues)
-            backgroundTintList = ColorStateList.valueOf(activity.getColor(R.color.colorPrimaryText))
-            adapter = object : ArrayAdapter<String>(
-                context!!,
-                android.R.layout.simple_spinner_item,
-                spinnerItems
-            ) {
-                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    return super.getView(position, convertView, parent).apply {
-                        if (this is TextView) {
-                            this.text = ""
-                        }
+            initialize(activity, spinnerItems, R.drawable.spinner_allow_issues, "特集を選択します") { position ->
+                val prevIssue = currentIssue
+                currentIssue =
+                    if (position == null || position == 0) {
+                        null
                     }
-                }
-
-                override fun getDropDownView(
-                    position: Int,
-                    convertView: View?,
-                    parent: ViewGroup
-                ): View {
-                    val view = super.getDropDownView(position, convertView, parent)
-                    if (position == 0) {
-                        (view as TextView).text = "特集指定なし"
+                    else {
+                        val item = spinnerItems[position]
+                        issues.firstOrNull { it.name == item }
                     }
-                    return view
-                }
-            }.apply {
-                setDropDownViewResource(R.layout.spinner_drop_down_item)
-            }
 
-            setOnLongClickListener {
-                activity.showToast("特集を選択します")
-                return@setOnLongClickListener true
-            }
-
-            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    val prevIssue = currentIssue
-                    currentIssue =
-                        if (position == 0) {
-                            null
-                        }
-                        else {
-                            val item = spinnerItems[position]
-                            issues.firstOrNull { it.name == item }
-                        }
-
-                    if (prevIssue != currentIssue) {
-                        refreshEntriesTabs(currentCategory!!)
-                    }
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                    currentIssue = null
+                if (prevIssue != currentIssue) {
+                    refreshEntriesTabs(currentCategory!!)
                 }
             }
 
@@ -278,7 +226,7 @@ class EntriesFragment : CoroutineScopeFragment() {
                 val currentIssueName = currentIssue!!.name
                 val position = spinnerItems.indexOfFirst { it == currentIssueName }
                 if (position >= 0) {
-                    setSelection(position)
+                    setSelection(position + 1)
                 }
             }
         }

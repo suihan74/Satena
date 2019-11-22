@@ -569,6 +569,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getUserEntriesAsync(
         user: String,
+        tag: String? = null,
         limit: Int? = null,
         of: Int? = null
     ) : Deferred<List<Entry>> = async {
@@ -580,6 +581,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
             }
             if (of != null) {
                 append("&offset=$of")
+            }
+            if (tag != null) {
+                append("&tag=$tag")
             }
         }
 
