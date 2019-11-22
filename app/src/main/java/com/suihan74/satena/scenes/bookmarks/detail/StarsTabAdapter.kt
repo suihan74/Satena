@@ -70,16 +70,12 @@ class StarsTabAdapter(
             })
             if (containsMentionsToUser) {
                 add(Tab.MENTION_TO_USER to {
-                    MentionedBookmarksTabFragment.createInstance(bookmarksFragment, bookmark,
-                        Tab.MENTION_TO_USER
-                    )
+                    MentionedBookmarksTabFragment.createInstance(bookmark, Tab.MENTION_TO_USER)
                 })
             }
             if (containsMentionsFromUser) {
                 add(Tab.MENTION_FROM_USER to {
-                    MentionedBookmarksTabFragment.createInstance(bookmarksFragment, bookmark,
-                        Tab.MENTION_FROM_USER
-                    )
+                    MentionedBookmarksTabFragment.createInstance(bookmark, Tab.MENTION_FROM_USER)
                 })
             }
         }

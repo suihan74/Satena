@@ -1,5 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
+import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,71 +12,84 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
-import com.suihan74.satena.scenes.bookmarks.BookmarksFragment
+import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.FragmentContainerActivity
 
 class MentionedBookmarksTabFragment : Fragment() {
     private lateinit var mRoot : View
-    private var mBookmarksFragment : BookmarksFragment? = null
-    private var mTargetBookmark : Bookmark? = null
-    private lateinit var mTabMode : StarsTabAdapter.Tab
 
     companion object {
-        fun createInstance(bookmarksFragment: BookmarksFragment, targetBookmark: Bookmark, tabMode: StarsTabAdapter.Tab) = MentionedBookmarksTabFragment().apply {
-            mBookmarksFragment = bookmarksFragment
-            mTargetBookmark = targetBookmark
-            mTabMode = tabMode
+        fun createInstance(targetBookmark: Bookmark, tabMode: StarsTabAdapter.Tab) = MentionedBookmarksTabFragment().apply {
+            arguments = Bundle().apply {
+                putSerializable(ARG_KEY_TARGET_BOOKMARK, targetBookmark)
+                putInt(ARG_KEY_TAB_MODE, tabMode.int)
+            }
         }
 
-        private const val BUNDLE_TARGET_USER = "mTargetBookmark"
-        private const val BUNDLE_TAB_MODE = "mTabMode"
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.apply {
-            putString(BUNDLE_TARGET_USER, mTargetBookmark?.user ?: "")
-            putInt(BUNDLE_TAB_MODE, mTabMode.int)
-        }
+        private const val ARG_KEY_TARGET_BOOKMARK = "target_bookmark"
+        private const val ARG_KEY_TAB_MODE = "tab_mode"
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_stars_tab, container, false)
         mRoot = root
 
-        savedInstanceState?.run {
-            val user = getString(BUNDLE_TARGET_USER)
-            mTargetBookmark = mBookmarksFragment?.bookmarksEntry?.bookmarks?.firstOrNull { it.user == user }
-            mTabMode = StarsTabAdapter.Tab.fromInt(getInt(BUNDLE_TAB_MODE))
-        }
+        val bookmarksFragment = (activity as? BookmarksActivity)?.bookmarksFragment
+            ?: throw RuntimeException("MentionedBookmarksTabFragment#onCreateView")
+
+        val (targetBookmark, tabMode) = arguments!!.run {
+            Pair(
+                getSerializable(ARG_KEY_TARGET_BOOKMARK) as Bookmark,
+                StarsTabAdapter.Tab.fromInt(getInt(ARG_KEY_TAB_MODE))
+            ) }
 
         root.findViewById<RecyclerView>(R.id.stars_list).apply {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!, R.drawable.recycler_view_item_divider)!!)
-            val bookmarks = mBookmarksFragment?.bookmarksEntry?.bookmarks ?: emptyList()
-            val starsMap = mBookmarksFragment?.starsMap ?: emptyMap()
+            val bookmarks = bookmarksFragment.bookmarksEntry?.bookmarks ?: emptyList()
+            val starsMap = bookmarksFragment.starsMap
 
-            val displayBookmarks = StarsTabAdapter.getMentions(mTargetBookmark!!, bookmarks, mTabMode)
+            val displayBookmarks = StarsTabAdapter.getMentions(targetBookmark, bookmarks, tabMode)
 
             addItemDecoration(dividerItemDecoration)
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             adapter = object : MentionedBookmarksAdapter(displayBookmarks, starsMap) {
                 override fun onItemClicked(user: String) {
-/*
+                    val target = bookmarks.firstOrNull { it.user == user } ?: return
                     (activity as FragmentContainerActivity).apply {
                         showFragment(
                             BookmarkDetailFragment.createInstance(
-                                target,
-                                mStarsMap,
-                                bookmarksEntry
-                            ), null)
+                                target
+                            ), "detail_id:${user}"
+                        )
                     }
-*/
+                }
+
+                override fun onItemLongClicked(user: String): Boolean {
+                    val items = arrayListOf<Pair<String, ()->Any>>(
+                        "最近のブックマークを見る" to {
+                            val intent = Intent(SatenaApplication.instance, EntriesActivity::class.java).apply {
+                                putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
+                            }
+                            startActivity(intent)
+                        })
+
+                    AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                        .setTitle(user)
+                        .setNegativeButton("Cancel", null)
+                        .setItems(items.map { it.first }.toTypedArray()) { _, which ->
+                            items[which].second()
+                        }
+                        .show()
+
+                    return true
                 }
             }
         }
 
-        //retainInstance = true
         return root
     }
 
