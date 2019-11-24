@@ -14,8 +14,8 @@ android {
     defaultConfig {
         applicationId "com.suihan74.satena"
         // バージョン情報
-        versionCode 64
-        versionName "1.24"
+        versionCode 65
+        versionName "1.25"
 
         minSdkVersion 23
         targetSdkVersion 28

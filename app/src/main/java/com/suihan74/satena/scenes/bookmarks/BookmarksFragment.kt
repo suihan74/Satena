@@ -969,22 +969,25 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     }
 
     override fun onBackPressed() : Boolean {
-        if (mDrawer.isDrawerOpen(GravityCompat.END)) {
-            mDrawer.closeDrawer(GravityCompat.END)
-            return true
-        }
-        else if (mAreScrollButtonsVisible && mBookmarksScrollMenuButton.isShown) {
-            hideScrollButtons()
-            return true
-        }
+        try {
+            if (mDrawer.isDrawerOpen(GravityCompat.END)) {
+                mDrawer.closeDrawer(GravityCompat.END)
+                return true
+            }
+            else if (mAreScrollButtonsVisible && mBookmarksScrollMenuButton.isShown) {
+                hideScrollButtons()
+                return true
+            }
 
-        val searchText = mRoot.findViewById<EditText>(R.id.bookmarks_search_text)
-        if (searchText.visibility == View.VISIBLE) {
-            searchText.setText("")
-            searchText.visibility = View.GONE
-            mSearchModeEnabled = false
-            return true
+            val searchText = mRoot.findViewById<EditText>(R.id.bookmarks_search_text)
+            if (searchText.visibility == View.VISIBLE) {
+                searchText.setText("")
+                searchText.visibility = View.GONE
+                mSearchModeEnabled = false
+                return true
+            }
         }
+        catch (e: Exception) {}
 
         return false
     }

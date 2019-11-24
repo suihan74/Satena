@@ -84,7 +84,9 @@ class StarsTabFragment : CoroutineScopeFragment() {
             mStarsAdapter = object : StarsAdapter(context, mBookmark, starsMap, allBookmarks, mStarsTabMode) {
                 override fun removeItem(user: String) {
                     super.removeItem(user)
-                    mBookmarkDetailFragment?.updateStars()
+                    launch(Dispatchers.Main) {
+                        mBookmarkDetailFragment?.updateStars()
+                    }
                 }
 
                 override fun onItemClicked(user: String, star: Star?) {
@@ -148,7 +150,7 @@ class StarsTabFragment : CoroutineScopeFragment() {
             setOnRefreshListener {
                 launch(Dispatchers.Main) {
                     try {
-                        mBookmarkDetailFragment?.updateStars()?.join()
+                        mBookmarkDetailFragment?.updateStars()
                     }
                     catch (e: Exception) {
                         activity.showToast("スターリスト更新失敗")
@@ -161,7 +163,6 @@ class StarsTabFragment : CoroutineScopeFragment() {
             }
         }
 
-        //retainInstance = true
         return view
     }
 

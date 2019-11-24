@@ -9,7 +9,6 @@ import com.suihan74.utilities.BookmarkCommentDecorator
 
 class StarsTabAdapter(
     private val viewPager: ViewPager,
-    bookmarksFragment : BookmarksFragment,
     detailFragment: BookmarkDetailFragment,
     private val bookmark : Bookmark
 ) : FragmentPagerAdapter(detailFragment.childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
@@ -51,7 +50,7 @@ class StarsTabAdapter(
         }
     }
 
-    init {
+    fun updateTabs(bookmarksFragment: BookmarksFragment) {
         val analyzed = BookmarkCommentDecorator.convert(bookmark.comment)
         val ids = analyzed.ids
         val targetUser = bookmark.user
@@ -60,7 +59,7 @@ class StarsTabAdapter(
         val containsMentionsFromUser = bookmarksEntry.bookmarks.any { b -> ids.contains(b.user) }
         val containsMentionsToUser = bookmarksEntry.bookmarks.any { b -> b.comment.contains("id:$targetUser") }
 
-        tabs.apply {
+        tabs.run {
             clear()
             add(Tab.TO_USER to {
                 StarsTabFragment.createInstance(bookmark, StarsAdapter.StarsTabMode.TO_USER)
@@ -79,11 +78,18 @@ class StarsTabAdapter(
                 })
             }
         }
+
+        notifyDataSetChanged()
+    }
+
+    fun clearTabs() {
+        tabs.clear()
+        notifyDataSetChanged()
     }
 
     override fun getItem(position: Int) = tabs[position].second()
 
-    override fun getPageTitle(position: Int) = when (tabs[position].first) {
+    override fun getPageTitle(position: Int) = when (Tab.fromInt(position)) {
         Tab.TO_USER -> "★ → ${bookmark.user}"
         Tab.FROM_USER -> "${bookmark.user} → ★"
         Tab.MENTION_TO_USER -> "mention → ${bookmark.user}"

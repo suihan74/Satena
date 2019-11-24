@@ -277,34 +277,32 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         val tabLayout = mView.findViewById<TabLayout>(R.id.tab_layout)
         val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
 
-        launch(Dispatchers.Main) {
-            val task = bookmarksFragment!!.getFetchStarsTask(mBookmark.user)
-            if (task == null || task.isCompleted) {
-                val adapter = StarsTabAdapter(
-                    tabPager,
-                    bookmarksFragment!!,
-                    this@BookmarkDetailFragment,
-                    mBookmark
-                )
-                tabPager.adapter = adapter
+        val adapter = StarsTabAdapter(
+            tabPager,
+            this@BookmarkDetailFragment,
+            mBookmark
+        )
+        tabPager.adapter = adapter
 
-                tabLayout.run {
-                    setupWithViewPager(tabPager)
-                    addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-                        override fun onTabSelected(p0: TabLayout.Tab?) {}
-                        override fun onTabUnselected(p0: TabLayout.Tab?) {}
-                        override fun onTabReselected(tab: TabLayout.Tab?) {
-                            val fragment = adapter.findFragment(tab!!.position)
-                            if (fragment is StarsTabFragment) {
-                                fragment.scrollToTop()
-                            }
-                            else if (fragment is MentionedBookmarksTabFragment) {
-                                fragment.scrollToTop()
-                            }
-                        }
-                    })
+        tabLayout.run {
+            setupWithViewPager(tabPager)
+            addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(p0: TabLayout.Tab?) {}
+                override fun onTabUnselected(p0: TabLayout.Tab?) {}
+                override fun onTabReselected(tab: TabLayout.Tab?) {
+                    if (tab == null) return
+
+                    when (val fragment = adapter.findFragment(tab.position)) {
+                        is StarsTabFragment -> fragment.scrollToTop()
+                        is MentionedBookmarksTabFragment -> fragment.scrollToTop()
+                    }
                 }
-            } else {
+            })
+        }
+
+        val task = bookmarksFragment!!.getFetchStarsTask(mBookmark.user)
+        if (task?.isActive == true) {
+            launch(Dispatchers.Main) {
                 val progressBar = mView.findViewById<ProgressBar>(R.id.detail_progress_bar).apply {
                     visibility = View.VISIBLE
                 }
@@ -315,13 +313,9 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                         return@launch
                     }
 
-                    tabPager.adapter = StarsTabAdapter(
-                        tabPager,
-                        bookmarksFragment!!,
-                        this@BookmarkDetailFragment,
-                        mBookmark
-                    )
-                    tabLayout.setupWithViewPager(tabPager)
+                    if (bookmarksFragment != null) {
+                        adapter.updateTabs(bookmarksFragment!!)
+                    }
                 }
                 catch (e: Exception) {
                     Log.d("FailedToFetchStars", e.message)
@@ -330,6 +324,9 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                     progressBar.visibility = View.GONE
                 }
             }
+        }
+        else {
+            adapter.updateTabs(bookmarksFragment!!)
         }
     }
 
@@ -500,10 +497,11 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                     val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
                     tabPager.adapter = StarsTabAdapter(
                         tabPager,
-                        bookmarksFragment!!,
                         this@BookmarkDetailFragment,
                         mBookmark
-                    )
+                    ).apply {
+                        updateTabs(bookmarksFragment!!)
+                    }
 
                     activity?.showToast("${mBookmark.user}のブコメに★をつけました")
                 }
@@ -518,25 +516,28 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         }
     }
 
-    fun updateStars() = launch {
+    suspend fun updateStars() = withContext(Dispatchers.Main) {
         bookmarksFragment!!.updateStar(mBookmark)
 
-        withContext(Dispatchers.Main) {
-            val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
-            tabPager.adapter = StarsTabAdapter(
-                tabPager,
-                bookmarksFragment!!,
-                this@BookmarkDetailFragment,
-                mBookmark
-            )
+        val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
+        tabPager.adapter = StarsTabAdapter(
+            tabPager,
+            this@BookmarkDetailFragment,
+            mBookmark
+        ).apply {
+            updateTabs(bookmarksFragment!!)
         }
     }
 
-    override fun onBackPressed(): Boolean {
+    override fun onBackPressed(): Boolean =
         if (mIsStarMenuOpened) {
             closeStarMenu()
-            return true
+            true
         }
-        return false
-    }
+        else {
+            val tabPager = mView.findViewById<ViewPager>(R.id.tab_pager)
+            (tabPager.adapter as? StarsTabAdapter)?.clearTabs()
+            tabPager.adapter = null
+            false
+        }
 }
