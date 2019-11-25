@@ -109,6 +109,12 @@ enum class Category(
         requireSignedIn = false,
         singleColumns = true),
 
+    History(
+        R.string.category_history,
+        R.drawable.ic_category_history,
+        requireSignedIn = false,
+        singleColumns = true),
+
     Site(0, 0,
         displayInList = false),
 

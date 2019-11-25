@@ -581,6 +581,11 @@ class EntriesActivity : ActivityBase() {
                 replaceFragment(fragment)
             }
 
+            Category.History -> {
+                val fragment = HistoryFragment.createInstance()
+                replaceFragment(fragment)
+            }
+
             else -> {
                 when (val fragment = currentFragment) {
                     is EntriesFragment -> {

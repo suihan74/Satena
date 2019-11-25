@@ -87,7 +87,7 @@
                 android:layout_height="wrap_content"/>
 
         <TextView
-                android:text="@string/pref_entries_hiding_toolbar_by_scrolling"
+                android:text="@string/pref_entries_hiding_toolbar_by_scrolling_desc"
                 android:textColor="?attr/textColor"
                 android:layout_marginTop="24dp"
                 android:layout_width="wrap_content"
@@ -95,6 +95,20 @@
 
         <ToggleButton
                 android:id="@+id/preferences_entries_hiding_toolbar_by_scrolling"
+                style="@style/Widget.AppCompat.Button"
+                android:textColor="@color/textColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:text="@string/pref_entries_history_max_size_desc"
+                android:textColor="?attr/textColor"
+                android:layout_marginTop="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/preferences_entries_history_max_size"
                 style="@style/Widget.AppCompat.Button"
                 android:textColor="@color/textColor"
                 android:layout_width="wrap_content"

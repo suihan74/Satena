@@ -9,12 +9,11 @@ import android.widget.Button
 import android.widget.ToggleButton
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
-import com.suihan74.satena.models.Category
-import com.suihan74.satena.models.EntriesTabType
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.dialogs.NumberPickerDialogFragment
+import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.get
 import com.suihan74.utilities.toVisibility
 
 class PreferencesEntriesFragment : PreferencesFragmentBase() {
@@ -23,8 +22,11 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
             PreferencesEntriesFragment()
     }
 
+    private var mRoot: View? = null
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_preferences_entries, container, false)
+        mRoot = view
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(activity)
         val tapActions = TapEntryAction.values().map { getString(it.titleId) }.toTypedArray()
@@ -175,8 +177,38 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
             }
         }
 
+        // ブクマ閲覧履歴の最大保存数
+        view.findViewById<Button>(R.id.preferences_entries_history_max_size).apply {
+            val key = EntriesHistoryKey.MAX_SIZE
+            val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
+            var currentMaxSize = historyPrefs.getInt(key)
+            text = String.format("%d件", currentMaxSize)
+            setOnClickListener {
+                val dialog = NumberPickerDialogFragment.createInstance(
+                    title = "ブクマ閲覧履歴の最大保存数を設定",
+                    message = "1～100件で指定できます",
+                    minValue = 1,
+                    maxValue = 100,
+                    defaultValue = currentMaxSize
+                ) { fm, value ->
+                    currentMaxSize = value
+                    historyPrefs.edit {
+                        putInt(key, value)
+                    }
+
+                    fm.get<PreferencesEntriesFragment>()?.findViewById<Button>(R.id.preferences_entries_history_max_size)?.let {
+                        it.text = String.format("%d件", value)
+                    }
+                }
+                dialog.show(fragmentManager!!, "dialog")
+            }
+        }
+
         return view
     }
 
     private fun getCategoryName(cat: Category) = getString(cat.textId)
+
+    fun <T : View> findViewById(id: Int) =
+        mRoot?.findViewById<T>(id)
 }

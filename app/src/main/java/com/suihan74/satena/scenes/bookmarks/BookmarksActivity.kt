@@ -10,6 +10,7 @@ import com.suihan74.HatenaLib.*
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.post.BookmarkPostFragment
 import com.suihan74.utilities.AccountLoader
@@ -323,6 +324,9 @@ class BookmarksActivity : ActivityBase() {
             )
             mBookmarksEntry = entry
         }
+
+        // 表示履歴に追加
+        mEntry?.saveHistory(this@BookmarksActivity)
 
         // フラグメント表示
         withContext(Dispatchers.Main) {
