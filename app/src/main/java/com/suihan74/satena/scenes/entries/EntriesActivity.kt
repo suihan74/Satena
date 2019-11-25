@@ -88,7 +88,7 @@ class EntriesActivity : ActivityBase() {
         super.onSaveInstanceState(outState)
         outState.apply {
             putBoolean("entries_showed", entriesShowed)
-            putInt("mCurrentCategory", currentCategory.int)
+            putInt("mCurrentCategory", currentCategory.ordinal)
         }
         savedCategoryEntries = categoryEntries
     }
@@ -249,7 +249,7 @@ class EntriesActivity : ActivityBase() {
                         if (home.requireSignedIn && !HatenaClient.signedIn()) {
                             // ログインが必要なカテゴリがホームに設定されているのにログインしていないとき，「総合」に設定し直す
                             prefs.edit {
-                                putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.All.int)
+                                putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.All.ordinal)
                             }
                             Category.All
                         }

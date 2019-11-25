@@ -30,7 +30,7 @@ class CustomBookmarksTabFragment : BookmarksTabFragment() {
     companion object {
         fun createInstance() = CustomBookmarksTabFragment().apply {
             arguments = Bundle().apply {
-                putInt(ARGS_KEY_TAB_TYPE, BookmarksTabType.CUSTOM.int)
+                putInt(ARGS_KEY_TAB_TYPE, BookmarksTabType.CUSTOM.ordinal)
             }
         }
     }

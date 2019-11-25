@@ -36,10 +36,10 @@ enum class PreferenceKey(
     ////////////////////////////////////////
     // entries
     ////////////////////////////////////////
-    ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.int),
-    ENTRY_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.int),
-    ENTRIES_HOME_CATEGORY(typeInfo<Int>(), Category.All.int),
-    ENTRIES_INITIAL_TAB(typeInfo<Int>(), EntriesTabType.POPULAR.int),
+    ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.ordinal),
+    ENTRY_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.ordinal),
+    ENTRIES_HOME_CATEGORY(typeInfo<Int>(), Category.All.ordinal),
+    ENTRIES_INITIAL_TAB(typeInfo<Int>(), EntriesTabType.POPULAR.ordinal),
     ENTRIES_MENU_TAP_GUARD(typeInfo<Boolean>(), true),
     ENTRIES_HIDING_TOOLBAR_BY_SCROLLING(typeInfo<Boolean>(), true),
 
@@ -47,15 +47,15 @@ enum class PreferenceKey(
     // bookmarks
     ////////////////////////////////////////
     USING_POST_BOOKMARK_DIALOG(typeInfo<Boolean>(), true),
-    BOOKMARKS_INITIAL_TAB(typeInfo<Int>(), BookmarksTabType.POPULAR.int),
+    BOOKMARKS_INITIAL_TAB(typeInfo<Int>(), BookmarksTabType.POPULAR.ordinal),
     BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING(typeInfo<Boolean>(), true),
     BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS(typeInfo<Boolean>(), true),
     BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING(typeInfo<Boolean>(), false),
     BOOKMARKS_SHOWING_STARS_OF_IGNORED_USERS(typeInfo<Boolean>(), true),
     BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING(typeInfo<Boolean>(), false),
     USING_POST_STAR_DIALOG(typeInfo<Boolean>(), true),
-    BOOKMARK_LINK_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_PAGE.int),
-    BOOKMARK_LINK_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.int),
+    BOOKMARK_LINK_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_PAGE.ordinal),
+    BOOKMARK_LINK_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.ordinal),
 
     ////////////////////////////////////////
     // custom bookmarks tab
@@ -82,8 +82,7 @@ enum class PreferenceKey(
 
 object PreferenceKeyMigrator {
     fun check(context: Context) {
-        val version = SafeSharedPreferences.version<PreferenceKey>(context)
-        when (version) {
+        when (SafeSharedPreferences.version<PreferenceKey>(context)) {
             1 -> migrateFromVersion1(context)
         }
     }

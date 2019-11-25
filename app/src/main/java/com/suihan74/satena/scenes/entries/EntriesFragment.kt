@@ -60,7 +60,7 @@ class EntriesFragment : CoroutineScopeFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(BUNDLE_CATEGORY, mEntriesTabAdapter.category.int)
+        outState.putInt(BUNDLE_CATEGORY, mEntriesTabAdapter.category.ordinal)
         if (this::mEntriesTabPager.isInitialized) {
             outState.putInt(BUNDLE_CURRENT_TAB, mEntriesTabPager.currentItem)
             outState.putSerializable(BUNDLE_ISSUE, currentIssue)
@@ -103,14 +103,12 @@ class EntriesFragment : CoroutineScopeFragment() {
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
                     if (currentCategory == Category.MyBookmarks && tab != null) {
-                        when(EntriesTabType.MYBOOKMARKS.int + tab.position) {
-                            EntriesTabType.MYBOOKMARKS.int -> {
+                        when(tab.position) {
+                            EntriesTabType.MYBOOKMARKS.tabPosition ->
                                 setHasOptionsMenu(true)
-                            }
 
-                            EntriesTabType.READLATER.int -> {
+                            EntriesTabType.READLATER.tabPosition ->
                                 setHasOptionsMenu(false)
-                            }
                         }
                     }
                 }
@@ -126,9 +124,9 @@ class EntriesFragment : CoroutineScopeFragment() {
                 val currentCategory = currentCategory ?: return@setOnTabLongClickListener true
                 val catKey = PreferenceKey.ENTRIES_HOME_CATEGORY
                 val tabKey = PreferenceKey.ENTRIES_INITIAL_TAB
-                if (prefs.getInt(catKey) != currentCategory.int || prefs.getInt(tabKey) != idx) {
+                if (prefs.getInt(catKey) != currentCategory.ordinal || prefs.getInt(tabKey) != idx) {
                     prefs.edit {
-                        put(catKey, currentCategory.int)
+                        put(catKey, currentCategory.ordinal)
                         put(tabKey, idx)
                     }
 

@@ -55,7 +55,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.run {
-            putInt(BUNDLE_CATEGORY, mCategory?.int ?: 0)
+            putInt(BUNDLE_CATEGORY, mCategory?.ordinal ?: 0)
             putInt(BUNDLE_TAB_POSITION, mTabPosition)
         }
     }

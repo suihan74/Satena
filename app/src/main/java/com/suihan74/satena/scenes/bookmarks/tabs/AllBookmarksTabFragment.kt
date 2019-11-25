@@ -15,7 +15,7 @@ class AllBookmarksTabFragment : BookmarksTabFragment() {
     companion object {
         fun createInstance() = AllBookmarksTabFragment().apply {
             arguments = Bundle().apply {
-                putInt(ARGS_KEY_TAB_TYPE, BookmarksTabType.ALL.int)
+                putInt(ARGS_KEY_TAB_TYPE, BookmarksTabType.ALL.ordinal)
             }
         }
     }

@@ -11,7 +11,7 @@ class RecentBookmarksTabFragment : BookmarksTabFragment() {
     companion object {
         fun createInstance() = RecentBookmarksTabFragment().apply {
             arguments = Bundle().apply {
-                putInt(ARGS_KEY_TAB_TYPE, BookmarksTabType.RECENT.int)
+                putInt(ARGS_KEY_TAB_TYPE, BookmarksTabType.RECENT.ordinal)
             }
         }
     }

@@ -29,17 +29,20 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
         view.findViewById<Button>(R.id.preferences_bookmarks_initial_tab).apply {
             val key = PreferenceKey.BOOKMARKS_INITIAL_TAB
             var currentInitialTab = BookmarksTabType.fromInt(prefs.getInt(key))
-            text = currentInitialTab.toString(context!!)
+            text = context!!.getText(currentInitialTab.textId)
             setOnClickListener {
                 AlertDialog.Builder(activity, R.style.AlertDialogStyle)
                     .setTitle(getString(R.string.pref_bookmarks_initial_tab_desc))
-                    .setSingleChoiceItems(BookmarksTabType.values().map { it.toString(context!!) }.toTypedArray(), currentInitialTab.int) { dialog, which ->
+                    .setSingleChoiceItems(
+                        BookmarksTabType.values().map { context!!.getText(it.textId) }.toTypedArray(),
+                        currentInitialTab.ordinal
+                    ) { dialog, which ->
                         val tab = BookmarksTabType.fromInt(which)
                         prefs.edit {
-                            putInt(key, tab.int)
+                            putInt(key, tab.ordinal)
                         }
                         currentInitialTab = tab
-                        this.text = tab.toString(context!!)
+                        this.text = context!!.getText(tab.textId)
                         dialog.dismiss()
                     }
                     .setNegativeButton("Cancel", null)
@@ -134,10 +137,10 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
                 setOnClickListener {
                     AlertDialog.Builder(activity, R.style.AlertDialogStyle)
                         .setTitle(getText(descId))
-                        .setSingleChoiceItems(tapActions, selectedAction.int) { dialog, which ->
+                        .setSingleChoiceItems(tapActions, selectedAction.ordinal) { dialog, which ->
                             selectedAction = TapEntryAction.fromInt(which)
                             prefs.edit {
-                                putInt(key, selectedAction.int)
+                                putInt(key, selectedAction.ordinal)
                             }
                             text = tapActions[which]
                             dialog.dismiss()

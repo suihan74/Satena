@@ -11,7 +11,7 @@ class PopularBookmarksTabFragment : BookmarksTabFragment() {
     companion object {
         fun createInstance() = PopularBookmarksTabFragment().apply {
             arguments = Bundle().apply {
-                putInt(ARGS_KEY_TAB_TYPE, BookmarksTabType.POPULAR.int)
+                putInt(ARGS_KEY_TAB_TYPE, BookmarksTabType.POPULAR.ordinal)
             }
         }
     }

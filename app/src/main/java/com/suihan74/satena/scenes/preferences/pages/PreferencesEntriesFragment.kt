@@ -36,10 +36,10 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
             setOnClickListener {
                 AlertDialog.Builder(activity, R.style.AlertDialogStyle)
                     .setTitle(getText(R.string.pref_entries_single_tap_action_desc))
-                    .setSingleChoiceItems(tapActions, currentSingleTapEntryAction.int) { dialog, which ->
+                    .setSingleChoiceItems(tapActions, currentSingleTapEntryAction.ordinal) { dialog, which ->
                         val act = TapEntryAction.fromInt(which)
                         prefs.edit {
-                            putInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION, act.int)
+                            putInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION, act.ordinal)
                         }
                         currentSingleTapEntryAction = act
                         text = tapActions[which]
@@ -60,11 +60,11 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
                     .setTitle(getText(R.string.pref_entries_long_tap_action_desc))
                     .setSingleChoiceItems(
                         tapActions,
-                        currentLongTapEntryAction.int
+                        currentLongTapEntryAction.ordinal
                     ) { dialog, which ->
                         val act = TapEntryAction.fromInt(which)
                         prefs.edit {
-                            putInt(PreferenceKey.ENTRY_LONG_TAP_ACTION, act.int)
+                            putInt(PreferenceKey.ENTRY_LONG_TAP_ACTION, act.ordinal)
                         }
                         currentLongTapEntryAction = act
                         text = tapActions[which]
@@ -90,10 +90,10 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
                 val categoryTexts = categories.map { getCategoryName(it) }.toTypedArray()
                 AlertDialog.Builder(activity, R.style.AlertDialogStyle)
                     .setTitle(getText(R.string.pref_home_category_desc))
-                    .setSingleChoiceItems(categoryTexts, currentHomeCategory.int) { dialog, which ->
+                    .setSingleChoiceItems(categoryTexts, currentHomeCategory.ordinal) { dialog, which ->
                         val cat = Category.fromInt(which)
                         prefs.edit {
-                            putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, cat.int)
+                            putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, cat.ordinal)
                         }
                         text = categoryTexts[which]
                         currentHomeCategory = cat
@@ -139,7 +139,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
                         items
                             .map { context.getText(it.textId) }
                             .toTypedArray(),
-                        currentInitialTab.int - tabOffset
+                        currentInitialTab.ordinal - tabOffset
                     ) { dialog, which ->
                         val tab = items[which]
                         prefs.edit {

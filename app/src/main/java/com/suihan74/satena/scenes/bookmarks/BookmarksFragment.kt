@@ -331,7 +331,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
 
     private val scrollButtons : Array<FloatingActionButton>
         get() {
-            val displayMyBookmarkButton = if (mTabPager?.currentItem == BookmarksTabType.POPULAR.int) {
+            val displayMyBookmarkButton = if (mTabPager?.currentItem == BookmarksTabType.POPULAR.ordinal) {
                 val user = HatenaClient.account?.name
                 if (user.isNullOrBlank()) {
                     false
@@ -372,7 +372,7 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
     private fun showFabs() {
         val buttons = scrollButtons
         mFABs.forEach {
-            if (it != mSettingsButton || mCurrentTabPosition == BookmarksTabType.CUSTOM.int) {
+            if (it != mSettingsButton || mCurrentTabPosition == BookmarksTabType.CUSTOM.ordinal) {
                 it.show()
             }
             else {
@@ -506,13 +506,13 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
         }
 
         mSettingsButton.apply {
-            if (mCurrentTabPosition != BookmarksTabType.CUSTOM.int) {
+            if (mCurrentTabPosition != BookmarksTabType.CUSTOM.ordinal) {
                 hide()
             }
 
             setOnClickListener {
                 val adapter = mTabPager?.adapter as? BookmarksTabAdapter
-                val fragment = adapter?.findFragment(BookmarksTabType.CUSTOM.int) as? CustomBookmarksTabFragment
+                val fragment = adapter?.findFragment(BookmarksTabType.CUSTOM.ordinal) as? CustomBookmarksTabFragment
                 fragment?.openSettingsDialog(this@BookmarksFragment)
             }
         }
@@ -636,7 +636,8 @@ class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
                     prefs.edit {
                         put(key, idx)
                     }
-                    context.showToast("${BookmarksTabType.fromInt(idx).toString(context)}タブを最初に表示するようにしました")
+                    val tabTitle = context.getString(BookmarksTabType.fromInt(idx).textId)
+                    context.showToast("${tabTitle}タブを最初に表示するようにしました")
                 }
                 return@setOnTabLongClickListener true
             }

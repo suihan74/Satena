@@ -87,17 +87,24 @@ class EntriesTabAdapter(
         }
     }
 
+    private fun fixEntriesTabType(category: Category, tabPosition: Int) : EntriesTabType {
+        val pos = when (category) {
+            Category.MyBookmarks -> tabPosition + EntriesTabType.MYBOOKMARKS.ordinal
+            else -> tabPosition
+        }
+        return EntriesTabType.fromInt(pos)
+    }
+
     override fun getPageTitle(position: Int): CharSequence? {
         val context = fragment.context ?: return null
-        val pos = position + if (category == Category.MyBookmarks) EntriesTabType.MYBOOKMARKS.int else 0
-        return context.getText(EntriesTabType.fromInt(pos).textId)
+        val tab = fixEntriesTabType(category, position)
+        return context.getText(tab.textId)
     }
 
     override fun getCount() = 2
 
     suspend fun getEntries(tabPosition: Int, offset: Int? = null) : List<Entry> {
-        val pos = tabPosition + if (category == Category.MyBookmarks) EntriesTabType.MYBOOKMARKS.int else 0
-        return when (EntriesTabType.fromInt(pos)) {
+        return when (fixEntriesTabType(category, tabPosition)) {
             EntriesTabType.POPULAR -> HatenaClient.getEntriesAsync(EntriesType.Hot, category.categoryInApi!!, of = offset).await()
             EntriesTabType.RECENT -> HatenaClient.getEntriesAsync(EntriesType.Recent, category.categoryInApi!!, of = offset).await()
             EntriesTabType.MYBOOKMARKS -> {
@@ -119,8 +126,7 @@ class EntriesTabAdapter(
     }
 
     suspend fun getEntries(issue: Issue, tabPosition: Int, offset: Int? = null) : List<Entry> {
-        val pos = tabPosition + if (category == Category.MyBookmarks) EntriesTabType.MYBOOKMARKS.int else 0
-        return when (EntriesTabType.fromInt(pos)) {
+        return when (fixEntriesTabType(category, tabPosition)) {
             EntriesTabType.POPULAR ->
                 HatenaClient.getEntriesAsync(EntriesType.Hot, issue, of = offset).await()
 
