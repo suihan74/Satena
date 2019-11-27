@@ -15,6 +15,7 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -29,10 +30,12 @@ import com.suihan74.HatenaLib.StarColor
 import com.suihan74.HatenaLib.UserColorStarsCount
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.BookmarkDialog
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.BookmarksFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -91,8 +94,10 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
 
         val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksDetailFragment has created from an invalid activity")
 
-        val user = view.findViewById<TextView>(R.id.user_name)
         val icon = view.findViewById<ImageView>(R.id.user_icon)
+
+        // ユーザー名/ユーザータグの表示を初期化
+        updateUserTags()
 
         view.findViewById<View>(R.id.tags_layout).apply {
             if (mBookmark.tags.isNullOrEmpty()) {
@@ -100,9 +105,12 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             }
             else {
                 visibility = View.VISIBLE
-                view.findViewById<TextView>(R.id.tags).apply {
+                mView.findViewById<TextView>(R.id.tags).apply {
                     text = BookmarkCommentDecorator.makeClickableTagsText(mBookmark.tags) { tag ->
-                        val intent = Intent(SatenaApplication.instance, EntriesActivity::class.java).apply {
+                        val intent = Intent(
+                            SatenaApplication.instance,
+                            EntriesActivity::class.java
+                        ).apply {
                             putExtra(EntriesActivity.EXTRA_DISPLAY_TAG, tag)
                         }
                         startActivity(intent)
@@ -110,6 +118,27 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                     movementMethod = LinkMovementMethod.getInstance()
                 }
             }
+        }
+
+        // ブクマに対するメニューを表示
+        view.findViewById<ImageButton>(R.id.menu_button).setOnClickListener {
+            val dialog = BookmarkDialog.Builder(
+                    bookmarksFragment!!,
+                    bookmark,
+                    bookmarksFragment!!.entry
+                )
+                .setOnRemoveBookmark {
+                    onBackPressed()
+                }
+                .setOnTagUser {
+                    updateUserTags()
+                }
+                .setOnSelectUrl { url ->
+                    context?.showCustomTabsIntent(url, activity)
+                }
+                .build()
+
+            dialog.show(childFragmentManager, "dialog")
         }
 
         val starMenuButton = view.findViewById<FloatingActionButton>(R.id.show_stars_button)
@@ -170,32 +199,6 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         }
 
         val analyzed = BookmarkCommentDecorator.convert(mBookmark.comment)
-
-        user.apply {
-            val tags = bookmarksFragment?.userTagsContainer?.getTagsOfUser(mBookmark.user)
-            text = if (tags.isNullOrEmpty()) {
-                mBookmark.user
-            }
-            else {
-                val tagsText = tags.joinToString(",") { it.name }
-                val tagColor = resources.getColor(R.color.tagColor, null)
-                val st = "${mBookmark.user} _$tagsText"
-                val density = resources.displayMetrics.scaledDensity
-                val size = (13 * density).toInt()
-
-                SpannableString(st).apply {
-                    val drawable = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
-                        setBounds(0, 0, lineHeight, lineHeight)
-                        setTint(tagColor)
-                    }
-                    val pos = mBookmark.user.length + 1
-                    setSpan(ImageSpan(drawable), pos, pos + 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    setSpan(TextAppearanceSpan(null, Typeface.DEFAULT.style, size, ColorStateList.valueOf(tagColor), null),
-                        mBookmark.user.length + 1, st.length, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-            }
-        }
-
 
         view.findViewById<TextView>(R.id.comment).apply {
             text = analyzed.comment
@@ -327,6 +330,34 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
         }
         else {
             adapter.updateTabs(bookmarksFragment!!)
+        }
+    }
+
+    private fun updateUserTags() {
+        mView.findViewById<TextView>(R.id.user_name).run {
+            val tags = bookmarksFragment?.userTagsContainer?.getTagsOfUser(mBookmark.user)
+            text =
+                if (tags.isNullOrEmpty()) {
+                    mBookmark.user
+                }
+                else {
+                    val tagsText = tags.joinToString(",") { it.name }
+                    val tagColor = resources.getColor(R.color.tagColor, null)
+                    val st = "${mBookmark.user} _$tagsText"
+                    val density = resources.displayMetrics.scaledDensity
+                    val size = (13 * density).toInt()
+
+                    SpannableString(st).apply {
+                        val drawable = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
+                            setBounds(0, 0, lineHeight, lineHeight)
+                            setTint(tagColor)
+                        }
+                        val pos = mBookmark.user.length + 1
+                        setSpan(ImageSpan(drawable), pos, pos + 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        setSpan(TextAppearanceSpan(null, Typeface.DEFAULT.style, size, ColorStateList.valueOf(tagColor), null),
+                            mBookmark.user.length + 1, st.length, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                }
         }
     }
 
