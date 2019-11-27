@@ -15,7 +15,7 @@ class MyHotEntriesFragment : SingleTabEntriesFragmentBase() {
         fun createInstance() = MyHotEntriesFragment()
     }
 
-    override val title = SatenaApplication.instance.getString(R.string.category_myhotentries)
+    override val title get() = SatenaApplication.instance.getString(R.string.category_myhotentries)
 
     override val currentCategory = Category.MyHotEntries
 

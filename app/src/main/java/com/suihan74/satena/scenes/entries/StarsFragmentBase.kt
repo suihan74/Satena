@@ -9,6 +9,7 @@ import com.suihan74.HatenaLib.BookmarkResult
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Star
 import com.suihan74.HatenaLib.StarsEntry
+import com.suihan74.satena.R
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -30,7 +31,7 @@ abstract class StarsFragmentBase : SingleTabEntriesFragmentBase() {
     }
 
     fun refreshEntries(fetchingTask: Deferred<List<StarsEntry>>) =
-        super.refreshEntries("スターの取得失敗") {
+        super.refreshEntries(getString(R.string.msg_get_stars_report_failed)) {
             async(Dispatchers.IO) {
                 val urlRegex =
                     Regex("""https?://b\.hatena\.ne\.jp/(.+)/(\d+)#bookmark\-(\d+)""")

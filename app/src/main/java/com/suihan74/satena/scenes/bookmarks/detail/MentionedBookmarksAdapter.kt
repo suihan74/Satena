@@ -88,7 +88,7 @@ open class MentionedBookmarksAdapter(
 
             val starsEntry = starsMap[bookmark.user]
             if (starsEntry != null) {
-                starsCount.text = String.format("★%d", starsEntry.totalStarsCount)
+                starsCount.text = String.format(view.context.getString(R.string.star_with_count), starsEntry.totalStarsCount)
             }
             else {
                 starsCount.text = ""

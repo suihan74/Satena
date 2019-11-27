@@ -222,7 +222,7 @@ class EntriesActivity : ActivityBase() {
                 }
                 catch (e: Exception) {
                     Log.e("CategoryEntry", Log.getStackTraceString(e))
-                    showToast("カテゴリ・特集情報の取得に失敗しました")
+                    showToast(getString(R.string.msg_get_categories_failed))
                     categoryEntries = com.suihan74.HatenaLib.Category.values().map {
                         val nameId = resources.getIdentifier("category_${it.name.toLowerCase(Locale.ROOT)}", "string", packageName)
                         CategoryEntry(
@@ -240,7 +240,7 @@ class EntriesActivity : ActivityBase() {
                     AccountLoader.signInAccounts(applicationContext)
                 }
                 catch (e: Exception) {
-                    showToast("アカウント認証失敗")
+                    showToast(getString(R.string.msg_auth_failed))
                     Log.e("FailedToAuth", Log.getStackTraceString(e))
                 }
                 finally {
@@ -369,7 +369,7 @@ class EntriesActivity : ActivityBase() {
         mIsFABMenuBackgroundActive = prefs.getBoolean(PreferenceKey.ENTRIES_MENU_TAP_GUARD)
         mUsingTerminationDialog = prefs.getBoolean(PreferenceKey.USING_TERMINATION_DIALOG)
         mHomeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
-        // TODO: 他のログイン必要画面に対応すること
+
         if (mHomeCategory == Category.MyBookmarks && !HatenaClient.signedIn()) {
             mHomeCategory = Category.All
         }
@@ -394,7 +394,7 @@ class EntriesActivity : ActivityBase() {
 
         if (HatenaClient.signedIn()) {
             myBookmarkButton.setImageResource(R.drawable.ic_mybookmarks)
-            myBookmarkDesc.text = "マイブックマーク"
+            myBookmarkDesc.setText(R.string.my_bookmarks_button_desc_my_bookmarks)
             myBookmarkButton.setOnClickListener {
                 closeFABMenu()
                 refreshEntriesFragment(Category.MyBookmarks)
@@ -402,7 +402,7 @@ class EntriesActivity : ActivityBase() {
         }
         else {
             myBookmarkButton.setImageResource(R.drawable.ic_baseline_person_add)
-            myBookmarkDesc.text = "ログイン"
+            myBookmarkDesc.setText(R.string.my_bookmarks_button_desc_sign_in)
             myBookmarkButton.setOnClickListener {
                 closeFABMenu()
                 val intent = Intent(this, HatenaAuthenticationActivity::class.java)
@@ -646,8 +646,8 @@ class EntriesActivity : ActivityBase() {
 
             mUsingTerminationDialog ->
                 AlertDialog.Builder(this, R.style.AlertDialogStyle)
-                .setTitle("確認")
-                .setMessage("アプリを終了しますか？")
+                .setTitle(R.string.confirm_dialog_title_simple)
+                .setMessage(R.string.app_termination_dialog_msg)
                 .setIcon(R.drawable.ic_baseline_help)
                 .setPositiveButton("OK") { _, _ -> finishAndRemoveTask() }
                 .setNegativeButton("Cancel", null)
@@ -676,4 +676,5 @@ class EntriesActivity : ActivityBase() {
             setExpanded(false, true)
         }
     }
+
 }

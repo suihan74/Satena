@@ -465,8 +465,8 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             val usingDialog = prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
             if (usingDialog) {
                 AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setTitle("確認")
-                    .setMessage("${color.name.toUpperCase(Locale.ROOT)}スターをつけます。よろしいですか？")
+                    .setTitle(R.string.confirm_dialog_title_simple)
+                    .setMessage(getString(R.string.msg_post_star_dialog, color.name.toUpperCase(Locale.ROOT)))
                     .setPositiveButton("OK") { _, _ -> postStarImpl(color, count) }
                     .setNegativeButton("CANCEL", null)
                     .show()
@@ -476,7 +476,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             }
         }
         else {
-            activity?.showToast("${color.name.toUpperCase(Locale.ROOT)}スターを所持していません")
+            context?.showToast(getString(R.string.msg_no_color_stars, color.name.toUpperCase(Locale.ROOT)))
         }
     }
 
@@ -503,16 +503,16 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                         updateTabs(bookmarksFragment!!)
                     }
 
-                    activity?.showToast("${mBookmark.user}のブコメに★をつけました")
+                    context?.showToast(getString(R.string.msg_post_star_succeeded, mBookmark.user))
                 }
                 catch (e: Exception) {
-                    activity?.showToast("${mBookmark.user}のブコメに★をつけるのに失敗しました")
+                    context?.showToast(getString(R.string.msg_post_star_failed, mBookmark.user))
                     Log.d("failedToPostStar", Log.getStackTraceString(e))
                 }
             }
         }
         else {
-            activity?.showToast("${color.name.toUpperCase(Locale.ROOT)}スターを所持していません")
+            context?.showToast(getString(R.string.msg_no_color_stars, color.name.toUpperCase(Locale.ROOT)))
         }
     }
 

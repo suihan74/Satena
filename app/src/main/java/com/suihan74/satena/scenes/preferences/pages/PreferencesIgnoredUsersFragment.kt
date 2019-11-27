@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -17,6 +18,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.pages.UserEntriesFragment
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
@@ -68,11 +70,14 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
         // ユーザーリスト
         mIgnoredUsersAdapter = object : IgnoredUsersAdapter(emptyList()) {
             val items = arrayListOf<Pair<String, (String)->Unit>>(
-                "ブクマ済みのエントリ一覧を見る" to { user ->
-                    val fragment = UserEntriesFragment.createInstance(user)
-                    (activity as FragmentContainerActivity).showFragment(fragment, null)
+                getString(R.string.pref_ignored_users_show_entries) to { user ->
+                    val intent = Intent(context, EntriesActivity::class.java).apply {
+                        putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
+                    }
+                    context?.startActivity(intent)
                 },
-                "非表示を解除する" to { user ->
+
+                getString(R.string.pref_ignored_users_unignore) to { user ->
                     launch(Dispatchers.Main) {
                         try {
                             HatenaClient.unignoreUserAsync(user).await()

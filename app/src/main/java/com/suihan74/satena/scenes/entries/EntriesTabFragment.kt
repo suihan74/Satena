@@ -108,7 +108,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
                         }
                         catch (e: Exception) {
                             Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                            activity.showToast("エントリーリスト更新失敗")
+                            activity.showToast(getString(R.string.msg_update_entries_failed))
                         }
                         finally {
                             loadCompleted()
@@ -133,7 +133,7 @@ class EntriesTabFragment : CoroutineScopeFragment() {
                     }
                     catch (e: Exception) {
                         Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                        activity.showToast("エントリーリスト更新失敗")
+                        activity.showToast(getString(R.string.msg_update_entries_failed))
                     }
                     finally {
                         this@swipeLayout.isRefreshing = false
