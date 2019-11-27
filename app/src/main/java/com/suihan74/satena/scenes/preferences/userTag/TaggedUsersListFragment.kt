@@ -70,8 +70,8 @@ class TaggedUsersListFragment : Fragment() {
             override fun onItemClicked(user: TaggedUser) {
                 val items = arrayOf(
 /*                    "編集" to {  },*/
-                    "ブックマークをみる" to { this@TaggedUsersListFragment.showBookmarks(user) },
-                    "削除" to { this@TaggedUsersListFragment.removeItem(user) }
+                    getString(R.string.pref_user_tags_user_menu_show_entries) to { this@TaggedUsersListFragment.showBookmarks(user) },
+                    getString(R.string.pref_user_tags_user_menu_remove) to { this@TaggedUsersListFragment.removeItem(user) }
                 )
 
                 AlertDialog.Builder(context, R.style.AlertDialogStyle)

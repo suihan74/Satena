@@ -189,7 +189,7 @@ class EntryInformationFragment : CoroutineScopeFragment() {
 
         withContext(Dispatchers.Main) {
             if (entry == null) {
-                activity.showToast("エントリ情報の取得に失敗しました")
+                activity.showToast(getString(R.string.msg_get_entry_information_failed))
             }
             else {
                 val fragment =

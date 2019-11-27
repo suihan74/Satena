@@ -5,6 +5,9 @@
     <string name="drawer_open">開く</string>
     <string name="drawer_close">閉じる</string>
 
+    <string name="confirm_dialog_title_simple">確認</string>
+    <string name="app_termination_dialog_msg">アプリを終了しますか？</string>
+
     <!-- ログイン画面 -->
     <string name="cancel">キャンセル</string>
     <string name="signin">ログイン</string>
@@ -67,6 +70,14 @@
     <string name="entry_action_delete_bookmark">ブックマークを削除する</string>
     <string name="entry_action_ignore">このサイトを非表示にする</string>
 
+    <!-- ブックマークに対する操作メニュー -->
+    <string name="bookmark_show_user_entries">最近のブックマークを見る</string>
+    <string name="bookmark_remove">ブックマークを削除</string>
+    <string name="bookmark_ignore">ユーザーを非表示</string>
+    <string name="bookmark_unignore">ユーザー非表示を解除</string>
+    <string name="bookmark_report">通報する</string>
+    <string name="bookmark_user_tags">ユーザータグ</string>
+
     <!-- 設定項目の説明 -->
     <string name="pref_title_information">情報</string>
     <string name="pref_title_account">アカウント</string>
@@ -107,8 +118,19 @@
     <string name="pref_bookmarks_using_post_star_dialog_desc">スターをつける前に確認する</string>
     <string name="pref_bookmark_link_single_tap_action_desc">ブコメ内のリンクをタップしたときの動作</string>
     <string name="pref_bookmark_link_long_tap_action_desc">ブコメ内のリンクを長押ししたときの動作</string>
+    <!-- ignored users -->
+    <string name="pref_ignored_users_show_entries">@string/bookmark_show_user_entries</string>
+    <string name="pref_ignored_users_unignore">非表示を解除する</string>
     <!-- user tags -->
     <string name="pref_user_tags_back_button_desc">ユーザータグ一覧に戻る</string>
+    <string name="user_tag_dialog_name_hint">ユーザータグ名</string>
+    <string name="tagged_user_dialog_name_hint">はてなID</string>
+    <!-- ユーザータグに対する操作メニュー -->
+    <string name="pref_user_tags_tag_menu_edit">編集</string>
+    <string name="pref_user_tags_tag_menu_remove">タグを削除</string>
+    <!-- タグ付けされたユーザーに対する操作メニュー -->
+    <string name="pref_user_tags_user_menu_show_entries">@string/bookmark_show_user_entries</string>
+    <string name="pref_user_tags_user_menu_remove">ユーザーを除外</string>
 
     <!-- 非表示エントリ登録ダイアログ -->
     <string name="ignored_entry_dialog_tab_url">URL</string>
@@ -121,15 +143,59 @@
 
     <!-- hints -->
     <string name="search_query_hint">検索キーワード</string>
-    <string name="user_tag_dialog_name_hint">ユーザータグ名</string>
-    <string name="tagged_user_dialog_name_hint">はてなID</string>
-
-    <!-- ブコメ詳細activity -->
-    <string name="muted_comment_description">※ NGワードを含むコメントです ※</string>
-    <string name="infinite">∞</string>
 
     <!-- ブコメ通報ダイアログ -->
     <string name="report_dialog_text_hint">このブコメを通報する理由など(任意)</string>
     <string name="report_dialog_description">通報内容</string>
 
+    <!-- ユーザータグ設定ダイアログ (ブクマ画面) -->
+    <string name="user_tags_dialog_title">ユーザータグを選択</string>
+    <string name="user_tags_dialog_new_tag">新規タグ</string>
+    <string name="msg_user_tag_existed">既に存在するタグです</string>
+    <string name="msg_user_tag_created_and_added_user">タグ: %s を作成して id:%s を追加しました</string>
+    <string name="msg_user_tagged">id:%s に%d個のタグを設定しました</string>
+
+    <!-- エントリ画面 -->
+    <string name="my_bookmarks_button_desc_my_bookmarks">マイブックマーク</string>
+    <string name="my_bookmarks_button_desc_sign_in">ログイン</string>
+    <string name="desc_issues_spinner">特集を選択します</string>
+    <string name="hint_search_my_bookmarks">検索クエリ</string>
+    <string name="option_menu_spinner_no_selected">指定なし</string>
+    <string name="msg_auth_failed">アカウント認証失敗</string>
+    <string name="msg_get_categories_failed">カテゴリ・特集情報の取得に失敗しました</string>
+    <string name="msg_update_entries_failed">エントリ更新失敗</string>
+    <string name="msg_get_stars_report_failed">スターの取得失敗</string>
+
+    <!-- ブクマ画面 -->
+    <string name="msg_update_bookmarks_failed">ブクマリスト更新失敗</string>
+    <string name="msg_ignore_user_succeeded">%sを非表示にしました</string>
+    <string name="msg_ignore_user_failed">%sの非表示に失敗しました</string>
+    <string name="msg_unignore_user_succeeded">%sの非表示を解除しました</string>
+    <string name="msg_unignore_user_failed">%sの非表示解除に失敗しました</string>
+    <string name="msg_remove_bookmark_succeeded">ブクマを削除しました</string>
+    <string name="msg_remove_bookmark_failed">ブクマ削除に失敗しました</string>
+    <!-- ブクマ画面でのエントリ情報 -->
+    <string name="msg_get_entry_information_failed">エントリ情報の取得に失敗しました</string>
+
+    <!-- ブコメ詳細画面 -->
+    <string name="muted_comment_description">※ NGワードを含むコメントです ※</string>
+    <string name="infinite">∞</string>
+    <string name="star">★</string>
+    <string name="star_with_count">★%d</string>
+    <string name="bookmark_detail_tab_stars_from">%s → ★</string>
+    <string name="bookmark_detail_tab_stars_to">★ → %s</string>
+    <string name="bookmark_detail_tab_mentions_from">%s → mention</string>
+    <string name="bookmark_detail_tab_mentions_to">mention -> %s</string>
+    <string name="msg_post_star_dialog">%sスターをつけます。よろしいですか？</string>
+    <string name="msg_post_star_succeeded">%sのブコメに★をつけました</string>
+    <string name="msg_post_star_failed">%sのブコメに★をつけられませんでした</string>
+    <string name="msg_no_color_stars">%sスターを所持していません</string>
+    <string name="msg_remove_star_succeeded">%sへの★を削除しました</string>
+    <string name="msg_remove_star_failed">%sへの★の削除に失敗しました</string>
+    <string name="msg_update_stars_failed">スターリスト更新失敗</string>
+    <!-- スター項目に対する操作メニュー -->
+    <string name="star_item_menu_show_user_entries">@string/bookmark_show_user_entries</string>
+    <string name="star_item_menu_remove">スターを削除する</string>
+    <!-- 言及ブクマ項目に対する操作メニュー -->
+    <string name="mentioned_item_menu_show_user_entries">@string/bookmark_show_user_entries</string>
 </resources>

@@ -168,7 +168,7 @@ class EntriesFragment : CoroutineScopeFragment() {
 
         (menu.findItem(R.id.search_view)?.actionView as? SearchView)?.run {
             isSubmitButtonEnabled = true
-            queryHint = "検索クエリ"
+            queryHint = getString(R.string.hint_search_my_bookmarks)
 
             if (searchQuery != null) {
                 setQuery(searchQuery, false)
@@ -204,7 +204,7 @@ class EntriesFragment : CoroutineScopeFragment() {
         inflater.inflate(R.menu.spinner_issues, menu)
 
         (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
-            initialize(activity, spinnerItems, R.drawable.spinner_allow_issues, "特集を選択します") { position ->
+            initialize(activity, spinnerItems, R.drawable.spinner_allow_issues, getString(R.string.desc_issues_spinner)) { position ->
                 val prevIssue = currentIssue
                 currentIssue =
                     if (position == null || position == 0) {
@@ -282,7 +282,7 @@ class EntriesFragment : CoroutineScopeFragment() {
                 tasks.awaitAll()
             }
             catch (e: Exception) {
-                activity.showToast("エントリーリスト更新失敗")
+                activity.showToast(getString(R.string.msg_update_entries_failed))
             }
             finally {
                 activity.hideProgressBar()

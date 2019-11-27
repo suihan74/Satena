@@ -52,7 +52,6 @@ class BookmarksActivity : ActivityBase() {
 
     private var mIsDialogOpened = false
 
-    // TODO: 一番上にあるBookmarksFragmentを返す（暫定）
     val bookmarksFragment
         get() = getStackedFragment<BookmarksFragment>(FRAGMENT_TAG_MAIN_CONTENT)
 

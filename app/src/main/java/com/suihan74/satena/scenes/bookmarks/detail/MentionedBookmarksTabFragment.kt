@@ -70,7 +70,7 @@ class MentionedBookmarksTabFragment : Fragment() {
 
                 override fun onItemLongClicked(user: String): Boolean {
                     val items = arrayListOf<Pair<String, ()->Any>>(
-                        "最近のブックマークを見る" to {
+                        getString(R.string.mentioned_item_menu_show_user_entries) to {
                             val intent = Intent(SatenaApplication.instance, EntriesActivity::class.java).apply {
                                 putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
                             }

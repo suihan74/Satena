@@ -95,7 +95,7 @@ abstract class SingleTabEntriesFragmentBase : CoroutineScopeFragment() {
         (activity as? ActivityBase)?.hideProgressBar()
     }
 
-    fun refreshEntries(updater: (Int?)->Deferred<List<Entry>>) = refreshEntries("エントリ取得失敗", updater)
+    fun refreshEntries(updater: (Int?)->Deferred<List<Entry>>) = refreshEntries(getString(R.string.msg_update_entries_failed), updater)
 
     fun refreshEntries(errorMessage: String, updater: (Int?)->Deferred<List<Entry>>) = launch(Dispatchers.Main) {
         if (!mSwipeRefreshLayout.isRefreshing) {

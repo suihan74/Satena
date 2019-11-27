@@ -67,9 +67,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
+                    android:layout_marginEnd="4dp"
                     android:layout_below="@id/comment"
                     android:layout_alignStart="@id/comment"
-                    android:layout_alignEnd="@id/comment"
+                    android:layout_toStartOf="@id/menu_button"
                     android:orientation="horizontal">
 
                 <ImageView
@@ -87,6 +88,17 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
+
+            <ImageButton
+                    android:id="@+id/menu_button"
+                    android:src="@drawable/ic_more_horiz"
+                    android:tint="?attr/textColor"
+                    android:background="@drawable/control_background_40dp_material"
+                    android:layout_alignEnd="@id/comment"
+                    android:layout_below="@id/comment"
+                    android:layout_marginTop="2dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"/>
         </RelativeLayout>
 
         <LinearLayout

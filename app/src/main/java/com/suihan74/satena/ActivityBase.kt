@@ -67,10 +67,7 @@ abstract class ActivityBase(
     }
 
     override fun onFragmentShown(fragment: Fragment) {
-        if (fragment is FragmentBase) {
-            title = fragment.title
-            updateToolbar(fragment)
-        }
+        updateToolbar(fragment)
     }
 
     override fun setContentView(layoutResID: Int) {

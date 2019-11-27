@@ -46,7 +46,7 @@ fun Spinner.initialize(
             val view = super.getDropDownView(position, convertView, parent)
             if (position == 0) {
                 (view as TextView).apply {
-                    text = "指定なし"
+                    setText(R.string.option_menu_spinner_no_selected)
                     setTextColor(context.getColor(R.color.colorPrimary))
                 }
             }

@@ -102,7 +102,7 @@ class StarsTabFragment : CoroutineScopeFragment() {
 
                 override fun onItemLongClicked(user: String, star: Star?): Boolean {
                     val items = arrayListOf<Pair<String, ()->Any>>(
-                        "最近のブックマークを見る" to {
+                        getString(R.string.star_item_menu_show_user_entries) to {
                             val intent = Intent(SatenaApplication.instance, EntriesActivity::class.java).apply {
                                 putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
                             }
@@ -110,7 +110,7 @@ class StarsTabFragment : CoroutineScopeFragment() {
                         })
 
                     if (mStarsTabMode == StarsTabMode.TO_USER && HatenaClient.account?.name == user) {
-                        items.add("スターを削除する" to {
+                        items.add(getString(R.string.star_item_menu_remove) to {
                             launch(Dispatchers.Main) {
                                 try {
                                     val tasks = ArrayList<Deferred<Any>>()
@@ -119,10 +119,10 @@ class StarsTabFragment : CoroutineScopeFragment() {
                                     }
                                     tasks.awaitAll()
                                     removeItem(user)
-                                    activity.showToast("${user}へのスターを削除しました")
+                                    activity.showToast(getString(R.string.msg_remove_star_succeeded, user))
                                 }
                                 catch (e: Exception) {
-                                    activity.showToast("${user}へのスターの削除に失敗しました")
+                                    activity.showToast(getString(R.string.msg_remove_star_failed, user))
                                     Log.d("failedToDeleteStar", Log.getStackTraceString(e))
                                 }
                             }
@@ -153,7 +153,7 @@ class StarsTabFragment : CoroutineScopeFragment() {
                         mBookmarkDetailFragment?.updateStars()
                     }
                     catch (e: Exception) {
-                        activity.showToast("スターリスト更新失敗")
+                        activity.showToast(getString(R.string.msg_update_stars_failed))
                         Log.d("FailedToUpdateStars", Log.getStackTraceString(e))
                     }
                     finally {

@@ -200,9 +200,9 @@ open class StarsAdapter(
                 StarColor.Purple -> R.color.starPurple
             }
             val starColor = ContextCompat.getColor(view.context, colorId)
-            val starText = if (star.count > 9) "★${star.count}" else {
+            val starText = if (star.count > 9) view.context.getString(R.string.star_with_count) else {
                 buildString {
-                    for (i in 1..star.count) append("★")
+                    for (i in 1..star.count) append(view.context.getString(R.string.star))
                 }
             }
 
@@ -222,7 +222,7 @@ open class StarsAdapter(
             user = bookmark.user
 
             userName.text = user
-            starsCount.text = String.format("★%d", starsEntry.totalStarsCount)
+            starsCount.text = String.format(view.context.getString(R.string.star_with_count), starsEntry.totalStarsCount)
 
             val bookmarkComment = BookmarkCommentDecorator.convert(bookmark.comment).comment
             val isMuted = muteWords.any { word -> bookmarkComment.contains(word) }

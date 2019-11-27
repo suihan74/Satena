@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.bookmarks
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,16 +17,15 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.BookmarkDialog
 import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
-import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
-import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -114,7 +112,7 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
                     }
                     catch (e: Exception) {
                         Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                        context?.showToast("ブクマリスト更新失敗")
+                        context?.showToast(getString(R.string.msg_update_bookmarks_failed))
                     }
                     finally {
                         loadCompleted()
@@ -165,7 +163,7 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
                         }
                     }
                     catch (e: Exception) {
-                        activity.showToast("ブックマークリスト更新失敗")
+                        activity.showToast(getString(R.string.msg_update_bookmarks_failed))
                         Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
                     }
                     finally {
@@ -307,136 +305,6 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
     private fun generateBookmarksAdapter(bookmarks: List<Bookmark>, bookmarksEntry: BookmarksEntry) : BookmarksAdapter {
         val activity = activity as BookmarksActivity
         return object : BookmarksAdapter(this, bookmarks, bookmarksEntry, mTabType) {
-            private fun ignoreUser(b: Bookmark) {
-                val adapter = this
-
-                launch(Dispatchers.Main) {
-                    try {
-                        HatenaClient.ignoreUserAsync(b.user).await()
-
-                        // リストから削除
-                        hideIgnoredBookmark(adapter, b)
-
-                        activity.showToast("id:${b.user}を非表示にしました")
-                    }
-                    catch (e: Exception) {
-                        Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
-                        activity.showToast("id:${b.user}を非表示にできませんでした")
-                    }
-                }
-            }
-
-            private fun unignoreUser(b: Bookmark) {
-                launch(Dispatchers.Main) {
-                    try {
-                        HatenaClient.unignoreUserAsync(b.user).await()
-                        activity.showToast("id:${b.user}の非表示を解除しました")
-                    }
-                    catch (e: Exception) {
-                        Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
-                        activity.showToast("id:${b.user}の非表示を解除できませんでした")
-                    }
-
-                    try {
-                        HatenaClient.getIgnoredUsersAsync().await()
-                    }
-                    catch (e: Exception) {
-                        Log.d("FailedToUpdateIgnores", Log.getStackTraceString(e))
-                    }
-                }
-            }
-
-            private fun removeBookmark(b: Bookmark) {
-                launch(Dispatchers.Main) {
-                    try {
-                        val entry = bookmarksFragment?.entry ?: return@launch
-                        HatenaClient.deleteBookmarkAsync(entry.url).await()
-
-                        // すべてのタブのリストから削除する
-                        val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
-                        parentTabAdapter?.removeBookmark(b)
-
-                        // キャッシュから削除
-                        bookmarksFragment?.removeBookmark(b.user)
-
-                        activity.showToast("ブクマを削除しました")
-                    }
-                    catch (e: Exception) {
-                        Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
-                        activity.showToast("ブクマを削除できませんでした")
-                    }
-                }
-            }
-
-            @SuppressLint("UseSparseArrays")
-            private fun tagUser(b: Bookmark) {
-                val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
-                val userTagsContainer = userTagsContainer
-                val user = userTagsContainer.addUser(b.user)
-                val tags = userTagsContainer.tags
-                val tagNames = tags.map { it.name }.toTypedArray()
-                val states = tags.map { it.contains(user) }.toBooleanArray()
-                val diffs = HashMap<Int, Boolean>()
-
-                AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setTitle("ユーザータグを選択")
-                    .setMultiChoiceItems(tagNames, states) { _, which, isChecked ->
-                        diffs[which] = isChecked
-                    }
-                    .setNeutralButton("新規タグ") { _, _ ->
-                        val dialog = UserTagDialogFragment.createInstance { _, name, _ ->
-                            if (userTagsContainer.containsTag(name)) {
-                                context!!.showToast("既に存在するタグです")
-                                return@createInstance false
-                            }
-                            else {
-                                val tag = userTagsContainer.addTag(name)
-                                userTagsContainer.tagUser(user, tag)
-
-                                prefs.edit {
-                                    putObject(UserTagsKey.CONTAINER, userTagsContainer)
-                                }
-
-                                val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
-                                parentTabAdapter?.notifyItemChanged(b)
-                                context!!.showToast("タグ: $name を作成して id:${b.user} を追加しました")
-                                return@createInstance true
-                            }
-                        }
-                        dialog.show(fragmentManager!!, "dialog")
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .setPositiveButton("OK") { _, _ ->
-                        if (diffs.isNotEmpty()) {
-                            diffs.forEach {
-                                val name = tagNames[it.key]
-                                val tag = userTagsContainer.getTag(name)!!
-                                if (it.value) {
-                                    userTagsContainer.tagUser(user, tag)
-                                }
-                                else {
-                                    userTagsContainer.unTagUser(user, tag)
-                                }
-                            }
-
-                            prefs.edit {
-                                putObject(UserTagsKey.CONTAINER, userTagsContainer)
-                            }
-
-                            context!!.showToast("id:${b.user} に${user.tags.size}個のタグを設定しました")
-                            val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
-                            parentTabAdapter?.notifyItemChanged(b)
-                        }
-                    }
-                    .show()
-            }
-
-
-            private fun reportUser(entry: Entry, bookmark: Bookmark) {
-                val dialog = ReportDialogFragment.createInstance(entry, bookmark)
-                dialog.show(fragmentManager!!, "report_dialog")
-            }
-
             override fun onItemClicked(bookmark: Bookmark) {
                 val fragment =
                     BookmarkDetailFragment.createInstance(
@@ -446,46 +314,41 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
             }
 
             override fun onItemLongClicked(bookmark: Bookmark): Boolean {
-                val items = arrayListOf("最近のブックマークを見る" to {
-                    val intent = Intent(SatenaApplication.instance, EntriesActivity::class.java).apply {
-                        putExtra(EntriesActivity.EXTRA_DISPLAY_USER, bookmark.user)
-                    }
-                    startActivity(intent)
-                })
-                if (HatenaClient.account?.name == bookmark.user) {
-                    items.add("ブックマークを削除" to { removeBookmark(bookmark) })
-                }
-                else if (HatenaClient.signedIn()) {
-                    if (HatenaClient.ignoredUsers.contains(bookmark.user)) {
-                        items.add("ユーザー非表示を解除" to { unignoreUser(bookmark) })
-                    }
-                    else {
-                        items.add("ユーザーを非表示" to { ignoreUser(bookmark) })
-                    }
-                    items.add("通報する" to { reportUser(bookmarksFragment!!.entry, bookmark) })
-                }
+                val adapter = this
+                val dialog = BookmarkDialog.Builder(
+                        bookmarksFragment!!,
+                        bookmark,
+                        bookmarksFragment!!.entry
+                    )
+                    .setOnRemoveBookmark { b ->
+                        // すべてのタブのリストから削除する
+                        val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+                        parentTabAdapter?.removeBookmark(b)
 
-                items.add("ユーザータグ" to { tagUser(bookmark) })
-
-                val analyzedBookmarkComment = BookmarkCommentDecorator.convert(bookmark.comment)
-                for (url in analyzedBookmarkComment.urls) {
-                    items.add(url to {
-                        context!!.showCustomTabsIntent(url, this@BookmarksTabFragment)
-                    })
-                }
-
-                val titleView = LayoutInflater.from(context).inflate(R.layout.dialog_title_bookmark, null).apply {
-                    setCustomTitle(bookmark)
-                }
-
-                AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setCustomTitle(titleView)
-                    .setNegativeButton("Cancel", null)
-                    .setItems(items.map { it.first }.toTypedArray()) { _, which ->
-                        items[which].second()
-                        super.notifyItemChanged(bookmark)
+                        // キャッシュから削除
+                        GlobalScope.launch(Dispatchers.Default) {
+                            bookmarksFragment?.removeBookmark(b.user)
+                        }
                     }
-                    .show()
+                    .setOnChangeUserIgnoreState { b, isIgnored ->
+                        if (isIgnored) {
+                            // リストから削除
+                            hideIgnoredBookmark(adapter, b)
+                        }
+                    }
+                    .setOnSelectMenuItem { b, _ ->
+                        notifyItemChanged(b)
+                    }
+                    .setOnSelectUrl { url ->
+                        context?.showCustomTabsIntent(url, activity)
+                    }
+                    .setOnTagUser { b ->
+                        val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+                        parentTabAdapter?.notifyItemChanged(b)
+                    }
+                    .build()
+
+                dialog.show(childFragmentManager, "dialog")
 
                 return super.onItemLongClicked(bookmark)
             }
