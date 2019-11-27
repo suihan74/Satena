@@ -112,7 +112,7 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
                     }
                     catch (e: Exception) {
                         Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                        context?.showToast(getString(R.string.msg_update_bookmarks_failed))
+                        context?.showToast(R.string.msg_update_bookmarks_failed)
                     }
                     finally {
                         loadCompleted()
@@ -163,7 +163,7 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
                         }
                     }
                     catch (e: Exception) {
-                        activity.showToast(getString(R.string.msg_update_bookmarks_failed))
+                        activity.showToast(R.string.msg_update_bookmarks_failed)
                         Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
                     }
                     finally {

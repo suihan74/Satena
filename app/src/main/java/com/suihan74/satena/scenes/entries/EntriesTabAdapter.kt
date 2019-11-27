@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.suihan74.HatenaLib.*
+import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.utilities.showToast
@@ -39,7 +40,7 @@ class EntriesTabAdapter(
             fragment.setEntries(emptyList())
             if (!failureToastShowed) {
                 failureToastShowed = true
-                context.showToast("エントリーリスト取得失敗")
+                context.showToast(R.string.msg_update_entries_failed)
             }
         }
         finally {

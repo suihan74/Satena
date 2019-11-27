@@ -138,13 +138,13 @@ open class BookmarkDialog : DialogFragment() {
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 HatenaClient.deleteBookmarkAsync(entry.url).await()
-                context?.showToast(getString(R.string.msg_remove_bookmark_succeeded))
+                context?.showToast(R.string.msg_remove_bookmark_succeeded)
 
                 onRemoveBookmark?.invoke(bookmark)
             }
             catch (e: Exception) {
                 Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
-                context?.showToast(getString(R.string.msg_remove_bookmark_failed))
+                context?.showToast(R.string.msg_remove_bookmark_failed)
             }
         }
     }
@@ -153,12 +153,12 @@ open class BookmarkDialog : DialogFragment() {
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 HatenaClient.ignoreUserAsync(bookmark.user).await()
-                context?.showToast(getString(R.string.msg_ignore_user_succeeded, bookmark.user))
+                context?.showToast(R.string.msg_ignore_user_succeeded, bookmark.user)
                 onChangeUserIgnoreState?.invoke(bookmark, true)
             }
             catch (e: Exception) {
                 Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
-                context?.showToast(getString(R.string.msg_ignore_user_failed, bookmark.user))
+                context?.showToast(R.string.msg_ignore_user_failed, bookmark.user)
             }
         }
     }
@@ -167,12 +167,12 @@ open class BookmarkDialog : DialogFragment() {
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 HatenaClient.unignoreUserAsync(bookmark.user).await()
-                context?.showToast(getString(R.string.msg_unignore_user_succeeded, bookmark.user))
+                context?.showToast(R.string.msg_unignore_user_succeeded, bookmark.user)
                 onChangeUserIgnoreState?.invoke(bookmark, false)
             }
             catch (e: Exception) {
                 Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
-                context?.showToast(getString(R.string.msg_unignore_user_failed, bookmark.user))
+                context?.showToast(R.string.msg_unignore_user_failed, bookmark.user)
             }
 
             try {
@@ -207,7 +207,7 @@ open class BookmarkDialog : DialogFragment() {
             .setNeutralButton(getString(R.string.user_tags_dialog_new_tag)) { _, _ ->
                 val dialog = UserTagDialogFragment.createInstance { _, name, _ ->
                     if (userTagsContainer.containsTag(name)) {
-                        context?.showToast(getString(R.string.msg_user_tag_existed))
+                        context?.showToast(R.string.msg_user_tag_existed)
                         return@createInstance false
                     }
                     else {
@@ -220,7 +220,7 @@ open class BookmarkDialog : DialogFragment() {
 
                         val parentTabAdapter = bookmarksFragment.bookmarksTabAdapter
                         parentTabAdapter?.notifyItemChanged(bookmark)
-                        context?.showToast(getString(R.string.msg_user_tag_created_and_added_user, name, bookmark.user))
+                        context?.showToast(R.string.msg_user_tag_created_and_added_user, name, bookmark.user)
                         return@createInstance true
                     }
                 }
@@ -244,7 +244,7 @@ open class BookmarkDialog : DialogFragment() {
                         putObject(UserTagsKey.CONTAINER, userTagsContainer)
                     }
 
-                    context?.showToast(getString(R.string.msg_user_tagged, user, user.tags.size))
+                    context?.showToast(R.string.msg_user_tagged, user, user.tags.size)
                     onTagUser?.invoke(bookmark)
                 }
             }

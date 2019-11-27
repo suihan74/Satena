@@ -13,3 +13,9 @@ fun Context.showToast(message: String) {
     }
     toast.show()
 }
+
+fun Context.showToast(messageId: Int) =
+    showToast(getString(messageId))
+
+fun Context.showToast(messageId: Int, vararg args: Any) =
+    showToast(getString(messageId, args))

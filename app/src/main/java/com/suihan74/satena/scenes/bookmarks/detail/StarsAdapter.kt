@@ -222,7 +222,7 @@ open class StarsAdapter(
             user = bookmark.user
 
             userName.text = user
-            starsCount.text = String.format(view.context.getString(R.string.star_with_count), starsEntry.totalStarsCount)
+            starsCount.text = view.context.getString(R.string.star_with_count, starsEntry.totalStarsCount)
 
             val bookmarkComment = BookmarkCommentDecorator.convert(bookmark.comment).comment
             val isMuted = muteWords.any { word -> bookmarkComment.contains(word) }

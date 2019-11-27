@@ -507,7 +507,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             }
         }
         else {
-            context?.showToast(getString(R.string.msg_no_color_stars, color.name.toUpperCase(Locale.ROOT)))
+            context?.showToast(R.string.msg_no_color_stars, color.name.toUpperCase(Locale.ROOT))
         }
     }
 
@@ -534,16 +534,16 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
                         updateTabs(bookmarksFragment!!)
                     }
 
-                    context?.showToast(getString(R.string.msg_post_star_succeeded, mBookmark.user))
+                    context?.showToast(R.string.msg_post_star_succeeded, mBookmark.user)
                 }
                 catch (e: Exception) {
-                    context?.showToast(getString(R.string.msg_post_star_failed, mBookmark.user))
+                    context?.showToast(R.string.msg_post_star_failed, mBookmark.user)
                     Log.d("failedToPostStar", Log.getStackTraceString(e))
                 }
             }
         }
         else {
-            context?.showToast(getString(R.string.msg_no_color_stars, color.name.toUpperCase(Locale.ROOT)))
+            context?.showToast(R.string.msg_no_color_stars, color.name.toUpperCase(Locale.ROOT))
         }
     }
 

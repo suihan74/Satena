@@ -222,7 +222,7 @@ class EntriesActivity : ActivityBase() {
                 }
                 catch (e: Exception) {
                     Log.e("CategoryEntry", Log.getStackTraceString(e))
-                    showToast(getString(R.string.msg_get_categories_failed))
+                    showToast(R.string.msg_get_categories_failed)
                     categoryEntries = com.suihan74.HatenaLib.Category.values().map {
                         val nameId = resources.getIdentifier("category_${it.name.toLowerCase(Locale.ROOT)}", "string", packageName)
                         CategoryEntry(
@@ -240,7 +240,7 @@ class EntriesActivity : ActivityBase() {
                     AccountLoader.signInAccounts(applicationContext)
                 }
                 catch (e: Exception) {
-                    showToast(getString(R.string.msg_auth_failed))
+                    showToast(R.string.msg_auth_failed)
                     Log.e("FailedToAuth", Log.getStackTraceString(e))
                 }
                 finally {

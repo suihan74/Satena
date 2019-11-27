@@ -119,10 +119,10 @@ class StarsTabFragment : CoroutineScopeFragment() {
                                     }
                                     tasks.awaitAll()
                                     removeItem(user)
-                                    activity.showToast(getString(R.string.msg_remove_star_succeeded, user))
+                                    activity.showToast(R.string.msg_remove_star_succeeded, user)
                                 }
                                 catch (e: Exception) {
-                                    activity.showToast(getString(R.string.msg_remove_star_failed, user))
+                                    activity.showToast(R.string.msg_remove_star_failed, user)
                                     Log.d("failedToDeleteStar", Log.getStackTraceString(e))
                                 }
                             }
@@ -153,7 +153,7 @@ class StarsTabFragment : CoroutineScopeFragment() {
                         mBookmarkDetailFragment?.updateStars()
                     }
                     catch (e: Exception) {
-                        activity.showToast(getString(R.string.msg_update_stars_failed))
+                        activity.showToast(R.string.msg_update_stars_failed)
                         Log.d("FailedToUpdateStars", Log.getStackTraceString(e))
                     }
                     finally {

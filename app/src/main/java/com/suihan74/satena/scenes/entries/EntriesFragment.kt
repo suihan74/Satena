@@ -282,7 +282,7 @@ class EntriesFragment : CoroutineScopeFragment() {
                 tasks.awaitAll()
             }
             catch (e: Exception) {
-                activity.showToast(getString(R.string.msg_update_entries_failed))
+                activity.showToast(R.string.msg_update_entries_failed)
             }
             finally {
                 activity.hideProgressBar()
