@@ -1,7 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks
 
-import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,23 +11,16 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.BookmarkDialog
-import com.suihan74.satena.dialogs.ReportDialogFragment
-import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
-abstract class BookmarksTabFragment : CoroutineScopeFragment() {
+abstract class BookmarksTabFragment : CoroutineScopeFragment(), BookmarkDialog.Listener {
     protected abstract fun getBookmarks(fragment: BookmarksFragment) : List<Bookmark>
     protected abstract fun isBookmarkShown(bookmark: Bookmark, fragment: BookmarksFragment) : Boolean
     protected abstract fun hideIgnoredBookmark(adapter: BookmarksAdapter, bookmark: Bookmark)
@@ -314,44 +305,46 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment() {
             }
 
             override fun onItemLongClicked(bookmark: Bookmark): Boolean {
-                val adapter = this
-                val dialog = BookmarkDialog.Builder(
-                        bookmarksFragment!!,
+                BookmarkDialog.Builder(
                         bookmark,
-                        bookmarksFragment!!.entry
-                    )
-                    .setOnRemoveBookmark { b ->
-                        // すべてのタブのリストから削除する
-                        val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
-                        parentTabAdapter?.removeBookmark(b)
-
-                        // キャッシュから削除
-                        GlobalScope.launch(Dispatchers.Default) {
-                            bookmarksFragment?.removeBookmark(b.user)
-                        }
-                    }
-                    .setOnChangeUserIgnoreState { b, isIgnored ->
-                        if (isIgnored) {
-                            // リストから削除
-                            hideIgnoredBookmark(adapter, b)
-                        }
-                    }
-                    .setOnSelectMenuItem { b, _ ->
-                        notifyItemChanged(b)
-                    }
-                    .setOnSelectUrl { url ->
-                        context?.showCustomTabsIntent(url, activity)
-                    }
-                    .setOnTagUser { b ->
-                        val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
-                        parentTabAdapter?.notifyItemChanged(b)
-                    }
+                        bookmarksFragment!!.entry)
                     .build()
-
-                dialog.show(childFragmentManager, "dialog")
+                    .show(childFragmentManager, "dialog")
 
                 return super.onItemLongClicked(bookmark)
             }
         }
+    }
+
+    override fun onRemoveBookmark(bookmark: Bookmark) {
+        // すべてのタブのリストから削除する
+        val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+        parentTabAdapter?.removeBookmark(bookmark)
+
+        // キャッシュから削除
+        GlobalScope.launch(Dispatchers.Default) {
+            bookmarksFragment?.removeBookmark(bookmark.user)
+        }
+    }
+
+    override fun onChangeUserIgnoreState(bookmark: Bookmark, state: Boolean) {
+        if (state && mBookmarksAdapter != null) {
+            // リストから削除
+            hideIgnoredBookmark(mBookmarksAdapter!!, bookmark)
+        }
+    }
+
+    override fun onSelectUrl(url: String) {
+        val activity = activity as CoroutineScope
+        context?.showCustomTabsIntent(url, activity)
+    }
+
+    override fun onTagUser(bookmark: Bookmark) {
+        val parentTabAdapter = bookmarksFragment?.bookmarksTabAdapter
+        parentTabAdapter?.notifyItemChanged(bookmark)
+    }
+
+    override fun onSelectMenuItem(bookmark: Bookmark, text: String) {
+        notifyItemChanged(bookmark)
     }
 }

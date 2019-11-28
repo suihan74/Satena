@@ -38,12 +38,14 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
-class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable, AlertDialogListener {
+class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable, AlertDialogListener, BookmarkDialog.Listener {
     private lateinit var mView : View
     private lateinit var mBookmark : Bookmark
 
@@ -123,23 +125,11 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable, AlertDia
 
         // ブクマに対するメニューを表示
         view.findViewById<ImageButton>(R.id.menu_button).setOnClickListener {
-            val dialog = BookmarkDialog.Builder(
-                    bookmarksFragment!!,
+            BookmarkDialog.Builder(
                     bookmark,
-                    bookmarksFragment!!.entry
-                )
-                .setOnRemoveBookmark {
-                    onBackPressed()
-                }
-                .setOnTagUser {
-                    updateUserTags()
-                }
-                .setOnSelectUrl { url ->
-                    context?.showCustomTabsIntent(url, activity)
-                }
+                    bookmarksFragment!!.entry)
                 .build()
-
-            dialog.show(childFragmentManager, "dialog")
+                .show(childFragmentManager, "dialog")
         }
 
         val starMenuButton = view.findViewById<FloatingActionButton>(R.id.show_stars_button)
@@ -579,5 +569,18 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable, AlertDia
         val color = dialog.getAdditionalData<StarColor>("color")!!
         val count = dialog.getAdditionalData<Int>("count")!!
         postStarImpl(color, count)
+    }
+
+    override fun onRemoveBookmark(bookmark: Bookmark) {
+        onBackPressed()
+    }
+
+    override fun onTagUser(bookmark: Bookmark) {
+        updateUserTags()
+    }
+
+    override fun onSelectUrl(url: String) {
+        val activity = action_bar as CoroutineScope
+        context?.showCustomTabsIntent(url, activity)
     }
 }
