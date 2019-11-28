@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.preferences.userTag
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.PorterDuff
 import android.os.Bundle
@@ -17,13 +16,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.models.TaggedUser
 import com.suihan74.satena.models.UserTag
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.DividerItemDecorator
 
-class TaggedUsersListFragment : Fragment() {
+class TaggedUsersListFragment : Fragment(), AlertDialogListener {
     private lateinit var mRoot: View
     private lateinit var mTaggedUsersAdapter : TaggedUsersAdapter
     private lateinit var mUserTag : UserTag
@@ -35,6 +36,8 @@ class TaggedUsersListFragment : Fragment() {
 
         private const val BUNDLE_USER_TAG_NAME = "mUserTag.name"
     }
+
+    private var menuItems: Array<out Pair<String, (user: TaggedUser)->Unit>>? = null
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -65,22 +68,20 @@ class TaggedUsersListFragment : Fragment() {
         root.findViewById<TextView>(R.id.tag_name).text = mUserTag.name
         updateCounter()
 
+        menuItems = arrayOf(
+            getString(R.string.pref_user_tags_user_menu_show_entries) to { user -> showBookmarks(user) },
+            getString(R.string.pref_user_tags_user_menu_remove) to { user -> removeItem(user) }
+        )
+
         val userTagsContainer = parentFragment.userTagsContainer
         mTaggedUsersAdapter = object : TaggedUsersAdapter(userTagsContainer.getUsersOfTag(mUserTag)) {
             override fun onItemClicked(user: TaggedUser) {
-                val items = arrayOf(
-/*                    "編集" to {  },*/
-                    getString(R.string.pref_user_tags_user_menu_show_entries) to { this@TaggedUsersListFragment.showBookmarks(user) },
-                    getString(R.string.pref_user_tags_user_menu_remove) to { this@TaggedUsersListFragment.removeItem(user) }
-                )
-
-                AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle(user.name)
-                    .setItems(items.map { it.first }.toTypedArray()) { _, which ->
-                        items[which].second.invoke()
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
+                    .setItems(menuItems!!.map { it.first })
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .setAdditionalData("user", user)
+                    .show(childFragmentManager, "user_menu_dialog")
             }
         }
 
@@ -138,5 +139,10 @@ class TaggedUsersListFragment : Fragment() {
             putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user.name)
         }
         startActivity(intent)
+    }
+
+    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
+        val user = dialog.getAdditionalData<TaggedUser>("user") ?: return
+        menuItems?.get(which)?.second?.invoke(user)
     }
 }

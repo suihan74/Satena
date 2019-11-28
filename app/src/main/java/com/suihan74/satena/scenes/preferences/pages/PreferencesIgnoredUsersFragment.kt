@@ -18,6 +18,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.pages.UserEntriesFragment
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
@@ -28,9 +30,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable {
+class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable, AlertDialogListener {
     private lateinit var mRoot : View
     private var mIgnoredUsersAdapter: IgnoredUsersAdapter? = null
+
+    private var mDialogMenuItems : List<Pair<String, (user: String)->Unit>>? = null
 
     companion object {
         fun createInstance() =
@@ -67,37 +71,37 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
             }
         }
 
-        // ユーザーリスト
-        mIgnoredUsersAdapter = object : IgnoredUsersAdapter(emptyList()) {
-            val items = arrayListOf<Pair<String, (String)->Unit>>(
-                getString(R.string.pref_ignored_users_show_entries) to { user ->
-                    val intent = Intent(context, EntriesActivity::class.java).apply {
-                        putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
-                    }
-                    context?.startActivity(intent)
-                },
+        // 各アイテムに対するメニュー項目
+        mDialogMenuItems = arrayListOf(
+            getString(R.string.pref_ignored_users_show_entries) to { user ->
+                val intent = Intent(context, EntriesActivity::class.java).apply {
+                    putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
+                }
+                context?.startActivity(intent)
+            },
 
-                getString(R.string.pref_ignored_users_unignore) to { user ->
-                    launch(Dispatchers.Main) {
-                        try {
-                            HatenaClient.unignoreUserAsync(user).await()
-                            mIgnoredUsersAdapter!!.removeUser(user)
-                        }
-                        catch (e: Exception) {
-                            Log.d("FailedToUnignoreUser", Log.getStackTraceString(e))
-                        }
+            getString(R.string.pref_ignored_users_unignore) to { user ->
+                launch(Dispatchers.Main) {
+                    try {
+                        HatenaClient.unignoreUserAsync(user).await()
+                        mIgnoredUsersAdapter!!.removeUser(user)
+                    }
+                    catch (e: Exception) {
+                        Log.d("unignoreFailure", Log.getStackTraceString(e))
                     }
                 }
-            )
+            }
+        )
 
+        // ユーザーリスト
+        mIgnoredUsersAdapter = object : IgnoredUsersAdapter(emptyList()) {
             override fun onItemClicked(user: String) {
-                AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle("id:$user")
-                    .setNegativeButton("Cancel", null)
-                    .setItems(items.map { it.first }.toTypedArray()) { _, which ->
-                        items[which].second(user)
-                    }
-                    .show()
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .setItems(mDialogMenuItems!!.map { it.first })
+                    .setAdditionalData("user", user)
+                    .show(childFragmentManager, "menu_dialog")
             }
         }
 
@@ -138,7 +142,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
             mIgnoredUsersAdapter!!.setUsers(ignoredUsers)
         }
         catch (e: Exception) {
-            activity?.showToast("非表示ユーザーリスト更新失敗")
+            activity?.showToast(R.string.msg_pref_ignored_users_update_failed)
             Log.d("FailedToUpdateIgnores", Log.getStackTraceString(e))
         }
         finally {
@@ -159,5 +163,11 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
                 false
             }
         }
+    }
+
+    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
+        val items = mDialogMenuItems ?: return
+        val user = dialog.getAdditionalData<String>("user") ?: return
+        items[which].second.invoke(user)
     }
 }

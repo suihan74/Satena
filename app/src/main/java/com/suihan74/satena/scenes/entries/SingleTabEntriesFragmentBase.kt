@@ -15,14 +15,13 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-abstract class SingleTabEntriesFragmentBase : CoroutineScopeFragment() {
+abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
     private lateinit var mRoot : View
     private lateinit var mSpinner : Spinner
     private lateinit var mSwipeRefreshLayout : SwipeRefreshLayout
@@ -31,6 +30,9 @@ abstract class SingleTabEntriesFragmentBase : CoroutineScopeFragment() {
     private var mEntriesScrollingUpdater: RecyclerViewScrollingUpdater? = null
 
     abstract val currentCategory: Category
+
+    override val entriesAdapter: EntriesAdapter?
+        get() = mEntriesAdapter
 
     open fun onRestoreSaveInstanceState(savedInstanceState: Bundle) {}
 
@@ -138,7 +140,7 @@ abstract class SingleTabEntriesFragmentBase : CoroutineScopeFragment() {
                             }
                             catch (e: Exception) {
                                 Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                                SatenaApplication.showToast(errorMessage)
+                                context?.showToast(errorMessage)
                             }
                             finally {
                                 loadCompleted()

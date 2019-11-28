@@ -8,15 +8,20 @@ import com.suihan74.HatenaLib.EntriesType
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
-class SearchEntriesFragment : SingleTabEntriesFragmentBase() {
+class SearchEntriesFragment : SingleTabEntriesFragmentBase(), AlertDialogListener {
     private lateinit var mRoot : View
     private lateinit var mQuery : String
     private lateinit var mSearchType : SearchType
     private var mEntriesType : EntriesType = EntriesType.Recent
+
+    private var mSearchOrderMenuItem : MenuItem? = null
+    private var mSearchTypeMenuItem : MenuItem? = null
 
     override val title : String
         get() = mQuery
@@ -113,65 +118,48 @@ class SearchEntriesFragment : SingleTabEntriesFragmentBase() {
         }
 
         // テキスト/タグ
-        menu.findItem(R.id.search_type)?.apply {
-            // 検索対象(tag/text)を切り替え
-            fun setSearchTypeText(s: SearchType) : String = when (s) {
-                SearchType.Text -> getString(R.string.search_type_text)
-                SearchType.Tag -> getString(R.string.search_type_tag)
-            }
-
+        mSearchTypeMenuItem = menu.findItem(R.id.search_type)?.apply {
             title = setSearchTypeText(mSearchType)
             setOnMenuItemClickListener {
-                val items = SearchType.values().map { setSearchTypeText(it) }.toTypedArray()
-                AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
-                    .setTitle("検索対象")
-                    .setNegativeButton("Cancel", null)
-                    .setSingleChoiceItems(items, SearchType.values().indexOf(mSearchType)) { dialog, which ->
-                        val newSearchType = SearchType.values()[which]
-                        title = setSearchTypeText(newSearchType)
-                        if (newSearchType != mSearchType) {
-                            mSearchType = newSearchType
-                            refreshEntries()
-                        }
-                        else {
-                            mSearchType = newSearchType
-                        }
-                        dialog.dismiss()
-                    }
-                    .show()
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setTitle(R.string.desc_search_type)
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .setSingleChoiceItems(
+                        SearchType.values().map { setSearchTypeText(it) },
+                        SearchType.values().indexOf(mSearchType))
+                    .show(childFragmentManager, "search_type_dialog")
+
                 return@setOnMenuItemClickListener true
             }
         }
 
         // 新着/人気
-        menu.findItem(R.id.search_order)?.apply {
-            fun setEntriesTypeText(e: EntriesType) : String = when (e) {
-                EntriesType.Recent -> getString(R.string.entries_tab_recent)
-                EntriesType.Hot -> getString(R.string.entries_tab_hot)
-            }
-
+        mSearchOrderMenuItem = menu.findItem(R.id.search_order)?.apply {
             title = setEntriesTypeText(mEntriesType)
             setOnMenuItemClickListener {
-                val items = EntriesType.values().map { setEntriesTypeText(it) }.toTypedArray()
-                AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
-                    .setTitle("検索順")
-                    .setNegativeButton("Cancel", null)
-                    .setSingleChoiceItems(items, EntriesType.values().indexOf(mEntriesType)) { dialog, which ->
-                        val newEntriesType = EntriesType.values()[which]
-                        title = setEntriesTypeText(newEntriesType)
-                        if (newEntriesType != mEntriesType) {
-                            mEntriesType = newEntriesType
-                            refreshEntries()
-                        }
-                        else {
-                            mEntriesType = newEntriesType
-                        }
-                        dialog.dismiss()
-                    }
-                    .show()
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setTitle(R.string.desc_search_order)
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .setSingleChoiceItems(
+                        EntriesType.values().map { setEntriesTypeText(it) },
+                        EntriesType.values().indexOf(mEntriesType))
+                    .show(childFragmentManager, "search_order_dialog")
+
                 return@setOnMenuItemClickListener true
             }
         }
+    }
+
+    // 検索対象(tag/text)を切り替え
+    private fun setSearchTypeText(s: SearchType) : String = when (s) {
+        SearchType.Text -> getString(R.string.search_type_text)
+        SearchType.Tag -> getString(R.string.search_type_tag)
+    }
+
+    // 検索順を切り替え
+    private fun setEntriesTypeText(e: EntriesType) : String = when (e) {
+        EntriesType.Recent -> getString(R.string.entries_tab_recent)
+        EntriesType.Hot -> getString(R.string.entries_tab_hot)
     }
 
     fun search(query: String? = null) : Boolean {
@@ -186,6 +174,36 @@ class SearchEntriesFragment : SingleTabEntriesFragmentBase() {
         (activity as? EntriesActivity)?.updateToolbar()
         super.refreshEntries("エントリ検索失敗") { offset ->
             HatenaClient.searchEntriesAsync(mQuery, mSearchType, mEntriesType, of = offset)
+        }
+    }
+
+    override fun onSingleSelectItem(dialog: AlertDialogFragment, which: Int) {
+        when (dialog.tag) {
+            "search_type_dialog" -> {
+                val newSearchType = SearchType.values()[which]
+                mSearchTypeMenuItem?.title = setSearchTypeText(newSearchType)
+                if (newSearchType != mSearchType) {
+                    mSearchType = newSearchType
+                    refreshEntries()
+                }
+                else {
+                    mSearchType = newSearchType
+                }
+                dialog.dismiss()
+            }
+
+            "search_order_dialog" -> {
+                val newEntriesType = EntriesType.values()[which]
+                mSearchOrderMenuItem?.title = setEntriesTypeText(newEntriesType)
+                if (newEntriesType != mEntriesType) {
+                    mEntriesType = newEntriesType
+                    refreshEntries()
+                }
+                else {
+                    mEntriesType = newEntriesType
+                }
+                dialog.dismiss()
+            }
         }
     }
 }

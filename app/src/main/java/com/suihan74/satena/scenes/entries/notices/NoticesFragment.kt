@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.entries.notices
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -19,6 +18,8 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Notice
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
@@ -32,7 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
 
-class NoticesFragment : CoroutineScopeFragment() {
+class NoticesFragment : CoroutineScopeFragment(), AlertDialogListener {
     private var mClickHandling = false
     private lateinit var mNoticesAdapter: NoticesAdapter
 
@@ -133,15 +134,14 @@ class NoticesFragment : CoroutineScopeFragment() {
 
             override fun onItemLongClicked(notice: Notice): Boolean {
                 val items = notice.users
-                    .map { "id:${it}を通報" to { reportUser(it) } }
-                    .plus("通知を削除" to { this@NoticesFragment.removeNotice(notice) })
+                    .map { getString(R.string.menu_notice_report, it) }
+                    .plus(getString(R.string.menu_notice_remove))
 
-                AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setItems(items.map { it.first }.toTypedArray()) { _, which ->
-                        items[which].second.invoke()
-                    }
-                    .setNegativeButton("CANCEL", null)
-                    .show()
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .setItems(items)
+                    .setAdditionalData("notice", notice)
+                    .show(childFragmentManager, "notice_menu_dialog")
 
                 return true
             }
@@ -244,5 +244,21 @@ class NoticesFragment : CoroutineScopeFragment() {
     private fun reportUser(user: String) {
         val dialog = ReportDialogFragment.createInstance(user)
         dialog.show(fragmentManager!!, "report_dialog")
+    }
+
+    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
+        val notice = dialog.getAdditionalData<Notice>("notice")!!
+        val items = dialog.items!!
+
+        when {
+            items[which] == getString(R.string.menu_notice_remove) -> {
+                this@NoticesFragment.removeNotice(notice)
+            }
+
+            else -> {
+                val user = notice.users.firstOrNull { getString(R.string.menu_notice_report, it) == items[which] } ?: return
+                reportUser(user)
+            }
+        }
     }
 }

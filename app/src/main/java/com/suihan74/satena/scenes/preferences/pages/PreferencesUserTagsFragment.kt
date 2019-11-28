@@ -16,6 +16,7 @@ import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.get
+import com.suihan74.utilities.showToast
 
 class PreferencesUserTagsFragment : PreferencesFragmentBase(), BackPressable {
     private lateinit var mUserTagsContainer : UserTagsContainer
@@ -132,7 +133,7 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase(), BackPressable {
     private fun showNewUserTagDialog() {
         val dialog = UserTagDialogFragment.createInstance { fm, name, color ->
             if (mUserTagsContainer.containsTag(name)) {
-                SatenaApplication.showToast("既に存在するタグです")
+                context?.showToast("既に存在するタグです")
                 return@createInstance false
             }
             else {
@@ -142,7 +143,7 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase(), BackPressable {
                 updatePrefs()
                 fragment?.addItem(item)
 
-                SatenaApplication.showToast("タグ: $name を作成した")
+                context?.showToast("タグ: $name を作成した")
                 return@createInstance true
             }
         }
@@ -159,7 +160,7 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase(), BackPressable {
             val user = mUserTagsContainer.getUser(name)!!
 
             if (tag.contains(user)) {
-                SatenaApplication.showToast("既に存在するユーザーです")
+                context?.showToast("既に存在するユーザーです")
                 return@createInstance false
             }
             else {
@@ -168,7 +169,7 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase(), BackPressable {
                 updatePrefs()
                 fragment.addItem(user)
 
-                SatenaApplication.showToast("id:${name}にタグをつけました")
+                context?.showToast("id:${name}にタグをつけました")
                 return@createInstance true
             }
         }

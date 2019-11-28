@@ -7,6 +7,9 @@
 
     <string name="confirm_dialog_title_simple">確認</string>
     <string name="app_termination_dialog_msg">アプリを終了しますか？</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">@android:string/cancel</string>
+    <string name="dialog_register">登録</string>
 
     <!-- ログイン画面 -->
     <string name="cancel">キャンセル</string>
@@ -121,6 +124,10 @@
     <!-- ignored users -->
     <string name="pref_ignored_users_show_entries">@string/bookmark_show_user_entries</string>
     <string name="pref_ignored_users_unignore">非表示を解除する</string>
+    <string name="msg_pref_ignored_users_update_failed">非表示ユーザーリスト更新失敗</string>
+    <!-- ignored entries -->
+    <string name="pref_ignored_entries_menu_edit">編集</string>
+    <string name="pref_ignored_entries_menu_remove">項目を削除</string>
     <!-- user tags -->
     <string name="pref_user_tags_back_button_desc">ユーザータグ一覧に戻る</string>
     <string name="user_tag_dialog_name_hint">ユーザータグ名</string>
@@ -140,6 +147,7 @@
 
     <!-- ブックマーク投稿ダイアログ -->
     <string name="bookmark_comment_edit_text_hint">ブコメ(任意)</string>
+    <string name="confirm_post_bookmark">ブックマークを投稿します。よろしいですか？</string>
 
     <!-- hints -->
     <string name="search_query_hint">検索キーワード</string>
@@ -161,12 +169,24 @@
     <string name="desc_issues_spinner">特集を選択します</string>
     <string name="hint_search_my_bookmarks">検索クエリ</string>
     <string name="option_menu_spinner_no_selected">指定なし</string>
+    <string name="desc_site_entries_order">表示順</string>
+    <string name="desc_search_type">検索対象</string>
+    <string name="desc_search_order">検索順</string>
     <string name="msg_auth_failed">アカウント認証失敗</string>
     <string name="msg_get_categories_failed">カテゴリ・特集情報の取得に失敗しました</string>
     <string name="msg_update_entries_failed">エントリ更新失敗</string>
     <string name="msg_get_stars_report_failed">スターの取得失敗</string>
 
+    <!-- 通知 -->
+    <string name="menu_notice_report">%sを通報</string>
+    <string name="menu_notice_remove">通知を削除</string>
+
     <!-- ブクマ画面 -->
+    <string name="custom_bookmarks_tab_pref_dialog_title">カスタムブクマリストの設定</string>
+    <string name="custom_bookmarks_no_comment_active">無言ブクマを表示</string>
+    <string name="custom_bookmarks_ignored_user_active">非表示ユーザーを表示</string>
+    <string name="custom_bookmarks_no_user_tags_active">タグ無しユーザーを表示</string>
+    <string name="msg_get_entry_failed">エントリ取得失敗</string>
     <string name="msg_update_bookmarks_failed">ブクマリスト更新失敗</string>
     <string name="msg_ignore_user_succeeded">%sを非表示にしました</string>
     <string name="msg_ignore_user_failed">%sの非表示に失敗しました</string>

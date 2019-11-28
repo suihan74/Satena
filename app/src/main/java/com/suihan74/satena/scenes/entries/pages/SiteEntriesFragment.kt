@@ -7,11 +7,13 @@ import android.view.*
 import com.suihan74.HatenaLib.EntriesType
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
-class SiteEntriesFragment : SingleTabEntriesFragmentBase() {
+class SiteEntriesFragment : SingleTabEntriesFragmentBase(), AlertDialogListener {
     /** 表示順 */
     private enum class EntriesOrder(
         val description: String,
@@ -24,6 +26,7 @@ class SiteEntriesFragment : SingleTabEntriesFragmentBase() {
     }
 
     private lateinit var mRoot : View
+    private var mEntriesOrderMenuItem : MenuItem? = null
     private lateinit var mRootUrl : String
     private var mEntriesOrder : EntriesOrder = EntriesOrder.Recent
 
@@ -78,26 +81,17 @@ class SiteEntriesFragment : SingleTabEntriesFragmentBase() {
         val activity = activity as? EntriesActivity
         activity?.expandAppBar()
 
-        menu.findItem(R.id.entries_order)?.apply {
+        mEntriesOrderMenuItem = menu.findItem(R.id.entries_order)?.apply {
             title = mEntriesOrder.description
             setOnMenuItemClickListener {
                 val items = EntriesOrder.values().map { it.description }.toTypedArray()
-                AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
-                    .setTitle("表示順")
-                    .setNegativeButton("Cancel", null)
-                    .setSingleChoiceItems(items, EntriesOrder.values().indexOf(mEntriesOrder)) { dialog, which ->
-                        val newEntriesOrder = EntriesOrder.values()[which]
-                        title = newEntriesOrder.description
-                        if (newEntriesOrder != mEntriesOrder) {
-                            mEntriesOrder = newEntriesOrder
-                            refreshEntries()
-                        }
-                        else {
-                            mEntriesOrder = newEntriesOrder
-                        }
-                        dialog.dismiss()
-                    }
-                    .show()
+
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setTitle(R.string.desc_site_entries_order)
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .setSingleChoiceItems(items, EntriesOrder.values().indexOf(mEntriesOrder))
+                    .show(childFragmentManager, "entries_order_dialog")
+
                 return@setOnMenuItemClickListener true
             }
         }
@@ -113,5 +107,18 @@ class SiteEntriesFragment : SingleTabEntriesFragmentBase() {
                 }
             }
         }
+    }
+
+    override fun onSingleSelectItem(dialog: AlertDialogFragment, which: Int) {
+        val newEntriesOrder = EntriesOrder.values()[which]
+        mEntriesOrderMenuItem?.title = newEntriesOrder.description
+        if (newEntriesOrder != mEntriesOrder) {
+            mEntriesOrder = newEntriesOrder
+            refreshEntries()
+        }
+        else {
+            mEntriesOrder = newEntriesOrder
+        }
+        dialog.dismiss()
     }
 }

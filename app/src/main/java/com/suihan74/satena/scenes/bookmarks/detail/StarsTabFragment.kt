@@ -16,6 +16,8 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Star
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.BookmarksFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
@@ -28,7 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
-class StarsTabFragment : CoroutineScopeFragment() {
+class StarsTabFragment : CoroutineScopeFragment(), AlertDialogListener {
     private lateinit var mRoot: View
     private var mBookmarksFragment : BookmarksFragment? = null
     private var mBookmarkDetailFragment : BookmarkDetailFragment? = null
@@ -101,41 +103,19 @@ class StarsTabFragment : CoroutineScopeFragment() {
                 }
 
                 override fun onItemLongClicked(user: String, star: Star?): Boolean {
-                    val items = arrayListOf<Pair<String, ()->Any>>(
-                        getString(R.string.star_item_menu_show_user_entries) to {
-                            val intent = Intent(SatenaApplication.instance, EntriesActivity::class.java).apply {
-                                putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
-                            }
-                            startActivity(intent)
-                        })
+                    val items = arrayListOf(getString(R.string.star_item_menu_show_user_entries))
 
                     if (mStarsTabMode == StarsTabMode.TO_USER && HatenaClient.account?.name == user) {
-                        items.add(getString(R.string.star_item_menu_remove) to {
-                            launch(Dispatchers.Main) {
-                                try {
-                                    val tasks = ArrayList<Deferred<Any>>()
-                                    for (i in 1..star!!.count) {
-                                        tasks.add(HatenaClient.deleteStarAsync(mBookmark.getBookmarkUrl(bookmarksEntry), star))
-                                    }
-                                    tasks.awaitAll()
-                                    removeItem(user)
-                                    activity.showToast(R.string.msg_remove_star_succeeded, user)
-                                }
-                                catch (e: Exception) {
-                                    activity.showToast(R.string.msg_remove_star_failed, user)
-                                    Log.d("failedToDeleteStar", Log.getStackTraceString(e))
-                                }
-                            }
-                        })
+                        items.add(getString(R.string.star_item_menu_remove))
                     }
 
-                    AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                    AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                         .setTitle(user)
-                        .setNegativeButton("Cancel", null)
-                        .setItems(items.map { it.first }.toTypedArray()) { _, which ->
-                            items[which].second()
-                        }
-                        .show()
+                        .setNegativeButton(R.string.dialog_cancel)
+                        .setItems(items)
+                        .setAdditionalData("star", star!!)
+                        .setAdditionalData("user", user)
+                        .show(childFragmentManager, "star_menu_dialog")
 
                     return true
                 }
@@ -168,5 +148,38 @@ class StarsTabFragment : CoroutineScopeFragment() {
 
     fun scrollToTop() {
         mRoot.findViewById<RecyclerView>(R.id.stars_list).scrollToPosition(0)
+    }
+
+    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
+        val user = dialog.getAdditionalData<String>("user") ?: return
+
+        when (dialog.items?.get(which)) {
+            getString(R.string.star_item_menu_show_user_entries) -> {
+                val intent = Intent(SatenaApplication.instance, EntriesActivity::class.java).apply {
+                    putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
+                }
+                startActivity(intent)
+            }
+
+            getString(R.string.star_item_menu_remove) -> {
+                val star = dialog.getAdditionalData<Star>("star") ?: return
+                launch(Dispatchers.Main) {
+                    try {
+                        val bookmarksEntry = mBookmarksFragment!!.bookmarksEntry!!
+                        val tasks = ArrayList<Deferred<Any>>()
+                        for (i in 1..star.count) {
+                            tasks.add(HatenaClient.deleteStarAsync(mBookmark.getBookmarkUrl(bookmarksEntry), star))
+                        }
+                        tasks.awaitAll()
+                        mStarsAdapter.removeItem(user)
+                        activity?.showToast(R.string.msg_remove_star_succeeded, user)
+                    }
+                    catch (e: Exception) {
+                        activity?.showToast(R.string.msg_remove_star_failed, user)
+                        Log.d("failedToDeleteStar", Log.getStackTraceString(e))
+                    }
+                }
+            }
+        }
     }
 }

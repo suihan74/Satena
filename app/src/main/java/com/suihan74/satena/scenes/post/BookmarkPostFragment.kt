@@ -23,6 +23,8 @@ import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.utilities.*
@@ -33,11 +35,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.ceil
 
-class BookmarkPostFragment : CoroutineScopeFragment() {
+class BookmarkPostFragment : CoroutineScopeFragment(), AlertDialogListener {
+
+    interface ResultListener {
+        fun onPostBookmark(result: BookmarkResult)
+    }
 
     private lateinit var mEntry: Entry
     private var mBookmarksEntry: BookmarksEntry? = null
-    private var mOnPostedAction: ((BookmarkResult)->Unit)? = null
 
     private var mRoot: View? = null
     val root: View
@@ -54,10 +59,6 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
 
         private const val ARG_INITIAL_VISIBILITY = "initialVisibility"
         private const val BUNDLE_EDITING_COMMENT = "editingComment"
-    }
-
-    fun setOnPostedListener(onPostedAction: ((BookmarkResult)->Unit)?) {
-        mOnPostedAction = onPostedAction
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -168,77 +169,15 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
             bookmarkButton.isEnabled = false
             commentEditor.isEnabled = false
 
-            val comment = commentEditor.text.toString()
-            val postMastodon = postMastodonButton.isChecked
-            val postTwitter = postTwitterButton.isChecked
-            val private = privateButton.isChecked
-
-            fun launchPostBookmark() = launch(Dispatchers.Main) {
-                val context = context ?: return@launch
-                try {
-                    val result = HatenaClient.postBookmarkAsync(
-                        url = mEntry.url,
-                        comment = comment,
-                        postTwitter = postTwitter,
-                        isPrivate = private
-                    ).await()
-
-                    if (result.success != true) throw RuntimeException("failed to bookmark")
-
-                    if (postMastodon) {
-                        // Mastodonに投稿
-                        val status =
-                            if (result.comment.isBlank()) {
-                                "\"${mEntry.title}\" ${mEntry.url}"
-                            }
-                            else {
-                                "${result.comment} / \"${mEntry.title}\" ${mEntry.url}"
-                            }
-
-                        withContext(Dispatchers.IO) {
-                            val client = MastodonClientHolder.client!!
-                            Statuses(client).postStatus(
-                                status = status,
-                                inReplyToId = null,
-                                sensitive = false,
-                                visibility = Status.Visibility.Public,
-                                mediaIds = null,
-                                spoilerText = null
-                            ).execute()
-                        }
-                    }
-
-                    bookmarkButton.isEnabled = true
-                    commentEditor.isEnabled = true
-                    context.showToast("ブクマ登録完了")
-
-                    try {
-                        mOnPostedAction?.invoke(result)
-                    }
-                    catch (e: Exception) {
-                        Log.e("OnPostedAction", e.message)
-                    }
-                }
-                catch(e: Exception) {
-                    Log.d("PostBookmark", Log.getStackTraceString(e))
-                    bookmarkButton.isEnabled = true
-                    commentEditor.isEnabled = true
-                    context.showToast("ブクマ登録失敗")
-                }
-            }
-
             // 確認ダイアログを表示する
             if (isConfirmationDialogEnabled) {
-                AlertDialog.Builder(context!!, R.style.AlertDialogStyle)
-                    .setTitle("確認")
-                    .setMessage("本当にブックマークしますか？")
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setTitle(R.string.confirm_dialog_title_simple)
+                    .setMessage(R.string.confirm_post_bookmark)
                     .setIcon(R.drawable.ic_baseline_help)
-                    .setNegativeButton("Cancel") { _, _ ->
-                        bookmarkButton.isEnabled = true
-                        commentEditor.isEnabled = true
-                    }
-                    .setPositiveButton("OK") { _, _ -> launchPostBookmark() }
-                    .show()
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .setPositiveButton(R.string.dialog_ok)
+                    .show(childFragmentManager, "confirm_post_dialog")
             }
             else {
                 launchPostBookmark()
@@ -332,5 +271,86 @@ class BookmarkPostFragment : CoroutineScopeFragment() {
                 }
             }
         }
+    }
+
+    private fun launchPostBookmark() = launch(Dispatchers.Main) {
+        val context = context ?: return@launch
+
+        val commentEditor = root.findViewById<EditText>(R.id.post_bookmark_comment)
+        val bookmarkButton = root.findViewById<Button>(R.id.post_bookmark_button)
+
+        val postMastodonButton = root.findViewById<ToggleButton>(R.id.post_bookmark_post_mastodon)
+        val postTwitterButton = root.findViewById<ToggleButton>(R.id.post_bookmark_post_twitter)
+        val postFacebookButton = root.findViewById<ToggleButton>(R.id.post_bookmark_post_facebook)
+        val privateButton = root.findViewById<ToggleButton>(R.id.post_bookmark_private)
+
+        val comment = commentEditor.text.toString()
+        val postMastodon = postMastodonButton.isChecked
+
+        try {
+            val result = HatenaClient.postBookmarkAsync(
+                url = mEntry.url,
+                comment = comment,
+                postTwitter = postTwitterButton.isChecked,
+                postFacebook = postFacebookButton.isChecked,
+                isPrivate = privateButton.isChecked
+            ).await()
+
+            if (result.success != true) throw RuntimeException("failed to bookmark")
+
+            if (postMastodon) {
+                // Mastodonに投稿
+                val status =
+                    if (result.comment.isBlank()) {
+                        "\"${mEntry.title}\" ${mEntry.url}"
+                    }
+                    else {
+                        "${result.comment} / \"${mEntry.title}\" ${mEntry.url}"
+                    }
+
+                withContext(Dispatchers.IO) {
+                    val client = MastodonClientHolder.client!!
+                    Statuses(client).postStatus(
+                        status = status,
+                        inReplyToId = null,
+                        sensitive = false,
+                        visibility = Status.Visibility.Public,
+                        mediaIds = null,
+                        spoilerText = null
+                    ).execute()
+                }
+            }
+
+            bookmarkButton.isEnabled = true
+            commentEditor.isEnabled = true
+            context.showToast("ブクマ登録完了")
+
+            try {
+                val listener = parentFragment as? ResultListener ?: activity as? ResultListener
+                listener?.onPostBookmark(result)
+
+            }
+            catch (e: Exception) {
+                Log.e("OnPostedAction", e.message)
+            }
+        }
+        catch(e: Exception) {
+            Log.d("PostBookmark", Log.getStackTraceString(e))
+            bookmarkButton.isEnabled = true
+            commentEditor.isEnabled = true
+            context.showToast("ブクマ登録失敗")
+        }
+    }
+
+    override fun onClickPositiveButton(dialog: AlertDialogFragment) {
+        launchPostBookmark()
+    }
+
+    override fun onClickNegativeButton(dialog: AlertDialogFragment) {
+        val bookmarkButton = root.findViewById<Button>(R.id.post_bookmark_button)
+        val commentEditor = root.findViewById<EditText>(R.id.post_bookmark_comment)
+
+        bookmarkButton.isEnabled = true
+        commentEditor.isEnabled = true
     }
 }

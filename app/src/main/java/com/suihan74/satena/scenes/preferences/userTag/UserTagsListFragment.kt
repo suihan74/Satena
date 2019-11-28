@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.preferences.userTag
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,14 +9,17 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.UserTag
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.showToast
 
-class UserTagsListFragment : Fragment() {
+class UserTagsListFragment : Fragment(), AlertDialogListener {
     private lateinit var mUserTagsAdapter : UserTagsAdapter
+    private var mDialogMenuItems: Array<Pair<String, (UserTag)->Unit>>? = null
 
     companion object {
         fun createInstance() = UserTagsListFragment()
@@ -25,6 +27,11 @@ class UserTagsListFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_user_tags_list, container, false)
+
+        mDialogMenuItems = arrayOf(
+            getString(R.string.pref_user_tags_tag_menu_edit) to { t -> this@UserTagsListFragment.modifyItem(t) },
+            getString(R.string.pref_user_tags_tag_menu_remove) to { t -> this@UserTagsListFragment.removeItem(t) }
+        )
 
         val parentFragment = parentFragment as PreferencesUserTagsFragment
         val userTagsContainer = parentFragment.userTagsContainer
@@ -34,18 +41,12 @@ class UserTagsListFragment : Fragment() {
             }
 
             override fun onItemLongClicked(tag: UserTag): Boolean {
-                val items = arrayOf(
-                    "編集" to { this@UserTagsListFragment.modifyItem(tag) },
-                    "削除" to { this@UserTagsListFragment.removeItem(tag) }
-                )
-
-                AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle(tag.name)
-                    .setItems(items.map { it.first }.toTypedArray()) { _, which ->
-                        items[which].second.invoke()
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .setItems(mDialogMenuItems!!.map { it.first })
+                    .setAdditionalData("tag", tag)
+                    .show(childFragmentManager, "menu_dialog")
 
                 return true
             }
@@ -79,13 +80,12 @@ class UserTagsListFragment : Fragment() {
             if (tag.name != name) {
                 val userTagsContainer = parentFragment.userTagsContainer
                 if (userTagsContainer.getTag(name) != null) {
-                    SatenaApplication.showToast("既に存在するタグ名です")
+                    context?.showToast(R.string.msg_user_tag_existed)
                     return@createInstance false
                 }
                 else {
-                    fragment as UserTagsListFragment
                     val modifiedTag = userTagsContainer.changeTagName(tag, name)
-                    fragment.updateItem(modifiedTag)
+                    (fragment as? UserTagsListFragment)?.updateItem(modifiedTag)
                     parentFragment.updatePrefs()
                 }
             }
@@ -96,5 +96,10 @@ class UserTagsListFragment : Fragment() {
 
     fun updateItem(tag: UserTag) {
         mUserTagsAdapter.updateItem(tag)
+    }
+
+    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
+        val tag = dialog.getAdditionalData<UserTag>("tag") ?: return
+        mDialogMenuItems?.get(which)?.second?.invoke(tag)
     }
 }

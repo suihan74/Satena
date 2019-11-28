@@ -17,7 +17,7 @@ import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class EntriesTabFragment : CoroutineScopeFragment() {
+class EntriesTabFragment : EntriesTabFragmentBase() {
     private var mView : View? = null
     private var mEntriesAdapter : EntriesAdapter? = null
     private var mEntriesScrollingUpdater : RecyclerViewScrollingUpdater? = null
@@ -27,6 +27,9 @@ class EntriesTabFragment : CoroutineScopeFragment() {
     private var mCategory: Category? = null
 
     private var mEntriesFragment: EntriesFragment? = null
+
+    override val entriesAdapter: EntriesAdapter
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
     var category: Category
         get() = mCategory!!

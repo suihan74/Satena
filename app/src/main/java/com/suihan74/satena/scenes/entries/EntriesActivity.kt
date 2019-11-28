@@ -21,6 +21,8 @@ import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
@@ -36,7 +38,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-class EntriesActivity : ActivityBase() {
+class EntriesActivity : ActivityBase(), AlertDialogListener {
     private var entriesShowed = true
 
     override val containerId = R.id.main_layout
@@ -645,14 +647,13 @@ class EntriesActivity : ActivityBase() {
                 refreshEntriesFragment(mHomeCategory)
 
             mUsingTerminationDialog ->
-                AlertDialog.Builder(this, R.style.AlertDialogStyle)
-                .setTitle(R.string.confirm_dialog_title_simple)
-                .setMessage(R.string.app_termination_dialog_msg)
-                .setIcon(R.drawable.ic_baseline_help)
-                .setPositiveButton("OK") { _, _ -> finishAndRemoveTask() }
-                .setNegativeButton("Cancel", null)
-                .create()
-                .show()
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setTitle(R.string.confirm_dialog_title_simple)
+                    .setMessage(R.string.app_termination_dialog_msg)
+                    .setIcon(R.drawable.ic_baseline_help)
+                    .setPositiveButton(R.string.dialog_ok)
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .show(supportFragmentManager, "termination_dialog")
 
             else ->
                 super.onBackPressed()
@@ -677,4 +678,9 @@ class EntriesActivity : ActivityBase() {
         }
     }
 
+    override fun onClickPositiveButton(dialog: AlertDialogFragment) {
+        if (dialog.tag == "termination_dialog") {
+            finishAndRemoveTask()
+        }
+    }
 }

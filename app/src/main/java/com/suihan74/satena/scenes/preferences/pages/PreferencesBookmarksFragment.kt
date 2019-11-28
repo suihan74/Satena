@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.preferences.pages
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,13 +7,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ToggleButton
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 
-class PreferencesBookmarksFragment : PreferencesFragmentBase() {
+class PreferencesBookmarksFragment : PreferencesFragmentBase(), AlertDialogListener {
     companion object {
         fun createInstance() : PreferencesBookmarksFragment =
             PreferencesBookmarksFragment()
@@ -22,31 +23,22 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_preferences_bookmarks, container, false)
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(activity)
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
 
         // 最初に表示するタブ
         view.findViewById<Button>(R.id.preferences_bookmarks_initial_tab).apply {
             val key = PreferenceKey.BOOKMARKS_INITIAL_TAB
-            var currentInitialTab = BookmarksTabType.fromInt(prefs.getInt(key))
-            text = context!!.getText(currentInitialTab.textId)
+            text = context!!.getText(BookmarksTabType.fromInt(prefs.getInt(key)).textId)
             setOnClickListener {
-                AlertDialog.Builder(activity, R.style.AlertDialogStyle)
-                    .setTitle(getString(R.string.pref_bookmarks_initial_tab_desc))
+                val currentInitialTab = BookmarksTabType.fromInt(prefs.getInt(key))
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setTitle(R.string.pref_bookmarks_initial_tab_desc)
+                    .setNegativeButton(R.string.dialog_cancel)
                     .setSingleChoiceItems(
-                        BookmarksTabType.values().map { context!!.getText(it.textId) }.toTypedArray(),
+                        BookmarksTabType.values().map { context!!.getString(it.textId) },
                         currentInitialTab.ordinal
-                    ) { dialog, which ->
-                        val tab = BookmarksTabType.fromInt(which)
-                        prefs.edit {
-                            putInt(key, tab.ordinal)
-                        }
-                        currentInitialTab = tab
-                        this.text = context!!.getText(tab.textId)
-                        dialog.dismiss()
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
+                    )
+                    .show(childFragmentManager, "initial_tab_dialog")
             }
         }
 
@@ -129,25 +121,19 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
 
         // タップアクションの設定項目を初期化する処理
         val initializeTapActionSelector = { viewId: Int, key: PreferenceKey, descId: Int ->
-            val tapActions = TapEntryAction.values().map { getText(it.titleId) }.toTypedArray()
-            var selectedAction = TapEntryAction.fromInt(prefs.getInt(key))
-
             view.findViewById<Button>(viewId).apply {
-                text = getText(selectedAction.titleId)
+                text = getText(TapEntryAction.fromInt(prefs.getInt(key)).titleId)
                 setOnClickListener {
-                    AlertDialog.Builder(activity, R.style.AlertDialogStyle)
-                        .setTitle(getText(descId))
-                        .setSingleChoiceItems(tapActions, selectedAction.ordinal) { dialog, which ->
-                            selectedAction = TapEntryAction.fromInt(which)
-                            prefs.edit {
-                                putInt(key, selectedAction.ordinal)
-                            }
-                            text = tapActions[which]
-                            dialog.dismiss()
-                        }
-                        .setNegativeButton("Cancel", null)
-                        .create()
-                        .show()
+                    val selectedAction = TapEntryAction.fromInt(prefs.getInt(key))
+                    AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                        .setTitle(descId)
+                        .setNegativeButton(R.string.dialog_cancel)
+                        .setSingleChoiceItems(
+                            TapEntryAction.values().map { getString(it.titleId) },
+                            selectedAction.ordinal)
+                        .setAdditionalData("key", key)
+                        .setAdditionalData("view_id", viewId)
+                        .show(childFragmentManager, "tap_action_dialog")
                 }
             }
         }
@@ -165,5 +151,35 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
             R.string.pref_bookmark_link_long_tap_action_desc)
 
         return view
+    }
+
+    override fun onSingleSelectItem(dialog: AlertDialogFragment, which: Int) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+
+        when (dialog.tag) {
+            "initial_tab_dialog" -> {
+                val tab = BookmarksTabType.fromInt(which)
+                prefs.edit {
+                    putInt(PreferenceKey.BOOKMARKS_INITIAL_TAB, tab.ordinal)
+                }
+                view?.findViewById<Button>(R.id.preferences_bookmarks_initial_tab)?.run {
+                    text = context!!.getText(tab.textId)
+                }
+                dialog.dismiss()
+            }
+
+            "tap_action_dialog" -> {
+                val key = dialog.getAdditionalData<PreferenceKey>("key") ?: return
+                val viewId = dialog.getAdditionalData<Int>("view_id") ?: return
+                val selectedAction = TapEntryAction.fromInt(which)
+                prefs.edit {
+                    putInt(key, selectedAction.ordinal)
+                }
+                view?.findViewById<Button>(viewId)?.run {
+                    text = dialog.items!![which]
+                }
+                dialog.dismiss()
+            }
+        }
     }
 }

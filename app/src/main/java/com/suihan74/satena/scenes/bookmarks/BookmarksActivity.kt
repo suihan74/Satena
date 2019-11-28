@@ -16,9 +16,11 @@ import com.suihan74.satena.scenes.post.BookmarkPostFragment
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.lock
+import com.suihan74.utilities.showToast
 import kotlinx.coroutines.*
+import java.lang.NullPointerException
 
-class BookmarksActivity : ActivityBase() {
+class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
     // プリロード中のブクマ・スター
     data class PreLoadingTasks (
         val bookmarksTask : Deferred<BookmarksEntry>,
@@ -258,7 +260,11 @@ class BookmarksActivity : ActivityBase() {
                             .firstOrNull { it.url == url }
                     }
                     catch (e: Exception) {
-                        Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
+                        Log.d("BookmarksActivity", Log.getStackTraceString(e))
+                        withContext(Dispatchers.Main) {
+                            showToast(R.string.msg_get_entry_failed)
+                            finish()
+                        }
                     }
                 }
 
@@ -267,7 +273,11 @@ class BookmarksActivity : ActivityBase() {
                         mBookmarksEntry = HatenaClient.getEmptyBookmarksEntryAsync(url).await()
                     }
                     catch (e: Exception) {
-                        Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
+                        Log.d("BookmarksActivity", Log.getStackTraceString(e))
+                        withContext(Dispatchers.Main) {
+                            showToast(R.string.msg_get_entry_failed)
+                            finish()
+                        }
                     }
                 }
 
@@ -285,9 +295,14 @@ class BookmarksActivity : ActivityBase() {
                 try {
                     HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
                         .firstOrNull { it.url == url }
+                        ?: HatenaClient.getEmptyBookmarksEntryAsync(url).await()
                 }
                 catch (e: Exception) {
-                    Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
+                    Log.d("BookmarksActivity", Log.getStackTraceString(e))
+                    withContext(Dispatchers.Main) {
+                        showToast(R.string.msg_get_entry_failed)
+                        finish()
+                    }
                 }
             }
 
@@ -342,17 +357,7 @@ class BookmarksActivity : ActivityBase() {
         mPostFragment = mPostFragment ?: supportFragmentManager.findFragmentByTag("postFragment") as? BookmarkPostFragment
 
         if (HatenaClient.signedIn() && mPostFragment == null) {
-            mPostFragment = BookmarkPostFragment.createInstance(entry, bookmarksEntry, initialVisibility = View.GONE).apply {
-                setOnPostedListener { bookmarkResult ->
-                    closeBookmarkDialog()
-                    launch(Dispatchers.Main) {
-                        val bookmarksFragment = bookmarksFragment!!
-                        bookmarksFragment.addBookmark(bookmarkResult)
-                        bookmarksFragment.updateUI()
-                    }
-                }
-            }
-
+            mPostFragment = BookmarkPostFragment.createInstance(entry, bookmarksEntry, initialVisibility = View.GONE)
             supportFragmentManager.beginTransaction()
                 .replace(R.id.bookmark_post_layout, mPostFragment!!, "postFragment")
                 .commitNow()
@@ -424,6 +429,15 @@ class BookmarksActivity : ActivityBase() {
         }
         else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onPostBookmark(result: BookmarkResult) {
+        closeBookmarkDialog()
+        launch(Dispatchers.Main) {
+            val bookmarksFragment = bookmarksFragment!!
+            bookmarksFragment.addBookmark(result)
+            bookmarksFragment.updateUI()
         }
     }
 }

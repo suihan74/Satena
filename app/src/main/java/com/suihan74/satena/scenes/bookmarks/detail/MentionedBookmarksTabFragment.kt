@@ -13,12 +13,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.FragmentContainerActivity
 
-class MentionedBookmarksTabFragment : Fragment() {
+class MentionedBookmarksTabFragment : Fragment(), AlertDialogListener {
     private lateinit var mRoot : View
 
     companion object {
@@ -69,21 +71,13 @@ class MentionedBookmarksTabFragment : Fragment() {
                 }
 
                 override fun onItemLongClicked(user: String): Boolean {
-                    val items = arrayListOf<Pair<String, ()->Any>>(
-                        getString(R.string.mentioned_item_menu_show_user_entries) to {
-                            val intent = Intent(SatenaApplication.instance, EntriesActivity::class.java).apply {
-                                putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
-                            }
-                            startActivity(intent)
-                        })
-
-                    AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                    val items = arrayListOf(getString(R.string.mentioned_item_menu_show_user_entries))
+                    AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                         .setTitle(user)
-                        .setNegativeButton("Cancel", null)
-                        .setItems(items.map { it.first }.toTypedArray()) { _, which ->
-                            items[which].second()
-                        }
-                        .show()
+                        .setNegativeButton(R.string.dialog_cancel)
+                        .setItems(items)
+                        .setAdditionalData("user", user)
+                        .show(childFragmentManager, "menu_dialog")
 
                     return true
                 }
@@ -95,5 +89,13 @@ class MentionedBookmarksTabFragment : Fragment() {
 
     fun scrollToTop() {
         mRoot.findViewById<RecyclerView>(R.id.stars_list).scrollToPosition(0)
+    }
+
+    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
+        val user = dialog.getAdditionalData<String>("user") ?: return
+        val intent = Intent(context, EntriesActivity::class.java).apply {
+            putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
+        }
+        startActivity(intent)
     }
 }

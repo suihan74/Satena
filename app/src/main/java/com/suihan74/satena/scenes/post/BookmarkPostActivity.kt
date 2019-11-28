@@ -7,10 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.webkit.URLUtil
 import android.widget.FrameLayout
-import com.suihan74.HatenaLib.BookmarksEntry
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.SearchType
+import com.suihan74.HatenaLib.*
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
@@ -21,7 +18,7 @@ import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class BookmarkPostActivity : ActivityBase() {
+class BookmarkPostActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
     companion object {
         private const val DIALOG_WIDTH_RATIO = 0.9
 
@@ -100,11 +97,7 @@ class BookmarkPostActivity : ActivityBase() {
                 loadExtras(intent)
 
                 try {
-                    val fragment = BookmarkPostFragment.createInstance(entry, mBookmarksEntry).apply {
-                        setOnPostedListener {
-                            onBackPressed() // 投稿完了でアクティビティを閉じる
-                        }
-                    }
+                    val fragment = BookmarkPostFragment.createInstance(entry, mBookmarksEntry)
                     showFragment(fragment)
                 }
                 catch (e: Exception) {
@@ -161,5 +154,9 @@ class BookmarkPostActivity : ActivityBase() {
                 mEntry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
             }
         }
+    }
+
+    override fun onPostBookmark(result: BookmarkResult) {
+        onBackPressed() // 投稿完了でアクティビティを閉じる
     }
 }

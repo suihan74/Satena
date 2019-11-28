@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
@@ -30,6 +29,8 @@ import com.suihan74.HatenaLib.StarColor
 import com.suihan74.HatenaLib.UserColorStarsCount
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.dialogs.BookmarkDialog
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
@@ -42,7 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
-class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
+class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable, AlertDialogListener {
     private lateinit var mView : View
     private lateinit var mBookmark : Bookmark
 
@@ -495,12 +496,14 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context!!)
             val usingDialog = prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
             if (usingDialog) {
-                AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle(R.string.confirm_dialog_title_simple)
                     .setMessage(getString(R.string.msg_post_star_dialog, color.name.toUpperCase(Locale.ROOT)))
-                    .setPositiveButton("OK") { _, _ -> postStarImpl(color, count) }
-                    .setNegativeButton("CANCEL", null)
-                    .show()
+                    .setPositiveButton(R.string.dialog_ok)
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .setAdditionalData("color", color)
+                    .setAdditionalData("count", count)
+                    .show(childFragmentManager, "post_star_dialog")
             }
             else {
                 postStarImpl(color, count)
@@ -571,4 +574,10 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable {
             tabPager.adapter = null
             false
         }
+
+    override fun onClickPositiveButton(dialog: AlertDialogFragment) {
+        val color = dialog.getAdditionalData<StarColor>("color")!!
+        val count = dialog.getAdditionalData<Int>("count")!!
+        postStarImpl(color, count)
+    }
 }

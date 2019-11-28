@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.IgnoredEntriesKey
 import com.suihan74.satena.models.IgnoredEntry
@@ -19,11 +21,14 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesAdapter
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.get
+import com.suihan74.utilities.showToast
 
-class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
+class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialogListener {
     private lateinit var mIgnoredEntriesList : RecyclerView
     private lateinit var mIgnoredEntriesAdapter : IgnoredEntriesAdapter
     private lateinit var mIgnoredEntries : ArrayList<IgnoredEntry>
+
+    private var mDialogMenuItems: Array<Pair<String, (entry: IgnoredEntry)->Unit>>? = null
 
     companion object {
         fun createInstance() =
@@ -36,6 +41,11 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
         val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context!!)
         mIgnoredEntries = ArrayList(prefs.get<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES))
 
+        mDialogMenuItems = arrayOf(
+            getString(R.string.pref_ignored_entries_menu_edit) to { entry -> mIgnoredEntriesAdapter.onItemClicked(entry) },
+            getString(R.string.pref_ignored_entries_menu_remove) to { entry -> this@PreferencesIgnoredEntriesFragment.removeItem(entry) }
+        )
+
         mIgnoredEntriesAdapter = object : IgnoredEntriesAdapter(mIgnoredEntries) {
             override fun onItemClicked(entry: IgnoredEntry) {
                 val dialog = IgnoredEntryDialogFragment.createInstance(entry) { fm, modified ->
@@ -46,18 +56,12 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
             }
 
             override fun onItemLongClicked(entry: IgnoredEntry): Boolean {
-                val items = arrayOf(
-                    "編集" to { onItemClicked(entry) },
-                    "削除" to { this@PreferencesIgnoredEntriesFragment.removeItem(entry) }
-                )
-
-                AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle("${entry.type.name} ${entry.query}")
-                    .setItems(items.map { it.first }.toTypedArray()) { _, which ->
-                        items[which].second.invoke()
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
+                    .setNegativeButton(R.string.dialog_cancel)
+                    .setItems(mDialogMenuItems!!.map { it.first })
+                    .setAdditionalData("entry", entry)
+                    .show(childFragmentManager, "menu_dialog")
 
                 return true
             }
@@ -78,12 +82,12 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
                 ""
             ) { fm, ignoredEntry ->
                 if (mIgnoredEntries.contains(ignoredEntry)) {
-                    SatenaApplication.showToast("既に存在する非表示設定です")
+                    context?.showToast("既に存在する非表示設定です")
                     return@createInstance false
                 } else {
                     fm.get<PreferencesIgnoredEntriesFragment>()?.addItem(ignoredEntry)
 
-                    SatenaApplication.showToast("${ignoredEntry.query} を非表示にしました")
+                    context?.showToast("${ignoredEntry.query} を非表示にしました")
                     return@createInstance true
                 }
             }
@@ -121,5 +125,10 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
         prefs.edit {
             put(IgnoredEntriesKey.IGNORED_ENTRIES, mIgnoredEntries)
         }
+    }
+
+    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
+        val entry = dialog.getAdditionalData<IgnoredEntry>("entry")!!
+        mDialogMenuItems!![which].second.invoke(entry)
     }
 }
