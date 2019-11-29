@@ -42,8 +42,10 @@ import org.threeten.bp.LocalDateTime
 import java.net.SocketTimeoutException
 import java.util.*
 
-class BookmarksFragment : CoroutineScopeFragment(), BackPressable {
-
+class BookmarksFragment :
+    CoroutineScopeFragment(),
+    BackPressable
+{
     @Parcelize
     private data class SavableData (
         val entry: Entry,

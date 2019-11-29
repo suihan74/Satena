@@ -24,7 +24,7 @@ import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.DividerItemDecorator
 
-class TaggedUsersListFragment : Fragment(), AlertDialogListener {
+class TaggedUsersListFragment : Fragment() {
     private lateinit var mRoot: View
     private lateinit var mTaggedUsersAdapter : TaggedUsersAdapter
     private lateinit var mUserTag : UserTag
@@ -35,9 +35,11 @@ class TaggedUsersListFragment : Fragment(), AlertDialogListener {
         }
 
         private const val BUNDLE_USER_TAG_NAME = "mUserTag.name"
+        const val DIALOG_TAG_MENU = "TaggedUsersListFragment.DIALOG_TAG_MENU"
     }
 
-    private var menuItems: Array<out Pair<String, (user: TaggedUser)->Unit>>? = null
+    var menuItems: Array<out Pair<String, (user: TaggedUser)->Unit>>? = null
+        private set
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -81,7 +83,7 @@ class TaggedUsersListFragment : Fragment(), AlertDialogListener {
                     .setItems(menuItems!!.map { it.first })
                     .setNegativeButton(R.string.dialog_cancel)
                     .setAdditionalData("user", user)
-                    .show(childFragmentManager, "user_menu_dialog")
+                    .show(parentFragment.childFragmentManager, DIALOG_TAG_MENU)
             }
         }
 
@@ -139,10 +141,5 @@ class TaggedUsersListFragment : Fragment(), AlertDialogListener {
             putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user.name)
         }
         startActivity(intent)
-    }
-
-    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
-        val user = dialog.getAdditionalData<TaggedUser>("user") ?: return
-        menuItems?.get(which)?.second?.invoke(user)
     }
 }

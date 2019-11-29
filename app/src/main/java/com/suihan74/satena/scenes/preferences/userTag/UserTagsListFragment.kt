@@ -15,20 +15,22 @@ import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.UserTag
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.DividerItemDecorator
-import com.suihan74.utilities.showToast
 
-class UserTagsListFragment : Fragment(), AlertDialogListener {
+class UserTagsListFragment : Fragment() {
     private lateinit var mUserTagsAdapter : UserTagsAdapter
-    private var mDialogMenuItems: Array<Pair<String, (UserTag)->Unit>>? = null
+    var menuItems: Array<out Pair<String, (UserTag)->Unit>>? = null
+        private set
 
     companion object {
         fun createInstance() = UserTagsListFragment()
+
+        const val DIALOG_TAG_MENU = "UserTagsListFragment.DIALOG_TAG_MENU"
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_user_tags_list, container, false)
 
-        mDialogMenuItems = arrayOf(
+        menuItems = arrayOf(
             getString(R.string.pref_user_tags_tag_menu_edit) to { t -> this@UserTagsListFragment.modifyItem(t) },
             getString(R.string.pref_user_tags_tag_menu_remove) to { t -> this@UserTagsListFragment.removeItem(t) }
         )
@@ -44,9 +46,9 @@ class UserTagsListFragment : Fragment(), AlertDialogListener {
                 AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle(tag.name)
                     .setNegativeButton(R.string.dialog_cancel)
-                    .setItems(mDialogMenuItems!!.map { it.first })
+                    .setItems(menuItems!!.map { it.first })
                     .setAdditionalData("tag", tag)
-                    .show(childFragmentManager, "menu_dialog")
+                    .show(parentFragment.childFragmentManager, DIALOG_TAG_MENU)
 
                 return true
             }
@@ -75,31 +77,12 @@ class UserTagsListFragment : Fragment(), AlertDialogListener {
     }
 
     private fun modifyItem(tag: UserTag) {
-        val parentFragment = parentFragment as PreferencesUserTagsFragment
-        val dialog = UserTagDialogFragment.createInstance(tag) { fragment, name, _ ->
-            if (tag.name != name) {
-                val userTagsContainer = parentFragment.userTagsContainer
-                if (userTagsContainer.getTag(name) != null) {
-                    context?.showToast(R.string.msg_user_tag_existed)
-                    return@createInstance false
-                }
-                else {
-                    val modifiedTag = userTagsContainer.changeTagName(tag, name)
-                    (fragment as? UserTagsListFragment)?.updateItem(modifiedTag)
-                    parentFragment.updatePrefs()
-                }
-            }
-            return@createInstance true
-        }
-        dialog.show(fragmentManager!!, "dialog")
+        UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
+            .setUserTag(tag)
+            .show(parentFragment!!.childFragmentManager, "modify_tag_dialog")
     }
 
     fun updateItem(tag: UserTag) {
         mUserTagsAdapter.updateItem(tag)
-    }
-
-    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
-        val tag = dialog.getAdditionalData<UserTag>("tag") ?: return
-        mDialogMenuItems?.get(which)?.second?.invoke(tag)
     }
 }

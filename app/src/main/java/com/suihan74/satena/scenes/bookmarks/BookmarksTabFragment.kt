@@ -13,14 +13,20 @@ import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.BookmarkDialog
+import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
 import kotlinx.coroutines.*
 
-abstract class BookmarksTabFragment : CoroutineScopeFragment(), BookmarkDialog.Listener {
+abstract class BookmarksTabFragment :
+    CoroutineScopeFragment(),
+    BookmarkDialog.Listener,
+    UserTagDialogFragment.Listener
+{
     protected abstract fun getBookmarks(fragment: BookmarksFragment) : List<Bookmark>
     protected abstract fun isBookmarkShown(bookmark: Bookmark, fragment: BookmarksFragment) : Boolean
     protected abstract fun hideIgnoredBookmark(adapter: BookmarksAdapter, bookmark: Bookmark)
@@ -347,4 +353,22 @@ abstract class BookmarksTabFragment : CoroutineScopeFragment(), BookmarkDialog.L
     override fun onSelectMenuItem(bookmark: Bookmark, text: String) {
         notifyItemChanged(bookmark)
     }
+
+    override val fragmentManagerForDialog
+        get() = childFragmentManager
+
+    override fun onClickPositiveButton(dialog: AlertDialogFragment) {
+        if (dialog.tag == "user_tag_dialog") {
+            BookmarkDialog.Listener.onCompleteSelectTags(activity as BookmarksActivity, this, dialog)
+        }
+    }
+
+    override fun onClickNeutralButton(dialog: AlertDialogFragment) {
+        if (dialog.tag == "user_tag_dialog") {
+            BookmarkDialog.Listener.onCreateNewTag(this, dialog)
+        }
+    }
+
+    override fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
+        BookmarkDialog.Listener.onCompleteCreateTag(tagName, activity as BookmarksActivity, dialog)
 }
