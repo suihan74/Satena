@@ -24,13 +24,20 @@ import com.suihan74.satena.models.UserTagsKey
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
-import com.suihan74.utilities.*
+import com.suihan74.utilities.PermissionRequestable
+import com.suihan74.utilities.RuntimePermission
+import com.suihan74.utilities.setHtml
+import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
 import java.io.File
 
-class PreferencesInformationFragment : PreferencesFragmentBase(), PermissionRequestable {
+class PreferencesInformationFragment :
+    PreferencesFragmentBase(),
+    PermissionRequestable,
+    FilePickerDialog.Listener
+{
     companion object {
         fun createInstance() =
             PreferencesInformationFragment()
@@ -105,35 +112,24 @@ class PreferencesInformationFragment : PreferencesFragmentBase(), PermissionRequ
         val granted = pairs.all { p -> p.second == RuntimePermission.PERMISSION_GRANTED }
 
         if (granted) {
-            val dialog = when (mFilePickerMode) {
+            when (mFilePickerMode) {
                 FilePickerMode.SAVE -> {
-                    FilePickerDialog.createInstance("出力先") { fm, dir ->
-                        Log.d("FilePickerDialog", dir.absolutePath)
-                        val file = File(dir, "${LocalDateTime.now()}.satena-settings")
-                        val fragment = fm.get<PreferencesInformationFragment>()
-                        fragment?.savePreferencesToFile(file)
-                    }.apply {
-                        directoryOnly = true
-                    }
+                    FilePickerDialog.Builder(R.style.AlertDialogStyle)
+                        .setDirectoryOnly(true)
+                        .setTitle(R.string.dialog_title_pref_information_save_settings)
+                        .show(childFragmentManager, "save_dialog")
                 }
 
                 FilePickerMode.LOAD -> {
-                    FilePickerDialog.createInstance("設定ファイルを選択") { fm, file ->
-                        Log.d("FilePickerDialog", file.absolutePath)
-                        val fragment = fm.get<PreferencesInformationFragment>()
-                        fragment?.loadPreferencesFromFile(file)
-                    }.apply {
-                        directoryOnly = false
-                    }
+                    FilePickerDialog.Builder(R.style.AlertDialogStyle)
+                        .setDirectoryOnly(false)
+                        .setTitle(R.string.dialog_title_pref_information_load_settings)
+                        .show(childFragmentManager, "load_dialog")
                 }
-
-                else -> return
             }
-
-            dialog.show(fragmentManager!!, "FilePicker")
         }
         else {
-            activity!!.showToast("ファイルを入出力するための権限がありません")
+            activity!!.showToast(R.string.msg_pref_information_save_load_permission_failed)
         }
     }
 
@@ -152,11 +148,11 @@ class PreferencesInformationFragment : PreferencesFragmentBase(), PermissionRequ
                     write(file)
                 }
 
-                context.showToast("設定を${file.absolutePath}に保存しました")
+                context.showToast(R.string.msg_pref_information_save_succeeded, file.absolutePath)
             }
             catch (e: Exception) {
                 Log.e("SavingSettings", e.message)
-                context.showToast("設定の保存に失敗しました")
+                context.showToast(R.string.msg_pref_information_save_failed)
             }
             finally {
                 activity?.hideProgressBar()
@@ -174,7 +170,7 @@ class PreferencesInformationFragment : PreferencesFragmentBase(), PermissionRequ
                 PreferencesMigrator.Input(context)
                     .read(file)
 
-                context.showToast("設定を${file.absolutePath}から読み込みました")
+                context.showToast(R.string.msg_pref_information_load_succeeded, file.absolutePath)
 
                 val intent = Intent(context, PreferencesActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or
@@ -192,14 +188,29 @@ class PreferencesInformationFragment : PreferencesFragmentBase(), PermissionRequ
             catch (e: Exception) {
                 Log.e("LoadingSettings", e.message)
                 if (e is IllegalStateException) {
-                    context.showToast("設定の読み込みに失敗しました\n${e.message}")
+                    context.showToast("${getString(R.string.msg_pref_information_load_failed)}\n${e.message}")
                 }
                 else {
-                    context.showToast("設定の読み込みに失敗しました")
+                    context.showToast(R.string.msg_pref_information_load_failed)
                 }
             }
             finally {
                 activity?.hideProgressBar()
+            }
+        }
+    }
+
+    override fun onOpen(file: File, dialog: FilePickerDialog) {
+        when (dialog.tag) {
+            "save_dialog" -> {
+                Log.d("FilePickerDialog", file.absolutePath)
+                val target = File(file, "${LocalDateTime.now()}.satena-settings")
+                savePreferencesToFile(target)
+            }
+
+            "load_dialog" -> {
+                Log.d("FilePickerDialog", file.absolutePath)
+                loadPreferencesFromFile(file)
             }
         }
     }

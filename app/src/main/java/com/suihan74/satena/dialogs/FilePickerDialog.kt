@@ -1,6 +1,5 @@
 package com.suihan74.satena.dialogs
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
@@ -9,8 +8,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
@@ -27,97 +24,64 @@ import java.io.File
 -> com.suihan74.utilities.RuntimePermission
 */
 
-class FilePickerDialog : DialogFragment() {
-    companion object {
-        fun createInstance(title: String, message: String?, action: (FragmentManager, File)->Unit): FilePickerDialog = FilePickerDialog().apply {
-            this.title = title
-            this.message = message
-            this.action = action
-        }
-
-        fun createInstance(title: String, action: (FragmentManager, File)->Unit) = FilePickerDialog().apply {
-            this.title = title
-            this.message = null
-            this.action = action
-        }
-
-        private var savedTitle : String? = null
-        private var savedMessage : String? = null
-        private var savedAction : ((FragmentManager, File)->Unit)? = null
-        private var savedDirectoryOnly : Boolean? = null
-        private var savedCurrentDirectory : File? = null
+class FilePickerDialog : AlertDialogFragment() {
+    interface Listener {
+        fun onOpen(file: File, dialog: FilePickerDialog)
     }
 
-    private var title : String? = null
-    private var message: String? = null
-    private lateinit var action: (FragmentManager, File)->Unit
-    var directoryOnly: Boolean = true
+    companion object {
+        private const val CURRENT_DIR = "CURRENT_DIR"
+        private const val DIRECTORY_ONLY = "DIRECTORY_ONLY"
+    }
 
+    val directoryOnly: Boolean by lazy { arguments!!.getBoolean(DIRECTORY_ONLY, false) }
     private lateinit var mItemsAdapter: ItemsAdapter
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        savedTitle = title
-        savedMessage = message
-        savedAction = action
-        savedDirectoryOnly = directoryOnly
-        savedCurrentDirectory = mItemsAdapter.currentDirectory
+        outState.putSerializable(CURRENT_DIR, mItemsAdapter.currentDirectory)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = activity as Context
 
-        savedTitle?.let {
-            title = it
-            savedTitle = null
-        }
-
-        savedMessage?.let {
-            message = it
-            savedMessage = null
-        }
-
-        savedAction?.let {
-            action = it
-            savedAction = null
-        }
-
-        savedDirectoryOnly?.let {
-            directoryOnly = it
-            savedDirectoryOnly = null
-        }
-
-        val externalStorage = savedCurrentDirectory?.let { it } ?: Environment.getExternalStorageDirectory()
-        savedCurrentDirectory = null
+        val externalStorage =
+            savedInstanceState?.run {
+                getSerializable(CURRENT_DIR) as? File
+            } ?: Environment.getExternalStorageDirectory()
 
         val inflater = LayoutInflater.from(context)
         val root = inflater.inflate(R.layout.fragment_dialog_filepicker, null)
 
-        val itemsAdapter = ItemsAdapter(externalStorage, directoryOnly, root.findViewById(R.id.current_path))
-        mItemsAdapter = itemsAdapter
+        mItemsAdapter = ItemsAdapter(externalStorage, directoryOnly, root.findViewById(R.id.current_path))
 
         root.findViewById<RecyclerView>(R.id.file_list).apply {
             val dividerItemDecoration = DividerItemDecorator(
                 ContextCompat.getDrawable(context, R.drawable.recycler_view_item_divider)!!)
             addItemDecoration(dividerItemDecoration)
             layoutManager = LinearLayoutManager(context)
-            adapter = itemsAdapter
+            adapter = mItemsAdapter
         }
 
-        val builder = AlertDialog.Builder(context, R.style.AlertDialogStyle)
-        builder
-            .setTitle(title)
-            .setPositiveButton("開く") { _, _ ->
-                action(fragmentManager!!, itemsAdapter.currentFile)
-            }
-            .setNegativeButton("CANCEL", null)
+        val listener = parentFragment as? Listener ?: activity as? Listener
+
+        return createBuilder(arguments!!, savedInstanceState)
             .setView(root)
+            .setPositiveButton(R.string.dialog_open) { _, _ ->
+                listener?.onOpen(mItemsAdapter.currentFile, this)
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .create()
+    }
 
-        if (message != null) {
-            builder.setMessage(message)
+    class Builder(themeResId: Int) : AlertDialogFragment.Builder(themeResId) {
+        override fun create() = FilePickerDialog().apply {
+            arguments = this@Builder.arguments
         }
 
-        return builder.create()
+        fun setDirectoryOnly(directoryOnly: Boolean) = this.apply {
+            arguments.putBoolean(DIRECTORY_ONLY, directoryOnly)
+        }
     }
 
     private class ItemsAdapter(
