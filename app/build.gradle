@@ -14,8 +14,8 @@ android {
     defaultConfig {
         applicationId "com.suihan74.satena"
         // バージョン情報
-        versionCode 66
-        versionName "1.26"
+        versionCode 67
+        versionName "1.27"
 
         minSdkVersion 23
         targetSdkVersion 28
@@ -47,7 +47,7 @@ dependencies {
 
     // recyclerview
     implementation 'com.google.android.material:material:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     // async/await
     def coroutines_version = '1.3.2'
