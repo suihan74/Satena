@@ -22,18 +22,18 @@ interface AlertDialogListener {
  */
 open class AlertDialogFragment : DialogFragment() {
     companion object {
-        private const val THEME_RES_ID = "THEME_RES_ID"
-        private const val POSITIVE_BUTTON_TEXT_ID = "POSITIVE_BUTTON_TEXT_ID"
-        private const val NEGATIVE_BUTTON_TEXT_ID = "NEGATIVE_BUTTON_TEXT_ID"
-        private const val NEUTRAL_BUTTON_TEXT_ID = "NEUTRAL_BUTTON_TEXT_ID"
-        private const val TITLE_ID = "TITLE_ID"
-        private const val TITLE = "TITLE"
-        private const val MESSAGE_ID = "MESSAGE_ID"
-        private const val MESSAGE = "MESSAGE"
-        private const val ICON_ID = "ICON_ID"
-        private const val ITEMS = "ITEMS"
-        private const val SINGLE_ITEMS_SELECTED = "SINGLE_ITEMS_SELECTED"
-        private const val MULTI_ITEMS_STATES = "MULTI_ITEMS_STATES"
+        const val THEME_RES_ID = "THEME_RES_ID"
+        const val POSITIVE_BUTTON_TEXT_ID = "POSITIVE_BUTTON_TEXT_ID"
+        const val NEGATIVE_BUTTON_TEXT_ID = "NEGATIVE_BUTTON_TEXT_ID"
+        const val NEUTRAL_BUTTON_TEXT_ID = "NEUTRAL_BUTTON_TEXT_ID"
+        const val TITLE_ID = "TITLE_ID"
+        const val TITLE = "TITLE"
+        const val MESSAGE_ID = "MESSAGE_ID"
+        const val MESSAGE = "MESSAGE"
+        const val ICON_ID = "ICON_ID"
+        const val ITEMS = "ITEMS"
+        const val SINGLE_ITEMS_SELECTED = "SINGLE_ITEMS_SELECTED"
+        const val MULTI_ITEMS_STATES = "MULTI_ITEMS_STATES"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

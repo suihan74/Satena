@@ -17,10 +17,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.FilePickerDialog
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
-import com.suihan74.satena.models.IgnoredEntriesKey
-import com.suihan74.satena.models.NoticesKey
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.UserTagsKey
+import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
@@ -145,6 +142,7 @@ class PreferencesInformationFragment :
                     addPreference<IgnoredEntriesKey>()
                     addPreference<NoticesKey>()
                     addPreference<UserTagsKey>()
+                    addPreference<EntriesHistoryKey>()
                     write(file)
                 }
 

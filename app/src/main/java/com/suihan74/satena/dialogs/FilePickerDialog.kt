@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
@@ -74,9 +75,22 @@ class FilePickerDialog : AlertDialogFragment() {
             .create()
     }
 
-    class Builder(themeResId: Int) : AlertDialogFragment.Builder(themeResId) {
-        override fun create() = FilePickerDialog().apply {
+    class Builder(themeResId: Int) {
+        private val arguments = Bundle().apply {
+            putInt(THEME_RES_ID, themeResId)
+        }
+
+        fun create() = FilePickerDialog().apply {
             arguments = this@Builder.arguments
+        }
+
+        fun show(fragmentManager: FragmentManager, tag: String) {
+            val dialog = create()
+            dialog.show(fragmentManager, tag)
+        }
+
+        fun setTitle(titleId: Int) = this.apply {
+            arguments.putInt(TITLE_ID, titleId)
         }
 
         fun setDirectoryOnly(directoryOnly: Boolean) = this.apply {
