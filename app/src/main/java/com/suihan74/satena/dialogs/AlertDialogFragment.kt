@@ -16,7 +16,11 @@ interface AlertDialogListener {
     fun onMultiSelectItem(dialog: AlertDialogFragment, which: Int, selected: Boolean) {}
 }
 
-class AlertDialogFragment : DialogFragment() {
+/**
+ * 画面復元で落ちないようにしたAlertDialog
+ * 独自Viewを表示するDialogFragmentを作成する場合もこのAlertDialogFragmentを継承すると実装が楽
+ */
+open class AlertDialogFragment : DialogFragment() {
     companion object {
         private const val THEME_RES_ID = "THEME_RES_ID"
         private const val POSITIVE_BUTTON_TEXT_ID = "POSITIVE_BUTTON_TEXT_ID"
@@ -53,15 +57,22 @@ class AlertDialogFragment : DialogFragment() {
     var multiChoiceItemsCurrentStates: BooleanArray? = null
         private set
 
+    var multiChoiceItemsInitialStates: BooleanArray? = null
+        private set
+
     fun <T> getAdditionalData(key: String) where T : Serializable =
         arguments?.getSerializable(key) as? T
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val arguments = arguments!!
+        val builder = createBuilder(arguments!!, savedInstanceState)
+        return builder.create()
+    }
+
+    protected fun createBuilder(arguments: Bundle, savedInstanceState: Bundle?) : AlertDialog.Builder {
         val themeResId = arguments.getInt(THEME_RES_ID)
         val listener = parentFragment as? AlertDialogListener ?: activity as? AlertDialogListener
 
-        val builder = AlertDialog.Builder(context, themeResId).apply {
+        return AlertDialog.Builder(context, themeResId).apply {
             arguments.getInt(TITLE_ID).let {
                 if (it != 0) setTitle(it)
             }
@@ -85,7 +96,8 @@ class AlertDialogFragment : DialogFragment() {
 
                 when {
                     singleSelected >= 0 -> {
-                        val savedSelected = savedInstanceState?.getInt(SINGLE_ITEMS_SELECTED, -1) ?: -1
+                        val savedSelected =
+                            savedInstanceState?.getInt(SINGLE_ITEMS_SELECTED, -1) ?: -1
                         val selected = if (savedSelected >= 0) savedSelected else singleSelected
                         setSingleChoiceItems(items, selected) { _, which ->
                             listener?.onSingleSelectItem(this@AlertDialogFragment, which)
@@ -96,6 +108,7 @@ class AlertDialogFragment : DialogFragment() {
                         val states = savedInstanceState?.getBooleanArray(MULTI_ITEMS_STATES)
                             ?: multiSelected.clone()
                         multiChoiceItemsCurrentStates = states
+                        multiChoiceItemsInitialStates = multiSelected.clone()
 
                         setMultiChoiceItems(items, states) { _, which, s ->
                             multiChoiceItemsCurrentStates?.set(which, s)
@@ -104,7 +117,12 @@ class AlertDialogFragment : DialogFragment() {
                     }
 
                     else ->
-                        setItems(items) { _, which -> listener?.onSelectItem(this@AlertDialogFragment, which) }
+                        setItems(items) { _, which ->
+                            listener?.onSelectItem(
+                                this@AlertDialogFragment,
+                                which
+                            )
+                        }
                 }
             }
             arguments.getInt(POSITIVE_BUTTON_TEXT_ID).let {
@@ -123,16 +141,14 @@ class AlertDialogFragment : DialogFragment() {
                 }
             }
         }
-
-        return builder.create()
     }
 
-    class Builder(themeResId: Int) {
-        private val arguments = Bundle().apply {
+    open class Builder(themeResId: Int) {
+        protected val arguments = Bundle().apply {
             putInt(THEME_RES_ID, themeResId)
         }
 
-        fun create() =
+        open fun create() =
             AlertDialogFragment().apply {
                 this.arguments = this@Builder.arguments
             }

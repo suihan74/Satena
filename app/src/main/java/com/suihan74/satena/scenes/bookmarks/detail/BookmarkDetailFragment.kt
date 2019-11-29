@@ -19,6 +19,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.view.GravityCompat
+import androidx.fragment.app.FragmentManager
 import androidx.viewpager.widget.ViewPager
 import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -30,9 +31,10 @@ import com.suihan74.HatenaLib.UserColorStarsCount
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.dialogs.BookmarkDialog
+import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.UserTagsContainer
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.BookmarksFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
@@ -45,7 +47,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
-class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable, AlertDialogListener, BookmarkDialog.Listener {
+class BookmarkDetailFragment :
+        CoroutineScopeFragment(),
+        BackPressable,
+        BookmarkDialog.Listener,
+        UserTagDialogFragment.Listener
+{
     private lateinit var mView : View
     private lateinit var mBookmark : Bookmark
 
@@ -60,10 +67,16 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable, AlertDia
             return activity.bookmarksFragment
         }
 
+    val userTagsContainer: UserTagsContainer
+        get() = bookmarksFragment!!.userTagsContainer
+
     val bookmark
         get() = mBookmark
 
     override val isToolbarVisible: Boolean = false
+
+    override val fragmentManagerForDialog: FragmentManager
+        get() = childFragmentManager
 
     companion object {
         fun createInstance(b: Bookmark) = BookmarkDetailFragment().apply {
@@ -326,7 +339,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable, AlertDia
 
     private fun updateUserTags() {
         mView.findViewById<TextView>(R.id.user_name).run {
-            val tags = bookmarksFragment?.userTagsContainer?.getTagsOfUser(mBookmark.user)
+            val tags = userTagsContainer.getTagsOfUser(mBookmark.user)
             text =
                 if (tags.isNullOrEmpty()) {
                     mBookmark.user
@@ -566,9 +579,23 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable, AlertDia
         }
 
     override fun onClickPositiveButton(dialog: AlertDialogFragment) {
-        val color = dialog.getAdditionalData<StarColor>("color")!!
-        val count = dialog.getAdditionalData<Int>("count")!!
-        postStarImpl(color, count)
+        when (dialog.tag) {
+            "user_tag_dialog" ->
+                BookmarkDialog.Listener.onCompleteSelectTags(activity as BookmarksActivity, this, dialog)
+
+            "post_star_dialog" -> {
+                val color = dialog.getAdditionalData<StarColor>("color")!!
+                val count = dialog.getAdditionalData<Int>("count")!!
+                postStarImpl(color, count)
+            }
+        }
+    }
+
+    override fun onClickNeutralButton(dialog: AlertDialogFragment) {
+        when (dialog.tag) {
+            "user_tag_dialog" ->
+                BookmarkDialog.Listener.onCreateNewTag(this, dialog)
+        }
     }
 
     override fun onRemoveBookmark(bookmark: Bookmark) {
@@ -583,4 +610,7 @@ class BookmarkDetailFragment : CoroutineScopeFragment(), BackPressable, AlertDia
         val activity = action_bar as CoroutineScope
         context?.showCustomTabsIntent(url, activity)
     }
+
+    override fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
+        BookmarkDialog.Listener.onCompleteCreateTag(tagName, activity as BookmarksActivity, dialog)
 }

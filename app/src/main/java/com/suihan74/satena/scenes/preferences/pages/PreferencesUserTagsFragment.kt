@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.TaggedUserDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
@@ -18,7 +19,11 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.get
 import com.suihan74.utilities.showToast
 
-class PreferencesUserTagsFragment : PreferencesFragmentBase(), BackPressable {
+class PreferencesUserTagsFragment :
+        PreferencesFragmentBase(),
+        BackPressable,
+        UserTagDialogFragment.Listener
+{
     private lateinit var mUserTagsContainer : UserTagsContainer
 
     private var mDisplayedUserTag : UserTag? = null
@@ -131,23 +136,8 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase(), BackPressable {
     }
 
     private fun showNewUserTagDialog() {
-        val dialog = UserTagDialogFragment.createInstance { fm, name, color ->
-            if (mUserTagsContainer.containsTag(name)) {
-                context?.showToast("既に存在するタグです")
-                return@createInstance false
-            }
-            else {
-                val fragment = fm.get<UserTagsListFragment>()
-                val item = mUserTagsContainer.addTag(name)
-
-                updatePrefs()
-                fragment?.addItem(item)
-
-                context?.showToast("タグ: $name を作成した")
-                return@createInstance true
-            }
-        }
-        dialog.show(childFragmentManager, "dialog")
+        UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
+            .show(childFragmentManager, "create_tag_dialog")
     }
 
     private fun showNewTaggedUserDialog() {
@@ -205,6 +195,69 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase(), BackPressable {
         }
         else {
             return false
+        }
+    }
+
+    /**
+     * 子フラグメントのメニューダイアログを処理する
+     *
+     * 各子フラグメントで別々に処理するようにしない理由は、
+     * 子のchildFragmentManagerを渡す場合は画面回転時にダイアログが閉じるが
+     * 一番上にある親（このフラグメント）のchildFragmentManagerを使う場合は画面回転後もダイアログ表示が継続するため
+     */
+    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
+        when (dialog.tag) {
+            UserTagsListFragment.DIALOG_TAG_MENU -> {
+                val childFragment = childFragmentManager.get<UserTagsListFragment>()
+                val tag = dialog.getAdditionalData<UserTag>("tag") ?: return
+                childFragment?.menuItems?.get(which)?.second?.invoke(tag)
+            }
+
+            TaggedUsersListFragment.DIALOG_TAG_MENU -> {
+                val childFragment = childFragmentManager.get<TaggedUsersListFragment>()
+                val user = dialog.getAdditionalData<TaggedUser>("user") ?: return
+                childFragment?.menuItems?.get(which)?.second?.invoke(user)
+            }
+        }
+    }
+
+    /**
+     * タグを新規作成orタグ名を編集するダイアログの結果を処理する
+     */
+    override fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean {
+        if (dialog.isModifyMode) {
+            val userTagsListFragment = childFragmentManager.get<UserTagsListFragment>()
+            val tag = dialog.editingUserTag!!
+
+            if (tag.name != tagName) {
+                val userTagsContainer = userTagsContainer
+                if (userTagsContainer.getTag(tagName) != null) {
+                    context?.showToast(R.string.msg_user_tag_existed)
+                    return false
+                }
+                else {
+                    val modifiedTag = userTagsContainer.changeTagName(tag, tagName)
+                    userTagsListFragment?.updateItem(modifiedTag)
+                    updatePrefs()
+                }
+            }
+            return true
+        }
+        else {
+            if (mUserTagsContainer.containsTag(tagName)) {
+                context?.showToast("既に存在するタグです")
+                return false
+            }
+            else {
+                val item = userTagsContainer.addTag(tagName)
+                val fragment = childFragmentManager.get<UserTagsListFragment>()
+
+                updatePrefs()
+                fragment?.addItem(item)
+
+                context?.showToast("タグ: $tagName を作成した")
+                return true
+            }
         }
     }
 }

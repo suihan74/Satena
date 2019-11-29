@@ -7,10 +7,12 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.models.TaggedUser
 import com.suihan74.satena.models.UserTagsKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesActivity
@@ -21,15 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-open class BookmarkDialog : DialogFragment(), AlertDialogListener {
-    interface Listener {
-        fun onRemoveBookmark(bookmark: Bookmark) {}
-        fun onChangeUserIgnoreState(bookmark: Bookmark, state: Boolean) {}
-        fun onTagUser(bookmark: Bookmark) {}
-        fun onSelectUrl(url: String) {}
-        fun onSelectMenuItem(bookmark: Bookmark, text: String) {}
-    }
-
+open class BookmarkDialog : DialogFragment() {
     companion object {
         private const val ARG_BOOKMARK = "bookmark"
         private const val ARG_ENTRY = "entry"
@@ -130,12 +124,12 @@ open class BookmarkDialog : DialogFragment(), AlertDialogListener {
         }
     }
 
-    private fun unignoreUser(listner: Listener?, bookmark: Bookmark) {
+    private fun unignoreUser(listener: Listener?, bookmark: Bookmark) {
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 HatenaClient.unignoreUserAsync(bookmark.user).await()
                 context?.showToast(R.string.msg_unignore_user_succeeded, bookmark.user)
-                listner?.onChangeUserIgnoreState(bookmark, false)
+                listener?.onChangeUserIgnoreState(bookmark, false)
             }
             catch (e: Exception) {
                 Log.d("FailedToIgnoreUser", Log.getStackTraceString(e))
@@ -159,50 +153,58 @@ open class BookmarkDialog : DialogFragment(), AlertDialogListener {
 
     @Suppress("UseSparseArrays")
     private fun tagUser(listener: Listener?, bookmark: Bookmark) {
-        val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
-
         val bookmarksFragment = (activity as BookmarksActivity).bookmarksFragment!!
         val userTagsContainer = bookmarksFragment.userTagsContainer
         val user = userTagsContainer.addUser(bookmark.user)
         val tags = userTagsContainer.tags
         val tagNames = tags.map { it.name }.toTypedArray()
         val states = tags.map { it.contains(user) }.toBooleanArray()
-        val diffs = HashMap<Int, Boolean>()
 
-        AlertDialog.Builder(context, R.style.AlertDialogStyle)
-            .setTitle(getString(R.string.user_tags_dialog_title))
-            .setMultiChoiceItems(tagNames, states) { _, which, isChecked ->
-                diffs[which] = isChecked
-            }
-            .setNeutralButton(getString(R.string.user_tags_dialog_new_tag)) { _, _ ->
-                val dialog = UserTagDialogFragment.createInstance { _, name, _ ->
-                    if (userTagsContainer.containsTag(name)) {
-                        context?.showToast(R.string.msg_user_tag_existed)
-                        return@createInstance false
-                    }
-                    else {
-                        val tag = userTagsContainer.addTag(name)
-                        userTagsContainer.tagUser(user, tag)
+        AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            .setTitle(R.string.user_tags_dialog_title)
+            .setNeutralButton(R.string.user_tags_dialog_new_tag)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok)
+            .setMultiChoiceItems(tagNames, states)
+            .setAdditionalData("bookmark", bookmark)
+            .show(listener!!.fragmentManagerForDialog, "user_tag_dialog")
+    }
 
-                        prefs.edit {
-                            putObject(UserTagsKey.CONTAINER, userTagsContainer)
+
+    interface Listener : AlertDialogListener {
+        val fragmentManagerForDialog : FragmentManager
+
+        fun onRemoveBookmark(bookmark: Bookmark) {}
+        fun onChangeUserIgnoreState(bookmark: Bookmark, state: Boolean) {}
+        fun onTagUser(bookmark: Bookmark) {}
+        fun onSelectUrl(url: String) {}
+        fun onSelectMenuItem(bookmark: Bookmark, text: String) {}
+
+        companion object {
+            fun onCompleteSelectTags(activity: BookmarksActivity, listener: Listener?, dialog: AlertDialogFragment) {
+                val bookmark = dialog.getAdditionalData<Bookmark>("bookmark")!!
+
+                val diffs =
+                    dialog.multiChoiceItemsCurrentStates!!.toList().mapIndexedNotNull { index, b ->
+                        if (dialog.multiChoiceItemsInitialStates!![index] != b) {
+                            index to b
                         }
-
-                        val parentTabAdapter = bookmarksFragment.bookmarksTabAdapter
-                        parentTabAdapter?.notifyItemChanged(bookmark)
-                        context?.showToast(R.string.msg_user_tag_created_and_added_user, name, bookmark.user)
-                        return@createInstance true
+                        else null
                     }
-                }
-                dialog.show(fragmentManager!!, "dialog")
-            }
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("OK") { _, _ ->
+
                 if (diffs.isNotEmpty()) {
+                    val prefs = SafeSharedPreferences.create<UserTagsKey>(activity)
+
+                    val bookmarksFragment = activity.bookmarksFragment!!
+                    val userTagsContainer = bookmarksFragment.userTagsContainer
+                    val user = userTagsContainer.addUser(bookmark.user)
+                    val tags = userTagsContainer.tags
+                    val tagNames = tags.map { it.name }
+
                     diffs.forEach {
-                        val name = tagNames[it.key]
+                        val name = tagNames[it.first]
                         val tag = userTagsContainer.getTag(name)!!
-                        if (it.value) {
+                        if (it.second) {
                             userTagsContainer.tagUser(user, tag)
                         }
                         else {
@@ -214,10 +216,55 @@ open class BookmarkDialog : DialogFragment(), AlertDialogListener {
                         putObject(UserTagsKey.CONTAINER, userTagsContainer)
                     }
 
-                    context?.showToast(R.string.msg_user_tagged, user, user.tags.size)
+                    activity.showToast(R.string.msg_user_tagged, user.name, user.tags.size)
                     listener?.onTagUser(bookmark)
                 }
             }
-            .show()
+
+            fun onCreateNewTag(listener: Listener?, dialog: AlertDialogFragment) {
+                val bookmark = dialog.getAdditionalData<Bookmark>("bookmark")!!
+
+                UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setAdditionalData("bookmark", bookmark)
+                    .show(listener!!.fragmentManagerForDialog, "create_tag_dialog")
+            }
+
+            fun onCompleteCreateTag(tagName: String, activity: BookmarksActivity, dialog: UserTagDialogFragment) : Boolean {
+                val prefs = SafeSharedPreferences.create<UserTagsKey>(activity)
+
+                val bookmarksFragment = activity.bookmarksFragment!!
+                val userTagsContainer = bookmarksFragment.userTagsContainer
+
+                val bookmark = dialog.getAdditionalData<Bookmark>("bookmark")!!
+                val user = bookmarksFragment.userTagsContainer.addUser(bookmark.user)
+
+                if (userTagsContainer.containsTag(tagName)) {
+                    activity.showToast(R.string.msg_user_tag_existed)
+                    return false
+                }
+                else {
+                    try {
+                        val tag = userTagsContainer.addTag(tagName)
+                        userTagsContainer.tagUser(user, tag)
+
+                        prefs.edit {
+                            putObject(UserTagsKey.CONTAINER, userTagsContainer)
+                        }
+
+                        val parentTabAdapter = bookmarksFragment.bookmarksTabAdapter
+                        parentTabAdapter?.notifyItemChanged(bookmark)
+                        activity.showToast(
+                            R.string.msg_user_tag_created_and_added_user,
+                            tagName,
+                            bookmark.user)
+                    }
+                    catch (e: Exception) {
+                        Log.e("onCompleteEditTagName", "failed to save")
+                        activity.showToast("ユーザータグの作成に失敗しました")
+                    }
+                    return true
+                }
+            }
+        }
     }
 }
