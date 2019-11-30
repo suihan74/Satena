@@ -153,7 +153,7 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase(), AlertDialogListe
         return view
     }
 
-    override fun onSingleSelectItem(dialog: AlertDialogFragment, which: Int) {
+    override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
 
         when (dialog.tag) {

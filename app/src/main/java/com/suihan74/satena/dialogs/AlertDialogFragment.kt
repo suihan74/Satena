@@ -12,8 +12,8 @@ interface AlertDialogListener {
     fun onClickNegativeButton(dialog: AlertDialogFragment) {}
     fun onClickNeutralButton(dialog: AlertDialogFragment) {}
     fun onSelectItem(dialog: AlertDialogFragment, which: Int) {}
-    fun onSingleSelectItem(dialog: AlertDialogFragment, which: Int) {}
-    fun onMultiSelectItem(dialog: AlertDialogFragment, which: Int, selected: Boolean) {}
+    fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {}
+    fun onMultiChoiceItem(dialog: AlertDialogFragment, which: Int, selected: Boolean) {}
 }
 
 /**
@@ -101,7 +101,7 @@ open class AlertDialogFragment : DialogFragment() {
                             savedInstanceState?.getInt(SINGLE_ITEMS_SELECTED, -1) ?: -1
                         val selected = if (savedSelected >= 0) savedSelected else singleSelected
                         setSingleChoiceItems(items, selected) { _, which ->
-                            listener?.onSingleSelectItem(this@AlertDialogFragment, which)
+                            listener?.onSingleChoiceItem(this@AlertDialogFragment, which)
                         }
                     }
 
@@ -113,7 +113,7 @@ open class AlertDialogFragment : DialogFragment() {
 
                         setMultiChoiceItems(items, states) { _, which, s ->
                             multiChoiceItemsCurrentStates?.set(which, s)
-                            listener?.onMultiSelectItem(this@AlertDialogFragment, which, s)
+                            listener?.onMultiChoiceItem(this@AlertDialogFragment, which, s)
                         }
                     }
 

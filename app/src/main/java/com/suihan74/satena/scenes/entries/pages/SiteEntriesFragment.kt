@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.entries.pages
 
-import android.app.AlertDialog
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
@@ -109,7 +108,7 @@ class SiteEntriesFragment : SingleTabEntriesFragmentBase(), AlertDialogListener 
         }
     }
 
-    override fun onSingleSelectItem(dialog: AlertDialogFragment, which: Int) {
+    override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
         val newEntriesOrder = EntriesOrder.values()[which]
         mEntriesOrderMenuItem?.title = newEntriesOrder.description
         if (newEntriesOrder != mEntriesOrder) {

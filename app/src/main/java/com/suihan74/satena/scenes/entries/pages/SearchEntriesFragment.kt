@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.entries.pages
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.widget.SearchView
@@ -177,7 +176,7 @@ class SearchEntriesFragment : SingleTabEntriesFragmentBase(), AlertDialogListene
         }
     }
 
-    override fun onSingleSelectItem(dialog: AlertDialogFragment, which: Int) {
+    override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
         when (dialog.tag) {
             "search_type_dialog" -> {
                 val newSearchType = SearchType.values()[which]

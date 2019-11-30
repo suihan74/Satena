@@ -161,7 +161,7 @@ class PreferencesEntriesFragment :
     fun <T : View> findViewById(id: Int) =
         mRoot?.findViewById<T>(id)
 
-    override fun onSingleSelectItem(dialog: AlertDialogFragment, which: Int) {
+    override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
 
         when (dialog.tag) {
