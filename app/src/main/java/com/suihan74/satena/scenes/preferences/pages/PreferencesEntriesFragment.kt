@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.preferences.pages
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,10 +14,13 @@ import com.suihan74.satena.dialogs.NumberPickerDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.get
 import com.suihan74.utilities.toVisibility
 
-class PreferencesEntriesFragment : PreferencesFragmentBase(), AlertDialogListener {
+class PreferencesEntriesFragment :
+    PreferencesFragmentBase(),
+    AlertDialogListener,
+    NumberPickerDialogFragment.Listener
+{
     companion object {
         fun createInstance() =
             PreferencesEntriesFragment()
@@ -134,28 +136,20 @@ class PreferencesEntriesFragment : PreferencesFragmentBase(), AlertDialogListene
 
         // ブクマ閲覧履歴の最大保存数
         view.findViewById<Button>(R.id.preferences_entries_history_max_size).apply {
-            val key = EntriesHistoryKey.MAX_SIZE
             val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
-            var currentMaxSize = historyPrefs.getInt(key)
-            text = String.format("%d件", currentMaxSize)
-            setOnClickListener {
-                val dialog = NumberPickerDialogFragment.createInstance(
-                    title = "ブクマ閲覧履歴の最大保存数を設定",
-                    message = "1～100件で指定できます",
-                    minValue = 1,
-                    maxValue = 100,
-                    defaultValue = currentMaxSize
-                ) { fm, value ->
-                    currentMaxSize = value
-                    historyPrefs.edit {
-                        putInt(key, value)
-                    }
+            val key = EntriesHistoryKey.MAX_SIZE
+            text = String.format("%d件", historyPrefs.getInt(key))
 
-                    fm.get<PreferencesEntriesFragment>()?.findViewById<Button>(R.id.preferences_entries_history_max_size)?.let {
-                        it.text = String.format("%d件", value)
-                    }
-                }
-                dialog.show(fragmentManager!!, "dialog")
+            setOnClickListener {
+                val currentMaxSize = historyPrefs.getInt(key)
+
+                NumberPickerDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setTitle(R.string.pref_entries_history_max_size_dialog_title)
+                    .setMessage(R.string.pref_entries_history_max_size_dialog_msg)
+                    .setMinValue(1)
+                    .setMaxValue(100)
+                    .setDefaultValue(currentMaxSize)
+                    .show(childFragmentManager, "history_max_size_picker")
             }
         }
 
@@ -226,6 +220,16 @@ class PreferencesEntriesFragment : PreferencesFragmentBase(), AlertDialogListene
 
                 dialog.dismiss()
             }
+        }
+    }
+
+    override fun onCompleteNumberPicker(value: Int, dialog: NumberPickerDialogFragment) {
+        val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
+        historyPrefs.edit {
+            putInt(EntriesHistoryKey.MAX_SIZE, value)
+        }
+        view?.findViewById<Button>(R.id.preferences_entries_history_max_size)?.run {
+            text = String.format("%d件", value)
         }
     }
 }

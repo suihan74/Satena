@@ -15,9 +15,11 @@ import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.get
 
-class PreferencesGeneralsFragment : PreferencesFragmentBase() {
+class PreferencesGeneralsFragment :
+    PreferencesFragmentBase(),
+    NumberPickerDialogFragment.Listener
+{
     private lateinit var mRoot : View
 
     companion object {
@@ -29,7 +31,7 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
         val view = inflater.inflate(R.layout.fragment_preferences_generals, container, false)
         mRoot = view
 
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context!!)
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
 
         // ダークテーマか否か
         view.findViewById<ToggleButton>(R.id.preferences_generals_theme).apply {
@@ -97,27 +99,18 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
         // バックグラウンドで通知を確認する間隔
         view.findViewById<Button>(R.id.preferences_generals_checking_notices_interval).apply {
             val key = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS
-            val value = prefs.get<Long>(key)
-            text = String.format("%d分", value)
+            text = String.format("%d分", prefs.get<Long>(key))
 
             setOnClickListener {
-                val currentValue = prefs.get<Long>(key)
-                val dialog = NumberPickerDialogFragment.createInstance(
-                    title = "通知確認間隔を設定",
-                    message = "1分～180分で指定できます",
-                    minValue = 1,
-                    maxValue = 180,
-                    defaultValue = currentValue.toInt()
-                ) { fm, value ->
-                    prefs.edit {
-                        putLong(key, value.toLong())
-                    }
+                val currentValue = prefs.get<Long>(key).toInt()
 
-                    fm.get<PreferencesGeneralsFragment>()?.findViewById<Button>(R.id.preferences_generals_checking_notices_interval)?.let {
-                        it.text = String.format("%d分", value)
-                    }
-                }
-                dialog.show(fragmentManager!!, "dialog")
+                NumberPickerDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setTitle(R.string.pref_generals_notices_intervals_dialog_title)
+                    .setMessage(R.string.pref_generals_checking_notices_intervals_desc)
+                    .setMinValue(1)
+                    .setMaxValue(180)
+                    .setDefaultValue(currentValue)
+                    .show(childFragmentManager, "notices_intervals_picker")
             }
         }
 
@@ -137,4 +130,15 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
 
     fun <T : View> findViewById(id: Int) =
         mRoot.findViewById<T>(id)!!
+
+    override fun onCompleteNumberPicker(value: Int, dialog: NumberPickerDialogFragment) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        prefs.edit {
+            putLong(PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS, value.toLong())
+        }
+
+        view?.findViewById<Button>(R.id.preferences_generals_checking_notices_interval)?.run {
+            text = String.format("%d分", value)
+        }
+    }
 }

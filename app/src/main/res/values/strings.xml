@@ -110,6 +110,9 @@
     <string name="pref_generals_background_checking_notices_desc">常駐して通知を確認する</string>
     <string name="pref_generals_checking_notices_intervals_desc">通知を確認する間隔</string>
     <string name="pref_generals_show_release_notes_after_update_desc">アプリ更新後の初回起動時に更新履歴を表示する</string>
+    <string name="pref_generals_notices_intervals_dialog_title">通知確認間隔を設定</string>
+    <string name="pref_generals_notices_intervals_dialog_msg">1分～180分で指定できます</string>
+
     <!-- entries -->
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
@@ -118,6 +121,8 @@
     <string name="pref_entries_menu_tap_guard_desc">メニュー表示中に他の操作をできないようにする</string>
     <string name="pref_entries_hiding_toolbar_by_scrolling_desc">スクロールでツールバーを隠す</string>
     <string name="pref_entries_history_max_size_desc">ブクマ閲覧履歴の最大保存数</string>
+    <string name="pref_entries_history_max_size_dialog_title">ブクマ閲覧履歴の最大保存数を設定</string>
+    <string name="pref_entries_history_max_size_dialog_msg">1～100件で指定できます</string>
     <!-- bookmarks -->
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
     <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>

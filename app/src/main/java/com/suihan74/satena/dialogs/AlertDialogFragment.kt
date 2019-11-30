@@ -22,18 +22,19 @@ interface AlertDialogListener {
  */
 open class AlertDialogFragment : DialogFragment() {
     companion object {
-        const val THEME_RES_ID = "THEME_RES_ID"
-        const val POSITIVE_BUTTON_TEXT_ID = "POSITIVE_BUTTON_TEXT_ID"
-        const val NEGATIVE_BUTTON_TEXT_ID = "NEGATIVE_BUTTON_TEXT_ID"
-        const val NEUTRAL_BUTTON_TEXT_ID = "NEUTRAL_BUTTON_TEXT_ID"
-        const val TITLE_ID = "TITLE_ID"
-        const val TITLE = "TITLE"
-        const val MESSAGE_ID = "MESSAGE_ID"
-        const val MESSAGE = "MESSAGE"
-        const val ICON_ID = "ICON_ID"
-        const val ITEMS = "ITEMS"
-        const val SINGLE_ITEMS_SELECTED = "SINGLE_ITEMS_SELECTED"
-        const val MULTI_ITEMS_STATES = "MULTI_ITEMS_STATES"
+        private const val KEY_BASE = "AlertDialogFragment."
+        const val THEME_RES_ID = KEY_BASE + "THEME_RES_ID"
+        const val POSITIVE_BUTTON_TEXT_ID = KEY_BASE + "POSITIVE_BUTTON_TEXT_ID"
+        const val NEGATIVE_BUTTON_TEXT_ID = KEY_BASE + "NEGATIVE_BUTTON_TEXT_ID"
+        const val NEUTRAL_BUTTON_TEXT_ID = KEY_BASE + "NEUTRAL_BUTTON_TEXT_ID"
+        const val TITLE_ID = KEY_BASE + "TITLE_ID"
+        const val TITLE = KEY_BASE + "TITLE"
+        const val MESSAGE_ID = KEY_BASE + "MESSAGE_ID"
+        const val MESSAGE = KEY_BASE + "MESSAGE"
+        const val ICON_ID = KEY_BASE + "ICON_ID"
+        const val ITEMS = KEY_BASE + "ITEMS"
+        const val SINGLE_ITEMS_SELECTED = KEY_BASE + "SINGLE_ITEMS_SELECTED"
+        const val MULTI_ITEMS_STATES = KEY_BASE + "MULTI_ITEMS_STATES"
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
