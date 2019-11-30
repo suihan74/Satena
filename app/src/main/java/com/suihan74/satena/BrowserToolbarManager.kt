@@ -81,8 +81,16 @@ class BrowserToolbarManager : BroadcastReceiver() {
 
                 if (entry == null) {
                     try {
-                        val bookmarksEntry = HatenaClient.getEmptyBookmarksEntryAsync(url).await()
-                        entry = Entry(0, bookmarksEntry.title, "", 0, url, url, "", "")
+                        val dummy = HatenaClient.getEmptyBookmarksEntryAsync(url).await()
+                        entry = Entry(
+                            id = 0,
+                            title = dummy.title,
+                            description = "",
+                            count = 0,
+                            url = dummy.url,
+                            rootUrl = Uri.parse(dummy.url).let { it.scheme!! + "://" + it.host!! },
+                            faviconUrl = "",
+                            imageUrl = dummy.screenshot)
                     } catch (e: Exception) {
                         Log.d("BrowserToolbarManager", Log.getStackTraceString(e))
                     }

@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.post
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Point
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.webkit.URLUtil
@@ -144,7 +145,15 @@ class BookmarkPostActivity : ActivityBase(), BookmarkPostFragment.ResultListener
                             Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
                             null
                         }
-                    entry = Entry(0, mBookmarksEntry?.title ?: "", "", 0, url, url, "", "")
+                    entry = Entry(
+                        id = 0,
+                        title = mBookmarksEntry!!.title,
+                        description = "",
+                        count = 0,
+                        url = mBookmarksEntry!!.url,
+                        rootUrl = Uri.parse(mBookmarksEntry!!.url).let { it.scheme!! + "://" + it.host!! },
+                        faviconUrl = "",
+                        imageUrl = mBookmarksEntry!!.screenshot)
                 }
 
                 mEntry = entry

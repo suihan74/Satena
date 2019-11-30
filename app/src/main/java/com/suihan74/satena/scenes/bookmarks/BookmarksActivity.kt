@@ -18,7 +18,6 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.lock
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.*
-import java.lang.NullPointerException
 
 class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
     // プリロード中のブクマ・スター
@@ -281,7 +280,15 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
                     }
                 }
 
-                entry ?: Entry(0, mBookmarksEntry?.title ?: "", "", 0, url, url, "", "")
+                entry ?: Entry(
+                    id = 0,
+                    title = mBookmarksEntry!!.title,
+                    description = "",
+                    count = 0,
+                    url = mBookmarksEntry!!.url,
+                    rootUrl = Uri.parse(mBookmarksEntry!!.url).let { it.scheme!! + "://" + it.host!! },
+                    faviconUrl = "",
+                    imageUrl = mBookmarksEntry!!.screenshot)
             }
 
             // ブコメページのリンクを踏んだときの処理

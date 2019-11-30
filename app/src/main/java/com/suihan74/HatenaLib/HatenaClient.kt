@@ -639,82 +639,108 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * まだ誰にもブックマークされていないページのダミーブックマーク情報を作成する
      */
     fun getEmptyBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = async {
-        val response = get(url)
-        val title = if (response.isSuccessful) {
-            val bodyBytes = response.body!!.bytes()
+        return@async get(url).use { response ->
+            if (response.isSuccessful) {
+                val bodyBytes = response.body!!.bytes()
 
-            // 文字コードを判別してからHTMLを読む
-            val defaultCharsetName = Charset.defaultCharset().name().toLowerCase(Locale.ROOT)
-            var charsetName = defaultCharsetName
-            var charsetDetected = false
+                // 文字コードを判別してからHTMLを読む
+                val defaultCharsetName = Charset.defaultCharset().name().toLowerCase(Locale.ROOT)
+                var charsetName = defaultCharsetName
+                var charsetDetected = false
 
-            val charsetRegex = Regex("""charset=([a-zA-Z0-9_\-]+)""")
-            fun parseCharset(src: String) : String {
-                val matchResult = charsetRegex.find(src)
-                return if (matchResult?.groups?.size ?: 0 >= 2) matchResult!!.groups[1]!!.value.toLowerCase(Locale.ROOT) else ""
-            }
-
-            // レスポンスヘッダで判断できる場合
-            val contentType = response.header("Content-Type")
-            if (contentType?.isNotEmpty() == true) {
-                val parsed = parseCharset(contentType)
-                if (parsed.isNotEmpty()) {
-                    charsetName = parsed
-                    charsetDetected = true
+                val charsetRegex = Regex("""charset=([a-zA-Z0-9_\-]+)""")
+                fun parseCharset(src: String): String {
+                    val matchResult = charsetRegex.find(src)
+                    return if (matchResult?.groups?.size ?: 0 >= 2) matchResult!!.groups[1]!!.value.toLowerCase(
+                        Locale.ROOT
+                    )
+                    else ""
                 }
-            }
 
-            val rawHtml = bodyBytes.toString(Charset.defaultCharset())
-            val rawDoc = Jsoup.parse(rawHtml)
-
-            if (!charsetDetected) {
-                // HTMLからcharset指定を探す必要がある場合
-                rawDoc.getElementsByTag("meta").let { elem ->
-                    // <meta charset="???">
-                    val charsetMeta = elem.firstOrNull { it.hasAttr("charset") }
-                    if (charsetMeta != null) {
-                        charsetName = charsetMeta.attr("charset").toLowerCase(Locale.ROOT)
+                // レスポンスヘッダで判断できる場合
+                val contentType = response.header("Content-Type")
+                if (contentType?.isNotEmpty() == true) {
+                    val parsed = parseCharset(contentType)
+                    if (parsed.isNotEmpty()) {
+                        charsetName = parsed
                         charsetDetected = true
-                        return@let
                     }
+                }
 
-                    // <meta http-equiv="Content-Type" content="text/html; charset=???">
-                    val meta = elem.firstOrNull { it.attr("http-equiv")?.toLowerCase(Locale.ROOT) == "content-type" }
-                    meta?.attr("content")?.let {
-                        val parsed = parseCharset(it)
-                        if (parsed.isNotEmpty()) {
-                            charsetName = parsed
+                val rawHtml = bodyBytes.toString(Charset.defaultCharset())
+                val rawDoc = Jsoup.parse(rawHtml)
+
+                if (!charsetDetected) {
+                    // HTMLからcharset指定を探す必要がある場合
+                    rawDoc.getElementsByTag("meta").let { elem ->
+                        // <meta charset="???">
+                        val charsetMeta = elem.firstOrNull { it.hasAttr("charset") }
+                        if (charsetMeta != null) {
+                            charsetName = charsetMeta.attr("charset").toLowerCase(Locale.ROOT)
                             charsetDetected = true
+                            return@let
+                        }
+
+                        // <meta http-equiv="Content-Type" content="text/html; charset=???">
+                        val meta =
+                            elem.firstOrNull { it.attr("http-equiv")?.toLowerCase(Locale.ROOT) == "content-type" }
+                        meta?.attr("content")?.let {
+                            val parsed = parseCharset(it)
+                            if (parsed.isNotEmpty()) {
+                                charsetName = parsed
+                                charsetDetected = true
+                            }
                         }
                     }
                 }
-            }
-            when (charsetName) {
-                "shift-jis", "shift_jis", "sjis" -> charsetName = "MS932"
-            }
-            // 文字コード判別ここまで
+                when (charsetName) {
+                    "shift-jis", "shift_jis", "sjis" -> charsetName = "MS932"
+                }
+                // 文字コード判別ここまで
 
-            val titleElement = if (charsetName == defaultCharsetName) {
-                rawDoc.select("title")
+                val doc =
+                    if (charsetName == defaultCharsetName) {
+                        rawDoc
+                    }
+                    else {
+                        Jsoup.parse(bodyBytes.inputStream(), charsetName, url)
+                    }
+
+                val title = doc.allElements
+                    .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:title" }
+                    ?.attr("content")
+                    ?: doc.select("title").html()
+
+                val actualUrl = doc.allElements
+                    .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:url" }
+                    ?.attr("content")
+                    ?: url
+
+                val screenshot = doc.allElements
+                    .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:image" }
+                    ?.attr("content")
+                    ?: ""
+
+                BookmarksEntry(
+                    id = 0,
+                    title = title,
+                    bookmarks = emptyList(),
+                    count = 0,
+                    url = actualUrl,
+                    entryUrl = actualUrl,
+                    screenshot = screenshot)
             }
             else {
-                val doc = Jsoup.parse(bodyBytes.inputStream(), charsetName, url)
-                doc.select("title")
+                BookmarksEntry(
+                    id = 0,
+                    title = "",
+                    bookmarks = emptyList(),
+                    count = 0,
+                    url = url,
+                    entryUrl = url,
+                    screenshot = "")
             }
-
-            titleElement?.html() ?: ""
         }
-        else { "" }
-        response.close()
-
-        return@async BookmarksEntry(
-            id = 0,
-            title = title,
-            bookmarks = emptyList(),
-            count = 0,
-            url = url,
-            entryUrl = url,
-            screenshot = "")
     }
 
     /**
