@@ -34,7 +34,6 @@ fun Entry.saveHistory(context: Context) {
     val modifiedEntries =
         when {
             existedPosition < 0 -> entries.plus(this)
-            existedPosition + 1 == entries.size -> entries
             else -> {
                 entries.filterNot { it.url == this.url }
                     .plus(this)
