@@ -225,7 +225,7 @@ open class AlertDialogFragment : DialogFragment() {
         fun setMultiChoiceItems(items: Collection<String>, booleanArray: BooleanArray) =
             setMultiChoiceItems(items.toTypedArray(), booleanArray)
 
-        fun <T> setAdditionalData(key: String, obj: T) where T : Serializable = this.apply {
+        fun setAdditionalData(key: String, obj: Serializable?) = this.apply {
             arguments.putSerializable(key, obj)
         }
     }

@@ -16,12 +16,13 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.ReportCategory
 import com.suihan74.satena.R
+import com.suihan74.utilities.get
 import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
-class ReportDialogFragment : DialogFragment(), CoroutineScope {
+class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogListener {
     private val mJob: Job = SupervisorJob()
     override val coroutineContext: CoroutineContext
         get() = mJob
@@ -32,7 +33,6 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
     }
 
     private var mRoot: View? = null
-
     private var mEntry: Entry? = null
     private var mBookmark: Bookmark? = null
 
@@ -42,20 +42,20 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
     companion object {
         fun createInstance(entry: Entry, bookmark: Bookmark) = ReportDialogFragment().apply {
             arguments = Bundle().apply {
-                putSerializable(ARG_KEY_ENTRY, entry)
-                putSerializable(ARG_KEY_BOOKMARK, bookmark)
+                putSerializable(ARG_ENTRY, entry)
+                putSerializable(ARG_BOOKMARK, bookmark)
             }
         }
 
         fun createInstance(user: String) = ReportDialogFragment().apply {
             arguments = Bundle().apply {
-                putString(ARG_KEY_USER, user)
+                putString(ARG_USER, user)
             }
         }
 
-        private const val ARG_KEY_ENTRY = "mEntry"
-        private const val ARG_KEY_BOOKMARK = "mBookmark"
-        private const val ARG_KEY_USER = "mUser"
+        private const val ARG_ENTRY = "ARG_ENTRY"
+        private const val ARG_BOOKMARK = "ARG_BOOKMARK"
+        private const val ARG_USER = "ARG_USER"
 
         private const val BUNDLE_CATEGORY = "category"
         private const val BUNDLE_TEXT = "text"
@@ -77,9 +77,9 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mEntry = arguments!!.getSerializable(ARG_KEY_ENTRY) as? Entry
-        mBookmark = arguments!!.getSerializable(ARG_KEY_BOOKMARK) as? Bookmark
-        mUser = arguments!!.getString(ARG_KEY_USER)
+        mEntry = arguments!!.getSerializable(ARG_ENTRY) as? Entry
+        mBookmark = arguments!!.getSerializable(ARG_BOOKMARK) as? Bookmark
+        mUser = arguments!!.getString(ARG_USER)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -128,23 +128,23 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
 
         return AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setView(content)
-            .setMessage("ブコメを通報")
-            .setPositiveButton("通報", null)
+            .setMessage(R.string.report_bookmark_dialog_title)
+            .setPositiveButton(R.string.report_dialog_ok, null)
 //            .setNeutralButton("通報して非表示", null)
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.dialog_cancel, null)
             .show()
             .apply {
                 getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                    report(mRoot!!, this, false)
+                    report(mRoot!!, false)
                 }
 
                 getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener {
-                    report(mRoot!!, this, true)
+                    report(mRoot!!, true)
                 }
             }
     }
 
-    private fun report(root: View, dialog: AlertDialog, withMuting: Boolean) {
+    private fun report(root: View, withMuting: Boolean) {
         val spinner = root.findViewById<Spinner>(R.id.category_spinner)
         val editText = root.findViewById<EditText>(R.id.text)
 
@@ -153,40 +153,57 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope {
 
         val user = mBookmark?.user ?: mUser ?: throw RuntimeException("invalid user")
 
-        AlertDialog.Builder(context, R.style.AlertDialogStyle)
-            .setTitle("確認")
+        AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(getString(R.string.report_dialog_confirm_msg, user, category.description))
             .setIcon(R.drawable.ic_baseline_help)
-            .setMessage("id:${user}を「${category.description}」のため通報します。よろしいですか？")
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("OK") { _, _ ->
-                launch(Dispatchers.Main) {
-                    try {
-                        when {
-                            mEntry != null && mBookmark != null ->
-                                HatenaClient.reportAsync(mEntry!!, mBookmark!!, category, text).await()
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok)
+            .setAdditionalData("category", category)
+            .setAdditionalData("text", text)
+            .setAdditionalData("user", user)
+            .setAdditionalData("entry", mEntry)
+            .setAdditionalData("bookmark", mBookmark)
+            .setAdditionalData("withMuting", withMuting)
+            .show(childFragmentManager, "confirm_dialog")
+    }
 
-                            mUser != null ->
-                                HatenaClient.reportAsync(mUser!!, category, text).await()
+    override fun onClickPositiveButton(dialog: AlertDialogFragment) {
+        // reportDialogを消すと確認ダイアログもdetachされるので先に取っておく
+        val context = context
 
-                            else -> throw RuntimeException()
-                        }
+        // 以下の処理の待機中に操作可能になってしまうので、先に通報ダイアログを消しておく
+        val reportDialog = fragmentManager?.get<ReportDialogFragment>()
+        reportDialog?.dismiss()
 
-                        if (withMuting) {
-                            HatenaClient.ignoreUserAsync(user).await()
-                            activity?.showToast("id:${user}を通報して非表示しました")
-                        }
-                        else {
-                            activity?.showToast("id:${user}を通報しました")
-                        }
-                    }
-                    catch (e: Exception) {
-                        activity?.showToast("通報失敗")
-                    }
-                    finally {
-                        dialog.dismiss()
-                    }
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val category = dialog.getAdditionalData<ReportCategory>("category")!!
+                val text = dialog.getAdditionalData<String>("text")!!
+                val user = dialog.getAdditionalData<String>("user")!!
+                val withMuting = dialog.getAdditionalData<Boolean>("withMuting")!!
+                val entry = dialog.getAdditionalData<Entry>("entry")
+                val bookmark = dialog.getAdditionalData<Bookmark>("bookmark")
+
+                when {
+                    entry != null && bookmark != null ->
+                        HatenaClient.reportAsync(entry, bookmark, category, text).await()
+
+                    else ->
+                        HatenaClient.reportAsync(user, category, text).await()
+                }
+
+                if (withMuting) {
+                    HatenaClient.ignoreUserAsync(user).await()
+                    context?.showToast(R.string.msg_report_and_mute_succeeded, user)
+                }
+                else {
+                    context?.showToast(R.string.msg_report_succeeded, user)
                 }
             }
-            .show()
+            catch (e: Exception) {
+                context?.showToast(R.string.msg_report_failed)
+            }
+        }
     }
 }

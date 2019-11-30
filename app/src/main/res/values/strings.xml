@@ -161,8 +161,14 @@
     <string name="search_query_hint">検索キーワード</string>
 
     <!-- ブコメ通報ダイアログ -->
+    <string name="report_bookmark_dialog_title">ブコメを通報</string>
+    <string name="report_dialog_ok">通報</string>
     <string name="report_dialog_text_hint">このブコメを通報する理由など(任意)</string>
     <string name="report_dialog_description">通報内容</string>
+    <string name="report_dialog_confirm_msg">%sを「%s」のため通報します。よろしいですか？</string>
+    <string name="msg_report_succeeded">id:%sを通報しました</string>
+    <string name="msg_report_and_mute_succeeded">id:%sを通報して非表示にしました</string>
+    <string name="msg_report_failed">通報に失敗しました</string>
 
     <!-- ユーザータグ設定ダイアログ (ブクマ画面) -->
     <string name="user_tags_dialog_title">ユーザータグを選択</string>
