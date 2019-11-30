@@ -287,7 +287,7 @@ open class BookmarksAdapter(
                         if (link.startsWith("http")) {
                             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
                             val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
-                            TappedActionLauncher.launch(context, act, link)
+                            TappedActionLauncher.launch(context, act, link, fragment)
                         }
                         else {
                             val eid = analyzed.entryIds.firstOrNull { link.contains(it.toString()) }
@@ -305,7 +305,7 @@ open class BookmarksAdapter(
                         if (link.startsWith("http")) {
                             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
                             val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
-                            TappedActionLauncher.launch(context, act, link)
+                            TappedActionLauncher.launch(context, act, link, fragment)
                         }
                     }
                 }

@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 open class EntriesAdapter(
-    private val fragment : CoroutineScopeFragment,
+    private val fragment : EntriesTabFragmentBase,
     var category : Category,
     private val tabPosition: Int,
     private var entries : List<Entry>
@@ -97,13 +97,13 @@ open class EntriesAdapter(
                 holder.itemView.setOnClickListener {
                     val position = holder.adapterPosition
                     val entry = states[position].body!!
-                    TappedActionLauncher.launch(parent.context, singleTapAction, entry, makeAdditionalMenuItems(entry))
+                    TappedActionLauncher.launch(parent.context, singleTapAction, entry, fragment)
                 }
 
                 holder.itemView.setOnLongClickListener {
                     val position = holder.adapterPosition
                     val entry = states[position].body!!
-                    TappedActionLauncher.launch(parent.context, longTapAction, entry, makeAdditionalMenuItems(entry))
+                    TappedActionLauncher.launch(parent.context, longTapAction, entry, fragment)
                     return@setOnLongClickListener true
                 }
 
@@ -156,7 +156,7 @@ open class EntriesAdapter(
         */
     }
 
-    private fun addToReadLaterEntries(entry: Entry) {
+    fun addToReadLaterEntries(entry: Entry) {
         fragment.launch(Dispatchers.Main) {
             val context = fragment.context ?: return@launch
             try {
@@ -176,7 +176,7 @@ open class EntriesAdapter(
         }
     }
 
-    private fun bookmarkReadLaterEntry(entry: Entry) {
+    fun bookmarkReadLaterEntry(entry: Entry) {
         fragment.launch(Dispatchers.Main) {
             val context = fragment.context ?: return@launch
             try {
@@ -203,7 +203,7 @@ open class EntriesAdapter(
         }
     }
 
-    private fun addEntryToIgnores(entry: Entry) {
+    fun addEntryToIgnores(entry: Entry) {
         val context = fragment.context ?: return
 
         if (ignoredEntries.any { it.type == IgnoredEntryType.URL && it.query == entry.url }) {
@@ -233,7 +233,7 @@ open class EntriesAdapter(
         dialog.show(fragment.fragmentManager!!, "IgnoredEntryDialogFragment")
     }
 
-    private fun deleteBookmark(entry: Entry) {
+    fun deleteBookmark(entry: Entry) {
         fragment.launch(Dispatchers.Main) {
             val context = fragment.context ?: return@launch
             try {

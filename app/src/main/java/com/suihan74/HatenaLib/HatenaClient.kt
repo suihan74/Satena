@@ -635,10 +635,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         return@async getJson<BookmarksEntry>(apiUrl, "yyyy/MM/dd HH:mm")
     }
 
-    /**
-     * まだ誰にもブックマークされていないページのダミーブックマーク情報を作成する
-     */
-    fun getEmptyBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = async {
+    fun getEmptyEntryAsync(url: String) : Deferred<Entry> = async {
         return@async get(url).use { response ->
             if (response.isSuccessful) {
                 val bodyBytes = response.body!!.bytes()
@@ -711,35 +708,59 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     ?.attr("content")
                     ?: doc.select("title").html()
 
+                val description = doc.allElements
+                    .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:description" }
+                    ?.attr("content")
+                    ?: ""
+
                 val actualUrl = doc.allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:url" }
                     ?.attr("content")
                     ?: url
 
-                val screenshot = doc.allElements
+                val imageUrl = doc.allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:image" }
                     ?.attr("content")
                     ?: ""
 
-                BookmarksEntry(
+                Entry(
                     id = 0,
                     title = title,
-                    bookmarks = emptyList(),
+                    description = description,
                     count = 0,
                     url = actualUrl,
-                    entryUrl = actualUrl,
-                    screenshot = screenshot)
+                    rootUrl = Uri.parse(actualUrl).let { it.scheme!! + "://" + it.host!! },
+                    faviconUrl = "",
+                    imageUrl = imageUrl)
             }
             else {
-                BookmarksEntry(
+                Entry(
                     id = 0,
                     title = "",
-                    bookmarks = emptyList(),
+                    description = "",
                     count = 0,
                     url = url,
-                    entryUrl = url,
-                    screenshot = "")
+                    rootUrl = Uri.parse(url).let { it.scheme!! + "://" + it.host!! },
+                    faviconUrl = "",
+                    imageUrl = "")
             }
+        }
+    }
+
+    /**
+     * まだ誰にもブックマークされていないページのダミーブックマーク情報を作成する
+     */
+    fun getEmptyBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = async {
+        return@async getEmptyEntryAsync(url).await().let {
+            BookmarksEntry(
+                id = 0,
+                title = it.title,
+                bookmarks = emptyList(),
+                count = 0,
+                url = it.url,
+                entryUrl = it.url,
+                screenshot = it.imageUrl
+            )
         }
     }
 

@@ -1,39 +1,30 @@
 package com.suihan74.satena
 
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
-import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.entries.EntriesTabFragmentBase
+import com.suihan74.utilities.CoroutineScopeFragment
 
 object TappedActionLauncher {
-    fun launch(context: Context, act: TapEntryAction, url: String, additionalItemsAdder: ((ArrayList<Pair<Int, () -> Unit>>)->Unit)?) = when (act) {
+    fun launch(context: Context, act: TapEntryAction, url: String, fragment: CoroutineScopeFragment? = null) = when (act) {
         TapEntryAction.SHOW_COMMENTS -> launchBookmarksActivity(context, url)
         TapEntryAction.SHOW_PAGE -> launchTabs(context, url)
         TapEntryAction.SHOW_PAGE_IN_BROWSER -> launchBrowser(context, url)
-        TapEntryAction.SHOW_MENU -> showMenu(context, url, additionalItemsAdder)
+        TapEntryAction.SHOW_MENU -> showMenu(context, url, fragment!!)
     }
 
-    fun launch(context: Context, act: TapEntryAction, url: String) =
-        launch(context, act, url, null)
-
-    fun launch(context: Context, act: TapEntryAction, entry: Entry, additionalItemsAdder: ((ArrayList<Pair<Int, () -> Unit>>)->Unit)?) = when (act) {
+    fun launch(context: Context, act: TapEntryAction, entry: Entry, fragment: EntriesTabFragmentBase? = null) = when (act) {
         TapEntryAction.SHOW_COMMENTS -> launchBookmarksActivity(context, entry)
         TapEntryAction.SHOW_PAGE -> launchTabs(context, entry)
         TapEntryAction.SHOW_PAGE_IN_BROWSER -> launchBrowser(context, entry)
-        TapEntryAction.SHOW_MENU -> showMenu(context, entry, additionalItemsAdder)
+        TapEntryAction.SHOW_MENU -> showMenu(context, entry, fragment)
     }
-
-    fun launch(context: Context, act: TapEntryAction, entry: Entry) =
-        launch(context, act, entry, null)
 
     private fun launchBookmarksActivity(context: Context, url: String) {
         val entryUrl = HatenaClient.getCommentPageUrlFromEntryUrl(url)
@@ -66,57 +57,32 @@ object TappedActionLauncher {
     private fun launchBrowser(context: Context, entry: Entry) =
         launchBrowser(context, entry.ampUrl ?: entry.url)
 
-    private fun showMenu(context: Context, url: String, additionalItemsAdder: ((ArrayList<Pair<Int, () -> Unit>>) -> Unit)?) {
+    private fun showMenu(context: Context, url: String, fragment: CoroutineScopeFragment) {
         val items = arrayListOf(
-            TapEntryAction.SHOW_COMMENTS.titleId to { launchBookmarksActivity(context, url) },
-            TapEntryAction.SHOW_PAGE.titleId to { launchTabs(context, url) },
-            TapEntryAction.SHOW_PAGE_IN_BROWSER.titleId to { launchBrowser(context, url) }
+            TapEntryAction.SHOW_COMMENTS.titleId,
+            TapEntryAction.SHOW_PAGE.titleId,
+            TapEntryAction.SHOW_PAGE_IN_BROWSER.titleId
         )
 
-        additionalItemsAdder?.invoke(items)
-
-        AlertDialog.Builder(context, R.style.AlertDialogStyle)
-            .setTitle(url)
-            .setNegativeButton("Cancel", null)
-            .setItems(items.map { context.getText(it.first) }.toTypedArray()) { _, which ->
-                items[which].second()
-            }
-            .show()
+        EntryMenuDialog.Builder(url, R.style.AlertDialogStyle)
+            .setItems(items.map { context.getString(it) })
+            .show(fragment.childFragmentManager, "entry_menu_dialog")
     }
 
-    private fun showMenu(context: Context, entry: Entry, additionalItemsAdder: ((ArrayList<Pair<Int, () -> Unit>>)->Unit)?) {
+    private fun showMenu(context: Context, entry: Entry, fragment: EntriesTabFragmentBase?) {
         val items = arrayListOf(
-            TapEntryAction.SHOW_COMMENTS.titleId to { launchBookmarksActivity(context, entry) },
-            TapEntryAction.SHOW_PAGE.titleId to { launchTabs(context, entry) },
-            TapEntryAction.SHOW_PAGE_IN_BROWSER.titleId to { launchBrowser(context, entry) }
+            TapEntryAction.SHOW_COMMENTS.titleId,
+            TapEntryAction.SHOW_PAGE.titleId,
+            TapEntryAction.SHOW_PAGE_IN_BROWSER.titleId
         )
+        val additionalItems = fragment?.makeAdditionalMenuItems(entry)
 
-        additionalItemsAdder?.invoke(items)
-
-        val rootUrlRegex = Regex("""https?://(.+)/$""")
-        val rootUrl = rootUrlRegex.find(entry.rootUrl)?.groupValues?.get(1) ?: Uri.parse(entry.rootUrl).host ?: ""
-
-        val titleView = LayoutInflater.from(context).inflate(R.layout.dialog_title_entry, null).apply {
-            findViewById<TextView>(R.id.title).text = entry.title
-            findViewById<TextView>(R.id.domain).text = rootUrl
-            val favicon = findViewById<ImageView>(R.id.favicon)
-            if (entry.faviconUrl == null) {
-                favicon.visibility = View.GONE
-            }
-            else {
-                favicon.visibility = View.VISIBLE
-                Glide.with(context)
-                    .load(Uri.parse(entry.faviconUrl))
-                    .into(favicon)
-            }
+        if (additionalItems != null) {
+            items.addAll(additionalItems)
         }
 
-        AlertDialog.Builder(context, R.style.AlertDialogStyle)
-            .setCustomTitle(titleView)
-            .setNegativeButton("Cancel", null)
-            .setItems(items.map { context.getText(it.first) }.toTypedArray()) { _, which ->
-                items[which].second()
-            }
-            .show()
+        EntryMenuDialog.Builder(entry, R.style.AlertDialogStyle)
+            .setItems(items.map { context.getString(it) })
+            .show(fragment!!.childFragmentManager, "entry_menu_dialog")
     }
 }

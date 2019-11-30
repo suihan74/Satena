@@ -13,8 +13,10 @@ import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
+import com.suihan74.satena.TappedActionLauncher
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.BookmarkDialog
+import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
@@ -25,7 +27,8 @@ import kotlinx.coroutines.*
 abstract class BookmarksTabFragment :
     CoroutineScopeFragment(),
     BookmarkDialog.Listener,
-    UserTagDialogFragment.Listener
+    UserTagDialogFragment.Listener,
+    EntryMenuDialog.Listener
 {
     protected abstract fun getBookmarks(fragment: BookmarksFragment) : List<Bookmark>
     protected abstract fun isBookmarkShown(bookmark: Bookmark, fragment: BookmarksFragment) : Boolean
@@ -371,4 +374,19 @@ abstract class BookmarksTabFragment :
 
     override fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
         BookmarkDialog.Listener.onCompleteCreateTag(tagName, activity as BookmarksActivity, dialog)
+
+    override fun onItemSelected(item: String, dialog: EntryMenuDialog) {
+        val entry = dialog.entry
+
+        when (item) {
+            getString(R.string.entry_action_show_comments) ->
+                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_COMMENTS, entry.url)
+
+            getString(R.string.entry_action_show_page) ->
+                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_PAGE, entry.url)
+
+            getString(R.string.entry_action_show_page_in_browser) ->
+                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_PAGE_IN_BROWSER, entry.url)
+        }
+    }
 }

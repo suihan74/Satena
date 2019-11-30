@@ -4,20 +4,18 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.TappedActionLauncher
-import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
+import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.entries.pages.SiteEntriesFragment
 import com.suihan74.utilities.CoroutineScopeFragment
 
-abstract class EntriesTabFragmentBase : CoroutineScopeFragment(), AlertDialogListener {
+abstract class EntriesTabFragmentBase : CoroutineScopeFragment(), EntryMenuDialog.Listener {
     abstract val entriesAdapter: EntriesAdapter?
 
-    /*
-    fun makeAdditionalMenuItems(
-        entry: Entry
-    ) : (ArrayList<Int>)->Unit = { items: ArrayList<Int> ->
+    fun makeAdditionalMenuItems(entry: Entry) : List<Int> {
+        val items = ArrayList<Int>()
+
         if (this !is SiteEntriesFragment) {
             items.add(R.string.entry_action_show_entries)
         }
@@ -29,11 +27,16 @@ abstract class EntriesTabFragmentBase : CoroutineScopeFragment(), AlertDialogLis
                 if (entry.bookmarkedData.tags.contains("あとで読む")) {
                     items.add(R.string.entry_action_read)
                 }
+                else {
+                    items.add(R.string.entry_action_read_later)
+                }
 
                 items.add(R.string.entry_action_delete_bookmark)
             }
         }
         items.add(R.string.entry_action_ignore)
+
+        return items
     }
 
     private fun showEntries(entry: Entry) {
@@ -41,10 +44,10 @@ abstract class EntriesTabFragmentBase : CoroutineScopeFragment(), AlertDialogLis
         activity.refreshEntriesFragment(Category.Site, entry.rootUrl)
     }
 
-    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
-        val entry = dialog.getAdditionalData<Entry>("entry")!!
+    override fun onItemSelected(item: String, dialog: EntryMenuDialog) {
+        val entry = dialog.entry
 
-        when (dialog.items!![which]) {
+        when (item) {
             getString(R.string.entry_action_show_comments) ->
                 TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_COMMENTS, entry)
 
@@ -54,7 +57,8 @@ abstract class EntriesTabFragmentBase : CoroutineScopeFragment(), AlertDialogLis
             getString(R.string.entry_action_show_page_in_browser) ->
                 TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_PAGE_IN_BROWSER, entry)
 
-            getString(R.string.entry_action_show_entries) -> showEntries(entry)
+            getString(R.string.entry_action_show_entries) ->
+                showEntries(entry)
 
             getString(R.string.entry_action_delete_bookmark) ->
                 entriesAdapter?.deleteBookmark(entry)
@@ -69,5 +73,4 @@ abstract class EntriesTabFragmentBase : CoroutineScopeFragment(), AlertDialogLis
                 entriesAdapter?.addEntryToIgnores(entry)
         }
     }
-    */
 }
