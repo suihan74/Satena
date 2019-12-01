@@ -7,8 +7,10 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
 import okhttp3.Request
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.threeten.bp.Duration
+import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.io.IOException
@@ -1264,6 +1266,194 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
         post(url, params).use { response ->
             return@async response.isSuccessful
+        }
+    }
+
+    /**
+     * ユーザー情報を取得する
+     */
+    fun getProfileAsync(user: String) : Deferred<Profile?> = async {
+        get("https://profile.hatena.ne.jp/${user}/").use { response ->
+            if (!response.isSuccessful) return@async null
+            val bookmarkInfoTask = getUserBookmarkInfoAsync(user)
+
+            val html = Jsoup.parse(response.body!!.string())
+            val spaceRegex = Regex("""\s+""")
+
+            // 基本情報
+            val (iconUrl, description) = html.getElementById("user-header-body").let { header ->
+                val iconUrl = header.getElementsByClass("userimg").firstOrNull()?.attr("src") ?: ""
+                val description = header.getElementsByClass("info").firstOrNull()?.wholeText() ?: ""
+                iconUrl to spaceRegex.replace(description, "")
+            }
+
+            // プロフィール項目
+            val profileKeys = html.getElementsByClass("profile-dt").map {
+                spaceRegex.replace(it.wholeText(), "")
+            }
+            val profileValues = html.getElementsByClass("profile-dd").map {
+                spaceRegex.replace(it.wholeText(), "")
+            }
+            val profiles = profileKeys.zip(profileValues)
+
+            val displayName = profiles.firstOrNull { it.first == "ニックネーム" }?.second ?: user
+
+            // アドレスリスト
+            val addresses = html.getElementsByClass("profile addresslist").firstOrNull()?.let { item ->
+                val addressKeys = item.getElementsByTag("th").map {
+                    spaceRegex.replace(it.wholeText(), "")
+                }
+                val addressValues = item.getElementsByTag("td").mapNotNull m@ {
+                    Profile.Address(
+                        text = spaceRegex.replace(it.wholeText(), ""),
+                        url =  it.getElementsByTag("a").firstOrNull()?.attr("href") ?: return@m null
+                    )
+                }
+                addressKeys.zip(addressValues)
+            } ?: emptyList()
+
+            // 使用中のサービス一覧
+            val servicesUl = html.getElementsByClass("hatena-fotolife floatlist").first()
+            val services = servicesUl.getElementsByTag("li").mapNotNull m@ { service ->
+                val image = service.getElementsByClass("profile-image").firstOrNull() ?: return@m null
+                val name = image.attr("title")
+                val imageUrl = image.attr("src")
+                val url = service.getElementsByTag("a").firstOrNull()?.attr("href") ?: return@m null
+
+                Profile.Service(
+                    name = name,
+                    url = url,
+                    imageUrl = imageUrl
+                )
+            }
+
+            return@async Profile(
+                id = user,
+                name = displayName,
+                iconUrl = iconUrl,
+                description = description,
+                profiles = profiles,
+                services = services,
+                addresses = addresses,
+                bookmark = bookmarkInfoTask.await()
+            )
+        }
+    }
+
+    private fun getUserBookmarkInfoAsync(user: String) : Deferred<Profile.Bookmark> = async {
+        try {
+            get("$B_BASE_URL/$user/").use { response ->
+                if (!response.isSuccessful) return@async Profile.Bookmark.createEmpty()
+
+                val html = Jsoup.parse(response.body!!.string())
+                val dataAttr = "data-gtm-click-label"
+                val userAttr = if (signedIn()) "user-my" else "user"
+
+                val statusClass = "userprofile-status-count"
+                fun statusCountToInt(doc: Document, className: String) =
+                    doc.getElementsByClass(className)
+                        .firstOrNull()
+                        ?.wholeText()
+                        ?.replace(",", "")
+                        ?.toInt()
+                        ?: 0
+                val count = statusCountToInt(html, statusClass)
+                val followings = 0//statusCountToInt(html, "$statusClass js-total-followings")
+                val followers = 0//statusCountToInt(html, "$statusClass js-total-followers")
+
+                // followings, followersはJSで後から挿入されるっぽい
+
+                val tagCountRegex = Regex("""\((\d+)\)""")
+                val allTags =
+                    html.getElementsByAttributeValue(dataAttr, "$userAttr-tags").map {
+                        val name = it.ownText()
+                        val countText =
+                            it.getElementsByClass("count").firstOrNull()?.wholeText() ?: "(0)"
+                        val tagCount =
+                            tagCountRegex.find(countText)?.groupValues?.getOrNull(1)?.toInt() ?: 0
+                        Profile.Bookmark.Tag(name, tagCount)
+                    }
+
+                val usersCountRegex = Regex("""(\d+)\s*users""")
+                val rootUrlRegex = Regex("""\S+""")
+                val eidRegex = Regex("""bookmark-(\d+)""")
+                val article = "centerarticle"
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+                val entries = html.getElementsByClass("bookmark-item js-user-bookmark-item").mapNotNull m@ { item ->
+                    val titleArea = item.getElementsByAttributeValue(dataAttr, "$userAttr-bookmark-title").firstOrNull() ?: return@m null
+                    val title = titleArea.wholeText()
+                    val faviconUrl = titleArea.getElementsByClass("$article-entry-favicon").firstOrNull()?.attr("src") ?: ""
+                    val entryUrl = titleArea.attr("href")
+
+                    val bookmarkCount =
+                        usersCountRegex.find(
+                            item.getElementsByAttributeValue(dataAttr, "$userAttr-bookmark-users").firstOrNull()?.wholeText() ?: "0 users")
+                            ?.groupValues
+                            ?.getOrNull(1)
+                            ?.toInt()
+                            ?: 0
+
+                    val rootUrl = rootUrlRegex.find(item.getElementsByAttributeValue(dataAttr, "$userAttr-bookmark-domain").firstOrNull()?.wholeText() ?: "")?.value
+
+                    val (description, imageUrl) = item.getElementsByClass("$article-entry-contents").firstOrNull()?.let {
+                        val description = it.getElementsByClass("$article-entry-summary").firstOrNull()?.wholeText() ?: ""
+                        val imageUrl = it.getElementsByTag("img").firstOrNull()?.attr("src") ?: ""
+                        description to imageUrl
+                    } ?: "" to ""
+
+                    // ユーザーがつけたブクマ情報
+                    val (eid, reaction) =
+                        item.getElementsByClass("$article-reaction js-user-bookmark-id-container").firstOrNull()?.let { reactionArea ->
+                            val eid = eidRegex.find(reactionArea.id())?.groupValues?.getOrNull(1)?.toLong() ?: 0L
+
+                            val reactionMain = reactionArea.getElementsByClass("$article-reaction-main").firstOrNull() ?: return@let eid to null
+//                            val userName = reactionMain.getElementsByClass("$article-reaction-username").firstOrNull()?.wholeText() ?: user
+                            val tags = reactionMain.getElementsByAttributeValue(dataAttr, "$userAttr-reaction-tag").map { tag ->
+                                tag.wholeText()
+                            }
+                            val comment = reactionMain.getElementsByClass("js-comment").firstOrNull()?.wholeText() ?: ""
+                            val timestampText = reactionMain.getElementsByClass("$article-reaction-timestamp").first().wholeText()
+
+                            // スター情報はJSで後から挿入されるようなのでhtmlから取得できない
+
+                            val bookmarkedData = BookmarkResult(
+                                user = user,
+                                comment = comment,
+                                tags = tags,
+                                timestamp = LocalDate.parse(timestampText, dateTimeFormatter).atStartOfDay(),
+                                userIconUrl = getUserIconUrl(user),
+                                commentRaw = tags.joinToString("") { "[$it]" } + comment,
+                                permalink = "$B_BASE_URL/entry/$eid/comment/$user",
+                                eid = eid
+                            )
+
+                            eid to bookmarkedData
+                        } ?: 0L to null
+
+                    Entry(
+                        id = eid,
+                        title = title,
+                        description = description,
+                        count = bookmarkCount,
+                        url = entryUrl,
+                        rootUrl = rootUrl,
+                        faviconUrl = faviconUrl,
+                        imageUrl = imageUrl,
+                        bookmarkedData = reaction
+                    )
+                }
+
+                return@async Profile.Bookmark(
+                    count = count,
+                    followingCount = followings,
+                    followerCount = followers,
+                    tags = allTags,
+                    entries = entries
+                )
+            }
+        }
+        catch (e: Exception) {
+            return@async Profile.Bookmark.createEmpty()
         }
     }
 }

@@ -6,11 +6,6 @@ import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.io.Serializable
 
-data class User (
-    val name : String,
-    val profileImageUrl : String
-) : Serializable
-
 data class StarCount (
     @JsonAdapter(StarColorDeserializer::class)
     val color : StarColor,
@@ -38,6 +33,11 @@ class BookmarkWithStarCount (
     val timestamp : LocalDateTime,
     val starCount : List<StarCount>
 ) : Serializable {
+
+    data class User (
+        val name : String,
+        val profileImageUrl : String
+    ) : Serializable
 
     @SerializedName("user")
     private val mUser : User = user

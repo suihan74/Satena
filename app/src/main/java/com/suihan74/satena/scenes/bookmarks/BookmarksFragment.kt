@@ -891,7 +891,7 @@ class BookmarksFragment :
             list.mapIndexed { index, b ->
                 if (index == position) {
                     BookmarkWithStarCount(
-                        user = User(b.user, b.userIconUrl),
+                        user = BookmarkWithStarCount.User(b.user, b.userIconUrl),
                         comment = bookmark.comment,
                         isPrivate = b.isPrivate,
                         link = b.link,
