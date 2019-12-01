@@ -723,25 +723,27 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     ?.attr("content")
                     ?: ""
 
+                val uri = Uri.parse(actualUrl)
                 Entry(
                     id = 0,
                     title = title,
                     description = description,
                     count = 0,
                     url = actualUrl,
-                    rootUrl = Uri.parse(actualUrl).let { it.scheme!! + "://" + it.host!! },
-                    faviconUrl = "",
+                    rootUrl = uri.let { it.scheme!! + "://" + it.host!! },
+                    faviconUrl = "https://www.google.com/s2/favicons?domain=${uri.host}",
                     imageUrl = imageUrl)
             }
             else {
+                val uri = Uri.parse(url)
                 Entry(
                     id = 0,
                     title = "",
                     description = "",
                     count = 0,
                     url = url,
-                    rootUrl = Uri.parse(url).let { it.scheme!! + "://" + it.host!! },
-                    faviconUrl = "",
+                    rootUrl = uri.let { it.scheme!! + "://" + it.host!! },
+                    faviconUrl = "https://www.google.com/s2/favicons?domain=${uri.host}",
                     imageUrl = "")
             }
         }

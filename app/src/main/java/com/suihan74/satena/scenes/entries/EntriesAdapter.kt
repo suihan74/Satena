@@ -310,17 +310,12 @@ open class EntriesAdapter(
 
                 title.text = value.title
                 domain.text = rootUrl
-                count.text = "${value.count} users"
+                count.text = String.format("%d users", value.count)
 
-                if (value.faviconUrl.isNullOrEmpty()) {
-                    favicon.visibility = View.GONE
-                }
-                else {
-                    favicon.visibility = View.VISIBLE
-                    Glide.with(root)
-                        .load(value.faviconUrl)
-                        .into(favicon)
-                }
+                favicon.visibility = View.VISIBLE
+                Glide.with(root)
+                    .load(value.faviconUrl)
+                    .into(favicon)
 
                 Glide.with(root)
                     .load(value.imageUrl)

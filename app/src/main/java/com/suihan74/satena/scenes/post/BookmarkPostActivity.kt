@@ -152,7 +152,7 @@ class BookmarkPostActivity : ActivityBase(), BookmarkPostFragment.ResultListener
                         count = 0,
                         url = mBookmarksEntry!!.url,
                         rootUrl = Uri.parse(mBookmarksEntry!!.url).let { it.scheme!! + "://" + it.host!! },
-                        faviconUrl = "",
+                        faviconUrl = null,
                         imageUrl = mBookmarksEntry!!.screenshot)
                 }
 

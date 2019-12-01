@@ -40,16 +40,12 @@ class EntryMenuDialog : AlertDialogFragment() {
         val titleView = LayoutInflater.from(context).inflate(R.layout.dialog_title_entry, null).apply {
             findViewById<TextView>(R.id.title).text = if (entry.title.isBlank()) entry.url else entry.title
             findViewById<TextView>(R.id.domain).text = rootUrl
-            val favicon = findViewById<ImageView>(R.id.favicon)
-            if (entry.faviconUrl == null) {
-                favicon.visibility = View.GONE
+            val favicon = findViewById<ImageView>(R.id.favicon).apply {
+                visibility = View.VISIBLE
             }
-            else {
-                favicon.visibility = View.VISIBLE
-                Glide.with(context)
-                    .load(Uri.parse(entry.faviconUrl))
-                    .into(favicon)
-            }
+            Glide.with(context)
+                .load(Uri.parse(entry.faviconUrl))
+                .into(favicon)
         }
 
         return AlertDialog.Builder(context, themeResId)

@@ -20,7 +20,8 @@ class Entry (
 
     rootUrl : String?,
 
-    val faviconUrl : String?,
+    faviconUrl : String?,
+
     @SerializedName("image", alternate = ["image_url"])
     val imageUrl : String,
 
@@ -49,7 +50,6 @@ class Entry (
 
     @SerializedName("root_url")
     private var mRootUrl : String? = rootUrl
-
     val rootUrl : String
         get() {
             val rootUrl = mRootUrl
@@ -63,6 +63,16 @@ class Entry (
             }
             else rootUrl
         }
+
+    @SerializedName("favicon_url")
+    private var mFaviconUrl : String? = faviconUrl
+    val faviconUrl : String
+        get() = mFaviconUrl ?: run {
+            val uri = Uri.parse(url)
+            mFaviconUrl = "https://www.google.com/s2/favicons?domain=${uri.host}"
+            return@run mFaviconUrl!!
+        }
+
 
     fun plusBookmarkedData(bookmark: BookmarkResult) = copy(
         count = if (bookmarkedData == null) count + 1 else count,
@@ -103,7 +113,7 @@ class Entry (
             count = 0,
             url = "",
             rootUrl = "",
-            faviconUrl = "",
+            faviconUrl = null,
             imageUrl = ""
         )
     }

@@ -89,7 +89,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
                             count = 0,
                             url = dummy.url,
                             rootUrl = Uri.parse(dummy.url).let { it.scheme!! + "://" + it.host!! },
-                            faviconUrl = "",
+                            faviconUrl = null,
                             imageUrl = dummy.screenshot)
                     } catch (e: Exception) {
                         Log.d("BrowserToolbarManager", Log.getStackTraceString(e))
