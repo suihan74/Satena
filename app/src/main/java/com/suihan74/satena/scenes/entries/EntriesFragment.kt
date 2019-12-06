@@ -207,7 +207,7 @@ class EntriesFragment : CoroutineScopeFragment() {
             initialize(activity, spinnerItems, R.drawable.spinner_allow_issues, getString(R.string.desc_issues_spinner)) { position ->
                 val prevIssue = currentIssue
                 currentIssue =
-                    if (position == null || position == 0) {
+                    if (position == null) {
                         null
                     }
                     else {
