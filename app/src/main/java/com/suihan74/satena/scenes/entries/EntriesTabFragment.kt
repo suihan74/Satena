@@ -13,7 +13,10 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.utilities.*
+import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.RecyclerViewScrollingUpdater
+import com.suihan74.utilities.getThemeColor
+import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -28,8 +31,8 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
 
     private var mEntriesFragment: EntriesFragment? = null
 
-    override val entriesAdapter: EntriesAdapter
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+    override val entriesAdapter: EntriesAdapter?
+        get() = mEntriesAdapter
 
     var category: Category
         get() = mCategory!!

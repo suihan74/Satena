@@ -83,7 +83,7 @@ abstract class ActivityBase(
     }
 
     fun showProgressBar(clickGuard: Boolean = true, withAction: Boolean = true) {
-        // TODO: なんらかのロード中に画面回転でフラグメントがリロードされると問題が起きやすいのでとりあえず方向固定で対処する
+        // なんらかのロード中に画面回転でフラグメントがリロードされると問題が起きやすいのでロード完了まで方向を固定する
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
 
         val progressBar = progressBarId?.let {
