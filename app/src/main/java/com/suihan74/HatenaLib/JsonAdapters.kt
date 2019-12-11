@@ -11,11 +11,19 @@ import java.lang.reflect.Type
 internal val Boolean.int
     get() = if (this) 1 else 0
 
-internal class BooleanDeserializer : JsonDeserializer<Boolean> {
-    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Boolean
-    {
-        val str = json?.asString ?: ""
-        return str == "1" || str == "true"
+internal class BooleanDeserializer : JsonSerializer<Boolean>, JsonDeserializer<Boolean> {
+    override fun serialize(src: Boolean?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
+        return JsonPrimitive(if (src == true) "true" else "false")
+    }
+
+    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Boolean {
+        try {
+            val str = json?.asString ?: ""
+            return str == "1" || str == "true"
+        }
+        catch (e: Exception) {
+            return false
+        }
     }
 }
 
