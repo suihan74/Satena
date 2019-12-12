@@ -5,10 +5,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Build
+import androidx.room.Room
 import com.jakewharton.threetenabp.AndroidThreeTen
-import com.suihan74.satena.models.IgnoredEntriesKeyMigrator
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.PreferenceKeyMigrator
+import com.suihan74.satena.models.*
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
 import com.suihan74.utilities.lock
@@ -19,11 +18,16 @@ class SatenaApplication : Application() {
     companion object {
         lateinit var instance : SatenaApplication
             private set
+
+        const val APP_DATABASE_FILE_NAME = "satena_db"
     }
 
     var currentActivity : ActivityBase? = null
 
     var isFirstLaunch : Boolean = false
+
+    lateinit var appDatabase: AppDatabase
+        private set
 
     init {
         instance = this
@@ -43,6 +47,9 @@ class SatenaApplication : Application() {
 
         // 設定ロード
         val prefs = SafeSharedPreferences.create<PreferenceKey>(applicationContext)
+
+        // DBを準備する
+        initializeDataBase()
 
         // テーマの設定
         val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
@@ -68,10 +75,21 @@ class SatenaApplication : Application() {
         startNotificationService()
     }
 
+    fun initializeDataBase() {
+        // DBを準備する
+        appDatabase = Room.databaseBuilder(this, AppDatabase::class.java, APP_DATABASE_FILE_NAME)
+            .build()
+    }
+
+    /** ユーザータグDBへのアクセスオブジェクトを取得する */
+    fun getUserTagDao() =
+        appDatabase.userTagDao()
+
     /** 各種設定のバージョン移行が必要か確認 */
     fun updatePreferencesVersion() {
         PreferenceKeyMigrator.check(applicationContext)
         IgnoredEntriesKeyMigrator.check(applicationContext)
+        UserTagsKeyMigrator.check(applicationContext)
     }
 
     fun setConnectionActivatingListener(listener: (()->Unit)?) {

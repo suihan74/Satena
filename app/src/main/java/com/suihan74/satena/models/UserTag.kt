@@ -3,6 +3,7 @@ package com.suihan74.satena.models
 import java.io.Serializable
 
 /** ユーザーをタグ付けするやつ */
+@Deprecated("DBに移行")
 class UserTagsContainer : Serializable {
     @Suppress("UseSparseArrays")
     private val mTags = HashMap<Int, UserTag>()
@@ -229,6 +230,7 @@ class UserTagsContainer : Serializable {
 }
 
 /** タグ情報 */
+@Deprecated("DBに移行")
 data class UserTag (
     val id: Int,
     val name: String,
@@ -256,6 +258,7 @@ data class UserTag (
 }
 
 /** ユーザー情報 */
+@Deprecated("DBに移行")
 data class TaggedUser (
     val id: Int,
     val name: String

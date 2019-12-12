@@ -34,7 +34,6 @@ abstract class BookmarksTabFragment :
     protected abstract fun isBookmarkShown(bookmark: Bookmark, fragment: BookmarksFragment) : Boolean
     protected abstract fun hideIgnoredBookmark(adapter: BookmarksAdapter, bookmark: Bookmark)
 
-    private lateinit var mView : View
     private lateinit var mRecyclerView: RecyclerView
 
     private var mBookmarksAdapter: BookmarksAdapter? = null
@@ -47,8 +46,8 @@ abstract class BookmarksTabFragment :
     val bookmarksFragment
         get() = (activity as? BookmarksActivity)?.bookmarksFragment
 
-    val userTagsContainer
-        get() = bookmarksFragment!!.userTagsContainer
+    val taggedUsers
+        get() = bookmarksFragment?.taggedUsers
 
     companion object {
         const val ARGS_KEY_TAB_TYPE = "mTabType"
@@ -72,7 +71,6 @@ abstract class BookmarksTabFragment :
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_bookmarks_tab, container, false)
-        mView = view
 
         val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksTabFragment has created from an invalid activity")
 
@@ -372,7 +370,7 @@ abstract class BookmarksTabFragment :
         }
     }
 
-    override fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
+    override suspend fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
         BookmarkDialog.Listener.onCompleteCreateTag(tagName, activity as BookmarksActivity, dialog)
 
     override fun onItemSelected(item: String, dialog: EntryMenuDialog) {

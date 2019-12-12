@@ -12,16 +12,19 @@ import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
-import com.suihan74.satena.models.TaggedUser
-import com.suihan74.satena.models.UserTagsKey
+import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.models.userTag.findRelation
+import com.suihan74.satena.models.userTag.insertRelation
+import com.suihan74.satena.models.userTag.insertTag
+import com.suihan74.satena.models.userTag.makeUser
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.utilities.BookmarkCommentDecorator
-import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 open class BookmarkDialog : DialogFragment() {
     companion object {
@@ -154,11 +157,9 @@ open class BookmarkDialog : DialogFragment() {
     @Suppress("UseSparseArrays")
     private fun tagUser(listener: Listener?, bookmark: Bookmark) {
         val bookmarksFragment = (activity as BookmarksActivity).bookmarksFragment!!
-        val userTagsContainer = bookmarksFragment.userTagsContainer
-        val user = userTagsContainer.addUser(bookmark.user)
-        val tags = userTagsContainer.tags
-        val tagNames = tags.map { it.name }.toTypedArray()
-        val states = tags.map { it.contains(user) }.toBooleanArray()
+        val tags = bookmarksFragment.tags!!
+        val tagNames = tags.map { it.userTag.name }.toTypedArray()
+        val states = tags.map { it.users.any { u -> u.name == bookmark.user } }.toBooleanArray()
 
         AlertDialogFragment.Builder(R.style.AlertDialogStyle)
             .setTitle(R.string.user_tags_dialog_title)
@@ -193,31 +194,43 @@ open class BookmarkDialog : DialogFragment() {
                     }
 
                 if (diffs.isNotEmpty()) {
-                    val prefs = SafeSharedPreferences.create<UserTagsKey>(activity)
-
                     val bookmarksFragment = activity.bookmarksFragment!!
-                    val userTagsContainer = bookmarksFragment.userTagsContainer
-                    val user = userTagsContainer.addUser(bookmark.user)
-                    val tags = userTagsContainer.tags
-                    val tagNames = tags.map { it.name }
+                    bookmarksFragment.launch(Dispatchers.IO) {
+                        val userName = bookmark.user
+                        val dao = SatenaApplication.instance.getUserTagDao()
+                        val user = dao.makeUser(userName)
+                        val tags = bookmarksFragment.tags!!.map { it.userTag }
 
-                    diffs.forEach {
-                        val name = tagNames[it.first]
-                        val tag = userTagsContainer.getTag(name)!!
-                        if (it.second) {
-                            userTagsContainer.tagUser(user, tag)
+                        diffs.forEach {
+                            val tag = tags[it.first]
+                            if (it.second) {
+                                dao.insertRelation(tag, user)
+                            }
+                            else {
+                                dao.findRelation(tag, user)?.let { relation ->
+                                    dao.deleteRelation(relation)
+                                }
+                            }
                         }
-                        else {
-                            userTagsContainer.unTagUser(user, tag)
+
+                        bookmarksFragment.taggedUsers = dao.getAllUsers().mapNotNull {
+                            dao.getUserAndTags(it.name)
+                        }
+                        bookmarksFragment.tags = dao.getAllTags().mapNotNull {
+                            dao.getTagAndUsers(it.name)
+                        }
+
+                        val userAndTags = dao.getUserAndTags(userName)
+
+                        withContext(Dispatchers.Main) {
+                            activity.showToast(
+                                R.string.msg_user_tagged,
+                                user.name,
+                                userAndTags?.tags?.size ?: 0
+                            )
+                            listener?.onTagUser(bookmark)
                         }
                     }
-
-                    prefs.edit {
-                        putObject(UserTagsKey.CONTAINER, userTagsContainer)
-                    }
-
-                    activity.showToast(R.string.msg_user_tagged, user.name, user.tags.size)
-                    listener?.onTagUser(bookmark)
                 }
             }
 
@@ -229,40 +242,55 @@ open class BookmarkDialog : DialogFragment() {
                     .show(listener!!.fragmentManagerForDialog, "create_tag_dialog")
             }
 
-            fun onCompleteCreateTag(tagName: String, activity: BookmarksActivity, dialog: UserTagDialogFragment) : Boolean {
-                val prefs = SafeSharedPreferences.create<UserTagsKey>(activity)
+            suspend fun onCompleteCreateTag(
+                tagName: String,
+                activity: BookmarksActivity,
+                dialog: UserTagDialogFragment
+            ) : Boolean = withContext(Dispatchers.IO) {
 
-                val bookmarksFragment = activity.bookmarksFragment!!
-                val userTagsContainer = bookmarksFragment.userTagsContainer
+                val dao = SatenaApplication.instance.getUserTagDao()
 
-                val bookmark = dialog.getAdditionalData<Bookmark>("bookmark")!!
-                val user = bookmarksFragment.userTagsContainer.addUser(bookmark.user)
-
-                if (userTagsContainer.containsTag(tagName)) {
-                    activity.showToast(R.string.msg_user_tag_existed)
-                    return false
+                if (dao.findTag(tagName) != null) {
+                    withContext(Dispatchers.Main) {
+                        activity.showToast(R.string.msg_user_tag_existed)
+                    }
+                    return@withContext false
                 }
                 else {
                     try {
-                        val tag = userTagsContainer.addTag(tagName)
-                        userTagsContainer.tagUser(user, tag)
+                        val bookmark = dialog.getAdditionalData<Bookmark>("bookmark")!!
+                        val userName = bookmark.user
 
-                        prefs.edit {
-                            putObject(UserTagsKey.CONTAINER, userTagsContainer)
+                        dao.insertTag(tagName)
+                        val tag = dao.findTag(tagName)!!
+                        val user = dao.makeUser(userName)
+                        dao.insertRelation(tag, user)
+
+                        val bookmarksFragment = activity.bookmarksFragment!!
+                        bookmarksFragment.taggedUsers = dao.getAllUsers().mapNotNull {
+                            dao.getUserAndTags(it.name)
+                        }
+                        bookmarksFragment.tags = dao.getAllTags().mapNotNull {
+                            dao.getTagAndUsers(it.name)
                         }
 
-                        val parentTabAdapter = bookmarksFragment.bookmarksTabAdapter
-                        parentTabAdapter?.notifyItemChanged(bookmark)
-                        activity.showToast(
-                            R.string.msg_user_tag_created_and_added_user,
-                            tagName,
-                            bookmark.user)
+                        withContext(Dispatchers.Main) {
+                            activity.showToast(
+                                R.string.msg_user_tag_created_and_added_user,
+                                tagName,
+                                userName
+                            )
+                            val listener = dialog.parentFragment as? Listener ?: dialog.activity as? Listener
+                            listener?.onTagUser(bookmark)
+                        }
                     }
                     catch (e: Exception) {
                         Log.e("onCompleteEditTagName", "failed to save")
-                        activity.showToast("ユーザータグの作成に失敗しました")
+                        withContext(Dispatchers.Main) {
+                            activity.showToast("ユーザータグの作成に失敗しました")
+                        }
                     }
-                    return true
+                    return@withContext true
                 }
             }
         }

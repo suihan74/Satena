@@ -6,15 +6,27 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.EditText
 import com.suihan74.satena.R
-import com.suihan74.satena.models.UserTag
+import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.utilities.showToast
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
-class UserTagDialogFragment : AlertDialogFragment() {
-    interface Listener: AlertDialogListener {
-        fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment) : Boolean
+class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
+    private val mJob: Job = SupervisorJob()
+
+    override val coroutineContext: CoroutineContext
+        get() = mJob
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mJob.cancel()
     }
 
-    var editingUserTag : UserTag? = null
+    interface Listener: AlertDialogListener {
+        suspend fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment) : Boolean
+    }
+
+    var editingUserTag : Tag? = null
         private set
 
     val isModifyMode
@@ -31,7 +43,7 @@ class UserTagDialogFragment : AlertDialogFragment() {
 
         val listener = parentFragment as? Listener ?: activity as? Listener
 
-        editingUserTag = arguments!!.getSerializable(EDITING_USER_TAG) as? UserTag
+        editingUserTag = arguments!!.getSerializable(EDITING_USER_TAG) as? Tag
 
         val tagName = content.findViewById<EditText>(R.id.tag_name)
         val dialogTitle =
@@ -59,8 +71,14 @@ class UserTagDialogFragment : AlertDialogFragment() {
                     return@setOnClickListener
                 }
 
-                if (listener?.onCompleteEditTagName(name, this@UserTagDialogFragment) != false) {
-                    this.dismiss()
+                launch(Dispatchers.Main) {
+                    if (listener?.onCompleteEditTagName(
+                            name,
+                            this@UserTagDialogFragment
+                        ) != false
+                    ) {
+                        dismiss()
+                    }
                 }
             }
         }
@@ -72,7 +90,7 @@ class UserTagDialogFragment : AlertDialogFragment() {
                 this.arguments = this@Builder.arguments
             }
 
-        fun setUserTag(tag: UserTag) = this.apply {
+        fun setUserTag(tag: Tag) = this.apply {
             arguments.putSerializable(EDITING_USER_TAG, tag)
         }
     }
