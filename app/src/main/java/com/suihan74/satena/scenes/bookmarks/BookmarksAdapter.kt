@@ -76,7 +76,7 @@ open class BookmarksAdapter(
     }
 
     private fun isShowable(b: Bookmark) : Boolean {
-        val tags = fragment.userTagsContainer.getTagsOfUser(b.user)
+        val tags = fragment.taggedUsers?.firstOrNull { it.user.name == b.user }?.tags ?: emptyList()
 
         return searchText.isBlank()
                 || b.user.contains(searchText)
@@ -159,8 +159,7 @@ open class BookmarksAdapter(
                     this,
                     fragment,
                     showIgnoredUsersMention,
-                    showIgnoredUsersInAll && tabType == BookmarksTabType.ALL,
-                    fragment.userTagsContainer
+                    showIgnoredUsersInAll && tabType == BookmarksTabType.ALL
                 ).apply {
 
                     itemView.setOnClickListener {
@@ -245,10 +244,9 @@ open class BookmarksAdapter(
     class ViewHolder(
         private val view : View,
         private val adapter: BookmarksAdapter,
-        private val fragment : CoroutineScopeFragment,
+        private val fragment : BookmarksTabFragment,
         private val showIgnoredUsersMention : Boolean,
-        private val showIgnoredUsersInAll : Boolean,
-        private val userTagsContainer: UserTagsContainer
+        private val showIgnoredUsersInAll : Boolean
     ) : RecyclerView.ViewHolder(view) {
 
         private val userName    = view.findViewById<TextView>(R.id.bookmark_user_name)!!
@@ -338,28 +336,23 @@ open class BookmarksAdapter(
             }
 
             // ユーザーにつけられたタグの表示
-            val user = userTagsContainer.getUser(bookmark.user)
             val userTagsText = view.findViewById<TextView>(R.id.user_tags)
-            if (user == null) {
+            val user = bookmark.user
+            val tags = fragment.taggedUsers?.firstOrNull { it.user.name == user }?.tags?.sortedBy { it.id }
+            if (tags.isNullOrEmpty()) {
                 userTagsText.visibility = View.GONE
             }
             else {
-                val tags = userTagsContainer.getTagsOfUser(user)
-                if (tags.isEmpty()) {
-                    userTagsText.visibility = View.GONE
-                }
-                else {
-                    userTagsText.apply {
-                        val icon = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
-                            val size = textSize.toInt()
-                            setBounds(0, 0, size, size)
-                            setTint(resources.getColor(R.color.tagColor, null))
-                        }
-                        setCompoundDrawablesRelative(icon, null, null, null)
-
-                        text = tags.joinToString(", ") { it.name }
-                        visibility = View.VISIBLE
+                userTagsText.apply {
+                    val icon = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
+                        val size = textSize.toInt()
+                        setBounds(0, 0, size, size)
+                        setTint(resources.getColor(R.color.tagColor, null))
                     }
+                    setCompoundDrawablesRelative(icon, null, null, null)
+
+                    text = tags.joinToString(", ") { it.name }
+                    visibility = View.VISIBLE
                 }
             }
 

@@ -2,6 +2,7 @@ package com.suihan74.satena
 
 import android.content.Context
 import android.util.Log
+import androidx.room.Database
 import com.suihan74.satena.models.MigrationData
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
@@ -16,7 +17,7 @@ import kotlin.experimental.and
 class PreferencesMigrator {
     companion object {
         private val SIGNATURE get() = byteArrayOf(0).plus("SATESET".toByteArray())
-        private val VERSION get() = byteArrayOf(0)
+        private val VERSION get() = byteArrayOf(1)
 
         private val SIGNATURE_SIZE = SIGNATURE.size
         private const val HASH_SIZE = 16
@@ -53,7 +54,24 @@ class PreferencesMigrator {
             }
             val dataSize = bytes.size
 
-            items.add(MigrationData(keyName, keyVersion, fileName, dataSize, bytes))
+            items.add(MigrationData(MigrationData.DataType.PREFERENCE, keyName, keyVersion, fileName, dataSize, bytes))
+        }
+
+        suspend inline fun <reified DB_T> addDatabase(fileName: String) =
+            addDatabase(DB_T::class.java, fileName)
+
+        suspend fun <DB_T> addDatabase(DBClass: Class<DB_T>, fileName: String) = withContext(Dispatchers.IO) {
+            val file = context.getDatabasePath(fileName)
+            check(file.exists()) { "the database file does not exist: $fileName" }
+
+            val bytes = file.inputStream().buffered().use {
+                it.readBytes()
+            }
+
+            val annotations = DBClass.annotations.firstOrNull { it is Database } as? Database
+            val version = annotations?.version ?: 0
+
+            items.add(MigrationData(MigrationData.DataType.DATABASE, "database__$fileName", version, fileName, bytes.size, bytes))
         }
 
         suspend fun write(dest: File) = withContext(Dispatchers.IO) {
@@ -80,47 +98,59 @@ class PreferencesMigrator {
     }
 
     class Input(private val context: Context) {
-        suspend fun read(src: File, onErrorAction: ((MigrationData)->Unit)? = null) = withContext(Dispatchers.IO) {
-            src.inputStream().buffered().use { stream ->
-                val signature = stream.readByteArray(SIGNATURE_SIZE)
-                check(signature.contentEquals(SIGNATURE)) { "the file is not a settings for Satena: ${src.absolutePath}" }
+        suspend fun read(src: File, onErrorAction: ((MigrationData) -> Unit)? = null) =
+            withContext(Dispatchers.IO) {
+                SatenaApplication.instance.appDatabase.close()
 
-                val headerHash = stream.readByteArray(HASH_SIZE)
-                val bodyHash = stream.readByteArray(HASH_SIZE)
+                src.inputStream().buffered().use { stream ->
+                    val signature = stream.readByteArray(SIGNATURE_SIZE)
+                    check(signature.contentEquals(SIGNATURE)) { "the file is not a settings for Satena: ${src.absolutePath}" }
 
-                val version = stream.readByteArray(1)
-                check (version.contentEquals(VERSION)) { "cannot read an old settings file: ${src.absolutePath}" }
+                    val headerHash = stream.readByteArray(HASH_SIZE)
+                    val bodyHash = stream.readByteArray(HASH_SIZE)
 
-                val itemsCount = stream.readInt()
+                    val version = stream.readByteArray(1)
+                    check(version.contentEquals(VERSION)) { "cannot read an old settings file: ${src.absolutePath}" }
 
-                val actualHeaderHash =
-                    getMd5Bytes(version.plus(itemsCount.toByteArray()))
-                check(actualHeaderHash.contentEquals(headerHash)) { "the file is falsified: ${src.absolutePath}" }
+                    val itemsCount = stream.readInt()
 
-                val items = ArrayList<MigrationData>(itemsCount)
-                for (i in 0 until itemsCount) {
-                    items.add(MigrationData.read(stream))
-                }
+                    val actualHeaderHash =
+                        getMd5Bytes(version.plus(itemsCount.toByteArray()))
+                    check(actualHeaderHash.contentEquals(headerHash)) { "the file is falsified: ${src.absolutePath}" }
 
-                val actualBodyHash =
-                    getMd5Bytes(items.flatMap { getMd5Bytes(it.toByteArray()).toList() }.toByteArray())
-                check(actualBodyHash.contentEquals(bodyHash)) { "the file is falsified: ${src.absolutePath}" }
-
-                for (item in items) {
-                    val result = apply(item)
-                    if (!result) {
-                        onErrorAction?.invoke(item)
+                    val items = ArrayList<MigrationData>(itemsCount)
+                    for (i in 0 until itemsCount) {
+                        items.add(MigrationData.read(stream))
                     }
+
+                    val actualBodyHash =
+                        getMd5Bytes(items.flatMap { getMd5Bytes(it.toByteArray()).toList() }.toByteArray())
+                    check(actualBodyHash.contentEquals(bodyHash)) { "the file is falsified: ${src.absolutePath}" }
+
+                    for (item in items) {
+                        val result = apply(item)
+                        if (!result) {
+                            onErrorAction?.invoke(item)
+                        }
+                    }
+
+                    // バージョン移行
+                    SatenaApplication.instance.updatePreferencesVersion()
+                    SatenaApplication.instance.initializeDataBase()
                 }
 
-                // バージョン移行
-                SatenaApplication.instance.updatePreferencesVersion()
+                Log.d("migration", "completed loading")
             }
 
-            Log.d("migration", "completed loading")
+        private suspend fun apply(data: MigrationData): Boolean = when (data.type) {
+            MigrationData.DataType.PREFERENCE ->
+                applyPreferences(data)
+
+            MigrationData.DataType.DATABASE ->
+                applyDatabase(data)
         }
 
-        private suspend fun apply(data: MigrationData) : Boolean = withContext(Dispatchers.IO) {
+        private suspend fun applyPreferences(data: MigrationData): Boolean = withContext(Dispatchers.IO) {
             var result = true
 
             val path = context.filesDir.absolutePath.let {
@@ -131,19 +161,26 @@ class PreferencesMigrator {
             val file = File(path)
             val backup = File(backupPath)
 
-            val backupSuccess = if (file.exists()) {
-                try {
-                    file.copyTo(backup, true)
-                    true
+            val backupSuccess =
+                if (file.exists()) {
+                    try {
+                        file.copyTo(backup, true)
+                        true
+                    }
+                    catch (e: Exception) {
+                        Log.e("migration", "failed to backup the already existed file: $path")
+                        false
+                    }
                 }
-                catch (e: Exception) {
-                    Log.e("migration", "failed to backup the already existed file: $path")
-                    false
-                }
-            }
-            else false
+                else false
 
             try {
+                // shared_prefsディレクトリが存在しないとファイルが作成できないので予め確認して作成する
+                val dir = File(file.parent)
+                if (!dir.exists()) {
+                    dir.mkdir()
+                }
+
                 SafeSharedPreferences.delete(context, data.fileName, data.keyName)
 
                 file.outputStream().buffered().use {
@@ -162,6 +199,48 @@ class PreferencesMigrator {
                 backup.delete()
             }
 
+            return@withContext result
+        }
+
+        private suspend fun applyDatabase(data: MigrationData): Boolean = withContext(Dispatchers.IO) {
+            val file = context.getDatabasePath(data.fileName)
+            val backup = context.getDatabasePath(data.keyName + ".bak")
+
+            val backupSuccess =
+                if (file.exists()) {
+                    try {
+                        file.copyTo(backup, true)
+                        true
+                    }
+                    catch (e: Exception) {
+                        Log.e("migration", "failed to backup the already existed database file: ${data.fileName}")
+                        false
+                    }
+                }
+                else false
+
+            var result = false
+            try {
+                // 初回起動時にはdatabasesディレクトリが存在しないので作成する必要がある
+                val dir = File(file.parent)
+                if (!dir.exists()) {
+                    dir.mkdir()
+                }
+
+                file.outputStream().buffered().use {
+                    it.write(data.data)
+                }
+                result = true
+            }
+            catch (e: Exception) {
+                Log.e("migration", "failed to load a database: ${data.fileName}")
+                if (backupSuccess) {
+                    backup.copyTo(file, true)
+                }
+            }
+            finally {
+                backup.delete()
+            }
             return@withContext result
         }
     }

@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks.tabs
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -62,21 +61,16 @@ class CustomBookmarksTabFragment : BookmarksTabFragment(), AlertDialogListener {
     }
 
     private fun getActiveTaggedUsers(fragment: BookmarksFragment) : List<String> {
-        val tagsContainer = fragment.userTagsContainer
+        val taggedUsers = fragment.taggedUsers
         return mActiveTagIds
             .mapNotNull { id ->
-                tagsContainer.tags.firstOrNull { it.id == id }
+                taggedUsers?.filter { it.tags.any { tag -> tag.id == id } }
             }
-            .flatMap { tag ->
-                tagsContainer.getUsersOfTag(tag)
-            }
-            .map { user ->
-                user.name
-            }
+            .flatMap { it -> it.map { it.user.name } }
+            .distinct()
     }
 
     override fun getBookmarks(fragment: BookmarksFragment) : List<Bookmark> {
-        val tagsContainer = fragment.userTagsContainer
         val ignoredUsers = fragment.ignoredUsers
         val activeUsers = getActiveTaggedUsers(fragment)
 
@@ -84,20 +78,26 @@ class CustomBookmarksTabFragment : BookmarksTabFragment(), AlertDialogListener {
             if (!mIsNoCommentUsersActive && bookmark.comment.isBlank()) return@filter false
             if (!mIsMutedUsersActive && ignoredUsers.contains(bookmark.user)) return@filter false
 
+            val user = bookmark.user
+            val isUserTagged = fragment.taggedUsers?.any { it.user.name == user && it.tags.isNotEmpty() } ?: false
+
             return@filter activeUsers.contains(bookmark.user) ||
-                    mIsUnaffiliatedUsersActive && !tagsContainer.checkUserTagged(bookmark.user)
+                    mIsUnaffiliatedUsersActive && !isUserTagged
         }
     }
 
     override fun isBookmarkShown(bookmark: Bookmark, fragment: BookmarksFragment) : Boolean {
-        val tagsContainer = fragment.userTagsContainer
         val ignoredUsers = fragment.ignoredUsers
         val activeUsers = getActiveTaggedUsers(fragment)
 
         if (!mIsNoCommentUsersActive && bookmark.comment.isBlank()) return false
         if (!mIsMutedUsersActive && ignoredUsers.contains(bookmark.user)) return false
+
+        val user = bookmark.user
+        val isUserTagged = fragment.taggedUsers?.any { it.user.name == user && it.tags.isNotEmpty() } ?: false
+
         return activeUsers.contains(bookmark.user) ||
-                mIsUnaffiliatedUsersActive && !tagsContainer.containsUser(bookmark.user)
+                mIsUnaffiliatedUsersActive && !isUserTagged
     }
 
     override fun hideIgnoredBookmark(adapter: BookmarksAdapter, bookmark: Bookmark) {
@@ -113,8 +113,7 @@ class CustomBookmarksTabFragment : BookmarksTabFragment(), AlertDialogListener {
             getString(R.string.custom_bookmarks_no_user_tags_active) to mIsUnaffiliatedUsersActive)
 
         val activeTagIds = ArrayList(mActiveTagIds)
-        val tagsContainer = fragment.userTagsContainer
-        val tags = tagsContainer.tags.map { tag -> "タグ:${tag.name}" to activeTagIds.contains(tag.id) }
+        val tags = fragment.tags?.map { tag -> "タグ:${tag.userTag.name}" to activeTagIds.contains(tag.userTag.id) } ?: emptyList()
 
         val items = notTagItems.plus(tags)
 
@@ -131,7 +130,8 @@ class CustomBookmarksTabFragment : BookmarksTabFragment(), AlertDialogListener {
     override fun onClickPositiveButton(dialog: AlertDialogFragment) {
         val items = dialog.items ?: return
         val states = dialog.multiChoiceItemsCurrentStates ?: return
-        val tagsContainer = (activity as? BookmarksActivity)?.bookmarksFragment?.userTagsContainer ?: return
+//        val tagsContainer = (activity as? BookmarksActivity)?.bookmarksFragment?.userTagsContainer ?: return
+        val bookmarksFragment = (activity as? BookmarksActivity)?.bookmarksFragment ?: return
 
         val activeTagIds = ArrayList<Int>()
         states
@@ -144,9 +144,9 @@ class CustomBookmarksTabFragment : BookmarksTabFragment(), AlertDialogListener {
                 else -> {
                     if (state) {
                         val item =
-                            tagsContainer.tags.firstOrNull { tag -> text == "タグ:${tag.name}" }
+                            bookmarksFragment.tags?.firstOrNull { tag -> text == "タグ:${tag.userTag.name}" }
                                 ?: return@forEachIndexed
-                        activeTagIds.add(item.id)
+                        activeTagIds.add(item.userTag.id)
                     }
                 }
             }}

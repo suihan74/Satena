@@ -9,21 +9,27 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
-import com.suihan74.satena.models.TaggedUser
+import com.suihan74.satena.models.userTag.User
 import com.suihan74.utilities.FooterViewHolder
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
 
-open class TaggedUsersAdapter(users : Collection<TaggedUser>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+open class TaggedUsersAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states = RecyclerState.makeStatesWithFooter(users.reversed())
+    private val states = RecyclerState.makeStatesWithFooter(emptyList<User>())
 
-    fun addItem(user: TaggedUser) {
+    fun setItems(users: List<User>) {
+        states.clear()
+        states.addAll(users.map { RecyclerState(RecyclerType.BODY, it) })
+        notifyDataSetChanged()
+    }
+
+    fun addItem(user: User) {
         states.add(0, RecyclerState(RecyclerType.BODY, user))
         notifyItemInserted(0)
     }
 
-    fun removeItem(user: TaggedUser) {
+    fun removeItem(user: User) {
         val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body?.id == user.id }
         if (position >= 0) {
             states.removeAt(position)
@@ -74,14 +80,14 @@ open class TaggedUsersAdapter(users : Collection<TaggedUser>) : RecyclerView.Ada
 
     override fun getItemViewType(position: Int): Int = states[position].type.int
 
-    open fun onItemClicked(user: TaggedUser) {}
-    open fun onItemLongClicked(user: TaggedUser) : Boolean = true
+    open fun onItemClicked(user: User) {}
+    open fun onItemLongClicked(user: User) : Boolean = true
 
     class ViewHolder(private val root: View) : RecyclerView.ViewHolder(root) {
         private val userIcon = root.findViewById<ImageView>(R.id.user_icon)
         private val userName = root.findViewById<TextView>(R.id.user_name)
 
-        var user : TaggedUser? = null
+        var user : User? = null
             internal set(value) {
                 field = value
                 if (value == null) { return }

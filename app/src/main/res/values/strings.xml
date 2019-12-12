@@ -179,8 +179,12 @@
     <string name="user_tags_dialog_title">ユーザータグを選択</string>
     <string name="user_tags_dialog_new_tag">新規タグ</string>
     <string name="msg_user_tag_existed">既に存在するタグです</string>
-    <string name="msg_user_tag_created_and_added_user">タグ: %s を作成して id:%s を追加しました</string>
+    <string name="msg_user_tag_created">タグ「%s」を作成しました</string>
+    <string name="msg_user_tag_updated">タグ「%s」の名称を「%s」に変更しました</string>
+    <string name="msg_user_tag_created_and_added_user">タグ「%s」を作成して id:%s を追加しました</string>
     <string name="msg_user_tagged">id:%s に%d個のタグを設定しました</string>
+    <string name="msg_user_tagged_single">id:%s にタグをつけました</string>
+    <string name="msg_user_has_already_tagged">タグ「%s」は id:%s に既についています</string>
 
     <!-- エントリ画面 -->
     <string name="my_bookmarks_button_desc_my_bookmarks">マイブックマーク</string>

@@ -30,8 +30,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.UserTagsContainer
-import com.suihan74.satena.models.UserTagsKey
+import com.suihan74.satena.models.userTag.TagAndUsers
+import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks.information.EntryInformationFragment
 import com.suihan74.satena.scenes.bookmarks.tabs.CustomBookmarksTabFragment
@@ -78,8 +78,6 @@ class BookmarksFragment :
     private var mBookmarksDigest : BookmarksDigest? = null
     private var mBookmarksRecent : List<Bookmark> = emptyList()
 
-    private lateinit var mUserTagsContainer : UserTagsContainer
-
     // ロード完了と同時に詳細画面に遷移する場合の対象ユーザー
     private var mTargetUser : String? = null
 
@@ -108,8 +106,8 @@ class BookmarksFragment :
     var ignoredUsers : Set<String> = emptySet()
         private set
 
-    val userTagsContainer
-        get() = mUserTagsContainer
+    var tags: List<TagAndUsers>? = null
+    var taggedUsers: List<UserAndTags>? = null
 
     val bookmarked : Boolean
         get() {
@@ -164,10 +162,6 @@ class BookmarksFragment :
         super.onCreate(savedInstanceState)
         enterTransition = TransitionSet().addTransition(Fade())
 
-        // ユーザータグをロード
-        val userTagsPrefs = SafeSharedPreferences.create<UserTagsKey>(context)
-        mUserTagsContainer = userTagsPrefs.get(UserTagsKey.CONTAINER)
-
         // 設定のロード
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         mIsHidingButtonsByScrollEnabled = prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
@@ -213,6 +207,7 @@ class BookmarksFragment :
                     // case: スクロールでFABを隠した後，スクロールできないタブに切り替えるとそのタブでFABが表示できなくなる
                     showFabs()
                 }
+
                 override fun onTabUnselected(p0: TabLayout.Tab?) {}
                 override fun onTabReselected(tab: TabLayout.Tab?) {
                     val adapter = tabPager.adapter as? BookmarksTabAdapter
@@ -248,7 +243,14 @@ class BookmarksFragment :
         root.findViewById<EditText>(R.id.bookmarks_search_text).apply {
             visibility = View.GONE
             addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
+
                 override fun afterTextChanged(s: Editable?) {}
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     val adapter = tabPager.adapter as? BookmarksTabAdapter
@@ -295,15 +297,26 @@ class BookmarksFragment :
         mAreScrollButtonsVisible = false
 
         // ブコメリストの初期化
-        if (savedInstanceState == null && bookmarksEntry == null) {
-            showProgressBar()
-            launch(Dispatchers.Main) {
-                initializeBookmarks(mCurrentTabPosition)
+        launch(Dispatchers.IO) {
+            // ユーザータグをロード
+            val dao = SatenaApplication.instance.getUserTagDao()
+            taggedUsers = dao.getAllUsers().mapNotNull {
+                dao.getUserAndTags(it.name)
             }
-        }
-        else {
-            hideProgressBar(withAnimation = false)
-            restoreBookmarks(mCurrentTabPosition)
+            tags = dao.getAllTags().mapNotNull {
+                dao.getTagAndUsers(it.name)
+            }
+
+            withContext(Dispatchers.Main) {
+                if (savedInstanceState == null && bookmarksEntry == null) {
+                    showProgressBar()
+                    initializeBookmarks(mCurrentTabPosition)
+                }
+                else {
+                    hideProgressBar(withAnimation = false)
+                    restoreBookmarks(mCurrentTabPosition)
+                }
+            }
         }
 
         return root
@@ -601,7 +614,7 @@ class BookmarksFragment :
             // ページ情報をDrawerに表示
             childFragmentManager.beginTransaction().apply {
                 replace(R.id.entry_information_layout, entryInfoFragment)
-                commit()
+                commitAllowingStateLoss()
             }
 
             val bookmarksEntry = bookmarksEntry!!
