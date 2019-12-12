@@ -89,6 +89,8 @@ class PreferencesMigrator {
                 val bodyHash = stream.readByteArray(HASH_SIZE)
 
                 val version = stream.readByteArray(1)
+                check (!version.contentEquals(VERSION)) { "cannot read an old settings file: ${src.absolutePath}" }
+
                 val itemsCount = stream.readInt()
 
                 val actualHeaderHash =
