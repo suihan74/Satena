@@ -1,8 +1,13 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_ONE_SHOT
+import android.content.Context.ALARM_SERVICE
 import android.content.Intent
 import android.os.Bundle
+import android.os.Process
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,7 +25,6 @@ import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
-import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.utilities.PermissionRequestable
 import com.suihan74.utilities.RuntimePermission
 import com.suihan74.utilities.setHtml
@@ -109,20 +113,25 @@ class PreferencesInformationFragment :
         val granted = pairs.all { p -> p.second == RuntimePermission.PERMISSION_GRANTED }
 
         if (granted) {
-            when (mFilePickerMode) {
-                FilePickerMode.SAVE -> {
-                    FilePickerDialog.Builder(R.style.AlertDialogStyle)
-                        .setDirectoryOnly(true)
-                        .setTitle(R.string.dialog_title_pref_information_save_settings)
-                        .show(childFragmentManager, "save_dialog")
-                }
+            try {
+                when (mFilePickerMode) {
+                    FilePickerMode.SAVE -> {
+                        FilePickerDialog.Builder(R.style.AlertDialogStyle)
+                            .setDirectoryOnly(true)
+                            .setTitle(R.string.dialog_title_pref_information_save_settings)
+                            .show(childFragmentManager, "save_dialog")
+                    }
 
-                FilePickerMode.LOAD -> {
-                    FilePickerDialog.Builder(R.style.AlertDialogStyle)
-                        .setDirectoryOnly(false)
-                        .setTitle(R.string.dialog_title_pref_information_load_settings)
-                        .show(childFragmentManager, "load_dialog")
+                    FilePickerMode.LOAD -> {
+                        FilePickerDialog.Builder(R.style.AlertDialogStyle)
+                            .setDirectoryOnly(false)
+                            .setTitle(R.string.dialog_title_pref_information_load_settings)
+                            .show(childFragmentManager, "load_dialog")
+                    }
                 }
+            }
+            catch (e: Exception) {
+                Log.e("filePicker", e.message)
             }
         }
         else {
@@ -170,6 +179,13 @@ class PreferencesInformationFragment :
 
                 context.showToast(R.string.msg_pref_information_load_succeeded, file.absolutePath)
 
+                val intent = Intent(SatenaApplication.instance, PreferencesActivity::class.java)
+                val pendingIntent = PendingIntent.getActivity(SatenaApplication.instance, 0, intent, FLAG_ONE_SHOT)
+                val alarmManager = requireActivity().getSystemService(ALARM_SERVICE) as AlarmManager
+                alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 500, pendingIntent)
+                Process.killProcess(Process.myPid())
+
+                /*
                 val intent = Intent(context, PreferencesActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or
                             Intent.FLAG_ACTIVITY_NEW_TASK or
@@ -182,6 +198,7 @@ class PreferencesInformationFragment :
                     putExtra(PreferencesActivity.EXTRA_RELOAD_ALL_PREFERENCES, true)
                 }
                 startActivity(intent)
+                 */
             }
             catch (e: Exception) {
                 Log.e("LoadingSettings", e.message)
