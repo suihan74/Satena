@@ -6,31 +6,37 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
-import com.suihan74.satena.models.UserTag
+import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.utilities.FooterViewHolder
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
 
-open class UserTagsAdapter(tags : Collection<UserTag>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states = RecyclerState.makeStatesWithFooter(tags.toList())
+    private val states = RecyclerState.makeStatesWithFooter(emptyList<TagAndUsers>())
 
-    fun addItem(tag: UserTag) {
+    fun setItems(tags: List<TagAndUsers>) {
+        states.clear()
+        states.addAll(0, tags.map { RecyclerState(RecyclerType.BODY, it) })
+        notifyDataSetChanged()
+    }
+
+    fun addItem(tag: TagAndUsers) {
         val position = states.size - 1
         states.add(position, RecyclerState(RecyclerType.BODY, tag))
         notifyItemInserted(position)
     }
 
-    fun removeItem(tag: UserTag) {
-        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body?.id == tag.id }
+    fun removeItem(tag: TagAndUsers) {
+        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body?.userTag?.id == tag.userTag.id }
         if (position >= 0) {
             states.removeAt(position)
             notifyItemRemoved(position)
         }
     }
 
-    fun updateItem(tag: UserTag) {
-        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body?.id == tag.id }
+    fun updateItem(tag: TagAndUsers) {
+        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body?.userTag?.id == tag.userTag.id }
         if (position >= 0) {
             states[position].body = tag
             notifyItemChanged(position)
@@ -79,20 +85,20 @@ open class UserTagsAdapter(tags : Collection<UserTag>) : RecyclerView.Adapter<Re
 
     override fun getItemViewType(position: Int): Int = states[position].type.int
 
-    open fun onItemClicked(tag: UserTag) {}
-    open fun onItemLongClicked(tag: UserTag) : Boolean = true
+    open fun onItemClicked(tag: TagAndUsers) {}
+    open fun onItemLongClicked(tag: TagAndUsers) : Boolean = true
 
     class ViewHolder(root: View) : RecyclerView.ViewHolder(root) {
         private val mName = root.findViewById<TextView>(R.id.tag_name)
         private val mCounter = root.findViewById<TextView>(R.id.users_count)
 
-        var tag : UserTag? = null
+        var tag : TagAndUsers? = null
             internal set(value) {
                 field = value
                 if (value == null) { return }
 
-                mName.text = value.name
-                mCounter.text = String.format("%d users", value.count)
+                mName.text = value.userTag.name
+                mCounter.text = String.format("%d users", value.users.size)
             }
     }
 }

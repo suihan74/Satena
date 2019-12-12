@@ -34,7 +34,6 @@ import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.BookmarkDialog
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.UserTagsContainer
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.BookmarksFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
@@ -66,9 +65,6 @@ class BookmarkDetailFragment :
             val activity = activity as? BookmarksActivity ?: throw IllegalStateException("BookmarksDetailFragment has created from an invalid activity")
             return activity.bookmarksFragment
         }
-
-    val userTagsContainer: UserTagsContainer
-        get() = bookmarksFragment!!.userTagsContainer
 
     val bookmark
         get() = mBookmark
@@ -339,7 +335,8 @@ class BookmarkDetailFragment :
 
     private fun updateUserTags() {
         mView.findViewById<TextView>(R.id.user_name).run {
-            val tags = userTagsContainer.getTagsOfUser(mBookmark.user)
+            val user = mBookmark.user
+            val tags = bookmarksFragment?.taggedUsers?.firstOrNull { it.user.name == user }?.tags?.sortedBy { it.id }
             text =
                 if (tags.isNullOrEmpty()) {
                     mBookmark.user
@@ -611,6 +608,6 @@ class BookmarkDetailFragment :
         context?.showCustomTabsIntent(url, activity)
     }
 
-    override fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
+    override suspend fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
         BookmarkDialog.Listener.onCompleteCreateTag(tagName, activity as BookmarksActivity, dialog)
 }

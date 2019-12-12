@@ -7,14 +7,19 @@ import java.io.OutputStream
 /**
  * 設定ファイルの外部ファイル入出力データ
  */
-
-data class MigrationData (
+data class MigrationData(
+    val type: DataType,
     val keyName: String,
     val version: Int,
     val fileName: String,
     val size: Int,
     val data: ByteArray?
 ) {
+    enum class DataType {
+        PREFERENCE,
+        DATABASE
+    }
+
     override fun hashCode() =
         (keyName.hashCode() + version + fileName.hashCode() + size) * 31 + (data?.sum() ?: 0)
 
@@ -32,6 +37,7 @@ data class MigrationData (
         }.toByteArray()
 
     fun write(stream: OutputStream) = stream.run {
+        writeInt(type.ordinal)
         writeString(keyName)
         writeInt(version)
         writeString(fileName)
@@ -41,6 +47,7 @@ data class MigrationData (
 
     companion object {
         fun read(stream: InputStream) : MigrationData = stream.run {
+            val type = DataType.values()[readInt()]
             val keyName = readString()
             val dataVersion = readInt()
             val fileName = readString()
@@ -48,6 +55,7 @@ data class MigrationData (
             val data = readByteArray(dataSize)
 
             MigrationData(
+                type = type,
                 keyName = keyName,
                 fileName = fileName,
                 version = dataVersion,

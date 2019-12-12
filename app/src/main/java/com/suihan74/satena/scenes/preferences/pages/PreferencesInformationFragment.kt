@@ -142,8 +142,8 @@ class PreferencesInformationFragment :
                     addPreference<PreferenceKey>()
                     addPreference<IgnoredEntriesKey>()
                     addPreference<NoticesKey>()
-                    addPreference<UserTagsKey>()
                     addPreference<EntriesHistoryKey>()
+                    addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME)
                     write(file)
                 }
 
