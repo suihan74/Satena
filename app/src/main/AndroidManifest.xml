@@ -93,6 +93,15 @@
             android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
         />
 
+        <activity
+                android:name="com.suihan74.utilities.RestartActivity"
+                android:excludeFromRecents="true"
+                android:exported="false"
+                android:launchMode="singleInstance"
+                android:process=":restart_process"
+                android:theme="@android:style/Theme.Translucent.NoTitleBar"
+        />
+
     </application>
 
 </manifest>

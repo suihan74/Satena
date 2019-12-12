@@ -1,13 +1,8 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.Manifest
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.app.PendingIntent.FLAG_ONE_SHOT
-import android.content.Context.ALARM_SERVICE
 import android.content.Intent
 import android.os.Bundle
-import android.os.Process
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,10 +20,7 @@ import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
-import com.suihan74.utilities.PermissionRequestable
-import com.suihan74.utilities.RuntimePermission
-import com.suihan74.utilities.setHtml
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
@@ -179,11 +171,9 @@ class PreferencesInformationFragment :
 
                 context.showToast(R.string.msg_pref_information_load_succeeded, file.absolutePath)
 
-                val intent = Intent(SatenaApplication.instance, PreferencesActivity::class.java)
-                val pendingIntent = PendingIntent.getActivity(SatenaApplication.instance, 0, intent, FLAG_ONE_SHOT)
-                val alarmManager = requireActivity().getSystemService(ALARM_SERVICE) as AlarmManager
-                alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 500, pendingIntent)
-                Process.killProcess(Process.myPid())
+                // アプリを再起動
+                val intent = RestartActivity.createIntent(context)
+                context.startActivity(intent)
 
                 /*
                 val intent = Intent(context, PreferencesActivity::class.java).apply {
