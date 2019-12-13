@@ -8,14 +8,13 @@ import android.widget.Button
 import android.widget.ToggleButton
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 
-class PreferencesBookmarksFragment : PreferencesFragmentBase(), AlertDialogListener {
+class PreferencesBookmarksFragment : PreferencesFragmentBase(), AlertDialogFragment.Listener {
     companion object {
         fun createInstance() : PreferencesBookmarksFragment =
             PreferencesBookmarksFragment()

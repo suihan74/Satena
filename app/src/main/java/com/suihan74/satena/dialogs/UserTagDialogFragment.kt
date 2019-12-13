@@ -22,7 +22,7 @@ class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
         mJob.cancel()
     }
 
-    interface Listener: AlertDialogListener {
+    interface Listener: AlertDialogFragment.Listener {
         suspend fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment) : Boolean
     }
 

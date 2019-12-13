@@ -7,12 +7,11 @@ import com.suihan74.HatenaLib.EntriesType
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
-class SiteEntriesFragment : SingleTabEntriesFragmentBase(), AlertDialogListener {
+class SiteEntriesFragment : SingleTabEntriesFragmentBase(), AlertDialogFragment.Listener {
     /** 表示順 */
     private enum class EntriesOrder(
         val description: String,

@@ -7,15 +7,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import java.io.Serializable
 
-interface AlertDialogListener {
-    fun onClickPositiveButton(dialog: AlertDialogFragment) {}
-    fun onClickNegativeButton(dialog: AlertDialogFragment) {}
-    fun onClickNeutralButton(dialog: AlertDialogFragment) {}
-    fun onSelectItem(dialog: AlertDialogFragment, which: Int) {}
-    fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {}
-    fun onMultiChoiceItem(dialog: AlertDialogFragment, which: Int, selected: Boolean) {}
-}
-
 /**
  * 画面復元で落ちないようにしたAlertDialog
  * 独自Viewを表示するDialogFragmentを作成する場合もこのAlertDialogFragmentを継承すると実装が楽
@@ -71,7 +62,7 @@ open class AlertDialogFragment : DialogFragment() {
 
     protected fun createBuilder(arguments: Bundle, savedInstanceState: Bundle?) : AlertDialog.Builder {
         val themeResId = arguments.getInt(THEME_RES_ID)
-        val listener = parentFragment as? AlertDialogListener ?: activity as? AlertDialogListener
+        val listener = parentFragment as? Listener ?: activity as? Listener
 
         return AlertDialog.Builder(context, themeResId).apply {
             arguments.getInt(TITLE_ID).let {
@@ -229,5 +220,14 @@ open class AlertDialogFragment : DialogFragment() {
         fun setAdditionalData(key: String, obj: Serializable?) = this.apply {
             arguments.putSerializable(key, obj)
         }
+    }
+
+    interface Listener {
+        fun onClickPositiveButton(dialog: AlertDialogFragment) {}
+        fun onClickNegativeButton(dialog: AlertDialogFragment) {}
+        fun onClickNeutralButton(dialog: AlertDialogFragment) {}
+        fun onSelectItem(dialog: AlertDialogFragment, which: Int) {}
+        fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {}
+        fun onMultiChoiceItem(dialog: AlertDialogFragment, which: Int, selected: Boolean) {}
     }
 }

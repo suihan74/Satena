@@ -8,12 +8,11 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 
-class SearchEntriesFragment : SingleTabEntriesFragmentBase(), AlertDialogListener {
+class SearchEntriesFragment : SingleTabEntriesFragmentBase(), AlertDialogFragment.Listener {
     private lateinit var mRoot : View
     private lateinit var mQuery : String
     private lateinit var mSearchType : SearchType

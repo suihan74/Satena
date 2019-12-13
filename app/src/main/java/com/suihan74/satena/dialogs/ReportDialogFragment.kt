@@ -22,7 +22,7 @@ import com.suihan74.utilities.showToast
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
-class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogListener {
+class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragment.Listener {
     private val mJob: Job = SupervisorJob()
     override val coroutineContext: CoroutineContext
         get() = mJob
