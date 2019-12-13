@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,15 +11,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.FragmentContainerActivity
 
-class MentionedBookmarksTabFragment : Fragment(), AlertDialogListener {
+class MentionedBookmarksTabFragment : Fragment(), AlertDialogFragment.Listener {
     private lateinit var mRoot : View
 
     companion object {

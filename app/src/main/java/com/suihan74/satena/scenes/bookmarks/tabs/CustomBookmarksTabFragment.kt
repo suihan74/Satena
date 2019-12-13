@@ -6,7 +6,6 @@ import android.view.MenuInflater
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
@@ -15,7 +14,7 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksFragment
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabFragment
 import com.suihan74.utilities.SafeSharedPreferences
 
-class CustomBookmarksTabFragment : BookmarksTabFragment(), AlertDialogListener {
+class CustomBookmarksTabFragment : BookmarksTabFragment(), AlertDialogFragment.Listener {
     /** ブコメを表示するタグのID */
     private var mActiveTagIds : List<Int> = emptyList()
 

@@ -172,7 +172,7 @@ open class BookmarkDialog : DialogFragment() {
     }
 
 
-    interface Listener : AlertDialogListener {
+    interface Listener : AlertDialogFragment.Listener {
         val fragmentManagerForDialog : FragmentManager
 
         fun onRemoveBookmark(bookmark: Bookmark) {}

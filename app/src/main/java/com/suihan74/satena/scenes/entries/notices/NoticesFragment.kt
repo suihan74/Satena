@@ -19,7 +19,6 @@ import com.suihan74.HatenaLib.Notice
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
@@ -33,7 +32,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
 
-class NoticesFragment : CoroutineScopeFragment(), AlertDialogListener {
+class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
     private var mClickHandling = false
     private lateinit var mNoticesAdapter: NoticesAdapter
 

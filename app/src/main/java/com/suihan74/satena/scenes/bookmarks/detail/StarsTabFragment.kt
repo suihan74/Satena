@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -17,7 +16,6 @@ import com.suihan74.HatenaLib.Star
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.BookmarksFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
@@ -30,7 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
-class StarsTabFragment : CoroutineScopeFragment(), AlertDialogListener {
+class StarsTabFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
     private lateinit var mRoot: View
     private var mBookmarksFragment : BookmarksFragment? = null
     private var mBookmarkDetailFragment : BookmarkDetailFragment? = null

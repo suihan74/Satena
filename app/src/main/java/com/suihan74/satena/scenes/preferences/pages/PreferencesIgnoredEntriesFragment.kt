@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.preferences.pages
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,9 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.IgnoredEntriesKey
 import com.suihan74.satena.models.IgnoredEntry
@@ -23,7 +20,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.get
 import com.suihan74.utilities.showToast
 
-class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialogListener {
+class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialogFragment.Listener {
     private lateinit var mIgnoredEntriesList : RecyclerView
     private lateinit var mIgnoredEntriesAdapter : IgnoredEntriesAdapter
     private lateinit var mIgnoredEntries : ArrayList<IgnoredEntry>
