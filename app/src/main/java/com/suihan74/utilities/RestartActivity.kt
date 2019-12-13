@@ -12,8 +12,8 @@ class RestartActivity : Activity() {
         const val EXTRA_MAIN_PID = "RestartActivity.EXTRA_MAIN_PID"
 
         fun createIntent(context: Context) = Intent().apply {
-            setClassName(context.packageName, RestartActivity::class.java.name)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            setClass(context, RestartActivity::class.java)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra(EXTRA_MAIN_PID, Process.myPid())
         }
     }
@@ -28,7 +28,7 @@ class RestartActivity : Activity() {
         // メインアクティビティ再起動
         val restartIntent = Intent(applicationContext, EntriesActivity::class.java).apply {
             action = Intent.ACTION_MAIN
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         applicationContext.startActivity(restartIntent)
 
