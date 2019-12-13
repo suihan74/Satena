@@ -69,6 +69,7 @@ interface UserTagDao {
     fun deleteRelation(relation: TagAndUserRelation)
 
     // ===== get relation ===== //
+    @Transaction
     @Query("""
         select * from user_tag
         where name = :tagName
@@ -76,6 +77,7 @@ interface UserTagDao {
     """)
     fun getTagAndUsers(tagName: String): TagAndUsers?
 
+    @Transaction
     @Query("""
         select * from user_tag_user
         where name = :userName
