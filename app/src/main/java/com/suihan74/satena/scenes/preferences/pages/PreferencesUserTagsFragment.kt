@@ -41,7 +41,7 @@ class PreferencesUserTagsFragment :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        dao = SatenaApplication.instance.getUserTagDao()
+        dao = SatenaApplication.instance.userTagDao
         model = ViewModelProviders.of(this)[UserTagViewModel::class.java]
         // 初期値をロード
         launch {

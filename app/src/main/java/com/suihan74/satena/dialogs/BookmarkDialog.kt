@@ -197,7 +197,7 @@ open class BookmarkDialog : DialogFragment() {
                     val bookmarksFragment = activity.bookmarksFragment!!
                     bookmarksFragment.launch(Dispatchers.IO) {
                         val userName = bookmark.user
-                        val dao = SatenaApplication.instance.getUserTagDao()
+                        val dao = SatenaApplication.instance.userTagDao
                         val user = dao.makeUser(userName)
                         val tags = bookmarksFragment.tags!!.map { it.userTag }
 
@@ -248,7 +248,7 @@ open class BookmarkDialog : DialogFragment() {
                 dialog: UserTagDialogFragment
             ) : Boolean = withContext(Dispatchers.IO) {
 
-                val dao = SatenaApplication.instance.getUserTagDao()
+                val dao = SatenaApplication.instance.userTagDao
 
                 if (dao.findTag(tagName) != null) {
                     withContext(Dispatchers.Main) {

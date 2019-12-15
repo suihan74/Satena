@@ -49,7 +49,7 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
             .addTransition(Slide(GravityCompat.END))
 
         val parentFragment = requireParentFragment() as PreferencesUserTagsFragment
-        dao = SatenaApplication.instance.getUserTagDao()
+        dao = SatenaApplication.instance.userTagDao
         model = ViewModelProviders.of(parentFragment)[UserTagViewModel::class.java]
     }
 

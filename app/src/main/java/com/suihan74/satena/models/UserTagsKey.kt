@@ -52,7 +52,7 @@ object UserTagsKeyMigrator {
     }
 
     private fun migrateFromVersion0(context: Context) {
-        val dao = SatenaApplication.instance.getUserTagDao()
+        val dao = SatenaApplication.instance.userTagDao
         val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
         val container = prefs.get<UserTagsContainer>(UserTagsKey.CONTAINER)
 

@@ -81,9 +81,9 @@ class SatenaApplication : Application() {
             .build()
     }
 
-    /** ユーザータグDBへのアクセスオブジェクトを取得する */
-    fun getUserTagDao() =
-        appDatabase.userTagDao()
+    /** ユーザータグDBへのアクセスオブジェクトを取得 */
+    val userTagDao
+        get() = appDatabase.userTagDao()
 
     /** 各種設定のバージョン移行が必要か確認 */
     fun updatePreferencesVersion() {

@@ -36,7 +36,7 @@ class UserTagsListFragment : CoroutineScopeFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        dao = SatenaApplication.instance.getUserTagDao()
+        dao = SatenaApplication.instance.userTagDao
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

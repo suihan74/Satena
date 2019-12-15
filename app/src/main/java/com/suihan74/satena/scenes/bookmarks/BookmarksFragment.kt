@@ -299,7 +299,7 @@ class BookmarksFragment :
         // ブコメリストの初期化
         launch(Dispatchers.IO) {
             // ユーザータグをロード
-            val dao = SatenaApplication.instance.getUserTagDao()
+            val dao = SatenaApplication.instance.userTagDao
             taggedUsers = dao.getAllUsers().mapNotNull {
                 dao.getUserAndTags(it.name)
             }
