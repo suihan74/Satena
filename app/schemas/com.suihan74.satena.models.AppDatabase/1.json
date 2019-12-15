@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "39fe8d75eb605182bdb57a4a8f6f4271",
+    "identityHash": "1b32c5e9c8984d383151d881de821305",
     "entities": [
       {
         "tableName": "user_tag_user",
@@ -27,7 +27,24 @@
           ],
           "autoGenerate": true
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "user_id",
+            "unique": true,
+            "columnNames": [
+              "id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `user_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "user_name",
+            "unique": true,
+            "columnNames": [
+              "name"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `user_name` ON `${TABLE_NAME}` (`name`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -53,7 +70,24 @@
           ],
           "autoGenerate": true
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "tag_id",
+            "unique": true,
+            "columnNames": [
+              "id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `tag_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "tag_name",
+            "unique": true,
+            "columnNames": [
+              "name"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `tag_name` ON `${TABLE_NAME}` (`name`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -80,7 +114,17 @@
           ],
           "autoGenerate": false
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "relation_tag_id_user_id",
+            "unique": true,
+            "columnNames": [
+              "user_id",
+              "tag_id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `relation_tag_id_user_id` ON `${TABLE_NAME}` (`user_id`, `tag_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "user_tag",
@@ -158,7 +202,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '39fe8d75eb605182bdb57a4a8f6f4271')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1b32c5e9c8984d383151d881de821305')"
     ]
   }
 }
