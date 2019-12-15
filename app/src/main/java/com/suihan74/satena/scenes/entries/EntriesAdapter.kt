@@ -19,6 +19,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.TappedActionLauncher
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.*
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries.pages.SiteEntriesFragment
 import com.suihan74.utilities.*
@@ -77,11 +79,12 @@ open class EntriesAdapter(
         singleTapAction = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
         longTapAction = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
 
-        val ignoredEntriesPrefs = SafeSharedPreferences.create<IgnoredEntriesKey>(fragment.context)
+        // TODO: ignoredEntryのDB化対応
+//        val ignoredEntriesPrefs = SafeSharedPreferences.create<IgnoredEntriesKey>(fragment.context)
         ignoredEntries.clear()
-        ignoredEntriesPrefs.getObject<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES)?.let {
-            ignoredEntries.addAll(it)
-        }
+//        ignoredEntriesPrefs.getObject<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES)?.let {
+//            ignoredEntries.addAll(it)
+//        }
     }
 
     fun onResume() {
@@ -213,21 +216,23 @@ open class EntriesAdapter(
         val dialog = IgnoredEntryDialogFragment.createInstance(
             entry.url,
             entry.title
-        ) { _, ignoredEntry ->
+        ) { ignoredEntry ->
             if (ignoredEntries.contains(ignoredEntry)) {
-                context.showToast("既に存在する非表示設定です")
+                context.showToast(R.string.msg_ignored_entry_dialog_already_existed)
                 return@createInstance false
             }
 
+            // TODO: ignoredEntryのDB化対応
+            /*
             ignoredEntries.add(ignoredEntry)
 
             val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
             prefs.edit {
                 putObject(IgnoredEntriesKey.IGNORED_ENTRIES, ignoredEntries)
-            }
+            }*/
 
             setEntries(entries)
-            context.showToast("${ignoredEntry.query} を非表示にしました")
+            context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
             return@createInstance true
         }
         dialog.show(fragment.fragmentManager!!, "IgnoredEntryDialogFragment")

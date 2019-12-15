@@ -1,26 +1,26 @@
 package com.suihan74.satena.models.ignoredEntry
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.TypeConverter
-import androidx.room.TypeConverters
+import androidx.room.*
 import com.suihan74.HatenaLib.Entry
 import org.threeten.bp.LocalDateTime
 import java.io.Serializable
 
-@Entity(tableName = "ignored_entry")
+@Entity(
+    tableName = "ignored_entry",
+    indices = [Index(value = ["type", "query"], name = "ignoredEntry_type_query", unique = true)]
+)
+@TypeConverters(
+    IgnoredEntryTypeConverter::class,
+    IgnoreTargetConverter::class
+)
 data class IgnoredEntry (
-    @TypeConverters(IgnoredEntryTypeConverter::class)
-    val type: IgnoredEntryType,
+    var type: IgnoredEntryType = IgnoredEntryType.URL,
 
-    val query: String,
+    var query: String = "",
 
-    @TypeConverters(IgnoreTargetConverter::class)
-    val target: IgnoreTarget = IgnoreTarget.ALL,
+    var target: IgnoreTarget = IgnoreTarget.ALL,
 
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     val id: Int = 0
 ) : Serializable {
 

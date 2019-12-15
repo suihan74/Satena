@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d4fa981d8cc3198d09d6d565e978b55d",
+    "identityHash": "39fe8d75eb605182bdb57a4a8f6f4271",
     "entities": [
       {
         "tableName": "user_tag_user",
@@ -105,12 +105,60 @@
             ]
           }
         ]
+      },
+      {
+        "tableName": "ignored_entry",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` INTEGER NOT NULL, `query` TEXT NOT NULL, `target` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "query",
+            "columnName": "query",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "target",
+            "columnName": "target",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "ignoredEntry_type_query",
+            "unique": true,
+            "columnNames": [
+              "type",
+              "query"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `ignoredEntry_type_query` ON `${TABLE_NAME}` (`type`, `query`)"
+          }
+        ],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd4fa981d8cc3198d09d6d565e978b55d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '39fe8d75eb605182bdb57a4a8f6f4271')"
     ]
   }
 }

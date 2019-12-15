@@ -153,10 +153,14 @@
     <string name="pref_user_tags_user_menu_remove">ユーザーを除外</string>
 
     <!-- 非表示エントリ登録ダイアログ -->
+    <string name="ignored_entry_dialog_title">非表示エントリを作成</string>
     <string name="ignored_entry_dialog_tab_url">URL</string>
     <string name="ignored_entry_dialog_tab_text">TEXT</string>
     <string name="ignored_entry_dialog_desc_url">↑から始まるURLのエントリを非表示にする</string>
     <string name="ignored_entry_dialog_desc_text">↑の文字列を含むエントリ(orブコメ)を非表示にする</string>
+    <string name="msg_ignored_entry_dialog_empty_query">クエリを入力してください</string>
+    <string name="msg_ignored_entry_dialog_already_existed">既に存在する非表示設定です</string>
+    <string name="msg_ignored_entry_dialog_succeeded">「%s」を非表示にしました</string>
 
     <!-- ブックマーク投稿ダイアログ -->
     <string name="bookmark_comment_edit_text_hint">ブコメ(任意)</string>
@@ -182,9 +186,9 @@
     <string name="msg_user_tag_created">タグ「%s」を作成しました</string>
     <string name="msg_user_tag_updated">タグ「%s」の名称を「%s」に変更しました</string>
     <string name="msg_user_tag_created_and_added_user">タグ「%s」を作成して id:%s を追加しました</string>
-    <string name="msg_user_tagged">id:%s に%d個のタグを設定しました</string>
+    <string name="msg_user_tagged">id:%sに%d個のタグを設定しました</string>
     <string name="msg_user_tagged_single">id:%s にタグをつけました</string>
-    <string name="msg_user_has_already_tagged">タグ「%s」は id:%s に既についています</string>
+    <string name="msg_user_has_already_tagged">タグ「%s」はid:%sに既についています</string>
 
     <!-- エントリ画面 -->
     <string name="my_bookmarks_button_desc_my_bookmarks">マイブックマーク</string>
@@ -211,10 +215,10 @@
     <string name="custom_bookmarks_no_user_tags_active">タグ無しユーザーを表示</string>
     <string name="msg_get_entry_failed">エントリ取得失敗</string>
     <string name="msg_update_bookmarks_failed">ブクマリスト更新失敗</string>
-    <string name="msg_ignore_user_succeeded">%sを非表示にしました</string>
-    <string name="msg_ignore_user_failed">%sの非表示に失敗しました</string>
-    <string name="msg_unignore_user_succeeded">%sの非表示を解除しました</string>
-    <string name="msg_unignore_user_failed">%sの非表示解除に失敗しました</string>
+    <string name="msg_ignore_user_succeeded">id:%sを非表示にしました</string>
+    <string name="msg_ignore_user_failed">id:%sの非表示に失敗しました</string>
+    <string name="msg_unignore_user_succeeded">id:%sの非表示を解除しました</string>
+    <string name="msg_unignore_user_failed">id:%sの非表示解除に失敗しました</string>
     <string name="msg_remove_bookmark_succeeded">ブクマを削除しました</string>
     <string name="msg_remove_bookmark_failed">ブクマ削除に失敗しました</string>
     <!-- ブクマ画面でのエントリ情報 -->

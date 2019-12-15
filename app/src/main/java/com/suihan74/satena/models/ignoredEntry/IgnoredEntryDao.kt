@@ -1,18 +1,37 @@
 package com.suihan74.satena.models.ignoredEntry
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Update
+import androidx.room.*
 
 @Dao
-interface IgnoredEntryDao {
-    @Insert
-    fun insert(entry: IgnoredEntry)
+abstract class IgnoredEntryDao {
+    @Query("select * from ignored_entry")
+    abstract fun getAllEntries(): List<IgnoredEntry>
+
+    @Query("""
+        select * from ignored_entry 
+        where type = :typeInt and `query` = :query 
+        limit 1
+    """)
+    abstract fun find(typeInt: Int, query: String) : IgnoredEntry?
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    abstract fun insert(entry: IgnoredEntry)
 
     @Update
-    fun update(entry: IgnoredEntry)
+    abstract fun update(entry: IgnoredEntry)
 
     @Delete
-    fun delete(entry: IgnoredEntry)
+    abstract fun delete(entry: IgnoredEntry)
+
+    // 外側から使いやすくするためのもの //
+
+    fun find(type: IgnoredEntryType, query: String) =
+        find(type.ordinal, query)
+
+    fun clearAllEntries() {
+        getAllEntries().forEach {
+            delete(it)
+        }
+    }
 }
+

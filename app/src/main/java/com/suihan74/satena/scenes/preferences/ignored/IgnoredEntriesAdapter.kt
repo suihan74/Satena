@@ -6,16 +6,23 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
-import com.suihan74.satena.models.IgnoredEntry
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.utilities.FooterViewHolder
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
 
-open class IgnoredEntriesAdapter(
-    ignoredEntries: List<IgnoredEntry>
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states = RecyclerState.makeStatesWithFooter(ignoredEntries.reversed())
+    private val states = RecyclerState.makeStatesWithFooter(emptyList<IgnoredEntry>())
+
+    fun setItem(entries: List<IgnoredEntry>) {
+        states.run {
+            clear()
+            addAll(0, entries.map { RecyclerState(RecyclerType.BODY, it) })
+            add(RecyclerState(RecyclerType.FOOTER))
+        }
+        notifyDataSetChanged()
+    }
 
     fun addItem(entry: IgnoredEntry) {
         states.add(0, RecyclerState(RecyclerType.BODY, entry))

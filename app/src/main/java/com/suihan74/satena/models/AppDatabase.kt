@@ -4,6 +4,8 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.suihan74.satena.models.converters.LocalDateTimeConverter
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUserRelation
 import com.suihan74.satena.models.userTag.User
@@ -13,11 +15,13 @@ import com.suihan74.satena.models.userTag.UserTagDao
     entities = [
         User::class,
         Tag::class,
-        TagAndUserRelation::class
+        TagAndUserRelation::class,
+        IgnoredEntry::class
     ],
     version = 1
 )
 @TypeConverters(LocalDateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userTagDao(): UserTagDao
+    abstract fun ignoredEntryDao(): IgnoredEntryDao
 }
