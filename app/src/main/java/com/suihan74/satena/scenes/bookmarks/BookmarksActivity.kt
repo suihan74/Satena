@@ -178,6 +178,7 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
             private set
 
         const val EXTRA_ENTRY = "EXTRA_ENTRY"
+        const val EXTRA_BOOKMARKS_ENTRY = "EXTRA_BOOKMARKS_ENTRY"
         const val EXTRA_ENTRY_ID = "EXTRA_ENTRY_ID"
         const val EXTRA_TARGET_USER = "EXTRA_TARGET_USER"
 
@@ -242,33 +243,31 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
     }
 
     private fun startInitialize() = launch(Dispatchers.Default) {
-        val entry = when (intent.action) {
+        val entry =
+            intent.getSerializableExtra(EXTRA_ENTRY) as? Entry ?:
+            intent.getSerializableExtra(EXTRA_BOOKMARKS_ENTRY) as? BookmarksEntry ?:
+            when (intent.action) {
             // ブラウザから「共有」を使って遷移してきたときの処理
             Intent.ACTION_SEND -> {
                 val url = modifySpecificUrls(intent.getStringExtra(Intent.EXTRA_TEXT))!!
                 if (!URLUtil.isNetworkUrl(url)) throw RuntimeException("invalid url shared")
 
-                var entry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
                 AccountLoader.signInAccounts(applicationContext)
 
-                if (entry == null) {
-                    preLoadingTasks = null
+                preLoadingTasks = null
 
-                    try {
-                        entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
-                            .firstOrNull { it.url == url }
-                            ?: HatenaClient.getEmptyEntryAsync(url).await()
-                    }
-                    catch (e: Exception) {
-                        Log.d("BookmarksActivity", Log.getStackTraceString(e))
-                        withContext(Dispatchers.Main) {
-                            showToast(R.string.msg_get_entry_failed)
-                            finish()
-                        }
+                try {
+                    HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
+                        .firstOrNull { it.url == url }
+                        ?: HatenaClient.getEmptyEntryAsync(url).await()
+                }
+                catch (e: Exception) {
+                    Log.d("BookmarksActivity", Log.getStackTraceString(e))
+                    withContext(Dispatchers.Main) {
+                        showToast(R.string.msg_get_entry_failed)
+                        finish()
                     }
                 }
-
-                entry
             }
 
             // ブコメページのリンクを踏んだときの処理
@@ -333,7 +332,7 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
         withContext(Dispatchers.Main) {
             showProgressBar()
             val targetUser = intent.getStringExtra(EXTRA_TARGET_USER)
-            val targetEntry = this@BookmarksActivity.mEntry!!
+            val targetEntry = mEntry!!
             val bookmarksFragment =  BookmarksFragment.createInstance(targetEntry, targetUser, preLoadingTasks)
             showFragment(bookmarksFragment, FRAGMENT_TAG_MAIN_CONTENT)
         }
