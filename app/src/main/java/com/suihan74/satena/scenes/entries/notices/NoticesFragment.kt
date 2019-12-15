@@ -71,7 +71,7 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
                                 val entry = HatenaClient.getBookmarksEntryAsync(notice.eid).await()
 
                                 val intent = Intent(activity, BookmarksActivity::class.java).apply {
-                                    putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+                                    putExtra(BookmarksActivity.EXTRA_BOOKMARKS_ENTRY, entry)
                                     putExtra(BookmarksActivity.EXTRA_TARGET_USER, HatenaClient.account!!.name)
                                 }
                                 startActivity(intent)
