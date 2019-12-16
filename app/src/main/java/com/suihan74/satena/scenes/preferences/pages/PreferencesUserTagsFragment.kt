@@ -16,6 +16,7 @@ import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersListFragment
+import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagViewModel
 import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.BackPressable
@@ -30,8 +31,6 @@ class PreferencesUserTagsFragment :
         UserTagDialogFragment.Listener,
         TagUserDialogFragment.Listener
 {
-    private lateinit var dao: UserTagDao
-
     private lateinit var model: UserTagViewModel
 
     companion object {
@@ -41,11 +40,15 @@ class PreferencesUserTagsFragment :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        dao = SatenaApplication.instance.userTagDao
-        model = ViewModelProviders.of(this)[UserTagViewModel::class.java]
+
+        val factory = UserTagViewModel.Factory(
+            UserTagRepository(SatenaApplication.instance.userTagDao)
+        )
+
+        model = ViewModelProviders.of(this, factory)[UserTagViewModel::class.java]
         // 初期値をロード
         launch {
-            model.loadTags(dao)
+            model.loadTags()
         }
     }
 
@@ -146,26 +149,26 @@ class PreferencesUserTagsFragment :
             val tag = dialog.editingUserTag!!
 
             if (tag.name != tagName) {
-                if (model.containsTag(dao, tagName)) {
+                if (model.containsTag(tagName)) {
                     context?.showToast(R.string.msg_user_tag_existed)
                     return false
                 }
                 else {
                     val prevName = tag.name
                     val modified = tag.copy(name = tagName)
-                    model.updateTag(dao, modified)
+                    model.updateTag(modified)
                     context?.showToast(R.string.msg_user_tag_updated, prevName, tagName)
                 }
             }
             return true
         }
         else {
-            return if (model.containsTag(dao, tagName)) {
+            return if (model.containsTag(tagName)) {
                 context?.showToast(R.string.msg_user_tag_existed)
                 false
             }
             else {
-                model.addTag(dao, tagName)
+                model.addTag(tagName)
                 context?.showToast(R.string.msg_user_tag_created, tagName)
                 true
             }
@@ -179,7 +182,7 @@ class PreferencesUserTagsFragment :
         val tag = model.currentTag.value ?: return true
 
         return if (tag.users.none { it.name == userName }) {
-            model.addRelation(dao, tag.userTag, userName)
+            model.addRelation(tag.userTag, userName)
             context?.showToast(R.string.msg_user_tagged_single, userName)
             true
         }

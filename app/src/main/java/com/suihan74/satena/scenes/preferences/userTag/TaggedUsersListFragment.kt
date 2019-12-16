@@ -29,7 +29,6 @@ import kotlinx.coroutines.launch
 class TaggedUsersListFragment : CoroutineScopeFragment() {
     private lateinit var mTaggedUsersAdapter : TaggedUsersAdapter
 
-    private lateinit var dao : UserTagDao
     private lateinit var model: UserTagViewModel
 
     companion object {
@@ -49,7 +48,6 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
             .addTransition(Slide(GravityCompat.END))
 
         val parentFragment = requireParentFragment() as PreferencesUserTagsFragment
-        dao = SatenaApplication.instance.userTagDao
         model = ViewModelProviders.of(parentFragment)[UserTagViewModel::class.java]
     }
 
@@ -122,7 +120,7 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
 
     private fun removeItem(user: User) = launch {
         val tag = model.currentTag.value?.userTag ?: return@launch
-        model.deleteRelation(dao, tag, user)
+        model.deleteRelation(tag, user)
     }
 
     private fun showBookmarks(user: User) {

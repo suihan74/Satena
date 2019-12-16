@@ -1,34 +1,39 @@
 package com.suihan74.satena.scenes.preferences.userTag
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.models.userTag.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 
-class UserTagViewModel : ViewModel() {
+class UserTagViewModel(
+    private val repository: UserTagRepository
+) : ViewModel() {
+
     /** 全てのタグとユーザーのリスト */
-    val tags: MutableLiveData<List<TagAndUsers>> by lazy {
-        MutableLiveData<List<TagAndUsers>>()
+    val tags by lazy {
+        MutableLiveData<List<TagAndUsers>>().apply {
+            // タグリスト更新と同時に、現在表示中のタグ内容も更新する
+            viewModelScope.launch(Dispatchers.Main) {
+                observeForever {
+                    updateCurrentTag()
+                }
+            }
+        }
     }
 
     /** 現在表示中のタグ */
-    val currentTag: MutableLiveData<TagAndUsers?> by lazy {
-        MutableLiveData<TagAndUsers?>()
-    }
+    val currentTag by lazy { MutableLiveData<TagAndUsers?>() }
 
     /** リストを取得 */
-    suspend fun loadTags(dao: UserTagDao) = withContext(Dispatchers.IO) {
-        tags.postValue(dao.getAllTags().mapNotNull {
-            dao.getTagAndUsers(it.name)
-        })
-
-        updateCurrentTag()
+    suspend fun loadTags() {
+        tags.postValue(repository.load())
     }
 
     /** 選択中の現在表示中のタグ情報を更新 */
-    suspend fun updateCurrentTag() = withContext(Dispatchers.IO) {
+    private fun updateCurrentTag() {
         val id = currentTag.value?.userTag?.id
         currentTag.postValue(
             if (id != null) {
@@ -39,63 +44,52 @@ class UserTagViewModel : ViewModel() {
     }
 
     /** タグを追加 */
-    suspend fun addTag(dao: UserTagDao, tagName: String) : Boolean = withContext(Dispatchers.IO) {
-        return@withContext if (dao.findTag(tagName) == null) {
-            dao.insertTag(tagName)
-            loadTags(dao)
-            true
+    suspend fun addTag(tagName: String) {
+        if (repository.addTag(tagName)) {
+            loadTags()
         }
-        else false
     }
 
     /** タグを削除 */
-    suspend fun deleteTag(dao: UserTagDao, tag: TagAndUsers) = withContext(Dispatchers.IO) {
-        dao.getAllRelations()
-            .filter { it.tagId == tag.userTag.id }
-            .forEach { dao.deleteRelation(it) }
-        dao.deleteTag(tag.userTag)
-        loadTags(dao)
+    suspend fun deleteTag(tag: TagAndUsers) {
+        repository.deleteTag(tag)
+        loadTags()
     }
 
     /** タグを更新 */
-    suspend fun updateTag(dao: UserTagDao, tag: Tag) = withContext(Dispatchers.IO) {
-        dao.updateTag(tag)
-        loadTags(dao)
+    suspend fun updateTag(tag: Tag) {
+        repository.updateTag(tag)
+        loadTags()
     }
 
     /** タグが存在するかを確認 */
-    suspend fun containsTag(dao: UserTagDao, tagName: String) : Boolean = withContext(Dispatchers.IO) {
-        tags.value?.any { it.userTag.name == tagName } == true
+    suspend fun containsTag(tagName: String) =
+        repository.containsTag(tagName)
+
+    /** ユーザーにタグをつける */
+    suspend fun addRelation(tag: Tag, user: User) {
+        repository.addRelation(tag, user)
+        loadTags()
     }
 
     /** ユーザーにタグをつける */
-    suspend fun addRelation(dao: UserTagDao, tag: Tag, user: User) = withContext(Dispatchers.IO) {
-        try {
-            dao.insertRelation(tag, user)
-            loadTags(dao)
-        }
-        catch (e: Exception) {
-            Log.d("UserTag", "deprecated relation: tag: ${tag.name}, user: ${user.name}")
-        }
-    }
-
-    /** ユーザーにタグをつける */
-    suspend fun addRelation(dao: UserTagDao, tag: Tag, userName: String) = withContext(Dispatchers.IO) {
-        try {
-            val user = dao.makeUser(userName)
-            dao.insertRelation(tag, user)
-            loadTags(dao)
-        }
-        catch (e: Exception) {
-            Log.d("UserTag", "deprecated relation: tag: ${tag.name}, user: $userName")
-        }
+    suspend fun addRelation(tag: Tag, userName: String) {
+        repository.addRelation(tag, userName)
+        loadTags()
     }
 
     /** ユーザーからタグを外す */
-    suspend fun deleteRelation(dao: UserTagDao, tag: Tag, user: User) = withContext(Dispatchers.IO) {
-        dao.findRelation(tag, user)?.let {
-            dao.deleteRelation(it)
-        }
-        loadTags(dao)
+    suspend fun deleteRelation(tag: Tag, user: User) {
+        repository.deleteRelation(tag, user)
+        loadTags()
+    }
+
+
+    // ViewModelProvidersを利用する一般的な使用法において、
+    // ファクトリを介してインスタンスを作成することでコンストラクタに引数を与える
+    class Factory(private val repository: UserTagRepository) : ViewModelProvider.NewInstanceFactory() {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>) =
+            UserTagViewModel(repository) as T
     }
 }

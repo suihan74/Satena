@@ -21,7 +21,6 @@ import com.suihan74.utilities.DividerItemDecorator
 import kotlinx.coroutines.launch
 
 class UserTagsListFragment : CoroutineScopeFragment() {
-    private lateinit var dao: UserTagDao
     private lateinit var model: UserTagViewModel
     private lateinit var mUserTagsAdapter : UserTagsAdapter
 
@@ -36,14 +35,14 @@ class UserTagsListFragment : CoroutineScopeFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        dao = SatenaApplication.instance.userTagDao
+
+        model = ViewModelProviders.of(parentFragment!!)[UserTagViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_user_tags_list, container, false)
 
         val parentFragment = parentFragment as PreferencesUserTagsFragment
-        model = ViewModelProviders.of(parentFragment)[UserTagViewModel::class.java]
 
         menuItems = arrayOf(
             getString(R.string.pref_user_tags_tag_menu_edit) to { t -> this@UserTagsListFragment.modifyItem(t) },
@@ -86,7 +85,7 @@ class UserTagsListFragment : CoroutineScopeFragment() {
     }
 
     private fun removeItem(tag: TagAndUsers) = launch {
-        model.deleteTag(dao, tag)
+        model.deleteTag(tag)
     }
 
     private fun modifyItem(tag: TagAndUsers) {

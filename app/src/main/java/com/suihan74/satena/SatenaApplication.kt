@@ -8,7 +8,6 @@ import android.os.Build
 import androidx.room.Room
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.satena.models.*
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryModule
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
 import com.suihan74.utilities.lock
@@ -29,10 +28,6 @@ class SatenaApplication : Application() {
 
     lateinit var appDatabase: AppDatabase
         private set
-
-    private lateinit var appComponent: AppComponent
-    val component
-        get() = appComponent
 
     init {
         instance = this
@@ -57,9 +52,9 @@ class SatenaApplication : Application() {
         initializeDataBase()
 
         // DI
-        appComponent = DaggerAppComponent.builder()
-            .ignoredEntryModule(IgnoredEntryModule(this))
-            .build()
+//        appComponent = DaggerAppComponent.builder()
+//            .ignoredEntryModule(IgnoredEntryModule(this))
+//            .build()
 
         // テーマの設定
         val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
