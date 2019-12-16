@@ -29,7 +29,7 @@ class UserTagViewModel(
 
     /** リストを取得 */
     suspend fun loadTags() {
-        tags.postValue(repository.load())
+        tags.postValue(repository.loadTags())
     }
 
     /** 選択中の現在表示中のタグ情報を更新 */

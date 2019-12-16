@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.HatenaClient
@@ -16,25 +17,29 @@ import com.suihan74.utilities.RecyclerType
 
 open class TaggedUsersAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states = RecyclerState.makeStatesWithFooter(emptyList<User>())
+    private var states = RecyclerState.makeStatesWithFooter(emptyList<User>())
 
     fun setItems(users: List<User>) {
-        states.clear()
-        states.addAll(users.map { RecyclerState(RecyclerType.BODY, it) })
-        notifyDataSetChanged()
-    }
+        val newStates = RecyclerState.makeStatesWithFooter(users)
+        val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = states.size
+            override fun getNewListSize() = newStates.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = states[oldItemPosition]
+                val new = newStates[newItemPosition]
+                return old.type == new.type && old.body?.id == new.body?.id
+            }
 
-    fun addItem(user: User) {
-        states.add(0, RecyclerState(RecyclerType.BODY, user))
-        notifyItemInserted(0)
-    }
-
-    fun removeItem(user: User) {
-        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body?.id == user.id }
-        if (position >= 0) {
-            states.removeAt(position)
-            notifyItemRemoved(position)
-        }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = states[oldItemPosition]
+                val new = newStates[newItemPosition]
+                return old.type == new.type &&
+                        old.body?.id == new.body?.id &&
+                        old.body?.name == new.body?.name
+            }
+        })
+        states = newStates
+        result.dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder =

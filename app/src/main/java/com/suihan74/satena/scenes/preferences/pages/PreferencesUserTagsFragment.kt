@@ -14,6 +14,7 @@ import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.models.userTag.UserTagDao
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersListFragment
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
@@ -22,6 +23,7 @@ import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.get
 import com.suihan74.utilities.showToast
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -46,30 +48,31 @@ class PreferencesUserTagsFragment :
         )
 
         model = ViewModelProviders.of(this, factory)[UserTagViewModel::class.java]
-        // 初期値をロード
-        launch {
-            model.loadTags()
-        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_preferences_user_tags, container, false)
 
-        // タグ一覧を表示
-        showUserTagsList()
-        if (model.currentTag.value != null) {
-            showTaggedUsersList()
-        }
+        // 初期値をロード
+        launch(Dispatchers.Main) {
+            model.loadTags()
 
-        root.findViewById<FloatingActionButton>(R.id.add_button).setOnClickListener {
-            val userTagsList = getCurrentFragment<UserTagsListFragment>()
-            if (userTagsList != null) {
-                showNewUserTagDialog()
+            // タグ一覧を表示
+            showUserTagsList()
+            if (model.currentTag.value != null) {
+                showTaggedUsersList()
             }
-            else {
-                val taggedUsersList = getCurrentFragment<TaggedUsersListFragment>()
-                if (taggedUsersList != null) {
-                    showNewTaggedUserDialog()
+
+            root.findViewById<FloatingActionButton>(R.id.add_button).setOnClickListener {
+                val userTagsList = getCurrentFragment<UserTagsListFragment>()
+                if (userTagsList != null) {
+                    showNewUserTagDialog()
+                }
+                else {
+                    val taggedUsersList = getCurrentFragment<TaggedUsersListFragment>()
+                    if (taggedUsersList != null) {
+                        showNewTaggedUserDialog()
+                    }
                 }
             }
         }

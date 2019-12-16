@@ -67,7 +67,7 @@ open class BookmarksAdapter(
 //        muteWords = ignoredEntries
 //            .filter { it.type == IgnoredEntryType.TEXT && it.target contains IgnoreTarget.BOOKMARK }
 //            .map { it.query }
-        muteWords = emptyList()
+        muteWords = fragment.ignoredWords
 
         mStates = RecyclerState.makeStatesWithFooter(bookmarks.filter { bookmark ->
             muteWords.none { word ->
@@ -77,7 +77,7 @@ open class BookmarksAdapter(
     }
 
     private fun isShowable(b: Bookmark) : Boolean {
-        val tags = fragment.taggedUsers?.firstOrNull { it.user.name == b.user }?.tags ?: emptyList()
+        val tags = fragment.taggedUsers.firstOrNull { it.user.name == b.user }?.tags ?: emptyList()
 
         return searchText.isBlank()
                 || b.user.contains(searchText)

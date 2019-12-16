@@ -9,8 +9,13 @@ class UserTagRepository(
     private val dao: UserTagDao
 ) {
     /** タグとそれが付いたユーザーリストを取得 */
-    suspend fun load() = withContext(Dispatchers.IO) {
+    suspend fun loadTags() = withContext(Dispatchers.IO) {
         dao.getAllTags().mapNotNull { dao.getTagAndUsers(it.name) }
+    }
+
+    /** タグが付いているユーザーのリストを取得 */
+    suspend fun loadUsers() = withContext(Dispatchers.IO) {
+        dao.getAllUsers().mapNotNull { dao.getUserAndTags(it.name) }
     }
 
     /** タグを追加 */

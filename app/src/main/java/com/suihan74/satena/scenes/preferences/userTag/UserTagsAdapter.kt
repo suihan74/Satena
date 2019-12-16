@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.TagAndUsers
@@ -13,34 +14,30 @@ import com.suihan74.utilities.RecyclerType
 
 open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states = RecyclerState.makeStatesWithFooter(emptyList<TagAndUsers>())
+    private var states = RecyclerState.makeStatesWithFooter(emptyList<TagAndUsers>())
 
     fun setItems(tags: List<TagAndUsers>) {
-        states.clear()
-        states.addAll(0, tags.map { RecyclerState(RecyclerType.BODY, it) })
-        notifyDataSetChanged()
-    }
+        val newStates = RecyclerState.makeStatesWithFooter(tags)
+        val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = states.size
+            override fun getNewListSize() = newStates.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = states[oldItemPosition]
+                val new = newStates[newItemPosition]
+                return old.type == new.type && old.body?.userTag?.id == new.body?.userTag?.id
+            }
 
-    fun addItem(tag: TagAndUsers) {
-        val position = states.size - 1
-        states.add(position, RecyclerState(RecyclerType.BODY, tag))
-        notifyItemInserted(position)
-    }
-
-    fun removeItem(tag: TagAndUsers) {
-        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body?.userTag?.id == tag.userTag.id }
-        if (position >= 0) {
-            states.removeAt(position)
-            notifyItemRemoved(position)
-        }
-    }
-
-    fun updateItem(tag: TagAndUsers) {
-        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body?.userTag?.id == tag.userTag.id }
-        if (position >= 0) {
-            states[position].body = tag
-            notifyItemChanged(position)
-        }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = states[oldItemPosition]
+                val new = newStates[newItemPosition]
+                return old.type == new.type &&
+                        old.body?.userTag?.id == new.body?.userTag?.id &&
+                        old.body?.userTag?.name == new.body?.userTag?.name &&
+                        old.body?.users?.size == new.body?.users?.size
+            }
+        })
+        states = newStates
+        result.dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder =

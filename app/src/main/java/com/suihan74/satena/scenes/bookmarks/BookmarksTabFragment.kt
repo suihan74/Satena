@@ -6,21 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
-import com.suihan74.satena.ActivityBase
-import com.suihan74.satena.R
-import com.suihan74.satena.TappedActionLauncher
+import com.suihan74.satena.*
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.BookmarkDialog
 import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
-import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
 import kotlinx.coroutines.*
 
@@ -34,20 +32,23 @@ abstract class BookmarksTabFragment :
     protected abstract fun isBookmarkShown(bookmark: Bookmark, fragment: BookmarksFragment) : Boolean
     protected abstract fun hideIgnoredBookmark(adapter: BookmarksAdapter, bookmark: Bookmark)
 
+    private lateinit var bookmarksViewModel: BookmarksViewModel
+
+    val ignoredWords
+        get() = bookmarksViewModel.ignoredWords.value ?: emptyList()
+
+    val taggedUsers
+        get() = bookmarksViewModel.taggedUsers.value ?: emptyList()
+
     private lateinit var mRecyclerView: RecyclerView
 
     private var mBookmarksAdapter: BookmarksAdapter? = null
     private var mTabType : BookmarksTabType = BookmarksTabType.RECENT
 
-    private var mIgnoredWords : List<String> = emptyList()
-
     private var mBookmarksUpdater : RecyclerViewScrollingUpdater? = null
 
     val bookmarksFragment
         get() = (activity as? BookmarksActivity)?.bookmarksFragment
-
-    val taggedUsers
-        get() = bookmarksFragment?.taggedUsers
 
     companion object {
         const val ARGS_KEY_TAB_TYPE = "mTabType"
@@ -56,15 +57,7 @@ abstract class BookmarksTabFragment :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // TODO: ignoredEntryをDBに移行
-/*
-        val ignoredEntriesPrefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
-        val ignoredEntries = ignoredEntriesPrefs.getNullable<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES) ?: emptyList()
-        mIgnoredWords = ignoredEntries
-            .filter { IgnoredEntryType.TEXT == it.type && it.target contains IgnoreTarget.BOOKMARK }
-            .map { it.query }
-*/
-        mIgnoredWords = emptyList()
+        bookmarksViewModel = ViewModelProviders.of(bookmarksFragment!!)[BookmarksViewModel::class.java]
 
         arguments!!.let {
             mTabType = BookmarksTabType.fromInt(it.getInt(ARGS_KEY_TAB_TYPE))
@@ -200,8 +193,10 @@ abstract class BookmarksTabFragment :
     }
 
     protected fun isBookmarkIgnored(bookmark: Bookmark) =
-        mIgnoredWords.any {
-            bookmark.user.contains(it) || bookmark.comment.contains(it) || bookmark.getTagsText(",").contains(it)
+        ignoredWords.any {
+            bookmark.user.contains(it) || bookmark.comment.contains(it) || bookmark.getTagsText(",").contains(
+                it
+            )
         }
 
     private fun isBookmarkShown(bookmark: Bookmark) : Boolean {
