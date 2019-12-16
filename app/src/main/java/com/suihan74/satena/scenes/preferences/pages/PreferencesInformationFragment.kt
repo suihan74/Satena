@@ -140,7 +140,6 @@ class PreferencesInformationFragment :
             try {
                 PreferencesMigrator.Output(context).run {
                     addPreference<PreferenceKey>()
-                    addPreference<IgnoredEntriesKey>()
                     addPreference<NoticesKey>()
                     addPreference<EntriesHistoryKey>()
                     addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME)

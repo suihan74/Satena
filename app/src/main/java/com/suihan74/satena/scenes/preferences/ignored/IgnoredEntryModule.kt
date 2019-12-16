@@ -12,5 +12,5 @@ class IgnoredEntryModule(private val app: SatenaApplication) {
 
     @Provides
     fun provideIgnoredEntryRepository() =
-        IgnoredEntryRepository()
+        IgnoredEntryRepository(provideIgnoredEntryDao())
 }

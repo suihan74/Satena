@@ -11,11 +11,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesAdapter
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryViewModel
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.showToast
@@ -34,7 +36,10 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        model = ViewModelProviders.of(this)[IgnoredEntryViewModel::class.java]
+        val vmFactory = IgnoredEntryViewModel.Factory(
+            IgnoredEntryRepository(SatenaApplication.instance.ignoredEntryDao)
+        )
+        model = ViewModelProviders.of(this, vmFactory)[IgnoredEntryViewModel::class.java]
         model.init()
     }
 

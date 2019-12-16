@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
@@ -13,15 +14,29 @@ import com.suihan74.utilities.RecyclerType
 
 open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states = RecyclerState.makeStatesWithFooter(emptyList<IgnoredEntry>())
+    private var states = RecyclerState.makeStatesWithFooter(emptyList<IgnoredEntry>())
 
     fun setItem(entries: List<IgnoredEntry>) {
-        states.run {
-            clear()
-            addAll(0, entries.map { RecyclerState(RecyclerType.BODY, it) })
-            add(RecyclerState(RecyclerType.FOOTER))
-        }
-        notifyDataSetChanged()
+        val newEntries = RecyclerState.makeStatesWithFooter(entries)
+
+        val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = states.size
+            override fun getNewListSize() = newEntries.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) : Boolean {
+                val old = states[oldItemPosition]
+                val new = newEntries[newItemPosition]
+                return old.type == new.type && old.body?.id == new.body?.id
+            }
+
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = states[oldItemPosition]
+                val new = newEntries[newItemPosition]
+                return old.type == new.type && old.body == new.body
+            }
+        })
+        states = newEntries
+
+        result.dispatchUpdatesTo(this)
     }
 
     fun addItem(entry: IgnoredEntry) {

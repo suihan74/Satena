@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.preferences.ignored
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
@@ -9,10 +10,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
-class IgnoredEntryViewModel : ViewModel() {
-    @Inject lateinit var repository: IgnoredEntryRepository
+class IgnoredEntryViewModel(
+    private val repository: IgnoredEntryRepository
+) : ViewModel() {
 
-    val entries: MutableLiveData<List<IgnoredEntry>> by lazy {
+    val entries by lazy {
         MutableLiveData<List<IgnoredEntry>>()
     }
 
@@ -23,26 +25,23 @@ class IgnoredEntryViewModel : ViewModel() {
     fun add(entry: IgnoredEntry) = viewModelScope.launch {
         val result = repository.add(entry)
         if (result != null) {
-            val items = entries.value
-            entries.postValue(
-                items?.plusElement(result) ?: listOf(result)
-            )
+            entries.postValue(repository.ignoredEntries)
         }
     }
 
     fun delete(entry: IgnoredEntry) = viewModelScope.launch {
         repository.delete(entry)
-        entries.postValue(
-            entries.value?.filterNot { it == entry }
-        )
+        entries.postValue(repository.ignoredEntries)
     }
 
     fun update(entry: IgnoredEntry) = viewModelScope.launch {
         repository.update(entry)
-        entries.postValue(repository.load())
+        entries.postValue(repository.ignoredEntries)
     }
 
-    init {
-        SatenaApplication.instance.component.inject(this)
+    class Factory(private val repository: IgnoredEntryRepository) : ViewModelProvider.NewInstanceFactory() {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>) =
+            IgnoredEntryViewModel(repository) as T
     }
 }

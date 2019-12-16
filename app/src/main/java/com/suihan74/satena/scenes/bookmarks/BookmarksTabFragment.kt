@@ -56,11 +56,15 @@ abstract class BookmarksTabFragment :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // TODO: ignoredEntryをDBに移行
+/*
         val ignoredEntriesPrefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
         val ignoredEntries = ignoredEntriesPrefs.getNullable<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES) ?: emptyList()
         mIgnoredWords = ignoredEntries
             .filter { IgnoredEntryType.TEXT == it.type && it.target contains IgnoreTarget.BOOKMARK }
             .map { it.query }
+*/
+        mIgnoredWords = emptyList()
 
         arguments!!.let {
             mTabType = BookmarksTabType.fromInt(it.getInt(ARGS_KEY_TAB_TYPE))

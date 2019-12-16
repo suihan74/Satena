@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
@@ -28,6 +29,7 @@ import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.entries.notices.NoticesFragment
 import com.suihan74.satena.scenes.entries.pages.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.hideSoftInputMethod
@@ -42,6 +44,9 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
     override val containerId = R.id.main_layout
     override val progressBarId = R.id.main_progress_bar
     override val progressBackgroundId = R.id.click_guard
+
+    lateinit var model: EntriesActivityViewModel
+        private set
 
     private lateinit var mDrawerToggle : ActionBarDrawerToggle
     private lateinit var mDrawer : DrawerLayout
@@ -95,6 +100,12 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // モデルのロード
+        val vmFactory = EntriesActivityViewModel.Factory(
+            IgnoredEntryRepository(SatenaApplication.instance.ignoredEntryDao)
+        )
+        model = ViewModelProviders.of(this, vmFactory)[EntriesActivityViewModel::class.java]
 
         // 設定ロード
         val prefs = SafeSharedPreferences.create<PreferenceKey>(applicationContext)
@@ -307,6 +318,8 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
 
     override fun onResume() {
         super.onResume()
+
+        model.load()
 
         closeFABMenu()
         // 設定を再読み込み

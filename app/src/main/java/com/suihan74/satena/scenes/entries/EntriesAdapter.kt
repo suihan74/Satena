@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -18,7 +19,10 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.TappedActionLauncher
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
-import com.suihan74.satena.models.*
+import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.EntriesTabType
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
@@ -35,24 +39,52 @@ open class EntriesAdapter(
     private var entries : List<Entry>
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states = RecyclerState.makeStatesWithFooter(entries)
+    private var states = RecyclerState.makeStatesWithFooter(entries)
 
     private lateinit var singleTapAction : TapEntryAction
     private lateinit var longTapAction : TapEntryAction
 
-    private val ignoredEntries = arrayListOf<IgnoredEntry>()
+    private val ignoredEntries : List<IgnoredEntry>
+        get() =
+            (fragment.activity as? EntriesActivity)?.model?.ignoredEntries?.value ?: emptyList()
 
     var entireOffset : Int = entries.size
         private set
     // getで動的にentries.size取得しないのは，非表示エントリなどによりentireOffset != entries.sizeになることがあるため
 
-
     init {
         refreshPreferences()
     }
 
+    class EntriesDiffCalculater(
+        private val oldStates: List<RecyclerState<Entry>>,
+        private val newStates: List<RecyclerState<Entry>>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize() = oldStates.size
+        override fun getNewListSize() = newStates.size
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) : Boolean {
+            val old = oldStates[oldItemPosition]
+            val new = newStates[newItemPosition]
+            return old.type == new.type && old.body?.id == new.body?.id
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val old = oldStates[oldItemPosition]
+            val new = newStates[newItemPosition]
+            return old.type == new.type &&
+                    old.body?.bookmarkedData == new.body?.bookmarkedData &&
+                    old.body?.id == new.body?.id &&
+                    old.body?.count == new.body?.count &&
+                    old.body?.title == new.body?.title
+        }
+    }
+
+    fun updateIgnoredEntries() {
+        setEntries(entries)
+    }
 
     fun setEntries(e: List<Entry>) {
+        /*
         states.clear()
         entireOffset = e.size
         entries = e.filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
@@ -61,17 +93,29 @@ open class EntriesAdapter(
             add(RecyclerState(RecyclerType.FOOTER))
         }
         notifyDataSetChanged()
+        */
+
+        val newEntries = e.filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
+        val newStates = RecyclerState.makeStatesWithFooter(newEntries)
+
+        entireOffset = e.size
+        entries = e
+
+        DiffUtil.calculateDiff(EntriesDiffCalculater(states, newStates)).run {
+            states = newStates
+            dispatchUpdatesTo(this@EntriesAdapter)
+        }
     }
 
     fun addEntries(e: List<Entry>) {
         val insertStartPosition = states.size - 1
         val newItems = e
             .filterNot { entry -> entries.any { it.id == entry.id } }
-            .filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
         entireOffset += e.size
         entries = entries.plus(newItems)
-        states.addAll(states.size - 1, newItems.map { RecyclerState(RecyclerType.BODY, it) })
-        notifyItemRangeInserted(insertStartPosition, newItems.size)
+        val filtered = newItems.filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
+        states.addAll(states.size - 1, filtered.map { RecyclerState(RecyclerType.BODY, it) })
+        notifyItemRangeInserted(insertStartPosition, filtered.size)
     }
 
     private fun refreshPreferences() {
@@ -81,7 +125,6 @@ open class EntriesAdapter(
 
         // TODO: ignoredEntryのDB化対応
 //        val ignoredEntriesPrefs = SafeSharedPreferences.create<IgnoredEntriesKey>(fragment.context)
-        ignoredEntries.clear()
 //        ignoredEntriesPrefs.getObject<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES)?.let {
 //            ignoredEntries.addAll(it)
 //        }
@@ -223,16 +266,21 @@ open class EntriesAdapter(
             }
 
             // TODO: ignoredEntryのDB化対応
-            /*
-            ignoredEntries.add(ignoredEntry)
+            fragment.launch(Dispatchers.Main) {
+                val activity = fragment.activity as? EntriesActivity
+                activity?.model?.addIgnoredEntry(ignoredEntry)?.join()
+                /*
+                ignoredEntries.add(ignoredEntry)
 
-            val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
-            prefs.edit {
-                putObject(IgnoredEntriesKey.IGNORED_ENTRIES, ignoredEntries)
-            }*/
+                val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
+                prefs.edit {
+                    putObject(IgnoredEntriesKey.IGNORED_ENTRIES, ignoredEntries)
+                }*/
 
-            setEntries(entries)
-            context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
+//                setEntries(entries)
+                context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
+            }
+
             return@createInstance true
         }
         dialog.show(fragment.fragmentManager!!, "IgnoredEntryDialogFragment")

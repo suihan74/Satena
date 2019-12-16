@@ -4,11 +4,13 @@ import com.suihan74.HatenaLib.Entry
 import org.threeten.bp.LocalDateTime
 import java.io.Serializable
 
+@Deprecated("DBに移行")
 enum class IgnoredEntryType {
     TEXT,
     URL
 }
 
+@Deprecated("DBに移行")
 enum class IgnoreTarget(val int: Int) {
     NONE(0),
     ENTRY(1),
@@ -23,6 +25,7 @@ enum class IgnoreTarget(val int: Int) {
     infix fun contains(other: IgnoreTarget) : Boolean = 0 != (int and other.int)
 }
 
+@Deprecated("DBに移行")
 data class IgnoredEntry (
     val type: IgnoredEntryType,
     val query: String,
