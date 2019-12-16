@@ -197,7 +197,7 @@ open class BookmarkDialog : DialogFragment() {
                     val bookmarksFragment = activity.bookmarksFragment!!
                     bookmarksFragment.launch(Dispatchers.IO) {
                         val userName = bookmark.user
-                        val dao = SatenaApplication.instance.getUserTagDao()
+                        val dao = SatenaApplication.instance.userTagDao
                         val user = dao.makeUser(userName)
                         val tags = bookmarksFragment.tags!!.map { it.userTag }
 
@@ -213,19 +213,14 @@ open class BookmarkDialog : DialogFragment() {
                             }
                         }
 
-                        bookmarksFragment.taggedUsers = dao.getAllUsers().mapNotNull {
-                            dao.getUserAndTags(it.name)
-                        }
-                        bookmarksFragment.tags = dao.getAllTags().mapNotNull {
-                            dao.getTagAndUsers(it.name)
-                        }
+                        bookmarksFragment.viewModel.loadTags()
 
-                        val userAndTags = dao.getUserAndTags(userName)
+                        val userAndTags = bookmarksFragment.taggedUsers.firstOrNull { it.user.name == userName }
 
                         withContext(Dispatchers.Main) {
                             activity.showToast(
                                 R.string.msg_user_tagged,
-                                user.name,
+                                userName,
                                 userAndTags?.tags?.size ?: 0
                             )
                             listener?.onTagUser(bookmark)
@@ -248,7 +243,7 @@ open class BookmarkDialog : DialogFragment() {
                 dialog: UserTagDialogFragment
             ) : Boolean = withContext(Dispatchers.IO) {
 
-                val dao = SatenaApplication.instance.getUserTagDao()
+                val dao = SatenaApplication.instance.userTagDao
 
                 if (dao.findTag(tagName) != null) {
                     withContext(Dispatchers.Main) {
@@ -267,12 +262,7 @@ open class BookmarkDialog : DialogFragment() {
                         dao.insertRelation(tag, user)
 
                         val bookmarksFragment = activity.bookmarksFragment!!
-                        bookmarksFragment.taggedUsers = dao.getAllUsers().mapNotNull {
-                            dao.getUserAndTags(it.name)
-                        }
-                        bookmarksFragment.tags = dao.getAllTags().mapNotNull {
-                            dao.getTagAndUsers(it.name)
-                        }
+                        bookmarksFragment.viewModel.loadTags()
 
                         withContext(Dispatchers.Main) {
                             activity.showToast(

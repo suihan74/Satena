@@ -6,7 +6,13 @@ import java.io.Serializable
 /**
  * ユーザータグ
  */
-@Entity(tableName = "user_tag")
+@Entity(
+    tableName = "user_tag",
+    indices = [
+        Index(value = ["id"], name = "tag_id", unique = true),
+        Index(value = ["name"], name = "tag_name", unique = true)
+    ]
+)
 data class Tag (
     var name: String,
 
@@ -17,7 +23,13 @@ data class Tag (
 /**
  * ユーザー
  */
-@Entity(tableName = "user_tag_user")
+@Entity(
+    tableName = "user_tag_user",
+    indices = [
+        Index(value = ["id"], name = "user_id", unique = true),
+        Index(value = ["name"], name = "user_name", unique = true)
+    ]
+)
 data class User (
     var name: String,
 
@@ -34,15 +46,19 @@ data class User (
     foreignKeys = [
         ForeignKey(
             entity = Tag::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("tag_id"),
+            parentColumns = ["id"],
+            childColumns = ["tag_id"],
             onDelete = ForeignKey.CASCADE),
         ForeignKey(
             entity = User::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("user_id"),
+            parentColumns = ["id"],
+            childColumns = ["user_id"],
             onDelete = ForeignKey.CASCADE)
-    ])
+    ],
+    indices = [
+        Index(value = ["user_id", "tag_id"], name = "relation_tag_id_user_id", unique = true)
+    ]
+)
 class TagAndUserRelation : Serializable {
     constructor(tagId: Int, userId: Int) {
         this.tagId = tagId

@@ -81,7 +81,7 @@ class StarsTabFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener 
             addItemDecoration(dividerItemDecoration)
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
-            mStarsAdapter = object : StarsAdapter(context, mBookmark, starsMap, allBookmarks, mStarsTabMode) {
+            mStarsAdapter = object : StarsAdapter(context, mBookmarksFragment!!, mBookmark, starsMap, allBookmarks, mStarsTabMode) {
                 override fun removeItem(user: String) {
                     super.removeItem(user)
                     launch(Dispatchers.Main) {

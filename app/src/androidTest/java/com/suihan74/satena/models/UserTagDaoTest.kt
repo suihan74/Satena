@@ -14,7 +14,7 @@ import org.junit.runner.RunWith
 
 @Suppress("NonAsciiCharacters")
 @RunWith(AndroidJUnit4ClassRunner::class)
-class AppDatabaseTest {
+class UserTagDaoTest {
     // Context of the app under test.
     private val appContext = InstrumentationRegistry.getInstrumentation().targetContext
     private val db =

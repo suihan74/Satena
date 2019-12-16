@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.bookmarks
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.os.Parcelable
 import android.text.Editable
 import android.text.TextWatcher
 import android.transition.Fade
@@ -19,6 +18,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.appbar.AppBarLayout
@@ -35,8 +35,9 @@ import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks.information.EntryInformationFragment
 import com.suihan74.satena.scenes.bookmarks.tabs.CustomBookmarksTabFragment
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
+import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
-import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
 import java.net.SocketTimeoutException
@@ -46,23 +47,10 @@ class BookmarksFragment :
     CoroutineScopeFragment(),
     BackPressable
 {
-    @Parcelize
-    private data class SavableData (
-        val entry: Entry,
-        val bookmarksEntry: BookmarksEntry?,
-        val bookmarksDigest: BookmarksDigest?,
-        val bookmarksRecent: List<Bookmark>,
-        val starsMap: HashMap<String, StarsEntry>,
-        val tabPosition: Int,
-        val searchModeEnabled: Boolean
-    ) : Parcelable
-
     private lateinit var mRoot : View
     private lateinit var mDrawer : DrawerLayout
     private lateinit var mTabLayout : TabLayout
     private var mTabPager : ViewPager? = null
-    private var mCurrentTabPosition : Int = 0
-    private var mSearchModeEnabled : Boolean = false
 
     private lateinit var mFABs : Array<FloatingActionButton>
     private lateinit var mBookmarkButton : TextFloatingActionButton
@@ -73,11 +61,6 @@ class BookmarksFragment :
     private var mAreScrollButtonsVisible = false
     private var mIsHidingButtonsByScrollEnabled : Boolean = true
 
-    private var mEntry : Entry = Entry.createEmpty()
-    private var mStarsMap : HashMap<String, StarsEntry>? = null
-    private var mBookmarksDigest : BookmarksDigest? = null
-    private var mBookmarksRecent : List<Bookmark> = emptyList()
-
     // ロード完了と同時に詳細画面に遷移する場合の対象ユーザー
     private var mTargetUser : String? = null
 
@@ -85,29 +68,39 @@ class BookmarksFragment :
     private var mPreLoadingTasks : BookmarksActivity.PreLoadingTasks? = null
     private var mFetchStarsTasks = WeakHashMap<String, Deferred<Unit>>()
 
-    val entry : Entry
-        get() = mEntry
-
-    var bookmarksEntry : BookmarksEntry? = null
+    /** ViewModel */
+    lateinit var viewModel: BookmarksViewModel
         private set
+
+    val entry : Entry
+        get() = viewModel.entry
+
+    var bookmarksEntry : BookmarksEntry?
+        get() = viewModel.bookmarksEntry
+        private set(value) {
+            viewModel.bookmarksEntry = value
+        }
 
     val bookmarksTabAdapter : BookmarksTabAdapter?
         get() = mTabPager?.adapter as? BookmarksTabAdapter
 
     val popularBookmarks
-        get() = mBookmarksDigest?.scoredBookmarks?.map { Bookmark.createFrom(it) } ?: emptyList()
+        get() = viewModel.bookmarksDigest?.scoredBookmarks?.map { Bookmark.createFrom(it) } ?: emptyList()
 
     val recentBookmarks
-        get() = mBookmarksRecent
+        get() = viewModel.bookmarksRecent
 
     val starsMap : Map<String, StarsEntry>
-        get() = lock(mStarsMap) { mStarsMap!! }
+        get() = lock(viewModel) { viewModel.starsMap }
 
     var ignoredUsers : Set<String> = emptySet()
         private set
 
-    var tags: List<TagAndUsers>? = null
-    var taggedUsers: List<UserAndTags>? = null
+    val tags: List<TagAndUsers>
+        get() = viewModel.userTags.value ?: emptyList()
+
+    val taggedUsers: List<UserAndTags>
+        get() = viewModel.taggedUsers.value ?: emptyList()
 
     val bookmarked : Boolean
         get() {
@@ -119,21 +112,26 @@ class BookmarksFragment :
     fun getFetchStarsTask(user: String) = mFetchStarsTasks[user]
 
     override val title: String
-        get() = mEntry.title
+        get() = (arguments?.getSerializable(ARG_ENTRY) as? Entry)?.title ?: ""
 
     companion object {
         fun createInstance(entry: Entry, preLoadingTasks: BookmarksActivity.PreLoadingTasks? = null) = BookmarksFragment().apply {
-            mEntry = entry
+            arguments = Bundle().apply {
+                putSerializable(ARG_ENTRY, entry)
+            }
             mPreLoadingTasks = preLoadingTasks
         }
 
         fun createInstance(entry: Entry, targetUser: String? = null, preLoadingTasks: BookmarksActivity.PreLoadingTasks? = null) = BookmarksFragment().apply {
-            mEntry = entry
-            mTargetUser = targetUser
+            arguments = Bundle().apply {
+                putSerializable(ARG_ENTRY, entry)
+                putString(ARG_TARGET_USER, targetUser)
+            }
             mPreLoadingTasks = preLoadingTasks
         }
 
-        private const val BUNDLE_SAVABLE_DATA = "savableData"
+        private const val ARG_ENTRY = "ARG_ENTRY"
+        private const val ARG_TARGET_USER = "ARG_TARGET_USER"
     }
 
     private fun getSubTitle(bookmarks: List<Bookmark>) : String {
@@ -142,46 +140,24 @@ class BookmarksFragment :
         else "${bookmarks.size} user${if (bookmarks.size == 1) "" else "s"}  ($commentsCount comment${if (commentsCount == 1) "" else "s"})"
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        val data = SavableData(
-            entry = mEntry,
-            bookmarksEntry = bookmarksEntry,
-            bookmarksDigest = mBookmarksDigest,
-            bookmarksRecent = mBookmarksRecent,
-            starsMap = mStarsMap ?: HashMap(),
-            tabPosition = mCurrentTabPosition,
-            searchModeEnabled = mSearchModeEnabled
-        )
-        outState.apply {
-            putParcelable(BUNDLE_SAVABLE_DATA, data)
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enterTransition = TransitionSet().addTransition(Fade())
+
+        val factory = BookmarksViewModel.Factory(
+            IgnoredEntryRepository(SatenaApplication.instance.ignoredEntryDao),
+            UserTagRepository(SatenaApplication.instance.userTagDao)
+        )
+        viewModel = ViewModelProviders.of(this, factory)[BookmarksViewModel::class.java]
+        viewModel.entry = arguments!!.getSerializable(ARG_ENTRY) as Entry
 
         // 設定のロード
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         mIsHidingButtonsByScrollEnabled = prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
 
-        var starsMap: HashMap<String, StarsEntry>? = null
-        var currentTabPosition: Int? = null
-        savedInstanceState?.run {
-            getParcelable<SavableData>(BUNDLE_SAVABLE_DATA)!!.let {
-                mEntry = it.entry
-                bookmarksEntry = it.bookmarksEntry
-                mBookmarksRecent = it.bookmarksRecent
-                mBookmarksDigest = it.bookmarksDigest
-                starsMap = it.starsMap
-                currentTabPosition = it.tabPosition
-                mSearchModeEnabled = it.searchModeEnabled
-            }
-        }
-
-        mStarsMap = starsMap ?: HashMap()
-        mCurrentTabPosition = currentTabPosition ?: prefs.getInt(PreferenceKey.BOOKMARKS_INITIAL_TAB)
+        viewModel.tabPosition =
+            if (viewModel.tabPosition >= 0) viewModel.tabPosition
+            else prefs.getInt(PreferenceKey.BOOKMARKS_INITIAL_TAB)
     }
 
     @SuppressLint("RestrictedApi")
@@ -191,7 +167,7 @@ class BookmarksFragment :
 
         // ツールバーの設定
         root.findViewById<Toolbar>(R.id.bookmarks_toolbar).apply {
-            title = mEntry.title
+            title = entry.title
         }
 
         // メインコンテンツの設定
@@ -201,7 +177,7 @@ class BookmarksFragment :
             setupWithViewPager(tabPager)
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
-                    mCurrentTabPosition = tab!!.position
+                    viewModel.tabPosition = tab!!.position
 
                     // 以下の事象を防ぐため，タブ切り替え時に必ずFABを表示する
                     // case: スクロールでFABを隠した後，スクロールできないタブに切り替えるとそのタブでFABが表示できなくなる
@@ -298,23 +274,17 @@ class BookmarksFragment :
 
         // ブコメリストの初期化
         launch(Dispatchers.IO) {
-            // ユーザータグをロード
-            val dao = SatenaApplication.instance.getUserTagDao()
-            taggedUsers = dao.getAllUsers().mapNotNull {
-                dao.getUserAndTags(it.name)
-            }
-            tags = dao.getAllTags().mapNotNull {
-                dao.getTagAndUsers(it.name)
-            }
+            // ViewModelを初期化
+            viewModel.init()
 
             withContext(Dispatchers.Main) {
                 if (savedInstanceState == null && bookmarksEntry == null) {
                     showProgressBar()
-                    initializeBookmarks(mCurrentTabPosition)
+                    initializeBookmarks(viewModel.tabPosition)
                 }
                 else {
                     hideProgressBar(withAnimation = false)
-                    restoreBookmarks(mCurrentTabPosition)
+                    restoreBookmarks(viewModel.tabPosition)
                 }
             }
         }
@@ -352,7 +322,7 @@ class BookmarksFragment :
                     false
                 }
                 else {
-                    mBookmarksDigest?.scoredBookmarks?.any { it.user == user } ?: false
+                    viewModel.bookmarksDigest?.scoredBookmarks?.any { it.user == user } ?: false
                 }
             }
             else {
@@ -387,7 +357,7 @@ class BookmarksFragment :
     private fun showFabs() {
         val buttons = scrollButtons
         mFABs.forEach {
-            if (it != mSettingsButton || mCurrentTabPosition == BookmarksTabType.CUSTOM.ordinal) {
+            if (it != mSettingsButton || viewModel.tabPosition == BookmarksTabType.CUSTOM.ordinal) {
                 it.show()
             }
             else {
@@ -492,12 +462,12 @@ class BookmarksFragment :
     @SuppressLint("RestrictedApi")
     private fun initializeFABs() {
         val searchEditText = mRoot.findViewById<EditText>(R.id.bookmarks_search_text).apply {
-            visibility = mSearchModeEnabled.toVisibility()
+            visibility = viewModel.searchModeEnabled.toVisibility()
         }
 
         mSearchButton.setOnClickListener {
-            mSearchModeEnabled = !mSearchModeEnabled
-            searchEditText.visibility = mSearchModeEnabled.toVisibility()
+            viewModel.searchModeEnabled = !viewModel.searchModeEnabled
+            searchEditText.visibility = viewModel.searchModeEnabled.toVisibility()
 
             if (searchEditText.visibility == View.GONE) {
                 searchEditText.text.clear()
@@ -521,7 +491,7 @@ class BookmarksFragment :
         }
 
         mSettingsButton.apply {
-            if (mCurrentTabPosition != BookmarksTabType.CUSTOM.ordinal) {
+            if (viewModel.tabPosition != BookmarksTabType.CUSTOM.ordinal) {
                 hide()
             }
 
@@ -557,12 +527,12 @@ class BookmarksFragment :
                 val ignoredUsersTask = HatenaClient.getIgnoredUsersAsync()
                 val bookmarksEntryTask =
                     mPreLoadingTasks?.bookmarksTask ?: HatenaClient.getBookmarksEntryAsync(
-                        mEntry.url
+                        entry.url
                     )
                 val digestBookmarksTask = mPreLoadingTasks?.bookmarksDigestTask
-                    ?: HatenaClient.getDigestBookmarksAsync(mEntry.url)
+                    ?: HatenaClient.getDigestBookmarksAsync(entry.url)
                 val recentBookmarksTask = mPreLoadingTasks?.bookmarksRecentTask
-                    ?: HatenaClient.getRecentBookmarksAsync(mEntry.url)
+                    ?: HatenaClient.getRecentBookmarksAsync(entry.url)
 
                 // recent bookmarksの取得をここまでロードした分までで中止する
                 BookmarksActivity.stopPreLoading()
@@ -576,21 +546,21 @@ class BookmarksFragment :
 
                 ignoredUsers = ignoredUsersTask.await().toSet()
                 bookmarksEntry = bookmarksEntryTask.await()
-                mBookmarksDigest = digestBookmarksTask.await()
+                viewModel.bookmarksDigest = digestBookmarksTask.await()
 
                 val recents = recentBookmarksTask.await()
-                mBookmarksRecent = makeBookmarksRecent(recents.map { Bookmark.createFrom(it) })
+                viewModel.bookmarksRecent = makeBookmarksRecent(recents.map { Bookmark.createFrom(it) })
             }
             catch (e: Exception) {
                 Log.d("failedToFetchBookmarks", e.message)
                 if (bookmarksEntry == null) {
-                    bookmarksEntry = BookmarksEntry(mEntry.id, mEntry.title, mEntry.count, mEntry.url, mEntry.url, mEntry.imageUrl, emptyList())
+                    bookmarksEntry = BookmarksEntry(entry.id, entry.title, entry.count, entry.url, entry.url, entry.imageUrl, emptyList())
                 }
             }
 
             val entryInfoFragment =
                 EntryInformationFragment.createInstance(
-                    mEntry,
+                    entry,
                     bookmarksEntry
                 )
             mDrawer = mRoot.findViewById(R.id.bookmarks_drawer_layout)
@@ -696,7 +666,7 @@ class BookmarksFragment :
 
         val entryInfoFragment =
             EntryInformationFragment.createInstance(
-                mEntry,
+                entry,
                 bookmarksEntry
             )
         mDrawer = mRoot.findViewById(R.id.bookmarks_drawer_layout)
@@ -729,7 +699,7 @@ class BookmarksFragment :
     }
 
     private fun makeBookmarksRecent(recentBookmarks: List<Bookmark>) =
-        mBookmarksRecent
+        recentBookmarks
             .plus(recentBookmarks)
             .distinctBy { it.user }
             .sortedByDescending { it.timestamp }
@@ -739,16 +709,16 @@ class BookmarksFragment :
         var of: Long? = null
         try {
             while (true) {
-                val response = HatenaClient.getRecentBookmarksAsync(mEntry.url, of = of).await()
+                val response = HatenaClient.getRecentBookmarksAsync(entry.url, of = of).await()
 
-                if (mBookmarksRecent.isEmpty()) {
+                if (recentBookmarks.isEmpty()) {
                     recentBookmarks.addAll(response)
                     break
                 }
 
                 recentBookmarks.addAll(response)
 
-                val existedLatest = mBookmarksRecent.first()
+                val existedLatest = recentBookmarks.first()
                 val responseLast = response.lastOrNull()
                 if ((responseLast?.timestamp ?: LocalDateTime.MIN) <= existedLatest.timestamp) break
                 if (response.isEmpty()) break
@@ -766,22 +736,22 @@ class BookmarksFragment :
             startUpdateStarsMap(bookmarks)
         }
 
-        mBookmarksRecent = makeBookmarksRecent(bookmarks)
+        viewModel.bookmarksRecent = makeBookmarksRecent(bookmarks)
     }
 
     suspend fun getNextBookmarks() : List<Bookmark> {
-        if (mBookmarksRecent.isEmpty()) return emptyList()
-        if (mBookmarksRecent.last().timestamp <= bookmarksEntry!!.bookmarks.last().timestamp) return emptyList()
+        if (recentBookmarks.isEmpty()) return emptyList()
+        if (recentBookmarks.last().timestamp <= bookmarksEntry!!.bookmarks.last().timestamp) return emptyList()
 
         try {
-            val of = mBookmarksRecent.size - 1L
-            val response = HatenaClient.getRecentBookmarksAsync(mEntry.url, of = of).await()
+            val of = recentBookmarks.size - 1L
+            val response = HatenaClient.getRecentBookmarksAsync(entry.url, of = of).await()
 
             val newer = response
-                .filterNot { mBookmarksRecent.any { exists -> exists.user == it.user } }
+                .filterNot { recentBookmarks.any { exists -> exists.user == it.user } }
                 .map { Bookmark.createFrom(it) }
 
-            mBookmarksRecent = makeBookmarksRecent(newer)
+            viewModel.bookmarksRecent = makeBookmarksRecent(newer)
 
             return newer
         }
@@ -792,12 +762,11 @@ class BookmarksFragment :
     }
 
     suspend fun updateStar(bookmark: Bookmark) {
-        val url = bookmark.getBookmarkUrl(mEntry)
+        val url = bookmark.getBookmarkUrl(entry)
         try {
             val starsEntry = HatenaClient.getStarsEntryAsync(url).await()
-            lock(mStarsMap) {
-                val starsMap = mStarsMap!!
-                starsMap[bookmark.user] = starsEntry
+            lock(viewModel) {
+                viewModel.starsMap[bookmark.user] = starsEntry
             }
         }
         catch (e: Exception) {
@@ -815,7 +784,7 @@ class BookmarksFragment :
             }
 
         val urls = list
-            .map { it.getBookmarkUrl(mEntry) }
+            .map { it.getBookmarkUrl(entry) }
 
         if (urls.isEmpty()) return
 
@@ -823,11 +792,10 @@ class BookmarksFragment :
             for (i in 1..5) {
                 try {
                     val entries = HatenaClient.getStarsEntryAsync(urls).await()
-                    lock(mStarsMap) {
-                        val starsMap = mStarsMap!!
+                    lock(viewModel) {
                         for (b in bookmarks) {
-                            starsMap[b.user] =
-                                entries.firstOrNull { it.url == b.getBookmarkUrl(mEntry) }
+                            viewModel.starsMap[b.user] =
+                                entries.firstOrNull { it.url == b.getBookmarkUrl(entry) }
                                     ?: continue
                         }
                     }
@@ -847,8 +815,8 @@ class BookmarksFragment :
     // ブックマーク取得
     fun refreshBookmarksAsync() = async(Dispatchers.Main) {
         val getIgnoredUsersTask = HatenaClient.getIgnoredUsersAsync()
-        val getBookmarksEntryTask = HatenaClient.getBookmarksEntryAsync(mEntry.url)
-        val getDigestBookmarksTask = HatenaClient.getDigestBookmarksAsync(mEntry.url)
+        val getBookmarksEntryTask = HatenaClient.getBookmarksEntryAsync(entry.url)
+        val getDigestBookmarksTask = HatenaClient.getDigestBookmarksAsync(entry.url)
         val updateRecentBookmarksTask = updateRecentBookmarksAsync()
 
         val tasks = listOf(
@@ -861,7 +829,7 @@ class BookmarksFragment :
 
         ignoredUsers = getIgnoredUsersTask.await().toSet()
         bookmarksEntry = getBookmarksEntryTask.await()
-        mBookmarksDigest = getDigestBookmarksTask.await()
+        viewModel.bookmarksDigest = getDigestBookmarksTask.await()
 
         if (bookmarksEntry != null) {
 //            val activity = activity as ActivityBase
@@ -927,7 +895,7 @@ class BookmarksFragment :
             starCount = emptyList()
         )
 
-        mEntry = entry.plusBookmarkedData(result)
+        viewModel.entry = entry.plusBookmarkedData(result)
         addBookmark(bookmark)
     }
 
@@ -944,15 +912,15 @@ class BookmarksFragment :
                 bookmarks = plusBookmarkToList(bookmark, be.bookmarks))
         }
 
-        if (mBookmarksDigest != null) {
-            val bd = mBookmarksDigest!!
-            mBookmarksDigest = BookmarksDigest(
+        if (viewModel.bookmarksDigest != null) {
+            val bd = viewModel.bookmarksDigest!!
+            viewModel.bookmarksDigest = BookmarksDigest(
                 referredBlogEntries = bd.referredBlogEntries,
                 scoredBookmarks = plusBookmarkToDigest(bookmark, bd.scoredBookmarks),
                 favoriteBookmarks = bd.favoriteBookmarks)
         }
 
-        mBookmarksRecent = plusBookmarkToList(bookmark, mBookmarksRecent)
+        viewModel.bookmarksRecent = plusBookmarkToList(bookmark, viewModel.bookmarksRecent)
     }
 
     suspend fun removeBookmark(user: String) = withContext(Dispatchers.Default) {
@@ -968,16 +936,16 @@ class BookmarksFragment :
                 bookmarks = be.bookmarks.filterNot { it.user == user })
         }
 
-        if (mBookmarksDigest != null) {
-            val bd = mBookmarksDigest!!
-            mBookmarksDigest = BookmarksDigest(
+        if (viewModel.bookmarksDigest != null) {
+            val bd = viewModel.bookmarksDigest!!
+            viewModel.bookmarksDigest = BookmarksDigest(
                 referredBlogEntries = bd.referredBlogEntries,
                 scoredBookmarks = bd.scoredBookmarks.filterNot { it.user == user },
                 favoriteBookmarks = bd.favoriteBookmarks.filterNot { it.user == user }
             )
         }
 
-        mBookmarksRecent = mBookmarksRecent.filterNot { it.user == user }
+        viewModel.bookmarksRecent = viewModel.bookmarksRecent.filterNot { it.user == user }
     }
 
     fun updateUI() {
@@ -999,7 +967,7 @@ class BookmarksFragment :
             if (searchText.visibility == View.VISIBLE) {
                 searchText.setText("")
                 searchText.visibility = View.GONE
-                mSearchModeEnabled = false
+                viewModel.searchModeEnabled = false
                 return true
             }
         }

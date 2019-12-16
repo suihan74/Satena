@@ -6,6 +6,7 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Build
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.satena.models.*
 import com.suihan74.utilities.SafeSharedPreferences
@@ -51,6 +52,11 @@ class SatenaApplication : Application() {
         // DBを準備する
         initializeDataBase()
 
+        // DI
+//        appComponent = DaggerAppComponent.builder()
+//            .ignoredEntryModule(IgnoredEntryModule(this))
+//            .build()
+
         // テーマの設定
         val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
         if (isThemeDark) {
@@ -78,12 +84,17 @@ class SatenaApplication : Application() {
     fun initializeDataBase() {
         // DBを準備する
         appDatabase = Room.databaseBuilder(this, AppDatabase::class.java, APP_DATABASE_FILE_NAME)
+            .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
             .build()
     }
 
-    /** ユーザータグDBへのアクセスオブジェクトを取得する */
-    fun getUserTagDao() =
-        appDatabase.userTagDao()
+    /** ユーザータグDBへのアクセスオブジェクトを取得 */
+    val userTagDao
+        get() = appDatabase.userTagDao()
+
+    /** 非表示エントリDBへのアクセスオブジェクトを取得 */
+    val ignoredEntryDao
+        get() = appDatabase.ignoredEntryDao()
 
     /** 各種設定のバージョン移行が必要か確認 */
     fun updatePreferencesVersion() {

@@ -61,12 +61,13 @@ open class BookmarksAdapter(
         showIgnoredUsersMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
         showIgnoredUsersInAll = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS)
 
-        val ignorePrefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
-        val ignoredEntries = ignorePrefs.get<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES)
-
-        muteWords = ignoredEntries
-            .filter { it.type == IgnoredEntryType.TEXT && it.target contains IgnoreTarget.BOOKMARK }
-            .map { it.query }
+        // TODO: ignoredEntriesをDBに移行
+//        val ignorePrefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
+//        val ignoredEntries = ignorePrefs.get<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES)
+//        muteWords = ignoredEntries
+//            .filter { it.type == IgnoredEntryType.TEXT && it.target contains IgnoreTarget.BOOKMARK }
+//            .map { it.query }
+        muteWords = fragment.ignoredWords
 
         mStates = RecyclerState.makeStatesWithFooter(bookmarks.filter { bookmark ->
             muteWords.none { word ->
@@ -76,7 +77,7 @@ open class BookmarksAdapter(
     }
 
     private fun isShowable(b: Bookmark) : Boolean {
-        val tags = fragment.taggedUsers?.firstOrNull { it.user.name == b.user }?.tags ?: emptyList()
+        val tags = fragment.taggedUsers.firstOrNull { it.user.name == b.user }?.tags ?: emptyList()
 
         return searchText.isBlank()
                 || b.user.contains(searchText)
