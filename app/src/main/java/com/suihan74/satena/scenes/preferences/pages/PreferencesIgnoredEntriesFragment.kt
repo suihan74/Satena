@@ -58,7 +58,7 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
         mIgnoredEntriesAdapter = object : IgnoredEntriesAdapter() {
             override fun onItemClicked(entry: IgnoredEntry) {
                 val dialog = IgnoredEntryDialogFragment.createInstance(entry) { modified ->
-                    if (model.entries.value?.contains(modified) == true) {
+                    if (entry.query != modified.query && model.entries.value?.contains(modified) == true) {
                         context?.showToast(R.string.msg_ignored_entry_dialog_already_existed)
                         return@createInstance false
                     }

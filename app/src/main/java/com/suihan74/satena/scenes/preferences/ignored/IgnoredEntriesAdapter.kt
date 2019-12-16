@@ -31,7 +31,10 @@ open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
                 val old = states[oldItemPosition]
                 val new = newEntries[newItemPosition]
-                return old.type == new.type && old.body == new.body
+                return old.type == new.type &&
+                        old.body?.type == new.body?.type &&
+                        old.body?.query == new.body?.query &&
+                        old.body?.target == new.body?.target
             }
         })
         states = newEntries

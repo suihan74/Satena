@@ -216,11 +216,13 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         }
 
         // 非表示対象を複数チェックボックスを使用して設定する
+        val initialIgnoreTarget = modifyingEntry?.target ?: IgnoreTarget.ENTRY
         val onCheckedChange = {
             model.ignoreTarget.postValue(getIgnoreTarget(content))
         }
         content.findViewById<CheckBox>(R.id.target_entry_checkbox).setOnCheckedChangeListener { _, _ -> onCheckedChange() }
         content.findViewById<CheckBox>(R.id.target_bookmark_checkbox).setOnCheckedChangeListener { _, _ -> onCheckedChange() }
+        setIgnoreTarget(content, initialIgnoreTarget)
 
         return AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setTitle(R.string.ignored_entry_dialog_title)

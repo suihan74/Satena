@@ -11,14 +11,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
-import com.suihan74.satena.models.IgnoreTarget
-import com.suihan74.satena.models.IgnoredEntriesKey
-import com.suihan74.satena.models.IgnoredEntry
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks.BookmarksFragment
 import com.suihan74.utilities.*
 
 open class StarsAdapter(
     private val context : Context,
+    fragment : BookmarksFragment,
     private val bookmark : Bookmark,
     private var starsMap : Map<String, StarsEntry>,
     private val bookmarks : List<Bookmark>,
@@ -34,7 +33,7 @@ open class StarsAdapter(
         }
     }
 
-    private val muteWords : List<String>
+    private val muteWords : List<String> = fragment.viewModel.ignoredWords.value ?: emptyList()
 
     private var stars : List<Star> = createStarsListToUser()
     private val staredBookmarks : List<Bookmark> = createBookmarksListStaredFromUser()
@@ -43,15 +42,16 @@ open class StarsAdapter(
     private val statesModeFrom = RecyclerState.makeStatesWithFooter(staredBookmarks)
 
 
+    /*
     init {
-        val pref = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
+        *val pref = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
         pref.get<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES).let {
             muteWords = it
                 .filter { e -> e.target contains IgnoreTarget.BOOKMARK }
                 .map { e -> e.query }
         }
     }
-
+    */
 
     private fun createStarsListToUser() : List<Star> {
         if (mode != StarsTabMode.TO_USER) return emptyList()
