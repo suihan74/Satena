@@ -6,6 +6,7 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Build
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.satena.models.*
 import com.suihan74.utilities.SafeSharedPreferences
@@ -83,6 +84,7 @@ class SatenaApplication : Application() {
     fun initializeDataBase() {
         // DBを準備する
         appDatabase = Room.databaseBuilder(this, AppDatabase::class.java, APP_DATABASE_FILE_NAME)
+            .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
             .build()
     }
 
