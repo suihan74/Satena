@@ -100,7 +100,9 @@ class PreferencesMigrator {
     class Input(private val context: Context) {
         suspend fun read(src: File, onErrorAction: ((MigrationData) -> Unit)? = null) =
             withContext(Dispatchers.IO) {
-                SatenaApplication.instance.appDatabase.close()
+                SatenaApplication.instance.appDatabase.run {
+                    close()
+                }
 
                 src.inputStream().buffered().use { stream ->
                     val signature = stream.readByteArray(SIGNATURE_SIZE)
