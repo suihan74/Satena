@@ -947,7 +947,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val apiUrl = "$S_BASE_URL/entry.json?uri=${Uri.encode(url)}&${cacheAvoidance()}"
         val gsonBuilder = getGsonBuilderForStars()
         val response = getJson<StarsEntries>(apiUrl, gsonBuilder)
-        return@async response.entries[0]
+        return@async response.entries.getOrNull(0) ?: StarsEntry(url = url, stars = emptyList(), coloredStars = null)
     }
 
     /**

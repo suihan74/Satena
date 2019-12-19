@@ -7,7 +7,6 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.models.TapEntryAction
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesTabFragmentBase
 import com.suihan74.utilities.CoroutineScopeFragment
 
@@ -36,8 +35,8 @@ object TappedActionLauncher {
     }
 
     private fun launchBookmarksActivity(context: Context, entry: Entry) {
-        val intent = Intent(context, BookmarksActivity::class.java)
-        intent.putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+        val intent = Intent(context, com.suihan74.satena.scenes.bookmarks2.BookmarksActivity::class.java)
+        intent.putExtra(com.suihan74.satena.scenes.bookmarks2.BookmarksActivity.EXTRA_ENTRY, entry)
         context.startActivity(intent)
     }
 
