@@ -157,7 +157,7 @@ class MastodonAuthenticationActivity : ActivityBase() {
         ).await()
 
         // persist AccessToken
-        AccountLoader.saveMastodonAccount(context, instanceName, accessToken.accessToken)
+        AccountLoader(applicationContext).saveMastodonAccount(instanceName, accessToken.accessToken)
     }
 
     override fun onNewIntent(intent: Intent?) {

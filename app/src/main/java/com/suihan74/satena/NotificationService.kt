@@ -159,7 +159,7 @@ class NotificationService : Service(), CoroutineScope {
             val localLastUpdated = prefs.getNullable<LocalDateTime>(PreferenceKey.NOTICES_LAST_SEEN)
             val now = LocalDateTime.now()
 
-            AccountLoader.signInHatenaAsync(context, reSignIn = false).await()
+            AccountLoader(context).signInHatenaAsync().await()
 
             val response = HatenaClient.getNoticesAsync().await()
             if (isLastSeenUpdatable) {

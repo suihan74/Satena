@@ -11,6 +11,7 @@ import android.widget.FrameLayout
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
@@ -79,19 +80,17 @@ class BookmarkPostActivity : ActivityBase(), BookmarkPostFragment.ResultListener
             launch(Dispatchers.Main) {
                 // 投稿用アカウントの確認
                 try {
-                    AccountLoader.signInHatenaAsync(this@BookmarkPostActivity).await()
-                    AccountLoader.signInMastodonAsync(this@BookmarkPostActivity).await()
-                    if (!HatenaClient.signedIn()) {
-                        throw AccountLoader.HatenaSignInException()
+                    AccountLoader(SatenaApplication.instance).run {
+                        signInAccounts()
                     }
                 }
                 catch (e: AccountLoader.HatenaSignInException) {
-                    showToast("サインインに失敗しました")
+                    showToast(R.string.msg_auth_failed)
                     finish()
                     return@launch
                 }
                 catch (e: AccountLoader.MastodonSignInException) {
-                    showToast("Mastodonへのサインインに失敗しました")
+                    showToast(R.string.msg_auth_mastodon_failed)
                 }
 
                 // エントリ情報を取得
@@ -103,7 +102,7 @@ class BookmarkPostActivity : ActivityBase(), BookmarkPostFragment.ResultListener
                 }
                 catch (e: Exception) {
                     Log.e("BookmarkPostActivity", e.message)
-                    showToast("エントリ情報の取得に失敗しました")
+                    showToast(R.string.msg_get_entry_information_failed)
                 }
                 finally {
                     hideProgressBar()
@@ -132,7 +131,7 @@ class BookmarkPostActivity : ActivityBase(), BookmarkPostFragment.ResultListener
                             .firstOrNull { it.url == url }
                     }
                     catch (e: Exception) {
-                        Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
+                        Log.e("FetchBookmarks", Log.getStackTraceString(e))
                     }
                 }
 
@@ -142,7 +141,7 @@ class BookmarkPostActivity : ActivityBase(), BookmarkPostFragment.ResultListener
                             HatenaClient.getEmptyBookmarksEntryAsync(url).await()
                         }
                         catch (e: Exception) {
-                            Log.d("failedToFetchBookmarks", Log.getStackTraceString(e))
+                            Log.e("FetchBookmarks", Log.getStackTraceString(e))
                             null
                         }
                     entry = Entry(

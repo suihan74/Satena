@@ -35,7 +35,7 @@ class ConnectivityReceiver : BroadcastReceiver() {
         @Suppress("DEPRECATION")
         if (context == null || intent?.action != ConnectivityManager.CONNECTIVITY_ACTION) return
 
-        val cm = context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = cm.activeNetworkInfo
         val isConnected = networkInfo?.isConnected ?: false
 
@@ -45,10 +45,11 @@ class ConnectivityReceiver : BroadcastReceiver() {
                     SatenaApplication.instance.currentActivity?.showProgressBar()
                     mActivatingListener?.invoke()
 
+                    val accountLoader = AccountLoader(context)
                     var success = false
                     for (i in 0 until 20) {
                         try {
-                            AccountLoader.signInAccounts(context, reSignIn = false)
+                            accountLoader.signInAccounts()
                             SatenaApplication.instance.startNotificationService()
                             success = true
                             break

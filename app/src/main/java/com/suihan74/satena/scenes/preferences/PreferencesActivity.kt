@@ -153,7 +153,7 @@ class PreferencesActivity : ActivityBase() {
 
         try {
             // 再ログイン
-            AccountLoader.signInAccounts(this, true)
+            AccountLoader(applicationContext).signInAccounts(true)
         }
         catch (e: Exception) {
             Log.e("FailedToReload", e.message)

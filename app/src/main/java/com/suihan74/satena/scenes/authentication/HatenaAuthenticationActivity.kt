@@ -51,7 +51,7 @@ class HatenaAuthenticationActivity : ActivityBase() {
 
             showToast("id:${account.name} でログインしました")
 
-            AccountLoader.saveHatenaAccount(this@HatenaAuthenticationActivity, name, password)
+            AccountLoader(applicationContext).saveHatenaAccount(name, password)
             SatenaApplication.instance.startNotificationService()
 
             // 前の画面に戻る
