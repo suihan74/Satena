@@ -30,10 +30,7 @@ import com.suihan74.satena.scenes.entries.notices.NoticesFragment
 import com.suihan74.satena.scenes.entries.pages.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.hideSoftInputMethod
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
@@ -248,7 +245,11 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
 
                 // アカウント情報を取得
                 try {
-                    AccountLoader(applicationContext).signInAccounts()
+                    AccountLoader(
+                        applicationContext,
+                        HatenaClient,
+                        MastodonClientHolder
+                    ).signInAccounts()
                 }
                 catch (e: AccountLoader.HatenaSignInException) {
                     showToast(R.string.msg_auth_failed)

@@ -15,6 +15,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
@@ -80,7 +81,11 @@ class BookmarkPostActivity : ActivityBase(), BookmarkPostFragment.ResultListener
             launch(Dispatchers.Main) {
                 // 投稿用アカウントの確認
                 try {
-                    AccountLoader(SatenaApplication.instance).run {
+                    AccountLoader(
+                        SatenaApplication.instance,
+                        HatenaClient,
+                        MastodonClientHolder
+                    ).run {
                         signInAccounts()
                     }
                 }

@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.util.Log
+import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
 import kotlinx.coroutines.*
 
 class ConnectivityReceiver : BroadcastReceiver() {
@@ -45,7 +47,12 @@ class ConnectivityReceiver : BroadcastReceiver() {
                     SatenaApplication.instance.currentActivity?.showProgressBar()
                     mActivatingListener?.invoke()
 
-                    val accountLoader = AccountLoader(context)
+                    val accountLoader = AccountLoader(
+                        context,
+                        HatenaClient,
+                        MastodonClientHolder
+                    )
+
                     var success = false
                     for (i in 0 until 20) {
                         try {

@@ -13,10 +13,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.post.BookmarkPostFragment
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.lock
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.coroutines.*
 
 class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
@@ -245,7 +242,6 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
     }
 
     private fun startInitialize() = launch(Dispatchers.Default) {
-        val accountLoader = AccountLoader(applicationContext)
         val extraEntry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
         val extraBookmarksEntry = intent.getSerializableExtra(EXTRA_BOOKMARKS_ENTRY) as? BookmarksEntry
 
@@ -256,6 +252,11 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
             preLoadingTasks = null
         }
 
+        val accountLoader = AccountLoader(
+            applicationContext,
+            HatenaClient,
+            MastodonClientHolder
+        )
         val entry =
             extraEntry ?:
             extraBookmarksEntry ?:
