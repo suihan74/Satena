@@ -22,6 +22,7 @@ import kotlinx.coroutines.*
 class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
     // プリロード中のブクマ・スター
     data class PreLoadingTasks (
+        val url: String,
         val bookmarksTask : Deferred<BookmarksEntry>,
         val bookmarksDigestTask : Deferred<BookmarksDigest>,
         val bookmarksRecentTask : Deferred<List<BookmarkWithStarCount>>,
@@ -168,6 +169,7 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
 
             preLoadingTasks =
                 PreLoadingTasks(
+                    entry.url,
                     bookmarksEntryTask,
                     digestTask,
                     recentTask,
@@ -243,9 +245,19 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
     }
 
     private fun startInitialize() = launch(Dispatchers.Default) {
+        val extraEntry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
+        val extraBookmarksEntry = intent.getSerializableExtra(EXTRA_BOOKMARKS_ENTRY) as? BookmarksEntry
+
+        // 違うページをプリロードしている場合，クリアする
+        if (extraEntry != null && extraEntry.url != preLoadingTasks?.url
+            || extraBookmarksEntry != null && extraBookmarksEntry.url != preLoadingTasks?.url) {
+            preLoadingTasks?.cancel()
+            preLoadingTasks = null
+        }
+
         val entry =
-            intent.getSerializableExtra(EXTRA_ENTRY) as? Entry ?:
-            intent.getSerializableExtra(EXTRA_BOOKMARKS_ENTRY) as? BookmarksEntry ?:
+            extraEntry ?:
+            extraBookmarksEntry ?:
             when (intent.action) {
             // ブラウザから「共有」を使って遷移してきたときの処理
             Intent.ACTION_SEND -> {
