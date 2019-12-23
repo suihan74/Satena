@@ -15,14 +15,12 @@ open class BaseClient {
         setCookiePolicy(CookiePolicy.ACCEPT_ALL)
     }
 
-    protected var clientWithoutCookie = OkHttpClient.Builder().build()
-        private set
+    protected val clientWithoutCookie = OkHttpClient.Builder().build()
 
-    protected var client =
+    protected val client =
         clientWithoutCookie.newBuilder()
             .cookieJar(JavaNetCookieJar(cookieManager))
             .build()
-        private set
 
     // キャッシュ回避
     protected fun cacheAvoidance() : String = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC).toString()
@@ -37,15 +35,7 @@ open class BaseClient {
             else clientWithoutCookie
 
         val call = httpClient.newCall(request)
-
-        try {
-            return call.execute()
-        }
-        catch (e: Exception) {
-            clientWithoutCookie = OkHttpClient.Builder().build()
-            client = clientWithoutCookie.newBuilder().cookieJar(JavaNetCookieJar(cookieManager)).build()
-            throw e
-        }
+        return call.execute()
     }
 
     protected fun post(url: String, params: Map<String, String>? = null) : Response {
