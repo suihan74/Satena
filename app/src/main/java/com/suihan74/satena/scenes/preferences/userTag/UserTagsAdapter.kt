@@ -14,7 +14,7 @@ import com.suihan74.utilities.RecyclerType
 
 open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var states = RecyclerState.makeStatesWithFooter(emptyList<TagAndUsers>())
+    private var states = emptyList<RecyclerState<TagAndUsers>>()
 
     fun setItems(tags: List<TagAndUsers>) {
         val newStates = RecyclerState.makeStatesWithFooter(tags)

@@ -9,28 +9,37 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.BookmarksTabType
-import com.suihan74.satena.scenes.bookmarks2.tab.AllBookmarksTabViewModel
-import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
-import com.suihan74.satena.scenes.bookmarks2.tab.PopularTabViewModel
-import com.suihan74.satena.scenes.bookmarks2.tab.RecentTabViewModel
+import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
+import com.suihan74.satena.scenes.bookmarks2.tab.*
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class BookmarksTabFragment : Fragment(), ScrollableToTop {
+class BookmarksTabFragment : Fragment() {
     /** BookmarksActivityのViewModel */
     private val activityViewModel: BookmarksViewModel by lazy {
         ViewModelProviders.of(bookmarksActivity)[BookmarksViewModel::class.java]
     }
 
-    private lateinit var viewModel: BookmarksTabViewModel
+    lateinit var viewModel: BookmarksTabViewModel
+        private set
+
+    private val bookmarksFragmentViewModel: BookmarksFragmentViewModel by lazy {
+        ViewModelProviders.of(bookmarksFragment)[BookmarksFragmentViewModel::class.java]
+    }
 
     /** このフラグメントが配置されているBookmarksActivity */
-    val bookmarksActivity
+    private val bookmarksActivity
         get() = requireActivity() as BookmarksActivity
+
+    private val bookmarksFragment
+        get() = requireParentFragment() as BookmarksFragment
 
     companion object {
         fun createInstance(tabType: BookmarksTabType) = BookmarksTabFragment().apply {
@@ -56,8 +65,8 @@ class BookmarksTabFragment : Fragment(), ScrollableToTop {
                 BookmarksTabType.ALL ->
                     ViewModelProviders.of(this, factory)[AllBookmarksTabViewModel::class.java]
 
-                else ->
-                    ViewModelProviders.of(this, factory)[PopularTabViewModel::class.java]
+                BookmarksTabType.CUSTOM ->
+                    ViewModelProviders.of(this, factory)[CustomTabViewModel::class.java]
             }
 
         if (savedInstanceState == null) {
@@ -76,6 +85,12 @@ class BookmarksTabFragment : Fragment(), ScrollableToTop {
         val bookmarksAdapter = object : BookmarksAdapter() {
             override fun onItemClicked(bookmark: Bookmark) {
                 (activity as? BookmarksActivity)?.showBookmarkDetail(bookmark)
+            }
+
+            override fun onItemLongClicked(bookmark: Bookmark): Boolean {
+                val dialog = BookmarkMenuDialog.createInstance(bookmark)
+                dialog.show(childFragmentManager, "bookmark_dialog")
+                return true
             }
         }
 
@@ -119,9 +134,39 @@ class BookmarksTabFragment : Fragment(), ScrollableToTop {
             }
         }
 
+        // スクロール処理
+        viewModel.setOnScrollToTopListener {
+            view?.bookmarks_list?.scrollToPosition(0)
+        }
+        viewModel.setOnScrollToBottomListener {
+            val size = bookmarksAdapter.itemCount
+            view?.bookmarks_list?.scrollToPosition(size - 1)
+        }
+        viewModel.setOnScrollToBookmarkListener { b ->
+            val position = bookmarksAdapter.getPosition(b)
+            if (position >= 0) {
+                view?.bookmarks_list?.scrollToPosition(position)
+            }
+        }
 
+        // --- Observers --- //
+
+        // ブクマリストの更新を監視
         viewModel.bookmarks.observe(this, Observer {
-            bookmarksAdapter.setBookmarks(it)
+            val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@Observer
+            val userTags = activityViewModel.taggedUsers.value ?: emptyList()
+            val ignoredUsers = activityViewModel.ignoredUsers.value
+            bookmarksAdapter.setBookmarks(it, bookmarksEntry, userTags, ignoredUsers)
+        })
+
+        // ユーザータグの更新を監視
+        activityViewModel.taggedUsers.observe(this, Observer {
+            val bookmarks = viewModel.bookmarks.value
+            if (bookmarks != null) {
+                val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@Observer
+                val ignoredUsers = activityViewModel.ignoredUsers.value
+                bookmarksAdapter.setBookmarks(bookmarks, bookmarksEntry, it, ignoredUsers)
+            }
         })
 
         // ------ //
@@ -129,7 +174,8 @@ class BookmarksTabFragment : Fragment(), ScrollableToTop {
         return view
     }
 
-    /** リストを一番上までスクロールする */
-    override fun scrollToTop() =
-        view?.bookmarks_list?.scrollToPosition(0)
+    override fun onResume() {
+        super.onResume()
+        bookmarksFragmentViewModel.selectedTabViewModel.postValue(viewModel)
+    }
 }

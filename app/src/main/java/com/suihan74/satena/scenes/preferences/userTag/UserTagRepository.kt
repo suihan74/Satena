@@ -72,4 +72,9 @@ class UserTagRepository(
             dao.deleteRelation(it)
         }
     }
+
+    /** ユーザーエンティティを取得する */
+    suspend fun getUser(user: String) = withContext(Dispatchers.IO) {
+        dao.findUser(user)
+    }
 }

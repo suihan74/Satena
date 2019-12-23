@@ -11,11 +11,20 @@ import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.android.synthetic.main.fragment_bookmarks2.view.*
 
 class BookmarksFragmentViewModel : ViewModel() {
-    val selectedTab by lazy { MutableLiveData<Int>() }
+    /** 選択されたタブのポジション */
+    val selectedTab by lazy {
+        MutableLiveData<Int>()
+    }
+
+    /** 選択されたタブがもつViewModel */
+    val selectedTabViewModel by lazy {
+        MutableLiveData<BookmarksTabViewModel>()
+    }
 }
 
 class BookmarksFragment : Fragment() {
@@ -38,15 +47,6 @@ class BookmarksFragment : Fragment() {
         fun createInstance() = BookmarksFragment()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (savedInstanceState == null) {
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-            viewModel.selectedTab.postValue(prefs.getInt(PreferenceKey.BOOKMARKS_INITIAL_TAB))
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -54,11 +54,17 @@ class BookmarksFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_bookmarks2, container, false)
 
+        val selectedTab =
+            viewModel.selectedTab.value
+            ?: SafeSharedPreferences.create<PreferenceKey>(context).run {
+                getInt(PreferenceKey.BOOKMARKS_INITIAL_TAB)
+            }
+
         // TabFragment表示部分
         val tabAdapter = BookmarksTabAdapter(this)
         val viewPager = view.tab_pager.apply {
             adapter = tabAdapter
-            currentItem = viewModel.selectedTab.value ?: 0
+            currentItem = selectedTab
         }
 
         // Tabセレクタ
@@ -73,8 +79,7 @@ class BookmarksFragment : Fragment() {
                 override fun onTabUnselected(p0: TabLayout.Tab?) {
                 }
                 override fun onTabReselected(tab: TabLayout.Tab?) {
-                    val fragment = tabAdapter.findFragment(viewPager, tab!!.position)
-                    fragment?.scrollToTop()
+                    viewModel.selectedTabViewModel.value?.scrollToTop()
                 }
             })
         }

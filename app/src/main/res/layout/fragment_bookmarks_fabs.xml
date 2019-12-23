@@ -107,7 +107,7 @@
     <EditText
             android:id="@+id/bookmarks_search_text"
             android:singleLine="true"
-            android:paddingStart="8dp"
+            android:paddingStart="24dp"
             android:paddingEnd="8dp"
             android:background="@color/colorPrimary"
             android:textColor="@color/colorPrimaryText"

@@ -18,15 +18,11 @@ class AccountLoader(
     class MastodonSignInException(message: String? = null) : Exception(message)
 
     suspend fun signInAccounts(reSignIn: Boolean = false) {
-        try {
-            val jobs = listOf(
-                signInHatenaAsync(reSignIn),
-                signInMastodonAsync(reSignIn)
-            )
-            jobs.awaitAll()
-        } catch (e: Exception) {
-            throw RuntimeException("failed to sign in")
-        }
+        val jobs = listOf(
+            signInHatenaAsync(reSignIn),
+            signInMastodonAsync(reSignIn)
+        )
+        jobs.awaitAll()
     }
 
     fun signInHatenaAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {

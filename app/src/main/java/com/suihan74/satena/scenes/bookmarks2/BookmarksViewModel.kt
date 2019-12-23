@@ -6,13 +6,20 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
-
+import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
+import com.suihan74.satena.models.userTag.Tag
+import com.suihan74.satena.models.userTag.TagAndUsers
+import com.suihan74.satena.models.userTag.UserAndTags
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
+import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
+import com.suihan74.utilities.lock
+import kotlinx.coroutines.*
 
 class BookmarksViewModel(
-    val repository: BookmarksRepository
+    val repository: BookmarksRepository,
+    private val userTagRepository: UserTagRepository,
+    private val ignoredEntryRepository: IgnoredEntryRepository
 ) : ViewModel() {
 
     val entry
@@ -26,70 +33,220 @@ class BookmarksViewModel(
         MutableLiveData<List<Bookmark>>()
     }
 
+    /** 新着順ブクマリスト */
     val bookmarksRecent by lazy {
         MutableLiveData<List<Bookmark>>()
     }
 
+    val taggedUsers by lazy {
+        MutableLiveData<List<UserAndTags>>()
+    }
+
+    val userTags by lazy {
+        MutableLiveData<List<TagAndUsers>>()
+    }
+
+    /** キーワードでブクマを抽出 */
+    val filteringWord by lazy {
+        MutableLiveData<String?>()
+    }
+
+    /** IgnoredEntryで設定された非表示ワード */
+    private var ignoredWords = emptyList<String>()
+        get() = lock(field) { field }
+        set(value) {
+            lock(field) { field = value }
+        }
+
+    /** 非表示ユーザーリストの変更を監視 */
+    val ignoredUsers = repository.ignoredUsersLiveData
+
+    /** 各リストを再構成する */
+    private fun reloadLists() {
+        if (repository.bookmarksEntry != null) {
+            bookmarksEntry.postValue(repository.bookmarksEntry)
+        }
+        bookmarksPopular.postValue(repository.bookmarksPopular)
+        bookmarksRecent.postValue(repository.bookmarksRecent)
+    }
 
     /** 初期化 */
-    fun load(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e -> onError?.invoke(e)}
+    fun init(loading: Boolean, onError: CompletionHandler? = null) = viewModelScope.launch(
+        CoroutineExceptionHandler { _, e -> onError?.invoke(e) }
     ) {
-        listOf(
-            repository.loadIgnoredUsersAsync(),
-            repository.loadBookmarksEntryAsnyc(),
-            repository.loadBookmarksDigestAsync(),
-            repository.loadBookmarksRecentAsync()
-        ).run {
-            awaitAll()
-            bookmarksEntry.postValue(repository.bookmarksEntry)
-            bookmarksPopular.postValue(
-                filter(repository.bookmarksPopular)
-            )
-            bookmarksRecent.postValue(
-                filter(repository.bookmarksRecent)
-            )
+        try {
+            ignoredEntryRepository.load()
+            ignoredWords = ignoredEntryRepository.ignoredEntries
+                .filter { it.type == IgnoredEntryType.TEXT && it.target.contains(IgnoreTarget.BOOKMARK) }
+                .map { it.query }
+
+            repository.init()
+        }
+        finally {}
+
+        if (loading) {
+            loadUserTags()
+
+            listOf(
+                repository.loadIgnoredUsersAsync(),
+                repository.loadBookmarksEntryAsnyc(),
+                repository.loadBookmarksDigestAsync(),
+                repository.loadBookmarksRecentAsync()
+            ).run {
+                awaitAll()
+                reloadLists()
+            }
+        }
+
+        // キーワードが更新されたら各リストを再生成する
+        filteringWord.observeForever {
+            reloadLists()
+        }
+
+        // 非表示ユーザーリストの更新を監視
+        ignoredUsers.observeForever {
+            reloadLists()
         }
     }
 
-    /** 非表示ユーザー情報を適用したブクマリストを返す */
-    fun filter(bookmarks: List<Bookmark>) : List<Bookmark> =
-        bookmarks.filterNot { b -> repository.ignoredUsers.any { it == b.user } }
+    /**
+     * エントリ情報・非表示ユーザー情報・ログインを完了した状態にする
+     * 通信OFF状態でinit()し，通信ONに変更した後でブクマロードをする場合のため
+     */
+    private suspend fun loadBasics(onError: CompletionHandler? = null) {
+        if (!repository.signedIn) {
+            try {
+                repository.init()
+                repository.loadIgnoredUsersAsync().await()
+            }
+            catch (e: Throwable) {
+                onError?.invoke(e)
+            }
+        }
+
+        if (bookmarksEntry.value == null) {
+            try {
+                repository.loadBookmarksEntryAsnyc().await()
+            }
+            catch (e: Throwable) {
+                onError?.invoke(e)
+            }
+        }
+    }
+
+    /** ブクマにキーワードが含まれるか確認 */
+    private fun Bookmark.containsKeyword(word: String) =
+        user.contains(word) || comment.contains(word) || getTagsText(",").contains(word)
+
+    /** 非表示ユーザー/ワード情報を適用したブクマリストを返す */
+    fun filter(bookmarks: List<Bookmark>) =
+        keywordFilter(bookmarks).filterNot { b ->
+            repository.ignoredUsers.any { it == b.user }
+                    || ignoredWords.any { b.containsKeyword(it) }
+        }
+
+    /** ブクマリストからキーワードで抽出 */
+    fun keywordFilter(list: List<Bookmark>) : List<Bookmark> {
+        val keyword = filteringWord.value
+        return if (keyword.isNullOrBlank()) list
+        else list.filter { it.containsKeyword(keyword) }
+    }
 
     /** 新着ブクマリストの次のページを追加ロードする */
-    fun loadNextRecent(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e -> onError?.invoke(e)}
+    fun loadNextRecent(onError: CompletionHandler? = null) = viewModelScope.launch(
+        CoroutineExceptionHandler { _, e ->
+            onError?.invoke(e)
+        }
     ) {
+        loadBasics(onError)
         repository.loadNextBookmarksRecentAsync().await()
-        bookmarksRecent.postValue(
-            filter(repository.bookmarksRecent)
-        )
+        bookmarksRecent.postValue(repository.bookmarksRecent)
+        bookmarksEntry.postValue(repository.bookmarksEntry)
+    }
+
+    /** 指定ユーザーのブクマが得られるまで新着順ブクマリストを追加ロードする */
+    fun loadNextRecentToUser(user: String, onError: CompletionHandler? = null) = viewModelScope.launch(
+        CoroutineExceptionHandler { _, e ->
+            onError?.invoke(e)
+        }
+    ) {
+        if (repository.bookmarksRecent.any { it.user == user }) {
+            return@launch
+        }
+
+        while (true) {
+            val list = repository.loadNextBookmarksRecentAsync().await()
+            if (list.isEmpty() || list.any { it.user == user }) break
+        }
+
+        bookmarksRecent.postValue(repository.bookmarksRecent)
+        bookmarksEntry.postValue(repository.bookmarksEntry)
     }
 
     /** 人気ブクマリストを再読み込み */
-    fun updateDigest(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e -> onError?.invoke(e)}
+    fun updateDigest(onError: CompletionHandler? = null) = viewModelScope.launch(
+        CoroutineExceptionHandler { _, e ->
+            onError?.invoke(e)
+        }
     ) {
+        loadBasics()
         repository.loadBookmarksDigestAsync().await()
-        bookmarksPopular.postValue(
-            filter(repository.bookmarksPopular)
-        )
+        bookmarksPopular.postValue(repository.bookmarksPopular)
     }
 
     /** 新着ブクマリストを再読み込み */
-    fun updateRecent(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e -> onError?.invoke(e)}
+    fun updateRecent(onError: CompletionHandler? = null) = viewModelScope.launch(
+        CoroutineExceptionHandler { _, e ->
+            onError?.invoke(e)
+        }
     ) {
+        loadBasics()
         repository.loadBookmarksRecentAsync().await()
-        bookmarksRecent.postValue(
-            filter(repository.bookmarksRecent)
-        )
+        bookmarksRecent.postValue(repository.bookmarksRecent)
+        bookmarksEntry.postValue(repository.bookmarksEntry)
+    }
+
+    /** ユーザーの非表示状態を変更する */
+    fun setUserIgnoreState(user: String, ignore: Boolean, onError: CompletionHandler? = null, onSuccess: (()->Unit)? = null) = viewModelScope.launch(
+        CoroutineExceptionHandler { _, e ->
+            onError?.invoke(e)
+        }
+    ) {
+        if (ignore) {
+            repository.ignoreUserAsync(user).await()
+        }
+        else {
+            repository.unignoreUserAsync(user).await()
+        }
+        onSuccess?.invoke()
+    }
+
+    /** ユーザーにタグをつける */
+    suspend fun tagUser(user: String, tag: Tag) {
+        userTagRepository.addRelation(tag, user)
+    }
+
+    /** ユーザーのタグを外す */
+    suspend fun unTagUser(user: String, tag: Tag) {
+        userTagRepository.getUser(user)?.let {
+            userTagRepository.deleteRelation(tag, it)
+        }
+    }
+
+    /** ユーザータグをロードする */
+    suspend fun loadUserTags() {
+        taggedUsers.postValue(userTagRepository.loadUsers())
+        userTags.postValue(userTagRepository.loadTags())
     }
 
     /** ViewModelProvidersを使用する際の依存性注入 */
-    class Factory(private val repository: BookmarksRepository) : ViewModelProvider.NewInstanceFactory() {
+    class Factory(
+        private val repository: BookmarksRepository,
+        private val userTagRepository: UserTagRepository,
+        private val ignoredEntryRepository: IgnoredEntryRepository
+    ) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) =
-            BookmarksViewModel(repository) as T
+            BookmarksViewModel(repository, userTagRepository, ignoredEntryRepository) as T
     }
 }

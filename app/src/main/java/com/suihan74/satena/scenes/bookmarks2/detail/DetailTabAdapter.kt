@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks2.detail
 
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 
@@ -19,13 +20,13 @@ class DetailTabAdapter(
 
     override fun getCount() = TabType.values().size
 
-    override fun getItem(position: Int) =
+    override fun getItem(position: Int) : Fragment =
         when (TabType.fromInt(position)) {
             TabType.STARS_TO_USER ->
                 StarsToUserFragment.createInstance()
 
-            else ->
-                StarsToUserFragment.createInstance()
+            TabType.STARS_FROM_USER ->
+                StarsFromUserFragment.createInstance()
         }
 
     override fun getPageTitle(position: Int) =

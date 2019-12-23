@@ -266,7 +266,10 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
                 val url = modifySpecificUrls(intent.getStringExtra(Intent.EXTRA_TEXT))!!
                 if (!URLUtil.isNetworkUrl(url)) throw RuntimeException("invalid url shared")
 
-                accountLoader.signInAccounts()
+                try {
+                    accountLoader.signInAccounts()
+                }
+                finally {}
 
                 preLoadingTasks = null
 
@@ -291,7 +294,11 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
                 val commentUrl = intent.dataString ?: ""
                 val url = HatenaClient.getEntryUrlFromCommentPageUrl(commentUrl)
 
-                accountLoader.signInAccounts()
+                try {
+                    accountLoader.signInAccounts()
+                }
+                finally {}
+
                 try {
                     HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
                         .firstOrNull { it.url == url }

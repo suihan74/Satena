@@ -1,30 +1,55 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.suihan74.HatenaLib.Bookmark
+import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
+import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
+import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
+import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
+import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
 
-class BookmarksActivity : AppCompatActivity() {
+class BookmarksActivity :
+    AppCompatActivity(),
+    BookmarkMenuDialog.Listener,
+    UserTagSelectionDialog.Listener
+{
     /** ViewModel */
     private lateinit var viewModel: BookmarksViewModel
 
     val bookmarksFragment
         get() = supportFragmentManager.findFragmentByTag("bookmarks") as BookmarksFragment
 
+    lateinit var onBackPressedCallback: OnBackPressedCallback
+
     companion object {
         // Intent EXTRA keys
         /** Entryを渡す */
-        const val EXTRA_ENTRY = "EXTRA_ENTRY"
+        const val EXTRA_ENTRY = "BookmarksActivity.EXTRA_ENTRY"
+        const val EXTRA_TARGET_USER = "BookmarksActivity.EXTRA_TARGET_USER"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,24 +65,55 @@ class BookmarksActivity : AppCompatActivity() {
         setContentView(R.layout.activity_bookmarks2)
 
         val entry = intent.getSerializableExtra(EXTRA_ENTRY) as Entry
-        if (savedInstanceState == null) {
-            val factory = BookmarksViewModel.Factory(
-                BookmarksRepository(
-                    entry = entry,
-                    client = HatenaClient
-                )
+        val targetUser = intent.getStringExtra(EXTRA_TARGET_USER)
+
+        val factory = BookmarksViewModel.Factory(
+            BookmarksRepository(
+                entry = entry,
+                client = HatenaClient,
+                accountLoader = AccountLoader(applicationContext, HatenaClient, MastodonClientHolder)
+            ),
+            UserTagRepository(
+                SatenaApplication.instance.userTagDao
+            ),
+            IgnoredEntryRepository(
+                SatenaApplication.instance.ignoredEntryDao
             )
-            viewModel = ViewModelProviders.of(this, factory)[BookmarksViewModel::class.java]
-            viewModel.load()
-        }
-        else {
-            viewModel = ViewModelProviders.of(this)[BookmarksViewModel::class.java]
+        )
+        viewModel = ViewModelProviders.of(this, factory)[BookmarksViewModel::class.java]
+
+        viewModel.init(loading = savedInstanceState == null) { e ->
+            when (e) {
+                is AccountLoader.HatenaSignInException ->
+                    showToast(R.string.msg_auth_failed)
+
+                is AccountLoader.MastodonSignInException ->
+                    showToast(R.string.msg_auth_mastodon_failed)
+
+                else ->
+                    showToast(R.string.msg_update_bookmarks_failed)
+            }
         }
 
         // Toolbar
-        toolbar.title = entry.title
+        toolbar.apply {
+            title = entry.title
+        }
 
-        setSupportActionBar(toolbar)
+        // Drawerの開閉を監視する
+        val drawerToggle = object : ActionBarDrawerToggle(this, drawer_layout, toolbar,
+            R.string.drawer_open,
+            R.string.drawer_close
+        ) {
+            override fun onDrawerOpened(drawerView: View) {
+                super.onDrawerOpened(drawerView)
+                val informationFragment = supportFragmentManager.findFragmentByTag("information") as? EntryInformationFragment
+                informationFragment?.onShown()
+            }
+        }
+        drawer_layout.addDrawerListener(drawerToggle)
+        drawerToggle.isDrawerIndicatorEnabled = false
+        drawerToggle.syncState()
 
         // Observers
         viewModel.bookmarksEntry.observe(this, Observer {
@@ -65,6 +121,22 @@ class BookmarksActivity : AppCompatActivity() {
                 it.bookmarks.size,
                 it.bookmarks.count { b -> b.comment.isNotBlank() })
         })
+
+        // 戻るボタンを監視
+        onBackPressedCallback = onBackPressedDispatcher.addCallback(this) {
+            if (drawer_layout.isDrawerOpen(GravityCompat.END)) {
+                drawer_layout.closeDrawer(GravityCompat.END)
+            }
+            else {
+                val backStackEntryCount = supportFragmentManager.backStackEntryCount
+                if (backStackEntryCount > 0) {
+                    supportFragmentManager.popBackStack()
+                }
+                else {
+                    finish()
+                }
+            }
+        }
 
         // コンテンツの初期化
         if (savedInstanceState == null) {
@@ -74,9 +146,14 @@ class BookmarksActivity : AppCompatActivity() {
 
             supportFragmentManager.beginTransaction()
                 .replace(R.id.content_layout, bookmarksFragment, "bookmarks")
-                .replace(R.id.entry_information_layout, entryInformationFragment, "information")
                 .replace(R.id.buttons_layout, buttonsFragment, "buttons")
+                .replace(R.id.entry_information_layout, entryInformationFragment, "information")
                 .commitAllowingStateLoss()
+
+            // ユーザーが指定されている場合そのユーザーのブクマ詳細画面に直接遷移する
+            if (!targetUser.isNullOrBlank()) {
+                showBookmarkDetail(targetUser)
+            }
         }
     }
 
@@ -91,19 +168,81 @@ class BookmarksActivity : AppCompatActivity() {
 
     /** ブクマ詳細画面を開く */
     fun showBookmarkDetail(user: String) {
-        val bookmark = viewModel.bookmarksEntry.value?.bookmarks?.firstOrNull { it.user == user }
-        if (bookmark != null) {
-            showBookmarkDetail(bookmark)
+        var observer: Observer<BookmarksEntry>? = null
+        observer = Observer { bEntry: BookmarksEntry ->
+            val bookmark = bEntry.bookmarks.firstOrNull { it.user == user } ?: return@Observer
+            val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
+            supportFragmentManager.beginTransaction()
+                .add(R.id.detail_content_layout, bookmarkDetailFragment)
+                .addToBackStack("detail: $user}")
+                .commitAllowingStateLoss()
+
+            viewModel.bookmarksEntry.removeObserver(observer!!)
+        }
+        viewModel.bookmarksEntry.observe(this, observer)
+    }
+
+    // --- BookmarkMenuDialogの処理 --- //
+
+    override fun isIgnored(user: String) =
+        viewModel.ignoredUsers.value.contains(user)
+
+    override fun onShowEntries(user: String) {
+        startActivity(
+            Intent(this, EntriesActivity::class.java).apply {
+                putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
+            }
+        )
+    }
+
+    override fun onIgnoreUser(user: String, ignore: Boolean) {
+        viewModel.setUserIgnoreState(
+            user = user,
+            ignore = ignore,
+            onError = { e ->
+                val msgId =
+                    if (ignore) R.string.msg_ignore_user_failed
+                    else R.string.msg_unignore_user_failed
+                showToast(msgId, user)
+                Log.d("ignoreUser", "failed: user = $user")
+                e?.printStackTrace()
+            },
+            onSuccess = {
+                val msgId =
+                    if (ignore) R.string.msg_ignore_user_succeeded
+                    else R.string.msg_unignore_user_succeeded
+                showToast(msgId, user)
+            }
+        )
+    }
+
+    override fun onReportBookmark(bookmark: Bookmark) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onSetUserTag(user: String) {
+        val dialog = UserTagSelectionDialog.createInstance(user)
+        dialog.show(supportFragmentManager, "user_tag_selection_dialog")
+    }
+
+    // --- UserTagSelectionDialogの処理 --- //
+
+    override fun getUserTags() =
+        viewModel.userTags.value ?: emptyList()
+
+    override suspend fun activateTags(user: String, activeTags: List<Tag>) {
+        activeTags.forEach { tag ->
+            viewModel.tagUser(user, tag)
         }
     }
 
-    override fun onBackPressed() {
-        val backStackEntryCount = supportFragmentManager.backStackEntryCount
-        if (backStackEntryCount > 0) {
-            supportFragmentManager.popBackStack()
+    override suspend fun inactivateTags(user: String, inactiveTags: List<Tag>) {
+        inactiveTags.forEach { tag ->
+            viewModel.unTagUser(user, tag)
         }
-        else {
-            super.onBackPressed()
-        }
+    }
+
+    override suspend fun reloadUserTags() {
+        viewModel.loadUserTags()
     }
 }

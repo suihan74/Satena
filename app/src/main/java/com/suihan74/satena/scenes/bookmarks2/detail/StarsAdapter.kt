@@ -8,20 +8,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.Star
 import com.suihan74.HatenaLib.StarColor
-import com.suihan74.HatenaLib.StarsEntry
 import com.suihan74.satena.R
-import com.suihan74.utilities.FooterViewHolder
-import com.suihan74.utilities.RecyclerState
-import com.suihan74.utilities.RecyclerType
-import com.suihan74.utilities.setHtml
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_stars.view.*
 
-open class StarsToUserAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var states = emptyList<RecyclerState<Star>>()
+open class StarsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    open fun onItemClicked(star: Star) {}
-    open fun onItemLongClicked(star: Star) = false
+    private var states = emptyList<RecyclerState<StarWithBookmark>>()
+
+    open fun onItemClicked(item: StarWithBookmark) {}
+    open fun onItemLongClicked(item: StarWithBookmark) = false
 
     override fun getItemCount() = states.size
     override fun getItemViewType(position: Int) = states[position].type.int
@@ -32,12 +29,14 @@ open class StarsToUserAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
                 RecyclerType.BODY ->
                     ViewHolder(inflater.inflate(R.layout.listview_item_stars, parent, false)).apply {
                         itemView.setOnClickListener {
-                            val star = states[adapterPosition].body!!
-                            onItemClicked(star)
+                            onItemClicked(
+                                states[adapterPosition].body!!
+                            )
                         }
                         itemView.setOnLongClickListener {
-                            val star = states[adapterPosition].body!!
-                            onItemLongClicked(star)
+                            onItemLongClicked(
+                                states[adapterPosition].body!!
+                            )
                         }
                     }
 
@@ -55,8 +54,8 @@ open class StarsToUserAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
         }
     }
 
-    fun setStars(starsEntry: StarsEntry) {
-        val newStates = RecyclerState.makeStatesWithFooter(starsEntry.allStars)
+    fun setStars(stars: List<StarWithBookmark>) {
+        val newStates = RecyclerState.makeStatesWithFooter(stars)
 
         val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize() = states.size
@@ -64,16 +63,17 @@ open class StarsToUserAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
             override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
                 val old = states[oldItemPosition]
                 val new = newStates[newItemPosition]
-                return old.type == new.type && old.body?.user == new.body?.user
+                return old.type == new.type && old.body?.star?.user == new.body?.star?.user
             }
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
                 val old = states[oldItemPosition]
                 val new = newStates[newItemPosition]
                 return old.type == new.type &&
-                        old.body?.user == new.body?.user &&
-                        old.body?.color == new.body?.color &&
-                        old.body?.count == new.body?.count &&
-                        old.body?.quote == new.body?.quote
+                        old.body?.star?.user == new.body?.star?.user &&
+                        old.body?.star?.color == new.body?.star?.color &&
+                        old.body?.star?.count == new.body?.star?.count &&
+                        old.body?.star?.quote == new.body?.star?.quote &&
+                        old.body?.bookmark?.comment == new.body?.bookmark?.comment
             }
         })
         states = newStates
@@ -81,17 +81,28 @@ open class StarsToUserAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
     }
 
     class ViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
-        var body: Star? = null
+        var body: StarWithBookmark? = null
             set(value) {
                 field = value
 
                 if (value != null) {
-                    view.star_user_name.text = value.user
-                    Glide.with(view.context)
-                        .load(value.userIconUrl)
-                        .into(view.star_user_icon)
+                    val star = value.star
+                    val bookmark = value.bookmark
 
-                    val colorId = when (value.color) {
+                    // IDとアイコン
+                    view.star_user_name.text = bookmark.user
+                    Glide.with(view.context).run {
+                        clear(view.star_user_icon)
+                        load(bookmark.userIconUrl)
+                            .into(view.star_user_icon)
+                    }
+
+                    // ユーザーのブコメ
+                    view.star_comment.text = bookmark.comment
+                    view.star_comment.visibility = (!bookmark.comment.isBlank()).toVisibility()
+
+                    // ユーザーが付けたスター
+                    val colorId = when (star.color) {
                         StarColor.Yellow -> R.color.starYellow
                         StarColor.Red -> R.color.starRed
                         StarColor.Green -> R.color.starGreen
@@ -100,11 +111,11 @@ open class StarsToUserAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
                     }
                     val starColor = view.context.getColor(colorId)
                     val starText =
-                        if (value.count > 9)
-                            view.context.getString(R.string.star_with_count, value.count)
+                        if (star.count > 9)
+                            view.context.getString(R.string.star_with_count, star.count)
                         else
                             buildString {
-                                for (i in 1..value.count) append(view.context.getString(R.string.star))
+                                for (i in 1..star.count) append(view.context.getString(R.string.star))
                             }
 
                     view.star_stars_count.setHtml("<font color=\"$starColor\">$starText</font>")

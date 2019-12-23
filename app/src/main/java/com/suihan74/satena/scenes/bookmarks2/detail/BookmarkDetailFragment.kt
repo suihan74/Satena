@@ -1,31 +1,46 @@
 package com.suihan74.satena.scenes.bookmarks2.detail
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.SpannableString
 import android.text.method.LinkMovementMethod
+import android.text.style.ImageSpan
+import android.text.style.TextAppearanceSpan
 import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
+import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.utilities.BookmarkCommentDecorator
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
 
 class BookmarkDetailFragment : Fragment() {
     private lateinit var activityViewModel: BookmarksViewModel
     private lateinit var viewModel: BookmarkDetailViewModel
+
+    private val bookmarksActivity
+        get() = activity as? BookmarksActivity
 
     companion object {
         fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().apply {
@@ -45,6 +60,10 @@ class BookmarkDetailFragment : Fragment() {
         val bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
         val factory = BookmarkDetailViewModel.Factory(activityViewModel.repository, bookmark)
         viewModel = ViewModelProviders.of(this, factory)[BookmarkDetailViewModel::class.java]
+        viewModel.init { e ->
+            context?.showToast(R.string.msg_get_stars_report_failed)
+            Log.e("userStars", Log.getStackTraceString(e))
+        }
 
         // 画面遷移アニメーション
         enterTransition = TransitionSet()
@@ -79,29 +98,58 @@ class BookmarkDetailFragment : Fragment() {
         }
 
         // スター付与ボタン
-        var areStarButtonsShown = false
         view.show_stars_button.setOnClickListener {
-            if (areStarButtonsShown) {
-                closeStarMenu()
-            }
-            else {
-                openStarMenu()
-            }
-            areStarButtonsShown = !areStarButtonsShown
+            viewModel.starsMenuOpened.postValue(viewModel.starsMenuOpened.value != true)
         }
 
+        // ユーザータグ情報の変更を監視
+        activityViewModel.taggedUsers.observe(this, Observer {
+            initializeUserNameAndUserTags(view)
+        })
+
+        // スターメニューボタンの状態を監視
+        viewModel.starsMenuOpened.observe(this, Observer {
+            if (it) {
+                openStarMenu()
+            }
+            else {
+                closeStarMenu()
+            }
+        })
+
+        // 所持スター情報を監視
+        viewModel.userStars.observe(this, Observer {
+            view.red_stars_count.text = it.red.toString()
+            view.green_stars_count.text = it.green.toString()
+            view.blue_stars_count.text = it.blue.toString()
+            view.purple_stars_count.text = it.purple.toString()
+        })
+
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 戻るボタンを監視
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
+            if (viewModel.starsMenuOpened.value == true) {
+                viewModel.starsMenuOpened.postValue(false)
+            }
+            else {
+                bookmarksActivity?.onBackPressedCallback?.handleOnBackPressed()
+            }
+        }
     }
 
     /** 対象ブクマ表示部を初期化 */
     private fun initializeBookmarkArea(view: View) {
         viewModel.bookmark.also {
-            view.user_name.text = it.user
             view.comment.text = it.comment
             Glide.with(requireContext())
                 .load(it.userIconUrl)
                 .into(view.user_icon)
 
+            // タグ部分
             view.tags_layout.apply {
                 if (it.tags.isNullOrEmpty()) {
                     visibility = View.GONE
@@ -119,6 +167,48 @@ class BookmarkDetailFragment : Fragment() {
                     }
                 }
             }
+
+            // メニューボタン
+            view.menu_button.setOnClickListener {
+                val dialog = BookmarkMenuDialog.createInstance(viewModel.bookmark)
+                dialog.show(childFragmentManager, "bookmark_dialog")
+            }
+        }
+    }
+
+    /** ユーザー名・ユーザータグ表示を初期化 */
+    private fun initializeUserNameAndUserTags(view: View) {
+        view.user_name.run {
+            val bookmark = viewModel.bookmark
+            val user = bookmark.user
+            val tags = activityViewModel.taggedUsers.value?.firstOrNull { it.user.name == user }?.tags?.sortedBy { it.id }
+            text =
+                if (tags.isNullOrEmpty()) {
+                    bookmark.user
+                }
+                else {
+                    val tagsText = tags.joinToString(",") { it.name }
+                    val tagColor = resources.getColor(R.color.tagColor, null)
+                    val st = "$user _$tagsText"
+                    val density = resources.displayMetrics.scaledDensity
+                    val size = (13 * density).toInt()
+
+                    SpannableString(st).apply {
+                        val drawable = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
+                            setBounds(0, 0, lineHeight, lineHeight)
+                            setTint(tagColor)
+                        }
+                        val pos = user.length + 1
+                        setSpan(
+                            ImageSpan(drawable),
+                            pos, pos + 1,
+                            SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        setSpan(
+                            TextAppearanceSpan(null, Typeface.DEFAULT.style, size, ColorStateList.valueOf(tagColor), null),
+                            user.length + 1, st.length,
+                            SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                }
         }
     }
 

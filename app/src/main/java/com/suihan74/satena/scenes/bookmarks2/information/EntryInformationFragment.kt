@@ -7,12 +7,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.RecyclerView
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.HatenaClient
@@ -27,12 +25,18 @@ import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.makeSpannedfromHtml
 import com.suihan74.utilities.showToast
 import com.suihan74.utilities.toVisibility
+import kotlinx.android.synthetic.main.fragment_entry_information.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class EntryInformationFragment : CoroutineScopeFragment() {
     lateinit var activityViewModel: BookmarksViewModel
+
+    private val bookmarksActivity
+        get() = activity as? BookmarksActivity
+
+    private var onBackPressedCallback: OnBackPressedCallback? = null
 
     companion object {
         fun createInstance() = EntryInformationFragment()
@@ -49,9 +53,9 @@ class EntryInformationFragment : CoroutineScopeFragment() {
 
         val entry = activityViewModel.entry
 
-        view.findViewById<TextView>(R.id.title).text = entry.title
+        view.title.text = entry.title
 
-        view.findViewById<TextView>(R.id.page_url).apply {
+        view.page_url.apply {
             text = makeSpannedfromHtml("<u>${Uri.decode(entry.url)}</u>")
 
             setOnClickListener {
@@ -59,13 +63,11 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             }
         }
 
-        view.findViewById<TextView>(R.id.description).text = entry.description
+        view.description.text = entry.description
 
-        view.findViewById<ImageView>(R.id.icon)?.let {
-            Glide.with(view)
-                .load(entry.imageUrl)
-                .into(it)
-        }
+        Glide.with(view)
+            .load(entry.imageUrl)
+            .into(view.icon)
 
         val tagsAdapter = object : TagsAdapter() {
             override fun onItemClicked(tag: String) {
@@ -76,7 +78,7 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             }
         }
 
-        view.findViewById<RecyclerView>(R.id.tags_list).apply {
+        view.tags_list.apply {
             layoutManager = ChipsLayoutManager.newBuilder(context!!)
                 .setMaxViewsInRow(4)
                 .setRowStrategy(ChipsLayoutManager.STRATEGY_DEFAULT)
@@ -85,32 +87,24 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             adapter = tagsAdapter
         }
 
-        view.findViewById<Button>(R.id.to_lower_floor_button).apply {
+        view.to_lower_floor_button.apply {
             visibility = HatenaClient.isUrlCommentPages(entry.url).toVisibility(defaultInvisible = View.INVISIBLE)
 
             setOnClickListener {
-                val activity = activity as ActivityBase
-                activity.showProgressBar()
-
                 launch(Dispatchers.Main) {
                     val url = HatenaClient.getEntryUrlFromCommentPageUrl(entry.url)
                     changeFloor(url)
-                    activity.hideProgressBar()
                 }
             }
         }
 
-        view.findViewById<Button>(R.id.to_upper_floor_button).apply {
+        view.to_upper_floor_button.apply {
             visibility = (entry.count > 0).toVisibility(defaultInvisible = View.INVISIBLE)
 
             setOnClickListener {
-                val activity = activity as ActivityBase
-                activity.showProgressBar()
-
                 launch(Dispatchers.Main) {
                     val url = HatenaClient.getCommentPageUrlFromEntryUrl(entry.url)
                     changeFloor(url)
-                    activity.hideProgressBar()
                 }
             }
         }
@@ -123,6 +117,15 @@ class EntryInformationFragment : CoroutineScopeFragment() {
         })
 
         return view
+    }
+
+    /** このFragmentを表示しているDrawerLayoutがオープンされたときに呼ぶ */
+    fun onShown() {
+        // 戻るボタンを監視
+        onBackPressedCallback = requireActivity().onBackPressedDispatcher.addCallback(this) {
+            bookmarksActivity?.onBackPressedCallback?.handleOnBackPressed()
+            onBackPressedCallback?.remove()
+        }
     }
 
     private suspend fun changeFloor(url: String) {

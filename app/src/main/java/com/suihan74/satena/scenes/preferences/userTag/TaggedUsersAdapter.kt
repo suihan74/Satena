@@ -17,7 +17,7 @@ import com.suihan74.utilities.RecyclerType
 
 open class TaggedUsersAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var states = RecyclerState.makeStatesWithFooter(emptyList<User>())
+    private var states = emptyList<RecyclerState<User>>()
 
     fun setItems(users: List<User>) {
         val newStates = RecyclerState.makeStatesWithFooter(users)

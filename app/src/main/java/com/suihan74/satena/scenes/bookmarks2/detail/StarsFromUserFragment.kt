@@ -18,13 +18,13 @@ import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_stars_tab.view.*
 
-class StarsToUserFragment : Fragment(), ScrollableToTop {
+class StarsFromUserFragment : Fragment(), ScrollableToTop {
     private val detailViewModel: BookmarkDetailViewModel by lazy {
         ViewModelProviders.of(parentFragment as BookmarkDetailFragment)[BookmarkDetailViewModel::class.java]
     }
 
     companion object {
-        fun createInstance() = StarsToUserFragment()
+        fun createInstance() = StarsFromUserFragment()
     }
 
     override fun onCreateView(
@@ -58,7 +58,7 @@ class StarsToUserFragment : Fragment(), ScrollableToTop {
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
-                detailViewModel.updateStarsToUser().invokeOnCompletion { e ->
+                detailViewModel.updateStarsAll(forceUpdate = true).invokeOnCompletion { e ->
                     if (e != null) {
                         context.showToast(R.string.msg_update_stars_failed)
                         Log.d("FailedToUpdateStars", Log.getStackTraceString(e))
@@ -69,9 +69,9 @@ class StarsToUserFragment : Fragment(), ScrollableToTop {
         }
 
         // ユーザーに付けられたスターリストの更新を監視する
-        detailViewModel.starsToUser.observe(this, Observer {
+        detailViewModel.starsAll.observe(this, Observer {
             starsAdapter.setStars(
-                detailViewModel.getStarsWithBookmarkTo(detailViewModel.bookmark.user)
+                detailViewModel.getStarsWithBookmarkFrom(detailViewModel.bookmark.user)
             )
         })
 
