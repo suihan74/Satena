@@ -15,6 +15,9 @@ open class BaseClient {
         setCookiePolicy(CookiePolicy.ACCEPT_ALL)
     }
 
+    protected val clientWithoutCookie =
+        OkHttpClient()
+
     protected val client : OkHttpClient =
         OkHttpClient().newBuilder()
         .readTimeout(3, TimeUnit.MINUTES)
@@ -26,11 +29,16 @@ open class BaseClient {
     // キャッシュ回避
     protected fun cacheAvoidance() : String = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC).toString()
 
-    protected fun get(url: String) : Response {
+    protected fun get(url: String, withCookie: Boolean = true) : Response {
         val request = Request.Builder()
             .url(url)
             .build()
-        val call = client.newCall(request)
+
+        val httpClient =
+            if (withCookie) client
+            else clientWithoutCookie
+
+        val call = httpClient.newCall(request)
         return call.execute()
     }
 
@@ -120,9 +128,9 @@ open class BaseClient {
         }
     }
 
-    protected fun <T> getJson(type: Type, url: String, dateFormat: String? = null) : T {
+    protected fun <T> getJson(type: Type, url: String, dateFormat: String? = null, withCookie: Boolean = true) : T {
         try {
-            val response = get(url)
+            val response = get(url, withCookie)
             return responseTo(type, response, dateFormat)
         }
         catch (e: Exception) {
@@ -133,6 +141,6 @@ open class BaseClient {
     protected inline fun <reified T> getJson(url: String, gsonBuilder: GsonBuilder) =
         getJson<T>(T::class.java, url, gsonBuilder)
 
-    protected inline fun <reified T> getJson(url: String, dateFormat: String? = null) =
-        getJson<T>(T::class.java, url, dateFormat)
+    protected inline fun <reified T> getJson(url: String, dateFormat: String? = null, withCookie: Boolean = true) =
+        getJson<T>(T::class.java, url, dateFormat, withCookie)
 }
