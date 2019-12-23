@@ -13,9 +13,9 @@ import java.io.Serializable
 data class Bookmark (
     val user : String,
     val comment : String,
-    val tags : List<String>,
-    val timestamp : LocalDateTime,
-    val starCount : List<Star>?
+    val tags : List<String> = emptyList(),
+    val timestamp : LocalDateTime = LocalDateTime.MIN,
+    val starCount : List<Star>? = null
 ) : Serializable {
     companion object {
         fun createFrom(src: BookmarkWithStarCount) = Bookmark(
