@@ -10,15 +10,13 @@ import android.widget.ImageButton
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.viewpager.widget.ViewPager
+import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.entries.EntriesActivity
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.BackPressable
-import com.suihan74.utilities.PermissionRequestable
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -153,7 +151,11 @@ class PreferencesActivity : ActivityBase() {
 
         try {
             // 再ログイン
-            AccountLoader.signInAccounts(this, true)
+            AccountLoader(
+                applicationContext,
+                HatenaClient,
+                MastodonClientHolder
+            ).signInAccounts(true)
         }
         catch (e: Exception) {
             Log.e("FailedToReload", e.message)

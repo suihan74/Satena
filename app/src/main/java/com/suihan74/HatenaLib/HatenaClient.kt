@@ -782,7 +782,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             if (of != null) append("&of=$of")
         }
         val listType = object : TypeToken<List<BookmarkWithStarCount>>() {}.type
-        return@async getJson<List<BookmarkWithStarCount>>(listType, apiUrl)
+        return@async getJson<List<BookmarkWithStarCount>>(listType, apiUrl, withCookie = false)
     }
 
     /**
@@ -793,7 +793,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             append("$B_BASE_URL/api/ipad.entry_reactions?url=${Uri.encode(url)}")
             if (limit != null) append("&limit=$limit")
         }
-        return@async getJson<BookmarksDigest>(apiUrl)
+        return@async getJson<BookmarksDigest>(apiUrl, withCookie = false)
     }
 
     /**
@@ -947,7 +947,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val apiUrl = "$S_BASE_URL/entry.json?uri=${Uri.encode(url)}&${cacheAvoidance()}"
         val gsonBuilder = getGsonBuilderForStars()
         val response = getJson<StarsEntries>(apiUrl, gsonBuilder)
-        return@async response.entries[0]
+        return@async response.entries.getOrNull(0) ?: StarsEntry(url = url, stars = emptyList(), coloredStars = null)
     }
 
     /**

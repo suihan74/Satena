@@ -13,10 +13,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.post.BookmarkPostFragment
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.lock
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.coroutines.*
 
 class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
@@ -255,6 +252,11 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
             preLoadingTasks = null
         }
 
+        val accountLoader = AccountLoader(
+            applicationContext,
+            HatenaClient,
+            MastodonClientHolder
+        )
         val entry =
             extraEntry ?:
             extraBookmarksEntry ?:
@@ -264,7 +266,10 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
                 val url = modifySpecificUrls(intent.getStringExtra(Intent.EXTRA_TEXT))!!
                 if (!URLUtil.isNetworkUrl(url)) throw RuntimeException("invalid url shared")
 
-                AccountLoader.signInAccounts(applicationContext)
+                try {
+                    accountLoader.signInAccounts()
+                }
+                finally {}
 
                 preLoadingTasks = null
 
@@ -289,7 +294,11 @@ class BookmarksActivity : ActivityBase(), BookmarkPostFragment.ResultListener {
                 val commentUrl = intent.dataString ?: ""
                 val url = HatenaClient.getEntryUrlFromCommentPageUrl(commentUrl)
 
-                AccountLoader.signInAccounts(applicationContext)
+                try {
+                    accountLoader.signInAccounts()
+                }
+                finally {}
+
                 try {
                     HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
                         .firstOrNull { it.url == url }

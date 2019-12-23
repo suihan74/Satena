@@ -14,7 +14,7 @@ import com.suihan74.utilities.RecyclerType
 
 open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var states = RecyclerState.makeStatesWithFooter(emptyList<IgnoredEntry>())
+    private var states = emptyList<RecyclerState<IgnoredEntry>>()
 
     fun setItem(entries: List<IgnoredEntry>) {
         val newEntries = RecyclerState.makeStatesWithFooter(entries)
@@ -40,25 +40,6 @@ open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>
         states = newEntries
 
         result.dispatchUpdatesTo(this)
-    }
-
-    fun addItem(entry: IgnoredEntry) {
-        states.add(0, RecyclerState(RecyclerType.BODY, entry))
-        notifyItemInserted(0)
-    }
-
-    fun removeItem(entry: IgnoredEntry) {
-        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body == entry }
-        states.removeAt(position)
-        notifyItemRemoved(position)
-    }
-
-    fun modifyItem(older: IgnoredEntry, newer: IgnoredEntry) {
-        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body == older }
-        if (position >= 0) {
-            states[position].body = newer
-            notifyItemChanged(position)
-        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder =

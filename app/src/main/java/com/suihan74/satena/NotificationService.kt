@@ -16,6 +16,7 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.notices.message
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.makeSpannedfromHtml
 import kotlinx.coroutines.*
@@ -159,7 +160,11 @@ class NotificationService : Service(), CoroutineScope {
             val localLastUpdated = prefs.getNullable<LocalDateTime>(PreferenceKey.NOTICES_LAST_SEEN)
             val now = LocalDateTime.now()
 
-            AccountLoader.signInHatenaAsync(context, reSignIn = false).await()
+            AccountLoader(
+                context,
+                HatenaClient,
+                MastodonClientHolder
+            ).signInHatenaAsync().await()
 
             val response = HatenaClient.getNoticesAsync().await()
             if (isLastSeenUpdatable) {

@@ -190,6 +190,10 @@
     <string name="msg_user_tagged_single">id:%s にタグをつけました</string>
     <string name="msg_user_has_already_tagged">タグ「%s」はid:%sに既についています</string>
 
+    <!-- 認証 -->
+    <string name="msg_auth_failed">アカウント認証失敗</string>
+    <string name="msg_auth_mastodon_failed">Mastodon認証失敗</string>
+
     <!-- エントリ画面 -->
     <string name="my_bookmarks_button_desc_my_bookmarks">マイブックマーク</string>
     <string name="my_bookmarks_button_desc_sign_in">ログイン</string>
@@ -199,7 +203,6 @@
     <string name="desc_site_entries_order">表示順</string>
     <string name="desc_search_type">検索対象</string>
     <string name="desc_search_order">検索順</string>
-    <string name="msg_auth_failed">アカウント認証失敗</string>
     <string name="msg_get_categories_failed">カテゴリ・特集情報の取得に失敗しました</string>
     <string name="msg_update_entries_failed">エントリ更新失敗</string>
     <string name="msg_get_stars_report_failed">スターの取得失敗</string>

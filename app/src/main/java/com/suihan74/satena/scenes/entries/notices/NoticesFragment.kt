@@ -14,8 +14,10 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Notice
+import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -23,7 +25,7 @@ import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.SafeSharedPreferences
@@ -68,10 +70,15 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
                             try {
                                 activity.showProgressBar()
 
-                                val entry = HatenaClient.getBookmarksEntryAsync(notice.eid).await()
+                                val siteUrl = HatenaClient.getEntryUrlFromIdAsync(notice.eid).await()
+                                val entry = HatenaClient.searchEntriesAsync(siteUrl, SearchType.Text).await().firstOrNull {
+                                    it.id == notice.eid
+                                }
+
+                                checkNotNull (entry)
 
                                 val intent = Intent(activity, BookmarksActivity::class.java).apply {
-                                    putExtra(BookmarksActivity.EXTRA_BOOKMARKS_ENTRY, entry)
+                                    putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
                                     putExtra(BookmarksActivity.EXTRA_TARGET_USER, HatenaClient.account!!.name)
                                 }
                                 startActivity(intent)

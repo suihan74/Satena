@@ -20,5 +20,10 @@ class Star(
 
     val userIconUrl : String
         get() = "http://cdn1.www.st-hatena.com/users/$user/profile.gif"
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is Star) return false
+        return color == other.color && count == other.count && quote == other.quote
+    }
 }
 

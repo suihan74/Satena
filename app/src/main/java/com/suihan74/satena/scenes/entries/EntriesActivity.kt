@@ -30,10 +30,7 @@ import com.suihan74.satena.scenes.entries.notices.NoticesFragment
 import com.suihan74.satena.scenes.entries.pages.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.hideSoftInputMethod
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
@@ -248,30 +245,37 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
 
                 // アカウント情報を取得
                 try {
-                    AccountLoader.signInAccounts(applicationContext)
+                    AccountLoader(
+                        applicationContext,
+                        HatenaClient,
+                        MastodonClientHolder
+                    ).signInAccounts()
                 }
-                catch (e: Exception) {
+                catch (e: AccountLoader.HatenaSignInException) {
                     showToast(R.string.msg_auth_failed)
-                    Log.e("FailedToAuth", Log.getStackTraceString(e))
+                    Log.e("AuthHatena", Log.getStackTraceString(e))
+                }
+                catch (e: AccountLoader.MastodonSignInException) {
+                    showToast(R.string.msg_auth_mastodon_failed)
+                    Log.e("AuthMastodon", Log.getStackTraceString(e))
                 }
                 finally {
-                    val category = if (savedInstanceState == null) {
-                        val home = Category.fromInt(prefs.get(PreferenceKey.ENTRIES_HOME_CATEGORY))
-                        if (home.requireSignedIn && !HatenaClient.signedIn()) {
-                            // ログインが必要なカテゴリがホームに設定されているのにログインしていないとき，「総合」に設定し直す
-                            prefs.edit {
-                                putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.All.ordinal)
+                    val category =
+                        if (savedInstanceState == null) {
+                            val home = Category.fromInt(prefs.get(PreferenceKey.ENTRIES_HOME_CATEGORY))
+                            if (home.requireSignedIn && !HatenaClient.signedIn()) {
+                                // ログインが必要なカテゴリがホームに設定されているのにログインしていないとき，「総合」に設定し直す
+                                prefs.edit {
+                                    putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.All.ordinal)
+                                }
+                                Category.All
                             }
-                            Category.All
+                            else home
                         }
                         else {
-                            home
+                            entriesShowed = savedInstanceState.getBoolean("entries_showed")
+                            Category.fromInt(savedInstanceState.getInt("mCurrentCategory"))
                         }
-                    }
-                    else {
-                        entriesShowed = savedInstanceState.getBoolean("entries_showed")
-                        Category.fromInt(savedInstanceState.getInt("mCurrentCategory"))
-                    }
                     mCurrentCategory = category
 
                     setMyBookmarkButton()
