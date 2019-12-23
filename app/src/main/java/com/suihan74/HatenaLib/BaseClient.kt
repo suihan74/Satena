@@ -15,16 +15,17 @@ open class BaseClient {
         setCookiePolicy(CookiePolicy.ACCEPT_ALL)
     }
 
-    protected val clientWithoutCookie =
-        OkHttpClient()
+    protected val clientWithoutCookie
+        get() = OkHttpClient.Builder().build()
 
-    protected val client : OkHttpClient =
-        OkHttpClient().newBuilder()
-        .readTimeout(3, TimeUnit.MINUTES)
-        .writeTimeout(3, TimeUnit.MINUTES)
-        .connectTimeout(3, TimeUnit.MINUTES)
-        .cookieJar(JavaNetCookieJar(cookieManager))
-        .build()
+    protected val client : OkHttpClient
+        get() =
+            OkHttpClient.Builder()
+            .readTimeout(3, TimeUnit.MINUTES)
+            .writeTimeout(3, TimeUnit.MINUTES)
+            .connectTimeout(3, TimeUnit.MINUTES)
+            .cookieJar(JavaNetCookieJar(cookieManager))
+            .build()
 
     // キャッシュ回避
     protected fun cacheAvoidance() : String = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC).toString()
