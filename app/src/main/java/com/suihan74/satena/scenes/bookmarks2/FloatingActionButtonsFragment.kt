@@ -128,7 +128,7 @@ class FloatingActionButtonsFragment : Fragment() {
         if (fragmentViewModel.selectedTab.value != BookmarksTabType.CUSTOM.ordinal) {
             view.custom_settings_button.hide()
         }
-        view.bookmarks_search_text.visibility = (activityViewModel.filteringWord.value != null).toVisibility(View.GONE)
+        view.bookmarks_search_text.visibility = (!activityViewModel.filteringWord.value.isNullOrBlank()).toVisibility(View.GONE)
 
         // ブクマ投稿ボタン
         view.bookmark_button.setOnClickListener {
@@ -169,7 +169,6 @@ class FloatingActionButtonsFragment : Fragment() {
 
         // 検索キーワード入力ボックス
         view.bookmarks_search_text.apply {
-            // TODO: 無効化した後で画面回転すると何故か有効な値が再代入される
             setText(activityViewModel.filteringWord.value)
             addTextChangedListener {
                 activityViewModel.filteringWord.postValue(it.toString())
