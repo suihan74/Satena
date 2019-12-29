@@ -1241,6 +1241,17 @@ object HatenaClient : BaseClient(), CoroutineScope {
     }
 
     /**
+     * ユーザーを通報する(b.hatena)
+     */
+    fun reportAsync(report: Report) =
+        reportAsync(
+            entry = report.entry,
+            bookmark = report.bookmark,
+            category = report.category,
+            text = report.comment ?: ""
+        )
+
+    /**
      * ユーザーを通報する(www.hatena)
      */
     fun reportAsync(

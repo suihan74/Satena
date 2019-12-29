@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
+import com.suihan74.HatenaLib.Report
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.models.userTag.Tag
@@ -52,9 +53,9 @@ class BookmarksViewModel(
     }
 
     /** IgnoredEntryで設定された非表示ワード */
-    private var ignoredWords = emptyList<String>()
+    var muteWords = emptyList<String>()
         get() = lock(field) { field }
-        set(value) {
+        private set(value) {
             lock(field) { field = value }
         }
 
@@ -76,7 +77,7 @@ class BookmarksViewModel(
     ) {
         try {
             ignoredEntryRepository.load()
-            ignoredWords = ignoredEntryRepository.ignoredEntries
+            muteWords = ignoredEntryRepository.ignoredEntries
                 .filter { it.type == IgnoredEntryType.TEXT && it.target.contains(IgnoreTarget.BOOKMARK) }
                 .map { it.query }
 
@@ -142,7 +143,7 @@ class BookmarksViewModel(
     fun filter(bookmarks: List<Bookmark>) =
         keywordFilter(bookmarks).filterNot { b ->
             repository.ignoredUsers.any { it == b.user }
-                    || ignoredWords.any { b.containsKeyword(it) }
+                    || muteWords.any { b.containsKeyword(it) }
         }
 
     /** ブクマリストからキーワードで抽出 */
@@ -207,18 +208,30 @@ class BookmarksViewModel(
     }
 
     /** ユーザーの非表示状態を変更する */
-    fun setUserIgnoreState(user: String, ignore: Boolean, onError: CompletionHandler? = null, onSuccess: (()->Unit)? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e ->
-            onError?.invoke(e)
+    fun setUserIgnoreState(
+        user: String,
+        ignore: Boolean,
+        onSuccess: (()->Unit)? = null,
+        onError: ((Throwable)->Unit)? = null
+    ) = viewModelScope.launch {
+        try {
+            if (ignore) {
+                repository.ignoreUserAsync(user).await()
+            }
+            else {
+                repository.unignoreUserAsync(user).await()
+            }
         }
-    ) {
-        if (ignore) {
-            repository.ignoreUserAsync(user).await()
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
+            return@launch
         }
-        else {
-            repository.unignoreUserAsync(user).await()
+
+        withContext(Dispatchers.Main) {
+            onSuccess?.invoke()
         }
-        onSuccess?.invoke()
     }
 
     /** ユーザーにタグをつける */
@@ -237,6 +250,27 @@ class BookmarksViewModel(
     suspend fun loadUserTags() {
         taggedUsers.postValue(userTagRepository.loadUsers())
         userTags.postValue(userTagRepository.loadTags())
+    }
+
+    /** ブクマを通報 */
+    fun reportBookmark(
+        report: Report,
+        onSuccess: (()->Unit)? = null,
+        onError: ((Throwable)->Unit)? = null
+    ) = viewModelScope.launch {
+        try {
+            repository.reportBookmark(report)
+        }
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
+            return@launch
+        }
+
+        withContext(Dispatchers.Main) {
+            onSuccess?.invoke()
+        }
     }
 
     /** ViewModelProvidersを使用する際の依存性注入 */

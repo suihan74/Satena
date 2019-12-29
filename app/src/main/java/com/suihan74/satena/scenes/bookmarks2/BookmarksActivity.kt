@@ -11,16 +11,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.suihan74.HatenaLib.Bookmark
-import com.suihan74.HatenaLib.BookmarksEntry
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
+import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
@@ -35,7 +33,8 @@ import kotlinx.android.synthetic.main.activity_bookmarks2.*
 class BookmarksActivity :
     AppCompatActivity(),
     BookmarkMenuDialog.Listener,
-    UserTagSelectionDialog.Listener
+    UserTagSelectionDialog.Listener,
+    ReportDialog.Listener
 {
     /** ViewModel */
     private lateinit var viewModel: BookmarksViewModel
@@ -197,27 +196,28 @@ class BookmarksActivity :
 
     override fun onIgnoreUser(user: String, ignore: Boolean) {
         viewModel.setUserIgnoreState(
-            user = user,
-            ignore = ignore,
-            onError = { e ->
-                val msgId =
-                    if (ignore) R.string.msg_ignore_user_failed
-                    else R.string.msg_unignore_user_failed
-                showToast(msgId, user)
-                Log.d("ignoreUser", "failed: user = $user")
-                e?.printStackTrace()
-            },
+            user,
+            ignore,
             onSuccess = {
                 val msgId =
                     if (ignore) R.string.msg_ignore_user_succeeded
                     else R.string.msg_unignore_user_succeeded
                 showToast(msgId, user)
+            },
+            onError = { e ->
+                val msgId =
+                    if (ignore) R.string.msg_ignore_user_failed
+                    else R.string.msg_unignore_user_failed
+                showToast(msgId, user)
+                Log.e("ignoreUser", "failed: user = $user")
+                e.printStackTrace()
             }
         )
     }
 
     override fun onReportBookmark(bookmark: Bookmark) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val dialog = ReportDialog.createInstance(viewModel.entry, bookmark)
+        dialog.show(supportFragmentManager, "report_dialog")
     }
 
     override fun onSetUserTag(user: String) {
@@ -244,5 +244,38 @@ class BookmarksActivity :
 
     override suspend fun reloadUserTags() {
         viewModel.loadUserTags()
+    }
+
+    // --- ReportDialogの処理 --- //
+
+    override fun onReportBookmark(model: ReportDialog.Model) {
+        val user = model.report.bookmark.user
+        viewModel.reportBookmark(
+            model.report,
+            onSuccess = {
+                if (model.ignoreAfterReporting && !viewModel.ignoredUsers.value.contains(user)) {
+                    viewModel.setUserIgnoreState(
+                        user,
+                        true,
+                        onSuccess = {
+                            showToast(R.string.msg_report_and_ignore_succeeded, user)
+                        },
+                        onError = { e ->
+                            showToast(R.string.msg_ignore_user_failed, user)
+                            Log.e("ignoreUser", "failed: user = $user")
+                            e.printStackTrace()
+                        }
+                    )
+                }
+                else {
+                    showToast(R.string.msg_report_succeeded, user)
+                }
+            },
+            onError = { e ->
+                showToast(R.string.msg_report_failed)
+                Log.e("onReportBookmark", "error user: $user")
+                e.printStackTrace()
+            }
+        )
     }
 }

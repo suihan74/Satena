@@ -199,6 +199,11 @@ class BookmarksRepository(
         )
     }
 
+    /** ブクマを通報 */
+    suspend fun reportBookmark(report: Report) {
+        client.reportAsync(report).await()
+    }
+
 // ------ //
 
     class IgnoredUsersLiveData(

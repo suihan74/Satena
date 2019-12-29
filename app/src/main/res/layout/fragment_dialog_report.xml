@@ -11,34 +11,55 @@
 
     <include layout="@layout/dialog_title_bookmark"/>
 
-    <TextView
-            android:id="@+id/description"
-            android:text="@string/report_dialog_description"
-            android:textColor="@color/textColor"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="6dp"
+    <ScrollView
+            android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+            android:scrollbarSize="4dp"
+            android:scrollbars="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content">
 
-    <androidx.appcompat.widget.AppCompatSpinner
-            android:id="@+id/category_spinner"
-            app:backgroundTint="@color/colorPrimary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-    <EditText
-            android:id="@+id/text"
-            android:textColor="@color/textColor"
-            android:importantForAutofill="no"
-            android:hint="@string/report_dialog_text_hint"
+            <TextView
+                    android:id="@+id/description"
+                    android:text="@string/report_dialog_description"
+                    android:textColor="@color/textColor"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
 
-            android:gravity="top"
-            android:inputType="text"
-            android:singleLine="true"
-            android:maxLines="10"
-            android:imeOptions="actionDone"
+            <androidx.appcompat.widget.AppCompatSpinner
+                    android:id="@+id/category_spinner"
+                    app:backgroundTint="@color/colorPrimary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
 
-            android:layout_width="match_parent"
-            android:layout_height="120dp"/>
+            <EditText
+                    android:id="@+id/text"
+                    android:textColor="@color/textColor"
+                    android:importantForAutofill="no"
+                    android:hint="@string/report_dialog_text_hint"
 
+                    android:gravity="top"
+                    android:inputType="text"
+                    android:singleLine="true"
+                    android:maxLines="10"
+                    android:imeOptions="actionDone"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"/>
+
+            <CheckBox
+                    android:id="@+id/ignore_user_after_reporting"
+                    android:text="@string/report_dialog_ignore_after_reporting_hint"
+                    android:textColor="@color/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
