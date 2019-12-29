@@ -4,12 +4,18 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.HatenaLib.Bookmark
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
+import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.Job
 
 /** タブごとに表示内容を変更するためBookmarksTabViewModelを継承して必要なメソッドを埋める */
 abstract class BookmarksTabViewModel : ViewModel() {
-    lateinit var bookmarksViewModel: BookmarksViewModel
+    protected lateinit var bookmarksViewModel: BookmarksViewModel
+        private set
+
+    protected lateinit var preferences: SafeSharedPreferences<PreferenceKey>
+        private set
 
     /** タブごとに表示するブクマリスト */
     val bookmarks by lazy {
@@ -73,12 +79,14 @@ abstract class BookmarksTabViewModel : ViewModel() {
 
 
     class Factory (
-        private val bookmarksViewModel: BookmarksViewModel
+        private val bookmarksViewModel: BookmarksViewModel,
+        private val preferences: SafeSharedPreferences<PreferenceKey>
     ) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) =
             (modelClass.newInstance() as BookmarksTabViewModel).apply {
                 bookmarksViewModel = this@Factory.bookmarksViewModel
+                preferences = this@Factory.preferences
             } as T
     }
 }

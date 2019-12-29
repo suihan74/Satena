@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.BookmarksTabType
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.*
 import com.suihan74.utilities.*
@@ -53,9 +54,10 @@ class BookmarksTabFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val factory = BookmarksTabViewModel.Factory(activityViewModel)
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
+        val factory = BookmarksTabViewModel.Factory(activityViewModel, prefs)
         viewModel =
-            when (BookmarksTabType.fromInt(arguments!!.getInt(ARG_TAB_TYPE))) {
+            when (BookmarksTabType.fromInt(requireArguments().getInt(ARG_TAB_TYPE))) {
                 BookmarksTabType.POPULAR ->
                     ViewModelProviders.of(this, factory)[PopularTabViewModel::class.java]
 

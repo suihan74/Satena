@@ -11,17 +11,19 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.models.BookmarksTabType
+import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
+import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.search_button
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
-class FloatingActionButtonsFragment : Fragment() {
+class FloatingActionButtonsFragment :
+    Fragment(),
+    CustomTabSettingsDialog.Listener
+{
     /** BookmarksActivityのViewModel */
     private val activityViewModel: BookmarksViewModel by lazy {
         ViewModelProviders.of(activity as BookmarksActivity)[BookmarksViewModel::class.java]
@@ -174,5 +176,24 @@ class FloatingActionButtonsFragment : Fragment() {
                 activityViewModel.filteringWord.postValue(it.toString())
             }
         }
+
+        // カスタムタブ設定ボタン
+        view.custom_settings_button.setOnClickListener {
+            val dialog = CustomTabSettingsDialog.createInstance()
+            dialog.show(childFragmentManager, "custom_tab_settings_dialog")
+        }
+    }
+
+
+    // --- CustomTabSettingsDialog --- //
+
+    override fun getCustomTabSettings() =
+        (tabViewModel as CustomTabViewModel).settings!!
+
+    override fun getUserTags() =
+        activityViewModel.userTags.value ?: emptyList()
+
+    override fun onPositiveButtonClicked(set: CustomTabViewModel.Settings) {
+        (tabViewModel as? CustomTabViewModel)?.saveSettings(set)
     }
 }
