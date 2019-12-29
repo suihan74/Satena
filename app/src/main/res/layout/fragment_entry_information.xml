@@ -107,7 +107,9 @@
             style="@style/Widget.AppCompat.Button"
             android:textColor="@color/textColor"
             android:layout_above="@id/bottom_contents_layout"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="12dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:layout_alignStart="@id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
@@ -119,7 +121,9 @@
             android:textColor="@color/textColor"
             android:layout_alignParentEnd="true"
             android:layout_above="@id/bottom_contents_layout"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="12dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:layout_alignEnd="@id/icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
