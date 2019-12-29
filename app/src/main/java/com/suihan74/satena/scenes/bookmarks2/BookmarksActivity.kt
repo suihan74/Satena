@@ -11,11 +11,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.userTag.Tag
+import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
@@ -29,6 +31,8 @@ import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class BookmarksActivity :
     AppCompatActivity(),
@@ -46,8 +50,11 @@ class BookmarksActivity :
 
     companion object {
         // Intent EXTRA keys
-        /** Entryを渡す */
+        /** Entryを直接渡す場合 */
         const val EXTRA_ENTRY = "BookmarksActivity.EXTRA_ENTRY"
+        /** EntryのURLを渡す場合 */
+        const val EXTRA_ENTRY_URL = "BookmarksActivity.EXTRA_ENTRY_URL"
+        /** 画面表示後直接特定のユーザーのブクマを表示する場合その対象 */
         const val EXTRA_TARGET_USER = "BookmarksActivity.EXTRA_TARGET_USER"
     }
 
@@ -63,25 +70,62 @@ class BookmarksActivity :
         )
         setContentView(R.layout.activity_bookmarks2)
 
-        val entry = intent.getSerializableExtra(EXTRA_ENTRY) as Entry
         val targetUser = intent.getStringExtra(EXTRA_TARGET_USER)
 
-        val factory = BookmarksViewModel.Factory(
-            BookmarksRepository(
-                entry = entry,
-                client = HatenaClient,
-                accountLoader = AccountLoader(applicationContext, HatenaClient, MastodonClientHolder)
-            ),
-            UserTagRepository(
-                SatenaApplication.instance.userTagDao
-            ),
-            IgnoredEntryRepository(
-                SatenaApplication.instance.ignoredEntryDao
-            )
-        )
-        viewModel = ViewModelProviders.of(this, factory)[BookmarksViewModel::class.java]
+        val firstLaunching = savedInstanceState == null
+        if (firstLaunching) {
+            val entry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
 
-        viewModel.init(loading = savedInstanceState == null) { e ->
+            val repository = BookmarksRepository(
+                client = HatenaClient,
+                accountLoader = AccountLoader(
+                    applicationContext,
+                    HatenaClient,
+                    MastodonClientHolder
+                )
+            )
+
+            val factory = BookmarksViewModel.Factory(
+                repository,
+                UserTagRepository(
+                    SatenaApplication.instance.userTagDao
+                ),
+                IgnoredEntryRepository(
+                    SatenaApplication.instance.ignoredEntryDao
+                )
+            )
+            viewModel = ViewModelProviders.of(this, factory)[BookmarksViewModel::class.java]
+
+            if (entry == null) {
+                val url = intent.getStringExtra(EXTRA_ENTRY_URL) ?: intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+                toolbar.title = url
+
+                viewModel.loadEntry(
+                    url = url,
+                    onSuccess = {
+                        init(firstLaunching, targetUser)
+                    },
+                    onError = { e ->
+                        showToast(R.string.msg_update_bookmarks_failed)
+                        Log.e("BookmarksActivity", Log.getStackTraceString(e))
+                        progress_bar.visibility = View.INVISIBLE
+                    }
+                )
+            }
+            else {
+                repository.setEntry(entry)
+                init(firstLaunching, targetUser)
+            }
+        }
+        else {
+            viewModel = ViewModelProviders.of(this)[BookmarksViewModel::class.java]
+            init(firstLaunching, targetUser)
+        }
+    }
+
+    /** entryロード完了後に画面を初期化 */
+    private fun init(firstLaunching: Boolean, targetUser: String?) {
+        viewModel.init(loading = firstLaunching) { e ->
             when (e) {
                 is AccountLoader.HatenaSignInException ->
                     showToast(R.string.msg_auth_failed)
@@ -96,11 +140,14 @@ class BookmarksActivity :
 
         // Toolbar
         toolbar.apply {
-            title = entry.title
+            title = viewModel.entry.title
         }
 
         // Drawerの開閉を監視する
-        val drawerToggle = object : ActionBarDrawerToggle(this, drawer_layout, toolbar,
+        val drawerToggle = object : ActionBarDrawerToggle(
+            this,
+            drawer_layout,
+            toolbar,
             R.string.drawer_open,
             R.string.drawer_close
         ) {
@@ -138,7 +185,7 @@ class BookmarksActivity :
         }
 
         // コンテンツの初期化
-        if (savedInstanceState == null) {
+        if (firstLaunching) {
             val bookmarksFragment = BookmarksFragment.createInstance()
             val entryInformationFragment = EntryInformationFragment.createInstance()
             val buttonsFragment = FloatingActionButtonsFragment.createInstance()
@@ -154,6 +201,8 @@ class BookmarksActivity :
                 showBookmarkDetail(targetUser)
             }
         }
+
+        progress_bar.visibility = View.INVISIBLE
     }
 
     /** ブクマ詳細画面を開く */

@@ -87,25 +87,27 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             adapter = tagsAdapter
         }
 
+        // -1階
         view.to_lower_floor_button.apply {
             visibility = HatenaClient.isUrlCommentPages(entry.url).toVisibility(defaultInvisible = View.INVISIBLE)
 
             setOnClickListener {
-                launch(Dispatchers.Main) {
+//                launch(Dispatchers.Main) {
                     val url = HatenaClient.getEntryUrlFromCommentPageUrl(entry.url)
                     changeFloor(url)
-                }
+//                }
             }
         }
 
+        // +1階 (今見ているページのコメントページに移動)
         view.to_upper_floor_button.apply {
             visibility = (entry.count > 0).toVisibility(defaultInvisible = View.INVISIBLE)
 
             setOnClickListener {
-                launch(Dispatchers.Main) {
+//                launch(Dispatchers.Main) {
                     val url = HatenaClient.getCommentPageUrlFromEntryUrl(entry.url)
                     changeFloor(url)
-                }
+//                }
             }
         }
 
@@ -128,6 +130,7 @@ class EntryInformationFragment : CoroutineScopeFragment() {
         }
     }
 
+/*
     private suspend fun changeFloor(url: String) {
         try {
             val entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
@@ -145,5 +148,12 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             Log.d("SearchEntry", e.message)
             context?.showToast(R.string.msg_get_entry_information_failed)
         }
+    }*/
+
+    private fun changeFloor(url: String) {
+        val intent = Intent(context, BookmarksActivity::class.java).apply {
+            putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
+        }
+        context?.startActivity(intent)
     }
 }

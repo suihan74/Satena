@@ -4,16 +4,18 @@ import androidx.lifecycle.LiveData
 import com.suihan74.HatenaLib.*
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.lock
-import kotlinx.coroutines.CompletionHandler
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
 class BookmarksRepository(
-    val entry: Entry,
     private val client: HatenaClient,
     private val accountLoader: AccountLoader
 ) {
+    /** エントリ情報 */
+    lateinit var entry: Entry
+        private set
+
     /** ブクマエントリ */
     var bookmarksEntry: BookmarksEntry? = null
         private set
@@ -65,6 +67,18 @@ class BookmarksRepository(
             if (it.value.allStars.any { star -> star.user == user }) it.value
             else null
         }
+    }
+
+    /** エントリ情報を取得 */
+    suspend fun loadEntry(url: String) {
+        val existed = client.searchEntriesAsync(url, SearchType.Text).await()
+            .firstOrNull { it.url == url }
+        entry = existed ?: client.getEmptyEntryAsync(url).await()
+    }
+
+    /** 既にロード済みのエントリ情報をリポジトリにセットする */
+    fun setEntry(entry: Entry) {
+        this.entry = entry
     }
 
     /** ブックマークエントリを取得 */

@@ -12,6 +12,7 @@ import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.UserAndTags
+import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.lock
@@ -71,6 +72,23 @@ class BookmarksViewModel(
         bookmarksRecent.postValue(repository.bookmarksRecent)
     }
 
+    fun loadEntry(url: String, onSuccess: (() -> Unit)? = null, onError: CompletionHandler? = null) = viewModelScope.launch {
+        try {
+            repository.loadEntry(modifySpecificUrls(url)!!)
+            init(true, onError)
+        }
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
+            return@launch
+        }
+
+        withContext(Dispatchers.Main) {
+            onSuccess?.invoke()
+        }
+    }
+
     /** 初期化 */
     fun init(loading: Boolean, onError: CompletionHandler? = null) = viewModelScope.launch(
         CoroutineExceptionHandler { _, e -> onError?.invoke(e) }
@@ -83,6 +101,7 @@ class BookmarksViewModel(
 
             repository.init()
         }
+        catch (e: Throwable) {}
         finally {}
 
         if (loading) {
