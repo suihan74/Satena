@@ -13,9 +13,8 @@ import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.core.view.GravityCompat
@@ -145,7 +144,30 @@ class BookmarkDetailFragment : Fragment() {
     private fun initializeBookmarkArea(view: View) {
         viewModel.bookmark.also {
             val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
-            view.comment.text = analyzedComment.comment
+            view.comment.let { comment ->
+                comment.text = analyzedComment.comment
+
+                // 選択テキストを画面下部で強調表示，スターを付ける際に引用文とする
+                comment.customSelectionActionModeCallback = object : ActionMode.Callback {
+                    override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) : Boolean {
+                        view.quote_text_view.apply {
+                            val selectedText = comment.text.substring(comment.selectionStart, comment.selectionEnd)
+                            text = String.format("\"%s\"", selectedText)
+                            visibility = View.VISIBLE
+                        }
+                        return false
+                    }
+                    override fun onDestroyActionMode(p0: ActionMode?) {
+                        view.quote_text_view.apply {
+                            text = ""
+                            visibility = View.INVISIBLE
+                        }
+                    }
+                    override fun onCreateActionMode(p0: ActionMode?, p1: Menu?) = true
+                    override fun onActionItemClicked(p0: ActionMode?, p1: MenuItem?) = false
+                }
+            }
+
             Glide.with(requireContext())
                 .load(it.userIconUrl)
                 .into(view.user_icon)
