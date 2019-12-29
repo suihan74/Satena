@@ -144,7 +144,8 @@ class BookmarkDetailFragment : Fragment() {
     /** 対象ブクマ表示部を初期化 */
     private fun initializeBookmarkArea(view: View) {
         viewModel.bookmark.also {
-            view.comment.text = it.comment
+            val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
+            view.comment.text = analyzedComment.comment
             Glide.with(requireContext())
                 .load(it.userIconUrl)
                 .into(view.user_icon)

@@ -23,26 +23,21 @@ class BookmarkMenuDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val listener = parentFragment as? Listener ?: activity as? Listener
         bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
 
         val titleView = LayoutInflater.from(context).inflate(R.layout.dialog_title_bookmark, null).apply {
             setCustomTitle(bookmark)
         }
 
-        val listener = parentFragment as? Listener
-            ?: activity as? Listener
-
-        val ignoreAction =
+        val items = listOf(
+            R.string.bookmark_show_user_entries to { listener?.onShowEntries(bookmark.user) },
             if (listener?.isIgnored(bookmark.user) == true) {
-                R.string.bookmark_unignore to { listener?.onIgnoreUser(bookmark.user, false) }
+                R.string.bookmark_unignore to { listener.onIgnoreUser(bookmark.user, false) }
             }
             else {
                 R.string.bookmark_ignore to { listener?.onIgnoreUser(bookmark.user, true) }
-            }
-
-        val items = listOf(
-            R.string.bookmark_show_user_entries to { listener?.onShowEntries(bookmark.user) },
-            ignoreAction,
+            },
             R.string.bookmark_report to { listener?.onReportBookmark(bookmark) },
             R.string.bookmark_user_tags to { listener?.onSetUserTag(bookmark.user) }
         )
