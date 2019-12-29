@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.entries
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -54,9 +55,18 @@ abstract class StarsFragmentBase : SingleTabEntriesFragmentBase() {
                     .distinctBy { it.eid }
 
                 val tasks = data.map { HatenaClient.getBookmarkPageAsync(it.eid, it.user) }
-                tasks.awaitAll()
+                try {
+                    tasks.awaitAll()
+                }
+                catch (e: Throwable) {
+                    Log.d("MyStarsFragment", e.message)
+                    e.printStackTrace()
+                }
 
                 return@async tasks.mapIndexedNotNull { index, deferred ->
+                    // TODO: 現状だとブクマ消されたらエントリも表示されなくなる
+                    if (deferred.isCancelled) return@mapIndexedNotNull null
+
                     val eid = data[index].eid
                     try {
                         val bookmark = deferred.await()
