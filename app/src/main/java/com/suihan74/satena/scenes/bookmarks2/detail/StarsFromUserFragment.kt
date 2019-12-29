@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.getThemeColor
@@ -38,8 +39,13 @@ class StarsFromUserFragment : Fragment(), ScrollableToTop {
             override fun onItemClicked(item: StarWithBookmark) {
                 // 戻るボタンを無効化するためスターメニューを閉じる
                 detailViewModel.starsMenuOpened.postValue(false)
-
                 (activity as? BookmarksActivity)?.showBookmarkDetail(item.bookmark)
+            }
+
+            override fun onItemLongClicked(item: StarWithBookmark): Boolean {
+                val dialog = BookmarkMenuDialog.createInstance(item.bookmark)
+                dialog.show(childFragmentManager, "bookmark_dialog")
+                return true
             }
         }
 

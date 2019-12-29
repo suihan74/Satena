@@ -13,8 +13,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
+import com.suihan74.satena.TappedActionLauncher
+import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.*
 import com.suihan74.utilities.*
@@ -22,7 +25,10 @@ import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class BookmarksTabFragment : Fragment() {
+class BookmarksTabFragment :
+    Fragment(),
+    EntryMenuDialog.Listener
+{
     /** BookmarksActivityのViewModel */
     private val activityViewModel: BookmarksViewModel by lazy {
         ViewModelProviders.of(bookmarksActivity)[BookmarksViewModel::class.java]
@@ -94,6 +100,16 @@ class BookmarksTabFragment : Fragment() {
                 dialog.show(childFragmentManager, "bookmark_dialog")
                 return true
             }
+
+            override fun onLinkClicked(url: String) {
+                super.onLinkClicked(url)
+            }
+
+            override fun onLinkLongClicked(url: String) {
+                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
+                TappedActionLauncher.launch(requireContext(), act, url, childFragmentManager)
+            }
         }
 
         // recycler view
@@ -109,11 +125,13 @@ class BookmarksTabFragment : Fragment() {
             addOnScrollListener(
                 object : RecyclerViewScrollingUpdater(bookmarksAdapter) {
                     override fun load() {
+                        bookmarksAdapter.startLoading()
                         viewModel.loadNextBookmarks().invokeOnCompletion { e->
                             if (e != null) {
                                 context?.showToast(R.string.msg_update_bookmarks_failed)
                                 Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
                             }
+                            bookmarksAdapter.stopLoading()
                             loadCompleted()
                         }
                     }
@@ -179,5 +197,22 @@ class BookmarksTabFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         bookmarksFragmentViewModel.selectedTabViewModel.postValue(viewModel)
+    }
+
+    // --- リンクメニューダイアログの処理 --- //
+
+    override fun onItemSelected(item: String, dialog: EntryMenuDialog) {
+        val entry = dialog.entry
+
+        when (item) {
+            getString(R.string.entry_action_show_comments) ->
+                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_COMMENTS, entry.url)
+
+            getString(R.string.entry_action_show_page) ->
+                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_PAGE, entry.url)
+
+            getString(R.string.entry_action_show_page_in_browser) ->
+                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_PAGE_IN_BROWSER, entry.url)
+        }
     }
 }

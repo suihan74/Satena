@@ -3,6 +3,7 @@ package com.suihan74.satena
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.fragment.app.FragmentManager
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.dialogs.EntryMenuDialog
@@ -11,11 +12,11 @@ import com.suihan74.satena.scenes.entries.EntriesTabFragmentBase
 import com.suihan74.utilities.CoroutineScopeFragment
 
 object TappedActionLauncher {
-    fun launch(context: Context, act: TapEntryAction, url: String, fragment: CoroutineScopeFragment? = null) = when (act) {
+    fun launch(context: Context, act: TapEntryAction, url: String, fragmentManager: FragmentManager? = null) = when (act) {
         TapEntryAction.SHOW_COMMENTS -> launchBookmarksActivity(context, url)
         TapEntryAction.SHOW_PAGE -> launchTabs(context, url)
         TapEntryAction.SHOW_PAGE_IN_BROWSER -> launchBrowser(context, url)
-        TapEntryAction.SHOW_MENU -> showMenu(context, url, fragment!!)
+        TapEntryAction.SHOW_MENU -> showMenu(context, url, fragmentManager!!)
     }
 
     fun launch(context: Context, act: TapEntryAction, entry: Entry, fragment: EntriesTabFragmentBase? = null) = when (act) {
@@ -56,7 +57,7 @@ object TappedActionLauncher {
     private fun launchBrowser(context: Context, entry: Entry) =
         launchBrowser(context, entry.ampUrl ?: entry.url)
 
-    private fun showMenu(context: Context, url: String, fragment: CoroutineScopeFragment) {
+    private fun showMenu(context: Context, url: String, fragmentManager: FragmentManager) {
         val items = arrayListOf(
             TapEntryAction.SHOW_COMMENTS.titleId,
             TapEntryAction.SHOW_PAGE.titleId,
@@ -65,7 +66,7 @@ object TappedActionLauncher {
 
         EntryMenuDialog.Builder(url, R.style.AlertDialogStyle)
             .setItems(items.map { context.getString(it) })
-            .show(fragment.childFragmentManager, "entry_menu_dialog")
+            .show(fragmentManager, "entry_menu_dialog")
     }
 
     private fun showMenu(context: Context, entry: Entry, fragment: EntriesTabFragmentBase?) {

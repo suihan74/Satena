@@ -5,6 +5,7 @@ import android.text.style.ImageSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,14 +15,22 @@ import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.StarColor
 import com.suihan74.satena.R
+import com.suihan74.satena.TappedActionLauncher
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_bookmarks.view.*
 import org.threeten.bp.format.DateTimeFormatter
 
-fun <T> List<T>.contentsEquals(other: List<T>) =
-    this.size == other.size && this.mapIndexed { index, _ -> this[index] == other[index] }.all { it }
+fun <T> List<T>?.contentsEquals(other: List<T>?) =
+    if (this == null && other == null)
+        true
+    else if (other == null)
+        false
+    else
+        this!!.size == other.size && this.mapIndexed { index, _ -> this[index] == other[index] }.all { it }
 
 open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -29,14 +38,32 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         val bookmark: Bookmark,
         val analyzedComment: AnalyzedBookmarkComment,
         val isIgnored: Boolean,
-        val mentions: List<Bookmark>
-    )
+        val mentions: List<Bookmark>,
+        val userTags: List<Tag>
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (other !is Entity) return false
 
+            return bookmark.user == other.bookmark.user &&
+                    bookmark.comment == other.bookmark.comment &&
+                    bookmark.starCount.contentsEquals(other.bookmark.starCount) &&
+                    isIgnored == other.isIgnored &&
+                    mentions.contentsEquals(other.mentions) &&
+                    userTags.contentsEquals(other.userTags)
+        }
+    }
+
+    /** 表示項目リスト */
     private var states = emptyList<RecyclerState<Entity>>()
-    private var tags = emptyList<List<Tag>?>()
+    private var loadableFooter: LoadableFooterViewHolder? = null
 
     open fun onItemClicked(bookmark: Bookmark) {}
     open fun onItemLongClicked(bookmark: Bookmark) = false
+
+    /** コメント中のリンクをタップしたときの処理 */
+    open fun onLinkClicked(url: String) {}
+    /** コメント中のリンクをロングタップしたときの処理 */
+    open fun onLinkLongClicked(url: String) {}
 
     override fun getItemCount() = states.size
 
@@ -57,7 +84,8 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             when (RecyclerType.fromInt(viewType)) {
                 RecyclerType.BODY ->
                     ViewHolder(
-                        inflater.inflate(R.layout.listview_item_bookmarks, parent, false)
+                        inflater.inflate(R.layout.listview_item_bookmarks, parent, false),
+                        this
                     ).apply {
                         itemView.setOnClickListener {
                             val bookmark = states[adapterPosition].body!!.bookmark
@@ -72,7 +100,9 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 RecyclerType.FOOTER ->
                     LoadableFooterViewHolder(
                         inflater.inflate(R.layout.footer_recycler_view_loadable, parent, false)
-                    )
+                    ).also {
+                        loadableFooter = it
+                    }
 
                 else -> throw RuntimeException("an invalid list item")
             }
@@ -84,12 +114,21 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 (holder as ViewHolder).run {
                     val entity = states[position].body!!
                     bookmark = entity
-                    userTags = tags[position]
                 }
             }
 
             else -> Unit
         }
+
+    /** フッタのローディングアニメを表示する */
+    fun startLoading() {
+        loadableFooter?.showProgressBar()
+    }
+
+    /** フッタのローディングアニメを隠す */
+    fun stopLoading() {
+        loadableFooter?.hideProgressBar()
+    }
 
     fun setBookmarks(
         bookmarks: List<Bookmark>,
@@ -100,12 +139,15 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
             val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
             Entity(
-                it,
-                analyzedComment,
-                ignoredUsers.contains(it.user),
-                analyzedComment.ids.mapNotNull { called -> bookmarksEntry.bookmarks.firstOrNull { it.user == called } })
+                bookmark = it,
+                analyzedComment = analyzedComment,
+                isIgnored = ignoredUsers.contains(it.user),
+                mentions = analyzedComment.ids.mapNotNull { called ->
+                    bookmarksEntry.bookmarks.firstOrNull { b -> b.user == called }
+                },
+                userTags = taggedUsers.firstOrNull { t -> t.user.name == it.user }?.tags ?: emptyList()
+            )
         })
-        val newTags = newStates.map { taggedUsers.firstOrNull { t -> t.user.name == it.body?.bookmark?.user }?.tags }
 
         val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize() = states.size
@@ -118,51 +160,19 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
                 val old = states[oldItemPosition]
                 val new = newStates[newItemPosition]
-
-                val oldTag = tags[oldItemPosition]
-                val newTag = newTags[newItemPosition]
-
-                val oldMentions = old.body?.mentions
-                val newMentions = new.body?.mentions
-
-                return old.type == new.type &&
-                        old.body?.bookmark?.user == new.body?.bookmark?.user &&
-                        old.body?.bookmark?.comment == new.body?.bookmark?.comment &&
-                        old.body?.bookmark?.starCount?.contentsEquals(new.body?.bookmark?.starCount!!) == true &&
-                        old.body?.isIgnored == new.body?.isIgnored &&
-                        (oldMentions == null && newMentions == null || oldMentions != null && newMentions != null && oldMentions.contentsEquals(newMentions)) &&
-                        (oldTag == null && newTag == null || oldTag != null && newTag != null && oldTag.contentsEquals(newTag))
+                return old.type == new.type && old.body?.equals(new.body) == true
             }
         })
         states = newStates
-        tags = newTags
 
         diff.dispatchUpdatesTo(this)
     }
 
     /** ブクマリストアイテム */
-    class ViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
-        var userTags: List<Tag>? = null
-            set(value) {
-                field = value
-                if (value.isNullOrEmpty()) {
-                    view.user_tags.visibility = View.GONE
-                }
-                else {
-                    view.user_tags.apply {
-                        val icon = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
-                            val size = textSize.toInt()
-                            setBounds(0, 0, size, size)
-                            setTint(resources.getColor(R.color.tagColor, null))
-                        }
-                        setCompoundDrawablesRelative(icon, null, null, null)
-
-                        text = value.joinToString(", ") { it.name }
-                        visibility = View.VISIBLE
-                    }
-                }
-            }
-
+    class ViewHolder(
+        private val view: View,
+        private val bookmarksAdapter: BookmarksAdapter
+    ) : RecyclerView.ViewHolder(view) {
         var bookmark: Entity? = null
             set(value) {
                 field = value
@@ -173,6 +183,8 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
         private fun init(entity: Entity) {
             val bookmark = entity.bookmark
+            val userTags = entity.userTags
+
             Glide.with(view.context).run {
                 clear(view.bookmark_user_icon)
                 load(bookmark.userIconUrl)
@@ -183,6 +195,39 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             view.bookmark_comment.apply {
                 text = entity.analyzedComment.comment
                 visibility = (text.isNotEmpty()).toVisibility(View.GONE)
+
+                val linkMovementMethod = object : MutableLinkMovementMethod() {
+                    override fun onSinglePressed(link: String) {
+                        if (link.startsWith("http")) {
+                            bookmarksAdapter.onLinkClicked(link)
+                        }
+                        else {
+                            val eid = entity.analyzedComment.entryIds.firstOrNull { link.contains(it.toString()) }
+                            if (eid != null) {
+/*                                fragment.launch(Dispatchers.Main) {
+                                    val entryUrl = HatenaClient.getEntryUrlFromIdAsync(eid).await()
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(entryUrl))
+                                    context.startActivity(intent)
+                                }
+                                    */
+                            }
+                        }
+                    }
+
+                    override fun onLongPressed(link: String) {
+                        if (link.startsWith("http")) {
+                            bookmarksAdapter.onLinkLongClicked(link)
+                        }
+                    }
+                }
+
+                setOnTouchListener { view, event ->
+                    val textView = view as TextView
+                    return@setOnTouchListener linkMovementMethod.onTouchEvent(
+                        textView,
+                        SpannableString(textView.text),
+                        event)
+                }
             }
 
             view.ignored_user_mark.visibility = entity.isIgnored.toVisibility(View.GONE)
@@ -228,6 +273,24 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
             view.bookmark_timestamp.setHtml(builder.toString())
 
+            // ユーザータグ
+            if (userTags.isNullOrEmpty()) {
+                view.user_tags.visibility = View.GONE
+            }
+            else {
+                view.user_tags.apply {
+                    val icon = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
+                        val size = textSize.toInt()
+                        setBounds(0, 0, size, size)
+                        setTint(resources.getColor(R.color.tagColor, null))
+                    }
+                    setCompoundDrawablesRelative(icon, null, null, null)
+
+                    text = userTags.joinToString(", ") { it.name }
+                    visibility = View.VISIBLE
+                }
+            }
+
             // 言及先リスト
             view.bookmark_mentions.apply {
                 val mentions = entity.mentions
@@ -239,14 +302,11 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     visibility = View.VISIBLE
                     layoutManager = LinearLayoutManager(context)
                     adapter = object : MentionsAdapter(mentions) {
-                        override fun onItemClicked(item: Bookmark) {
-//                            this@ViewHolder.adapter.onItemClicked(item)
-                        }
+                        override fun onItemClicked(item: Bookmark) =
+                            bookmarksAdapter.onItemClicked(item)
 
-                        override fun onItemLongClicked(item: Bookmark): Boolean {
-//                            this@ViewHolder.adapter.onItemLongClicked(item)
-                            return true
-                        }
+                        override fun onItemLongClicked(item: Bookmark) =
+                            bookmarksAdapter.onItemLongClicked(item)
                     }
 
                     repeat(itemDecorationCount) {
@@ -254,7 +314,8 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     }
 
                     val dividerItemDecoration = DividerItemDecorator(
-                        ContextCompat.getDrawable(context, R.drawable.recycler_view_item_divider)!!)
+                        ContextCompat.getDrawable(context, R.drawable.recycler_view_item_divider)!!
+                    )
                     addItemDecoration(dividerItemDecoration)
                 }
             }
