@@ -39,7 +39,8 @@ class FloatingActionButtonsFragment :
         get() = fragmentViewModel.selectedTabViewModel.value
 
     /** 戻るボタンの監視用コールバック */
-    private lateinit var onBackPressedCallback: OnBackPressedCallback
+    private lateinit var onBackPressedCallbackForKeyword: OnBackPressedCallback
+    private lateinit var onBackPressedCallbackForScroll: OnBackPressedCallback
 
     companion object {
         fun createInstance() = FloatingActionButtonsFragment()
@@ -85,13 +86,20 @@ class FloatingActionButtonsFragment :
     override fun onResume() {
         super.onResume()
         // 戻るボタンを監視
-        onBackPressedCallback = requireActivity().onBackPressedDispatcher.addCallback(this, false) {
+        onBackPressedCallbackForKeyword = requireActivity().onBackPressedDispatcher.addCallback(this, false) {
             val view = view!!
             if (view.bookmarks_search_text.visibility == View.VISIBLE) {
                 view.bookmarks_search_text.visibility = View.GONE
                 activityViewModel.filteringWord.postValue(null)
-                isEnabled = false
             }
+            isEnabled = false
+        }
+        onBackPressedCallbackForScroll = requireActivity().onBackPressedDispatcher.addCallback(this, false) {
+            val view = view!!
+            view.bookmarks_scroll_top_button.hide()
+            view.bookmarks_scroll_bottom_button.hide()
+            view.bookmarks_scroll_my_bookmark_button.hide()
+            isEnabled = false
         }
     }
 
@@ -142,15 +150,18 @@ class FloatingActionButtonsFragment :
 
         // スクロールメニュー
         view.bookmarks_scroll_menu_button.setOnClickListener {
-            if (view.bookmarks_scroll_top_button.isShown) {
-                scrollFABs.forEach { it.hide() }
-            }
-            else {
-                view.bookmarks_scroll_top_button.show()
-                view.bookmarks_scroll_bottom_button.show()
-                if (tabViewModel?.signedUserBookmark?.value != null) {
-                    view.bookmarks_scroll_my_bookmark_button.show()
+            view.bookmarks_scroll_top_button.isShown.let {
+                if (it) {
+                    scrollFABs.forEach { fab -> fab.hide() }
                 }
+                else {
+                    view.bookmarks_scroll_top_button.show()
+                    view.bookmarks_scroll_bottom_button.show()
+                    if (tabViewModel?.signedUserBookmark?.value != null) {
+                        view.bookmarks_scroll_my_bookmark_button.show()
+                    }
+                }
+                onBackPressedCallbackForScroll.isEnabled = !it
             }
         }
 
@@ -165,7 +176,7 @@ class FloatingActionButtonsFragment :
                 else {
                     activityViewModel.filteringWord.postValue(null)
                 }
-                onBackPressedCallback.isEnabled = it
+                onBackPressedCallbackForKeyword.isEnabled = it
             }
         }
 
