@@ -112,6 +112,7 @@
             android:background="@color/colorPrimary"
             android:textColor="@color/colorPrimaryText"
             android:inputType="text"
+            android:imeOptions="actionDone"
             android:hint="検索キーワード"
             android:textColorHint="@color/bookmarkSearchHintColor"
             android:layout_width="match_parent"

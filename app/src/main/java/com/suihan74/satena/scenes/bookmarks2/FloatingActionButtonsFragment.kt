@@ -1,12 +1,16 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -17,7 +21,15 @@ import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.toVisibility
+import kotlinx.android.synthetic.main.fragment_bookmarks.view.*
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
+import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmark_button
+import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_scroll_bottom_button
+import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_scroll_menu_button
+import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_scroll_my_bookmark_button
+import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_scroll_top_button
+import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_search_text
+import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.custom_settings_button
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.search_button
 
 class FloatingActionButtonsFragment :
@@ -167,16 +179,28 @@ class FloatingActionButtonsFragment :
 
         // キーワード抽出モードON/OFF切り替えボタン
         view.search_button.setOnClickListener {
-            (view.bookmarks_search_text.visibility != View.VISIBLE).let {
-                view.bookmarks_search_text.visibility = it.toVisibility(View.GONE)
+            (view.bookmarks_search_text.visibility != View.VISIBLE).let { isOn ->
+                view.bookmarks_search_text.visibility = isOn.toVisibility(View.GONE)
+
+                // IMEのON/OFF
+                (requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.run {
+                    if (isOn) {
+                        view.bookmarks_search_text.requestFocus()
+                        showSoftInput(view.bookmarks_search_text, 0)
+                    }
+                    else {
+                        hideSoftInputFromWindow(requireActivity().currentFocus?.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+                    }
+                }
+
                 // 非表示にしたらフィルタリングを解除する
-                if (it) {
+                if (isOn) {
                     activityViewModel.filteringWord.postValue(view.bookmarks_search_text.text.toString())
                 }
                 else {
                     activityViewModel.filteringWord.postValue(null)
                 }
-                onBackPressedCallbackForKeyword.isEnabled = it
+                onBackPressedCallbackForKeyword.isEnabled = isOn
             }
         }
 
@@ -185,6 +209,19 @@ class FloatingActionButtonsFragment :
             setText(activityViewModel.filteringWord.value)
             addTextChangedListener {
                 activityViewModel.filteringWord.postValue(it.toString())
+            }
+
+            setOnEditorActionListener { _, actionId, _ ->
+                when (actionId) {
+                    EditorInfo.IME_ACTION_DONE -> {
+                        (requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.run {
+                            hideSoftInputFromWindow(requireActivity().currentFocus?.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+                        }
+                        true
+                    }
+
+                    else -> false
+                }
             }
         }
 
