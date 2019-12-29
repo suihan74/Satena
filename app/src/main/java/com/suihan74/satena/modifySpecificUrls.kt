@@ -38,7 +38,9 @@ suspend fun modifySpecificUrls(url: String?) : String? = when {
             client.newCall(request).execute().use { response ->
                 Jsoup.parse(response.body!!.string()).head()
                     .allElements
-                    .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:url" }
+                    .firstOrNull { elem ->
+                        elem.tagName() == "meta" && (elem.attr("property") == "og:url" || elem.attr("name") == "twitter:url")
+                    }
                     ?.attr("content")
                     ?: url
             }
