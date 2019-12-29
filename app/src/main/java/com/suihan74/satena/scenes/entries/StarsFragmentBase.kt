@@ -64,6 +64,7 @@ abstract class StarsFragmentBase : SingleTabEntriesFragmentBase() {
                 }
 
                 return@async tasks.mapIndexedNotNull { index, deferred ->
+                    // TODO: 現状だとブクマ消されたらエントリも表示されなくなる
                     if (deferred.isCancelled) return@mapIndexedNotNull null
 
                     val eid = data[index].eid
