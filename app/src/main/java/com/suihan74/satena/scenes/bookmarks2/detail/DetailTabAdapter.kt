@@ -31,8 +31,8 @@ class DetailTabAdapter(
 
     override fun getPageTitle(position: Int) =
         when (TabType.fromInt(position)) {
-            TabType.STARS_TO_USER -> "★ to user"
-            TabType.STARS_FROM_USER -> "★ from user"
+            TabType.STARS_TO_USER -> "★ to ${detailFragment.targetUser} (${detailFragment.starsCountToUser})"
+            TabType.STARS_FROM_USER -> "★ from ${detailFragment.targetUser}"
         }
 
     fun findFragment(viewPager: ViewPager, position: Int) =

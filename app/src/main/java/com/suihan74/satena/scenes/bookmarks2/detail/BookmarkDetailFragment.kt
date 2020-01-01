@@ -42,6 +42,15 @@ class BookmarkDetailFragment : Fragment() {
     private val bookmarksActivity
         get() = activity as? BookmarksActivity
 
+    /** この画面で表示しているユーザー */
+    val targetUser
+        get() = viewModel.bookmark.user
+
+    /** ユーザーに付けられたスターの数 */
+    val starsCountToUser
+        get() = viewModel.starsToUser.value?.totalStarsCount ?: 0
+
+
     companion object {
         fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().apply {
             arguments = Bundle().apply {
@@ -157,6 +166,12 @@ class BookmarkDetailFragment : Fragment() {
                 text = "\"${comment}\""
                 visibility = (!comment.isNullOrBlank()).toVisibility()
             }
+        })
+
+        viewModel.starsToUser.observe(this, Observer {
+            val tabLayout = view.tab_layout
+            val tab = tabLayout.getTabAt(0)
+            tab?.text = tabAdapter.getPageTitle(0)
         })
 
         return view
