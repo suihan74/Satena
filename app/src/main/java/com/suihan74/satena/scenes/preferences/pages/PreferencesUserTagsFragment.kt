@@ -147,7 +147,7 @@ class PreferencesUserTagsFragment :
     /**
      * タグを新規作成orタグ名を編集するダイアログの結果を処理する
      */
-    override suspend fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean {
+    override suspend fun onCompletedEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean {
         if (dialog.isModifyMode) {
             val tag = dialog.editingUserTag!!
 

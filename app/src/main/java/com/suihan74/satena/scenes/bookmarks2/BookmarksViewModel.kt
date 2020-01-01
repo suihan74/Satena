@@ -253,6 +253,11 @@ class BookmarksViewModel(
         }
     }
 
+    /** 新しいタグを作成する */
+    suspend fun createTag(tagName: String) {
+        userTagRepository.addTag(tagName)
+    }
+
     /** ユーザーにタグをつける */
     suspend fun tagUser(user: String, tag: Tag) {
         userTagRepository.addRelation(tag, user)
@@ -267,8 +272,8 @@ class BookmarksViewModel(
 
     /** ユーザータグをロードする */
     suspend fun loadUserTags() {
-        taggedUsers.postValue(userTagRepository.loadUsers())
-        userTags.postValue(userTagRepository.loadTags())
+        taggedUsers.value = (userTagRepository.loadUsers())
+        userTags.value = (userTagRepository.loadTags())
     }
 
     /** ブクマを通報 */

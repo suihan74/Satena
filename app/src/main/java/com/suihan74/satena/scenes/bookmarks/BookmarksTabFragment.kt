@@ -369,7 +369,7 @@ abstract class BookmarksTabFragment :
         }
     }
 
-    override suspend fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
+    override suspend fun onCompletedEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
         BookmarkDialog.Listener.onCompleteCreateTag(tagName, activity as BookmarksActivity, dialog)
 
     override fun onItemSelected(item: String, dialog: EntryMenuDialog) {

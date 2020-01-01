@@ -183,8 +183,11 @@
 
     <!-- ユーザータグ設定ダイアログ (ブクマ画面) -->
     <string name="user_tags_dialog_title">ユーザータグを選択</string>
+    <string name="user_tag_dialog_title_edit_mode">ユーザータグを編集</string>
+    <string name="user_tag_dialog_title_create_mode">ユーザータグを作成</string>
     <string name="user_tags_dialog_new_tag">新規タグ</string>
     <string name="msg_user_tag_existed">既に存在するタグです</string>
+    <string name="msg_user_tag_no_name">タグ名を入力してください</string>
     <string name="msg_user_tag_created">タグ「%s」を作成しました</string>
     <string name="msg_user_tag_updated">タグ「%s」の名称を「%s」に変更しました</string>
     <string name="msg_user_tag_created_and_added_user">タグ「%s」を作成して id:%s を追加しました</string>

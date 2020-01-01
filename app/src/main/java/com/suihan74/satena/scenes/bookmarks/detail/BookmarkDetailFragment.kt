@@ -608,6 +608,6 @@ class BookmarkDetailFragment :
         context?.showCustomTabsIntent(url, activity)
     }
 
-    override suspend fun onCompleteEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
+    override suspend fun onCompletedEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =
         BookmarkDialog.Listener.onCompleteCreateTag(tagName, activity as BookmarksActivity, dialog)
 }

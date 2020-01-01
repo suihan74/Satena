@@ -11,13 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.viewModelScope
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.userTag.Tag
-import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
@@ -31,14 +30,13 @@ import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 class BookmarksActivity :
     AppCompatActivity(),
     BookmarkMenuDialog.Listener,
     UserTagSelectionDialog.Listener,
-    ReportDialog.Listener
+    ReportDialog.Listener,
+    UserTagDialogFragment.Listener
 {
     /** ViewModel */
     private lateinit var viewModel: BookmarksViewModel
@@ -97,7 +95,7 @@ class BookmarksActivity :
             viewModel = ViewModelProviders.of(this, factory)[BookmarksViewModel::class.java]
 
             if (entry == null) {
-                val url = intent.getStringExtra(EXTRA_ENTRY_URL) ?: intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+                val url = getUrlFromIntent(intent)
                 toolbar.title = url
 
                 viewModel.loadEntry(
@@ -122,6 +120,20 @@ class BookmarksActivity :
             init(firstLaunching, targetUser)
         }
     }
+
+    private fun getUrlFromIntent(intent: Intent) : String =
+        when (intent.action) {
+            // 閲覧中のURLが送られてくる場合
+            Intent.ACTION_SEND ->
+                intent.getStringExtra(Intent.EXTRA_TEXT)!!
+
+            // ブコメページのURLが送られてくる場合
+            Intent.ACTION_VIEW ->
+                HatenaClient.getEntryUrlFromCommentPageUrl(intent.dataString!!)
+
+            else ->
+                intent.getStringExtra(EXTRA_ENTRY_URL)!!
+        }
 
     /** entryロード完了後に画面を初期化 */
     private fun init(firstLaunching: Boolean, targetUser: String?) {
@@ -272,6 +284,35 @@ class BookmarksActivity :
     override fun onSetUserTag(user: String) {
         val dialog = UserTagSelectionDialog.createInstance(user)
         dialog.show(supportFragmentManager, "user_tag_selection_dialog")
+    }
+
+    // --- UserTagDialogの処理 --- //
+
+    override suspend fun onCompletedEditTagName(
+        tagName: String,
+        dialog: UserTagDialogFragment
+    ): Boolean {
+        return try {
+            viewModel.createTag(tagName)
+            viewModel.loadUserTags()
+            true
+        }
+        catch (e: Throwable) {
+            Log.e("BookmarksActivity", Log.getStackTraceString(e))
+            false
+        }
+    }
+
+    override suspend fun onAddUserToCreatedTag(
+        tagName: String,
+        user: String,
+        dialog: UserTagDialogFragment
+    ) {
+        val tag = viewModel.userTags.value?.firstOrNull { it.userTag.name == tagName } ?: throw RuntimeException("")
+        viewModel.tagUser(user, tag.userTag)
+        viewModel.loadUserTags()
+
+        showToast(R.string.msg_user_tag_created_and_added_user, tagName, user)
     }
 
     // --- UserTagSelectionDialogの処理 --- //

@@ -59,14 +59,14 @@
 
         <!-- TODO: 実装完了後.scenes.bookmarksと差し替える -->
         <activity android:name=".scenes.bookmarks2.BookmarksActivity">
-            <intent-filter android:label="ブコメを見る">
+            <intent-filter android:label="(新)ブコメを見る">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:mimeType="text/plain"/>
             </intent-filter>
 
-            <intent-filter android:label="Satenaで見る">
+            <intent-filter android:label="(新)Satenaで見る">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>

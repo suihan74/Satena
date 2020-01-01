@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import kotlinx.coroutines.launch
@@ -62,6 +63,12 @@ class UserTagSelectionDialog : DialogFragment() {
                 viewModel.checks[which] = isChecked
             }
             .setNegativeButton(R.string.dialog_cancel, null)
+            .setNeutralButton(R.string.user_tags_dialog_new_tag) { _, _ ->
+                val dialog = UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
+                    .setTargetUser(user)
+                    .create()
+                dialog.show(parentFragmentManager, "new_tag_dialog")
+            }
             .setPositiveButton(R.string.dialog_ok, null)
             .show()
             .apply {
