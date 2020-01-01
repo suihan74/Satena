@@ -126,8 +126,11 @@ class BookmarkDetailFragment : Fragment() {
         }
 
         // スター付与ボタンの表示状態を切り替える
-        view.show_stars_button.setOnClickListener {
-            viewModel.starsMenuOpened.postValue(viewModel.starsMenuOpened.value != true)
+        view.show_stars_button.run {
+            setOnClickListener {
+                viewModel.starsMenuOpened.postValue(viewModel.starsMenuOpened.value != true)
+            }
+            hide()
         }
 
         // スター付与ボタン各色
@@ -149,6 +152,16 @@ class BookmarkDetailFragment : Fragment() {
             }
             else {
                 closeStarMenu()
+            }
+        })
+
+        // サインイン状態を監視
+        activityViewModel.signedIn.observe(this, Observer {
+            if (it) {
+                view.show_stars_button.show()
+            }
+            else {
+                view.show_stars_button.hide()
             }
         })
 

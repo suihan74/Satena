@@ -63,6 +63,11 @@ class BookmarksViewModel(
     /** 非表示ユーザーリストの変更を監視 */
     val ignoredUsers = repository.ignoredUsersLiveData
 
+    /** サインイン完了を監視する */
+    val signedIn by lazy {
+        MutableLiveData<Boolean>()
+    }
+
     /** 各リストを再構成する */
     private fun reloadLists() {
         if (repository.bookmarksEntry != null) {
@@ -100,6 +105,7 @@ class BookmarksViewModel(
                 .map { it.query }
 
             repository.init()
+            signedIn.postValue(repository.signedIn)
         }
         catch (e: Throwable) {}
         finally {}

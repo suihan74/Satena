@@ -10,7 +10,6 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -21,8 +20,6 @@ import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.toVisibility
-import kotlinx.android.synthetic.main.fragment_bookmarks.view.*
-import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmark_button
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_scroll_bottom_button
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_scroll_menu_button
@@ -92,6 +89,15 @@ class FloatingActionButtonsFragment :
             })
         })
 
+        activityViewModel.signedIn.observe(this, Observer {
+            if (it) {
+                view.bookmark_button.show()
+            }
+            else {
+                view.bookmark_button.hide()
+            }
+        })
+
         return view
     }
 
@@ -153,6 +159,7 @@ class FloatingActionButtonsFragment :
         view.bookmarks_search_text.visibility = (!activityViewModel.filteringWord.value.isNullOrBlank()).toVisibility(View.GONE)
 
         // ブクマ投稿ボタン
+        view.bookmark_button.hide()
         view.bookmark_button.setOnClickListener {
             val intent = Intent(context, BookmarkPostActivity::class.java).apply {
                 putExtra(BookmarkPostActivity.EXTRA_ENTRY, activityViewModel.entry)
