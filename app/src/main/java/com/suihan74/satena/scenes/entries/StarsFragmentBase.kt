@@ -37,13 +37,13 @@ abstract class StarsFragmentBase : SingleTabEntriesFragmentBase() {
                 val urlRegex =
                     Regex("""https?://b\.hatena\.ne\.jp/(.+)/(\d+)#bookmark\-(\d+)""")
                 val entries = fetchingTask.await()
-                val data =
-                    entries.mapNotNull {
+                val data = entries
+                    .mapNotNull {
                         val match = urlRegex.matchEntire(it.url) ?: return@mapNotNull null
                         val user = match.groups[1]?.value ?: return@mapNotNull null
                         val timestamp = match.groups[2]?.value ?: return@mapNotNull null
                         val eid = match.groups[3]?.value ?: return@mapNotNull null
-                        val starsCount = it.allStars.groupBy { s -> s.color }.map { s -> Star("", "", s.key, s.value.size) }
+                        val starsCount = it.allStars
                         BookmarkCommentUrl(
                             it.url,
                             user,
@@ -52,7 +52,16 @@ abstract class StarsFragmentBase : SingleTabEntriesFragmentBase() {
                             starsCount
                         )
                     }
-                    .distinctBy { it.eid }
+                    .groupBy { it.eid.toString() + "_" + it.user }
+                    .map {
+                        val starsCount = it.value
+                            .flatMap { e -> e.starsCount }
+                            .groupBy { s -> s.color }
+                            .map { s -> Star("", "", s.key, s.value.size) }
+                        it.value.first().copy(
+                            starsCount = starsCount
+                        )
+                    }
 
                 val tasks = data.map { HatenaClient.getBookmarkPageAsync(it.eid, it.user) }
                 try {
@@ -91,7 +100,13 @@ abstract class StarsFragmentBase : SingleTabEntriesFragmentBase() {
                     catch (e: Exception) {
                         null
                     }
-                }
+                }.groupBy { it.id }
+                 .map {
+                     it.value.first().copy(
+                         bookmarkedData = null,
+                         myhotentryComments = it.value.mapNotNull { e -> e.bookmarkedData }
+                     )
+                 }
             }
         }
 }
