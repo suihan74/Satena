@@ -102,7 +102,9 @@ class BookmarksTabFragment :
             }
 
             override fun onLinkClicked(url: String) {
-                super.onLinkClicked(url)
+                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
+                TappedActionLauncher.launch(requireContext(), act, url, childFragmentManager)
             }
 
             override fun onLinkLongClicked(url: String) {
