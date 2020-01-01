@@ -137,6 +137,9 @@ class BookmarkDetailViewModel(
             return@launch
         }
 
+        // リストを更新する
+        updateStarsToUser(true)
+
         withContext(Dispatchers.Main) {
             onCompletedPostStarListener?.invoke(color)
         }
