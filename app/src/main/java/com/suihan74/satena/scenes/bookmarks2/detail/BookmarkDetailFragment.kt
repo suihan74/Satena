@@ -14,6 +14,7 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
+import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
@@ -24,14 +25,14 @@ import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.StarColor
 import com.suihan74.satena.R
+import com.suihan74.satena.TappedActionLauncher
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.entries.EntriesActivity
-import com.suihan74.utilities.BookmarkCommentDecorator
-import com.suihan74.utilities.ScrollableToTop
-import com.suihan74.utilities.showToast
-import com.suihan74.utilities.toVisibility
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
 
 class BookmarkDetailFragment : Fragment() {
@@ -193,6 +194,36 @@ class BookmarkDetailFragment : Fragment() {
                     }
                     override fun onCreateActionMode(p0: ActionMode?, p1: Menu?) = true
                     override fun onActionItemClicked(p0: ActionMode?, p1: MenuItem?) = false
+                }
+
+                // テキスト中のリンクを処理
+                val linkMovementMethod = object : MutableLinkMovementMethod() {
+                    override fun onSinglePressed(link: String) {
+                        if (link.startsWith("http")) {
+                            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                            val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
+                            TappedActionLauncher.launch(requireContext(), act, link, childFragmentManager)
+                        }
+                        else {
+                            // TODO: eid
+                        }
+                    }
+
+                    override fun onLongPressed(link: String) {
+                        if (link.startsWith("http")) {
+                            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                            val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
+                            TappedActionLauncher.launch(requireContext(), act, link, childFragmentManager)
+                        }
+                    }
+                }
+
+                comment.setOnTouchListener { view, event ->
+                    val textView = view as TextView
+                    return@setOnTouchListener linkMovementMethod.onTouchEvent(
+                        textView,
+                        SpannableString(textView.text),
+                        event)
                 }
             }
 

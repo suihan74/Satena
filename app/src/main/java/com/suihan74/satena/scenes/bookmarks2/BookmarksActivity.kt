@@ -14,8 +14,11 @@ import androidx.lifecycle.ViewModelProviders
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.TappedActionLauncher
+import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
@@ -36,7 +39,8 @@ class BookmarksActivity :
     BookmarkMenuDialog.Listener,
     UserTagSelectionDialog.Listener,
     ReportDialog.Listener,
-    UserTagDialogFragment.Listener
+    UserTagDialogFragment.Listener,
+    EntryMenuDialog.Listener
 {
     /** ViewModel */
     private lateinit var viewModel: BookmarksViewModel
@@ -367,5 +371,22 @@ class BookmarksActivity :
                 e.printStackTrace()
             }
         )
+    }
+
+    // --- リンクメニューダイアログの処理 --- //
+
+    override fun onItemSelected(item: String, dialog: EntryMenuDialog) {
+        val entry = dialog.entry
+
+        when (item) {
+            getString(R.string.entry_action_show_comments) ->
+                TappedActionLauncher.launch(this, TapEntryAction.SHOW_COMMENTS, entry.url)
+
+            getString(R.string.entry_action_show_page) ->
+                TappedActionLauncher.launch(this, TapEntryAction.SHOW_PAGE, entry.url)
+
+            getString(R.string.entry_action_show_page_in_browser) ->
+                TappedActionLauncher.launch(this, TapEntryAction.SHOW_PAGE_IN_BROWSER, entry.url)
+        }
     }
 }

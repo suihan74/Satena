@@ -26,8 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class BookmarksTabFragment :
-    Fragment(),
-    EntryMenuDialog.Listener
+    Fragment()
 {
     /** BookmarksActivityのViewModel */
     private val activityViewModel: BookmarksViewModel by lazy {
@@ -199,22 +198,5 @@ class BookmarksTabFragment :
     override fun onResume() {
         super.onResume()
         bookmarksFragmentViewModel.selectedTabViewModel.postValue(viewModel)
-    }
-
-    // --- リンクメニューダイアログの処理 --- //
-
-    override fun onItemSelected(item: String, dialog: EntryMenuDialog) {
-        val entry = dialog.entry
-
-        when (item) {
-            getString(R.string.entry_action_show_comments) ->
-                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_COMMENTS, entry.url)
-
-            getString(R.string.entry_action_show_page) ->
-                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_PAGE, entry.url)
-
-            getString(R.string.entry_action_show_page_in_browser) ->
-                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_PAGE_IN_BROWSER, entry.url)
-        }
     }
 }
