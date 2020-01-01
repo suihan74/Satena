@@ -12,7 +12,7 @@ import androidx.core.content.ContextCompat
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import kotlinx.coroutines.*
 import org.chromium.customtabsclient.shared.CustomTabsHelper
@@ -23,8 +23,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
             ?: entry?.url
             ?: return
 
-        val clickedId = intent.getIntExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS_CLICKED_ID, -1)
-        val bIntent = when (clickedId) {
+        val bIntent = when (intent.getIntExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS_CLICKED_ID, -1)) {
             R.id.bookmark_button ->
                 Intent(context, BookmarkPostActivity::class.java).apply {
                     action = Intent.ACTION_SEND
@@ -63,14 +62,11 @@ class BrowserToolbarManager : BroadcastReceiver() {
 
         fun createRemoteViews(context: Context, entry: Entry?): RemoteViews {
             this.entry = entry
-            if (entry != null) {
-                BookmarksActivity.startPreLoading(entry)
-            }
             return RemoteViews(context.packageName, R.layout.browser_toolbar)
         }
 
-        fun createRemoteViews(context: Context, url: String, coroutineScope: CoroutineScope) : RemoteViews {
-            entryLoadingJob = coroutineScope.launch(Dispatchers.IO) {
+        fun createRemoteViews(context: Context, url: String) : RemoteViews {
+            entryLoadingJob = GlobalScope.launch(Dispatchers.IO) {
                 try {
                     entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
                         .firstOrNull { it.url == url }
@@ -78,32 +74,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
                 catch (e: Exception) {
                     Log.d("BrowserToolbarManager", Log.getStackTraceString(e))
                 }
-
-                if (entry == null) {
-                    try {
-                        val dummy = HatenaClient.getEmptyBookmarksEntryAsync(url).await()
-                        entry = Entry(
-                            id = 0,
-                            title = dummy.title,
-                            description = "",
-                            count = 0,
-                            url = dummy.url,
-                            rootUrl = Uri.parse(dummy.url).let { it.scheme!! + "://" + it.host!! },
-                            faviconUrl = null,
-                            imageUrl = dummy.screenshot)
-                    } catch (e: Exception) {
-                        Log.d("BrowserToolbarManager", Log.getStackTraceString(e))
-                    }
-                }
-
-                if (entry == null) {
-                    Log.e("BrowserToolbarmanager", "failed to fetch the entry: $url")
-                }
-                else {
-                    BookmarksActivity.startPreLoading(entry!!)
-                }
             }
-
             return RemoteViews(context.packageName, R.layout.browser_toolbar)
         }
 
@@ -141,8 +112,8 @@ fun Context.showCustomTabsIntent(entry: Entry) =
         entry.ampUrl ?: entry.url
     )
 
-fun Context.showCustomTabsIntent(url: String, coroutineScope: CoroutineScope = GlobalScope) =
+fun Context.showCustomTabsIntent(url: String) =
     showCustomTabsIntent(
-        BrowserToolbarManager.createRemoteViews(this, url, coroutineScope),
+        BrowserToolbarManager.createRemoteViews(this, url),
         url
     )

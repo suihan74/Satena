@@ -341,8 +341,7 @@ abstract class BookmarksTabFragment :
     }
 
     override fun onSelectUrl(url: String) {
-        val activity = activity as CoroutineScope
-        context?.showCustomTabsIntent(url, activity)
+        context?.showCustomTabsIntent(url)
     }
 
     override fun onTagUser(bookmark: Bookmark) {

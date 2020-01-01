@@ -604,8 +604,7 @@ class BookmarkDetailFragment :
     }
 
     override fun onSelectUrl(url: String) {
-        val activity = action_bar as CoroutineScope
-        context?.showCustomTabsIntent(url, activity)
+        context?.showCustomTabsIntent(url)
     }
 
     override suspend fun onCompletedEditTagName(tagName: String, dialog: UserTagDialogFragment): Boolean =

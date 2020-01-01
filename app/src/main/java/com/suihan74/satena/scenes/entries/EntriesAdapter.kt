@@ -25,7 +25,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries.pages.SiteEntriesFragment
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
@@ -283,7 +283,7 @@ open class EntriesAdapter(
 
             return@createInstance true
         }
-        dialog.show(fragment.fragmentManager!!, "IgnoredEntryDialogFragment")
+        dialog.show(fragment.parentFragmentManager, "IgnoredEntryDialogFragment")
     }
 
     fun deleteBookmark(entry: Entry) {
@@ -396,9 +396,10 @@ open class EntriesAdapter(
                                     context.startActivity(intent)
                                 }
                                 else {
-                                    val intent = Intent(context, BookmarksActivity::class.java)
-                                    intent.putExtra(BookmarksActivity.EXTRA_ENTRY, value)
-                                    intent.putExtra(BookmarksActivity.EXTRA_TARGET_USER, item.user)
+                                    val intent = Intent(context, BookmarksActivity::class.java).apply {
+                                        putExtra(BookmarksActivity.EXTRA_ENTRY, value)
+                                        putExtra(BookmarksActivity.EXTRA_TARGET_USER, item.user)
+                                    }
                                     context.startActivity(intent)
                                 }
                             }
