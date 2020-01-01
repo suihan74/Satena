@@ -130,7 +130,7 @@
             android:visibility="invisible"
             app:layout_anchor="@id/bookmark_detail_layout"
             app:layout_anchorGravity="bottom"
-            android:background="?attr/panelBackground"
+            android:background="#aa000000"
             android:textColor="?attr/textColor"
             android:textSize="20sp"
             android:paddingStart="8dp"

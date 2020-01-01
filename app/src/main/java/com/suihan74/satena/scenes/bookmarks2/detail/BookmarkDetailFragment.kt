@@ -14,8 +14,6 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
-import android.widget.TextView
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
@@ -24,6 +22,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.Bookmark
+import com.suihan74.HatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
@@ -32,6 +31,7 @@ import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.utilities.BookmarkCommentDecorator
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.showToast
+import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
 
 class BookmarkDetailFragment : Fragment() {
@@ -58,11 +58,30 @@ class BookmarkDetailFragment : Fragment() {
 
         val bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
         val factory = BookmarkDetailViewModel.Factory(activityViewModel.repository, bookmark)
-        viewModel = ViewModelProviders.of(this, factory)[BookmarkDetailViewModel::class.java]
-        viewModel.init { e ->
-            context?.showToast(R.string.msg_get_stars_report_failed)
-            Log.e("userStars", Log.getStackTraceString(e))
+        viewModel = ViewModelProviders.of(this, factory)[BookmarkDetailViewModel::class.java].apply {
+            // スターロード失敗時の挙動
+            setOnLoadedStarsFailureListener { e ->
+                requireActivity().showToast(R.string.msg_update_stars_failed)
+                Log.e("UserStars", Log.getStackTraceString(e))
+            }
+            // スター付与完了時の挙動を設定
+            setOnCompletedPostStarListener {
+                requireActivity().showToast(R.string.msg_post_star_succeeded, viewModel.bookmark.user)
+            }
+            setOnPostStarFailureListener { color, throwable ->
+                when (throwable) {
+                    is BookmarkDetailViewModel.StarExhaustedException -> {
+                        requireActivity().showToast(R.string.msg_no_color_stars, color)
+                    }
+                    else -> {
+                        requireActivity().showToast(R.string.msg_post_star_failed, viewModel.bookmark.user)
+                    }
+                }
+                Log.e("PostStar", Log.getStackTraceString(throwable))
+            }
         }
+
+        viewModel.init()
 
         // 画面遷移アニメーション
         enterTransition = TransitionSet()
@@ -96,10 +115,17 @@ class BookmarkDetailFragment : Fragment() {
             })
         }
 
-        // スター付与ボタン
+        // スター付与ボタンの表示状態を切り替える
         view.show_stars_button.setOnClickListener {
             viewModel.starsMenuOpened.postValue(viewModel.starsMenuOpened.value != true)
         }
+
+        // スター付与ボタン各色
+        view.yellow_star_button.setOnClickListener { viewModel.postStar(StarColor.Yellow) }
+        view.red_star_button.setOnClickListener { viewModel.postStar(StarColor.Red) }
+        view.green_star_button.setOnClickListener { viewModel.postStar(StarColor.Green) }
+        view.blue_star_button.setOnClickListener { viewModel.postStar(StarColor.Blue) }
+        view.purple_star_button.setOnClickListener { viewModel.postStar(StarColor.Purple) }
 
         // ユーザータグ情報の変更を監視
         activityViewModel.taggedUsers.observe(this, Observer {
@@ -122,6 +148,14 @@ class BookmarkDetailFragment : Fragment() {
             view.green_stars_count.text = it.green.toString()
             view.blue_stars_count.text = it.blue.toString()
             view.purple_stars_count.text = it.purple.toString()
+        })
+
+        // コメント引用を監視
+        viewModel.quote.observe(this, Observer { comment ->
+            view.quote_text_view.run {
+                text = "\"${comment}\""
+                visibility = (!comment.isNullOrBlank()).toVisibility()
+            }
         })
 
         return view
@@ -150,18 +184,12 @@ class BookmarkDetailFragment : Fragment() {
                 // 選択テキストを画面下部で強調表示，スターを付ける際に引用文とする
                 comment.customSelectionActionModeCallback = object : ActionMode.Callback {
                     override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) : Boolean {
-                        view.quote_text_view.apply {
-                            val selectedText = comment.text.substring(comment.selectionStart, comment.selectionEnd)
-                            text = String.format("\"%s\"", selectedText)
-                            visibility = View.VISIBLE
-                        }
+                        val selectedText = comment.text.substring(comment.selectionStart, comment.selectionEnd)
+                        viewModel.quote.postValue(selectedText)
                         return false
                     }
                     override fun onDestroyActionMode(p0: ActionMode?) {
-                        view.quote_text_view.apply {
-                            text = ""
-                            visibility = View.INVISIBLE
-                        }
+                        viewModel.quote.postValue(null)
                     }
                     override fun onCreateActionMode(p0: ActionMode?, p1: Menu?) = true
                     override fun onActionItemClicked(p0: ActionMode?, p1: MenuItem?) = false

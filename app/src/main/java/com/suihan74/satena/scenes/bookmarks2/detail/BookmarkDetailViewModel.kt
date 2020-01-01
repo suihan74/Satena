@@ -5,10 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.HatenaLib.Bookmark
+import com.suihan74.HatenaLib.StarColor
 import com.suihan74.satena.scenes.bookmarks2.BookmarksRepository
-import kotlinx.coroutines.CompletionHandler
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class BookmarkDetailViewModel(
     /** BookmarksActivityのViewModel */
@@ -29,14 +28,45 @@ class BookmarkDetailViewModel(
     /** スターメニューが開いているか */
     val starsMenuOpened by lazy { MutableLiveData<Boolean>() }
 
+    /** スターを付ける際のコメント引用 */
+    val quote by lazy { MutableLiveData<String>() }
+
+    // --- Listeners --- //
+
+    /** ブクマに付けられたスター情報のロード失敗時に呼ばれるリスナ */
+    private var onLoadedStarsFailureListener : ((Throwable)->Unit)? = null
+
+    /** スター付与に成功した際に呼ばれるリスナ */
+    private var onCompletedPostStarListener : ((StarColor)->Unit)? = null
+
+    /** スター付与に失敗した際に呼ばれるリスナ */
+    private var onPostStarFailureListener : ((StarColor, Throwable)->Unit)? = null
+
+    fun setOnLoadedStarsFailureListener(listener: ((Throwable)->Unit)? = null) {
+        onLoadedStarsFailureListener = listener
+    }
+
+    fun setOnCompletedPostStarListener(listener: ((StarColor)->Unit)? = null) {
+        onCompletedPostStarListener = listener
+    }
+
+    fun setOnPostStarFailureListener(listener: ((StarColor, Throwable)->Unit)? = null) {
+        onPostStarFailureListener = listener
+    }
+
+    // --- --- //
+
     /** 初期化 */
-    fun init(onError: CompletionHandler? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e ->
-            onError?.invoke(e)
-        }
-    ) {
+    fun init() = viewModelScope.launch {
         starsMenuOpened.postValue(false)
-        userStars.load()
+        try {
+            userStars.load()
+        }
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onLoadedStarsFailureListener?.invoke(e)
+            }
+        }
     }
 
     /** userに付いたスターと，それを付けた人の同記事へのブクマを取得する */
@@ -72,21 +102,72 @@ class BookmarkDetailViewModel(
         }
     }
 
-    fun updateStarsToUser(onError: CompletionHandler? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e ->
-            onError?.invoke(e)
+    fun updateStarsToUser(forceUpdate: Boolean = false) = viewModelScope.launch {
+        try {
+            starsToUser.updateAsync(forceUpdate).await()
         }
-    ) {
-        starsToUser.updateAsync().await()
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onLoadedStarsFailureListener?.invoke(e)
+            }
+        }
     }
 
-    fun updateStarsAll(forceUpdate: Boolean, onError: CompletionHandler? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e ->
-            onError?.invoke(e)
+    fun updateStarsAll(forceUpdate: Boolean) = viewModelScope.launch {
+        try {
+            starsAll.updateAsync(forceUpdate).await()
         }
-    ) {
-        starsAll.updateAsync(forceUpdate).await()
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onLoadedStarsFailureListener?.invoke(e)
+            }
+        }
     }
+
+    /** 対象ブクマにスターを付ける */
+    fun postStar(color: StarColor) = viewModelScope.launch {
+        try {
+            checkStarCount(color)
+            bookmarksRepository.postStar(bookmark, color, quote.value ?: "")
+        }
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onPostStarFailureListener?.invoke(color, e)
+            }
+            return@launch
+        }
+
+        withContext(Dispatchers.Main) {
+            onCompletedPostStarListener?.invoke(color)
+        }
+    }
+
+    private fun checkStarCount(color: StarColor) {
+        if (!bookmarksRepository.signedIn)
+            throw NotSignedInException()
+
+        val activeStars = userStars.value ?:
+            throw StarExhaustedException(color)
+
+        val valid = when (color) {
+            StarColor.Red -> activeStars.red > 0
+            StarColor.Green -> activeStars.green > 0
+            StarColor.Blue -> activeStars.blue > 0
+            StarColor.Purple -> activeStars.purple > 0
+            else -> true
+        }
+        if (!valid) {
+            throw StarExhaustedException(color)
+        }
+    }
+
+    class NotSignedInException() : RuntimeException(
+        "failed to an action required sign-in."
+    )
+
+    class StarExhaustedException(val color : StarColor) : RuntimeException(
+        "${color.name} star has been exhausted."
+    )
 
     class Factory(
         private val bookmarksRepository: BookmarksRepository,

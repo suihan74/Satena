@@ -64,11 +64,7 @@ class StarsToUserFragment : Fragment(), ScrollableToTop {
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
-                detailViewModel.updateStarsToUser().invokeOnCompletion { e ->
-                    if (e != null) {
-                        context.showToast(R.string.msg_update_stars_failed)
-                        Log.d("FailedToUpdateStars", Log.getStackTraceString(e))
-                    }
+                detailViewModel.updateStarsToUser(forceUpdate = true).invokeOnCompletion { e ->
                     this@swipeLayout.isRefreshing = false
                 }
             }
