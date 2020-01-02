@@ -56,7 +56,7 @@ open class EntriesAdapter(
         refreshPreferences()
     }
 
-    class EntriesDiffCalculater(
+    class EntriesDiffCalculator(
         private val oldStates: List<RecyclerState<Entry>>,
         private val newStates: List<RecyclerState<Entry>>
     ) : DiffUtil.Callback() {
@@ -84,24 +84,13 @@ open class EntriesAdapter(
     }
 
     fun setEntries(e: List<Entry>) {
-        /*
-        states.clear()
-        entireOffset = e.size
-        entries = e.filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
-        states.run {
-            addAll(entries.map { RecyclerState(RecyclerType.BODY, it) })
-            add(RecyclerState(RecyclerType.FOOTER))
-        }
-        notifyDataSetChanged()
-        */
-
         val newEntries = e.filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
         val newStates = RecyclerState.makeStatesWithFooter(newEntries)
 
         entireOffset = e.size
         entries = e
 
-        DiffUtil.calculateDiff(EntriesDiffCalculater(states, newStates)).run {
+        DiffUtil.calculateDiff(EntriesDiffCalculator(states, newStates)).run {
             states = newStates
             dispatchUpdatesTo(this@EntriesAdapter)
         }
@@ -122,12 +111,6 @@ open class EntriesAdapter(
         val prefs = SafeSharedPreferences.create<PreferenceKey>(fragment.context)
         singleTapAction = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
         longTapAction = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
-
-        // TODO: ignoredEntryのDB化対応
-//        val ignoredEntriesPrefs = SafeSharedPreferences.create<IgnoredEntriesKey>(fragment.context)
-//        ignoredEntriesPrefs.getObject<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES)?.let {
-//            ignoredEntries.addAll(it)
-//        }
     }
 
     fun onResume() {
@@ -197,9 +180,6 @@ open class EntriesAdapter(
     private fun showEntries(entry: Entry) {
         val activity = fragment.activity as? EntriesActivity ?: throw RuntimeException("activity error")
         activity.refreshEntriesFragment(Category.Site, entry.rootUrl)
-/*        val fragment = SiteEntriesFragment.createInstance(entry.rootUrl)
-        activity.showFragment(fragment, entry.rootUrl)
-        */
     }
 
     fun addToReadLaterEntries(entry: Entry) {
@@ -265,21 +245,13 @@ open class EntriesAdapter(
                 return@createInstance false
             }
 
-            // TODO: ignoredEntryのDB化対応
-            fragment.launch(Dispatchers.Main) {
-                val activity = fragment.activity as? EntriesActivity
-                activity?.model?.addIgnoredEntry(ignoredEntry)?.join()
-                /*
-                ignoredEntries.add(ignoredEntry)
-
-                val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
-                prefs.edit {
-                    putObject(IgnoredEntriesKey.IGNORED_ENTRIES, ignoredEntries)
-                }*/
-
-//                setEntries(entries)
-                context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
-            }
+            val activity = fragment.activity as? EntriesActivity
+            activity?.model?.addIgnoredEntry(
+                ignoredEntry,
+                onSuccess = { ie ->
+                    context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ie.query)
+                }
+            )
 
             return@createInstance true
         }

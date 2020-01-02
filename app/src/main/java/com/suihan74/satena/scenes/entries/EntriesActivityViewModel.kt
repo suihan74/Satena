@@ -4,14 +4,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
-import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
+import kotlinx.coroutines.CompletionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 class EntriesActivityViewModel(
     private val ignoredEntryRepository: IgnoredEntryRepository
@@ -25,9 +22,20 @@ class EntriesActivityViewModel(
         ignoredEntries.postValue(ignoredEntryRepository.load())
     }
 
-    fun addIgnoredEntry(entry: IgnoredEntry) = viewModelScope.launch {
-        ignoredEntryRepository.add(entry)
-        ignoredEntries.postValue(ignoredEntryRepository.ignoredEntries)
+    fun addIgnoredEntry(
+        entry: IgnoredEntry,
+        onSuccess: ((IgnoredEntry)->Unit)? = null,
+        onError: CompletionHandler? = null
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        try {
+            ignoredEntryRepository.add(entry)
+            ignoredEntries.value = ignoredEntryRepository.ignoredEntries
+        }
+        catch (e: Throwable) {
+            onError?.invoke(e)
+        }
+
+        onSuccess?.invoke(entry)
     }
 
     class Factory(private val ignoredEntryRepository: IgnoredEntryRepository) : ViewModelProvider.NewInstanceFactory() {
