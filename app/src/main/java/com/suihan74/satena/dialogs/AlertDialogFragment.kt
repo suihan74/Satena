@@ -1,8 +1,8 @@
 package com.suihan74.satena.dialogs
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import java.io.Serializable
@@ -64,7 +64,7 @@ open class AlertDialogFragment : DialogFragment() {
         val themeResId = arguments.getInt(THEME_RES_ID)
         val listener = parentFragment as? Listener ?: activity as? Listener
 
-        return AlertDialog.Builder(context, themeResId).apply {
+        return AlertDialog.Builder(requireContext(), themeResId).apply {
             arguments.getInt(TITLE_ID).let {
                 if (it != 0) setTitle(it)
             }

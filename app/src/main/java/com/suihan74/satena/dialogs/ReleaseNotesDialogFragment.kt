@@ -1,6 +1,5 @@
 package com.suihan74.satena.dialogs
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.graphics.Typeface
 import android.os.Bundle
@@ -12,6 +11,7 @@ import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.suihan74.satena.R
@@ -68,7 +68,7 @@ class ReleaseNotesDialogFragment : DialogFragment(), CoroutineScope {
             }
         }
 
-        return AlertDialog.Builder(context, R.style.AlertDialogStyle)
+        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setView(content)
             .setTitle("更新履歴")
             .setNegativeButton("閉じる", null)

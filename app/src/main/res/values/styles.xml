@@ -124,13 +124,16 @@
 
 
     <!-- AlertDialog -->
-    <style name="AlertDialogStyle" parent="Theme.AppCompat.Light.Dialog">
+    <style name="AlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="android:background">@color/panelBackground</item>
         <item name="android:textColor">@color/textColor</item>
 
         <item name="colorAccent">@color/colorPrimary</item>
         <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
-        <item name="android:buttonBarButtonStyle">@style/ButtonBarButtonStyle</item>
+        <item name="buttonBarButtonStyle">@style/ButtonBarButtonStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/ButtonBarButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/ButtonBarButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/ButtonBarButtonStyle</item>
 
         <item name="android:windowMinWidthMajor">@dimen/dialog_width_major</item>
         <item name="android:windowMinWidthMinor">@dimen/dialog_width_minor</item>
@@ -146,7 +149,7 @@
         <item name="android:textColor">@color/textColor</item>
     </style>
 
-    <style name="ButtonBarButtonStyle" parent="Widget.AppCompat.Button.Borderless.Colored">
+    <style name="ButtonBarButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
         <item name="android:textColor">@color/colorPrimary</item>
     </style>
 

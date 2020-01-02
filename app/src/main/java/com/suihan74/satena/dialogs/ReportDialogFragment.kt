@@ -1,6 +1,5 @@
 package com.suihan74.satena.dialogs
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -10,6 +9,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.Entry
@@ -126,7 +126,7 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
             setSelection(initialPosition)
         }
 
-        return AlertDialog.Builder(context, R.style.AlertDialogStyle)
+        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setView(content)
             .setMessage(R.string.report_bookmark_dialog_title)
             .setPositiveButton(R.string.report_dialog_ok, null)

@@ -1,6 +1,5 @@
 package com.suihan74.satena.dialogs
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
@@ -8,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.Entry
@@ -48,7 +48,7 @@ class EntryMenuDialog : AlertDialogFragment() {
                 .into(favicon)
         }
 
-        return AlertDialog.Builder(context, themeResId)
+        return AlertDialog.Builder(requireContext(), themeResId)
             .setCustomTitle(titleView)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setItems(items) { _, which ->

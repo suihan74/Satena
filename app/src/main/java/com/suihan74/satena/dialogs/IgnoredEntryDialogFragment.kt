@@ -1,6 +1,5 @@
 package com.suihan74.satena.dialogs
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -9,11 +8,10 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.CheckBox
-import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -224,7 +222,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         content.findViewById<CheckBox>(R.id.target_bookmark_checkbox).setOnCheckedChangeListener { _, _ -> onCheckedChange() }
         setIgnoreTarget(content, initialIgnoreTarget)
 
-        return AlertDialog.Builder(context, R.style.AlertDialogStyle)
+        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setTitle(R.string.ignored_entry_dialog_title)
             .setPositiveButton(R.string.dialog_register, null)
             .setNegativeButton(R.string.dialog_cancel, null)

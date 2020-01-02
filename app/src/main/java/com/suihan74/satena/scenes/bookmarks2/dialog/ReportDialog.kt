@@ -1,12 +1,13 @@
 package com.suihan74.satena.scenes.bookmarks2.dialog
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
@@ -18,8 +19,6 @@ import com.suihan74.satena.R
 import com.suihan74.utilities.hideSoftInputMethod
 import kotlinx.android.synthetic.main.dialog_title_bookmark.view.*
 import kotlinx.android.synthetic.main.fragment_dialog_report.view.*
-import kotlinx.android.synthetic.main.fragment_dialog_report.view.category_spinner
-import kotlinx.android.synthetic.main.fragment_dialog_report.view.text
 
 class ReportDialog : DialogFragment() {
     data class Model (
