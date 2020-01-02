@@ -56,6 +56,7 @@ object UserTagsKeyMigrator {
         val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
         val container = prefs.get<UserTagsContainer>(UserTagsKey.CONTAINER)
 
+        // TODO: やばい
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 container.users.forEach { user ->

@@ -7,6 +7,9 @@ import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.lang.reflect.Type
 
 /**************************************
@@ -99,31 +102,36 @@ object IgnoredEntriesKeyMigrator {
     private fun migrateFromVersion1(context: Context) {
         val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
         val entries = prefs.getObject<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES) ?: emptyList()
-        val dao = SatenaApplication.instance.ignoredEntryDao
-        dao.clearAllEntries()
 
-        var success = true
-        entries.forEach {
-            try {
-                dao.insert(
-                    com.suihan74.satena.models.ignoredEntry.IgnoredEntry(
-                        type = com.suihan74.satena.models.ignoredEntry.IgnoredEntryType.valueOf(it.type.name),
-                        query = it.query,
-                        target = IgnoreTarget.fromInt(it.target.int)
+        GlobalScope.launch(Dispatchers.IO) {
+            val dao = SatenaApplication.instance.ignoredEntryDao
+            dao.clearAllEntries()
+
+            var success = true
+            entries.forEach {
+                try {
+                    dao.insert(
+                        com.suihan74.satena.models.ignoredEntry.IgnoredEntry(
+                            type = com.suihan74.satena.models.ignoredEntry.IgnoredEntryType.valueOf(
+                                it.type.name
+                            ),
+                            query = it.query,
+                            target = IgnoreTarget.fromInt(it.target.int)
+                        )
                     )
-                )
+                }
+                catch (e: Exception) {
+                    Log.e("migrationError", e.message)
+                    success = false
+                }
             }
-            catch (e: Exception) {
-                Log.e("migrationError", e.message)
-                success = false
-            }
-        }
 
-        if (success) {
-            prefs.edit {
-                /* editを使用して設定バージョンを上書き */
+            if (success) {
+                prefs.edit {
+                    /* editを使用して設定バージョンを上書き */
+                }
+                Log.i("migration", "migration of IgnoredEntry is succeeded")
             }
-            Log.i("migration", "migration of IgnoredEntry is succeeded")
         }
     }
 }

@@ -127,6 +127,44 @@
 
 ##---------------End: proguard configuration for OkHttp3  ----------
 
+##---------------Begin: proguard configuration for Room  ----------
+
+-keep class * extends androidx.room.RoomDatabase
+-dontwarn androidx.room.paging.**
+
+##---------------End: proguard configuration for Room  ----------
+
+##---------------Begin: proguard configuration for ViewModel  ----------
+
+# LifecycleObserver's empty constructor is considered to be unused by proguard
+-keep class * implements androidx.lifecycle.LifecycleObserver {
+    <init>(...);
+}
+# ViewModel's empty constructor is considered to be unused by proguard
+-keepclassmembers class * extends androidx.lifecycle.ViewModel {
+    <init>(...);
+}
+# keep Lifecycle State and Event enums values
+-keepclassmembers class androidx.lifecycle.Lifecycle$State { *; }
+-keepclassmembers class androidx.lifecycle.Lifecycle$Event { *; }
+# keep methods annotated with @OnLifecycleEvent even if they seem to be unused
+# (Mostly for LiveData.LifecycleBoundObserver.onStateChange(), but who knows)
+-keepclassmembers class * {
+    @androidx.lifecycle.OnLifecycleEvent *;
+}
+
+-keepclassmembers class * implements androidx.lifecycle.LifecycleObserver {
+    <init>(...);
+}
+
+-keep class * implements androidx.lifecycle.LifecycleObserver {
+    <init>(...);
+}
+-keepclassmembers class androidx.** { *; }
+-keep class androidx.** { *; }
+-dontwarn androidx.**
+
+##---------------Begin: proguard configuration for ViewModel  ----------
 
 -keep class com.suihan74.HatenaLib.** { *; }
 -keep class com.suihan74.satena.** { *; }
