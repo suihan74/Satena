@@ -107,7 +107,10 @@ class ReportDialog : DialogFragment() {
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setTitle(R.string.report_bookmark_dialog_title)
             .setView(content)
-            .setPositiveButton(R.string.report_dialog_ok, null)
+            .setPositiveButton(R.string.report_dialog_ok) { _, _ ->
+                val listener = parentFragment as? Listener ?: activity as? Listener
+                listener?.onReportBookmark(viewModel.model)
+            }
             .setNegativeButton(R.string.dialog_cancel, null)
             .create()
     }
