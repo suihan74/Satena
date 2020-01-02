@@ -87,6 +87,18 @@
             </intent-filter>
         </activity>
 
+        <!-- TODO: 実装完了後.scenes.postと差し替える -->
+        <activity
+                android:name=".scenes.post2.BookmarkPostActivity"
+                android:theme="@style/AppDialogTheme">
+            <intent-filter android:label="(新)ブコメを書く">
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+        </activity>
+
         <!-- ログイン画面 -->
         <activity android:name=".scenes.authentication.HatenaAuthenticationActivity" android:launchMode="singleTask"/>
         <activity android:name=".scenes.authentication.MastodonAuthenticationActivity" android:launchMode="singleTask">

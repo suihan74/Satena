@@ -164,7 +164,10 @@
 
     <!-- ブックマーク投稿ダイアログ -->
     <string name="bookmark_comment_edit_text_hint">ブコメ(任意)</string>
-    <string name="confirm_post_bookmark">ブックマークを投稿します。よろしいですか？</string>
+    <string name="confirm_post_bookmark">ブックマークします。よろしいですか？</string>
+    <string name="msg_comment_too_long">コメントが長すぎます。%d文字以下にしてください</string>
+    <string name="msg_post_bookmark_succeeded">ブックマークしました</string>
+    <string name="msg_post_bookmark_failed">ブックマークに失敗しました</string>
 
     <!-- hints -->
     <string name="search_query_hint">検索キーワード</string>

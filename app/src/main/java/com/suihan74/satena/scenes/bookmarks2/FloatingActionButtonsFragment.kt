@@ -18,16 +18,9 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
-import com.suihan74.satena.scenes.post.BookmarkPostActivity
+import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.utilities.toVisibility
-import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmark_button
-import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_scroll_bottom_button
-import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_scroll_menu_button
-import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_scroll_my_bookmark_button
-import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_scroll_top_button
-import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.bookmarks_search_text
-import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.custom_settings_button
-import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.search_button
+import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
 
 class FloatingActionButtonsFragment :
     Fragment(),
@@ -132,14 +125,9 @@ class FloatingActionButtonsFragment :
 
             view.bookmarks_scroll_my_bookmark_button.apply {
                 setOnClickListener {
+                    // TODO: (暫定的な動作)詳細画面に遷移
                     tabViewModel?.signedUserBookmark?.value?.let { target ->
-                        // TODO: 未ロードの場合どうするかを考える
-                        activityViewModel.loadNextRecentToUser(target.user).invokeOnCompletion { e ->
-                            if (e == null) {
-                                // TODO: postValueされるまえに呼ばれてしまうのでロードが挟まるとスクロールしない問題
-                                tabViewModel?.scrollTo(target)
-                            }
-                        }
+                        (activity as? BookmarksActivity)?.showBookmarkDetail(target)
                     }
                 }
             },
