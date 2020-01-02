@@ -98,12 +98,14 @@ class CustomTabViewModel : BookmarksTabViewModel() {
             bookmarksViewModel.bookmarksRecent.value
             ?: return
         )
-        val muteWords = bookmarksViewModel.muteWords
 
         val users = bookmarksViewModel.taggedUsers.value ?: emptyList()
 
+        val muteWords = bookmarksViewModel.muteWords
+        val muteUsers = bookmarksViewModel.ignoredUsers.value ?: emptyList()
+
         val filtered = list.filter {
-            set.shown(it, users, muteWords)
+            set.shown(it, users, muteWords, muteUsers)
         }
 
         bookmarks.postValue(
@@ -128,13 +130,14 @@ class CustomTabViewModel : BookmarksTabViewModel() {
         /** 非表示設定されるブクマ(非表示ユーザー/NGワード)を表示するか */
         val activeMutedBookmarks: Boolean
     ) {
-        fun shown(bookmark: Bookmark, taggedUsers: List<UserAndTags>, muteWords: List<String>) : Boolean {
+        fun shown(bookmark: Bookmark, taggedUsers: List<UserAndTags>, muteWords: List<String>, muteUsers: List<String>) : Boolean {
             val tags = taggedUsers.firstOrNull { it.user.name == bookmark.user }?.tags ?: emptyList()
             return when {
                 !activeNoCommentBookmarks && bookmark.comment.isBlank() ->
                     false
 
-                !activeMutedBookmarks && muteWords.any { w -> bookmark.comment.contains(w) } ->
+                !activeMutedBookmarks
+                && (muteWords.any { w -> bookmark.comment.contains(w) } || muteUsers.any { u -> bookmark.user == u }) ->
                     false
 
                 activeUnaffiliatedUsers && tags.isEmpty() ->
