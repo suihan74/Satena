@@ -123,6 +123,24 @@ class BookmarksActivity :
             viewModel = ViewModelProviders.of(this)[BookmarksViewModel::class.java]
             init(firstLaunching, targetUser)
         }
+
+        // スクロールでツールバーを隠す
+        toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
+            scrollFlags =
+                if (prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING))
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
+                else
+                    0
+        }
+
+        // スクロールでボタンを隠す
+        buttons_layout.updateLayoutParams<CoordinatorLayout.LayoutParams> {
+            behavior =
+                if (prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING))
+                    HideBottomViewOnScrollBehavior<View>(this@BookmarksActivity, null)
+                else
+                    null
+        }
     }
 
     private fun getUrlFromIntent(intent: Intent) : String =
