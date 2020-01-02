@@ -130,7 +130,6 @@
 
         <item name="colorAccent">@color/colorPrimary</item>
         <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
-        <item name="buttonBarButtonStyle">@style/ButtonBarButtonStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/ButtonBarButtonStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/ButtonBarButtonStyle</item>
         <item name="buttonBarNeutralButtonStyle">@style/ButtonBarButtonStyle</item>
