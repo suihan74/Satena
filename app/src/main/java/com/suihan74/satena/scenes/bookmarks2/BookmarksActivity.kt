@@ -8,9 +8,13 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -19,6 +23,7 @@ import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
@@ -56,6 +61,9 @@ class BookmarksActivity :
         const val EXTRA_ENTRY = "BookmarksActivity.EXTRA_ENTRY"
         /** EntryのURLを渡す場合 */
         const val EXTRA_ENTRY_URL = "BookmarksActivity.EXTRA_ENTRY_URL"
+        /** EntryのIDを渡す場合 */
+        const val EXTRA_ENTRY_ID = "BookmarksActivity.EXTRA_ENTRY_ID"
+
         /** 画面表示後直接特定のユーザーのブクマを表示する場合その対象 */
         const val EXTRA_TARGET_USER = "BookmarksActivity.EXTRA_TARGET_USER"
     }
@@ -220,6 +228,9 @@ class BookmarksActivity :
 
         // コンテンツの初期化
         if (firstLaunching) {
+            // 表示履歴に追加
+            viewModel.entry.saveHistory(this@BookmarksActivity)
+
             val bookmarksFragment = BookmarksFragment.createInstance()
             val entryInformationFragment = EntryInformationFragment.createInstance()
             val buttonsFragment = FloatingActionButtonsFragment.createInstance()

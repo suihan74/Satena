@@ -204,12 +204,7 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         else {
                             val eid = entity.analyzedComment.entryIds.firstOrNull { link.contains(it.toString()) }
                             if (eid != null) {
-/*                                fragment.launch(Dispatchers.Main) {
-                                    val entryUrl = HatenaClient.getEntryUrlFromIdAsync(eid).await()
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(entryUrl))
-                                    context.startActivity(intent)
-                                }
-                                    */
+                                // TODO: EntryIdをクリックしたらブクマActivityを追加する
                             }
                         }
                     }
