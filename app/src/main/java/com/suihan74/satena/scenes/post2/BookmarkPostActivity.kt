@@ -1,8 +1,7 @@
 package com.suihan74.satena.scenes.post2
 
-import android.app.Activity
 import android.content.Context
-import android.graphics.Point
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.inputmethod.EditorInfo
@@ -25,8 +24,6 @@ import kotlinx.android.synthetic.main.activity_bookmark_post_2.*
 
 class BookmarkPostActivity : AppCompatActivity() {
     companion object {
-        private const val DIALOG_WIDTH_RATIO = 0.9
-
         const val EXTRA_ENTRY = "BookmarkPostActivity.EXTRA_ENTRY"
     }
 
@@ -47,7 +44,16 @@ class BookmarkPostActivity : AppCompatActivity() {
 
         // Extraの取得
         val entry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
-        val entryUrl = intent.dataString
+        val entryUrl =
+            when (intent.action) {
+                Intent.ACTION_SEND ->
+                    intent.getStringExtra(Intent.EXTRA_TEXT)
+
+                Intent.ACTION_VIEW ->
+                    intent.dataString
+
+                else -> null
+            }
 
         // ViewModelの生成/取得
         val factory = ViewModel.Factory(
@@ -80,12 +86,6 @@ class BookmarkPostActivity : AppCompatActivity() {
                 showToast(R.string.msg_get_entry_information_failed)
                 finish()
             }
-        }
-
-        // 画面サイズを調整
-        val displaySize = getDisplaySize(this)
-        bookmark_post_layout.layoutParams = bookmark_post_layout.layoutParams.apply {
-            width = (displaySize.x * DIALOG_WIDTH_RATIO).toInt()
         }
 
         // EditTextの設定
@@ -180,10 +180,11 @@ class BookmarkPostActivity : AppCompatActivity() {
     }
 
     /** 画面サイズを取得する */
-    private fun getDisplaySize(activity: Activity) : Point {
+/*    private fun getDisplaySize(activity: Activity) : Point {
         val display = activity.windowManager.defaultDisplay
         val point = Point()
         display.getSize(point)
         return point
     }
+ */
 }

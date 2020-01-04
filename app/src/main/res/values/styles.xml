@@ -77,6 +77,10 @@
 
         <!-- enable fragment transition -->
         <item name="android:windowContentTransitions">true</item>
+
+        <!-- 画面幅占有比率 -->
+        <item name="android:windowMinWidthMajor">@dimen/post_bookmark_dialog_width_ratio</item>
+        <item name="android:windowMinWidthMinor">@dimen/post_bookmark_dialog_width_ratio</item>
     </style>
 
     <!-- Light Theme -->
@@ -134,8 +138,8 @@
         <item name="buttonBarNegativeButtonStyle">@style/ButtonBarButtonStyle</item>
         <item name="buttonBarNeutralButtonStyle">@style/ButtonBarButtonStyle</item>
 
-        <item name="android:windowMinWidthMajor">@dimen/dialog_width_major</item>
-        <item name="android:windowMinWidthMinor">@dimen/dialog_width_minor</item>
+        <item name="android:windowMinWidthMajor">@dimen/alert_dialog_width_ratio</item>
+        <item name="android:windowMinWidthMinor">@dimen/alert_dialog_width_ratio</item>
 
         <!-- TabLayout -->
         <item name="tabSelectedTextColor">@color/colorPrimary</item>
