@@ -56,6 +56,10 @@ class ViewModel(
         }
     }
 
+    val user by lazy {
+        client.account?.name ?: ""
+    }
+
     /** コメント長 */
     val commentLength by lazy {
         MutableLiveData(0)
@@ -217,6 +221,14 @@ class ViewModel(
 
         onSuccess?.invoke()
     }
+
+    /** コメントの長さをチェックする */
+    fun checkCommentLength(onError: OnError? = null) =
+        (getCommentLength(comment.value ?: "") <= MAX_COMMENT_LENGTH).also {
+            if (!it) {
+                onError?.invoke(CommentTooLongException())
+            }
+        }
 
     /** コメントにタグを挿入/削除 */
     fun toggleTag(tag: String) {

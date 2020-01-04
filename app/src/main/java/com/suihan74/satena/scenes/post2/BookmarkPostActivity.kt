@@ -15,14 +15,19 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.post2.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.activity_bookmark_post_2.*
 
-class BookmarkPostActivity : AppCompatActivity() {
+class BookmarkPostActivity :
+    AppCompatActivity(),
+    ConfirmPostBookmarkDialog.Listener
+{
     companion object {
         const val EXTRA_ENTRY = "BookmarkPostActivity.EXTRA_ENTRY"
     }
@@ -129,10 +134,7 @@ class BookmarkPostActivity : AppCompatActivity() {
 
         // 投稿ボタン処理
         post_button.setOnClickListener {
-            viewModel.postBookmark(
-                onSuccess = onPostSuccess,
-                onError = onPostError
-            )
+            postBookmark()
         }
 
         // 利用タグ情報をロード完了したらリストに反映する
@@ -179,12 +181,28 @@ class BookmarkPostActivity : AppCompatActivity() {
         }
     }
 
-    /** 画面サイズを取得する */
-/*    private fun getDisplaySize(activity: Activity) : Point {
-        val display = activity.windowManager.defaultDisplay
-        val point = Point()
-        display.getSize(point)
-        return point
+    /** ブックマークを投稿する（必要ならダイアログを表示する） */
+    private fun postBookmark() {
+        if (!viewModel.checkCommentLength(onPostError)) return
+
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val showDialog = prefs.getBoolean(PreferenceKey.USING_POST_BOOKMARK_DIALOG)
+        if (showDialog) {
+            ConfirmPostBookmarkDialog.createInstance(viewModel)
+                .show(supportFragmentManager, "post_bookmark_dialog")
+        }
+        else {
+            viewModel.postBookmark(
+                onSuccess = onPostSuccess,
+                onError = onPostError
+            )
+        }
     }
- */
+
+    override fun onApprovedToPost() {
+        viewModel.postBookmark(
+            onSuccess = onPostSuccess,
+            onError = onPostError
+        )
+    }
 }
