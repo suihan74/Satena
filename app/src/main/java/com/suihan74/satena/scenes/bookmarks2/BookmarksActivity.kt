@@ -441,4 +441,35 @@ class BookmarksActivity :
                 TappedActionLauncher.launch(this, TapEntryAction.SHOW_PAGE_IN_BROWSER, entry.url)
         }
     }
+
+    // --- ブックマーク中のリンクの処理 --- //
+
+    fun onBookmarkClicked(bookmark: Bookmark) {
+        showBookmarkDetail(bookmark)
+    }
+
+    fun onBookmarkLongClicked(bookmark: Bookmark): Boolean {
+        val dialog = BookmarkMenuDialog.createInstance(bookmark)
+        dialog.show(supportFragmentManager, "bookmark_dialog")
+        return true
+    }
+
+    fun onLinkClicked(url: String) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
+        TappedActionLauncher.launch(this, act, url, supportFragmentManager)
+    }
+
+    fun onLinkLongClicked(url: String) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
+        TappedActionLauncher.launch(this, act, url, supportFragmentManager)
+    }
+
+    fun onEntryIdClicked(eid: Long) {
+        val intent = Intent(this, BookmarksActivity::class.java).apply {
+            putExtra(EXTRA_ENTRY_ID, eid)
+        }
+        startActivity(intent)
+    }
 }

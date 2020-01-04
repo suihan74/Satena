@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -90,27 +91,20 @@ class BookmarksTabFragment :
 
         // adapter
         val bookmarksAdapter = object : BookmarksAdapter() {
-            override fun onItemClicked(bookmark: Bookmark) {
-                (activity as? BookmarksActivity)?.showBookmarkDetail(bookmark)
-            }
+            override fun onItemClicked(bookmark: Bookmark) =
+                bookmarksActivity.onBookmarkClicked(bookmark)
 
-            override fun onItemLongClicked(bookmark: Bookmark): Boolean {
-                val dialog = BookmarkMenuDialog.createInstance(bookmark)
-                dialog.show(childFragmentManager, "bookmark_dialog")
-                return true
-            }
+            override fun onItemLongClicked(bookmark: Bookmark) =
+                bookmarksActivity.onBookmarkLongClicked(bookmark)
 
-            override fun onLinkClicked(url: String) {
-                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-                val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
-                TappedActionLauncher.launch(requireContext(), act, url, childFragmentManager)
-            }
+            override fun onLinkClicked(url: String) =
+                bookmarksActivity.onLinkClicked(url)
 
-            override fun onLinkLongClicked(url: String) {
-                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-                val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
-                TappedActionLauncher.launch(requireContext(), act, url, childFragmentManager)
-            }
+            override fun onLinkLongClicked(url: String) =
+                bookmarksActivity.onLinkLongClicked(url)
+
+            override fun onEntryIdClicked(eid: Long) =
+                bookmarksActivity.onEntryIdClicked(eid)
         }
 
         // recycler view

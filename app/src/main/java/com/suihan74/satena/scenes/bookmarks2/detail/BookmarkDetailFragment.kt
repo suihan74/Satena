@@ -228,20 +228,20 @@ class BookmarkDetailFragment : Fragment() {
                 val linkMovementMethod = object : MutableLinkMovementMethod() {
                     override fun onSinglePressed(link: String) {
                         if (link.startsWith("http")) {
-                            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-                            val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
-                            TappedActionLauncher.launch(requireContext(), act, link, childFragmentManager)
+                            bookmarksActivity?.onLinkClicked(link)
                         }
                         else {
-                            // TODO: eid
+                            analyzedComment.entryIds
+                                .firstOrNull { eid -> link.contains(eid.toString()) }
+                                ?.let { eid ->
+                                    bookmarksActivity?.onEntryIdClicked(eid)
+                                }
                         }
                     }
 
                     override fun onLongPressed(link: String) {
                         if (link.startsWith("http")) {
-                            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-                            val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
-                            TappedActionLauncher.launch(requireContext(), act, link, childFragmentManager)
+                            bookmarksActivity?.onLinkLongClicked(link)
                         }
                     }
                 }

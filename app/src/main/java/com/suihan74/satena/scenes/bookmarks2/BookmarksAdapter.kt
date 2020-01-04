@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.content.Intent
 import android.text.SpannableString
 import android.text.style.ImageSpan
 import android.view.LayoutInflater
@@ -64,6 +65,8 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     open fun onLinkClicked(url: String) {}
     /** コメント中のリンクをロングタップしたときの処理 */
     open fun onLinkLongClicked(url: String) {}
+    /** コメント中のEntryIdをタップしたときの処理 */
+    open fun onEntryIdClicked(eid: Long) {}
 
     override fun getItemCount() = states.size
 
@@ -202,10 +205,11 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                             bookmarksAdapter.onLinkClicked(link)
                         }
                         else {
-                            val eid = entity.analyzedComment.entryIds.firstOrNull { link.contains(it.toString()) }
-                            if (eid != null) {
-                                // TODO: EntryIdをクリックしたらブクマActivityを追加する
-                            }
+                            entity.analyzedComment.entryIds
+                                .firstOrNull { link.contains(it.toString()) }
+                                ?.let { eid ->
+                                    bookmarksAdapter.onEntryIdClicked(eid)
+                                }
                         }
                     }
 

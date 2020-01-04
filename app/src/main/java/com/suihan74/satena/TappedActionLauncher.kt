@@ -8,8 +8,8 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesTabFragmentBase
-import com.suihan74.utilities.CoroutineScopeFragment
 
 object TappedActionLauncher {
     fun launch(context: Context, act: TapEntryAction, url: String, fragmentManager: FragmentManager? = null) = when (act) {
@@ -29,15 +29,16 @@ object TappedActionLauncher {
     private fun launchBookmarksActivity(context: Context, url: String) {
         val entryUrl = HatenaClient.getCommentPageUrlFromEntryUrl(url)
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(entryUrl)).apply {
-            setPackage("com.suihan74.satena")
-            extras?.putCharSequence(Intent.EXTRA_TEXT, entryUrl)
+            setClass(context, BookmarksActivity::class.java)
+            putExtra(Intent.EXTRA_TEXT, entryUrl)
         }
         context.startActivity(intent)
     }
 
     private fun launchBookmarksActivity(context: Context, entry: Entry) {
-        val intent = Intent(context, com.suihan74.satena.scenes.bookmarks2.BookmarksActivity::class.java)
-        intent.putExtra(com.suihan74.satena.scenes.bookmarks2.BookmarksActivity.EXTRA_ENTRY, entry)
+        val intent = Intent(context, BookmarksActivity::class.java).apply {
+            putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+        }
         context.startActivity(intent)
     }
 
