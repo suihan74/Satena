@@ -55,7 +55,7 @@
         <Button
                 android:id="@+id/post_button"
                 android:textStyle="bold"
-                android:text="B!"
+                android:text="@string/post_bookmark_button_text"
                 android:textColor="@color/colorPrimaryText"
                 android:backgroundTint="@color/colorPrimary"
                 android:layout_below="@id/comment"
