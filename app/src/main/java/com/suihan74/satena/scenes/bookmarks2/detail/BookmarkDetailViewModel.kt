@@ -126,8 +126,9 @@ class BookmarkDetailViewModel(
 
     /** 対象ブクマにスターを付ける */
     fun postStar(color: StarColor) = viewModelScope.launch {
+        if (!checkStarCount(color)) return@launch
+
         try {
-            checkStarCount(color)
             bookmarksRepository.postStar(bookmark, color, quote.value ?: "")
         }
         catch (e: Throwable) {
@@ -145,22 +146,30 @@ class BookmarkDetailViewModel(
         }
     }
 
-    private fun checkStarCount(color: StarColor) {
-        if (!bookmarksRepository.signedIn)
-            throw NotSignedInException()
+    /** 指定カラーのスターを所持しているか確認する */
+    fun checkStarCount(color: StarColor) : Boolean {
+        try {
+            if (!bookmarksRepository.signedIn)
+                throw NotSignedInException()
 
-        val activeStars = userStars.value ?:
-            throw StarExhaustedException(color)
+            val activeStars = userStars.value ?: throw StarExhaustedException(color)
 
-        val valid = when (color) {
-            StarColor.Red -> activeStars.red > 0
-            StarColor.Green -> activeStars.green > 0
-            StarColor.Blue -> activeStars.blue > 0
-            StarColor.Purple -> activeStars.purple > 0
-            else -> true
+            val valid = when (color) {
+                StarColor.Red -> activeStars.red > 0
+                StarColor.Green -> activeStars.green > 0
+                StarColor.Blue -> activeStars.blue > 0
+                StarColor.Purple -> activeStars.purple > 0
+                else -> true
+            }
+            if (!valid) {
+                throw StarExhaustedException(color)
+            }
+
+            return true
         }
-        if (!valid) {
-            throw StarExhaustedException(color)
+        catch (e: Throwable) {
+            onPostStarFailureListener?.invoke(color, e)
+            return false
         }
     }
 

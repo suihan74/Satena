@@ -327,6 +327,8 @@ class BookmarkDetailFragment :
 
     /** スターをつける（必要なら確認ダイアログを表示） */
     private fun postStar(color: StarColor) {
+        if (!viewModel.checkStarCount(color)) return
+
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val showDialog = prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
         if (showDialog) {
