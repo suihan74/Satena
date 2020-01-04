@@ -25,9 +25,8 @@ import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.StarColor
 import com.suihan74.satena.R
-import com.suihan74.satena.TappedActionLauncher
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
@@ -35,7 +34,10 @@ import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
 
-class BookmarkDetailFragment : Fragment() {
+class BookmarkDetailFragment :
+    Fragment(),
+    AlertDialogFragment.Listener
+{
     private lateinit var activityViewModel: BookmarksViewModel
     private lateinit var viewModel: BookmarkDetailViewModel
 
@@ -133,12 +135,13 @@ class BookmarkDetailFragment : Fragment() {
             hide()
         }
 
+        // TODO: 確認ダイアログを表示できるようにする
         // スター付与ボタン各色
-        view.yellow_star_button.setOnClickListener { viewModel.postStar(StarColor.Yellow) }
-        view.red_star_button.setOnClickListener { viewModel.postStar(StarColor.Red) }
-        view.green_star_button.setOnClickListener { viewModel.postStar(StarColor.Green) }
-        view.blue_star_button.setOnClickListener { viewModel.postStar(StarColor.Blue) }
-        view.purple_star_button.setOnClickListener { viewModel.postStar(StarColor.Purple) }
+        view.yellow_star_button.setOnClickListener { postStar(StarColor.Yellow) }
+        view.red_star_button.setOnClickListener { postStar(StarColor.Red) }
+        view.green_star_button.setOnClickListener { postStar(StarColor.Green) }
+        view.blue_star_button.setOnClickListener { postStar(StarColor.Blue) }
+        view.purple_star_button.setOnClickListener { postStar(StarColor.Purple) }
 
         // ユーザータグ情報の変更を監視
         activityViewModel.taggedUsers.observe(this, Observer {
@@ -322,6 +325,25 @@ class BookmarkDetailFragment : Fragment() {
         }
     }
 
+    /** スターをつける（必要なら確認ダイアログを表示） */
+    private fun postStar(color: StarColor) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val showDialog = prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
+        if (showDialog) {
+            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                .setTitle(R.string.confirm_dialog_title_simple)
+                .setIcon(R.drawable.ic_baseline_help)
+                .setMessage(getString(R.string.msg_post_star_dialog, color.name))
+                .setPositiveButton(R.string.dialog_ok)
+                .setNegativeButton(R.string.dialog_cancel)
+                .setAdditionalData("star_color", color)
+                .show(childFragmentManager, "star_dialog")
+        }
+        else {
+            viewModel.postStar(color)
+        }
+    }
+
     // --- スターボタンの表示切替アニメーション --- //
 
     private fun showStarButton(layoutId: Int, counterId: Int, dimenId: Int) =
@@ -455,5 +477,15 @@ class BookmarkDetailFragment : Fragment() {
         hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
 
         view!!.show_stars_button.setImageResource(R.drawable.ic_star)
+    }
+
+
+    // --- post star dialog --- //
+
+    override fun onClickPositiveButton(dialog: AlertDialogFragment) {
+        if (dialog.tag == "star_dialog") {
+            val color = dialog.getAdditionalData<StarColor>("star_color")!!
+            viewModel.postStar(color)
+        }
     }
 }
