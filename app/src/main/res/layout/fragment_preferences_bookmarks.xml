@@ -58,6 +58,20 @@
                 android:layout_height="wrap_content"/>
 
         <TextView
+                android:text="@string/pref_bookmarks_hiding_toolbar_by_scrolling"
+                android:textColor="?attr/textColor"
+                android:layout_marginTop="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ToggleButton
+                android:id="@+id/preferences_bookmarks_hiding_toolbar_by_scrolling"
+                style="@style/Widget.AppCompat.Button"
+                android:textColor="@color/textColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
                 android:text="@string/pref_bookmarks_hiding_buttons_with_scrolling_desc"
                 android:textColor="?attr/textColor"
                 android:layout_marginTop="24dp"
@@ -108,20 +122,6 @@
 
         <ToggleButton
                 android:id="@+id/preferences_bookmarks_showing_stars_of_ignored_users"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        <TextView
-                android:text="@string/pref_bookmarks_hiding_toolbar_by_scrolling"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        <ToggleButton
-                android:id="@+id/preferences_bookmarks_hiding_toolbar_by_scrolling"
                 style="@style/Widget.AppCompat.Button"
                 android:textColor="@color/textColor"
                 android:layout_width="wrap_content"
