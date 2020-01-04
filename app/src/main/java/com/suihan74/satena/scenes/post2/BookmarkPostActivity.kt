@@ -15,7 +15,6 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
-import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.post2.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.utilities.AccountLoader
@@ -30,6 +29,8 @@ class BookmarkPostActivity :
 {
     companion object {
         const val EXTRA_ENTRY = "BookmarkPostActivity.EXTRA_ENTRY"
+
+        private const val DIALOG_CONFIRM_POST_BOOKMARK = "DIALOG_CONFIRM_POST_BOOKMARK"
     }
 
     private lateinit var viewModel: ViewModel
@@ -189,7 +190,7 @@ class BookmarkPostActivity :
         val showDialog = prefs.getBoolean(PreferenceKey.USING_POST_BOOKMARK_DIALOG)
         if (showDialog) {
             ConfirmPostBookmarkDialog.createInstance(viewModel)
-                .show(supportFragmentManager, "post_bookmark_dialog")
+                .show(supportFragmentManager, DIALOG_CONFIRM_POST_BOOKMARK)
         }
         else {
             viewModel.postBookmark(
@@ -199,10 +200,13 @@ class BookmarkPostActivity :
         }
     }
 
-    override fun onApprovedToPost() {
-        viewModel.postBookmark(
-            onSuccess = onPostSuccess,
-            onError = onPostError
-        )
+    override fun onApprovedToPost(dialog: ConfirmPostBookmarkDialog) {
+        when (dialog.tag) {
+            DIALOG_CONFIRM_POST_BOOKMARK ->
+                viewModel.postBookmark(
+                    onSuccess = onPostSuccess,
+                    onError = onPostError
+                )
+        }
     }
 }

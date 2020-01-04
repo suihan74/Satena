@@ -51,7 +51,7 @@ class BookmarksActivity :
     private lateinit var viewModel: BookmarksViewModel
 
     val bookmarksFragment
-        get() = findFragmentByTag<BookmarksFragment>("bookmarks")!!
+        get() = findFragmentByTag<BookmarksFragment>(FRAGMENT_BOOKMARKS)!!
 
     lateinit var onBackPressedCallback: OnBackPressedCallback
 
@@ -66,6 +66,16 @@ class BookmarksActivity :
 
         /** 画面表示後直接特定のユーザーのブクマを表示する場合その対象 */
         const val EXTRA_TARGET_USER = "BookmarksActivity.EXTRA_TARGET_USER"
+
+        // Fragment tags
+        private const val FRAGMENT_BOOKMARKS = "FRAGMENT_BOOKMARKS"
+        private const val FRAGMENT_BUTTONS = "FRAGMENT_BUTTONS"
+        private const val FRAGMENT_INFORMATION = "FRAGMENT_INFORMATION"
+
+        // Dialog tags
+        private const val DIALOG_BOOKMARK_MENU = "DIALOG_BOOKMARK_MENU"
+        private const val DIALOG_REPORT = "DIALOG_REPORT"
+        private const val DIALOG_SELECT_USER_TAG = "DIALOG_SELECT_USER_TAG"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -172,6 +182,7 @@ class BookmarksActivity :
         }
     }
 
+    /** Intentから適切なエントリーURLを受け取る */
     private fun getUrlFromIntent(intent: Intent) : String =
         when (intent.action) {
             // 閲覧中のURLが送られてくる場合
@@ -218,7 +229,7 @@ class BookmarksActivity :
                 super.onDrawerOpened(drawerView)
                 hideSoftInputMethod()
 
-                findFragmentByTag<EntryInformationFragment>("information")
+                findFragmentByTag<EntryInformationFragment>(FRAGMENT_INFORMATION)
                     ?.onShown()
             }
         }
@@ -228,9 +239,11 @@ class BookmarksActivity :
 
         // Observers
         viewModel.bookmarksEntry.observe(this, Observer {
-            toolbar.subtitle = String.format("%d users (%d comments)",
+            toolbar.subtitle = getString(
+                R.string.toolbar_subtitle_bookmarks,
                 it.bookmarks.size,
-                it.bookmarks.count { b -> b.comment.isNotBlank() })
+                it.bookmarks.count { b -> b.comment.isNotBlank() }
+            )
         })
 
         // 戻るボタンを監視
@@ -259,9 +272,9 @@ class BookmarksActivity :
             val buttonsFragment = FloatingActionButtonsFragment.createInstance()
 
             supportFragmentManager.beginTransaction()
-                .replace(R.id.content_layout, bookmarksFragment, "bookmarks")
-                .replace(R.id.buttons_layout, buttonsFragment, "buttons")
-                .replace(R.id.entry_information_layout, entryInformationFragment, "information")
+                .replace(R.id.content_layout, bookmarksFragment, FRAGMENT_BOOKMARKS)
+                .replace(R.id.buttons_layout, buttonsFragment, FRAGMENT_BUTTONS)
+                .replace(R.id.entry_information_layout, entryInformationFragment, FRAGMENT_INFORMATION)
                 .commitAllowingStateLoss()
 
             // ユーザーが指定されている場合そのユーザーのブクマ詳細画面に直接遷移する
@@ -334,12 +347,12 @@ class BookmarksActivity :
 
     override fun onReportBookmark(bookmark: Bookmark) {
         val dialog = ReportDialog.createInstance(viewModel.entry, bookmark)
-        dialog.show(supportFragmentManager, "report_dialog")
+        dialog.show(supportFragmentManager, DIALOG_REPORT)
     }
 
     override fun onSetUserTag(user: String) {
         val dialog = UserTagSelectionDialog.createInstance(user)
-        dialog.show(supportFragmentManager, "user_tag_selection_dialog")
+        dialog.show(supportFragmentManager, DIALOG_SELECT_USER_TAG)
     }
 
     // --- UserTagDialogの処理 --- //
@@ -450,7 +463,7 @@ class BookmarksActivity :
 
     fun onBookmarkLongClicked(bookmark: Bookmark): Boolean {
         val dialog = BookmarkMenuDialog.createInstance(bookmark)
-        dialog.show(supportFragmentManager, "bookmark_dialog")
+        dialog.show(supportFragmentManager, DIALOG_BOOKMARK_MENU)
         return true
     }
 

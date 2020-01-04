@@ -28,21 +28,11 @@ class BookmarksFragmentViewModel : ViewModel() {
 }
 
 class BookmarksFragment : Fragment() {
-    /** BookmarksActivityのViewModel */
-    private val activityViewModel: BookmarksViewModel by lazy {
-        ViewModelProviders.of(bookmarksActivity)[BookmarksViewModel::class.java]
-    }
-
     /** BookmarksFragmentの状態管理用ViewModel */
     private val viewModel: BookmarksFragmentViewModel by lazy {
         ViewModelProviders.of(this)[BookmarksFragmentViewModel::class.java]
     }
 
-    /** このフラグメントが配置されているBookmarksActivity */
-    val bookmarksActivity
-        get() = requireActivity() as BookmarksActivity
-
-    // statics
     companion object {
         fun createInstance() = BookmarksFragment()
     }

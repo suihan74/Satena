@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks2
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,21 +9,14 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
-import com.suihan74.satena.TappedActionLauncher
-import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
-import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.*
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class BookmarksTabFragment :
     Fragment()
@@ -191,6 +183,6 @@ class BookmarksTabFragment :
 
     override fun onResume() {
         super.onResume()
-        bookmarksFragmentViewModel.selectedTabViewModel.postValue(viewModel)
+        bookmarksFragmentViewModel.selectedTabViewModel.value = viewModel
     }
 }

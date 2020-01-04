@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.satena.scenes.post2.ViewModel
@@ -44,7 +43,7 @@ class ConfirmPostBookmarkDialog : DialogFragment() {
             .setCustomTitle(titleView)
             .setMessage(R.string.confirm_post_bookmark)
             .setPositiveButton(R.string.dialog_ok) { _, _ ->
-                listener?.onApprovedToPost()
+                listener?.onApprovedToPost(this)
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .create()
@@ -52,6 +51,6 @@ class ConfirmPostBookmarkDialog : DialogFragment() {
 
     interface Listener {
         /** 投稿が承認された場合 */
-        fun onApprovedToPost()
+        fun onApprovedToPost(dialog: ConfirmPostBookmarkDialog)
     }
 }

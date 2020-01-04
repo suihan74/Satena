@@ -221,6 +221,7 @@
     <string name="menu_notice_remove">通知を削除</string>
 
     <!-- ブクマ画面 -->
+    <string name="toolbar_subtitle_bookmarks">"%d users (%d comments)"</string>
     <string name="custom_bookmarks_tab_pref_dialog_title">カスタムブクマリストの設定</string>
     <string name="custom_bookmarks_no_comment_active">無言ブクマを表示</string>
     <string name="custom_bookmarks_ignored_user_active">非表示ユーザーを表示</string>
@@ -245,6 +246,7 @@
     <string name="bookmark_detail_tab_stars_to">★ → %s</string>
     <string name="bookmark_detail_tab_mentions_from">%s → mention</string>
     <string name="bookmark_detail_tab_mentions_to">mention -> %s</string>
+    <string name="bookmark_detail_quote_comment">"%s"</string>
     <string name="msg_post_star_dialog">%sスターをつけます。よろしいですか？</string>
     <string name="msg_post_star_succeeded">%sのブコメに★をつけました</string>
     <string name="msg_post_star_failed">%sのブコメに★をつけられませんでした</string>

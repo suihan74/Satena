@@ -60,7 +60,13 @@ class BookmarkDetailFragment :
             }
         }
 
+        // argument keys
         private const val ARG_BOOKMARK = "ARG_BOOKMARK"
+
+        // dialog tags
+        private const val DIALOG_BOOKMARK_MENU = "DIALOG_BOOKMARK_MENU"
+        private const val DIALOG_CONFIRM_POST_STAR = "DIALOG_CONFIRM_POST_STAR"
+        private const val DIALOG_DATA_STAR_COLOR = "DIALOG_CONFIRM_POST_STAR.STAR_COLOR"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -179,7 +185,7 @@ class BookmarkDetailFragment :
         // コメント引用を監視
         viewModel.quote.observe(this, Observer { comment ->
             view.quote_text_view.run {
-                text = "\"${comment}\""
+                text = getString(R.string.bookmark_detail_quote_comment, comment)
                 visibility = (!comment.isNullOrBlank()).toVisibility()
             }
         })
@@ -284,7 +290,7 @@ class BookmarkDetailFragment :
             // メニューボタン
             view.menu_button.setOnClickListener {
                 val dialog = BookmarkMenuDialog.createInstance(viewModel.bookmark)
-                dialog.show(childFragmentManager, "bookmark_dialog")
+                dialog.show(childFragmentManager, DIALOG_BOOKMARK_MENU)
             }
         }
     }
@@ -338,8 +344,8 @@ class BookmarkDetailFragment :
                 .setMessage(getString(R.string.msg_post_star_dialog, color.name))
                 .setPositiveButton(R.string.dialog_ok)
                 .setNegativeButton(R.string.dialog_cancel)
-                .setAdditionalData("star_color", color)
-                .show(childFragmentManager, "star_dialog")
+                .setAdditionalData(DIALOG_DATA_STAR_COLOR, color)
+                .show(childFragmentManager, DIALOG_CONFIRM_POST_STAR)
         }
         else {
             viewModel.postStar(color)
@@ -485,9 +491,11 @@ class BookmarkDetailFragment :
     // --- post star dialog --- //
 
     override fun onClickPositiveButton(dialog: AlertDialogFragment) {
-        if (dialog.tag == "star_dialog") {
-            val color = dialog.getAdditionalData<StarColor>("star_color")!!
-            viewModel.postStar(color)
+        when (dialog.tag) {
+            DIALOG_CONFIRM_POST_STAR -> {
+                val color = dialog.getAdditionalData<StarColor>(DIALOG_DATA_STAR_COLOR)!!
+                viewModel.postStar(color)
+            }
         }
     }
 }
