@@ -14,10 +14,8 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Notice
-import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -65,8 +63,20 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
                 mClickHandling = true
 
                 when (notice.verb) {
-                    Notice.VERB_STAR ->
-                        launch(Dispatchers.Main) {
+                    Notice.VERB_STAR -> {
+                        val intent = Intent(requireContext(), BookmarksActivity::class.java).apply {
+                            putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
+                            if (!HatenaClient.account?.name.isNullOrBlank()) {
+                                putExtra(
+                                    BookmarksActivity.EXTRA_TARGET_USER,
+                                    HatenaClient.account!!.name
+                                )
+                            }
+                        }
+                        startActivity(intent)
+                        mClickHandling = false
+                    }
+                        /*launch(Dispatchers.Main) {
                             try {
                                 activity.showProgressBar()
 
@@ -91,7 +101,7 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
                                 activity.hideProgressBar()
                                 mClickHandling = false
                             }
-                        }
+                        }*/
 
                     Notice.VERB_ADD_FAVORITE -> {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
@@ -103,6 +113,13 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
                         val baseUrl = "${HatenaClient.B_BASE_URL}/entry?url="
                         if (notice.link.startsWith(baseUrl)) {
                             val url = Uri.decode(notice.link.substring(baseUrl.length))
+                            val intent = Intent(requireContext(), BookmarksActivity::class.java).apply {
+                                putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
+                            }
+                            startActivity(intent)
+
+                            mClickHandling = false
+/*
                             launch(Dispatchers.Main) {
                                 try {
                                     activity.showProgressBar()
@@ -122,6 +139,7 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
                                     mClickHandling = false
                                 }
                             }
+*/
                         }
                         else {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
@@ -131,7 +149,9 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
                     }
 
                     else -> {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link)).apply {
+                            setClass(requireContext(), BookmarksActivity::class.java)
+                        }
                         startActivity(intent)
                         mClickHandling = false
                     }

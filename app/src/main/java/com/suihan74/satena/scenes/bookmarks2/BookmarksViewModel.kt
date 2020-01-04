@@ -6,13 +6,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
+import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.Report
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.UserAndTags
-import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.lock
@@ -77,9 +77,13 @@ class BookmarksViewModel(
         bookmarksRecent.postValue(repository.bookmarksRecent)
     }
 
-    fun loadEntry(url: String, onSuccess: (() -> Unit)? = null, onError: CompletionHandler? = null) = viewModelScope.launch {
+    private fun loadEntryImpl(
+        loadAction: suspend ()->Unit,
+        onSuccess: ((Entry) -> Unit)? = null,
+        onError: CompletionHandler? = null
+    ) = viewModelScope.launch {
         try {
-            repository.loadEntry(modifySpecificUrls(url)!!)
+            loadAction.invoke()
             init(true, onError)
         }
         catch (e: Throwable) {
@@ -90,9 +94,31 @@ class BookmarksViewModel(
         }
 
         withContext(Dispatchers.Main) {
-            onSuccess?.invoke()
+            onSuccess?.invoke(repository.entry)
         }
     }
+
+    /** URLを使ってEntryをロードする */
+    fun loadEntry(
+        url: String,
+        onSuccess: ((entry: Entry) -> Unit)? = null,
+        onError: CompletionHandler? = null
+    ) = loadEntryImpl(
+        { repository.loadEntry(url) },
+        onSuccess,
+        onError
+    )
+
+    /** EntryIdを使ってEntryをロードする */
+    fun loadEntry(
+        eid: Long,
+        onSuccess: ((entry: Entry) -> Unit)? = null,
+        onError: CompletionHandler? = null
+    ) = loadEntryImpl(
+        { repository.loadEntry(eid) },
+        onSuccess,
+        onError
+    )
 
     /** 初期化 */
     fun init(loading: Boolean, onError: CompletionHandler? = null) = viewModelScope.launch(

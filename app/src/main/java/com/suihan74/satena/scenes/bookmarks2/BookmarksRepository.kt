@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.bookmarks2
 
 import androidx.lifecycle.LiveData
 import com.suihan74.HatenaLib.*
+import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.lock
 import kotlinx.coroutines.Deferred
@@ -71,9 +72,19 @@ class BookmarksRepository(
 
     /** エントリ情報を取得 */
     suspend fun loadEntry(url: String) {
-        val existed = client.searchEntriesAsync(url, SearchType.Text).await()
-            .firstOrNull { it.url == url }
-        entry = existed ?: client.getEmptyEntryAsync(url).await()
+        val modifiedUrl = modifySpecificUrls(url)!!
+        val existed = client.searchEntriesAsync(modifiedUrl, SearchType.Text).await()
+            .firstOrNull { it.url == modifiedUrl }
+        entry = existed ?: client.getEmptyEntryAsync(modifiedUrl).await()
+    }
+
+    /** エントリ情報を取得 */
+    suspend fun loadEntry(eid: Long) {
+        val url = client.getEntryUrlFromIdAsync(eid).await()
+        val modifiedUrl = modifySpecificUrls(url)!!
+        val existed = client.searchEntriesAsync(modifiedUrl, SearchType.Text).await()
+            .firstOrNull { it.id == eid }
+        entry = existed ?: client.getEmptyEntryAsync(modifiedUrl).await()
     }
 
     /** 既にロード済みのエントリ情報をリポジトリにセットする */

@@ -15,7 +15,10 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
-import com.suihan74.HatenaLib.*
+import com.suihan74.HatenaLib.Bookmark
+import com.suihan74.HatenaLib.BookmarksEntry
+import com.suihan74.HatenaLib.Entry
+import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.TappedActionLauncher
@@ -33,10 +36,7 @@ import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragmen
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
 
 class BookmarksActivity :
@@ -51,7 +51,7 @@ class BookmarksActivity :
     private lateinit var viewModel: BookmarksViewModel
 
     val bookmarksFragment
-        get() = supportFragmentManager.findFragmentByTag("bookmarks") as BookmarksFragment
+        get() = findFragmentByTag<BookmarksFragment>("bookmarks")!!
 
     lateinit var onBackPressedCallback: OnBackPressedCallback
 
@@ -107,29 +107,50 @@ class BookmarksActivity :
             viewModel = ViewModelProviders.of(this, factory)[BookmarksViewModel::class.java]
 
             if (entry == null) {
-                val url = getUrlFromIntent(intent)
-                toolbar.title = url
+                // Entryのロードが必要
+                progress_bar.visibility = View.VISIBLE
 
-                viewModel.loadEntry(
-                    url = url,
-                    onSuccess = {
-                        init(firstLaunching, targetUser)
-                    },
-                    onError = { e ->
-                        showToast(R.string.msg_update_bookmarks_failed)
-                        Log.e("BookmarksActivity", Log.getStackTraceString(e))
-                        progress_bar.visibility = View.INVISIBLE
-                    }
-                )
+                val eid = intent.getLongExtra(EXTRA_ENTRY_ID, 0L)
+                if (eid > 0L) {
+                    toolbar.title = "eid=$eid"
+
+                    viewModel.loadEntry(
+                        eid = eid,
+                        onSuccess = { e ->
+                            init(firstLaunching, e, targetUser)
+                        },
+                        onError = { e ->
+                            showToast(R.string.msg_update_bookmarks_failed)
+                            Log.e("BookmarksActivity", Log.getStackTraceString(e))
+                            progress_bar.visibility = View.INVISIBLE
+                        }
+                    )
+                }
+                else {
+                    val url = getUrlFromIntent(intent)
+                    toolbar.title = url
+
+                    viewModel.loadEntry(
+                        url = url,
+                        onSuccess = { e ->
+                            init(firstLaunching, e, targetUser)
+                        },
+                        onError = { e ->
+                            showToast(R.string.msg_update_bookmarks_failed)
+                            Log.e("BookmarksActivity", Log.getStackTraceString(e))
+                            progress_bar.visibility = View.INVISIBLE
+                        }
+                    )
+                }
             }
             else {
                 repository.setEntry(entry)
-                init(firstLaunching, targetUser)
+                init(firstLaunching, entry, targetUser)
             }
         }
         else {
             viewModel = ViewModelProviders.of(this)[BookmarksViewModel::class.java]
-            init(firstLaunching, targetUser)
+            init(firstLaunching, viewModel.entry, targetUser)
         }
 
         // スクロールでツールバーを隠す
@@ -166,7 +187,7 @@ class BookmarksActivity :
         }
 
     /** entryロード完了後に画面を初期化 */
-    private fun init(firstLaunching: Boolean, targetUser: String?) {
+    private fun init(firstLaunching: Boolean, entry: Entry, targetUser: String?) {
         viewModel.init(loading = firstLaunching) { e ->
             when (e) {
                 is AccountLoader.HatenaSignInException ->
@@ -182,7 +203,7 @@ class BookmarksActivity :
 
         // Toolbar
         toolbar.apply {
-            title = viewModel.entry.title
+            title = entry.title
         }
 
         // Drawerの開閉を監視する
@@ -195,8 +216,10 @@ class BookmarksActivity :
         ) {
             override fun onDrawerOpened(drawerView: View) {
                 super.onDrawerOpened(drawerView)
-                val informationFragment = supportFragmentManager.findFragmentByTag("information") as? EntryInformationFragment
-                informationFragment?.onShown()
+                hideSoftInputMethod()
+
+                findFragmentByTag<EntryInformationFragment>("information")
+                    ?.onShown()
             }
         }
         drawer_layout.addDrawerListener(drawerToggle)
@@ -229,7 +252,7 @@ class BookmarksActivity :
         // コンテンツの初期化
         if (firstLaunching) {
             // 表示履歴に追加
-            viewModel.entry.saveHistory(this@BookmarksActivity)
+            entry.saveHistory(this@BookmarksActivity)
 
             val bookmarksFragment = BookmarksFragment.createInstance()
             val entryInformationFragment = EntryInformationFragment.createInstance()
