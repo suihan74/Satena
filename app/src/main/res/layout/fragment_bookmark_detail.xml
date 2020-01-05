@@ -54,7 +54,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"/>
 
-                    <TextView
+                    <com.suihan74.utilities.SelectableTextView
                             android:id="@+id/comment"
                             android:textSize="14sp"
                             android:textColor="?attr/textColor"

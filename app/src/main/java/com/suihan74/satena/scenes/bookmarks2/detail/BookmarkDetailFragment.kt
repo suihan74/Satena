@@ -14,7 +14,6 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
-import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
@@ -216,25 +215,30 @@ class BookmarkDetailFragment :
     private fun initializeBookmarkArea(view: View) {
         viewModel.bookmark.also {
             val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
-            view.comment.let { comment ->
-                comment.text = analyzedComment.comment
+            (view.comment as SelectableTextView).run {
+                text = analyzedComment.comment
 
                 // 選択テキストを画面下部で強調表示，スターを付ける際に引用文とする
-                comment.customSelectionActionModeCallback = object : ActionMode.Callback {
-                    override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) : Boolean {
-                        val selectedText = comment.text.substring(comment.selectionStart, comment.selectionEnd)
-                        viewModel.quote.postValue(selectedText)
+                customSelectionActionModeCallback = object : ActionMode.Callback {
+                    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) : Boolean {
+                        try {
+                            val selectedText = text.substring(selectionStart, selectionEnd)
+                            viewModel.quote.value = selectedText
+                        }
+                        catch (e: Throwable) {
+                            viewModel.quote.value = null
+                        }
                         return false
                     }
-                    override fun onDestroyActionMode(p0: ActionMode?) {
-                        viewModel.quote.postValue(null)
+                    override fun onDestroyActionMode(mode: ActionMode?) {
+                        viewModel.quote.value = null
                     }
-                    override fun onCreateActionMode(p0: ActionMode?, p1: Menu?) = true
-                    override fun onActionItemClicked(p0: ActionMode?, p1: MenuItem?) = false
+                    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?) = true
+                    override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?) = false
                 }
 
                 // テキスト中のリンクを処理
-                val linkMovementMethod = object : MutableLinkMovementMethod() {
+                movementMethod = object : MutableLinkMovementMethod2() {
                     override fun onSinglePressed(link: String) {
                         if (link.startsWith("http")) {
                             bookmarksActivity?.onLinkClicked(link)
@@ -253,14 +257,6 @@ class BookmarkDetailFragment :
                             bookmarksActivity?.onLinkLongClicked(link)
                         }
                     }
-                }
-
-                comment.setOnTouchListener { view, event ->
-                    val textView = view as TextView
-                    return@setOnTouchListener linkMovementMethod.onTouchEvent(
-                        textView,
-                        SpannableString(textView.text),
-                        event)
                 }
             }
 
