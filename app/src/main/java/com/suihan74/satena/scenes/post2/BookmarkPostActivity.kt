@@ -11,11 +11,13 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.suihan74.HatenaLib.BookmarkResult
 import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.post2.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
@@ -28,8 +30,24 @@ class BookmarkPostActivity :
     ConfirmPostBookmarkDialog.Listener
 {
     companion object {
+        // Extra keys
+        /** ブクマ対象のエントリ */
         const val EXTRA_ENTRY = "BookmarkPostActivity.EXTRA_ENTRY"
+        /** 初期表示するコメント */
+        const val EXTRA_EDITING_COMMENT = "BookmarkPostActivity.EXTRA_EDITING_COMMENT"
 
+        // Request codes
+        val REQUEST_CODE
+            get() = hashCode() and 0x0000ffff
+
+        // Result keys
+        /** 成功時: 投稿完了したブクマ情報(BookmarkResult)を返す */
+        const val RESULT_BOOKMARK = "BookmarkPostActivity.RESULT_BOOKMARK"
+        /** 失敗時: 編集途中のコメントを返す */
+        const val RESULT_EDITING_COMMENT = "BookmarkPostActivity.RESULT_EDITING_COMMENT"
+
+        // Dialog tags
+        /** 投稿確認ダイアログ */
         private const val DIALOG_CONFIRM_POST_BOOKMARK = "DIALOG_CONFIRM_POST_BOOKMARK"
     }
 
@@ -50,6 +68,7 @@ class BookmarkPostActivity :
 
         // Extraの取得
         val entry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
+        val editingComment = intent.getStringExtra(EXTRA_EDITING_COMMENT)
         val entryUrl =
             when (intent.action) {
                 Intent.ACTION_SEND ->
@@ -83,10 +102,10 @@ class BookmarkPostActivity :
 
         when {
             entry != null ->
-                viewModel.init(entry, onError = onAuthError)
+                viewModel.init(entry, editingComment, onError = onAuthError)
 
             !entryUrl.isNullOrBlank() ->
-                viewModel.init(entryUrl, onError = onAuthError)
+                viewModel.init(entryUrl, editingComment, onError = onAuthError)
 
             else -> {
                 showToast(R.string.msg_get_entry_information_failed)
@@ -164,8 +183,12 @@ class BookmarkPostActivity :
     }
 
     /** 投稿成功時処理 */
-    private val onPostSuccess = {
+    private val onPostSuccess = { result: BookmarkResult ->
         showToast(R.string.msg_post_bookmark_succeeded)
+        val intent = Intent().apply {
+            putExtra(RESULT_BOOKMARK, result)
+        }
+        setResult(RESULT_OK, intent)
         finish()
     }
 
@@ -208,5 +231,14 @@ class BookmarkPostActivity :
                     onError = onPostError
                 )
         }
+    }
+
+    /** 戻るボタンで閉じる場合、編集中のコメントを保存しておく */
+    override fun onBackPressed() {
+        val intent = Intent().apply {
+            putExtra(RESULT_EDITING_COMMENT, viewModel.comment.value)
+        }
+        setResult(RESULT_CANCELED, intent)
+        finish()
     }
 }

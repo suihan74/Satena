@@ -151,8 +151,9 @@ class FloatingActionButtonsFragment :
         view.bookmark_button.setOnClickListener {
             val intent = Intent(context, BookmarkPostActivity::class.java).apply {
                 putExtra(BookmarkPostActivity.EXTRA_ENTRY, activityViewModel.entry)
+                putExtra(BookmarkPostActivity.EXTRA_EDITING_COMMENT, activityViewModel.editingComment)
             }
-            startActivity(intent)
+            activity?.startActivityForResult(intent, BookmarkPostActivity.REQUEST_CODE)
         }
 
         // スクロールメニュー

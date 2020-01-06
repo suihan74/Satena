@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -15,10 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
-import com.suihan74.HatenaLib.Bookmark
-import com.suihan74.HatenaLib.BookmarksEntry
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.TappedActionLauncher
@@ -34,6 +32,7 @@ import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
@@ -63,7 +62,6 @@ class BookmarksActivity :
         const val EXTRA_ENTRY_URL = "BookmarksActivity.EXTRA_ENTRY_URL"
         /** EntryのIDを渡す場合 */
         const val EXTRA_ENTRY_ID = "BookmarksActivity.EXTRA_ENTRY_ID"
-
         /** 画面表示後直接特定のユーザーのブクマを表示する場合その対象 */
         const val EXTRA_TARGET_USER = "BookmarksActivity.EXTRA_TARGET_USER"
 
@@ -284,6 +282,32 @@ class BookmarksActivity :
         }
 
         progress_bar.visibility = View.INVISIBLE
+    }
+
+    /** BookmarkPostActivityからの結果を受け取る */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // ブクマ投稿結果をentryに反映して、次回以降の編集時に投稿内容を最初から入力した状態でダイアログを表示する
+        when (requestCode) {
+            BookmarkPostActivity.REQUEST_CODE -> {
+                when (resultCode) {
+                    Activity.RESULT_OK -> {
+                        val result = data?.getSerializableExtra(BookmarkPostActivity.RESULT_BOOKMARK) as? BookmarkResult
+                            ?: return
+                        viewModel.resetEntry(
+                            viewModel.entry.copy(bookmarkedData = result)
+                        )
+                        viewModel.setEditingComment(null)
+                    }
+
+                    Activity.RESULT_CANCELED -> {
+                        val comment = data?.getStringExtra(BookmarkPostActivity.RESULT_EDITING_COMMENT)
+                        viewModel.setEditingComment(comment)
+                    }
+                }
+            }
+        }
     }
 
     /** ブクマ詳細画面を開く */

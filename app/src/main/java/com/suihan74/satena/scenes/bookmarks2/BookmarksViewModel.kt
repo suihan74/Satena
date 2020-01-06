@@ -68,6 +68,18 @@ class BookmarksViewModel(
         MutableLiveData<Boolean>()
     }
 
+    /** 編集途中の投稿コメント */
+    val editingComment : String
+        get() =
+            mEditingComment
+            ?: entry.bookmarkedData?.commentRaw
+            ?: ""
+    private var mEditingComment : String? = null
+
+    fun setEditingComment(comment: String?) {
+        mEditingComment = comment
+    }
+
     /** 各リストを再構成する */
     private fun reloadLists() {
         if (repository.bookmarksEntry != null) {
@@ -119,6 +131,14 @@ class BookmarksViewModel(
         onSuccess,
         onError
     )
+
+    /**
+     * entryを更新する
+     * ブクマ投稿後に変更を反映するために使用
+     */
+    fun resetEntry(newEntry: Entry) {
+        repository.setEntry(newEntry)
+    }
 
     /** 初期化 */
     fun init(loading: Boolean, onError: CompletionHandler? = null) = viewModelScope.launch(

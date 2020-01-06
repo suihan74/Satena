@@ -4,10 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.SearchType
-import com.suihan74.HatenaLib.Tag
+import com.suihan74.HatenaLib.*
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.sys1yagi.mastodon4j.api.entity.Status
@@ -18,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.ceil
 
-typealias OnSuccess = ()->Unit
+typealias OnSuccess = (result: BookmarkResult)->Unit
 typealias OnError = (e: Throwable)->Unit
 
 class ViewModel(
@@ -87,11 +84,13 @@ class ViewModel(
     val postFacebook by lazy { MutableLiveData<Boolean>() }
 
     /** 初期化 */
-    fun init(url: String, onError: OnError? = null) = viewModelScope.launch(
+    fun init(url: String, editingComment: String?, onError: OnError? = null) = viewModelScope.launch(
         Dispatchers.Main + CoroutineExceptionHandler { _, e ->
             onError?.invoke(e)
         }
     ) {
+        comment.value = editingComment ?: ""
+
         try {
             signIn()
         }
@@ -112,11 +111,17 @@ class ViewModel(
     }
 
     /** 初期化 */
-    fun init(entry: Entry, onError: OnError? = null) = viewModelScope.launch(
+    fun init(entry: Entry, editingComment: String?, onError: OnError? = null) = viewModelScope.launch(
         Dispatchers.Main + CoroutineExceptionHandler { _, e ->
             onError?.invoke(e)
         }
     ) {
+        this@ViewModel.entry.value = entry
+        comment.value = editingComment
+                    ?: entry.bookmarkedData?.comment
+                    ?: ""
+        isPrivate.value = entry.bookmarkedData?.private ?: false
+
         try {
             signIn()
         }
@@ -129,11 +134,6 @@ class ViewModel(
         }
         catch (e: LoadingTagsFailureException) {
             onError?.invoke(e)
-        }
-
-        this@ViewModel.entry.value = entry
-        entry.bookmarkedData?.comment?.let {
-            comment.value = it
         }
     }
 
@@ -219,7 +219,7 @@ class ViewModel(
             }
         }
 
-        onSuccess?.invoke()
+        onSuccess?.invoke(result)
     }
 
     /** コメントの長さをチェックする */
