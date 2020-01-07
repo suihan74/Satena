@@ -11,8 +11,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.reflect.Type
 
 /**************************************
@@ -40,48 +39,40 @@ enum class UserTagsKey(
 // version migration
 ////////////////////////////////////////////////////////////////////////////////
 
-object UserTagsKeyMigrator {
-    var completed: Boolean = false
-        get() = synchronized(this) { field }
-        private set(value) = synchronized(this) { field = value }
-
-    fun check(context: Context) {
+object UserTagsKeyMigration {
+    suspend fun check(context: Context) {
         when (SafeSharedPreferences.version<UserTagsKey>(context)) {
             0 -> migrateFromVersion0(context)
         }
     }
 
-    private fun migrateFromVersion0(context: Context) {
+    private suspend fun migrateFromVersion0(context: Context) = withContext(Dispatchers.IO) {
         val dao = SatenaApplication.instance.userTagDao
         val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
         val container = prefs.get<UserTagsContainer>(UserTagsKey.CONTAINER)
 
-        // TODO: やばい
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                container.users.forEach { user ->
-                    dao.makeUser(user.name)
-                }
-                container.tags.forEach { tag ->
-                    val tagEntity = dao.makeTag(tag.name)
-                    // 全ユーザーのタグ付け処理
-                    val users = container.getUsersOfTag(tag)
-                    users.forEach { user ->
-                        val userEntity = dao.findUser(user.name)
-                        if (userEntity != null) {
-                            dao.insertRelation(tagEntity, userEntity)
-                        }
+        try {
+            container.users.forEach { user ->
+                dao.makeUser(user.name)
+            }
+            container.tags.forEach { tag ->
+                val tagEntity = dao.makeTag(tag.name)
+                // 全ユーザーのタグ付け処理
+                val users = container.getUsersOfTag(tag)
+                users.forEach { user ->
+                    val userEntity = dao.findUser(user.name)
+                    if (userEntity != null) {
+                        dao.insertRelation(tagEntity, userEntity)
                     }
                 }
+            }
 
-                // バージョンを更新する
-                prefs.edit {}
-                completed = true
-            }
-            catch (e: Exception) {
-                Log.e("migrationUserTags", e.message)
-                dao.clearAll()
-            }
+            // バージョンを更新する
+            prefs.edit {}
+        }
+        catch (e: Exception) {
+            Log.e("migrationUserTags", e.message)
+            dao.clearAll()
         }
     }
 }

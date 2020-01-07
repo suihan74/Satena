@@ -80,7 +80,7 @@ enum class PreferenceKey(
 // version migration
 ////////////////////////////////////////////////////////////////////////////////
 
-object PreferenceKeyMigrator {
+object PreferenceKeyMigration {
     fun check(context: Context) {
         when (SafeSharedPreferences.version<PreferenceKey>(context)) {
             1 -> migrateFromVersion1(context)

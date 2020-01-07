@@ -12,12 +12,15 @@ import android.widget.Button
 import android.widget.TextView
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.suihan74.satena.ActivityBase
-import com.suihan74.satena.PreferencesMigrator
+import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.FilePickerDialog
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
-import com.suihan74.satena.models.*
+import com.suihan74.satena.models.AppDatabase
+import com.suihan74.satena.models.EntriesHistoryKey
+import com.suihan74.satena.models.NoticesKey
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.*
@@ -138,7 +141,7 @@ class PreferencesInformationFragment :
         launch(Dispatchers.Main) {
             val context = SatenaApplication.instance.applicationContext
             try {
-                PreferencesMigrator.Output(context).run {
+                PreferencesMigration.Output(context).run {
                     addPreference<PreferenceKey>()
                     addPreference<NoticesKey>()
                     addPreference<EntriesHistoryKey>()
@@ -167,7 +170,7 @@ class PreferencesInformationFragment :
         launch(Dispatchers.Main) {
             val context = SatenaApplication.instance.applicationContext
             try {
-                PreferencesMigrator.Input(context)
+                PreferencesMigration.Input(context)
                     .read(file)
 
                 context.showToast(R.string.msg_pref_information_load_succeeded, file.absolutePath)

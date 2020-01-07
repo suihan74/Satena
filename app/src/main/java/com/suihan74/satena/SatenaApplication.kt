@@ -13,6 +13,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
 import com.suihan74.utilities.lock
 import com.suihan74.utilities.showToast
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 class SatenaApplication : Application() {
@@ -59,12 +60,10 @@ class SatenaApplication : Application() {
 
         // テーマの設定
         val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
-        if (isThemeDark) {
-            setTheme(R.style.AppTheme_Dark)
-        }
-        else {
-            setTheme(R.style.AppTheme_Light)
-        }
+        setTheme(
+            if (isThemeDark) R.style.AppTheme_Dark
+            else R.style.AppTheme_Light
+        )
 
         // GUIDの作成（初回のみ）
         val uuid = prefs.getString(PreferenceKey.ID)
@@ -75,7 +74,9 @@ class SatenaApplication : Application() {
             }
         }
         else {
-            updatePreferencesVersion()
+            runBlocking {
+                updatePreferencesVersion()
+            }
         }
 
         startNotificationService()
@@ -97,10 +98,10 @@ class SatenaApplication : Application() {
         get() = appDatabase.ignoredEntryDao()
 
     /** 各種設定のバージョン移行が必要か確認 */
-    fun updatePreferencesVersion() {
-        PreferenceKeyMigrator.check(applicationContext)
-        IgnoredEntriesKeyMigrator.check(applicationContext)
-        UserTagsKeyMigrator.check(applicationContext)
+    suspend fun updatePreferencesVersion() {
+        PreferenceKeyMigration.check(applicationContext)
+        IgnoredEntriesKeyMigration.check(applicationContext)
+        UserTagsKeyMigration.check(applicationContext)
     }
 
     fun setConnectionActivatingListener(listener: (()->Unit)?) {

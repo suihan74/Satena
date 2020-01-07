@@ -14,7 +14,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import kotlin.experimental.and
 
-class PreferencesMigrator {
+class PreferencesMigration {
     companion object {
         private val SIGNATURE get() = byteArrayOf(0).plus("SATESET".toByteArray())
         private val VERSION get() = byteArrayOf(1)

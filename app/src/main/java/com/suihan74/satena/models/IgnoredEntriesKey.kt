@@ -8,8 +8,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.reflect.Type
 
 /**************************************
@@ -54,10 +53,9 @@ enum class IgnoredEntriesKeyVersion0(
 // version migration
 ////////////////////////////////////////////////////////////////////////////////
 
-object IgnoredEntriesKeyMigrator {
-    fun check(context: Context) {
-        val version = SafeSharedPreferences.version<IgnoredEntriesKey>(context)
-        when (version) {
+object IgnoredEntriesKeyMigration {
+    suspend fun check(context: Context) {
+        when (SafeSharedPreferences.version<IgnoredEntriesKey>(context)) {
             0 -> {
                 migrateFromVersion0(context)
                 migrateFromVersion1(context)
@@ -99,39 +97,37 @@ object IgnoredEntriesKeyMigrator {
         }
     }
 
-    private fun migrateFromVersion1(context: Context) {
+    private suspend fun migrateFromVersion1(context: Context) = withContext(Dispatchers.IO) {
         val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
         val entries = prefs.getObject<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES) ?: emptyList()
 
-        GlobalScope.launch(Dispatchers.IO) {
-            val dao = SatenaApplication.instance.ignoredEntryDao
-            dao.clearAllEntries()
+        val dao = SatenaApplication.instance.ignoredEntryDao
+        dao.clearAllEntries()
 
-            var success = true
-            entries.forEach {
-                try {
-                    dao.insert(
-                        com.suihan74.satena.models.ignoredEntry.IgnoredEntry(
-                            type = com.suihan74.satena.models.ignoredEntry.IgnoredEntryType.valueOf(
-                                it.type.name
-                            ),
-                            query = it.query,
-                            target = IgnoreTarget.fromInt(it.target.int)
-                        )
+        var success = true
+        entries.forEach {
+            try {
+                dao.insert(
+                    com.suihan74.satena.models.ignoredEntry.IgnoredEntry(
+                        type = com.suihan74.satena.models.ignoredEntry.IgnoredEntryType.valueOf(
+                            it.type.name
+                        ),
+                        query = it.query,
+                        target = IgnoreTarget.fromInt(it.target.int)
                     )
-                }
-                catch (e: Exception) {
-                    Log.e("migrationError", e.message)
-                    success = false
-                }
+                )
             }
+            catch (e: Exception) {
+                Log.e("migrationError", e.message)
+                success = false
+            }
+        }
 
-            if (success) {
-                prefs.edit {
-                    /* editを使用して設定バージョンを上書き */
-                }
-                Log.i("migration", "migration of IgnoredEntry is succeeded")
+        if (success) {
+            prefs.edit {
+                /* editを使用して設定バージョンを上書き */
             }
+            Log.i("migration", "migration of IgnoredEntry is succeeded")
         }
     }
 }
