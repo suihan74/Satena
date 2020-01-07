@@ -169,6 +169,10 @@
     <string name="msg_comment_too_long">コメントが長すぎます。%d文字以下にしてください</string>
     <string name="msg_post_bookmark_succeeded">ブックマークしました</string>
     <string name="msg_post_bookmark_failed">ブックマークに失敗しました</string>
+    <string name="hint_mastodon_toggle">Mastodonに投稿します</string>
+    <string name="hint_twitter_toggle">Twitterに投稿します</string>
+    <string name="hint_facebook_toggle">Facebookに投稿します</string>
+    <string name="hint_private_toggle">非公開でブクマします</string>
 
     <!-- hints -->
     <string name="search_query_hint">検索キーワード</string>

@@ -17,7 +17,6 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.post2.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
@@ -159,7 +158,26 @@ class BookmarkPostActivity :
 
         // 利用タグ情報をロード完了したらリストに反映する
         viewModel.tags.observe(this, Observer {
-            tagsListAdapter.setTags(it.map { t -> t.text })
+            tagsListAdapter.setTags(
+                it.map { t -> t.text }
+            )
+        })
+
+        // 各トグルボタンをONにしたときにメッセージを表示する
+        viewModel.postMastodon.observe(this, Observer {
+            if (it) showToast(R.string.hint_mastodon_toggle)
+        })
+
+        viewModel.postTwitter.observe(this, Observer {
+            if (it) showToast(R.string.hint_twitter_toggle)
+        })
+
+        viewModel.postFacebook.observe(this, Observer {
+            if (it) showToast(R.string.hint_facebook_toggle)
+        })
+
+        viewModel.isPrivate.observe(this, Observer {
+            if (it) showToast(R.string.hint_private_toggle)
         })
     }
 
