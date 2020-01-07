@@ -17,7 +17,8 @@
                 android:layout_centerHorizontal="true"
                 android:layout_width="256dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"/>
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@null" />
 
         <EditText
                 android:id="@+id/instance_name"
@@ -37,7 +38,7 @@
 
         <Button
                 android:id="@+id/auth_button"
-                android:text="@string/signin"
+                android:text="@string/sign_in"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 android:backgroundTint="@color/mastodonColorPrimary"

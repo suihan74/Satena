@@ -8,7 +8,6 @@ import org.threeten.bp.ZoneOffset
 import java.lang.reflect.Type
 import java.net.CookieManager
 import java.net.CookiePolicy
-import java.util.concurrent.TimeUnit
 
 open class BaseClient {
     protected val cookieManager = CookieManager().apply {

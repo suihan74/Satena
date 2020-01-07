@@ -92,7 +92,7 @@ class EntriesTabViewModel(
 
     val entries by lazy { MutableLiveData<List<Entry>>() }
     val entriesType by lazy { MutableLiveData<EntriesType>() }
-    val cateogry by lazy { MutableLiveData<Category>() }
+    val category by lazy { MutableLiveData<Category>() }
 
     class Factory(private val repository: EntriesTabRepository) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")

@@ -7,5 +7,3 @@ fun Boolean.toVisibility(defaultInvisible: Int = View.GONE) =
         View.VISIBLE
     else
         defaultInvisible
-
-fun Boolean.fromVisibility(visibility: Int) = visibility == View.VISIBLE

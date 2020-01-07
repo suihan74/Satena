@@ -25,5 +25,13 @@ class Star(
         if (other !is Star) return false
         return color == other.color && count == other.count && quote == other.quote
     }
+
+    override fun hashCode(): Int {
+        var result = user.hashCode()
+        result = 31 * result + quote.hashCode()
+        result = 31 * result + count
+        result = 31 * result + (mColor?.hashCode() ?: 0)
+        return result
+    }
 }
 

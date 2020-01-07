@@ -4,10 +4,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 
 class IgnoredEntryViewModel(

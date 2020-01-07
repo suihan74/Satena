@@ -31,7 +31,8 @@ class Entry (
     val bookmarkedData : BookmarkResult? = null,
 
     // ホットエントリにのみ含まれる情報
-    val myhotentryComments : List<BookmarkResult>? = null
+    @SerializedName("myhotentry_Comments")
+    val myHotEntryComments : List<BookmarkResult>? = null
 ) : Serializable {
 
     @SerializedName("title")
@@ -90,7 +91,7 @@ class Entry (
         imageUrl: String = this.imageUrl,
         ampUrl: String? = this.ampUrl,
         bookmarkedData: BookmarkResult? = this.bookmarkedData,
-        myhotentryComments: List<BookmarkResult>? = this.myhotentryComments
+        myhotentryComments: List<BookmarkResult>? = this.myHotEntryComments
     ) = Entry(
         id = id,
         title = title,
@@ -102,7 +103,7 @@ class Entry (
         imageUrl = imageUrl,
         ampUrl = ampUrl,
         bookmarkedData = bookmarkedData,
-        myhotentryComments = myhotentryComments
+        myHotEntryComments = myhotentryComments
     )
 
     companion object {

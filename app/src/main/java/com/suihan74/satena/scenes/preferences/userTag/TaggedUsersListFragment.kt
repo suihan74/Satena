@@ -19,7 +19,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.userTag.User
-import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.CoroutineScopeFragment

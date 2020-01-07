@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks2
 
-import android.content.Intent
 import android.text.SpannableString
 import android.text.style.ImageSpan
 import android.view.LayoutInflater
@@ -16,9 +15,6 @@ import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.BookmarksEntry
 import com.suihan74.HatenaLib.StarColor
 import com.suihan74.satena.R
-import com.suihan74.satena.TappedActionLauncher
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.utilities.*
@@ -52,6 +48,8 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     mentions.contentsEquals(other.mentions) &&
                     userTags.contentsEquals(other.userTags)
         }
+
+        override fun hashCode() = super.hashCode()
     }
 
     /** 表示項目リスト */

@@ -4,16 +4,15 @@ import android.util.Log
 import androidx.room.Room
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry
-import com.suihan74.satena.models.ignoredEntry.*
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.Assert.*
 
-@Suppress("NonAsciiCharacters")
+@Suppress("NonAsciiCharacters", "SpellCheckingInspection")
 @RunWith(AndroidJUnit4ClassRunner::class)
 class IgnoredEntryDaoTest {
     // Context of the app under test.

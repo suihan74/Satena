@@ -16,15 +16,15 @@ internal class BooleanDeserializer : JsonSerializer<Boolean>, JsonDeserializer<B
         return JsonPrimitive(if (src == true) "true" else "false")
     }
 
-    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Boolean {
+    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?) =
         try {
-            val str = json?.asString ?: ""
-            return str == "1" || str == "true"
+            json?.asString?.let {
+                it == "1" || it == "true"
+            } ?: false
         }
         catch (e: Exception) {
-            return false
+            false
         }
-    }
 }
 
 internal class StarDeserializer : JsonDeserializer<Star> {

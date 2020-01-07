@@ -35,7 +35,7 @@ abstract class StarsFragmentBase : SingleTabEntriesFragmentBase() {
         super.refreshEntries(getString(R.string.msg_get_stars_report_failed)) {
             async(Dispatchers.IO) {
                 val urlRegex =
-                    Regex("""https?://b\.hatena\.ne\.jp/(.+)/(\d+)#bookmark\-(\d+)""")
+                    Regex("""https?://b\.hatena\.ne\.jp/(.+)/(\d+)#bookmark-(\d+)""")
                 val entries = fetchingTask.await()
                 val data = entries
                     .mapNotNull {

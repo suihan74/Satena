@@ -9,7 +9,7 @@ import android.util.AttributeSet
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
 
-class TextFloatingActionButton(context: Context, private val attrs : AttributeSet)
+class TextFloatingActionButton(context: Context, attrs : AttributeSet)
     : FloatingActionButton(context, attrs) {
 
     private val typedArray = context.obtainStyledAttributes(

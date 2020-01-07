@@ -1,3 +1,5 @@
+@file:Suppress("KotlinDeprecation")
+
 package com.suihan74.satena.dialogs
 
 import android.app.AlertDialog
@@ -66,7 +68,7 @@ open class BookmarkDialog : DialogFragment() {
         }
         else if (HatenaClient.signedIn()) {
             if (HatenaClient.ignoredUsers.contains(bookmark.user)) {
-                items.add(context.getString(R.string.bookmark_unignore) to { unignoreUser(listener, bookmark) })
+                items.add(context.getString(R.string.bookmark_unignore) to { unIgnoreUser(listener, bookmark) })
             }
             else {
                 items.add(context.getString(R.string.bookmark_ignore) to { ignoreUser(listener, bookmark) })
@@ -127,7 +129,7 @@ open class BookmarkDialog : DialogFragment() {
         }
     }
 
-    private fun unignoreUser(listener: Listener?, bookmark: Bookmark) {
+    private fun unIgnoreUser(listener: Listener?, bookmark: Bookmark) {
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 HatenaClient.unignoreUserAsync(bookmark.user).await()

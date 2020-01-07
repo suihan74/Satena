@@ -44,7 +44,8 @@
                             android:background="@color/colorPrimary"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:onClick="onClickedTab"/>
+                            android:onClick="onClickedTab"
+                            android:contentDescription="@string/pref_title_information" />
 
                     <ImageButton
                             android:id="@+id/preferences_tab_accounts"
@@ -52,7 +53,8 @@
                             android:background="@null"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:onClick="onClickedTab"/>
+                            android:onClick="onClickedTab"
+                            android:contentDescription="@string/pref_title_account" />
 
                     <ImageButton
                             android:id="@+id/preferences_tab_generals"
@@ -60,7 +62,8 @@
                             android:background="@null"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:onClick="onClickedTab"/>
+                            android:onClick="onClickedTab"
+                            android:contentDescription="@string/pref_title_generals" />
 
                     <ImageButton
                             android:id="@+id/preferences_tab_entries"
@@ -68,7 +71,8 @@
                             android:background="@null"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:onClick="onClickedTab"/>
+                            android:onClick="onClickedTab"
+                            android:contentDescription="@string/pref_title_entries" />
 
                     <ImageButton
                             android:id="@+id/preferences_tab_bookmarks"
@@ -76,7 +80,8 @@
                             android:background="@null"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:onClick="onClickedTab"/>
+                            android:onClick="onClickedTab"
+                            android:contentDescription="@string/pref_title_bookmarks" />
 
                     <ImageButton
                             android:id="@+id/preferences_tab_filters"
@@ -84,7 +89,8 @@
                             android:background="@null"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:onClick="onClickedTab"/>
+                            android:onClick="onClickedTab"
+                            android:contentDescription="@string/pref_title_ignored_entries" />
 
                     <ImageButton
                             android:id="@+id/preferences_tab_ignored_users"
@@ -92,7 +98,8 @@
                             android:background="@null"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:onClick="onClickedTab"/>
+                            android:onClick="onClickedTab"
+                            android:contentDescription="@string/pref_title_ignored_users" />
 
                     <ImageButton
                             android:id="@+id/preferences_tab_user_tags"
@@ -100,7 +107,8 @@
                             android:background="@null"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:onClick="onClickedTab"/>
+                            android:onClick="onClickedTab"
+                            android:contentDescription="@string/pref_title_user_tags" />
                 </LinearLayout>
             </ScrollView>
 

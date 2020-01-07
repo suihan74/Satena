@@ -107,7 +107,7 @@ class EntriesFragment : CoroutineScopeFragment() {
                             EntriesTabType.MYBOOKMARKS.tabPosition ->
                                 setHasOptionsMenu(true)
 
-                            EntriesTabType.READLATER.tabPosition ->
+                            EntriesTabType.READ_LATER.tabPosition ->
                                 setHasOptionsMenu(false)
                         }
                     }

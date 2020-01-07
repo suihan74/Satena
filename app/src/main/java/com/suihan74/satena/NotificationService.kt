@@ -18,7 +18,7 @@ import com.suihan74.satena.scenes.entries.notices.message
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.makeSpannedfromHtml
+import com.suihan74.utilities.makeSpannedFromHtml
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
 import kotlin.coroutines.CoroutineContext
@@ -199,7 +199,7 @@ class NotificationService : Service(), CoroutineScope {
     private fun invokeNotice(context: Context, notice: Notice) {
         val title = "通知"
         val message = notice.message(context).let {
-            makeSpannedfromHtml(it).toString()
+            makeSpannedFromHtml(it).toString()
         }
 
         var actions : List<NotificationCompat.Action>? = null

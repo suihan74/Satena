@@ -52,6 +52,7 @@ open class AlertDialogFragment : DialogFragment() {
     var multiChoiceItemsInitialStates: BooleanArray? = null
         private set
 
+    @Suppress("UNCHECKED_CAST")
     fun <T> getAdditionalData(key: String) where T : Serializable =
         arguments?.getSerializable(key) as? T
 

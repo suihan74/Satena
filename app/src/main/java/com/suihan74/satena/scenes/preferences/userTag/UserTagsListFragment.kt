@@ -10,11 +10,9 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.TagAndUsers
-import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.DividerItemDecorator

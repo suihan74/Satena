@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.Star
 import com.suihan74.HatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.utilities.*

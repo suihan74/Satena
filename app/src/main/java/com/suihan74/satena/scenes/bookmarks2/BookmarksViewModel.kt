@@ -161,7 +161,7 @@ class BookmarksViewModel(
 
             listOf(
                 repository.loadIgnoredUsersAsync(),
-                repository.loadBookmarksEntryAsnyc(),
+                repository.loadBookmarksEntryAsync(),
                 repository.loadBookmarksDigestAsync(),
                 repository.loadBookmarksRecentAsync()
             ).run {
@@ -198,7 +198,7 @@ class BookmarksViewModel(
 
         if (bookmarksEntry.value == null) {
             try {
-                repository.loadBookmarksEntryAsnyc().await()
+                repository.loadBookmarksEntryAsync().await()
             }
             catch (e: Throwable) {
                 onError?.invoke(e)
@@ -290,7 +290,7 @@ class BookmarksViewModel(
                 repository.ignoreUserAsync(user).await()
             }
             else {
-                repository.unignoreUserAsync(user).await()
+                repository.unIgnoreUserAsync(user).await()
             }
         }
         catch (e: Throwable) {

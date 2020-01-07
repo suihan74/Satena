@@ -96,7 +96,7 @@ class PreferencesEntriesFragment :
                 val currentHomeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
                 val items =
                     if (currentHomeCategory == Category.MyBookmarks) {
-                        listOf(EntriesTabType.MYBOOKMARKS, EntriesTabType.READLATER)
+                        listOf(EntriesTabType.MYBOOKMARKS, EntriesTabType.READ_LATER)
                     }
                     else {
                         listOf(EntriesTabType.POPULAR, EntriesTabType.RECENT)
