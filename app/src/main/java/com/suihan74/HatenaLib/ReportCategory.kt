@@ -20,7 +20,7 @@ enum class ReportCategory(
         "report.type.discrimination",
         "差別、侮辱を目的とした利用"),
 
-    OTHRES(
+    OTHERS(
         "report.type.misc",
         "その他")
 }

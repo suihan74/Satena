@@ -190,7 +190,7 @@ open class EntriesAdapter(
                 val position: Int = entries.indexOfFirst { it.id == entry.id }
                 states[position].body = updateEntry(entry,
                     bookmarkedData = result,
-                    myhotentryComments = entry.myhotentryComments)
+                    myhotentryComments = entry.myHotEntryComments)
 
                 notifyItemChanged(position)
                 context.showToast("ブックマーク完了")
@@ -209,7 +209,7 @@ open class EntriesAdapter(
                 HatenaClient.postBookmarkAsync(entry.url, readLater = false).await()
 
                 val tabType = EntriesTabType.fromCategory(category, tabPosition)
-                if (EntriesTabType.READLATER == tabType) {
+                if (EntriesTabType.READ_LATER == tabType) {
                     val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body == entry }
                     if (position >= 0) {
                         withContext(Dispatchers.Default) {
@@ -276,7 +276,7 @@ open class EntriesAdapter(
                     else {
                         states[position].body = updateEntry(entry,
                             bookmarkedData = null,
-                            myhotentryComments = entry.myhotentryComments)
+                            myhotentryComments = entry.myHotEntryComments)
                         notifyItemChanged(position)
                     }
                 }
@@ -314,7 +314,7 @@ open class EntriesAdapter(
             imageUrl = imageUrl ?: src.imageUrl ?: "",
             ampUrl = ampUrl ?: src.ampUrl,
             bookmarkedData = bookmarkedData,
-            myhotentryComments = myhotentryComments)
+            myHotEntryComments = myhotentryComments)
 
     private class ViewHolder(val root : View) : RecyclerView.ViewHolder(root) {
         private val title   = root.findViewById<TextView>(R.id.entry_title)!!
@@ -350,8 +350,8 @@ open class EntriesAdapter(
                 if (value.bookmarkedData != null) {
                     comments.add(value.bookmarkedData)
                 }
-                if (value.myhotentryComments != null) {
-                    comments.addAll(value.myhotentryComments)
+                if (value.myHotEntryComments != null) {
+                    comments.addAll(value.myHotEntryComments)
                 }
 
                 if (comments.isEmpty()) {

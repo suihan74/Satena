@@ -24,12 +24,13 @@ abstract class FragmentBase : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (savedInstanceState == null) {
-            fragmentId = UUID.randomUUID().toString()
-        }
-        else {
-            fragmentId = savedInstanceState.getString(BUNDLE_FRAGMENT_ID)!!
-        }
+        fragmentId =
+            if (savedInstanceState == null) {
+                UUID.randomUUID().toString()
+            }
+            else {
+                savedInstanceState.getString(BUNDLE_FRAGMENT_ID)!!
+            }
     }
 }
 

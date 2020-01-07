@@ -1,5 +1,6 @@
 package com.suihan74.satena
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -33,6 +34,7 @@ class ConnectivityReceiver : BroadcastReceiver() {
 
     private var mJob : Job? = null
 
+    @SuppressLint("UnsafeProtectedBroadcastReceiver")
     override fun onReceive(context: Context?, intent: Intent?) {
         @Suppress("DEPRECATION")
         if (context == null || intent?.action != ConnectivityManager.CONNECTIVITY_ACTION) return

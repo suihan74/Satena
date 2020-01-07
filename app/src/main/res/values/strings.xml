@@ -14,7 +14,7 @@
 
     <!-- ログイン画面 -->
     <string name="cancel">キャンセル</string>
-    <string name="signin">ログイン</string>
+    <string name="sign_in">ログイン</string>
     <string name="hatena_title">はてなブックマーク</string>
     <string name="hint_id">はてなID/メールアドレス</string>
     <string name="hint_password">パスワード</string>
@@ -31,7 +31,7 @@
     <string name="entries_tab_hot">人気</string>
     <string name="entries_tab_recent">新着</string>
     <string name="entries_tab_mybookmarks">マイブックマーク</string>
-    <string name="entries_tab_readlater">あとで読む</string>
+    <string name="entries_tab_read_later">あとで読む</string>
 
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
@@ -103,6 +103,10 @@
     <string name="msg_pref_information_save_failed">設定の保存に失敗しました</string>
     <string name="msg_pref_information_load_succeeded">設定を%sから読み込みました</string>
     <string name="msg_pref_information_load_failed">設定の読み込みに失敗しました</string>
+    <!-- accounts -->
+    <string name="pref_accounts_service_name_hatena">Hatena</string>
+    <string name="pref_accounts_service_name_mastodon">Mastodon</string>
+    <string name="pref_accounts_sign_in">ログイン</string>
     <!-- generals -->
     <string name="pref_generals_theme_desc">テーマ</string>
     <string name="pref_generals_using_termination_dialog_desc">終了確認ダイアログを表示する</string>

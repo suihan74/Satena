@@ -300,7 +300,7 @@ class SafeSharedPreferences<KeyT> private constructor (
         else -> throw RuntimeException("type mismatch")
     }
 
-    inline fun <reified T> getObject(key: KeyT) = lock(key) { rawPrefs.getObject<T>(key.name, key.defaultValue as? T) }
+    inline fun <reified T> getObject(key: KeyT) = lock(key) { rawPrefs.getObject(key.name, key.defaultValue as? T) }
 
 
     /**

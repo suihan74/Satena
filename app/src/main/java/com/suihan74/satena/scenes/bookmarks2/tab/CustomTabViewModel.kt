@@ -6,7 +6,6 @@ import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.UserAndTags
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class CustomTabViewModel : BookmarksTabViewModel() {
@@ -102,7 +101,7 @@ class CustomTabViewModel : BookmarksTabViewModel() {
         val users = bookmarksViewModel.taggedUsers.value ?: emptyList()
 
         val muteWords = bookmarksViewModel.muteWords
-        val muteUsers = bookmarksViewModel.ignoredUsers.value ?: emptyList()
+        val muteUsers = bookmarksViewModel.ignoredUsers.value
 
         val filtered = list.filter {
             set.shown(it, users, muteWords, muteUsers)

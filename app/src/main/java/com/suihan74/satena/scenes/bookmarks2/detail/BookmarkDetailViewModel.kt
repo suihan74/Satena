@@ -173,7 +173,7 @@ class BookmarkDetailViewModel(
         }
     }
 
-    class NotSignedInException() : RuntimeException(
+    class NotSignedInException : RuntimeException(
         "failed to an action required sign-in."
     )
 

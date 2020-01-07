@@ -16,6 +16,7 @@ import kotlin.experimental.and
 
 class PreferencesMigration {
     companion object {
+        @Suppress("SpellCheckingInspection")
         private val SIGNATURE get() = byteArrayOf(0).plus("SATESET".toByteArray())
         private val VERSION get() = byteArrayOf(1)
 

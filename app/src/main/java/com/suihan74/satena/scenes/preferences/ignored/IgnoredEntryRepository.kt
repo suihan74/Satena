@@ -1,12 +1,10 @@
 package com.suihan74.satena.scenes.preferences.ignored
 
 import android.util.Log
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 
 class IgnoredEntryRepository(

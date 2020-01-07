@@ -84,7 +84,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
                         mIgnoredUsersAdapter!!.removeUser(user)
                     }
                     catch (e: Exception) {
-                        Log.d("unignoreFailure", Log.getStackTraceString(e))
+                        Log.d("unIgnoreFailure", Log.getStackTraceString(e))
                     }
                 }
             }

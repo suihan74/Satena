@@ -13,8 +13,6 @@ import com.suihan74.satena.dialogs.TagUserDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.User
-import com.suihan74.satena.models.userTag.UserTagDao
-import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersListFragment
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository

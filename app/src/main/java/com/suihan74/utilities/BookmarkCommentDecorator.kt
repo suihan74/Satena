@@ -52,7 +52,7 @@ object BookmarkCommentDecorator {
             }
 
         return AnalyzedBookmarkComment(
-            makeSpannedfromHtml(html),
+            makeSpannedFromHtml(html),
             ids.distinct(),
             entryIds.distinct(),
             urls.distinct())

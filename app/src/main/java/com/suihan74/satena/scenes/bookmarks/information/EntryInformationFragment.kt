@@ -22,7 +22,7 @@ import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.post.BookmarkPostFragment
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.CoroutineScopeFragment
-import com.suihan74.utilities.makeSpannedfromHtml
+import com.suihan74.utilities.makeSpannedFromHtml
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,7 +61,7 @@ class EntryInformationFragment : CoroutineScopeFragment(), BookmarkPostFragment.
         view.findViewById<TextView>(R.id.title).text = mEntry.title
 
         view.findViewById<TextView>(R.id.page_url).apply {
-            text = makeSpannedfromHtml("<u>${Uri.decode(mEntry.url)}</u>")
+            text = makeSpannedFromHtml("<u>${Uri.decode(mEntry.url)}</u>")
 
             setOnClickListener {
                 activity!!.showCustomTabsIntent(mEntry)

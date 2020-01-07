@@ -93,7 +93,7 @@ class BookmarksRepository(
     }
 
     /** ブックマークエントリを取得 */
-    fun loadBookmarksEntryAsnyc() =
+    fun loadBookmarksEntryAsync() =
         client.getBookmarksEntryAsync(entry.url).apply {
             invokeOnCompletion { e ->
                 if (e != null) return@invokeOnCompletion
@@ -186,7 +186,7 @@ class BookmarksRepository(
         }
 
     /** ユーザーの非表示を解除する */
-    fun unignoreUserAsync(user: String) =
+    fun unIgnoreUserAsync(user: String) =
         client.unignoreUserAsync(user).apply {
             invokeOnCompletion { e ->
                 if (e == null) {
@@ -356,7 +356,7 @@ class BookmarksRepository(
             val cache = repository.getStarsEntryTo(bookmark.user)
             return if (!forceUpdate && cache != null) {
                 GlobalScope.async {
-                    return@async cache!!.also {
+                    return@async cache.also {
                         postValue(it)
                     }
                 }

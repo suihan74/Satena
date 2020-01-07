@@ -62,8 +62,8 @@ class CustomBookmarksTabFragment : BookmarksTabFragment(), AlertDialogFragment.L
     private fun getActiveTaggedUsers(fragment: BookmarksFragment) : List<String> {
         val taggedUsers = fragment.taggedUsers
         return mActiveTagIds
-            .mapNotNull { id ->
-                taggedUsers?.filter { it.tags.any { tag -> tag.id == id } }
+            .map { id ->
+                taggedUsers.filter { it.tags.any { tag -> tag.id == id } }
             }
             .flatMap { it -> it.map { it.user.name } }
             .distinct()

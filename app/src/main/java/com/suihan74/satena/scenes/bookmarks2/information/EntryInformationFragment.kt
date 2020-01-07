@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.bookmarks2.information
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,21 +13,15 @@ import androidx.lifecycle.ViewModelProviders
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.SearchType
-import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.CoroutineScopeFragment
-import com.suihan74.utilities.makeSpannedfromHtml
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.makeSpannedFromHtml
 import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.fragment_entry_information.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class EntryInformationFragment : CoroutineScopeFragment() {
     lateinit var activityViewModel: BookmarksViewModel
@@ -56,7 +49,7 @@ class EntryInformationFragment : CoroutineScopeFragment() {
         view.title.text = entry.title
 
         view.page_url.apply {
-            text = makeSpannedfromHtml("<u>${Uri.decode(entry.url)}</u>")
+            text = makeSpannedFromHtml("<u>${Uri.decode(entry.url)}</u>")
 
             setOnClickListener {
                 activity!!.showCustomTabsIntent(entry)

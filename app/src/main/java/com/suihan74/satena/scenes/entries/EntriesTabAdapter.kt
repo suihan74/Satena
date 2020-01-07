@@ -122,7 +122,7 @@ class EntriesTabAdapter(
                     HatenaClient.searchMyEntriesAsync(query, SearchType.Text, of = offset).await()
                 }
             }
-            EntriesTabType.READLATER -> HatenaClient.searchMyEntriesAsync("あとで読む", SearchType.Tag, of = offset).await()
+            EntriesTabType.READ_LATER -> HatenaClient.searchMyEntriesAsync("あとで読む", SearchType.Tag, of = offset).await()
         }
     }
 

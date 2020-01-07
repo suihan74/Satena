@@ -2,7 +2,6 @@ package com.suihan74.satena.models.ignoredEntry
 
 import androidx.room.*
 import com.suihan74.HatenaLib.Entry
-import org.threeten.bp.LocalDateTime
 import java.io.Serializable
 
 @Entity(

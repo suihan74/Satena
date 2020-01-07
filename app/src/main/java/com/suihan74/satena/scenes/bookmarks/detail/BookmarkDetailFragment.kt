@@ -39,8 +39,6 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

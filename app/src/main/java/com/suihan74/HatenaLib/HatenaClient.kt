@@ -888,11 +888,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
     fun getStarsEntryAsync(urls: Iterable<String>) : Deferred<List<StarsEntry>> = async {
         val uriParamKey = "&uri="
         val apiBaseUrl = "$S_BASE_URL/entry.json?${cacheAvoidance()}${uriParamKey}"
-        val params = urls.map { Uri.encode(it) }.joinToString(uriParamKey)
+        val params = urls.joinToString(uriParamKey) { Uri.encode(it) }
         var apiUrl = apiBaseUrl + params
 
         val gsonBuilder = getGsonBuilderForStars()
-        var isSuccess = true
 
         // urlの長さは2048を超えてはいけない
         val urlLengthLimit = 2000
@@ -921,14 +920,11 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     getJson<StarsEntries>(apiUrl, gsonBuilder)
                 }
                 catch (e: SocketTimeoutException) {
-                    isSuccess = false
                     null
                 }
             })
 
             tasks.awaitAll()
-
-//            if (!isSuccess) throw SocketTimeoutException("timeout")
 
             return@async tasks
                 .mapNotNull { it.await() }
@@ -1007,6 +1003,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
         val url = "$S_BASE_URL/api/v0/me/colorstars?${cacheAvoidance()}"
 
+        @Suppress("SpellCheckingInspection")
         val request = Request.Builder()
             .get()
             .url(url)
