@@ -81,6 +81,8 @@ class BookmarksTabFragment :
     ): View? {
         val view = inflater.inflate(R.layout.fragment_bookmarks_tab, container, false)
 
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+
         // adapter
         val bookmarksAdapter = object : BookmarksAdapter() {
             override fun onItemClicked(bookmark: Bookmark) =
@@ -163,7 +165,8 @@ class BookmarksTabFragment :
             val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@Observer
             val userTags = activityViewModel.taggedUsers.value ?: emptyList()
             val ignoredUsers = activityViewModel.ignoredUsers.value
-            bookmarksAdapter.setBookmarks(it, bookmarksEntry, userTags, ignoredUsers)
+            val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
+            bookmarksAdapter.setBookmarks(it, bookmarksEntry, userTags, ignoredUsers, displayMutedMention)
         })
 
         // ユーザータグの更新を監視
@@ -172,7 +175,8 @@ class BookmarksTabFragment :
             if (bookmarks != null) {
                 val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@Observer
                 val ignoredUsers = activityViewModel.ignoredUsers.value
-                bookmarksAdapter.setBookmarks(bookmarks, bookmarksEntry, it, ignoredUsers)
+                val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
+                bookmarksAdapter.setBookmarks(bookmarks, bookmarksEntry, it, ignoredUsers, displayMutedMention)
             }
         })
 

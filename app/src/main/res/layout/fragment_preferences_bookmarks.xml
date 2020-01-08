@@ -38,8 +38,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_bookmarks_using_post_dialog"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -52,8 +51,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_using_post_star_dialog"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -66,8 +64,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_bookmarks_hiding_toolbar_by_scrolling"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -80,8 +77,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_bookmarks_hiding_buttons_with_scrolling"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -94,8 +90,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_bookmarks_showing_ignored_users_in_all_bookmarks"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -108,8 +103,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_bookmarks_showing_ignored_users_with_calling"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -122,8 +116,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_bookmarks_showing_stars_of_ignored_users"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 

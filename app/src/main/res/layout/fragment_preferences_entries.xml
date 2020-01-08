@@ -81,8 +81,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_entries_menu_tap_guard"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -95,8 +94,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_entries_hiding_toolbar_by_scrolling"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 

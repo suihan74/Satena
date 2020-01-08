@@ -135,7 +135,8 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         bookmarks: List<Bookmark>,
         bookmarksEntry: BookmarksEntry,
         taggedUsers: List<UserAndTags>,
-        ignoredUsers: List<String>
+        ignoredUsers: List<String>,
+        displayMutedMention: Boolean
     ) {
         val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
             val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
@@ -144,7 +145,10 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 analyzedComment = analyzedComment,
                 isIgnored = ignoredUsers.contains(it.user),
                 mentions = analyzedComment.ids.mapNotNull { called ->
-                    bookmarksEntry.bookmarks.firstOrNull { b -> b.user == called }
+                    bookmarksEntry.bookmarks.firstOrNull { b -> b.user == called }?.let { mentioned ->
+                        if (!displayMutedMention && ignoredUsers.contains(mentioned.user)) null
+                        else mentioned
+                    }
                 },
                 userTags = taggedUsers.firstOrNull { t -> t.user.name == it.user }?.tags ?: emptyList()
             )

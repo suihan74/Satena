@@ -40,8 +40,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_generals_using_termination_dialog"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -54,8 +53,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_generals_notices_last_seen_updatable"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -68,8 +66,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_generals_background_checking_notices"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -96,8 +93,7 @@
 
         <ToggleButton
                 android:id="@+id/preferences_generals_show_release_notes_after_update"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
+                style="@style/PreferencesToggleButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 

@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"/>
 
     <Button
-            android:id="@+id/preferences_accounts_hatena_signin_button"
+            android:id="@+id/preferences_accounts_hatena_sign_in_button"
             android:text="@string/pref_accounts_sign_in"
             android:textColor="@color/textColor"
             android:layout_width="wrap_content"
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"/>
 
     <Button
-            android:id="@+id/preferences_accounts_mastodon_signin_button"
+            android:id="@+id/preferences_accounts_mastodon_sign_in_button"
             android:text="@string/pref_accounts_sign_in"
             android:textColor="@color/textColor"
             android:layout_width="wrap_content"

@@ -63,6 +63,12 @@
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
     </style>
 
+    <!-- 設定画面のトグルボタン -->
+    <style name="PreferencesToggleButtonStyle" parent="Widget.AppCompat.Button">
+        <item name="android:backgroundTint">@drawable/preferences_toggle_background_selector</item>
+        <item name="android:textColor">@drawable/preferences_toggle_text_color_selector</item>
+    </style>
+
     <!-- ブクマ投稿ダイアログ用 -->
     <style name="AppDialogTheme" parent="Theme.AppCompat.Dialog">
         <item name="colorPrimary">@color/colorPrimary</item>
