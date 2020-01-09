@@ -4,25 +4,25 @@ import androidx.room.Room
 import androidx.test.platform.app.InstrumentationRegistry
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.invokeSuspend
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertNotNull
+import org.junit.Before
 import org.junit.Test
-import java.lang.reflect.Method
 import kotlin.coroutines.Continuation
-import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
 @Suppress("NonAsciiCharacters", "SpellCheckingInspection", "DEPRECATION")
 class UserTagsKeyMigrationTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
 
-    @Test
-    fun sharedPreferencesからRoomDBへの移行() {
+    /** テストデータの作成 */
+    @Before
+    fun initialize() {
         val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
         val container = prefs.get<UserTagsContainer>(UserTagsKey.CONTAINER)
         val dao = db.userTagDao()
 
-        // --- テストデータを作成 --- //
         container.run {
             val userHoge = addUser("hoge")
             val userFuga = addUser("fuga")
@@ -37,9 +37,14 @@ class UserTagsKeyMigrationTest {
             put(UserTagsKey.CONTAINER, container)
         }
         dao.clearAll()
-        // ------ //
+    }
 
-        // --- 移行 --- //
+    @Test
+    fun sharedPreferencesからRoomDBへの移行() {
+        val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
+        val dao = db.userTagDao()
+
+        // テスト対象メソッドを取得
         val migrationMethod = UserTagsKeyMigration::class.java.getDeclaredMethod(
             "migrateFromVersion0",
             SafeSharedPreferences::class.java,
@@ -68,12 +73,5 @@ class UserTagsKeyMigrationTest {
         assertNotNull(relFooHoge)
         assertNotNull(relBarHoge)
         assertNotNull(relBarFuga)
-
-        // ------ //
     }
-
-    private suspend fun Method.invokeSuspend(obj: Any, vararg args: Any?) : Any? =
-        suspendCoroutineUninterceptedOrReturn { cont ->
-            invoke(obj, *args, cont)
-        }
 }
