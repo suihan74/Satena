@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.suihan74.satena.R
@@ -87,22 +88,15 @@ class PreferencesBookmarksFragment :
         }
 
         // タップアクションの設定項目を初期化する処理
-        val initializeTapActionSelector = { viewId: Int, descId: Int, tag: String ->
+        val initializeTapActionSelector = { viewId: Int, selectedActionLiveData: LiveData<Int>, descId: Int, tag: String ->
             view.findViewById<Button>(viewId).apply {
                 setOnClickListener {
-                    val selectedAction =
-                        when (tag) {
-                            DIALOG_LINK_SINGLE_TAP_ACTION -> viewModel.linkSingleTapAction.value!!
-                            DIALOG_LINK_LONG_TAP_ACTION -> viewModel.linkLongTapAction.value!!
-                            else -> throw RuntimeException("invalid dialog tag")
-                        }
-
                     AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                         .setTitle(descId)
                         .setNegativeButton(R.string.dialog_cancel)
                         .setSingleChoiceItems(
                             TapEntryAction.values().map { getString(it.titleId) },
-                            selectedAction
+                            selectedActionLiveData.value!!
                         )
                         .show(childFragmentManager, tag)
                 }
@@ -111,12 +105,14 @@ class PreferencesBookmarksFragment :
 
         initializeTapActionSelector(
             R.id.button_link_single_tap_action,
+            viewModel.linkSingleTapAction,
             R.string.pref_bookmark_link_single_tap_action_desc,
             DIALOG_LINK_SINGLE_TAP_ACTION
         )
 
         initializeTapActionSelector(
             R.id.button_link_long_tap_action,
+            viewModel.linkLongTapAction,
             R.string.pref_bookmark_link_long_tap_action_desc,
             DIALOG_LINK_LONG_TAP_ACTION
         )
@@ -142,18 +138,16 @@ class PreferencesBookmarksFragment :
         when (dialog.tag) {
             DIALOG_INITIAL_TAB -> {
                 viewModel.initialTabPosition.value = which
-                dialog.dismiss()
             }
 
             DIALOG_LINK_SINGLE_TAP_ACTION -> {
                 viewModel.linkSingleTapAction.value = which
-                dialog.dismiss()
             }
 
             DIALOG_LINK_LONG_TAP_ACTION -> {
                 viewModel.linkLongTapAction.value = which
-                dialog.dismiss()
             }
         }
+        dialog.dismiss()
     }
 }
