@@ -1,4 +1,4 @@
-package com.suihan74.satena.models
+package com.suihan74.satena.scenes.bookmarks2
 
 import com.suihan74.satena.R
 

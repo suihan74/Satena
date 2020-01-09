@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.bookmarks2
 
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.suihan74.satena.models.BookmarksTabType
 
 open class BookmarksTabAdapter (
     private val bookmarksFragment: BookmarksFragment

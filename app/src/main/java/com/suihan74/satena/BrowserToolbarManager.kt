@@ -13,8 +13,11 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.SearchType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.satena.scenes.post.BookmarkPostActivity
-import kotlinx.coroutines.*
+import com.suihan74.satena.scenes.post2.BookmarkPostActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.chromium.customtabsclient.shared.CustomTabsHelper
 
 class BrowserToolbarManager : BroadcastReceiver() {
@@ -109,7 +112,7 @@ private fun Context.showCustomTabsIntent(remoteViews: RemoteViews, url: String) 
 fun Context.showCustomTabsIntent(entry: Entry) =
     showCustomTabsIntent(
         BrowserToolbarManager.createRemoteViews(this, entry),
-        entry.ampUrl ?: entry.url
+        /*entry.ampUrl ?: */entry.url
     )
 
 fun Context.showCustomTabsIntent(url: String) =

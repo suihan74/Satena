@@ -12,7 +12,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.satena.R
-import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.*
 import com.suihan74.utilities.*
