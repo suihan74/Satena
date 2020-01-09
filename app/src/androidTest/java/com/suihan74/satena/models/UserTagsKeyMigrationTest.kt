@@ -3,8 +3,6 @@ package com.suihan74.satena.models
 import androidx.room.Room
 import androidx.test.platform.app.InstrumentationRegistry
 import com.suihan74.satena.models.userTag.UserTagDao
-import com.suihan74.satena.models.userTag.clearAll
-import com.suihan74.satena.models.userTag.findRelation
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertNotNull

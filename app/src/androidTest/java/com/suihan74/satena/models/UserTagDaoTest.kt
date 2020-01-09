@@ -4,15 +4,12 @@ import android.util.Log
 import androidx.room.Room
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry
-import com.suihan74.satena.models.userTag.insertRelation
-import com.suihan74.satena.models.userTag.insertTag
-import com.suihan74.satena.models.userTag.insertUser
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@Suppress("NonAsciiCharacters")
+@Suppress("NonAsciiCharacters", "SpellCheckingInspection")
 @RunWith(AndroidJUnit4ClassRunner::class)
 class UserTagDaoTest {
     // Context of the app under test.

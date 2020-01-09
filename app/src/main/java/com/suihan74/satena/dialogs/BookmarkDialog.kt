@@ -15,10 +15,6 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.models.userTag.findRelation
-import com.suihan74.satena.models.userTag.insertRelation
-import com.suihan74.satena.models.userTag.insertTag
-import com.suihan74.satena.models.userTag.makeUser
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.utilities.BookmarkCommentDecorator
