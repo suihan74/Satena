@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -16,6 +17,7 @@ import java.lang.reflect.Type
  * DBに移行
  **************************************/
 @Deprecated("DBに移行")
+@Suppress("DEPRECATION")
 @SharedPreferencesKey(fileName = "ignored_entries", version = 2, latest = true)
 enum class IgnoredEntriesKey(
     override val valueType: Type,
@@ -33,13 +35,22 @@ enum class IgnoredEntriesKey(
  * version 1
  * URLの内容はドメイン以下（「http://」or「https://」を含める必要がない）
  **************************************/
-
-//
+@Deprecated("")
+@Suppress("DEPRECATION")
+@SharedPreferencesKey(fileName = "ignored_entries", version = 1)
+enum class IgnoredEntriesKeyVersion1(
+    override val valueType: Type,
+    override val defaultValue: Any?
+) : SafeSharedPreferences.Key {
+    IGNORED_ENTRIES(typeInfo<List<IgnoredEntry>>(), emptyList<IgnoredEntry>())
+}
 
 /**************************************
  * version 0
  * URLの内容が「http://」or「https://」を含む完全なURL文字列
  **************************************/
+@Deprecated("")
+@Suppress("DEPRECATION")
 @SharedPreferencesKey(fileName = "ignored_entries", version = 0)
 enum class IgnoredEntriesKeyVersion0(
     override val valueType: Type,
@@ -53,15 +64,19 @@ enum class IgnoredEntriesKeyVersion0(
 // version migration
 ////////////////////////////////////////////////////////////////////////////////
 
+@Suppress("DEPRECATION")
 object IgnoredEntriesKeyMigration {
     suspend fun check(context: Context) {
+        val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
+        val dao = SatenaApplication.instance.ignoredEntryDao
+
         when (SafeSharedPreferences.version<IgnoredEntriesKey>(context)) {
             0 -> {
                 migrateFromVersion0(context)
-                migrateFromVersion1(context)
+                migrateFromVersion1(prefs, dao)
             }
 
-            1 -> migrateFromVersion1(context)
+            1 -> migrateFromVersion1(prefs, dao)
         }
     }
 
@@ -97,11 +112,11 @@ object IgnoredEntriesKeyMigration {
         }
     }
 
-    private suspend fun migrateFromVersion1(context: Context) = withContext(Dispatchers.IO) {
-        val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
+    private suspend fun migrateFromVersion1(
+        prefs: SafeSharedPreferences<IgnoredEntriesKey>,
+        dao: IgnoredEntryDao
+    ) = withContext(Dispatchers.IO) {
         val entries = prefs.getObject<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES) ?: emptyList()
-
-        val dao = SatenaApplication.instance.ignoredEntryDao
         dao.clearAllEntries()
 
         var success = true

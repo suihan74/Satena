@@ -7,6 +7,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.invokeSuspend
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import kotlin.coroutines.Continuation
@@ -16,11 +17,13 @@ class UserTagsKeyMigrationTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
 
+    private var previousVersion: Int = 0
+
     /** テストデータの作成 */
     @Before
     fun initialize() {
-        val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
-        val container = prefs.get<UserTagsContainer>(UserTagsKey.CONTAINER)
+        val prefs = SafeSharedPreferences.create<UserTagsKeyVersion0>(context)
+        val container = prefs.get<UserTagsContainer>(UserTagsKeyVersion0.CONTAINER)
         val dao = db.userTagDao()
 
         container.run {
@@ -34,9 +37,11 @@ class UserTagsKeyMigrationTest {
             tagUser(userHoge, tagBar)
         }
         prefs.edit {
-            put(UserTagsKey.CONTAINER, container)
+            put(UserTagsKeyVersion0.CONTAINER, container)
         }
         dao.clearAll()
+
+        previousVersion = prefs.version
     }
 
     @Test
@@ -58,6 +63,10 @@ class UserTagsKeyMigrationTest {
             migrationMethod.invokeSuspend(UserTagsKeyMigration, prefs, dao)
         }
 
+        // prefsのバージョンを上げて次回以降の移行処理を実行しないようにされているか
+        assertTrue(prefs.version > previousVersion)
+
+        // prefsに存在したデータが全てdbに存在しているか
         val userHoge = dao.findUser("hoge")
         val userFuga = dao.findUser("fuga")
         val tagFoo = dao.findTag("FOO")

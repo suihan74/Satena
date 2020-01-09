@@ -3,7 +3,7 @@ package com.suihan74.satena.models
 import android.content.Context
 import android.util.Log
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.models.userTag.*
+import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -32,6 +32,17 @@ enum class UserTagsKey(
 /**************************************
  * version 0
  **************************************/
+
+@Deprecated("DBに移行。後のバージョンで消去する")
+@Suppress("DEPRECATION")
+@SharedPreferencesKey(fileName = "user_tags", version = 0)
+enum class UserTagsKeyVersion0(
+    override val valueType: Type,
+    override val defaultValue: Any?
+) : SafeSharedPreferences.Key {
+
+    CONTAINER(typeInfo<UserTagsContainer>(), UserTagsContainer())
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // version migration
