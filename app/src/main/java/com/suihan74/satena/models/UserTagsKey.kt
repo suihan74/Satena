@@ -15,6 +15,7 @@ import java.lang.reflect.Type
  * version 1
  **************************************/
 @Deprecated("DBに移行。後のバージョンで消去する")
+@Suppress("DEPRECATION")
 @SharedPreferencesKey(fileName = "user_tags", version = 1, latest = true)
 enum class UserTagsKey(
     override val valueType: Type,
@@ -36,6 +37,7 @@ enum class UserTagsKey(
 // version migration
 ////////////////////////////////////////////////////////////////////////////////
 
+@Suppress("DEPRECATION")
 object UserTagsKeyMigration {
     suspend fun check(context: Context) {
         val dao = SatenaApplication.instance.userTagDao

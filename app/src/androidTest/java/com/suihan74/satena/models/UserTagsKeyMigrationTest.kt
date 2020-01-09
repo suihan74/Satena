@@ -13,7 +13,7 @@ import java.lang.reflect.Method
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
-@Suppress("NonAsciiCharacters", "SpellCheckingInspection")
+@Suppress("NonAsciiCharacters", "SpellCheckingInspection", "DEPRECATION")
 class UserTagsKeyMigrationTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
