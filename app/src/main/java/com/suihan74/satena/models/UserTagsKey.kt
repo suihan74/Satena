@@ -3,10 +3,7 @@ package com.suihan74.satena.models
 import android.content.Context
 import android.util.Log
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.models.userTag.clearAll
-import com.suihan74.satena.models.userTag.insertRelation
-import com.suihan74.satena.models.userTag.makeTag
-import com.suihan74.satena.models.userTag.makeUser
+import com.suihan74.satena.models.userTag.*
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -41,14 +38,18 @@ enum class UserTagsKey(
 
 object UserTagsKeyMigration {
     suspend fun check(context: Context) {
+        val dao = SatenaApplication.instance.userTagDao
+        val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
+
         when (SafeSharedPreferences.version<UserTagsKey>(context)) {
-            0 -> migrateFromVersion0(context)
+            0 -> migrateFromVersion0(prefs, dao)
         }
     }
 
-    private suspend fun migrateFromVersion0(context: Context) = withContext(Dispatchers.IO) {
-        val dao = SatenaApplication.instance.userTagDao
-        val prefs = SafeSharedPreferences.create<UserTagsKey>(context)
+    private suspend fun migrateFromVersion0(
+        prefs: SafeSharedPreferences<UserTagsKey>,
+        dao: UserTagDao
+    ) = withContext(Dispatchers.IO) {
         val container = prefs.get<UserTagsContainer>(UserTagsKey.CONTAINER)
 
         try {
