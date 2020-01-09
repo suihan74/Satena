@@ -116,7 +116,7 @@
     <string name="pref_generals_show_release_notes_after_update_desc">アプリ更新後の初回起動時に更新履歴を表示する</string>
     <string name="pref_generals_notices_intervals_dialog_title">通知確認間隔を設定</string>
     <string name="pref_generals_notices_intervals_dialog_msg">1分～180分で指定できます</string>
-
+    <string name="pref_generals_notices_intervals_button_text">%d分</string>
     <!-- entries -->
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
