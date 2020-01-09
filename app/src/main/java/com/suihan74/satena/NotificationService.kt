@@ -12,7 +12,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Notice
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.notices.message
 import com.suihan74.utilities.AccountLoader
