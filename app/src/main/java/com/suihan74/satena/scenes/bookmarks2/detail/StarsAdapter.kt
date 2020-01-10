@@ -46,12 +46,13 @@ open class StarsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
         }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) =
         when (RecyclerType.fromInt(holder.itemViewType)) {
             RecyclerType.BODY ->
                 (holder as ViewHolder).body = states[position].body!!
+
+            else -> {}
         }
-    }
 
     fun setStars(stars: List<StarWithBookmark>) {
         val newStates = RecyclerState.makeStatesWithFooter(stars)
@@ -99,6 +100,10 @@ open class StarsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     // ユーザーのブコメ
                     view.star_comment.text = bookmark.comment
                     view.star_comment.visibility = (!bookmark.comment.isBlank()).toVisibility()
+
+                    if (star == null) {
+                        return
+                    }
 
                     // ユーザーが付けたスター
                     val colorId = when (star.color) {

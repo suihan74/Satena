@@ -7,7 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.StarColor
 import com.suihan74.satena.scenes.bookmarks2.BookmarksRepository
-import kotlinx.coroutines.*
+import com.suihan74.utilities.BookmarkCommentDecorator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BookmarkDetailViewModel(
     /** BookmarksActivityのViewModel */
@@ -21,6 +24,16 @@ class BookmarkDetailViewModel(
 
     /** エントリに関する全スター情報を監視 */
     val starsAll = bookmarksRepository.allStarsLiveData
+
+    /** 対象ブクマに対するメンション */
+    val mentionsToUser by lazy {
+        MutableLiveData<List<Bookmark>>()
+    }
+
+    /** 対象ブクマに含まれる他ユーザーへのメンション */
+    val mentionsFromUser by lazy {
+        MutableLiveData<List<Bookmark>>()
+    }
 
     /** サインインしているユーザーの所持スター情報 */
     val userStars = bookmarksRepository.userStarsLiveData
@@ -67,6 +80,22 @@ class BookmarkDetailViewModel(
                 onLoadedStarsFailureListener?.invoke(e)
             }
         }
+
+        // メンションリストの作成
+        val bookmarks = bookmarksRepository.bookmarksEntry?.bookmarks ?: emptyList()
+        val analyzed = BookmarkCommentDecorator.convert(bookmark.comment)
+        mentionsFromUser.postValue(
+            analyzed.ids
+                .mapNotNull { id ->
+                    bookmarks.firstOrNull { it.user == id }
+                }
+        )
+        mentionsToUser.postValue(
+            bookmarks.filter {
+                BookmarkCommentDecorator.convert(it.comment)
+                    .ids.contains(bookmark.user)
+            }
+        )
     }
 
     /** userに付いたスターと，それを付けた人の同記事へのブクマを取得する */

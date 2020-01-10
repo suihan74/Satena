@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.bookmarks2.detail
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.graphics.PorterDuff
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.SpannableString
@@ -38,19 +39,18 @@ class BookmarkDetailFragment :
     AlertDialogFragment.Listener
 {
     private lateinit var activityViewModel: BookmarksViewModel
-    private lateinit var viewModel: BookmarkDetailViewModel
+    lateinit var viewModel: BookmarkDetailViewModel
 
     private val bookmarksActivity
         get() = activity as? BookmarksActivity
 
-    /** この画面で表示しているユーザー */
-    val targetUser
-        get() = viewModel.bookmark.user
+    /** この画面で表示しているブックマーク */
+    val bookmark
+        get() = viewModel.bookmark
 
     /** ユーザーに付けられたスターの数 */
     val starsCountToUser
         get() = viewModel.starsToUser.value?.totalStarsCount ?: 0
-
 
     companion object {
         fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().apply {
@@ -117,19 +117,48 @@ class BookmarkDetailFragment :
         initializeBookmarkArea(view)
 
         // タブの設定
-        val tabAdapter = DetailTabAdapter(this)
+        val tabAdapter = DetailTabAdapter(this).apply {
+            setOnDataSetChangedListener {
+                // アイコンを設定
+                (0 until count).forEach { i ->
+                    val context = requireContext()
+                    val tab = view.tab_layout.getTabAt(i) ?: return@forEach
+                    tab.icon = context.getDrawable(getPageTitleIcon(i))?.apply {
+                        setColorFilter(
+                            context.getThemeColor(
+                                if (i == view.tab_layout.selectedTabPosition) R.attr.tabSelectedTextColor
+                                else R.attr.tabTextColor
+                            ),
+                            PorterDuff.Mode.SRC_IN
+                        )
+                    }
+                }
+            }
+        }
+
         view.tab_pager.adapter = tabAdapter
         view.tab_layout.apply {
             setupWithViewPager(view.tab_pager)
+
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
+                    tab?.icon?.setColorFilter(
+                        requireContext().getThemeColor(R.attr.tabSelectedTextColor),
+                        PorterDuff.Mode.SRC_IN
+                    )
                 }
-                override fun onTabUnselected(p0: TabLayout.Tab?) {
+                override fun onTabUnselected(tab: TabLayout.Tab?) {
+                    tab?.icon?.setColorFilter(
+                        requireContext().getThemeColor(R.attr.tabTextColor),
+                        PorterDuff.Mode.SRC_IN
+                    )
                 }
                 override fun onTabReselected(tab: TabLayout.Tab?) {
                     (tabAdapter.findFragment(view.tab_pager, tab!!.position) as? ScrollableToTop)?.scrollToTop()
                 }
             })
+
+            tabAdapter.notifyDataSetChanged()
         }
 
         // スター付与ボタンの表示状態を切り替える
