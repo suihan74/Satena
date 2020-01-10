@@ -65,6 +65,8 @@ class BookmarksFragment : Fragment() {
                     tab?.position?.let {
                         viewModel.selectedTab.postValue(it)
                     }
+                    // タブを切り替えたら画面下部のボタンを再表示する
+                    (activity as? BookmarksActivity)?.showButtons()
                 }
                 override fun onTabUnselected(p0: TabLayout.Tab?) {
                 }

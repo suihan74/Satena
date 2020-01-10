@@ -15,7 +15,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -178,6 +177,13 @@ class BookmarksActivity :
                 else
                     null
         }
+    }
+
+    fun showButtons() {
+        val behavior = (buttons_layout.layoutParams as? CoordinatorLayout.LayoutParams)
+            ?.behavior as? HideBottomViewOnScrollBehavior
+            ?: return
+        behavior.slideUp(buttons_layout)
     }
 
     /** Intentから適切なエントリーURLを受け取る */
