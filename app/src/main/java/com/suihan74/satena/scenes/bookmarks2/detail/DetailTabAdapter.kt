@@ -65,11 +65,11 @@ class DetailTabAdapter(
         when (tabs[position]) {
             TabType.STARS_TO_USER,
             TabType.MENTION_TO_USER ->
-                "to"
+                "to ${detailFragment.bookmark.user}"
 
             TabType.STARS_FROM_USER,
             TabType.MENTION_FROM_USER ->
-                "from"
+                "from ${detailFragment.bookmark.user}"
         }
 
     fun getPageTitleIcon(position: Int) =

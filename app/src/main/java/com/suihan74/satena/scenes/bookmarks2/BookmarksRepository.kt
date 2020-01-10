@@ -282,6 +282,11 @@ class BookmarksRepository(
         val loading: Boolean
             get() = task != null
 
+        /** 再通知 */
+        fun notifyReload() {
+            postValue(value)
+        }
+
         override fun onActive() {
             updateAsync().start()
         }
@@ -347,6 +352,11 @@ class BookmarksRepository(
 
         override fun onInactive() {
             task?.cancel()
+        }
+
+        /** 再通知 */
+        fun notifyReload() {
+            postValue(value)
         }
 
         /** スター情報を強制再読み込み */

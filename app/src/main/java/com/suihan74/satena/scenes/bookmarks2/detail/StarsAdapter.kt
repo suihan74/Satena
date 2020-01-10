@@ -55,6 +55,7 @@ open class StarsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         }
 
     fun setStars(stars: List<StarWithBookmark>) {
+        if (states.isEmpty() && stars.isEmpty()) return
         val newStates = RecyclerState.makeStatesWithFooter(stars)
 
         val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
@@ -68,12 +69,7 @@ open class StarsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
                 val old = states[oldItemPosition]
                 val new = newStates[newItemPosition]
-                return old.type == new.type &&
-                        old.body?.star?.user == new.body?.star?.user &&
-                        old.body?.star?.color == new.body?.star?.color &&
-                        old.body?.star?.count == new.body?.star?.count &&
-                        old.body?.star?.quote == new.body?.star?.quote &&
-                        old.body?.bookmark?.comment == new.body?.bookmark?.comment
+                return old.type == new.type && old.body == new.body
             }
         })
         states = newStates
@@ -100,6 +96,9 @@ open class StarsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     // ユーザーのブコメ
                     view.star_comment.text = bookmark.comment
                     view.star_comment.visibility = (!bookmark.comment.isBlank()).toVisibility()
+
+                    // 非表示ブクマかどうかのマークを表示
+                    view.muted_mark.visibility = (value.state == StarWithBookmark.DisplayState.COVER).toVisibility()
 
                     if (star == null) {
                         return

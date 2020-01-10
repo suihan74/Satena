@@ -56,10 +56,8 @@ class MentionFromUserFragment : Fragment(), ScrollableToTop {
         view.stars_swipe_layout.isEnabled = false
 
         // メンション先をリストに追加
-        detailViewModel.mentionsFromUser.observe(this, Observer { bookmarks ->
-            starsAdapter.setStars(bookmarks.map {
-                StarWithBookmark(null, it)
-            })
+        detailViewModel.mentionsFromUser.observe(this, Observer {
+            starsAdapter.setStars(it)
         })
 
         return view

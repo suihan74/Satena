@@ -48,10 +48,6 @@ class BookmarkDetailFragment :
     val bookmark
         get() = viewModel.bookmark
 
-    /** ユーザーに付けられたスターの数 */
-    val starsCountToUser
-        get() = viewModel.starsToUser.value?.totalStarsCount ?: 0
-
     companion object {
         fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().apply {
             arguments = Bundle().apply {
@@ -74,7 +70,8 @@ class BookmarkDetailFragment :
         activityViewModel = ViewModelProviders.of(requireActivity())[BookmarksViewModel::class.java]
 
         val bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
-        val factory = BookmarkDetailViewModel.Factory(activityViewModel.repository, bookmark)
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val factory = BookmarkDetailViewModel.Factory(activityViewModel.repository, prefs, bookmark)
         viewModel = ViewModelProviders.of(this, factory)[BookmarkDetailViewModel::class.java].apply {
             // スターロード失敗時の挙動
             setOnLoadedStarsFailureListener { e ->
@@ -99,6 +96,13 @@ class BookmarkDetailFragment :
         }
 
         viewModel.init()
+
+        // 非表示ユーザーリストが更新されたら各リストを更新する
+        activityViewModel.ignoredUsers.observe(this, Observer {
+            viewModel.loadMentions()
+            viewModel.starsToUser.notifyReload()
+            viewModel.starsAll.notifyReload()
+        })
 
         // 画面遷移アニメーション
         enterTransition = TransitionSet()
@@ -169,7 +173,6 @@ class BookmarkDetailFragment :
             hide()
         }
 
-        // TODO: 確認ダイアログを表示できるようにする
         // スター付与ボタン各色
         view.yellow_star_button.setOnClickListener { postStar(StarColor.Yellow) }
         view.red_star_button.setOnClickListener { postStar(StarColor.Red) }

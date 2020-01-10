@@ -6,15 +6,19 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.StarColor
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksRepository
 import com.suihan74.utilities.BookmarkCommentDecorator
+import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class BookmarkDetailViewModel(
     /** BookmarksActivityのViewModel */
-    val bookmarksRepository: BookmarksRepository,
+    private val bookmarksRepository: BookmarksRepository,
+    /** アプリ設定 */
+    private val prefs: SafeSharedPreferences<PreferenceKey>,
     /** 表示対象のブックマーク */
     val bookmark: Bookmark
 ) : ViewModel() {
@@ -27,12 +31,12 @@ class BookmarkDetailViewModel(
 
     /** 対象ブクマに対するメンション */
     val mentionsToUser by lazy {
-        MutableLiveData<List<Bookmark>>()
+        MutableLiveData<List<StarWithBookmark>>()
     }
 
     /** 対象ブクマに含まれる他ユーザーへのメンション */
     val mentionsFromUser by lazy {
-        MutableLiveData<List<Bookmark>>()
+        MutableLiveData<List<StarWithBookmark>>()
     }
 
     /** サインインしているユーザーの所持スター情報 */
@@ -80,20 +84,43 @@ class BookmarkDetailViewModel(
                 onLoadedStarsFailureListener?.invoke(e)
             }
         }
+    }
 
-        // メンションリストの作成
+    /** メンションリストのロード */
+    fun loadMentions() = viewModelScope.launch {
+        val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
+        val ignoredUsers = bookmarksRepository.ignoredUsers
         val bookmarks = bookmarksRepository.bookmarksEntry?.bookmarks ?: emptyList()
         val analyzed = BookmarkCommentDecorator.convert(bookmark.comment)
         mentionsFromUser.postValue(
             analyzed.ids
-                .mapNotNull { id ->
-                    bookmarks.firstOrNull { it.user == id }
+                .mapNotNull m@ { id ->
+                    val b = bookmarks.firstOrNull { it.user == id } ?: return@m null
+                    val ignored = ignoredUsers.contains(b.user)
+                    val state =
+                        if (ignored) {
+                            if (displayIgnoredUsers) StarWithBookmark.DisplayState.COVER
+                            else return@m null
+                        }
+                        else StarWithBookmark.DisplayState.SHOW
+
+                    StarWithBookmark(null, b, state)
                 }
         )
         mentionsToUser.postValue(
             bookmarks.filter {
                 BookmarkCommentDecorator.convert(it.comment)
                     .ids.contains(bookmark.user)
+            }.mapNotNull m@ { b ->
+                val ignored = ignoredUsers.contains(b.user)
+                val state =
+                    if (ignored) {
+                        if (displayIgnoredUsers) StarWithBookmark.DisplayState.COVER
+                        else return@m null
+                    }
+                    else StarWithBookmark.DisplayState.SHOW
+
+                StarWithBookmark(null, b, state)
             }
         )
     }
@@ -103,13 +130,24 @@ class BookmarkDetailViewModel(
         val bookmarks = bookmarksRepository.bookmarksEntry?.bookmarks ?: emptyList()
         val recentBookmarks = bookmarksRepository.bookmarksRecent
 
-        return bookmarksRepository.getStarsEntryTo(user)?.allStars?.map {
+        val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_STARS_OF_IGNORED_USERS)
+        val ignoredUsers = bookmarksRepository.ignoredUsers
+
+        return bookmarksRepository.getStarsEntryTo(user)?.allStars?.mapNotNull m@ {
             val bookmark =
                 recentBookmarks.firstOrNull { b -> b.user == it.user }
                 ?: bookmarks.firstOrNull { b -> b.user == it.user }
                 ?: Bookmark(user = it.user, comment = "")
 
-            StarWithBookmark(it, bookmark)
+            val ignored = ignoredUsers.contains(bookmark.user)
+            val state =
+                if (ignored) {
+                    if (displayIgnoredUsers) StarWithBookmark.DisplayState.COVER
+                    else return@m null
+                }
+                else StarWithBookmark.DisplayState.SHOW
+
+            StarWithBookmark(it, bookmark, state)
         } ?: emptyList()
     }
 
@@ -117,6 +155,9 @@ class BookmarkDetailViewModel(
     fun getStarsWithBookmarkFrom(user: String) : List<StarWithBookmark> {
         val bookmarks = bookmarksRepository.bookmarksEntry?.bookmarks ?: emptyList()
         val recentBookmarks = bookmarksRepository.bookmarksRecent
+
+        val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_STARS_OF_IGNORED_USERS)
+        val ignoredUsers = bookmarksRepository.ignoredUsers
 
         return bookmarksRepository.getStarsEntryFrom(user).mapNotNull m@ {
             val bookmark =
@@ -127,7 +168,15 @@ class BookmarkDetailViewModel(
             val star = it.allStars.firstOrNull { s -> s.user == user }
                 ?: return@m null
 
-            StarWithBookmark(star, bookmark)
+            val ignored = ignoredUsers.contains(bookmark.user)
+            val state =
+                if (ignored) {
+                    if (displayIgnoredUsers) StarWithBookmark.DisplayState.COVER
+                    else return@m null
+                }
+                else StarWithBookmark.DisplayState.SHOW
+
+            StarWithBookmark(star, bookmark, state)
         }
     }
 
@@ -212,10 +261,11 @@ class BookmarkDetailViewModel(
 
     class Factory(
         private val bookmarksRepository: BookmarksRepository,
+        private val prefs: SafeSharedPreferences<PreferenceKey>,
         private val bookmark: Bookmark
     ) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) =
-            BookmarkDetailViewModel(bookmarksRepository, bookmark) as T
+            BookmarkDetailViewModel(bookmarksRepository, prefs, bookmark) as T
     }
 }
