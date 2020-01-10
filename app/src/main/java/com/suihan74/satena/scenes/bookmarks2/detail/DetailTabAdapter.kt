@@ -30,14 +30,14 @@ class DetailTabAdapter(
         tabs = tabsArrayList
 
         detailFragment.viewModel.mentionsToUser.observe(detailFragment, Observer {
-            if (it.isNotEmpty()) {
+            if (it.isNotEmpty() && !tabsArrayList.contains(TabType.MENTION_TO_USER)) {
                 tabsArrayList.add(TabType.MENTION_TO_USER)
                 notifyDataSetChanged()
             }
         })
 
         detailFragment.viewModel.mentionsFromUser.observe(detailFragment, Observer {
-            if (it.isNotEmpty()) {
+            if (it.isNotEmpty() && !tabsArrayList.contains(TabType.MENTION_FROM_USER)) {
                 tabsArrayList.add(TabType.MENTION_FROM_USER)
                 notifyDataSetChanged()
             }
