@@ -10,20 +10,11 @@ class HideBottomViewOnScrollBehavior<V : View>(
     attrs: AttributeSet?
 ) : HideBottomViewOnScrollBehavior<V>(context, attrs) {
 
-    var hidden = false
-        private set
-
     public override fun slideDown(child: V) {
-        if (!hidden) {
-            super.slideDown(child)
-        }
-        hidden = true
+        super.slideDown(child)
     }
 
     public override fun slideUp(child: V) {
-        if (hidden) {
-            super.slideUp(child)
-        }
-        hidden = false
+        super.slideUp(child)
     }
 }
