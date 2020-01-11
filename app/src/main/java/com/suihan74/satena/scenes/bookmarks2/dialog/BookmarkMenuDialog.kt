@@ -30,17 +30,20 @@ class BookmarkMenuDialog : DialogFragment() {
             setCustomTitle(bookmark)
         }
 
-        val items = listOf(
+        val items = arrayListOf(
             R.string.bookmark_show_user_entries to { listener?.onShowEntries(bookmark.user) },
             if (listener?.isIgnored(bookmark.user) == true) {
                 R.string.bookmark_unignore to { listener.onIgnoreUser(bookmark.user, false) }
             }
             else {
                 R.string.bookmark_ignore to { listener?.onIgnoreUser(bookmark.user, true) }
-            },
-            R.string.bookmark_report to { listener?.onReportBookmark(bookmark) },
-            R.string.bookmark_user_tags to { listener?.onSetUserTag(bookmark.user) }
-        )
+            }
+        ).apply {
+            if (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty()) {
+                add(R.string.bookmark_report to { listener?.onReportBookmark(bookmark) })
+            }
+            add(R.string.bookmark_user_tags to { listener?.onSetUserTag(bookmark.user) })
+        }
 
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setCustomTitle(titleView)
