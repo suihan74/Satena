@@ -90,6 +90,15 @@
                         android:layout_height="wrap_content"/>
             </LinearLayout>
 
+            <ImageView
+                    android:id="@+id/ignored_user_mark"
+                    android:src="@drawable/ic_ignored_user_mark"
+                    android:layout_below="@id/tags_layout"
+                    android:layout_alignStart="@id/tags_layout"
+                    android:layout_marginTop="4dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+
             <ImageButton
                     android:id="@+id/menu_button"
                     android:src="@drawable/ic_more_horiz"

@@ -180,10 +180,6 @@ class BookmarkDetailFragment :
         view.blue_star_button.setOnClickListener { postStar(StarColor.Blue) }
         view.purple_star_button.setOnClickListener { postStar(StarColor.Purple) }
 
-        // ユーザータグ情報の変更を監視
-        activityViewModel.taggedUsers.observe(this, Observer {
-            initializeUserNameAndUserTags(view)
-        })
 
         // スターメニューボタンの状態を監視
         viewModel.starsMenuOpened.observe(this, Observer {
@@ -195,9 +191,9 @@ class BookmarkDetailFragment :
             }
         })
 
-        // サインイン状態を監視
+        // サインイン状態でブコメがあればスターを付けられるようにする
         activityViewModel.signedIn.observe(this, Observer {
-            if (it) {
+            if (it && bookmark.comment.isNotBlank()) {
                 view.show_stars_button.show()
             }
             else {
@@ -245,82 +241,93 @@ class BookmarkDetailFragment :
 
     /** 対象ブクマ表示部を初期化 */
     private fun initializeBookmarkArea(view: View) {
-        viewModel.bookmark.also {
-            val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
-            (view.comment as SelectableTextView).run {
-                text = analyzedComment.comment
+        val bookmark = viewModel.bookmark
+        val analyzedComment = BookmarkCommentDecorator.convert(bookmark.comment)
+        view.comment.run {
+            text = analyzedComment.comment
 
-                // 選択テキストを画面下部で強調表示，スターを付ける際に引用文とする
-                customSelectionActionModeCallback = object : ActionMode.Callback {
-                    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) : Boolean {
-                        try {
-                            val selectedText = text.substring(selectionStart, selectionEnd)
-                            viewModel.quote.value = selectedText
-                        }
-                        catch (e: Throwable) {
-                            viewModel.quote.value = null
-                        }
-                        return false
+            visibility = analyzedComment.comment.isNotBlank().toVisibility()
+
+            // 選択テキストを画面下部で強調表示，スターを付ける際に引用文とする
+            customSelectionActionModeCallback = object : ActionMode.Callback {
+                override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) : Boolean {
+                    try {
+                        val selectedText = text.substring(selectionStart, selectionEnd)
+                        viewModel.quote.value = selectedText
                     }
-                    override fun onDestroyActionMode(mode: ActionMode?) {
+                    catch (e: Throwable) {
                         viewModel.quote.value = null
                     }
-                    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?) = true
-                    override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?) = false
+                    return false
                 }
-
-                // テキスト中のリンクを処理
-                movementMethod = object : MutableLinkMovementMethod2() {
-                    override fun onSinglePressed(link: String) {
-                        if (link.startsWith("http")) {
-                            bookmarksActivity?.onLinkClicked(link)
-                        }
-                        else {
-                            analyzedComment.entryIds
-                                .firstOrNull { eid -> link.contains(eid.toString()) }
-                                ?.let { eid ->
-                                    bookmarksActivity?.onEntryIdClicked(eid)
-                                }
-                        }
-                    }
-
-                    override fun onLongPressed(link: String) {
-                        if (link.startsWith("http")) {
-                            bookmarksActivity?.onLinkLongClicked(link)
-                        }
-                    }
+                override fun onDestroyActionMode(mode: ActionMode?) {
+                    viewModel.quote.value = null
                 }
+                override fun onCreateActionMode(mode: ActionMode?, menu: Menu?) = true
+                override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?) = false
             }
 
-            Glide.with(requireContext())
-                .load(it.userIconUrl)
-                .into(view.user_icon)
-
-            // タグ部分
-            view.tags_layout.apply {
-                if (it.tags.isNullOrEmpty()) {
-                    visibility = View.GONE
-                }
-                else {
-                    visibility = View.VISIBLE
-                    view.tags.apply {
-                        text = BookmarkCommentDecorator.makeClickableTagsText(it.tags) { tag ->
-                            val intent = Intent(context, EntriesActivity::class.java).apply {
-                                putExtra(EntriesActivity.EXTRA_DISPLAY_TAG, tag)
+            // テキスト中のリンクを処理
+            movementMethod = object : MutableLinkMovementMethod2() {
+                override fun onSinglePressed(link: String) {
+                    if (link.startsWith("http")) {
+                        bookmarksActivity?.onLinkClicked(link)
+                    }
+                    else {
+                        analyzedComment.entryIds
+                            .firstOrNull { eid -> link.contains(eid.toString()) }
+                            ?.let { eid ->
+                                bookmarksActivity?.onEntryIdClicked(eid)
                             }
-                            startActivity(intent)
-                        }
-                        movementMethod = LinkMovementMethod.getInstance()
                     }
                 }
-            }
 
-            // メニューボタン
-            view.menu_button.setOnClickListener {
-                val dialog = BookmarkMenuDialog.createInstance(viewModel.bookmark)
-                dialog.show(childFragmentManager, DIALOG_BOOKMARK_MENU)
+                override fun onLongPressed(link: String) {
+                    if (link.startsWith("http")) {
+                        bookmarksActivity?.onLinkLongClicked(link)
+                    }
+                }
             }
         }
+
+        Glide.with(requireContext())
+            .load(bookmark.userIconUrl)
+            .into(view.user_icon)
+
+        // タグ部分
+        view.tags_layout.apply {
+            if (bookmark.tags.isNullOrEmpty()) {
+                visibility = View.GONE
+            }
+            else {
+                visibility = View.VISIBLE
+                view.tags.apply {
+                    text = BookmarkCommentDecorator.makeClickableTagsText(bookmark.tags) { tag ->
+                        val intent = Intent(context, EntriesActivity::class.java).apply {
+                            putExtra(EntriesActivity.EXTRA_DISPLAY_TAG, tag)
+                        }
+                        startActivity(intent)
+                    }
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
+            }
+        }
+
+        // メニューボタン
+        view.menu_button.setOnClickListener {
+            val dialog = BookmarkMenuDialog.createInstance(viewModel.bookmark)
+            dialog.show(childFragmentManager, DIALOG_BOOKMARK_MENU)
+        }
+
+        // 非表示ユーザーマーク
+        activityViewModel.ignoredUsers.observe(this, Observer {
+            view.ignored_user_mark.visibility = it.contains(bookmark.user).toVisibility()
+        })
+
+        // ユーザータグ情報の変更を監視
+        activityViewModel.taggedUsers.observe(this, Observer {
+            initializeUserNameAndUserTags(view)
+        })
     }
 
     /** ユーザー名・ユーザータグ表示を初期化 */
