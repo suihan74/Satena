@@ -23,11 +23,22 @@ class BookmarkDetailViewModel(
     val bookmark: Bookmark
 ) : ViewModel() {
 
-    /** 詳細画面で表示中のブクマについたスターを監視 */
+    /** 詳細画面で表示中のブクマについたスター */
     val starsToUser = bookmarksRepository.createStarsEntryLiveData(bookmark)
 
-    /** エントリに関する全スター情報を監視 */
-    val starsAll = bookmarksRepository.allStarsLiveData
+    /** 表示対象ブクマのユーザーがつけたスター */
+    val starsFromUser by lazy {
+        MutableLiveData<List<StarWithBookmark>>()
+    }
+
+    /** エントリに関する全スター情報 */
+    val starsAll = bookmarksRepository.allStarsLiveData.apply {
+        observeForever {
+            starsFromUser.postValue(
+                getStarsWithBookmarkFrom(bookmark.user)
+            )
+        }
+    }
 
     /** 対象ブクマに対するメンション */
     val mentionsToUser by lazy {

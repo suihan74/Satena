@@ -65,10 +65,8 @@ class StarsFromUserFragment : Fragment(), ScrollableToTop {
         }
 
         // ユーザーに付けられたスターリストの更新を監視する
-        detailViewModel.starsAll.observe(this, Observer {
-            starsAdapter.setStars(
-                detailViewModel.getStarsWithBookmarkFrom(detailViewModel.bookmark.user)
-            )
+        detailViewModel.starsFromUser.observe(this, Observer {
+            starsAdapter.setStars(it)
         })
 
         return view

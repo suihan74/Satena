@@ -85,7 +85,8 @@ class DetailTabAdapter(
         }
 
     fun findFragment(viewPager: ViewPager, position: Int) =
-        instantiateItem(viewPager, position)
+        if (position < count) instantiateItem(viewPager, position)
+        else null
 
     /** タブリストが変更されたときに呼ばれるリスナ */
     private var onDataSetChangedListener : (()->Unit)? = null

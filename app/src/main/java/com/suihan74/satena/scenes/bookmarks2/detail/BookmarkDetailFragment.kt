@@ -218,9 +218,27 @@ class BookmarkDetailFragment :
         })
 
         viewModel.starsToUser.observe(this, Observer {
-            val tabLayout = view.tab_layout
-            val tab = tabLayout.getTabAt(0)
-            tab?.text = tabAdapter.getPageTitle(0)
+            val idx = getTabIndex<StarsToUserFragment>(view, tabAdapter) ?: return@Observer
+            val tab = view.tab_layout.getTabAt(idx)
+            tab?.text = String.format("%s (%d)", tabAdapter.getPageTitle(idx), it?.totalStarsCount ?: 0)
+        })
+
+        viewModel.starsFromUser.observe(this, Observer {
+            val idx = getTabIndex<StarsFromUserFragment>(view, tabAdapter) ?: return@Observer
+            val tab = view.tab_layout.getTabAt(idx)
+            tab?.text = String.format("%s (%d)", tabAdapter.getPageTitle(idx), it.sumBy { s -> s.star?.count ?: 0 })
+        })
+
+        viewModel.mentionsToUser.observe(this, Observer {
+            val idx = getTabIndex<MentionToUserFragment>(view, tabAdapter) ?: return@Observer
+            val tab = view.tab_layout.getTabAt(idx)
+            tab?.text = String.format("%s (%d)", tabAdapter.getPageTitle(idx), it.size)
+        })
+
+        viewModel.mentionsFromUser.observe(this, Observer {
+            val idx = getTabIndex<MentionFromUserFragment>(view, tabAdapter) ?: return@Observer
+            val tab = view.tab_layout.getTabAt(idx)
+            tab?.text = String.format("%s (%d)", tabAdapter.getPageTitle(idx), it.size)
         })
 
         return view
@@ -238,6 +256,11 @@ class BookmarkDetailFragment :
             }
         }
     }
+
+    private inline fun <reified T> getTabIndex(view: View, tabAdapter: DetailTabAdapter) =
+        (0 until tabAdapter.count).firstOrNull { i ->
+            tabAdapter.findFragment(view.tab_pager, i) is T
+        }
 
     /** 対象ブクマ表示部を初期化 */
     private fun initializeBookmarkArea(view: View) {
