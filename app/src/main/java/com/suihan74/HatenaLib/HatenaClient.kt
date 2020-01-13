@@ -1116,28 +1116,37 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * URLがブコメページのURLかを判別する
      */
-    fun isUrlCommentPages(url: String) : Boolean = url.startsWith("$B_BASE_URL/entry/")
+    fun isUrlCommentPages(url: String) : Boolean = url.startsWith("$B_BASE_URL/entry")
 
     /**
      * ブコメページのURLからエントリのURLを取得する
-     * e.g.)  https://b.hatena.ne.jp/entry/s/www.hoge.com/ ==> https://www.hoge.com/
+     * e.g.)
+     * https://b.hatena.ne.jp/entry/s/www.hoge.com/ ==> https://www.hoge.com/
+     * https://b.hatena.ne.jp/entry?url=https~~~
      */
     fun getEntryUrlFromCommentPageUrl(url: String) : String {
-        val regex = Regex("""https?://b\.hatena\.ne\.jp/entry/(https://|s/)?(.+)""")
-        val matches = regex.matchEntire(url) ?: throw RuntimeException("invalid comment page url: $url")
-
-        val path = matches.groups[2]?.value ?: throw RuntimeException("invalid comment page url: $url")
-
-        return if (matches.groups[1]?.value.isNullOrEmpty()) {
-            if (path.startsWith("http://")) {
-                path
-            }
-            else {
-                "http://$path"
-            }
+        if (url.startsWith("$B_BASE_URL/entry?url=")) {
+            return Uri.parse(url).getQueryParameter("url") ?: ""
         }
         else {
-            "https://$path"
+            val regex = Regex("""https?://b\.hatena\.ne\.jp/entry/(https://|s/)?(.+)""")
+            val matches =
+                regex.matchEntire(url) ?: throw RuntimeException("invalid comment page url: $url")
+
+            val path =
+                matches.groups[2]?.value ?: throw RuntimeException("invalid comment page url: $url")
+
+            return if (matches.groups[1]?.value.isNullOrEmpty()) {
+                if (path.startsWith("http://")) {
+                    path
+                }
+                else {
+                    "http://$path"
+                }
+            }
+            else {
+                "https://$path"
+            }
         }
     }
 
@@ -1146,7 +1155,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * e.g.)  https://www.hoge.com/ ===> https://b.hatena.ne.jp/entry/s/www.hoge.com/
      */
     fun getCommentPageUrlFromEntryUrl(url: String) =
-        buildString {
+        "$B_BASE_URL/entry?url=${Uri.encode(url)}"
+/*        buildString {
             append("$B_BASE_URL/entry/")
             append(
                 when {
@@ -1156,7 +1166,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 }
             )
         }
-
+*/
 
     /**
      * 障害情報を取得する
