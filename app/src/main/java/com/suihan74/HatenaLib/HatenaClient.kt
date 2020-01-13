@@ -1155,8 +1155,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * e.g.)  https://www.hoge.com/ ===> https://b.hatena.ne.jp/entry/s/www.hoge.com/
      */
     fun getCommentPageUrlFromEntryUrl(url: String) =
-        "$B_BASE_URL/entry?url=${Uri.encode(url)}"
-/*        buildString {
+//        "$B_BASE_URL/entry?url=${Uri.encode(url)}"
+        buildString {
             append("$B_BASE_URL/entry/")
             append(
                 when {
@@ -1166,7 +1166,6 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 }
             )
         }
-*/
 
     /**
      * 障害情報を取得する
