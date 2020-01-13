@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
+import android.view.ViewConfiguration
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +25,7 @@ import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.activity_bookmark_post_2.*
+
 
 class BookmarkPostActivity :
     AppCompatActivity(),
@@ -55,6 +58,10 @@ class BookmarkPostActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        /*window.addFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+        )*/
 
         // 設定ロード
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
@@ -258,5 +265,30 @@ class BookmarkPostActivity :
         }
         setResult(RESULT_CANCELED, intent)
         finish()
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        // Activityの外側をタップして閉じる際に、結果を渡しておく
+        if (event?.action == MotionEvent.ACTION_DOWN && isOutOfBounds(this, event)) {
+            val intent = Intent().apply {
+                putExtra(RESULT_EDITING_COMMENT, viewModel.comment.value)
+            }
+            setResult(RESULT_CANCELED, intent)
+        }
+        return super.onTouchEvent(event)
+    }
+
+    /** Activity部分の外側をタップしたかを判別する */
+    private fun isOutOfBounds(
+        context: Context,
+        event: MotionEvent
+    ): Boolean {
+        val x = event.x.toInt()
+        val y = event.y.toInt()
+        val slop = ViewConfiguration.get(context).scaledWindowTouchSlop
+        val decorView = window.decorView
+        return (x < -slop || y < -slop
+                || x > decorView.width + slop
+                || y > decorView.height + slop)
     }
 }
