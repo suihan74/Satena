@@ -217,6 +217,7 @@ class BookmarkDetailFragment :
             }
         })
 
+        // タブタイトルに各タブのアイテム数を表示する
         viewModel.starsToUser.observe(this, Observer {
             val idx = getTabIndex<StarsToUserFragment>(view, tabAdapter) ?: return@Observer
             val tab = view.tab_layout.getTabAt(idx)
