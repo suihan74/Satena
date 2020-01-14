@@ -4,6 +4,16 @@
         android:layout_width="match_parent"
         android:layout_height="96dp">
 
+    <TextView
+            android:id="@+id/footer_text"
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="invisible"
+            android:text="追加読み込み"
+            android:textColor="?attr/textColor"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
     <ProgressBar
             android:id="@+id/footer_progress_bar"
             android:layout_gravity="center"

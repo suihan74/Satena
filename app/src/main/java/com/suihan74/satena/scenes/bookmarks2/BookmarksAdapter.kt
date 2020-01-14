@@ -18,6 +18,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.utilities.*
+import kotlinx.android.synthetic.main.footer_recycler_view_loadable.view.*
 import kotlinx.android.synthetic.main.listview_item_bookmarks.view.*
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -66,6 +67,10 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     /** コメント中のEntryIdをタップしたときの処理 */
     open fun onEntryIdClicked(eid: Long) {}
 
+    /** フッターの追加ロードをタップしたときの処理 */
+    open fun onAdditionalLoading() {}
+    open val nextLoadable : Boolean = false
+
     override fun getItemCount() = states.size
 
     override fun getItemViewType(position: Int) =
@@ -102,7 +107,12 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     LoadableFooterViewHolder(
                         inflater.inflate(R.layout.footer_recycler_view_loadable, parent, false)
                     ).also {
-                        loadableFooter = it
+                        loadableFooter = it.apply {
+                            stopLoading()
+                            itemView.footer_text.setOnClickListener {
+                                onAdditionalLoading()
+                            }
+                        }
                     }
 
                 else -> throw RuntimeException("an invalid list item")
@@ -128,7 +138,7 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     /** フッタのローディングアニメを隠す */
     fun stopLoading() {
-        loadableFooter?.hideProgressBar()
+        loadableFooter?.hideProgressBar(nextLoadable)
     }
 
     fun setBookmarks(
