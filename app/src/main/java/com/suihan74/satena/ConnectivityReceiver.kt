@@ -43,7 +43,7 @@ class ConnectivityReceiver : BroadcastReceiver() {
         val networkInfo = cm.activeNetworkInfo
         val isConnected = networkInfo?.isConnected ?: false
 
-        if (isConnected && mPreviousState == false) {
+        if (isConnected && mPreviousState != true) {
             if (mJob == null) {
                 mJob = GlobalScope.launch(SupervisorJob() + Dispatchers.Main) {
                     SatenaApplication.instance.currentActivity?.showProgressBar()
