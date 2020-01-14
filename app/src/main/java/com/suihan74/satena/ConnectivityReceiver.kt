@@ -1,11 +1,14 @@
 package com.suihan74.satena
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.util.Log
+import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
 import kotlinx.coroutines.*
 
 class ConnectivityReceiver : BroadcastReceiver() {
@@ -31,24 +34,31 @@ class ConnectivityReceiver : BroadcastReceiver() {
 
     private var mJob : Job? = null
 
+    @SuppressLint("UnsafeProtectedBroadcastReceiver")
     override fun onReceive(context: Context?, intent: Intent?) {
         @Suppress("DEPRECATION")
         if (context == null || intent?.action != ConnectivityManager.CONNECTIVITY_ACTION) return
 
-        val cm = context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = cm.activeNetworkInfo
         val isConnected = networkInfo?.isConnected ?: false
 
-        if (isConnected && mPreviousState == false) {
+        if (isConnected && mPreviousState != true) {
             if (mJob == null) {
                 mJob = GlobalScope.launch(SupervisorJob() + Dispatchers.Main) {
                     SatenaApplication.instance.currentActivity?.showProgressBar()
                     mActivatingListener?.invoke()
 
+                    val accountLoader = AccountLoader(
+                        context,
+                        HatenaClient,
+                        MastodonClientHolder
+                    )
+
                     var success = false
                     for (i in 0 until 20) {
                         try {
-                            AccountLoader.signInAccounts(context, reSignIn = false)
+                            accountLoader.signInAccounts()
                             SatenaApplication.instance.startNotificationService()
                             success = true
                             break

@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.preferences.pages
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -19,9 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.scenes.entries.EntriesActivity
-import com.suihan74.satena.scenes.entries.pages.UserEntriesFragment
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
 import com.suihan74.utilities.*
@@ -30,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable, AlertDialogListener {
+class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable, AlertDialogFragment.Listener {
     private lateinit var mRoot : View
     private var mIgnoredUsersAdapter: IgnoredUsersAdapter? = null
 
@@ -87,7 +84,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
                         mIgnoredUsersAdapter!!.removeUser(user)
                     }
                     catch (e: Exception) {
-                        Log.d("unignoreFailure", Log.getStackTraceString(e))
+                        Log.d("unIgnoreFailure", Log.getStackTraceString(e))
                     }
                 }
             }

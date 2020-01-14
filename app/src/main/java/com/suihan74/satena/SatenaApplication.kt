@@ -5,25 +5,31 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Build
+import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.jakewharton.threetenabp.AndroidThreeTen
-import com.suihan74.satena.models.IgnoredEntriesKeyMigrator
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.PreferenceKeyMigrator
+import com.suihan74.satena.models.*
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
 import com.suihan74.utilities.lock
 import com.suihan74.utilities.showToast
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 class SatenaApplication : Application() {
     companion object {
         lateinit var instance : SatenaApplication
             private set
+
+        const val APP_DATABASE_FILE_NAME = "satena_db"
     }
 
     var currentActivity : ActivityBase? = null
 
     var isFirstLaunch : Boolean = false
+
+    lateinit var appDatabase: AppDatabase
+        private set
 
     init {
         instance = this
@@ -44,14 +50,20 @@ class SatenaApplication : Application() {
         // 設定ロード
         val prefs = SafeSharedPreferences.create<PreferenceKey>(applicationContext)
 
+        // DBを準備する
+        initializeDataBase()
+
+        // DI
+//        appComponent = DaggerAppComponent.builder()
+//            .ignoredEntryModule(IgnoredEntryModule(this))
+//            .build()
+
         // テーマの設定
         val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
-        if (isThemeDark) {
-            setTheme(R.style.AppTheme_Dark)
-        }
-        else {
-            setTheme(R.style.AppTheme_Light)
-        }
+        setTheme(
+            if (isThemeDark) R.style.AppTheme_Dark
+            else R.style.AppTheme_Light
+        )
 
         // GUIDの作成（初回のみ）
         val uuid = prefs.getString(PreferenceKey.ID)
@@ -62,16 +74,34 @@ class SatenaApplication : Application() {
             }
         }
         else {
-            updatePreferencesVersion()
+            runBlocking {
+                updatePreferencesVersion()
+            }
         }
 
         startNotificationService()
     }
 
+    fun initializeDataBase() {
+        // DBを準備する
+        appDatabase = Room.databaseBuilder(this, AppDatabase::class.java, APP_DATABASE_FILE_NAME)
+            .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
+            .build()
+    }
+
+    /** ユーザータグDBへのアクセスオブジェクトを取得 */
+    val userTagDao
+        get() = appDatabase.userTagDao()
+
+    /** 非表示エントリDBへのアクセスオブジェクトを取得 */
+    val ignoredEntryDao
+        get() = appDatabase.ignoredEntryDao()
+
     /** 各種設定のバージョン移行が必要か確認 */
-    fun updatePreferencesVersion() {
-        PreferenceKeyMigrator.check(applicationContext)
-        IgnoredEntriesKeyMigrator.check(applicationContext)
+    suspend fun updatePreferencesVersion() {
+        PreferenceKeyMigration.check(applicationContext)
+        IgnoredEntriesKeyMigration.check(applicationContext)
+        UserTagsKeyMigration.check(applicationContext)
     }
 
     fun setConnectionActivatingListener(listener: (()->Unit)?) {

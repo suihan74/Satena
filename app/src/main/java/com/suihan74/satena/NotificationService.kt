@@ -12,12 +12,13 @@ import androidx.core.app.NotificationManagerCompat
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.HatenaLib.Notice
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.notices.message
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.makeSpannedfromHtml
+import com.suihan74.utilities.makeSpannedFromHtml
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
 import kotlin.coroutines.CoroutineContext
@@ -159,7 +160,11 @@ class NotificationService : Service(), CoroutineScope {
             val localLastUpdated = prefs.getNullable<LocalDateTime>(PreferenceKey.NOTICES_LAST_SEEN)
             val now = LocalDateTime.now()
 
-            AccountLoader.signInHatenaAsync(context, reSignIn = false).await()
+            AccountLoader(
+                context,
+                HatenaClient,
+                MastodonClientHolder
+            ).signInHatenaAsync().await()
 
             val response = HatenaClient.getNoticesAsync().await()
             if (isLastSeenUpdatable) {
@@ -194,7 +199,7 @@ class NotificationService : Service(), CoroutineScope {
     private fun invokeNotice(context: Context, notice: Notice) {
         val title = "通知"
         val message = notice.message(context).let {
-            makeSpannedfromHtml(it).toString()
+            makeSpannedFromHtml(it).toString()
         }
 
         var actions : List<NotificationCompat.Action>? = null

@@ -364,7 +364,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         require(signedIn()) { "need to sign-in to get myhotentries" }
 
         val url = buildString {
-            append("$B_BASE_URL/api/entries/myhotentry.json?include_amp_urls=${includeAmpUrls.int}")
+            append("$B_BASE_URL/api/entries/myhotentry.json?${cacheAvoidance()}&include_amp_urls=${includeAmpUrls.int}")
             if (!date.isNullOrEmpty()) {
                 append("&date=$date")
             }
@@ -377,7 +377,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * カテゴリ情報を取得する
      */
     fun getCategoryEntriesAsync() : Deferred<List<CategoryEntry>> = async {
-        val url = "$B_BASE_URL/api/ipad.categories.json"
+        val url = "$B_BASE_URL/api/ipad.categories.json?${cacheAvoidance()}"
         val response = getJson<CategoryEntriesResponse>(CategoryEntriesResponse::class.java, url)
         return@async response.categories
     }
@@ -386,7 +386,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 指定カテゴリの特集を取得する
      */
     fun getIssuesAsync(category: Category) : Deferred<List<Issue>> = async {
-        val url = "$B_BASE_URL/api/internal/cambridge/category/${category.code}/issues"
+        val url = "$B_BASE_URL/api/internal/cambridge/category/${category.code}/issues?${cacheAvoidance()}"
         val response = getJson<IssuesResponse>(IssuesResponse::class.java, url)
         return@async response.issues
     }
@@ -790,7 +790,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getDigestBookmarksAsync(url: String, limit: Long? = null) : Deferred<BookmarksDigest> = async {
         val apiUrl = buildString {
-            append("$B_BASE_URL/api/ipad.entry_reactions?url=${Uri.encode(url)}")
+            append("$B_BASE_URL/api/ipad.entry_reactions?${cacheAvoidance()}&url=${Uri.encode(url)}")
             if (limit != null) append("&limit=$limit")
         }
         return@async getJson<BookmarksDigest>(apiUrl, withCookie = false)
@@ -850,7 +850,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 指定ユーザーのお気に入りリストを取得する
      */
     fun getFollowingsAsync(user: String) : Deferred<List<String>> = async {
-        val url = "$B_BASE_URL/$user/follow.json"
+        val url = "$B_BASE_URL/$user/follow.json?${cacheAvoidance()}"
         val response = getJson<FollowUserResponse>(url)
         return@async response.followings.map { it.name }
     }
@@ -867,7 +867,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 指定ユーザーのフォロワーリストを取得する
      */
     fun getFollowersAsync(user: String) : Deferred<List<String>> = async {
-        val url = "$B_BASE_URL/api/internal/cambridge/user/$user/followers"
+        val url = "$B_BASE_URL/api/internal/cambridge/user/$user/followers?${cacheAvoidance()}"
         val response = getJson<FollowUserResponse>(url)
         return@async response.followings.map { it.name }
     }
@@ -877,7 +877,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getFollowingBookmarksAsync(includeAmpUrls: Boolean = true) : Deferred<List<BookmarkPage>> = async {
         require (signedIn()) { "need to sign-in to get bookmarks of followings" }
-        val url = "$B_BASE_URL/api/internal/cambridge/user/my/feed/following/bookmarks?include_amp_urls=${includeAmpUrls.int}"
+        val url = "$B_BASE_URL/api/internal/cambridge/user/my/feed/following/bookmarks?${cacheAvoidance()}&include_amp_urls=${includeAmpUrls.int}"
         val response = getJson<FollowingBookmarksResponse>(url)
         return@async response.bookmarks
     }
@@ -888,11 +888,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
     fun getStarsEntryAsync(urls: Iterable<String>) : Deferred<List<StarsEntry>> = async {
         val uriParamKey = "&uri="
         val apiBaseUrl = "$S_BASE_URL/entry.json?${cacheAvoidance()}${uriParamKey}"
-        val params = urls.map { Uri.encode(it) }.joinToString(uriParamKey)
+        val params = urls.joinToString(uriParamKey) { Uri.encode(it) }
         var apiUrl = apiBaseUrl + params
 
         val gsonBuilder = getGsonBuilderForStars()
-        var isSuccess = true
 
         // urlの長さは2048を超えてはいけない
         val urlLengthLimit = 2000
@@ -921,14 +920,11 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     getJson<StarsEntries>(apiUrl, gsonBuilder)
                 }
                 catch (e: SocketTimeoutException) {
-                    isSuccess = false
                     null
                 }
             })
 
             tasks.awaitAll()
-
-//            if (!isSuccess) throw SocketTimeoutException("timeout")
 
             return@async tasks
                 .mapNotNull { it.await() }
@@ -944,10 +940,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * スター情報を取得する
      */
     fun getStarsEntryAsync(url: String) : Deferred<StarsEntry> = async {
-        val apiUrl = "$S_BASE_URL/entry.json?uri=${Uri.encode(url)}&${cacheAvoidance()}"
+        val apiUrl = "$S_BASE_URL/entry.json?${cacheAvoidance()}&uri=${Uri.encode(url)}"
         val gsonBuilder = getGsonBuilderForStars()
         val response = getJson<StarsEntries>(apiUrl, gsonBuilder)
-        return@async response.entries[0]
+        return@async response.entries.getOrNull(0) ?: StarsEntry(url = url, stars = emptyList(), coloredStars = null)
     }
 
     /**
@@ -955,7 +951,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getRecentStarsAsync() : Deferred<List<StarsEntry>> = async {
         require(signedInStar()) { "need to sign-in to get my stars" }
-        val apiUrl = "$S_BASE_URL/${account!!.name}/stars.json"
+        val apiUrl = "$S_BASE_URL/${account!!.name}/stars.json?${cacheAvoidance()}"
         val listType = object : TypeToken<List<StarsEntry>>() {}.type
         return@async getJson<List<StarsEntry>>(listType, apiUrl)
     }
@@ -965,7 +961,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getRecentStarsReportAsync() : Deferred<List<StarsEntry>> = async {
         require(signedInStar()) { "need to sign-in to get my stars" }
-        val apiUrl = "$S_BASE_URL/${account!!.name}/report.json"
+        val apiUrl = "$S_BASE_URL/${account!!.name}/report.json?${cacheAvoidance()}"
         val response = getJson<StarsEntries>(apiUrl)
         return@async response.entries
     }
@@ -1005,8 +1001,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
     fun getMyColorStarsAsync() : Deferred<UserColorStarsCount> = async {
         require(signedIn()) { "need to sign-in to get color stars" }
 
-        val url = "$S_BASE_URL/api/v0/me/colorstars"
+        val url = "$S_BASE_URL/api/v0/me/colorstars?${cacheAvoidance()}"
 
+        @Suppress("SpellCheckingInspection")
         val request = Request.Builder()
             .get()
             .url(url)
@@ -1170,7 +1167,6 @@ object HatenaClient : BaseClient(), CoroutineScope {
             )
         }
 
-
     /**
      * 障害情報を取得する
      */
@@ -1249,6 +1245,17 @@ object HatenaClient : BaseClient(), CoroutineScope {
             return@async response.isSuccessful
         }
     }
+
+    /**
+     * ユーザーを通報する(b.hatena)
+     */
+    fun reportAsync(report: Report) =
+        reportAsync(
+            entry = report.entry,
+            bookmark = report.bookmark,
+            category = report.category,
+            text = report.comment ?: ""
+        )
 
     /**
      * ユーザーを通報する(www.hatena)

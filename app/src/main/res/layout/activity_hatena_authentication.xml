@@ -62,7 +62,7 @@
 
         <Button
                 android:id="@+id/auth_button"
-                android:text="@string/signin"
+                android:text="@string/sign_in"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 android:backgroundTint="@color/colorPrimary"

@@ -6,19 +6,100 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.suihan74.HatenaLib.EntriesType
 import com.suihan74.HatenaLib.Entry
+import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+class EntriesTabRepository(
+    private val ignoredEntryDao : IgnoredEntryDao,
+    private val client: HatenaClient
+) {
+    lateinit var entriesType: EntriesType
+    lateinit var category: Category
+
+    private var ignoredEntries: List<IgnoredEntry> = emptyList()
+
+    private val mEntries by lazy { ArrayList<Entry>() }
+    val entries: List<Entry>
+        get() = mEntries.filterNot { entry ->
+            ignoredEntries.any { ig -> ig.isMatched(entry) }
+        }
+
+    suspend fun init(entriesType: EntriesType, category: Category) {
+        try {
+            ignoredEntries = withContext(Dispatchers.IO) {
+                ignoredEntryDao.getAllEntries()
+            }
+
+            this.entriesType = entriesType
+            this.category = category
+            val hatenaCategory = category.categoryInApi ?: throw IllegalArgumentException()
+            val response = client.getEntriesAsync(entriesType, hatenaCategory).await()
+            mEntries.clear()
+            mEntries.addAll(response)
+        }
+        catch (e: Exception) {
+            throw RuntimeException("failed to initialize entries")
+        }
+    }
+
+    suspend fun loadAdditional() {
+        try {
+            val hatenaCategory = category.categoryInApi ?: throw IllegalStateException()
+            val response = client.getEntriesAsync(entriesType, hatenaCategory, mEntries.size).await()
+            mEntries.addAll(response)
+        }
+        catch (e: Exception) {
+            throw RuntimeException("failed to load additional entries")
+        }
+    }
+
+    suspend fun loadRecent() {
+        try {
+            val hatenaCategory = category.categoryInApi ?: throw IllegalStateException()
+            val response = client.getEntriesAsync(entriesType, hatenaCategory).await()
+            val recent = response.filterNot { mEntries.any { existed -> existed.id == it.id } }
+            mEntries.addAll(0, recent)
+        }
+        catch (e: Exception) {
+            throw RuntimeException("failed to load additional entries")
+        }
+    }
+}
+
+class EntriesTabViewModel(
+    private val repository: EntriesTabRepository
+) : ViewModel() {
+
+    val entries by lazy { MutableLiveData<List<Entry>>() }
+    val entriesType by lazy { MutableLiveData<EntriesType>() }
+    val category by lazy { MutableLiveData<Category>() }
+
+    class Factory(private val repository: EntriesTabRepository) : ViewModelProvider.NewInstanceFactory() {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>) =
+            EntriesTabViewModel(repository) as T
+    }
+}
 
 class EntriesTabFragment : EntriesTabFragmentBase() {
     private var mView : View? = null
@@ -147,6 +228,10 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                 }
             }
         }
+
+        (activity as EntriesActivity).model.ignoredEntries.observe(this, Observer {
+            mEntriesAdapter?.updateIgnoredEntries()
+        })
 
         return view
     }

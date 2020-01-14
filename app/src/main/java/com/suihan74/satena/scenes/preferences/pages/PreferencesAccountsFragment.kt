@@ -26,13 +26,13 @@ class PreferencesAccountsFragment : PreferencesFragmentBase() {
         val view = inflater.inflate(R.layout.fragment_preferences_accounts, container, false)
         mRoot = view
 
-        val hatenaSignInButton = view.findViewById<Button>(R.id.preferences_accounts_hatena_signin_button)
+        val hatenaSignInButton = view.findViewById<Button>(R.id.preferences_accounts_hatena_sign_in_button)
         hatenaSignInButton.setOnClickListener {
             val intent = Intent(context, HatenaAuthenticationActivity::class.java)
             startActivity(intent)
         }
 
-        val mastodonSignInButton = view.findViewById<Button>(R.id.preferences_accounts_mastodon_signin_button)
+        val mastodonSignInButton = view.findViewById<Button>(R.id.preferences_accounts_mastodon_sign_in_button)
         mastodonSignInButton.setOnClickListener {
             val intent = Intent(context, MastodonAuthenticationActivity::class.java)
             startActivity(intent)

@@ -8,23 +8,18 @@ import org.threeten.bp.ZoneOffset
 import java.lang.reflect.Type
 import java.net.CookieManager
 import java.net.CookiePolicy
-import java.util.concurrent.TimeUnit
 
 open class BaseClient {
     protected val cookieManager = CookieManager().apply {
         setCookiePolicy(CookiePolicy.ACCEPT_ALL)
     }
 
-    protected val clientWithoutCookie =
-        OkHttpClient()
+    protected val clientWithoutCookie = OkHttpClient.Builder().build()
 
-    protected val client : OkHttpClient =
-        OkHttpClient().newBuilder()
-        .readTimeout(3, TimeUnit.MINUTES)
-        .writeTimeout(3, TimeUnit.MINUTES)
-        .connectTimeout(3, TimeUnit.MINUTES)
-        .cookieJar(JavaNetCookieJar(cookieManager))
-        .build()
+    protected val client =
+        clientWithoutCookie.newBuilder()
+            .cookieJar(JavaNetCookieJar(cookieManager))
+            .build()
 
     // キャッシュ回避
     protected fun cacheAvoidance() : String = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC).toString()

@@ -9,7 +9,6 @@ import android.widget.ToggleButton
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.dialogs.NumberPickerDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
@@ -18,7 +17,7 @@ import com.suihan74.utilities.toVisibility
 
 class PreferencesEntriesFragment :
     PreferencesFragmentBase(),
-    AlertDialogListener,
+    AlertDialogFragment.Listener,
     NumberPickerDialogFragment.Listener
 {
     companion object {
@@ -97,7 +96,7 @@ class PreferencesEntriesFragment :
                 val currentHomeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
                 val items =
                     if (currentHomeCategory == Category.MyBookmarks) {
-                        listOf(EntriesTabType.MYBOOKMARKS, EntriesTabType.READLATER)
+                        listOf(EntriesTabType.MYBOOKMARKS, EntriesTabType.READ_LATER)
                     }
                     else {
                         listOf(EntriesTabType.POPULAR, EntriesTabType.RECENT)

@@ -1,20 +1,11 @@
 package com.suihan74.satena.dialogs
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import java.io.Serializable
-
-interface AlertDialogListener {
-    fun onClickPositiveButton(dialog: AlertDialogFragment) {}
-    fun onClickNegativeButton(dialog: AlertDialogFragment) {}
-    fun onClickNeutralButton(dialog: AlertDialogFragment) {}
-    fun onSelectItem(dialog: AlertDialogFragment, which: Int) {}
-    fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {}
-    fun onMultiChoiceItem(dialog: AlertDialogFragment, which: Int, selected: Boolean) {}
-}
 
 /**
  * 画面復元で落ちないようにしたAlertDialog
@@ -61,6 +52,7 @@ open class AlertDialogFragment : DialogFragment() {
     var multiChoiceItemsInitialStates: BooleanArray? = null
         private set
 
+    @Suppress("UNCHECKED_CAST")
     fun <T> getAdditionalData(key: String) where T : Serializable =
         arguments?.getSerializable(key) as? T
 
@@ -71,9 +63,9 @@ open class AlertDialogFragment : DialogFragment() {
 
     protected fun createBuilder(arguments: Bundle, savedInstanceState: Bundle?) : AlertDialog.Builder {
         val themeResId = arguments.getInt(THEME_RES_ID)
-        val listener = parentFragment as? AlertDialogListener ?: activity as? AlertDialogListener
+        val listener = parentFragment as? Listener ?: activity as? Listener
 
-        return AlertDialog.Builder(context, themeResId).apply {
+        return AlertDialog.Builder(requireContext(), themeResId).apply {
             arguments.getInt(TITLE_ID).let {
                 if (it != 0) setTitle(it)
             }
@@ -229,5 +221,14 @@ open class AlertDialogFragment : DialogFragment() {
         fun setAdditionalData(key: String, obj: Serializable?) = this.apply {
             arguments.putSerializable(key, obj)
         }
+    }
+
+    interface Listener {
+        fun onClickPositiveButton(dialog: AlertDialogFragment) {}
+        fun onClickNegativeButton(dialog: AlertDialogFragment) {}
+        fun onClickNeutralButton(dialog: AlertDialogFragment) {}
+        fun onSelectItem(dialog: AlertDialogFragment, which: Int) {}
+        fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {}
+        fun onMultiChoiceItem(dialog: AlertDialogFragment, which: Int, selected: Boolean) {}
     }
 }

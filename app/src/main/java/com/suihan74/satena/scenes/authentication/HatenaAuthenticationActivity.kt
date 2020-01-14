@@ -12,6 +12,7 @@ import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,7 +52,11 @@ class HatenaAuthenticationActivity : ActivityBase() {
 
             showToast("id:${account.name} でログインしました")
 
-            AccountLoader.saveHatenaAccount(this@HatenaAuthenticationActivity, name, password)
+            AccountLoader(
+                applicationContext,
+                HatenaClient,
+                MastodonClientHolder
+            ).saveHatenaAccount(name, password)
             SatenaApplication.instance.startNotificationService()
 
             // 前の画面に戻る

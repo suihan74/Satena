@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -18,8 +19,13 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.TappedActionLauncher
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
-import com.suihan74.satena.models.*
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.EntriesTabType
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries.pages.SiteEntriesFragment
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
@@ -33,55 +39,78 @@ open class EntriesAdapter(
     private var entries : List<Entry>
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states = RecyclerState.makeStatesWithFooter(entries)
+    private var states = RecyclerState.makeStatesWithFooter(entries)
 
     private lateinit var singleTapAction : TapEntryAction
     private lateinit var longTapAction : TapEntryAction
 
-    private val ignoredEntries = arrayListOf<IgnoredEntry>()
+    private val ignoredEntries : List<IgnoredEntry>
+        get() =
+            (fragment.activity as? EntriesActivity)?.model?.ignoredEntries?.value ?: emptyList()
 
     var entireOffset : Int = entries.size
         private set
     // getで動的にentries.size取得しないのは，非表示エントリなどによりentireOffset != entries.sizeになることがあるため
 
-
     init {
         refreshPreferences()
     }
 
+    class EntriesDiffCalculator(
+        private val oldStates: List<RecyclerState<Entry>>,
+        private val newStates: List<RecyclerState<Entry>>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize() = oldStates.size
+        override fun getNewListSize() = newStates.size
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) : Boolean {
+            val old = oldStates[oldItemPosition]
+            val new = newStates[newItemPosition]
+            return old.type == new.type && old.body?.id == new.body?.id
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val old = oldStates[oldItemPosition]
+            val new = newStates[newItemPosition]
+            return old.type == new.type &&
+                    old.body?.bookmarkedData == new.body?.bookmarkedData &&
+                    old.body?.id == new.body?.id &&
+                    old.body?.count == new.body?.count &&
+                    old.body?.title == new.body?.title
+        }
+    }
+
+    fun updateIgnoredEntries() {
+        setEntries(entries)
+    }
 
     fun setEntries(e: List<Entry>) {
-        states.clear()
+        val newEntries = e.filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
+        val newStates = RecyclerState.makeStatesWithFooter(newEntries)
+
         entireOffset = e.size
-        entries = e.filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
-        states.run {
-            addAll(entries.map { RecyclerState(RecyclerType.BODY, it) })
-            add(RecyclerState(RecyclerType.FOOTER))
+        entries = e
+
+        DiffUtil.calculateDiff(EntriesDiffCalculator(states, newStates)).run {
+            states = newStates
+            dispatchUpdatesTo(this@EntriesAdapter)
         }
-        notifyDataSetChanged()
     }
 
     fun addEntries(e: List<Entry>) {
         val insertStartPosition = states.size - 1
         val newItems = e
             .filterNot { entry -> entries.any { it.id == entry.id } }
-            .filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
         entireOffset += e.size
         entries = entries.plus(newItems)
-        states.addAll(states.size - 1, newItems.map { RecyclerState(RecyclerType.BODY, it) })
-        notifyItemRangeInserted(insertStartPosition, newItems.size)
+        val filtered = newItems.filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
+        states.addAll(states.size - 1, filtered.map { RecyclerState(RecyclerType.BODY, it) })
+        notifyItemRangeInserted(insertStartPosition, filtered.size)
     }
 
     private fun refreshPreferences() {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(fragment.context)
         singleTapAction = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
         longTapAction = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
-
-        val ignoredEntriesPrefs = SafeSharedPreferences.create<IgnoredEntriesKey>(fragment.context)
-        ignoredEntries.clear()
-        ignoredEntriesPrefs.getObject<List<IgnoredEntry>>(IgnoredEntriesKey.IGNORED_ENTRIES)?.let {
-            ignoredEntries.addAll(it)
-        }
     }
 
     fun onResume() {
@@ -151,9 +180,6 @@ open class EntriesAdapter(
     private fun showEntries(entry: Entry) {
         val activity = fragment.activity as? EntriesActivity ?: throw RuntimeException("activity error")
         activity.refreshEntriesFragment(Category.Site, entry.rootUrl)
-/*        val fragment = SiteEntriesFragment.createInstance(entry.rootUrl)
-        activity.showFragment(fragment, entry.rootUrl)
-        */
     }
 
     fun addToReadLaterEntries(entry: Entry) {
@@ -164,7 +190,7 @@ open class EntriesAdapter(
                 val position: Int = entries.indexOfFirst { it.id == entry.id }
                 states[position].body = updateEntry(entry,
                     bookmarkedData = result,
-                    myhotentryComments = entry.myhotentryComments)
+                    myhotentryComments = entry.myHotEntryComments)
 
                 notifyItemChanged(position)
                 context.showToast("ブックマーク完了")
@@ -183,7 +209,7 @@ open class EntriesAdapter(
                 HatenaClient.postBookmarkAsync(entry.url, readLater = false).await()
 
                 val tabType = EntriesTabType.fromCategory(category, tabPosition)
-                if (EntriesTabType.READLATER == tabType) {
+                if (EntriesTabType.READ_LATER == tabType) {
                     val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body == entry }
                     if (position >= 0) {
                         withContext(Dispatchers.Default) {
@@ -213,24 +239,23 @@ open class EntriesAdapter(
         val dialog = IgnoredEntryDialogFragment.createInstance(
             entry.url,
             entry.title
-        ) { _, ignoredEntry ->
+        ) { ignoredEntry ->
             if (ignoredEntries.contains(ignoredEntry)) {
-                context.showToast("既に存在する非表示設定です")
+                context.showToast(R.string.msg_ignored_entry_dialog_already_existed)
                 return@createInstance false
             }
 
-            ignoredEntries.add(ignoredEntry)
+            val activity = fragment.activity as? EntriesActivity
+            activity?.model?.addIgnoredEntry(
+                ignoredEntry,
+                onSuccess = { ie ->
+                    context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ie.query)
+                }
+            )
 
-            val prefs = SafeSharedPreferences.create<IgnoredEntriesKey>(context)
-            prefs.edit {
-                putObject(IgnoredEntriesKey.IGNORED_ENTRIES, ignoredEntries)
-            }
-
-            setEntries(entries)
-            context.showToast("${ignoredEntry.query} を非表示にしました")
             return@createInstance true
         }
-        dialog.show(fragment.fragmentManager!!, "IgnoredEntryDialogFragment")
+        dialog.show(fragment.parentFragmentManager, "IgnoredEntryDialogFragment")
     }
 
     fun deleteBookmark(entry: Entry) {
@@ -251,7 +276,7 @@ open class EntriesAdapter(
                     else {
                         states[position].body = updateEntry(entry,
                             bookmarkedData = null,
-                            myhotentryComments = entry.myhotentryComments)
+                            myhotentryComments = entry.myHotEntryComments)
                         notifyItemChanged(position)
                     }
                 }
@@ -289,7 +314,7 @@ open class EntriesAdapter(
             imageUrl = imageUrl ?: src.imageUrl ?: "",
             ampUrl = ampUrl ?: src.ampUrl,
             bookmarkedData = bookmarkedData,
-            myhotentryComments = myhotentryComments)
+            myHotEntryComments = myhotentryComments)
 
     private class ViewHolder(val root : View) : RecyclerView.ViewHolder(root) {
         private val title   = root.findViewById<TextView>(R.id.entry_title)!!
@@ -325,8 +350,8 @@ open class EntriesAdapter(
                 if (value.bookmarkedData != null) {
                     comments.add(value.bookmarkedData)
                 }
-                if (value.myhotentryComments != null) {
-                    comments.addAll(value.myhotentryComments)
+                if (value.myHotEntryComments != null) {
+                    comments.addAll(value.myHotEntryComments)
                 }
 
                 if (comments.isEmpty()) {
@@ -343,9 +368,10 @@ open class EntriesAdapter(
                                     context.startActivity(intent)
                                 }
                                 else {
-                                    val intent = Intent(context, BookmarksActivity::class.java)
-                                    intent.putExtra(BookmarksActivity.EXTRA_ENTRY, value)
-                                    intent.putExtra(BookmarksActivity.EXTRA_TARGET_USER, item.user)
+                                    val intent = Intent(context, BookmarksActivity::class.java).apply {
+                                        putExtra(BookmarksActivity.EXTRA_ENTRY, value)
+                                        putExtra(BookmarksActivity.EXTRA_TARGET_USER, item.user)
+                                    }
                                     context.startActivity(intent)
                                 }
                             }

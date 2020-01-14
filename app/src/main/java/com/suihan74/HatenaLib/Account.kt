@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection", "SpellCheckingInspection")
+
 package com.suihan74.HatenaLib
 
 import com.google.gson.annotations.SerializedName

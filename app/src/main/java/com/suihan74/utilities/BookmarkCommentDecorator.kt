@@ -52,7 +52,7 @@ object BookmarkCommentDecorator {
             }
 
         return AnalyzedBookmarkComment(
-            makeSpannedfromHtml(html),
+            makeSpannedFromHtml(html),
             ids.distinct(),
             entryIds.distinct(),
             urls.distinct())
@@ -62,9 +62,12 @@ object BookmarkCommentDecorator {
         val sb = SpannableStringBuilder()
         val sep = ", "
         var spanStart = 0
-        for (tag in tags) {
+        val lastIdx = tags.lastIndex
+        tags.forEachIndexed { idx, tag ->
             sb.append(tag)
-            sb.append(sep)
+            if (idx < lastIdx) {
+                sb.append(sep)
+            }
             sb.setSpan(object : ClickableSpan() {
                 override fun onClick(widget: View) = onItemClicked(tag)
             }, spanStart, spanStart + tag.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

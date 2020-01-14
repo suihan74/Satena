@@ -4,36 +4,42 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
-import com.suihan74.satena.models.IgnoredEntry
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.utilities.FooterViewHolder
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
 
-open class IgnoredEntriesAdapter(
-    ignoredEntries: List<IgnoredEntry>
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val states = RecyclerState.makeStatesWithFooter(ignoredEntries.reversed())
+    private var states = emptyList<RecyclerState<IgnoredEntry>>()
 
-    fun addItem(entry: IgnoredEntry) {
-        states.add(0, RecyclerState(RecyclerType.BODY, entry))
-        notifyItemInserted(0)
-    }
+    fun setItem(entries: List<IgnoredEntry>) {
+        val newEntries = RecyclerState.makeStatesWithFooter(entries)
 
-    fun removeItem(entry: IgnoredEntry) {
-        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body == entry }
-        states.removeAt(position)
-        notifyItemRemoved(position)
-    }
+        val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = states.size
+            override fun getNewListSize() = newEntries.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) : Boolean {
+                val old = states[oldItemPosition]
+                val new = newEntries[newItemPosition]
+                return old.type == new.type && old.body?.id == new.body?.id
+            }
 
-    fun modifyItem(older: IgnoredEntry, newer: IgnoredEntry) {
-        val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body == older }
-        if (position >= 0) {
-            states[position].body = newer
-            notifyItemChanged(position)
-        }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = states[oldItemPosition]
+                val new = newEntries[newItemPosition]
+                return old.type == new.type &&
+                        old.body?.type == new.body?.type &&
+                        old.body?.query == new.body?.query &&
+                        old.body?.target == new.body?.target
+            }
+        })
+        states = newEntries
+
+        result.dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder =

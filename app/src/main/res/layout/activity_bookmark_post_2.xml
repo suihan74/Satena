@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.post2.ViewModel" />
+    </data>
+
+    <RelativeLayout
+            android:id="@+id/bookmark_post_layout"
+            android:background="?attr/bookmarkDialogBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/tags_list"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <EditText
+                android:id="@+id/comment"
+                android:text="@={vm.comment}"
+
+                android:textColor="?attr/textColor"
+                android:gravity="top"
+                android:hint="@string/bookmark_comment_edit_text_hint"
+                android:importantForAutofill="no"
+                android:textColorHint="?attr/textColorHint"
+
+                android:inputType="text"
+                android:singleLine="true"
+                android:imeOptions="actionDone"
+
+                android:layout_below="@id/tags_list"
+                android:layout_width="match_parent"
+                android:layout_height="152dp"/>
+
+        <TextView
+                android:id="@+id/comment_count"
+                android:layout_below="@id/comment"
+                android:layout_toStartOf="@id/post_button"
+                android:layout_alignBaseline="@id/post_button"
+                android:layout_marginEnd="16dp"
+                android:textColor="?attr/textColor"
+                android:text="@{vm.commentLength.toString()}"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/post_button"
+                android:textStyle="bold"
+                android:text="@string/post_bookmark_button_text"
+                android:textColor="@color/colorPrimaryText"
+                android:backgroundTint="@color/colorPrimary"
+                android:layout_below="@id/comment"
+                android:layout_alignParentEnd="true"
+                android:layout_width="65dp"
+                android:layout_height="46dp"/>
+
+        <LinearLayout
+                android:layout_below="@id/comment"
+                android:layout_toStartOf="@id/comment_count"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:layout_height="46dp">
+
+            <ToggleButton
+                    android:id="@+id/post_mastodon_toggle"
+                    android:checked="@={vm.postMastodon}"
+                    android:visibility="@{vm.signedInMastodon ? View.VISIBLE : View.GONE}"
+                    android:background="@drawable/ic_mstdn_logo"
+                    android:backgroundTint="@color/post_dialog_toggle_button"
+                    android:textColor="#00000000"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="16dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+
+            <ToggleButton
+                    android:id="@+id/post_twitter_toggle"
+                    android:checked="@={vm.postTwitter}"
+                    android:visibility="@{vm.signedInTwitter ? View.VISIBLE : View.GONE}"
+                    android:background="@drawable/ic_twitter_logo"
+                    android:backgroundTint="@color/post_dialog_toggle_button"
+                    android:textColor="#00000000"
+                    android:layout_marginEnd="16dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+
+            <ToggleButton
+                    android:id="@+id/post_facebook_toggle"
+                    android:checked="@={vm.postFacebook}"
+                    android:visibility="@{vm.signedInFacebook ? View.VISIBLE : View.GONE}"
+                    android:background="@drawable/toggle_button_post_facebook"
+                    android:textColor="#00000000"
+                    android:layout_marginEnd="16dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+
+            <ToggleButton
+                    android:id="@+id/post_private_toggle"
+                    android:checked="@={vm.isPrivate}"
+                    android:background="@drawable/ic_baseline_lock"
+                    android:backgroundTint="@color/post_dialog_toggle_button"
+                    android:textColor="#00000000"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="16dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+        </LinearLayout>
+    </RelativeLayout>
+</layout>

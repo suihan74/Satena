@@ -25,6 +25,8 @@ enum class EntriesHistoryKey (
     MAX_SIZE(typeInfo<Int>(), 20),
 }
 
+// TODO: entry画面用のVM/Repositoryにて行うようにする
+/** エントリを表示履歴に追加/更新する */
 fun Entry.saveHistory(context: Context) {
     val prefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
     val entries = prefs.get<List<Entry>>(EntriesHistoryKey.ENTRIES)

@@ -19,12 +19,11 @@ import com.suihan74.HatenaLib.Notice
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
 import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.SafeSharedPreferences
@@ -33,7 +32,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
 
-class NoticesFragment : CoroutineScopeFragment(), AlertDialogListener {
+class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
     private var mClickHandling = false
     private lateinit var mNoticesAdapter: NoticesAdapter
 
@@ -64,15 +63,32 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogListener {
                 mClickHandling = true
 
                 when (notice.verb) {
-                    Notice.VERB_STAR ->
-                        launch(Dispatchers.Main) {
+                    Notice.VERB_STAR -> {
+                        val intent = Intent(requireContext(), BookmarksActivity::class.java).apply {
+                            putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
+                            if (!HatenaClient.account?.name.isNullOrBlank()) {
+                                putExtra(
+                                    BookmarksActivity.EXTRA_TARGET_USER,
+                                    HatenaClient.account!!.name
+                                )
+                            }
+                        }
+                        startActivity(intent)
+                        mClickHandling = false
+                    }
+                        /*launch(Dispatchers.Main) {
                             try {
                                 activity.showProgressBar()
 
-                                val entry = HatenaClient.getBookmarksEntryAsync(notice.eid).await()
+                                val siteUrl = HatenaClient.getEntryUrlFromIdAsync(notice.eid).await()
+                                val entry = HatenaClient.searchEntriesAsync(siteUrl, SearchType.Text).await().firstOrNull {
+                                    it.id == notice.eid
+                                }
+
+                                checkNotNull (entry)
 
                                 val intent = Intent(activity, BookmarksActivity::class.java).apply {
-                                    putExtra(BookmarksActivity.EXTRA_BOOKMARKS_ENTRY, entry)
+                                    putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
                                     putExtra(BookmarksActivity.EXTRA_TARGET_USER, HatenaClient.account!!.name)
                                 }
                                 startActivity(intent)
@@ -85,7 +101,7 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogListener {
                                 activity.hideProgressBar()
                                 mClickHandling = false
                             }
-                        }
+                        }*/
 
                     Notice.VERB_ADD_FAVORITE -> {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
@@ -97,6 +113,13 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogListener {
                         val baseUrl = "${HatenaClient.B_BASE_URL}/entry?url="
                         if (notice.link.startsWith(baseUrl)) {
                             val url = Uri.decode(notice.link.substring(baseUrl.length))
+                            val intent = Intent(requireContext(), BookmarksActivity::class.java).apply {
+                                putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
+                            }
+                            startActivity(intent)
+
+                            mClickHandling = false
+/*
                             launch(Dispatchers.Main) {
                                 try {
                                     activity.showProgressBar()
@@ -116,6 +139,7 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogListener {
                                     mClickHandling = false
                                 }
                             }
+*/
                         }
                         else {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
@@ -125,7 +149,9 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogListener {
                     }
 
                     else -> {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(notice.link)).apply {
+                            setClass(requireContext(), BookmarksActivity::class.java)
+                        }
                         startActivity(intent)
                         mClickHandling = false
                     }

@@ -33,7 +33,7 @@
             android:paddingEnd="40dp"
             android:hint="ID検索"
             android:textColorHint="#dfdfdf"
-            android:background="@drawable/rounded_search_textview"
+            android:background="@drawable/rounded_search_text_view"
             android:layout_gravity="bottom|end"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"

@@ -1,159 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:scrollbars="vertical"
-        android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
-        android:scrollbarSize="4dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.preferences.pages.PreferencesBookmarksViewModel" />
+    </data>
 
-    <LinearLayout
+    <ScrollView
+            android:scrollbars="vertical"
+            android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+            android:scrollbarSize="4dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:paddingEnd="16dp"
-            android:paddingStart="15dp"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-        <TextView
-                android:text="@string/pref_bookmarks_initial_tab_desc"
-                android:textColor="?attr/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:paddingEnd="16dp"
+                android:paddingStart="15dp"
+                android:orientation="vertical">
 
-        <Button
-                android:id="@+id/preferences_bookmarks_initial_tab"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_bookmarks_initial_tab_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_bookmarks_using_post_dialog_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <Button
+                    android:id="@+id/button_initial_tab"
+                    app:bookmarksTabType="@{vm.initialTabPosition}"
+                    style="@style/Widget.AppCompat.Button"
+                    android:textColor="@color/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <ToggleButton
-                android:id="@+id/preferences_bookmarks_using_post_dialog"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_bookmarks_using_post_dialog_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_bookmarks_using_post_star_dialog_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <ToggleButton
+                    android:checked="@={vm.confirmPostBookmark}"
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <ToggleButton
-                android:id="@+id/preferences_using_post_star_dialog"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_bookmarks_using_post_star_dialog_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_bookmarks_hiding_buttons_with_scrolling_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <ToggleButton
+                    android:checked="@={vm.confirmPostStar}"
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <ToggleButton
-                android:id="@+id/preferences_bookmarks_hiding_buttons_with_scrolling"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_bookmarks_hiding_toolbar_by_scrolling"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_bookmarks_showing_ignored_users_in_all_bookmarks_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <ToggleButton
+                    android:checked="@={vm.toggleToolbarByScrolling}"
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <ToggleButton
-                android:id="@+id/preferences_bookmarks_showing_ignored_users_in_all_bookmarks"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_bookmarks_hiding_buttons_with_scrolling_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_bookmarks_showing_ignored_users_with_calling_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <ToggleButton
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:checked="@={vm.toggleButtonsByScrolling}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <ToggleButton
-                android:id="@+id/preferences_bookmarks_showing_ignored_users_with_calling"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_bookmarks_showing_ignored_users_in_all_bookmarks_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_bookmarks_showing_stars_of_ignored_users_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <ToggleButton
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:checked="@={vm.displayMutedBookmarksInAllBookmarksTab}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <ToggleButton
-                android:id="@+id/preferences_bookmarks_showing_stars_of_ignored_users"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_bookmarks_showing_ignored_users_with_calling_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_bookmarks_hiding_toolbar_by_scrolling"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <ToggleButton
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:checked="@={vm.displayMutedBookmarksInMention}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <ToggleButton
-                android:id="@+id/preferences_bookmarks_hiding_toolbar_by_scrolling"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_bookmarks_showing_stars_of_ignored_users_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_bookmark_link_single_tap_action_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <ToggleButton
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:checked="@={vm.displayIgnoredUsersStar}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <Button
-                android:id="@+id/preferences_bookmark_link_single_tap_action"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_bookmark_link_single_tap_action_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_bookmark_link_long_tap_action_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <Button
+                    android:id="@+id/button_link_single_tap_action"
+                    style="@style/Widget.AppCompat.Button"
+                    app:linkTapAction="@{vm.linkSingleTapAction}"
+                    android:textColor="@color/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <Button
-                android:id="@+id/preferences_bookmark_link_long_tap_action"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_bookmark_link_long_tap_action_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-    </LinearLayout>
-</ScrollView>
+            <Button
+                    android:id="@+id/button_link_long_tap_action"
+                    style="@style/Widget.AppCompat.Button"
+                    app:linkTapAction="@{vm.linkLongTapAction}"
+                    android:textColor="@color/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+    </ScrollView>
+</layout>

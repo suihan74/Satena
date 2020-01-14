@@ -5,181 +5,149 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ToggleButton
+import androidx.databinding.BindingAdapter
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentPreferencesBookmarksBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.AlertDialogListener
-import com.suihan74.satena.models.BookmarksTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
+import kotlinx.android.synthetic.main.fragment_preferences_bookmarks.view.*
 
-class PreferencesBookmarksFragment : PreferencesFragmentBase(), AlertDialogListener {
+/** ブクマ設定画面用のBindingAdapter */
+object PreferencesBookmarksAdapter {
+    /** 「最初に表示するタブ」のボタンテキスト */
+    @BindingAdapter("app:bookmarksTabType")
+    @JvmStatic
+    fun setBookmarksTabTypeText(button: Button, ordinal: Int) {
+        val tab = BookmarksTabType.fromInt(ordinal)
+        button.setText(tab.textId)
+    }
+
+    /** 「リンク文字列をタップしたときの動作」のボタンテキスト */
+    @BindingAdapter("app:linkTapAction")
+    @JvmStatic
+    fun setLinkTapActionText(button: Button, ordinal: Int) {
+        val act = TapEntryAction.fromInt(ordinal)
+        button.setText(act.titleId)
+    }
+}
+
+class PreferencesBookmarksFragment :
+    PreferencesFragmentBase(),
+    AlertDialogFragment.Listener
+{
     companion object {
-        fun createInstance() : PreferencesBookmarksFragment =
-            PreferencesBookmarksFragment()
+        fun createInstance() = PreferencesBookmarksFragment()
+
+        // dialog tags
+        private const val DIALOG_INITIAL_TAB = "DIALOG_INITIAL_TAB"
+        private const val DIALOG_LINK_SINGLE_TAP_ACTION = "DIALOG_LINK_SINGLE_TAP_ACTION"
+        private const val DIALOG_LINK_LONG_TAP_ACTION = "DIALOG_LINK_LONG_TAP_ACTION"
+    }
+
+    private lateinit var viewModel: PreferencesBookmarksViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val factory = PreferencesBookmarksViewModel.Factory(prefs)
+        viewModel = ViewModelProviders.of(this, factory)[PreferencesBookmarksViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_preferences_bookmarks, container, false)
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val binding = DataBindingUtil.inflate<FragmentPreferencesBookmarksBinding>(
+            inflater,
+            R.layout.fragment_preferences_bookmarks,
+            container,
+            false
+        ).apply {
+            vm = viewModel
+        }
+        val view = binding.root
 
         // 最初に表示するタブ
-        view.findViewById<Button>(R.id.preferences_bookmarks_initial_tab).apply {
-            val key = PreferenceKey.BOOKMARKS_INITIAL_TAB
-            text = context!!.getText(BookmarksTabType.fromInt(prefs.getInt(key)).textId)
-            setOnClickListener {
-                val currentInitialTab = BookmarksTabType.fromInt(prefs.getInt(key))
-                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
-                    .setTitle(R.string.pref_bookmarks_initial_tab_desc)
-                    .setNegativeButton(R.string.dialog_cancel)
-                    .setSingleChoiceItems(
-                        BookmarksTabType.values().map { context!!.getString(it.textId) },
-                        currentInitialTab.ordinal
-                    )
-                    .show(childFragmentManager, "initial_tab_dialog")
-            }
-        }
-
-        // ブックマークする前に確認する
-        view.findViewById<ToggleButton>(R.id.preferences_bookmarks_using_post_dialog).apply {
-            val key = PreferenceKey.USING_POST_BOOKMARK_DIALOG
-            isChecked = prefs.getBoolean(key)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit {
-                    putBoolean(key, isChecked)
-                }
-            }
-        }
-
-        // スターをつける前に確認する
-        view.findViewById<ToggleButton>(R.id.preferences_using_post_star_dialog).apply {
-            val key = PreferenceKey.USING_POST_STAR_DIALOG
-            isChecked = prefs.getBoolean(key)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit {
-                    putBoolean(key, isChecked)
-                }
-            }
-        }
-
-        // 画面スクロールで下部ボタン類を隠す
-        view.findViewById<ToggleButton>(R.id.preferences_bookmarks_hiding_buttons_with_scrolling).apply {
-            val key = PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING
-            isChecked = prefs.getBoolean(key)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit {
-                    putBoolean(key, isChecked)
-                }
-            }
-        }
-
-        // 「すべて」タブでは非表示ユーザーも表示する
-        view.findViewById<ToggleButton>(R.id.preferences_bookmarks_showing_ignored_users_in_all_bookmarks).apply {
-            val key = PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS
-            isChecked = prefs.getBoolean(key)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit {
-                    putBoolean(key, isChecked)
-                }
-            }
-        }
-
-        // idコールで言及されている非表示ユーザーを表示する
-        view.findViewById<ToggleButton>(R.id.preferences_bookmarks_showing_ignored_users_with_calling).apply {
-            val key = PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING
-            isChecked = prefs.getBoolean(key)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit {
-                    putBoolean(key, isChecked)
-                }
-            }
-        }
-
-        // ブコメ詳細画面で非表示ユーザーがつけたスターを表示する
-        view.findViewById<ToggleButton>(R.id.preferences_bookmarks_showing_stars_of_ignored_users).apply {
-            val key = PreferenceKey.BOOKMARKS_SHOWING_STARS_OF_IGNORED_USERS
-            isChecked = prefs.getBoolean(key)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit {
-                    putBoolean(key, isChecked)
-                }
-            }
-        }
-
-        // スクロールでツールバーを隠す
-        view.findViewById<ToggleButton>(R.id.preferences_bookmarks_hiding_toolbar_by_scrolling).apply {
-            val key = PreferenceKey.BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING
-            isChecked = prefs.getBoolean(key)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit {
-                    putBoolean(key, isChecked)
-                }
-            }
+        view.button_initial_tab.setOnClickListener {
+            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                .setTitle(R.string.pref_bookmarks_initial_tab_desc)
+                .setNegativeButton(R.string.dialog_cancel)
+                .setSingleChoiceItems(
+                    BookmarksTabType.values().map {
+                        requireContext().getString(it.textId)
+                    },
+                    viewModel.initialTabPosition.value!!
+                )
+                .show(childFragmentManager, DIALOG_INITIAL_TAB)
         }
 
         // タップアクションの設定項目を初期化する処理
-        val initializeTapActionSelector = { viewId: Int, key: PreferenceKey, descId: Int ->
+        val initializeTapActionSelector = { viewId: Int, selectedActionLiveData: LiveData<Int>, descId: Int, tag: String ->
             view.findViewById<Button>(viewId).apply {
-                text = getText(TapEntryAction.fromInt(prefs.getInt(key)).titleId)
                 setOnClickListener {
-                    val selectedAction = TapEntryAction.fromInt(prefs.getInt(key))
                     AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                         .setTitle(descId)
                         .setNegativeButton(R.string.dialog_cancel)
                         .setSingleChoiceItems(
                             TapEntryAction.values().map { getString(it.titleId) },
-                            selectedAction.ordinal)
-                        .setAdditionalData("key", key)
-                        .setAdditionalData("view_id", viewId)
-                        .show(childFragmentManager, "tap_action_dialog")
+                            selectedActionLiveData.value!!
+                        )
+                        .show(childFragmentManager, tag)
                 }
             }
         }
 
-        // ブコメ内のリンクをタップしたときの挙動
         initializeTapActionSelector(
-            R.id.preferences_bookmark_link_single_tap_action,
-            PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION,
-            R.string.pref_bookmark_link_single_tap_action_desc)
+            R.id.button_link_single_tap_action,
+            viewModel.linkSingleTapAction,
+            R.string.pref_bookmark_link_single_tap_action_desc,
+            DIALOG_LINK_SINGLE_TAP_ACTION
+        )
 
-        // ブコメ内のリンクを長押ししたときの挙動
         initializeTapActionSelector(
-            R.id.preferences_bookmark_link_long_tap_action,
-            PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION,
-            R.string.pref_bookmark_link_long_tap_action_desc)
+            R.id.button_link_long_tap_action,
+            viewModel.linkLongTapAction,
+            R.string.pref_bookmark_link_long_tap_action_desc,
+            DIALOG_LINK_LONG_TAP_ACTION
+        )
+
+        // --- observers --- //
+
+        viewModel.initialTabPosition.observe(this, Observer {
+            PreferencesBookmarksAdapter.setBookmarksTabTypeText(view.button_initial_tab, it)
+        })
+
+        viewModel.linkSingleTapAction.observe(this, Observer {
+            PreferencesBookmarksAdapter.setLinkTapActionText(view.button_link_single_tap_action, it)
+        })
+
+        viewModel.linkLongTapAction.observe(this, Observer {
+            PreferencesBookmarksAdapter.setLinkTapActionText(view.button_link_long_tap_action, it)
+        })
 
         return view
     }
 
     override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-
         when (dialog.tag) {
-            "initial_tab_dialog" -> {
-                val tab = BookmarksTabType.fromInt(which)
-                prefs.edit {
-                    putInt(PreferenceKey.BOOKMARKS_INITIAL_TAB, tab.ordinal)
-                }
-                view?.findViewById<Button>(R.id.preferences_bookmarks_initial_tab)?.run {
-                    text = context!!.getText(tab.textId)
-                }
-                dialog.dismiss()
+            DIALOG_INITIAL_TAB -> {
+                viewModel.initialTabPosition.value = which
             }
 
-            "tap_action_dialog" -> {
-                val key = dialog.getAdditionalData<PreferenceKey>("key") ?: return
-                val viewId = dialog.getAdditionalData<Int>("view_id") ?: return
-                val selectedAction = TapEntryAction.fromInt(which)
-                prefs.edit {
-                    putInt(key, selectedAction.ordinal)
-                }
-                view?.findViewById<Button>(viewId)?.run {
-                    text = dialog.items!![which]
-                }
-                dialog.dismiss()
+            DIALOG_LINK_SINGLE_TAP_ACTION -> {
+                viewModel.linkSingleTapAction.value = which
+            }
+
+            DIALOG_LINK_LONG_TAP_ACTION -> {
+                viewModel.linkLongTapAction.value = which
             }
         }
+        dialog.dismiss()
     }
 }

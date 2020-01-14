@@ -9,24 +9,24 @@ import com.sys1yagi.mastodon4j.MastodonClient
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 
-object AccountLoader {
+class AccountLoader(
+    private val context: Context,
+    private val client: HatenaClient,
+    private val mastodonClientHolder: MastodonClientHolder
+) {
     class HatenaSignInException(message: String? = null) : Exception(message)
     class MastodonSignInException(message: String? = null) : Exception(message)
 
-    suspend fun signInAccounts(context: Context, reSignIn: Boolean = false) {
-        try {
-            val jobs = listOf(
-                signInHatenaAsync(context, reSignIn),
-                signInMastodonAsync(context, reSignIn)
-            )
-            jobs.awaitAll()
-        } catch (e: Exception) {
-            throw RuntimeException("failed to sign in")
-        }
+    suspend fun signInAccounts(reSignIn: Boolean = false) {
+        val jobs = listOf(
+            signInHatenaAsync(reSignIn),
+            signInMastodonAsync(reSignIn)
+        )
+        jobs.awaitAll()
     }
 
-    fun signInHatenaAsync(context: Context, reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
-        if (HatenaClient.signedIn() && !reSignIn) return@async HatenaClient.account
+    fun signInHatenaAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
+        if (client.signedIn() && !reSignIn) return@async client.account
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
@@ -44,8 +44,9 @@ object AccountLoader {
                 val passwordEncryptedData = serializer.deserialize(userPasswordEncryptedStr)
                 val password = CryptUtility.decrypt(passwordEncryptedData, key)
 
-                HatenaClient.signInAsync(name, password).await()
-            } catch (e: Exception) {
+                client.signInAsync(name, password).await()
+            }
+            catch (e: Exception) {
                 Log.d("HatenaLogin", Log.getStackTraceString(e))
                 throw HatenaSignInException(e.message)
             }
@@ -54,8 +55,8 @@ object AccountLoader {
         }
     }
 
-    fun signInMastodonAsync(context: Context, reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
-        if (MastodonClientHolder.signedIn() && !reSignIn) return@async MastodonClientHolder.account
+    fun signInMastodonAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
+        if (mastodonClientHolder.signedIn() && !reSignIn) return@async mastodonClientHolder.account
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val mastodonAccessTokenEncryptedStr =
@@ -77,8 +78,9 @@ object AccountLoader {
                     .accessToken(data.accessToken)
                     .build()
 
-                MastodonClientHolder.signInAsync(client).await()
-            } catch (e: Exception) {
+                mastodonClientHolder.signInAsync(client).await()
+            }
+            catch (e: Exception) {
                 Log.d("MastodonLogin", Log.getStackTraceString(e))
                 throw MastodonSignInException(e.message)
             }
@@ -87,7 +89,7 @@ object AccountLoader {
         }
     }
 
-    fun saveHatenaAccount(context: Context, name: String, password: String) {
+    fun saveHatenaAccount(name: String, password: String) {
         val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
         val key = createKey(context)
         val encryptedName = CryptUtility.encrypt(name, key)
@@ -100,7 +102,7 @@ object AccountLoader {
         }
     }
 
-    fun saveMastodonAccount(context: Context, instanceName: String, accessToken: String) {
+    fun saveMastodonAccount(instanceName: String, accessToken: String) {
         val key = createKey(context)
         val data = SerializableMastodonAccessToken(instanceName, accessToken)
 
@@ -115,24 +117,24 @@ object AccountLoader {
         }
     }
 
-    fun deleteHatenaAccount(context: Context) {
-        lock (HatenaClient) {
+    fun deleteHatenaAccount() {
+        lock (client) {
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
             prefs.edit {
                 remove(PreferenceKey.HATENA_USER_NAME)
                 remove(PreferenceKey.HATENA_PASSWORD)
             }
-            HatenaClient.signOut()
+            client.signOut()
         }
     }
 
-    fun deleteMastodonAccount(context: Context) {
+    fun deleteMastodonAccount() {
         lock (MastodonClientHolder) {
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
             prefs.edit {
                 remove(PreferenceKey.MASTODON_ACCESS_TOKEN)
             }
-            MastodonClientHolder.signOut()
+            mastodonClientHolder.signOut()
         }
     }
 

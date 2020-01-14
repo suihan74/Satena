@@ -14,7 +14,7 @@
 
     <!-- ログイン画面 -->
     <string name="cancel">キャンセル</string>
-    <string name="signin">ログイン</string>
+    <string name="sign_in">ログイン</string>
     <string name="hatena_title">はてなブックマーク</string>
     <string name="hint_id">はてなID/メールアドレス</string>
     <string name="hint_password">パスワード</string>
@@ -31,7 +31,7 @@
     <string name="entries_tab_hot">人気</string>
     <string name="entries_tab_recent">新着</string>
     <string name="entries_tab_mybookmarks">マイブックマーク</string>
-    <string name="entries_tab_readlater">あとで読む</string>
+    <string name="entries_tab_read_later">あとで読む</string>
 
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
@@ -103,6 +103,10 @@
     <string name="msg_pref_information_save_failed">設定の保存に失敗しました</string>
     <string name="msg_pref_information_load_succeeded">設定を%sから読み込みました</string>
     <string name="msg_pref_information_load_failed">設定の読み込みに失敗しました</string>
+    <!-- accounts -->
+    <string name="pref_accounts_service_name_hatena">Hatena</string>
+    <string name="pref_accounts_service_name_mastodon">Mastodon</string>
+    <string name="pref_accounts_sign_in">ログイン</string>
     <!-- generals -->
     <string name="pref_generals_theme_desc">テーマ</string>
     <string name="pref_generals_using_termination_dialog_desc">終了確認ダイアログを表示する</string>
@@ -112,7 +116,7 @@
     <string name="pref_generals_show_release_notes_after_update_desc">アプリ更新後の初回起動時に更新履歴を表示する</string>
     <string name="pref_generals_notices_intervals_dialog_title">通知確認間隔を設定</string>
     <string name="pref_generals_notices_intervals_dialog_msg">1分～180分で指定できます</string>
-
+    <string name="pref_generals_notices_intervals_button_text">%d分</string>
     <!-- entries -->
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
@@ -153,14 +157,26 @@
     <string name="pref_user_tags_user_menu_remove">ユーザーを除外</string>
 
     <!-- 非表示エントリ登録ダイアログ -->
+    <string name="ignored_entry_dialog_title">非表示エントリを作成</string>
     <string name="ignored_entry_dialog_tab_url">URL</string>
     <string name="ignored_entry_dialog_tab_text">TEXT</string>
     <string name="ignored_entry_dialog_desc_url">↑から始まるURLのエントリを非表示にする</string>
     <string name="ignored_entry_dialog_desc_text">↑の文字列を含むエントリ(orブコメ)を非表示にする</string>
+    <string name="msg_ignored_entry_dialog_empty_query">クエリを入力してください</string>
+    <string name="msg_ignored_entry_dialog_already_existed">既に存在する非表示設定です</string>
+    <string name="msg_ignored_entry_dialog_succeeded">「%s」を非表示にしました</string>
 
     <!-- ブックマーク投稿ダイアログ -->
+    <string name="post_bookmark_button_text">B!</string>
     <string name="bookmark_comment_edit_text_hint">ブコメ(任意)</string>
-    <string name="confirm_post_bookmark">ブックマークを投稿します。よろしいですか？</string>
+    <string name="confirm_post_bookmark">ブックマークします。よろしいですか？</string>
+    <string name="msg_comment_too_long">コメントが長すぎます。%d文字以下にしてください</string>
+    <string name="msg_post_bookmark_succeeded">ブックマークしました</string>
+    <string name="msg_post_bookmark_failed">ブックマークに失敗しました</string>
+    <string name="hint_mastodon_toggle">Mastodonに投稿します</string>
+    <string name="hint_twitter_toggle">Twitterに投稿します</string>
+    <string name="hint_facebook_toggle">Facebookに投稿します</string>
+    <string name="hint_private_toggle">非公開でブクマします</string>
 
     <!-- hints -->
     <string name="search_query_hint">検索キーワード</string>
@@ -169,18 +185,31 @@
     <string name="report_bookmark_dialog_title">ブコメを通報</string>
     <string name="report_dialog_ok">通報</string>
     <string name="report_dialog_text_hint">このブコメを通報する理由など(任意)</string>
+    <string name="report_dialog_ignore_after_reporting_hint">通報後ユーザーを非表示にする</string>
     <string name="report_dialog_description">通報内容</string>
     <string name="report_dialog_confirm_msg">%sを「%s」のため通報します。よろしいですか？</string>
     <string name="msg_report_succeeded">id:%sを通報しました</string>
+    <string name="msg_report_and_ignore_succeeded">id:%sを通報して非表示にしました</string>
     <string name="msg_report_and_mute_succeeded">id:%sを通報して非表示にしました</string>
     <string name="msg_report_failed">通報に失敗しました</string>
 
     <!-- ユーザータグ設定ダイアログ (ブクマ画面) -->
     <string name="user_tags_dialog_title">ユーザータグを選択</string>
+    <string name="user_tag_dialog_title_edit_mode">ユーザータグを編集</string>
+    <string name="user_tag_dialog_title_create_mode">ユーザータグを作成</string>
     <string name="user_tags_dialog_new_tag">新規タグ</string>
     <string name="msg_user_tag_existed">既に存在するタグです</string>
-    <string name="msg_user_tag_created_and_added_user">タグ: %s を作成して id:%s を追加しました</string>
-    <string name="msg_user_tagged">id:%s に%d個のタグを設定しました</string>
+    <string name="msg_user_tag_no_name">タグ名を入力してください</string>
+    <string name="msg_user_tag_created">タグ「%s」を作成しました</string>
+    <string name="msg_user_tag_updated">タグ「%s」の名称を「%s」に変更しました</string>
+    <string name="msg_user_tag_created_and_added_user">タグ「%s」を作成して id:%s を追加しました</string>
+    <string name="msg_user_tagged">id:%sに%d個のタグを設定しました</string>
+    <string name="msg_user_tagged_single">id:%s にタグをつけました</string>
+    <string name="msg_user_has_already_tagged">タグ「%s」はid:%sに既についています</string>
+
+    <!-- 認証 -->
+    <string name="msg_auth_failed">アカウント認証失敗</string>
+    <string name="msg_auth_mastodon_failed">Mastodon認証失敗</string>
 
     <!-- エントリ画面 -->
     <string name="my_bookmarks_button_desc_my_bookmarks">マイブックマーク</string>
@@ -191,7 +220,6 @@
     <string name="desc_site_entries_order">表示順</string>
     <string name="desc_search_type">検索対象</string>
     <string name="desc_search_order">検索順</string>
-    <string name="msg_auth_failed">アカウント認証失敗</string>
     <string name="msg_get_categories_failed">カテゴリ・特集情報の取得に失敗しました</string>
     <string name="msg_update_entries_failed">エントリ更新失敗</string>
     <string name="msg_get_stars_report_failed">スターの取得失敗</string>
@@ -201,18 +229,20 @@
     <string name="menu_notice_remove">通知を削除</string>
 
     <!-- ブクマ画面 -->
+    <string name="toolbar_subtitle_bookmarks">"%d users (%d comments)"</string>
     <string name="custom_bookmarks_tab_pref_dialog_title">カスタムブクマリストの設定</string>
     <string name="custom_bookmarks_no_comment_active">無言ブクマを表示</string>
     <string name="custom_bookmarks_ignored_user_active">非表示ユーザーを表示</string>
     <string name="custom_bookmarks_no_user_tags_active">タグ無しユーザーを表示</string>
     <string name="msg_get_entry_failed">エントリ取得失敗</string>
     <string name="msg_update_bookmarks_failed">ブクマリスト更新失敗</string>
-    <string name="msg_ignore_user_succeeded">%sを非表示にしました</string>
-    <string name="msg_ignore_user_failed">%sの非表示に失敗しました</string>
-    <string name="msg_unignore_user_succeeded">%sの非表示を解除しました</string>
-    <string name="msg_unignore_user_failed">%sの非表示解除に失敗しました</string>
+    <string name="msg_ignore_user_succeeded">id:%sを非表示にしました</string>
+    <string name="msg_ignore_user_failed">id:%sの非表示に失敗しました</string>
+    <string name="msg_unignore_user_succeeded">id:%sの非表示を解除しました</string>
+    <string name="msg_unignore_user_failed">id:%sの非表示解除に失敗しました</string>
     <string name="msg_remove_bookmark_succeeded">ブクマを削除しました</string>
     <string name="msg_remove_bookmark_failed">ブクマ削除に失敗しました</string>
+    <string name="msg_bookmarks_initial_tab_changed">「%s」タブを最初に表示するように設定しました</string>
     <!-- ブクマ画面でのエントリ情報 -->
     <string name="msg_get_entry_information_failed">エントリ情報の取得に失敗しました</string>
 
@@ -225,6 +255,7 @@
     <string name="bookmark_detail_tab_stars_to">★ → %s</string>
     <string name="bookmark_detail_tab_mentions_from">%s → mention</string>
     <string name="bookmark_detail_tab_mentions_to">mention -> %s</string>
+    <string name="bookmark_detail_quote_comment">"%s"</string>
     <string name="msg_post_star_dialog">%sスターをつけます。よろしいですか？</string>
     <string name="msg_post_star_succeeded">%sのブコメに★をつけました</string>
     <string name="msg_post_star_failed">%sのブコメに★をつけられませんでした</string>

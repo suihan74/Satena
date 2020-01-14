@@ -10,6 +10,7 @@ import android.widget.EditText
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
+import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.utilities.AccountLoader
@@ -157,7 +158,11 @@ class MastodonAuthenticationActivity : ActivityBase() {
         ).await()
 
         // persist AccessToken
-        AccountLoader.saveMastodonAccount(context, instanceName, accessToken.accessToken)
+        AccountLoader(
+            applicationContext,
+            HatenaClient,
+            MastodonClientHolder
+        ).saveMastodonAccount(instanceName, accessToken.accessToken)
     }
 
     override fun onNewIntent(intent: Intent?) {
