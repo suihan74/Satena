@@ -79,14 +79,14 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
                 val userName = nameEditor.text?.toString() ?: ""
 
                 if (userName.isBlank()) {
-                    context.showToast("はてなIDを入力してください")
+                    activity?.showToast("はてなIDを入力してください")
                     return@setOnClickListener
                 }
 
                 // ユーザーが存在しない
                 lock (this@TagUserDialogFragment) {
                     if (!mIsUserExisted) {
-                        context.showToast("ユーザーが見つかりません")
+                        activity?.showToast("ユーザーが見つかりません")
                         return@setOnClickListener
                     }
                 }
