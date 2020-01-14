@@ -13,6 +13,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.setOnTabLongClickListener
+import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_bookmarks2.view.*
 
 class BookmarksFragmentViewModel : ViewModel() {
@@ -74,6 +76,19 @@ class BookmarksFragment : Fragment() {
                     viewModel.selectedTabViewModel.value?.scrollToTop()
                 }
             })
+
+            // タブを長押しで最初に表示するタブを変更
+            setOnTabLongClickListener { idx ->
+                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                val key = PreferenceKey.BOOKMARKS_INITIAL_TAB
+                if (prefs.getInt(key) != idx) {
+                    prefs.edit {
+                        put(key, idx)
+                    }
+                    context.showToast(R.string.msg_bookmarks_initial_tab_changed, getString(BookmarksTabType.fromInt(idx).textId))
+                }
+                return@setOnTabLongClickListener true
+            }
         }
 
         return view

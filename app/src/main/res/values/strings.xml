@@ -242,6 +242,7 @@
     <string name="msg_unignore_user_failed">id:%sの非表示解除に失敗しました</string>
     <string name="msg_remove_bookmark_succeeded">ブクマを削除しました</string>
     <string name="msg_remove_bookmark_failed">ブクマ削除に失敗しました</string>
+    <string name="msg_bookmarks_initial_tab_changed">「%s」タブを最初に表示するように設定しました</string>
     <!-- ブクマ画面でのエントリ情報 -->
     <string name="msg_get_entry_information_failed">エントリ情報の取得に失敗しました</string>
 
