@@ -168,6 +168,10 @@ class BookmarkDetailFragment :
         // スター付与ボタンの表示状態を切り替える
         view.show_stars_button.run {
             setOnClickListener {
+                if (!viewModel.userStars.loaded) {
+                    // 所持スターがロードされていない場合、再度ロード処理
+                    viewModel.loadUserStars()
+                }
                 viewModel.starsMenuOpened.postValue(viewModel.starsMenuOpened.value != true)
             }
             hide()

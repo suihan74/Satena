@@ -85,8 +85,13 @@ class BookmarkDetailViewModel(
     // --- --- //
 
     /** 初期化 */
-    fun init() = viewModelScope.launch {
-        starsMenuOpened.postValue(false)
+    fun init() {
+        starsMenuOpened.value = false
+        loadUserStars()
+    }
+
+    /** ユーザースターのロード */
+    fun loadUserStars() = viewModelScope.launch {
         try {
             userStars.load()
         }

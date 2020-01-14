@@ -98,6 +98,22 @@ class BookmarksTabFragment :
 
             override fun onEntryIdClicked(eid: Long) =
                 bookmarksActivity.onEntryIdClicked(eid)
+
+            override fun onAdditionalLoading() {
+                startLoading()
+                viewModel.loadNextBookmarks().invokeOnCompletion { e->
+                    if (e != null) {
+                        context?.showToast(R.string.msg_update_bookmarks_failed)
+                        Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
+                    }
+                    stopLoading()
+                }
+            }
+
+            override val nextLoadable: Boolean
+                get() {
+                    return false
+                }
         }
 
         // recycler view

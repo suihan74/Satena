@@ -251,17 +251,38 @@ class BookmarksRepository(
     ) : LiveData<UserColorStarsCount>() {
         override fun getValue() = repository.userStars
 
-        suspend fun load() =
+        var loaded = false
+            get() = synchronized(field) { field }
+            private set(value) {
+                synchronized(field) {
+                    field = value
+                }
+            }
+
+        suspend fun load() {
+            loaded = false
             if (client.signedIn()) {
-                val result = client.getMyColorStarsAsync().await()
-                repository.userStars = result
-                postValue(result)
+                try {
+                    val result = client.getMyColorStarsAsync().await()
+                    repository.userStars = result
+                    loaded = true
+                    postValue(result)
+                }
+                catch (e: Throwable) {
+                    setDummy()
+                    throw e
+                }
             }
             else {
-                val dummy = UserColorStarsCount(0, 0, 0, 0)
-                repository.userStars = dummy
-                postValue(dummy)
+                setDummy()
             }
+        }
+
+        private fun setDummy() {
+            val dummy = UserColorStarsCount(0, 0, 0, 0)
+            repository.userStars = dummy
+            postValue(dummy)
+        }
     }
 
 // ------ //
