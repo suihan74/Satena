@@ -225,25 +225,25 @@ class BookmarkDetailFragment :
         viewModel.starsToUser.observe(this, Observer {
             val idx = getTabIndex<StarsToUserFragment>(view, tabAdapter) ?: return@Observer
             val tab = view.tab_layout.getTabAt(idx)
-            tab?.text = String.format("%s (%d)", tabAdapter.getPageTitle(idx), it?.totalStarsCount ?: 0)
+            tab?.text = String.format("(%d) %s", it?.totalStarsCount ?: 0, tabAdapter.getPageTitle(idx))
         })
 
         viewModel.starsFromUser.observe(this, Observer {
             val idx = getTabIndex<StarsFromUserFragment>(view, tabAdapter) ?: return@Observer
             val tab = view.tab_layout.getTabAt(idx)
-            tab?.text = String.format("%s (%d)", tabAdapter.getPageTitle(idx), it.sumBy { s -> s.star?.count ?: 0 })
+            tab?.text = String.format("(%d) %s", it.sumBy { s -> s.star?.count ?: 0 }, tabAdapter.getPageTitle(idx))
         })
 
         viewModel.mentionsToUser.observe(this, Observer {
             val idx = getTabIndex<MentionToUserFragment>(view, tabAdapter) ?: return@Observer
             val tab = view.tab_layout.getTabAt(idx)
-            tab?.text = String.format("%s (%d)", tabAdapter.getPageTitle(idx), it.size)
+            tab?.text = String.format("(%d) %s", it.size, tabAdapter.getPageTitle(idx))
         })
 
         viewModel.mentionsFromUser.observe(this, Observer {
             val idx = getTabIndex<MentionFromUserFragment>(view, tabAdapter) ?: return@Observer
             val tab = view.tab_layout.getTabAt(idx)
-            tab?.text = String.format("%s (%d)", tabAdapter.getPageTitle(idx), it.size)
+            tab?.text = String.format("(%d) %s", it.size, tabAdapter.getPageTitle(idx))
         })
 
         return view
