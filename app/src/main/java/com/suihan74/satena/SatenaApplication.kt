@@ -1,10 +1,12 @@
 package com.suihan74.satena
 
 import android.app.Application
+import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.net.ConnectivityManager
-import android.os.Build
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import androidx.annotation.RequiresApi
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -31,6 +33,8 @@ class SatenaApplication : Application() {
     lateinit var appDatabase: AppDatabase
         private set
 
+    val networkReceiver = NetworkReceiver(this)
+
     init {
         instance = this
     }
@@ -40,12 +44,6 @@ class SatenaApplication : Application() {
 
         // initialize the timezone information
         AndroidThreeTen.init(applicationContext)
-
-        // 接続状態を監視
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            @Suppress("DEPRECATION")
-            registerReceiver(ConnectivityReceiver(), IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
-        }
 
         // 設定ロード
         val prefs = SafeSharedPreferences.create<PreferenceKey>(applicationContext)
@@ -79,11 +77,37 @@ class SatenaApplication : Application() {
             }
         }
 
+        // 接続状態を監視
+        registerNetworkCallback()
+
+        // 通知サービスを開始
         startNotificationService()
     }
 
+    override fun onTerminate() {
+        unregisterNetworkCallback()
+        super.onTerminate()
+    }
+
+    /** ネットワークの接続状態を監視する */
+    @RequiresApi(23)
+    private fun registerNetworkCallback() {
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            .build()
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        cm.registerNetworkCallback(request, networkReceiver.networkCallback)
+    }
+
+    @RequiresApi(23)
+    private fun unregisterNetworkCallback() {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        cm.unregisterNetworkCallback(networkReceiver.networkCallback)
+    }
+
+    /** DBを準備する */
     fun initializeDataBase() {
-        // DBを準備する
         appDatabase = Room.databaseBuilder(this, AppDatabase::class.java, APP_DATABASE_FILE_NAME)
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
             .build()
@@ -102,18 +126,6 @@ class SatenaApplication : Application() {
         PreferenceKeyMigration.check(applicationContext)
         IgnoredEntriesKeyMigration.check(applicationContext)
         UserTagsKeyMigration.check(applicationContext)
-    }
-
-    fun setConnectionActivatingListener(listener: (()->Unit)?) {
-        ConnectivityReceiver.setConnectionActivatingListener(listener)
-    }
-
-    fun setConnectionActivatedListener(listener: (()->Unit)?) {
-        ConnectivityReceiver.setConnectionActivatedListener(listener)
-    }
-
-    fun setConnectionDeactivatedListener(listener: (()->Unit)?) {
-        ConnectivityReceiver.setConnectionDeactivatedListener(listener)
     }
 
     /** 通知サービスを開始 */

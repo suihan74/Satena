@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         package="com.suihan74.satena">
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -24,12 +25,14 @@
         <service android:name=".NotificationService" />
 
         <!-- Receivers -->
-        <receiver android:name=".ConnectivityReceiver">
+        <!--<receiver android:name=".NetworkReceiver">
             <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"
+                        tools:ignore="BatteryLife" />
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
             </intent-filter>
         </receiver>
+        -->
 
         <receiver android:name=".BrowserToolbarManager"/>
 

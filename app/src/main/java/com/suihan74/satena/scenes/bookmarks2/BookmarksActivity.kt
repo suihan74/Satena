@@ -14,6 +14,7 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.HatenaLib.*
 import com.suihan74.satena.R
@@ -36,6 +37,7 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
+import kotlinx.coroutines.launch
 
 class BookmarksActivity :
     AppCompatActivity(),
@@ -177,6 +179,14 @@ class BookmarksActivity :
                 else
                     null
         }
+
+        // 接続状態を監視する
+        val networkReceiver = SatenaApplication.instance.networkReceiver
+        networkReceiver.state.observe(this, Observer { connected ->
+            if (connected == true && networkReceiver.previousState != true) {
+                viewModel.init(true)
+            }
+        })
     }
 
     fun showButtons() {
