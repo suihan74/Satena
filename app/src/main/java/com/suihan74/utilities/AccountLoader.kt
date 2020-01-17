@@ -7,6 +7,7 @@ import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.models.PreferenceKey
 import com.sys1yagi.mastodon4j.MastodonClient
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
 import okhttp3.OkHttpClient
 
 class AccountLoader(
@@ -17,6 +18,9 @@ class AccountLoader(
     class HatenaSignInException(message: String? = null) : Exception(message)
     class MastodonSignInException(message: String? = null) : Exception(message)
 
+    private val hatenaMutex = Mutex()
+    private val mastodonMutex = Mutex()
+
     suspend fun signInAccounts(reSignIn: Boolean = false) {
         val jobs = listOf(
             signInHatenaAsync(reSignIn),
@@ -26,6 +30,7 @@ class AccountLoader(
     }
 
     fun signInHatenaAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
+        hatenaMutex.lock()
         if (client.signedIn() && !reSignIn) return@async client.account
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
@@ -50,12 +55,18 @@ class AccountLoader(
                 Log.d("HatenaLogin", Log.getStackTraceString(e))
                 throw HatenaSignInException(e.message)
             }
-        } else {
+            finally {
+                hatenaMutex.unlock()
+            }
+        }
+        else {
+            hatenaMutex.unlock()
             return@async null
         }
     }
 
     fun signInMastodonAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
+        mastodonMutex.lock()
         if (mastodonClientHolder.signedIn() && !reSignIn) return@async mastodonClientHolder.account
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
@@ -84,7 +95,12 @@ class AccountLoader(
                 Log.d("MastodonLogin", Log.getStackTraceString(e))
                 throw MastodonSignInException(e.message)
             }
-        } else {
+            finally {
+                mastodonMutex.unlock()
+            }
+        }
+        else {
+            mastodonMutex.unlock()
             return@async null
         }
     }
