@@ -346,7 +346,7 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
 
                         setMyBookmarkButton()
 
-                        refreshEntriesFragment(currentCategory, forceUpdate = true)
+                        //refreshEntriesFragment(currentCategory, forceUpdate = true)
                     }
                 }
             }
