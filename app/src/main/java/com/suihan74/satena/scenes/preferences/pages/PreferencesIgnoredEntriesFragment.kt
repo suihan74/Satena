@@ -21,11 +21,12 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryViewModel
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.showToast
+import kotlinx.android.synthetic.main.fragment_preferences_ignored_entries.view.*
 
 class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialogFragment.Listener {
     private lateinit var mIgnoredEntriesAdapter : IgnoredEntriesAdapter
 
-    private lateinit var model: IgnoredEntryViewModel
+    private lateinit var viewModel: IgnoredEntryViewModel
 
     private var mDialogMenuItems: Array<Pair<String, (entry: IgnoredEntry)->Unit>>? = null
 
@@ -39,8 +40,8 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
         val vmFactory = IgnoredEntryViewModel.Factory(
             IgnoredEntryRepository(SatenaApplication.instance.ignoredEntryDao)
         )
-        model = ViewModelProviders.of(this, vmFactory)[IgnoredEntryViewModel::class.java]
-        model.init()
+        viewModel = ViewModelProviders.of(this, vmFactory)[IgnoredEntryViewModel::class.java]
+        viewModel.init()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -51,25 +52,25 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
                 mIgnoredEntriesAdapter.onItemClicked(entry)
             },
             getString(R.string.pref_ignored_entries_menu_remove) to { entry ->
-                model.delete(entry)
+                viewModel.delete(entry)
             }
         )
 
         mIgnoredEntriesAdapter = object : IgnoredEntriesAdapter() {
             override fun onItemClicked(entry: IgnoredEntry) {
                 val dialog = IgnoredEntryDialogFragment.createInstance(entry) { modified ->
-                    if (entry.query != modified.query && model.entries.value?.contains(modified) == true) {
+                    if (entry.query != modified.query && viewModel.entries.value?.contains(modified) == true) {
                         context?.showToast(R.string.msg_ignored_entry_dialog_already_existed)
                         return@createInstance false
                     }
                     else {
-                        model.update(modified)
+                        viewModel.update(modified)
 
                         context?.showToast(R.string.msg_ignored_entry_dialog_succeeded, modified.query)
                         return@createInstance true
                     }
                 }
-                dialog.show(fragmentManager!!, "dialog")
+                dialog.show(childFragmentManager, "dialog")
             }
 
             override fun onItemLongClicked(entry: IgnoredEntry): Boolean {
@@ -84,7 +85,7 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
             }
         }
 
-        root.findViewById<RecyclerView>(R.id.ignored_entries_list).apply {
+        root.ignored_entries_list.apply {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
                 R.drawable.recycler_view_item_divider
             )!!)
@@ -93,23 +94,23 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
             adapter = mIgnoredEntriesAdapter
         }
 
-        root.findViewById<FloatingActionButton>(R.id.add_button).setOnClickListener {
+        root.add_button.setOnClickListener {
             val dialog = IgnoredEntryDialogFragment.createInstance { ignoredEntry ->
-                if (model.entries.value?.contains(ignoredEntry) == true) {
+                if (viewModel.entries.value?.contains(ignoredEntry) == true) {
                     context?.showToast(R.string.msg_ignored_entry_dialog_already_existed)
                     return@createInstance false
                 }
                 else {
-                    model.add(ignoredEntry)
+                    viewModel.add(ignoredEntry)
 
                     context?.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
                     return@createInstance true
                 }
             }
-            dialog.show(fragmentManager!!, "dialog")
+            dialog.show(childFragmentManager, "dialog")
         }
 
-        model.entries.observe(this, Observer {
+        viewModel.entries.observe(this, Observer {
             mIgnoredEntriesAdapter.setItem(it)
         })
 

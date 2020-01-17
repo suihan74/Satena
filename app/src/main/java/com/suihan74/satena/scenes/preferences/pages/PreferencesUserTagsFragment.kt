@@ -21,6 +21,7 @@ import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.get
 import com.suihan74.utilities.showToast
+import kotlinx.android.synthetic.main.fragment_preferences_user_tags.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -31,7 +32,7 @@ class PreferencesUserTagsFragment :
         UserTagDialogFragment.Listener,
         TagUserDialogFragment.Listener
 {
-    private lateinit var model: UserTagViewModel
+    private lateinit var viewModel: UserTagViewModel
 
     companion object {
         fun createInstance() =
@@ -45,7 +46,7 @@ class PreferencesUserTagsFragment :
             UserTagRepository(SatenaApplication.instance.userTagDao)
         )
 
-        model = ViewModelProviders.of(this, factory)[UserTagViewModel::class.java]
+        viewModel = ViewModelProviders.of(this, factory)[UserTagViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -53,15 +54,15 @@ class PreferencesUserTagsFragment :
 
         // 初期値をロード
         launch(Dispatchers.Main) {
-            model.loadTags()
+            viewModel.loadTags()
 
             // タグ一覧を表示
             showUserTagsList()
-            if (model.currentTag.value != null) {
+            if (viewModel.currentTag.value != null) {
                 showTaggedUsersList()
             }
 
-            root.findViewById<FloatingActionButton>(R.id.add_button).setOnClickListener {
+            root.add_button.setOnClickListener {
                 val userTagsList = getCurrentFragment<UserTagsListFragment>()
                 if (userTagsList != null) {
                     showNewUserTagDialog()
@@ -112,7 +113,7 @@ class PreferencesUserTagsFragment :
     override fun onBackPressed(): Boolean {
         val fragment = getCurrentFragment<TaggedUsersListFragment>()
         return if (fragment != null) {
-            model.currentTag.postValue(null)
+            viewModel.currentTag.postValue(null)
             childFragmentManager.popBackStack()
             true
         }
@@ -150,26 +151,26 @@ class PreferencesUserTagsFragment :
             val tag = dialog.editingUserTag!!
 
             if (tag.name != tagName) {
-                if (model.containsTag(tagName)) {
+                if (viewModel.containsTag(tagName)) {
                     context?.showToast(R.string.msg_user_tag_existed)
                     return false
                 }
                 else {
                     val prevName = tag.name
                     val modified = tag.copy(name = tagName)
-                    model.updateTag(modified)
+                    viewModel.updateTag(modified)
                     context?.showToast(R.string.msg_user_tag_updated, prevName, tagName)
                 }
             }
             return true
         }
         else {
-            return if (model.containsTag(tagName)) {
+            return if (viewModel.containsTag(tagName)) {
                 context?.showToast(R.string.msg_user_tag_existed)
                 false
             }
             else {
-                model.addTag(tagName)
+                viewModel.addTag(tagName)
                 context?.showToast(R.string.msg_user_tag_created, tagName)
                 true
             }
@@ -180,10 +181,10 @@ class PreferencesUserTagsFragment :
      * 現在選択中のタグにユーザーを追加する
      */
     override suspend fun onCompleteTaggedUser(userName: String, dialog: TagUserDialogFragment): Boolean {
-        val tag = model.currentTag.value ?: return true
+        val tag = viewModel.currentTag.value ?: return true
 
         return if (tag.users.none { it.name == userName }) {
-            model.addRelation(tag.userTag, userName)
+            viewModel.addRelation(tag.userTag, userName)
             context?.showToast(R.string.msg_user_tagged_single, userName)
             true
         }
