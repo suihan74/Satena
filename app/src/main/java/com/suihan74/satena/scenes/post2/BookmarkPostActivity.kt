@@ -2,10 +2,10 @@ package com.suihan74.satena.scenes.post2
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
-import android.view.ViewConfiguration
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
@@ -58,10 +58,6 @@ class BookmarkPostActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        /*window.addFlags(
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-        )*/
 
         // 設定ロード
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
@@ -269,7 +265,7 @@ class BookmarkPostActivity :
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         // Activityの外側をタップして閉じる際に、結果を渡しておく
-        if (event?.action == MotionEvent.ACTION_DOWN && isOutOfBounds(this, event)) {
+        if (event?.action == MotionEvent.ACTION_DOWN && isOutOfBounds(event)) {
             val intent = Intent().apply {
                 putExtra(RESULT_EDITING_COMMENT, viewModel.comment.value)
             }
@@ -278,17 +274,12 @@ class BookmarkPostActivity :
         return super.onTouchEvent(event)
     }
 
-    /** Activity部分の外側をタップしたかを判別する */
-    private fun isOutOfBounds(
-        context: Context,
-        event: MotionEvent
-    ): Boolean {
+    /** Activityの外側をタップしたかを判別する */
+    private fun isOutOfBounds(event: MotionEvent): Boolean {
         val x = event.x.toInt()
         val y = event.y.toInt()
-        val slop = ViewConfiguration.get(context).scaledWindowTouchSlop
-        val decorView = window.decorView
-        return (x < -slop || y < -slop
-                || x > decorView.width + slop
-                || y > decorView.height + slop)
+        val dialogBounds = Rect()
+        window.decorView.getHitRect(dialogBounds)
+        return !dialogBounds.contains(x, y)
     }
 }

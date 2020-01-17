@@ -8,6 +8,7 @@ import org.threeten.bp.ZoneOffset
 import java.lang.reflect.Type
 import java.net.CookieManager
 import java.net.CookiePolicy
+import java.net.SocketTimeoutException
 
 open class BaseClient {
     protected val cookieManager = CookieManager().apply {
@@ -63,21 +64,27 @@ open class BaseClient {
     }
 
     protected fun <T> send(type: Type, request: Request, gsonBuilder: GsonBuilder) : T {
-        val response = send(request)
-        if (response.isSuccessful) {
-            val gson = gsonBuilder
-                .serializeNulls()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .create()
-            val json = response.body!!.string()
-            val result = gson.fromJson<T>(json, type)
+        try {
+            val response = send(request)
+            if (response.isSuccessful) {
+                val gson = gsonBuilder
+                    .serializeNulls()
+                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                    .create()
+                val json = response.body!!.string()
+                val result = gson.fromJson<T>(json, type)
+
+                response.close()
+                return result
+            }
 
             response.close()
-            return result
+            throw RuntimeException("connection failed")
         }
-
-        response.close()
-        throw RuntimeException("connection error")
+        catch (e: SocketTimeoutException) {
+            client.connectionPool.evictAll()
+            throw RuntimeException("connection error", e)
+        }
     }
 
     protected fun <T> send(type: Type, request: Request) : T =
@@ -128,8 +135,12 @@ open class BaseClient {
             val response = get(url, withCookie)
             return responseTo(type, response, dateFormat)
         }
+        catch (e: SocketTimeoutException) {
+            client.connectionPool.evictAll()
+            throw RuntimeException("${e.message}: $url", e)
+        }
         catch (e: Exception) {
-            throw RuntimeException("${e.message}: $url")
+            throw RuntimeException("${e.message}: $url", e)
         }
     }
 

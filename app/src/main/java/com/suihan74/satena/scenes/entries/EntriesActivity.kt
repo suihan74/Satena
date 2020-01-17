@@ -10,7 +10,10 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
@@ -33,6 +36,7 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
@@ -311,6 +315,42 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
                 }
             }
         }
+
+        val networkReceiver = SatenaApplication.instance.networkReceiver
+        networkReceiver.state.observe(this, Observer { connected ->
+            if (connected == true && networkReceiver.previousState != true) {
+                model.viewModelScope.launch {
+                    try {
+                        AccountLoader(
+                            applicationContext,
+                            HatenaClient,
+                            MastodonClientHolder
+                        ).signInAccounts()
+                    }
+                    catch (e: AccountLoader.HatenaSignInException) {
+                        showToast(R.string.msg_auth_failed)
+                        Log.e("AuthHatena", Log.getStackTraceString(e))
+                    }
+                    catch (e: AccountLoader.MastodonSignInException) {
+                        showToast(R.string.msg_auth_mastodon_failed)
+                        Log.e("AuthMastodon", Log.getStackTraceString(e))
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        mCategoriesAdapter.setCategories(
+                            if (HatenaClient.signedIn())
+                                Category.valuesWithSignedIn()
+                            else
+                                Category.valuesWithoutSignedIn()
+                        )
+
+                        setMyBookmarkButton()
+
+                        //refreshEntriesFragment(currentCategory, forceUpdate = true)
+                    }
+                }
+            }
+        })
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -329,14 +369,6 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
         // 設定を再読み込み
         refreshPreferences()
 
-        setMyBookmarkButton()
-
-        mCategoriesAdapter.setCategories(
-            if (HatenaClient.signedIn())
-                Category.valuesWithSignedIn()
-            else
-                Category.valuesWithoutSignedIn())
-
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         toolbar?.run {
             layoutParams = (layoutParams as AppBarLayout.LayoutParams).apply {
@@ -349,19 +381,6 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
         }
 
         updateToolbar()
-
-        SatenaApplication.instance.setConnectionActivatedListener {
-            mCategoriesAdapter.setCategories(
-                if (HatenaClient.signedIn())
-                    Category.valuesWithSignedIn()
-                else
-                    Category.valuesWithoutSignedIn())
-
-            setMyBookmarkButton()
-
-            refreshEntriesFragment(currentCategory)
-            hideProgressBar()
-        }
 
         // アプリのバージョン名を取得
         val packageInfo = packageManager.getPackageInfo(packageName, 0)
