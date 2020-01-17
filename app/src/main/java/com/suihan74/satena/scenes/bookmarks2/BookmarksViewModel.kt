@@ -150,8 +150,7 @@ class BookmarksViewModel(
                 .filter { it.type == IgnoredEntryType.TEXT && it.target.contains(IgnoreTarget.BOOKMARK) }
                 .map { it.query }
 
-            repository.init()
-            signedIn.postValue(repository.signedIn)
+            signIn()
         }
         catch (e: Throwable) {}
         finally {}
@@ -179,6 +178,12 @@ class BookmarksViewModel(
         ignoredUsers.observeForever {
             reloadLists()
         }
+    }
+
+    /** サインイン */
+    suspend fun signIn() {
+        repository.init()
+        signedIn.postValue(repository.signedIn)
     }
 
     /**

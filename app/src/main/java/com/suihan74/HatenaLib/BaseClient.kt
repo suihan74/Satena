@@ -129,7 +129,8 @@ open class BaseClient {
             return responseTo(type, response, dateFormat)
         }
         catch (e: Exception) {
-            throw RuntimeException("${e.message}: $url")
+            client.connectionPool.evictAll()
+            throw RuntimeException("${e.message}: $url", e)
         }
     }
 

@@ -20,11 +20,13 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.HatenaLib.Bookmark
 import com.suihan74.HatenaLib.StarColor
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
@@ -33,6 +35,7 @@ import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
+import kotlinx.coroutines.launch
 
 class BookmarkDetailFragment :
     Fragment(),
@@ -244,6 +247,17 @@ class BookmarkDetailFragment :
             val idx = getTabIndex<MentionFromUserFragment>(view, tabAdapter) ?: return@Observer
             val tab = view.tab_layout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it.size, tabAdapter.getPageTitle(idx))
+        })
+
+        // 接続状態を監視する
+        val networkReceiver = SatenaApplication.instance.networkReceiver
+        networkReceiver.state.observe(this, Observer { connected ->
+            if (connected == true && networkReceiver.previousState != true) {
+                viewModel.viewModelScope.launch {
+                    viewModel.starsToUser.updateAsync().await()
+                    viewModel.starsAll.updateAsync().await()
+                }
+            }
         })
 
         return view
