@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
@@ -18,12 +19,11 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
-import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.makeSpannedFromHtml
 import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.fragment_entry_information.view.*
 
-class EntryInformationFragment : CoroutineScopeFragment() {
+class EntryInformationFragment : Fragment() {
     lateinit var activityViewModel: BookmarksViewModel
 
     private val bookmarksActivity
@@ -85,10 +85,8 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             visibility = HatenaClient.isUrlCommentPages(entry.url).toVisibility(defaultInvisible = View.INVISIBLE)
 
             setOnClickListener {
-//                launch(Dispatchers.Main) {
-                    val url = HatenaClient.getEntryUrlFromCommentPageUrl(entry.url)
-                    changeFloor(url)
-//                }
+                val url = HatenaClient.getEntryUrlFromCommentPageUrl(entry.url)
+                changeFloor(url)
             }
         }
 
@@ -97,10 +95,8 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             visibility = (entry.count > 0).toVisibility(defaultInvisible = View.INVISIBLE)
 
             setOnClickListener {
-//                launch(Dispatchers.Main) {
-                    val url = HatenaClient.getCommentPageUrlFromEntryUrl(entry.url)
-                    changeFloor(url)
-//                }
+                val url = HatenaClient.getCommentPageUrlFromEntryUrl(entry.url)
+                changeFloor(url)
             }
         }
 
@@ -122,26 +118,6 @@ class EntryInformationFragment : CoroutineScopeFragment() {
             onBackPressedCallback?.remove()
         }
     }
-
-/*
-    private suspend fun changeFloor(url: String) {
-        try {
-            val entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
-                .firstOrNull { it.url == url }
-                ?: HatenaClient.getEmptyEntryAsync(url).await()
-
-            withContext(Dispatchers.Main) {
-                val intent = Intent(context, BookmarksActivity::class.java).apply {
-                    putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
-                }
-                context?.startActivity(intent)
-            }
-        }
-        catch (e: Exception) {
-            Log.d("SearchEntry", e.message)
-            context?.showToast(R.string.msg_get_entry_information_failed)
-        }
-    }*/
 
     private fun changeFloor(url: String) {
         val intent = Intent(context, BookmarksActivity::class.java).apply {

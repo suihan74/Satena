@@ -31,7 +31,10 @@ class AccountLoader(
 
     fun signInHatenaAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
         hatenaMutex.lock()
-        if (client.signedIn() && !reSignIn) return@async client.account
+        if (client.signedIn() && !reSignIn) {
+            hatenaMutex.unlock()
+            return@async client.account
+        }
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
@@ -67,7 +70,10 @@ class AccountLoader(
 
     fun signInMastodonAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
         mastodonMutex.lock()
-        if (mastodonClientHolder.signedIn() && !reSignIn) return@async mastodonClientHolder.account
+        if (mastodonClientHolder.signedIn() && !reSignIn) {
+            mastodonMutex.unlock()
+            return@async mastodonClientHolder.account
+        }
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val mastodonAccessTokenEncryptedStr =

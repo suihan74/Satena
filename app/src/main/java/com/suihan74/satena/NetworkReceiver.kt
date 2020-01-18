@@ -34,8 +34,15 @@ class NetworkReceiver(private val context: Context) {
 
         val isConnected = activeNetworks.isNotEmpty()
         if (mState.value != isConnected) {
-            previousState = !isConnected
-            mState.postValue(isConnected)
+            // 起動時の状態確認を通知しないようにする
+            // previousStateがnullであるとき、起動時の初回確認であると判断する
+            if (previousState == null) {
+                previousState = isConnected
+            }
+            else {
+                previousState = !isConnected
+                mState.postValue(isConnected)
+            }
         }
     }
 }

@@ -152,8 +152,9 @@ class BookmarksViewModel(
 
             signIn()
         }
-        catch (e: Throwable) {}
-        finally {}
+        catch (e: Throwable) {
+            onError?.invoke(e)
+        }
 
         if (loading) {
             loadUserTags()
