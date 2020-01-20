@@ -40,10 +40,6 @@ class BookmarksRepository(
     /** スター情報のキャッシュ -> key = 対象ユーザー名, value = スター情報 */
     private val starsMap = HashMap<String, StarsEntry>()
 
-    /** 所持スター情報のキャッシュ */
-    var userStars: UserColorStarsCount? = null
-        private set
-
     /** ログイン状態 */
     val signedIn
         get() = client.signedIn()
@@ -51,6 +47,25 @@ class BookmarksRepository(
     /** ログイン中のユーザー名 */
     val userSignedIn
         get() = client.account?.name
+
+    /** 表示ユーザーリストを監視するライブデータを生成する */
+    val ignoredUsersLiveData by lazy {
+        IgnoredUsersLiveData(this)
+    }
+
+    /** サインインしているユーザーの所持スター情報を監視するライブデータを作成する */
+    val userStarsLiveData by lazy {
+        UserStarsLiveData(client)
+    }
+
+    /** エントリ中のブクマについたすべてのスター取得を監視するライブデータを作成する */
+    val allStarsLiveData by lazy {
+        StarsLiveData(
+            client,
+            entry,
+            this
+        )
+    }
 
     /** リポジトリ初期化 */
     suspend fun init() {
@@ -158,11 +173,6 @@ class BookmarksRepository(
     fun loadNextBookmarksRecentAsync() =
         loadBookmarksRecentAsync(bookmarksRecent.size.toLong())
 
-    /** 表示ユーザーリストを監視するライブデータを生成する */
-    val ignoredUsersLiveData by lazy {
-        IgnoredUsersLiveData(this)
-    }
-
     /** 非表示ユーザーのリストをロードする */
     fun loadIgnoredUsersAsync() =
         client.getIgnoredUsersAsync().apply {
@@ -196,11 +206,6 @@ class BookmarksRepository(
             }
         }
 
-    /** サインインしているユーザーの所持スター情報を監視するライブデータを作成する */
-    val userStarsLiveData by lazy {
-        UserStarsLiveData(client, this)
-    }
-
     /** ブクマにスターをつける */
     suspend fun postStar(bookmark: Bookmark, color: StarColor, quote: String = "") {
         client.postStarAsync(bookmark.getBookmarkUrl(entry), color, quote).await()
@@ -214,15 +219,6 @@ class BookmarksRepository(
             entry,
             bookmark,
             this)
-
-    /** エントリ中のブクマについたすべてのスター取得を監視するライブデータを作成する */
-    val allStarsLiveData by lazy {
-        StarsLiveData(
-            client,
-            entry,
-            this
-        )
-    }
 
     /** ブクマを通報 */
     suspend fun reportBookmark(report: Report) {
@@ -246,10 +242,12 @@ class BookmarksRepository(
 
     /** ユーザーの所持スターを監視するライブデータ */
     class UserStarsLiveData(
-        private val client: HatenaClient,
-        private val repository: BookmarksRepository
+        private val client: HatenaClient
     ) : LiveData<UserColorStarsCount>() {
-        override fun getValue() = repository.userStars
+        var userStars : UserColorStarsCount? = null
+            private set
+
+        override fun getValue() = userStars
 
         var loaded = false
             get() = synchronized(field) { field }
@@ -264,7 +262,7 @@ class BookmarksRepository(
             if (client.signedIn()) {
                 try {
                     val result = client.getMyColorStarsAsync().await()
-                    repository.userStars = result
+                    userStars = result
                     loaded = true
                     postValue(result)
                 }
@@ -280,7 +278,7 @@ class BookmarksRepository(
 
         private fun setDummy() {
             val dummy = UserColorStarsCount(0, 0, 0, 0)
-            repository.userStars = dummy
+            userStars = dummy
             postValue(dummy)
         }
     }
@@ -373,6 +371,7 @@ class BookmarksRepository(
 
         override fun onInactive() {
             task?.cancel()
+            task = null
         }
 
         /** 再通知 */
@@ -382,7 +381,8 @@ class BookmarksRepository(
 
         /** スター情報を強制再読み込み */
         fun updateAsync(forceUpdate: Boolean = false) : Deferred<StarsEntry> {
-            this.task?.cancel()
+            task?.cancel()
+            task = null
 
             val cache = repository.getStarsEntryTo(bookmark.user)
             return if (!forceUpdate && cache != null) {
@@ -401,7 +401,7 @@ class BookmarksRepository(
                             postValue(result)
                         }
                     }
-                    this.task = it
+                    task = it
                 }
             }
         }
