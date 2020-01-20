@@ -127,6 +127,7 @@
     <string name="pref_entries_history_max_size_desc">ブクマ閲覧履歴の最大保存数</string>
     <string name="pref_entries_history_max_size_dialog_title">ブクマ閲覧履歴の最大保存数を設定</string>
     <string name="pref_entries_history_max_size_dialog_msg">1～100件で指定できます</string>
+    <string name="pref_entries_history_max_size_text">%d件</string>
     <!-- bookmarks -->
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
     <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>

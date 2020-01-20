@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ToggleButton
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -14,6 +12,7 @@ import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.toVisibility
+import kotlinx.android.synthetic.main.fragment_preferences_entries.view.*
 
 class PreferencesEntriesFragment :
     PreferencesFragmentBase(),
@@ -23,47 +22,50 @@ class PreferencesEntriesFragment :
     companion object {
         fun createInstance() =
             PreferencesEntriesFragment()
-    }
 
-    private var mRoot: View? = null
+        private const val DIALOG_SINGLE_TAP_ACTION = "DIALOG_SINGLE_TAP_ACTION"
+        private const val DIALOG_LONG_TAP_ACTION = "DIALOG_LONG_TAP_ACTION"
+        private const val DIALOG_HOME_CATEGORY = "DIALOG_HOME_CATEGORY"
+        private const val DIALOG_HOME_TAB = "DIALOG_HOME_TAB"
+        private const val DIALOG_HISTORY_MAX_SIZE_PICKER = "DIALOG_HISTORY_MAX_SIZE_PICKER"
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_preferences_entries, container, false)
-        mRoot = view
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val tapActions = TapEntryAction.values().map { getString(it.titleId) }.toTypedArray()
 
         // シングルタップ時の動作
-        view.findViewById<Button>(R.id.preferences_entries_single_tap_action).apply {
-            text = getText(TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION)).titleId)
+        view.preferences_entries_single_tap_action.apply {
+            setText(TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION)).titleId)
             setOnClickListener {
                 val currentAction = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
                 AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle(R.string.pref_entries_single_tap_action_desc)
                     .setNegativeButton(R.string.dialog_cancel)
                     .setSingleChoiceItems(tapActions, currentAction.ordinal)
-                    .show(childFragmentManager, "single_tap_action_dialog")
+                    .show(childFragmentManager, DIALOG_SINGLE_TAP_ACTION)
             }
         }
 
         // ロングタップ時の動作
-        view.findViewById<Button>(R.id.preferences_entries_long_tap_action).apply {
-            text = getText(TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION)).titleId)
+        view.preferences_entries_long_tap_action.apply {
+            setText(TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION)).titleId)
             setOnClickListener {
                 val currentAction = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
                 AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle(R.string.pref_entries_long_tap_action_desc)
                     .setNegativeButton(R.string.dialog_cancel)
                     .setSingleChoiceItems(tapActions, currentAction.ordinal)
-                    .show(childFragmentManager, "long_tap_action_dialog")
+                    .show(childFragmentManager, DIALOG_LONG_TAP_ACTION)
             }
         }
 
         // ホームカテゴリ
         val initialHomeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
-        view.findViewById<Button>(R.id.preferences_home_category).apply {
-            text = getCategoryName(initialHomeCategory)
+        view.preferences_home_category.apply {
+            setText(initialHomeCategory.textId)
             setOnClickListener {
                 val currentHomeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
 
@@ -77,20 +79,22 @@ class PreferencesEntriesFragment :
                     .setTitle(R.string.pref_home_category_desc)
                     .setNegativeButton(R.string.dialog_cancel)
                     .setSingleChoiceItems(
-                        categories.map { getCategoryName(it) },
+                        categories.map { getString(it.textId) },
                         currentHomeCategory.ordinal)
-                    .show(childFragmentManager, "home_category_dialog")
+                    .show(childFragmentManager, DIALOG_HOME_CATEGORY)
             }
         }
 
         // 最初に表示するタブ
         val initialTabItemVisibility = (!initialHomeCategory.singleColumns).toVisibility()
-        view.findViewById<View>(R.id.preferences_entries_initial_tab_desc).visibility = initialTabItemVisibility
-        view.findViewById<Button>(R.id.preferences_entries_initial_tab).apply {
+        view.preferences_entries_initial_tab_desc.visibility = initialTabItemVisibility
+        view.preferences_entries_initial_tab.apply {
             val key = PreferenceKey.ENTRIES_INITIAL_TAB
             val tabOffset = if (initialHomeCategory == Category.MyBookmarks) 2 else 0
-            text = context.getText(EntriesTabType.fromInt(prefs.getInt(key) + tabOffset).textId)
+
+            setText(EntriesTabType.fromInt(prefs.getInt(key) + tabOffset).textId)
             visibility = initialTabItemVisibility
+
             setOnClickListener {
                 val currentInitialTab = EntriesTabType.fromInt(prefs.getInt(key) + tabOffset)
                 val currentHomeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
@@ -108,12 +112,12 @@ class PreferencesEntriesFragment :
                     .setSingleChoiceItems(
                         items.map { context.getString(it.textId) },
                         currentInitialTab.ordinal - tabOffset)
-                    .show(childFragmentManager, "home_tab_dialog")
+                    .show(childFragmentManager, DIALOG_HOME_TAB)
             }
         }
 
         // メニュー表示中の操作を許可
-        view.findViewById<ToggleButton>(R.id.preferences_entries_menu_tap_guard).apply {
+        view.preferences_entries_menu_tap_guard.apply {
             isChecked = prefs.getBoolean(PreferenceKey.ENTRIES_MENU_TAP_GUARD)
             setOnCheckedChangeListener { _, isChecked ->
                 prefs.edit {
@@ -123,7 +127,7 @@ class PreferencesEntriesFragment :
         }
 
         // スクロールでツールバーを隠す
-        view.findViewById<ToggleButton>(R.id.preferences_entries_hiding_toolbar_by_scrolling).apply {
+        view.preferences_entries_hiding_toolbar_by_scrolling.apply {
             val key = PreferenceKey.ENTRIES_HIDING_TOOLBAR_BY_SCROLLING
             isChecked = prefs.getBoolean(key)
             setOnCheckedChangeListener { _, isChecked ->
@@ -134,10 +138,10 @@ class PreferencesEntriesFragment :
         }
 
         // ブクマ閲覧履歴の最大保存数
-        view.findViewById<Button>(R.id.preferences_entries_history_max_size).apply {
+        view.preferences_entries_history_max_size.apply {
             val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
             val key = EntriesHistoryKey.MAX_SIZE
-            text = String.format("%d件", historyPrefs.getInt(key))
+            text = getString(R.string.pref_entries_history_max_size_text, historyPrefs.getInt(key))
 
             setOnClickListener {
                 val currentMaxSize = historyPrefs.getInt(key)
@@ -148,72 +152,68 @@ class PreferencesEntriesFragment :
                     .setMinValue(1)
                     .setMaxValue(100)
                     .setDefaultValue(currentMaxSize)
-                    .show(childFragmentManager, "history_max_size_picker")
+                    .show(childFragmentManager, DIALOG_HISTORY_MAX_SIZE_PICKER)
             }
         }
 
         return view
     }
 
-    private fun getCategoryName(cat: Category) = getString(cat.textId)
-
-    fun <T : View> findViewById(id: Int) =
-        mRoot?.findViewById<T>(id)
-
+    /** ダイアログ項目の選択 */
     override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
 
         when (dialog.tag) {
-            "single_tap_action_dialog" -> {
+            DIALOG_SINGLE_TAP_ACTION -> {
                 val act = TapEntryAction.fromInt(which)
                 prefs.edit {
                     putInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION, act.ordinal)
                 }
-                view?.findViewById<Button>(R.id.preferences_entries_single_tap_action)?.run {
+                view?.preferences_entries_single_tap_action?.run {
                     text = dialog.items!![which]
                 }
                 dialog.dismiss()
             }
 
-            "long_tap_action_dialog" -> {
+            DIALOG_LONG_TAP_ACTION -> {
                 val act = TapEntryAction.fromInt(which)
                 prefs.edit {
                     putInt(PreferenceKey.ENTRY_LONG_TAP_ACTION, act.ordinal)
                 }
-                view?.findViewById<Button>(R.id.preferences_entries_long_tap_action)?.run {
+                view?.preferences_entries_long_tap_action?.run {
                     text = dialog.items!![which]
                 }
                 dialog.dismiss()
             }
 
-            "home_category_dialog" -> {
+            DIALOG_HOME_CATEGORY -> {
                 val cat = Category.fromInt(which)
                 prefs.edit {
                     putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, cat.ordinal)
                 }
-                view?.findViewById<Button>(R.id.preferences_home_category)?.run {
+                view?.preferences_home_category?.run {
                     text = dialog.items!![which]
                 }
 
                 val v = (!cat.singleColumns).toVisibility()
-                view?.findViewById<View>(R.id.preferences_entries_initial_tab_desc)?.visibility = v
-                view?.findViewById<Button>(R.id.preferences_entries_initial_tab)?.run initialTab@ {
+                view?.preferences_entries_initial_tab_desc?.visibility = v
+                view?.preferences_entries_initial_tab?.run initialTab@ {
                     this@initialTab.visibility = v
                     val tabOffset = if (cat == Category.MyBookmarks) 2 else 0
                     val key = PreferenceKey.ENTRIES_INITIAL_TAB
                     val currentInitialTab = EntriesTabType.fromInt(prefs.getInt(key) + tabOffset)
-                    this@initialTab.text = context.getText(currentInitialTab.textId)
+                    this@initialTab.setText(currentInitialTab.textId)
                 }
 
                 dialog.dismiss()
             }
 
-            "home_tab_dialog" -> {
+            DIALOG_HOME_TAB -> {
                 prefs.edit {
                     putInt(PreferenceKey.ENTRIES_INITIAL_TAB, which)
                 }
 
-                view?.findViewById<Button>(R.id.preferences_entries_initial_tab)?.run {
+                view?.preferences_entries_initial_tab?.run {
                     text = dialog.items!![which]
                 }
 
@@ -222,13 +222,14 @@ class PreferencesEntriesFragment :
         }
     }
 
+    /** NumberPickerの処理完了 */
     override fun onCompleteNumberPicker(value: Int, dialog: NumberPickerDialogFragment) {
         val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
         historyPrefs.edit {
             putInt(EntriesHistoryKey.MAX_SIZE, value)
         }
-        view?.findViewById<Button>(R.id.preferences_entries_history_max_size)?.run {
-            text = String.format("%d件", value)
+        view?.preferences_entries_history_max_size?.run {
+            text = getString(R.string.pref_entries_history_max_size_text, value)
         }
     }
 }
