@@ -164,7 +164,7 @@ class ReportDialog : DialogFragment() {
                         position: Int,
                         id: Long
                     ) {
-                        val category = ReportCategory.values()[position]
+                        val category = ReportCategory.fromInt(position)
                         viewModel.category.postValue(category)
                     }
 
