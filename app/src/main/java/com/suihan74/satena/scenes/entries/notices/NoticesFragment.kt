@@ -205,6 +205,7 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
                 val savedNotices = noticesPrefs.get<List<Notice>>(NoticesKey.NOTICES)
                 val noticesSize = noticesPrefs.getInt(NoticesKey.NOTICES_SIZE)
                 val removedNotices = noticesPrefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
+                val ignoreNoticesFromSpam = prefs.getBoolean(PreferenceKey.IGNORE_NOTICES_FROM_SPAM)
 
                 val response = HatenaClient.getNoticesAsync().await()
                 val fetchedNotices = response.notices
@@ -214,7 +215,12 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
                 } }
 
                 var oldestMatched = LocalDateTime.MAX
-                val notices = oldNotices.plus(fetchedNotices)
+
+                val allNotices =
+                    if (ignoreNoticesFromSpam) oldNotices.plus(fetchedNotices).filterNot { it.checkFromSpam() }
+                    else oldNotices.plus(fetchedNotices)
+
+                val notices = allNotices
                     .filterNot { n ->
                         removedNotices.any { it.created == n.created && it.modified == n.modified }.also { result ->
                             if (result) {
