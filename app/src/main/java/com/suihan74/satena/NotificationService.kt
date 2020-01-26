@@ -14,6 +14,7 @@ import com.suihan74.HatenaLib.Notice
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.scenes.entries.notices.checkFromSpam
 import com.suihan74.satena.scenes.entries.notices.message
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
@@ -197,6 +198,11 @@ class NotificationService : Service(), CoroutineScope {
     }
 
     private fun invokeNotice(context: Context, notice: Notice) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        if (prefs.getBoolean(PreferenceKey.IGNORE_NOTICES_FROM_SPAM) && notice.checkFromSpam()) {
+            return
+        }
+
         val title = "通知"
         val message = notice.message(context).let {
             makeSpannedFromHtml(it).toString()

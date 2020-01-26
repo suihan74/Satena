@@ -1063,7 +1063,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * 指定したユーザーのブコメを非表示にする
      */
-    fun ignoreUserAsync(user: String) : Deferred<Any> = async {
+    fun ignoreUserAsync(user: String) : Deferred<Unit> = async {
         require(signedIn()) { "need to sign-in to mute users" }
         val url = "$B_BASE_URL/${account!!.name}/api.ignore.json"
         try {
@@ -1084,7 +1084,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * 指定したユーザーのブコメ非表示を解除する
      */
-    fun unignoreUserAsync(user: String) : Deferred<Any> = async {
+    fun unignoreUserAsync(user: String) : Deferred<Unit> = async {
         require(signedIn()) { "need to sign-in to mute users" }
         val url = "$B_BASE_URL/${account!!.name}/api.unignore.json"
         try {

@@ -44,6 +44,11 @@ class PreferencesGeneralsViewModel(
         PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS
     )
 
+    /** スパムと思われるスター通知を行わない */
+    val ignoreNoticesToSilentBookmark = createLiveData<Boolean>(
+        PreferenceKey.IGNORE_NOTICES_FROM_SPAM
+    )
+
     /** アップデート後初回起動時にリリースノートを表示する */
     val displayReleaseNotes = createLiveData<Boolean>(
         PreferenceKey.SHOW_RELEASE_NOTES_AFTER_UPDATE
