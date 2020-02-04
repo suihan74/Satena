@@ -20,6 +20,7 @@ import com.sys1yagi.mastodon4j.MastodonClient
 import com.sys1yagi.mastodon4j.api.Scope
 import com.sys1yagi.mastodon4j.api.entity.auth.AppRegistration
 import com.sys1yagi.mastodon4j.api.method.Apps
+import kotlinx.android.synthetic.main.activity_mastodon_authentication.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,14 +39,11 @@ class MastodonAuthenticationActivity : ActivityBase() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mastodon_authentication)
 
-        val authButton = findViewById<Button>(R.id.auth_button)
-        val instanceName = findViewById<EditText>(R.id.instance_name)
-
-        authButton.setOnClickListener {
+        auth_button.setOnClickListener {
             showProgressBar()
             launch(Dispatchers.Main) {
                 try {
-                    startAuthorizeMastodon(instanceName.text.toString())
+                    startAuthorizeMastodon(instance_name.text.toString())
                 }
                 catch (e: Exception) {
                     Log.e("FailedToSignIn", e.message)
@@ -73,7 +71,7 @@ class MastodonAuthenticationActivity : ActivityBase() {
                         showToast("$instance にログイン完了")
 
                         // 前の画面に戻る
-                        onBackPressed()
+                        finish()
                     }
                     catch (e: Exception) {
                         Log.e("FailedToSignIn", e.message)

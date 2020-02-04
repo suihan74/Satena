@@ -14,6 +14,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.showToast
+import kotlinx.android.synthetic.main.activity_hatena_authentication.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,29 +25,28 @@ class HatenaAuthenticationActivity : ActivityBase() {
         setContentView(R.layout.activity_hatena_authentication)
 
         // ログイン
-        val loginButton = findViewById<Button>(R.id.auth_button)
-        loginButton.setOnClickListener {
-            val name = findViewById<EditText>(R.id.user_name).text.toString()
-            val password = findViewById<EditText>(R.id.password).text.toString()
+        auth_button.setOnClickListener {
+            val name = user_name.text.toString()
+            val password = password.text.toString()
 
             if (name.isBlank() || password.length < 5) {
                 showToast("ユーザー名とパスワードを入力してください")
             }
             else {
-                launch(Dispatchers.Main) {
-                    startSignIn(name, password)
+                launch {
+                    signIn(name, password)
                 }
             }
         }
 
         // 新規登録
-        findViewById<TextView>(R.id.sign_up_text_view).apply {
+        sign_up_text_view.apply {
             movementMethod = LinkMovementMethod.getInstance()
             setLinkTextColor(ContextCompat.getColor(this@HatenaAuthenticationActivity, R.color.colorPrimary))
         }
     }
 
-    private suspend fun startSignIn(name: String, password: String) = withContext(Dispatchers.Main) {
+    private suspend fun signIn(name: String, password: String) = withContext(Dispatchers.Main) {
         try {
             val account = HatenaClient.signInAsync(name, password).await()
 
@@ -60,7 +60,7 @@ class HatenaAuthenticationActivity : ActivityBase() {
             SatenaApplication.instance.startNotificationService()
 
             // 前の画面に戻る
-            onBackPressed()
+            finish()
         }
         catch (e: Exception) {
             Log.d("FailedToSignIn", e.message)

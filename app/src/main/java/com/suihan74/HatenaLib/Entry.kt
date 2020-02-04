@@ -31,7 +31,7 @@ class Entry (
     val bookmarkedData : BookmarkResult? = null,
 
     // ホットエントリにのみ含まれる情報
-    @SerializedName("myhotentry_Comments")
+    @SerializedName("myhotentry_comments")
     val myHotEntryComments : List<BookmarkResult>? = null
 ) : Serializable {
 

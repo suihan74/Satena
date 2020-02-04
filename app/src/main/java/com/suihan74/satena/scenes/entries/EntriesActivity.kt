@@ -34,6 +34,7 @@ import com.suihan74.satena.scenes.entries.pages.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.utilities.*
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -160,6 +161,9 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
         mDrawerToggle.isDrawerIndicatorEnabled = false
         mDrawerToggle.syncState()
 
+        // カテゴリリスト
+        initializeCategoriesList()
+
         // メニューボタンの設定
         val menuButton = findViewById<FloatingActionButton>(R.id.entries_menu_button).apply {
             setOnClickListener {
@@ -198,29 +202,6 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
         preferencesButton.setOnClickListener {
             val intent = Intent(this, PreferencesActivity::class.java)
             startActivity(intent)
-        }
-
-        // カテゴリリストの作成
-        val categories = if (HatenaClient.signedIn()) {
-            Category.valuesWithSignedIn()
-        }
-        else {
-            Category.valuesWithoutSignedIn()
-        }
-
-        findViewById<RecyclerView>(R.id.categories_list).apply {
-            setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(context)
-            mCategoriesAdapter = object : CategoriesAdapter(categories) {
-                override fun onItemClicked(category: Category) {
-                    if (category != mCurrentCategory) {
-                        invalidateOptionsMenu()
-                    }
-                    refreshEntriesFragment(category)
-                    mDrawer.closeDrawer(GravityCompat.END)
-                }
-            }
-            adapter = mCategoriesAdapter
         }
 
         if (!isFragmentShowed()) {
@@ -397,6 +378,31 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
         if (showReleaseNotes && lastVersionName != versionName) {
             val dialog = ReleaseNotesDialogFragment.createInstance()
             dialog.show(supportFragmentManager, "release_notes")
+        }
+
+        initializeCategoriesList()
+        setMyBookmarkButton()
+    }
+
+    /** カテゴリリストを初期化 */
+    private fun initializeCategoriesList() {
+        val categories =
+            if (HatenaClient.signedIn()) Category.valuesWithSignedIn()
+            else Category.valuesWithoutSignedIn()
+
+        categories_list.apply {
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(context)
+            mCategoriesAdapter = object : CategoriesAdapter(categories) {
+                override fun onItemClicked(category: Category) {
+                    if (category != mCurrentCategory) {
+                        invalidateOptionsMenu()
+                    }
+                    refreshEntriesFragment(category)
+                    mDrawer.closeDrawer(GravityCompat.END)
+                }
+            }
+            adapter = mCategoriesAdapter
         }
     }
 
