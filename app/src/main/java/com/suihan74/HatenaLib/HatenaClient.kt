@@ -39,11 +39,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
     /** 現在ログイン済みのユーザ情報 */
     var account : Account? = null
-        get() {
-            synchronized(this) {
-                return field
-            }
-        }
+        get() = synchronized(this) { field }
         private set(value) {
             synchronized(this) {
                 field = value
@@ -78,7 +74,14 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * HatenaClientがログイン済みか確認する
      */
-    fun signedIn() : Boolean = mRk != null && account != null
+    fun signedIn() : Boolean = mSignedIn //mRk != null && account != null
+    private var mSignedIn : Boolean = false
+        get() = synchronized(this) { field }
+        set(value) {
+            synchronized(this) {
+                field = value
+            }
+        }
 
     /**
      * HatenaClientがはてなスターのサービスにログイン済みかを確認する
@@ -107,6 +110,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 response.close()
                 try {
                     account = getAccountAsync().await()
+                    mSignedIn = true
 
                     listOf(
                         signInStarAsync(),
@@ -114,6 +118,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     ).awaitAll()
                 }
                 catch (e: Exception) {
+                    mSignedIn = false
                     throw e
                 }
 
@@ -121,6 +126,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             }
         }
 
+        mSignedIn = false
         response.close()
         throw RuntimeException("connection error")
     }
@@ -150,6 +156,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
                     response.close()
                     account = getAccountAsync().await()
+                    mSignedIn = true
 
                     listOf(
                         signInStarAsync(),
@@ -161,6 +168,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 ?: throw RuntimeException("failed to sign in")
         }
 
+        mSignedIn = false
         response.close()
         throw RuntimeException("connection error")
     }
