@@ -14,6 +14,15 @@ class EntriesViewModel(
         MutableLiveData<List<Category>>()
     }
 
+    /** 現在表示中のカテゴリ */
+    val currentCategory by lazy {
+        MutableLiveData<Category>()
+    }
+
+    init {
+        categories.value = Category.valuesWithoutSignedIn().toList()
+    }
+
     class Factory(private val repository: EntriesRepository) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>) : T =

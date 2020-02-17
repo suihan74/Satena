@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:bind="http://schemas.android.com/tools">
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.entries2.EntriesViewModel"/>
+    </data>
+
+    <androidx.drawerlayout.widget.DrawerLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/drawer_layout"
+            android:background="?attr/panelBackground"
+            android:fitsSystemWindows="false">
+
+        <!-- The main content view -->
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <!-- メニューボタンの上にclick_guardを表示するために二重にする必要がある -->
+            <androidx.coordinatorlayout.widget.CoordinatorLayout
+                    android:id="@+id/main_content_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                <include layout="@layout/actionbar_default" android:id="@+id/action_bar"/>
+
+                <FrameLayout
+                        android:id="@+id/main_layout"
+                        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+
+                <!-- メニュー表示中に他の領域をタップできなくする(設定がONになっているときに表示する) -->
+                <View
+                        android:id="@+id/entries_menu_background_guard_full"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:visibility="gone"
+                        android:background="#a0000000"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+
+                <!-- メニュー表示中の記事誤タップ防止用ビュー -->
+                <View
+                        android:id="@+id/entries_menu_background_guard"
+                        android:visibility="gone"
+                        android:layout_gravity="bottom|end"
+                        android:background="#00000000"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_width="96dp"
+                        android:layout_height="300dp"/>
+
+                <!-- 以下メニューボタン -->
+                <LinearLayout
+                        android:id="@+id/entries_menu_notices_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="bottom|end"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:visibility="invisible"
+                        android:layout_marginEnd="24dp"
+                        android:layout_marginBottom="24dp">
+
+                    <TextView
+                            android:id="@+id/entries_menu_notices_desc"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/notices_desc"
+                            android:textColor="#ddd"
+                            android:textStyle="bold"
+                            android:background="@drawable/rounded_corner_text_view"
+                            android:alpha="0"
+                            android:paddingTop="4dp"
+                            android:paddingBottom="4dp"
+                            android:paddingLeft="6dp"
+                            android:paddingRight="6dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginEnd="8dp"/>
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/entries_menu_notices_button"
+                            style="@style/Widget.Design.FloatingActionButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_notifications"
+                            android:layout_margin="8dp"
+                            app:backgroundTint="?attr/colorPrimary"
+                            app:fabSize="mini"/>
+                </LinearLayout>
+
+                <LinearLayout
+                        android:id="@+id/entries_menu_categories_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="bottom|end"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:visibility="invisible"
+                        android:layout_marginEnd="24dp"
+                        android:layout_marginBottom="24dp">
+
+                    <TextView
+                            android:id="@+id/entries_menu_categories_desc"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/categories_desc"
+                            android:textColor="#ddd"
+                            android:textStyle="bold"
+                            android:background="@drawable/rounded_corner_text_view"
+                            android:alpha="0"
+                            android:paddingTop="4dp"
+                            android:paddingBottom="4dp"
+                            android:paddingLeft="6dp"
+                            android:paddingRight="6dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginEnd="8dp"/>
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/entries_menu_categories_button"
+                            style="@style/Widget.Design.FloatingActionButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_baseline_category"
+                            android:layout_margin="8dp"
+                            app:backgroundTint="?attr/colorPrimary"
+                            app:fabSize="mini"/>
+                </LinearLayout>
+
+                <LinearLayout
+                        android:id="@+id/entries_menu_my_bookmarks_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:visibility="invisible"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginEnd="24dp"
+                        android:layout_marginBottom="24dp">
+
+                    <TextView
+                            android:id="@+id/entries_menu_my_bookmarks_desc"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/my_bookmarks_desc"
+                            android:textColor="#ddd"
+                            android:textStyle="bold"
+                            android:background="@drawable/rounded_corner_text_view"
+                            android:alpha="0"
+                            android:paddingTop="4dp"
+                            android:paddingBottom="4dp"
+                            android:paddingLeft="6dp"
+                            android:paddingRight="6dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginEnd="8dp"/>
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/entries_menu_my_bookmarks_button"
+                            style="@style/Widget.Design.FloatingActionButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="8dp"
+                            app:backgroundTint="?attr/colorPrimary"
+                            app:fabSize="mini"/>
+                </LinearLayout>
+
+                <LinearLayout
+                        android:id="@+id/entries_menu_settings_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="bottom|end"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:visibility="invisible"
+                        android:layout_marginEnd="24dp"
+                        android:layout_marginBottom="24dp">
+
+                    <TextView
+                            android:id="@+id/entries_menu_preferences_desc"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/preferences_desc"
+                            android:textColor="#ddd"
+                            android:textStyle="bold"
+                            android:background="@drawable/rounded_corner_text_view"
+                            android:alpha="0"
+                            android:paddingTop="4dp"
+                            android:paddingBottom="4dp"
+                            android:paddingLeft="6dp"
+                            android:paddingRight="6dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginEnd="8dp"/>
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/entries_menu_preferences_button"
+                            style="@style/Widget.Design.FloatingActionButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_baseline_settings"
+                            android:layout_margin="8dp"
+                            app:backgroundTint="?attr/colorPrimary"
+                            app:fabSize="mini"/>
+                </LinearLayout>
+
+                <!-- メニュー表示中の記事誤タップ防止用ビュー -->
+                <View
+                        android:id="@+id/entries_menu_button_guard"
+                        android:layout_gravity="bottom|end"
+                        android:background="#00000000"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"/>
+
+                <!-- メニュー表示切替用の大ボタン -->
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/entries_menu_button"
+                        style="@style/Widget.Design.FloatingActionButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_baseline_menu_white"
+                        app:borderWidth="0dp"
+                        app:backgroundTint="?attr/colorPrimary"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginEnd="24dp"
+                        android:layout_marginBottom="24dp"
+                        app:fabSize="normal"/>
+
+            </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+            <View
+                    android:id="@+id/click_guard"
+                    android:visibility="gone"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:background="#a0000000"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            <ProgressBar
+                    android:id="@+id/main_progress_bar"
+                    android:visibility="invisible"
+                    style="?android:attr/progressBarStyle"
+                    android:indeterminateTint="?attr/colorPrimary"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <!-- カテゴリリスト -->
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/categories_list"
+                bind:viewmodels="@{vm.categories}"
+                android:orientation="vertical"
+                android:layout_width="240dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="end"
+                android:divider="@android:color/transparent"
+                android:dividerHeight="0dp"
+                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+                android:scrollbarSize="4dp"
+                android:scrollbars="vertical"
+                android:background="?attr/panelBackground"/>
+    </androidx.drawerlayout.widget.DrawerLayout>
+</layout>
