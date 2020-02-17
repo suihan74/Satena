@@ -332,7 +332,7 @@ class BookmarksRepository(
                     if (e == null) {
                         val result = it.getCompleted()
 
-                        result.forEach { starEntry ->
+                        result?.forEach { starEntry ->
                             val user = userAndUrls.firstOrNull { pair ->
                                 pair.second == starEntry.url
                             }?.first

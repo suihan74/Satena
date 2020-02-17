@@ -16,7 +16,10 @@ import com.suihan74.HatenaLib.Entry
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.utilities.*
+import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.RecyclerViewScrollingUpdater
+import com.suihan74.utilities.getThemeColor
+import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -118,14 +121,12 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
                     mEntriesAdapter = EntriesAdapter(
                         this@SingleTabEntriesFragmentBase,
                         Category.All,
-                        0,
-                        entries
+                        0
                     )
                     adapter = mEntriesAdapter
                 }
-                else {
-                    mEntriesAdapter!!.setEntries(entries)
-                }
+
+                mEntriesAdapter!!.setEntries(entries)
 
                 val mEntriesAdapter = mEntriesAdapter!!
                 if (mEntriesScrollingUpdater != null) {
