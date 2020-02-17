@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.StarColor
@@ -12,15 +13,24 @@ import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_stars.view.*
 
 
-open class StarsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+open class StarsAdapter : ListAdapter<RecyclerState<StarWithBookmark>, RecyclerView.ViewHolder>(DiffCallback()) {
+    private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<StarWithBookmark>>() {
+        override fun areItemsTheSame(
+            oldItem: RecyclerState<StarWithBookmark>,
+            newItem: RecyclerState<StarWithBookmark>
+        ) = oldItem.type == newItem.type && oldItem.body?.star?.user == newItem.body?.star?.user
 
-    private var states = emptyList<RecyclerState<StarWithBookmark>>()
+        override fun areContentsTheSame(
+            oldItem: RecyclerState<StarWithBookmark>,
+            newItem: RecyclerState<StarWithBookmark>
+        ) = oldItem.type == newItem.type && oldItem.body == newItem.body
+    }
 
     open fun onItemClicked(item: StarWithBookmark) {}
     open fun onItemLongClicked(item: StarWithBookmark) = false
 
-    override fun getItemCount() = states.size
-    override fun getItemViewType(position: Int) = states[position].type.int
+    override fun getItemCount() = currentList.size
+    override fun getItemViewType(position: Int) = currentList[position].type.int
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         LayoutInflater.from(parent.context).let { inflater ->
@@ -29,12 +39,12 @@ open class StarsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     ViewHolder(inflater.inflate(R.layout.listview_item_stars, parent, false)).apply {
                         itemView.setOnClickListener {
                             onItemClicked(
-                                states[adapterPosition].body!!
+                                currentList[adapterPosition].body!!
                             )
                         }
                         itemView.setOnLongClickListener {
                             onItemLongClicked(
-                                states[adapterPosition].body!!
+                                currentList[adapterPosition].body!!
                             )
                         }
                     }
@@ -49,31 +59,14 @@ open class StarsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) =
         when (RecyclerType.fromInt(holder.itemViewType)) {
             RecyclerType.BODY ->
-                (holder as ViewHolder).body = states[position].body!!
+                (holder as ViewHolder).body = currentList[position].body!!
 
             else -> {}
         }
 
     fun setStars(stars: List<StarWithBookmark>) {
-        if (states.isEmpty() && stars.isEmpty()) return
-        val newStates = RecyclerState.makeStatesWithFooter(stars)
-
-        val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-            override fun getOldListSize() = states.size
-            override fun getNewListSize() = newStates.size
-            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                val old = states[oldItemPosition]
-                val new = newStates[newItemPosition]
-                return old.type == new.type && old.body?.star?.user == new.body?.star?.user
-            }
-            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                val old = states[oldItemPosition]
-                val new = newStates[newItemPosition]
-                return old.type == new.type && old.body == new.body
-            }
-        })
-        states = newStates
-        diff.dispatchUpdatesTo(this)
+        if (currentList.isEmpty() && stars.isEmpty()) return
+        submitList(RecyclerState.makeStatesWithFooter(stars))
     }
 
     class ViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {

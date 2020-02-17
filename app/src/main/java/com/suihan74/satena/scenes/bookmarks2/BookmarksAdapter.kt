@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.Bookmark
@@ -23,14 +24,27 @@ import kotlinx.android.synthetic.main.listview_item_bookmarks.view.*
 import org.threeten.bp.format.DateTimeFormatter
 
 fun <T> List<T>?.contentsEquals(other: List<T>?) =
-    if (this == null && other == null)
-        true
-    else if (other == null)
-        false
-    else
-        this!!.size == other.size && this.mapIndexed { index, _ -> this[index] == other[index] }.all { it }
+    if (this == null && other == null) true
+    else if (other == null) false
+    else this!!.size == other.size && this.mapIndexed { index, _ -> this[index] == other[index] }.all { it }
 
-open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>, RecyclerView.ViewHolder>(DiffCallback()) {
+    private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entity>>() {
+        override fun areItemsTheSame(
+            oldItem: RecyclerState<Entity>,
+            newItem: RecyclerState<Entity>
+        ): Boolean {
+            return oldItem.type == newItem.type && oldItem.body?.bookmark?.user == newItem.body?.bookmark?.user
+        }
+
+        override fun areContentsTheSame(
+            oldItem: RecyclerState<Entity>,
+            newItem: RecyclerState<Entity>
+        ): Boolean {
+            return oldItem.type == newItem.type && oldItem.body?.equals(newItem.body) == true
+        }
+    }
 
     data class Entity (
         val bookmark: Bookmark,
@@ -54,7 +68,6 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     /** 表示項目リスト */
-    private var states = emptyList<RecyclerState<Entity>>()
     private var loadableFooter: LoadableFooterViewHolder? = null
 
     open fun onItemClicked(bookmark: Bookmark) {}
@@ -71,10 +84,10 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     open fun onAdditionalLoading() {}
     open val nextLoadable : Boolean = false
 
-    override fun getItemCount() = states.size
+    override fun getItemCount() = currentList.size
 
     override fun getItemViewType(position: Int) =
-        states[position].type.int
+        currentList[position].type.int
 
     /**
      * 指定ブクマの位置を取得する
@@ -83,7 +96,7 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
      * 対象が存在しないとき ---> -1
      */
     fun getPosition(bookmark: Bookmark) =
-        states.indexOfFirst { it.body?.bookmark?.user == bookmark.user }
+        currentList.indexOfFirst { it.body?.bookmark?.user == bookmark.user }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         LayoutInflater.from(parent.context).let { inflater ->
@@ -94,11 +107,11 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         this
                     ).apply {
                         itemView.setOnClickListener {
-                            val bookmark = states[adapterPosition].body!!.bookmark
+                            val bookmark = currentList[adapterPosition].body!!.bookmark
                             onItemClicked(bookmark)
                         }
                         itemView.setOnLongClickListener {
-                            val bookmark = states[adapterPosition].body!!.bookmark
+                            val bookmark = currentList[adapterPosition].body!!.bookmark
                             onItemLongClicked(bookmark)
                         }
                     }
@@ -123,7 +136,7 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         when (RecyclerType.fromInt(holder.itemViewType)) {
             RecyclerType.BODY -> {
                 (holder as ViewHolder).run {
-                    val entity = states[position].body!!
+                    val entity = currentList[position].body!!
                     bookmark = entity
                 }
             }
@@ -164,23 +177,7 @@ open class BookmarksAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             )
         })
 
-        val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-            override fun getOldListSize() = states.size
-            override fun getNewListSize() = newStates.size
-            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                val old = states[oldItemPosition]
-                val new = newStates[newItemPosition]
-                return old.type == new.type && old.body?.bookmark?.user == new.body?.bookmark?.user
-            }
-            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                val old = states[oldItemPosition]
-                val new = newStates[newItemPosition]
-                return old.type == new.type && old.body?.equals(new.body) == true
-            }
-        })
-        states = newStates
-
-        diff.dispatchUpdatesTo(this)
+        submitList(newStates)
     }
 
     /** ブクマリストアイテム */

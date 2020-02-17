@@ -3,56 +3,57 @@ package com.suihan74.satena.scenes.preferences.ignored
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
+import kotlinx.android.synthetic.main.listview_item_ignored_users.view.*
 
 open class IgnoredUsersAdapter(
     private var _users : List<String>
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-    private var states : List<String> = _users
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
+) : ListAdapter<String, RecyclerView.ViewHolder>(DiffCallback()) {
+    private class DiffCallback : DiffUtil.ItemCallback<String>() {
+        override fun areItemsTheSame(oldItem: String, newItem: String) = oldItem == newItem
+        override fun areContentsTheSame(oldItem: String, newItem: String) = oldItem == newItem
+    }
 
     fun setUsers(u: List<String>) {
         _users = u
-        states = if (searchText.isEmpty()) u else u.filter { it.contains(searchText) }
+        submitList(
+            if (searchText.isEmpty()) u
+            else u.filter { it.contains(searchText) }
+        )
     }
 
     fun isEmpty() = _users.isEmpty()
 
     class ViewHolder(private val view : View) : RecyclerView.ViewHolder(view) {
-        private val userIcon = view.findViewById<ImageView>(R.id.user_icon)!!
-        private val userName = view.findViewById<TextView>(R.id.user_name)!!
         var user : String
-            get() = userName.text.toString()
+            get() = view.user_name.text.toString()
             internal set (value) {
-                userName.text = value
+                view.user_name.text = value
                 val iconUrl = HatenaClient.getUserIconUrl(value)
 
                 Glide.with(view)
                     .load(iconUrl)
-                    .into(userIcon)
+                    .into(view.user_icon)
             }
     }
 
     fun removeUser(user: String) {
-        val position = states.indexOf(user)
         _users = _users.filterNot { it == user }.toList()
-        states = states.filterNot { it == user }.toList()
-        notifyItemRemoved(position)
+        submitList(currentList.filterNot { it == user }.toList())
     }
 
     var searchText = ""
         set(value) {
             field = value
-            states = if (value.isEmpty()) _users else _users.filter { it.contains(value) }
+            submitList(
+                if (value.isEmpty()) _users
+                else _users.filter { it.contains(value) }
+            )
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -73,11 +74,11 @@ open class IgnoredUsersAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         (holder as ViewHolder).apply {
-            user = states[position]
+            user = currentList[position]
         }
     }
 
-    override fun getItemCount() = states.size
+    override fun getItemCount() = currentList.size
 
     open fun onItemClicked(user : String) {}
     open fun onItemLongClicked(user : String) : Boolean = true

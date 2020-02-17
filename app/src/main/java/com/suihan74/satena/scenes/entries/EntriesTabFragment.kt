@@ -181,9 +181,9 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             mEntriesAdapter = EntriesAdapter(
                 this@EntriesTabFragment,
                 category,
-                mTabPosition,
-                mEntries
+                mTabPosition
             )
+            mEntriesAdapter!!.setEntries(mEntries)
             adapter = mEntriesAdapter
             mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter!!) {
                 override fun load() {

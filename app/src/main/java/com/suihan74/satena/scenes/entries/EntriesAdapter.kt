@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.HatenaLib.BookmarkResult
@@ -26,7 +27,6 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.satena.scenes.entries.pages.SiteEntriesFragment
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,11 +35,27 @@ import kotlinx.coroutines.withContext
 open class EntriesAdapter(
     private val fragment : EntriesTabFragmentBase,
     var category : Category,
-    private val tabPosition: Int,
-    private var entries : List<Entry>
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private val tabPosition: Int
+) : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
 
-    private var states = RecyclerState.makeStatesWithFooter(entries)
+    private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entry>>() {
+        override fun areItemsTheSame(
+            oldItem: RecyclerState<Entry>,
+            newItem: RecyclerState<Entry>
+        ) = oldItem.type == newItem.type && oldItem.body?.id == newItem.body?.id
+
+        override fun areContentsTheSame(
+            oldItem: RecyclerState<Entry>,
+            newItem: RecyclerState<Entry>
+        ) = oldItem.type == newItem.type &&
+            oldItem.body?.id == newItem.body?.id &&
+            oldItem.body?.count == newItem.body?.count &&
+            oldItem.body?.title == newItem.body?.title &&
+            oldItem.body?.bookmarkedData == newItem.body?.bookmarkedData
+    }
+
+//    private var currentList = RecyclerState.makeStatesWithFooter(entries)
+    private var entries: List<Entry> = emptyList()
 
     private lateinit var singleTapAction : TapEntryAction
     private lateinit var longTapAction : TapEntryAction
@@ -56,29 +72,6 @@ open class EntriesAdapter(
         refreshPreferences()
     }
 
-    class EntriesDiffCalculator(
-        private val oldStates: List<RecyclerState<Entry>>,
-        private val newStates: List<RecyclerState<Entry>>
-    ) : DiffUtil.Callback() {
-        override fun getOldListSize() = oldStates.size
-        override fun getNewListSize() = newStates.size
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) : Boolean {
-            val old = oldStates[oldItemPosition]
-            val new = newStates[newItemPosition]
-            return old.type == new.type && old.body?.id == new.body?.id
-        }
-
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            val old = oldStates[oldItemPosition]
-            val new = newStates[newItemPosition]
-            return old.type == new.type &&
-                    old.body?.bookmarkedData == new.body?.bookmarkedData &&
-                    old.body?.id == new.body?.id &&
-                    old.body?.count == new.body?.count &&
-                    old.body?.title == new.body?.title
-        }
-    }
-
     fun updateIgnoredEntries() {
         setEntries(entries)
     }
@@ -90,21 +83,18 @@ open class EntriesAdapter(
         entireOffset = e.size
         entries = e
 
-        DiffUtil.calculateDiff(EntriesDiffCalculator(states, newStates)).run {
-            states = newStates
-            dispatchUpdatesTo(this@EntriesAdapter)
-        }
+        submitList(newStates)
     }
 
     fun addEntries(e: List<Entry>) {
-        val insertStartPosition = states.size - 1
-        val newItems = e
-            .filterNot { entry -> entries.any { it.id == entry.id } }
+        val newItems = e.filterNot { entry -> entries.any { it.id == entry.id } }
         entireOffset += e.size
         entries = entries.plus(newItems)
         val filtered = newItems.filterNot { entry -> ignoredEntries.any { it.isMatched(entry) } }
-        states.addAll(states.size - 1, filtered.map { RecyclerState(RecyclerType.BODY, it) })
-        notifyItemRangeInserted(insertStartPosition, filtered.size)
+
+        val newList = ArrayList(currentList)
+        newList.addAll(currentList.size - 1, filtered.map { RecyclerState(RecyclerType.BODY, it) })
+        submitList(newList)
     }
 
     private fun refreshPreferences() {
@@ -125,13 +115,13 @@ open class EntriesAdapter(
 
                 holder.itemView.setOnClickListener {
                     val position = holder.adapterPosition
-                    val entry = states[position].body!!
+                    val entry = currentList[position].body!!
                     TappedActionLauncher.launch(parent.context, singleTapAction, entry, fragment)
                 }
 
                 holder.itemView.setOnLongClickListener {
                     val position = holder.adapterPosition
-                    val entry = states[position].body!!
+                    val entry = currentList[position].body!!
                     TappedActionLauncher.launch(parent.context, longTapAction, entry, fragment)
                     return@setOnLongClickListener true
                 }
@@ -148,39 +138,14 @@ open class EntriesAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (RecyclerType.fromInt(holder.itemViewType)) {
-            RecyclerType.BODY -> (holder as ViewHolder).entry = states[position].body!!
+            RecyclerType.BODY -> (holder as ViewHolder).entry = currentList[position].body!!
             else -> {}
         }
     }
 
-    override fun getItemCount() = states.size
+    override fun getItemCount() = currentList.size
 
-    override fun getItemViewType(position: Int): Int = states[position].type.int
-
-    private fun makeAdditionalMenuItems(entry: Entry) : (ArrayList<Pair<Int, ()->Unit>>)->Unit =
-        { items: ArrayList<Pair<Int, ()->Unit>> ->
-            if (fragment !is SiteEntriesFragment) {
-                items.add(R.string.entry_action_show_entries to { showEntries(entry) })
-            }
-            if (HatenaClient.signedIn()) {
-                if (entry.bookmarkedData == null) {
-                    items.add(R.string.entry_action_read_later to { addToReadLaterEntries(entry) })
-                }
-                else {
-                    if (entry.bookmarkedData.tags.contains("あとで読む")) {
-                        items.add(R.string.entry_action_read to { bookmarkReadLaterEntry(entry) })
-                    }
-
-                    items.add(R.string.entry_action_delete_bookmark to { deleteBookmark(entry) })
-                }
-            }
-            items.add(R.string.entry_action_ignore to { addEntryToIgnores(entry) })
-        }
-
-    private fun showEntries(entry: Entry) {
-        val activity = fragment.activity as? EntriesActivity ?: throw RuntimeException("activity error")
-        activity.refreshEntriesFragment(Category.Site, entry.rootUrl)
-    }
+    override fun getItemViewType(position: Int): Int = currentList[position].type.int
 
     fun addToReadLaterEntries(entry: Entry) {
         fragment.launch(Dispatchers.Main) {
@@ -188,7 +153,7 @@ open class EntriesAdapter(
             try {
                 val result = HatenaClient.postBookmarkAsync(entry.url, readLater = true).await()
                 val position: Int = entries.indexOfFirst { it.id == entry.id }
-                states[position].body = updateEntry(entry,
+                currentList[position].body = updateEntry(entry,
                     bookmarkedData = result,
                     myhotentryComments = entry.myHotEntryComments)
 
@@ -210,11 +175,11 @@ open class EntriesAdapter(
 
                 val tabType = EntriesTabType.fromCategory(category, tabPosition)
                 if (EntriesTabType.READ_LATER == tabType) {
-                    val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body == entry }
+                    val position = currentList.indexOfFirst { it.type == RecyclerType.BODY && it.body == entry }
                     if (position >= 0) {
                         withContext(Dispatchers.Default) {
                             entries = entries.filterNot { it.id == entry.id }
-                            states.removeAt(position)
+                            currentList.removeAt(position)
                         }
                         notifyItemRemoved(position)
                     }
@@ -264,17 +229,17 @@ open class EntriesAdapter(
             try {
                 HatenaClient.deleteBookmarkAsync(entry.url).await()
 
-                val position = states.indexOfFirst { it.type == RecyclerType.BODY && it.body == entry }
+                val position = currentList.indexOfFirst { it.type == RecyclerType.BODY && it.body == entry }
                 if (position >= 0) {
                     if (Category.MyBookmarks == category) {
                         withContext(Dispatchers.Default) {
                             entries = entries.filterNot { it.id == entry.id }
-                            states.removeAt(position)
+                            currentList.removeAt(position)
                         }
                         notifyItemRemoved(position)
                     }
                     else {
-                        states[position].body = updateEntry(entry,
+                        currentList[position].body = updateEntry(entry,
                             bookmarkedData = null,
                             myhotentryComments = entry.myHotEntryComments)
                         notifyItemChanged(position)
