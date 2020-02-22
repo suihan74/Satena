@@ -182,7 +182,13 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                 this@EntriesTabFragment,
                 category,
                 mTabPosition
-            )
+            ).apply {
+                registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+                    override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                        recyclerView.scrollToPosition(positionStart)
+                    }
+                })
+            }
             mEntriesAdapter!!.setEntries(mEntries)
             adapter = mEntriesAdapter
             mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter!!) {
