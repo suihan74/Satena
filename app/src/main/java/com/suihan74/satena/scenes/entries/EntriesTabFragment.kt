@@ -171,6 +171,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         }
 
         // initialize entries list
+        var scrollPosition = 0
         val recyclerView = view.findViewById<RecyclerView>(R.id.entries_list)
         val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
             R.drawable.recycler_view_item_divider
@@ -185,11 +186,14 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             ).apply {
                 registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
                     override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                        recyclerView.scrollToPosition(positionStart)
+                        if (scrollPosition >= 0) {
+                            recyclerView.scrollToPosition(scrollPosition)
+                            scrollPosition = -1
+                        }
                     }
                 })
             }
-            mEntriesAdapter!!.setEntries(mEntries)
+//            mEntriesAdapter!!.setEntries(mEntries)
             adapter = mEntriesAdapter
             mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter!!) {
                 override fun load() {

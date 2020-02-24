@@ -113,6 +113,7 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
                 R.drawable.recycler_view_item_divider
             )!!)
+            var scrollPosition = 0
             val recyclerView = mRoot.findViewById<RecyclerView>(R.id.entries_list)
             recyclerView.apply {
                 addItemDecoration(dividerItemDecoration)
@@ -126,7 +127,10 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
                     ).apply {
                         registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
                             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                                recyclerView.scrollToPosition(positionStart)
+                                if (scrollPosition >= 0) {
+                                    recyclerView.scrollToPosition(scrollPosition)
+                                    scrollPosition = -1
+                                }
                             }
                         })
                     }

@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.HatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -95,12 +94,6 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
                     .setAdditionalData("user", user)
                     .show(childFragmentManager, "menu_dialog")
             }
-        }.apply {
-            registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    root.ignored_users_list.scrollToPosition(positionStart)
-                }
-            })
         }
 
         root.ignored_users_list.apply {

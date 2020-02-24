@@ -73,7 +73,9 @@ open class EntriesAdapter(
     }
 
     fun updateIgnoredEntries() {
-        setEntries(entries)
+        if (entries.isNotEmpty()) {
+            setEntries(entries)
+        }
     }
 
     fun setEntries(e: List<Entry>) {
