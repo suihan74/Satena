@@ -26,7 +26,31 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-                <include layout="@layout/actionbar_default" android:id="@+id/action_bar"/>
+                <com.google.android.material.appbar.AppBarLayout
+                        app:elevation="0dp"
+                        android:stateListAnimator="@null"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.Toolbar
+                            android:id="@+id/toolbar"
+                            app:title="@{vm.currentCategory.textId}"
+                            android:layout_width="match_parent"
+                            android:layout_height="?attr/actionBarSize"
+                            app:titleTextColor="?android:attr/textColorSecondary"
+                            android:background="?attr/colorPrimary"
+                            android:contentInsetStart="8dp"
+                            app:layout_scrollFlags="scroll|enterAlways">
+
+                        <androidx.appcompat.widget.SearchView
+                                android:id="@+id/toolbar_search_view"
+                                android:visibility="gone"
+                                app:iconifiedByDefault="false"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"/>
+
+                    </androidx.appcompat.widget.Toolbar>
+                </com.google.android.material.appbar.AppBarLayout>
 
                 <FrameLayout
                         android:id="@+id/main_layout"
@@ -154,7 +178,7 @@
                             android:id="@+id/entries_menu_my_bookmarks_desc"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/my_bookmarks_desc"
+                            android:text="@{vm.myBookmarkButtonTextId}"
                             android:textColor="#ddd"
                             android:textStyle="bold"
                             android:background="@drawable/rounded_corner_text_view"
@@ -169,6 +193,7 @@
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                             android:id="@+id/entries_menu_my_bookmarks_button"
                             style="@style/Widget.Design.FloatingActionButton"
+                            bind:src="@{vm.myBookmarkButtonIconId}"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="8dp"
@@ -266,7 +291,7 @@
         <!-- カテゴリリスト -->
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/categories_list"
-                bind:viewmodels="@{vm.categories}"
+                bind:items="@{vm.categories}"
                 android:orientation="vertical"
                 android:layout_width="240dp"
                 android:layout_height="match_parent"

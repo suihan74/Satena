@@ -36,7 +36,8 @@ open class CategoriesAdapter : ListAdapter<Category, CategoriesAdapter.ViewHolde
         holder.category = currentList[position]
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<Category>() {
+    /** DiffCallback for ListAdapter */
+    private class DiffCallback : DiffUtil.ItemCallback<Category>() {
         override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
             return oldItem.ordinal == newItem.ordinal
         }
@@ -46,6 +47,7 @@ open class CategoriesAdapter : ListAdapter<Category, CategoriesAdapter.ViewHolde
         }
     }
 
+    /** ViewHolder for Items */
     inner class ViewHolder(val view : View) : RecyclerView.ViewHolder(view) {
         var category : Category? = null
             internal set(value) {
