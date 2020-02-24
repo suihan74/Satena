@@ -119,7 +119,14 @@ enum class Category(
         displayInList = false),
 
     User(0, 0,
-        displayInList = false)
+        displayInList = false),
+
+    Notices(
+        R.string.notices_desc,
+        R.drawable.ic_notifications,
+        displayInList = false,
+        requireSignedIn = true,
+        singleColumns = true)
 
     ;
 

@@ -4,17 +4,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 
-class TwoTabsEntriesFragment : Fragment() {
+class EntriesTabFragment : Fragment() {
     companion object {
-        fun createInstance() = TwoTabsEntriesFragment()
+        fun createInstance() = EntriesTabFragment()
     }
 
     /** EntriesActivityのViewModel */
-    private lateinit var activityViewModel: EntriesViewModel
+    private lateinit var activityViewModel : EntriesViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,8 +29,10 @@ class TwoTabsEntriesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_entries, container, false)
+        val binding = DataBindingUtil.inflate<FragmentEntriesTab2Binding>(inflater, R.layout.fragment_entries_tab2, container, false).apply {
+            lifecycleOwner = this@EntriesTabFragment
+        }
 
-        return view
+        return binding.root
     }
 }
