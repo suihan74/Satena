@@ -20,7 +20,7 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_entries2.*
 
 class EntriesActivity : AppCompatActivity() {
@@ -46,6 +46,11 @@ class EntriesActivity : AppCompatActivity() {
                 val factory = EntriesViewModel.Factory(
                     EntriesRepository(
                         client = HatenaClient,
+                        accountLoader = AccountLoader(
+                            this,
+                            HatenaClient,
+                            MastodonClientHolder
+                        ),
                         prefs = prefs,
                         historyPrefs = SafeSharedPreferences.create(this)
                     )
@@ -54,6 +59,11 @@ class EntriesActivity : AppCompatActivity() {
             }
             else {
                 ViewModelProviders.of(this)[EntriesViewModel::class.java]
+            }.apply {
+                initialize { e ->
+                    showToast(R.string.msg_auth_failed)
+                    Log.e("error", Log.getStackTraceString(e))
+                }
             }
 
         binding = DataBindingUtil.setContentView<ActivityEntries2Binding>(
@@ -74,6 +84,8 @@ class EntriesActivity : AppCompatActivity() {
                 }
             }
         }
+
+        // --- Event listeners ---
 
         // FABメニュー表示ボタン
         entries_menu_button.setOnClickListener {
@@ -112,6 +124,8 @@ class EntriesActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        // --- Observers ---
+
         var isActionBarInitialized = false
         // コンテンツ部分のフラグメントを設定
         viewModel.currentCategory.observe(this, Observer {
@@ -125,7 +139,6 @@ class EntriesActivity : AppCompatActivity() {
                 if (it.singleColumns) SingleTabEntriesFragment.createInstance()
                 else TwinTabsEntriesFragment.createInstance()
 
-
             var transaction = supportFragmentManager.beginTransaction()
                 .replace(R.id.main_layout, fragment)
 
@@ -134,7 +147,16 @@ class EntriesActivity : AppCompatActivity() {
             }
 
             transaction.commit()
+        })
 
+        viewModel.signedIn.observe(this, Observer {
+            if (it) {
+                entries_menu_notices_button.show()
+            }
+            else {
+                entries_menu_notices_button.hide()
+            }
+            entries_menu_notices_desc.visibility = it.toVisibility()
         })
     }
 
@@ -204,13 +226,13 @@ class EntriesActivity : AppCompatActivity() {
 
         entries_menu_background_guard.visibility = View.VISIBLE
 
-        if (viewModel.signedIn.value == true && viewModel.currentCategory.value != Category.Notices) {
+//        if (viewModel.signedIn.value == true && viewModel.currentCategory.value != Category.Notices) {
             openFABMenuAnimation(
                 entries_menu_notices_layout,
                 entries_menu_notices_desc,
                 R.dimen.dp_238
             )
-        }
+//        }
         openFABMenuAnimation(
             entries_menu_categories_layout,
             entries_menu_categories_desc,

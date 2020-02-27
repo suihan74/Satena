@@ -3,9 +3,27 @@ package com.suihan74.satena.scenes.entries2
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.suihan74.HatenaLib.Issue
 import com.suihan74.satena.R
-import com.suihan74.satena.models.Category
+import kotlinx.coroutines.launch
+
+/**
+ * 現在値と同じ値のセット時に通知を発生しないMutableLiveData
+ */
+class SingleUpdateMutableLiveData<T>(initialValue: T? = null) : MutableLiveData<T>(initialValue) {
+    override fun setValue(value: T?) {
+        if (value != this.value) {
+            super.setValue(value)
+        }
+    }
+
+    override fun postValue(value: T?) {
+        if (value != this.value) {
+            super.postValue(value)
+        }
+    }
+}
 
 class EntriesViewModel(
     private val repository : EntriesRepository
@@ -17,7 +35,7 @@ class EntriesViewModel(
 
     /** 現在表示中のカテゴリ */
     val currentCategory by lazy {
-        MutableLiveData<Category>(repository.homeCategory)
+        SingleUpdateMutableLiveData(repository.homeCategory)
     }
 
     /** 現在表示中のIssue */
@@ -50,6 +68,10 @@ class EntriesViewModel(
                      else R.drawable.ic_baseline_person_add
             }
         }
+    }
+
+    fun initialize(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
+        repository.initialize(onError)
     }
 
     /** FABメニューにタップ防止背景を表示する */
