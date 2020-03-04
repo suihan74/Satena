@@ -139,14 +139,10 @@ class EntriesActivity : AppCompatActivity() {
                 if (it.singleColumns) SingleTabEntriesFragment.createInstance()
                 else TwinTabsEntriesFragment.createInstance()
 
-            var transaction = supportFragmentManager.beginTransaction()
+            supportFragmentManager.beginTransaction()
                 .replace(R.id.main_layout, fragment)
-
-            if (supportFragmentManager.fragments.isNotEmpty()) {
-                transaction = transaction.addToBackStack(null)
-            }
-
-            transaction.commit()
+                .addToBackStack(null)
+                .commit()
         })
 
         viewModel.signedIn.observe(this, Observer {
@@ -167,6 +163,9 @@ class EntriesActivity : AppCompatActivity() {
         }
         else if (isFABMenuOpened) {
             closeFABMenu()
+        }
+        else if (supportFragmentManager.backStackEntryCount <= 1) {
+            finish()
         }
         else {
             super.onBackPressed()
@@ -283,22 +282,3 @@ class EntriesActivity : AppCompatActivity() {
     }
 }
 
-@BindingAdapter("bind:items")
-fun RecyclerView.setItems(categories: Array<Category>?) {
-    if (categories == null) return
-
-    val adapter = this.adapter as CategoriesAdapter
-    adapter.submitList(categories.toList())
-}
-
-@BindingAdapter("bind:src")
-fun FloatingActionButton.setSrc(resId: Int?) {
-    if (resId == null) return
-
-    try {
-        setImageResource(resId)
-    }
-    catch (e: Throwable) {
-        Log.e("resource error", Log.getStackTraceString(e))
-    }
-}

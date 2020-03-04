@@ -26,7 +26,7 @@ class SingleUpdateMutableLiveData<T>(initialValue: T? = null) : MutableLiveData<
 }
 
 class EntriesViewModel(
-    private val repository : EntriesRepository
+    val repository : EntriesRepository
 ) : ViewModel() {
     /** カテゴリリスト */
     val categories by lazy {

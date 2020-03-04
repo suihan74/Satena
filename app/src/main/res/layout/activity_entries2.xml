@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:bind="http://schemas.android.com/tools">
+<layout>
     <data>
         <variable
                 name="vm"
@@ -194,7 +194,7 @@
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                             android:id="@+id/entries_menu_my_bookmarks_button"
                             style="@style/Widget.Design.FloatingActionButton"
-                            bind:src="@{vm.myBookmarkButtonIconId}"
+                            app:src="@{vm.myBookmarkButtonIconId}"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="8dp"
@@ -292,7 +292,7 @@
         <!-- カテゴリリスト -->
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/categories_list"
-                bind:items="@{vm.categories}"
+                app:src="@{vm.categories}"
                 android:orientation="vertical"
                 android:layout_width="240dp"
                 android:layout_height="match_parent"

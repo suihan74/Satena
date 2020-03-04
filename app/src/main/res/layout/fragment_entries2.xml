@@ -32,11 +32,5 @@
                 android:scrollbars="vertical"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-        <TextView
-                android:text="@{vm.category.textId}"
-                android:layout_gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

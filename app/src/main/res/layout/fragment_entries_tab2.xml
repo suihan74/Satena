@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout
-        xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:bind="http://schemas.android.com/apk/res-auto">
     <data>
+        <variable
+            name="vm"
+            type="com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel"/>
     </data>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/entries_swipe_layout"
+            android:id="@+id/swipe_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/entries_list"
+                bind:src="@{vm.items}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scrollbarThumbVertical="@drawable/scrollbar_thumb"

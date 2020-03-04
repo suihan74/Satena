@@ -1,64 +1,59 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
-import com.suihan74.satena.models.Category
-import kotlinx.android.synthetic.main.activity_entries2.*
+import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
-class EntriesFragmentViewModel : ViewModel() {
-    /** この画面で表示しているカテゴリ */
-    val category by lazy {
-        MutableLiveData<Category>()
-    }
-}
-
-class TwinTabsEntriesFragment : Fragment() {
+class TwinTabsEntriesFragment : EntriesFragment() {
     companion object {
         fun createInstance() = TwinTabsEntriesFragment()
     }
 
-    /** EntriesActivityのViewModel */
-    private lateinit var activityViewModel : EntriesViewModel
+    // タブ管理に関する設定
 
-    private lateinit var viewModel : EntriesFragmentViewModel
+    private val tabTitles = arrayOf(
+        R.string.entries_tab_hot,
+        R.string.entries_tab_recent
+    )
+    override fun getTabTitleId(position: Int) = tabTitles[position]
+    override val tabCount = tabTitles.size
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        activityViewModel = ViewModelProviders.of(requireActivity())[EntriesViewModel::class.java]
-        val category = activityViewModel.currentCategory.value
-
-        viewModel = ViewModelProviders.of(this)[EntriesFragmentViewModel::class.java]
-        viewModel.category.value = category
-        setHasOptionsMenu(category == Category.MyBookmarks || category?.hasIssues == true)
-    }
+    // タブ設定に関する設定ここまで
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        super.onCreateView(inflater, container, savedInstanceState)
+
         val binding = DataBindingUtil.inflate<FragmentEntries2Binding>(inflater, R.layout.fragment_entries2, container, false).apply {
             lifecycleOwner = this@TwinTabsEntriesFragment
             vm = viewModel
         }
 
-        requireActivity().toolbar.setTitle(viewModel.category.value?.textId ?: 0)
+        val view = binding.root
 
-        return binding.root
-    }
+        // タブ設定
+        view.entries_tab_pager.adapter = EntriesTabAdapter(this)
+        view.main_tab_layout.apply {
+            setupWithViewPager(view.entries_tab_pager)
+            addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab?) {}
+                override fun onTabUnselected(p0: TabLayout.Tab?) {}
+                override fun onTabReselected(tab: TabLayout.Tab?) {
+                    val adapter = view.entries_tab_pager.adapter as EntriesTabAdapter
+                    val position = tab!!.position
+                    val fragment = adapter.instantiateItem(view.entries_tab_pager, position) as? EntriesTabFragment
+                    fragment?.scrollToTop()
+                }
+            })
+        }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
-        Log.i("TODO", "issues list")
+        return view
     }
 }

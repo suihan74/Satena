@@ -2,7 +2,9 @@ package com.suihan74.satena.scenes.entries2
 
 import androidx.lifecycle.LiveData
 import com.suihan74.hatenaLib.EntriesType
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesHistoryKey
 import com.suihan74.satena.models.PreferenceKey
@@ -50,6 +52,16 @@ class EntriesRepository(
         }
         catch (e: Throwable) {
             onError?.invoke(e)
+        }
+    }
+
+    /** 最新のエントリーリストを読み込む */
+    suspend fun refreshEntries(category: Category, issue: Issue? = null, entriesType: EntriesType? = null) : List<Entry> {
+        return when (val apiCat = category.categoryInApi) {
+            null -> emptyList()
+            else -> {
+                client.getEntriesAsync(entriesType!!, apiCat).await()
+            }
         }
     }
 
