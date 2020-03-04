@@ -4,7 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.HatenaLib.Issue
+import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.R
 import kotlinx.coroutines.launch
 

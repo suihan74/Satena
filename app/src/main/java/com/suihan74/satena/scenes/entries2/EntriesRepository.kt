@@ -1,7 +1,8 @@
 package com.suihan74.satena.scenes.entries2
 
 import androidx.lifecycle.LiveData
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.EntriesType
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesHistoryKey
 import com.suihan74.satena.models.PreferenceKey
