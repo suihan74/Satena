@@ -5,8 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.Bookmark
-import com.suihan74.HatenaLib.StarColor
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.utilities.appendStarText
 import com.suihan74.utilities.setHtml

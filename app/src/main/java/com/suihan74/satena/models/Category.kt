@@ -5,7 +5,7 @@ import com.suihan74.satena.R
 enum class Category(
     val textId: Int,
     val iconId: Int,
-    val categoryInApi: com.suihan74.HatenaLib.Category? = null,
+    val categoryInApi: com.suihan74.hatenaLib.Category? = null,
     val requireSignedIn: Boolean = false,
     val singleColumns : Boolean = false,
     val hasIssues: Boolean = false,
@@ -14,59 +14,59 @@ enum class Category(
     All(
         R.string.category_all,
         R.drawable.ic_category_all,
-        categoryInApi = com.suihan74.HatenaLib.Category.All),
+        categoryInApi = com.suihan74.hatenaLib.Category.All),
 
     General(
         R.string.category_general,
         R.drawable.ic_category_general,
-        categoryInApi = com.suihan74.HatenaLib.Category.General),
+        categoryInApi = com.suihan74.hatenaLib.Category.General),
 
     Social(
         R.string.category_social,
         R.drawable.ic_category_social,
-        categoryInApi = com.suihan74.HatenaLib.Category.Social,
+        categoryInApi = com.suihan74.hatenaLib.Category.Social,
         hasIssues = true),
 
     Economics(
         R.string.category_economics,
         R.drawable.ic_category_economics,
-        categoryInApi = com.suihan74.HatenaLib.Category.Economics,
+        categoryInApi = com.suihan74.hatenaLib.Category.Economics,
         hasIssues = true),
 
     Life(
         R.string.category_life,
         R.drawable.ic_category_life,
-        categoryInApi = com.suihan74.HatenaLib.Category.Life,
+        categoryInApi = com.suihan74.hatenaLib.Category.Life,
         hasIssues = true),
 
     Knowledge(
         R.string.category_knowledge,
         R.drawable.ic_category_knowledge,
-        categoryInApi = com.suihan74.HatenaLib.Category.Knowledge,
+        categoryInApi = com.suihan74.hatenaLib.Category.Knowledge,
         hasIssues = true),
 
     It(
         R.string.category_it,
         R.drawable.ic_category_it,
-        categoryInApi = com.suihan74.HatenaLib.Category.It,
+        categoryInApi = com.suihan74.hatenaLib.Category.It,
         hasIssues = true),
 
     Entertainment(
         R.string.category_entertainment,
         R.drawable.ic_category_entertainment,
-        categoryInApi = com.suihan74.HatenaLib.Category.Entertainment,
+        categoryInApi = com.suihan74.hatenaLib.Category.Entertainment,
         hasIssues = true),
 
     Game(
         R.string.category_game,
         R.drawable.ic_category_game,
-        categoryInApi = com.suihan74.HatenaLib.Category.Game,
+        categoryInApi = com.suihan74.hatenaLib.Category.Game,
         hasIssues = true),
 
     Fun(
         R.string.category_fun,
         R.drawable.ic_category_fun,
-        categoryInApi = com.suihan74.HatenaLib.Category.Fun,
+        categoryInApi = com.suihan74.hatenaLib.Category.Fun,
         hasIssues = true),
 
     MyHotEntries(

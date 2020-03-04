@@ -4,8 +4,8 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.Bookmark
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 
 fun View.setCustomTitle(bookmark: Bookmark) =

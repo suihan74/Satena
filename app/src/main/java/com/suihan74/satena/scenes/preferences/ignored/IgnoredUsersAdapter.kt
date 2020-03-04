@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import kotlinx.android.synthetic.main.listview_item_ignored_users.view.*
 

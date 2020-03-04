@@ -13,9 +13,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.suihan74.HatenaLib.BookmarkResult
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.BookmarkResult
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
 import com.suihan74.satena.models.PreferenceKey

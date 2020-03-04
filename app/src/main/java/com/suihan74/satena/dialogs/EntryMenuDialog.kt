@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.Entry
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 
 class EntryMenuDialog : AlertDialogFragment() {

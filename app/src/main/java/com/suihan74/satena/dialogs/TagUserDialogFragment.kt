@@ -10,7 +10,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.utilities.lock
 import com.suihan74.utilities.showToast

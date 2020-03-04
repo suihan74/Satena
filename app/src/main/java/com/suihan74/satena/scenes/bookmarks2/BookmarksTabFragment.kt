@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.suihan74.HatenaLib.Bookmark
+import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.*

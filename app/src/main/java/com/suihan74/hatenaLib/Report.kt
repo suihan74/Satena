@@ -1,4 +1,4 @@
-package com.suihan74.HatenaLib
+package com.suihan74.hatenaLib
 
 data class Report (
     val entry: Entry,

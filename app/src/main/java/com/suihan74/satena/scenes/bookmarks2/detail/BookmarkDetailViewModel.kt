@@ -4,8 +4,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.HatenaLib.Bookmark
-import com.suihan74.HatenaLib.StarColor
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksRepository
 import com.suihan74.utilities.BookmarkCommentDecorator

@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.suihan74.HatenaLib.MaintenanceEntry
+import com.suihan74.hatenaLib.MaintenanceEntry
 import com.suihan74.satena.R
 import com.suihan74.utilities.*
 import org.threeten.bp.format.DateTimeFormatter

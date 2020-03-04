@@ -6,10 +6,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.suihan74.HatenaLib.BookmarkResult
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.Star
-import com.suihan74.HatenaLib.StarsEntry
+import com.suihan74.hatenaLib.BookmarkResult
+import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.Star
+import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers

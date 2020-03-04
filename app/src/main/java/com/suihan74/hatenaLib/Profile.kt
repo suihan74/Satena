@@ -1,4 +1,4 @@
-package com.suihan74.HatenaLib
+package com.suihan74.hatenaLib
 
 data class Profile (
     val id : String,

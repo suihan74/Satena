@@ -7,8 +7,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.BookmarkResult
-import com.suihan74.HatenaLib.StarColor
+import com.suihan74.hatenaLib.BookmarkResult
+import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.utilities.appendStarText
 import com.suihan74.utilities.getThemeColor

@@ -1,7 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks2.detail
 
-import com.suihan74.HatenaLib.Bookmark
-import com.suihan74.HatenaLib.Star
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Star
 
 data class StarWithBookmark (
     /** スター情報 */

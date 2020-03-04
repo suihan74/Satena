@@ -13,9 +13,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.suihan74.HatenaLib.EntriesType
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.EntriesType
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category

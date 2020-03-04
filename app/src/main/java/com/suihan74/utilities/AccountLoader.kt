@@ -3,7 +3,7 @@ package com.suihan74.utilities
 import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.PreferenceKey
 import com.sys1yagi.mastodon4j.MastodonClient
 import kotlinx.coroutines.*

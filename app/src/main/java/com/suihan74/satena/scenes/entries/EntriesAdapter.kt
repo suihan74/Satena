@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.BookmarkResult
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.BookmarkResult
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.TappedActionLauncher
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment

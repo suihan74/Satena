@@ -10,8 +10,8 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.MaintenanceEntry
+import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.MaintenanceEntry
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication

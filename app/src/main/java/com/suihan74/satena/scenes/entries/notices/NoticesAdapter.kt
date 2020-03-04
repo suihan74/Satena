@@ -7,8 +7,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.Notice
+import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
 import com.suihan74.utilities.FooterViewHolder
 import com.suihan74.utilities.RecyclerState

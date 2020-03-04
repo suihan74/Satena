@@ -14,9 +14,8 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.viewModelScope
 import com.google.android.material.appbar.AppBarLayout
-import com.suihan74.HatenaLib.*
+import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.TappedActionLauncher
@@ -37,7 +36,6 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
-import kotlinx.coroutines.launch
 
 class BookmarksActivity :
     AppCompatActivity(),

@@ -1,6 +1,6 @@
 package com.suihan74.satena.scenes.entries.notices
 
-import com.suihan74.HatenaLib.Notice
+import com.suihan74.hatenaLib.Notice
 
 private val spamRegex = Regex("""はてなブックマーク\s*-\s*\d+に関する.+のブックマーク""")
 

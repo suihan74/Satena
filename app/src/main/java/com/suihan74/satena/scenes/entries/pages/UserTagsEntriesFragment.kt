@@ -8,9 +8,9 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.SearchType
-import com.suihan74.HatenaLib.Tag
+import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.SearchType
+import com.suihan74.hatenaLib.Tag
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase

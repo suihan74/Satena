@@ -11,10 +11,10 @@ import android.widget.EditText
 import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import com.suihan74.HatenaLib.Bookmark
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.ReportCategory
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.ReportCategory
 import com.suihan74.satena.R
 import com.suihan74.utilities.get
 import com.suihan74.utilities.hideSoftInputMethod

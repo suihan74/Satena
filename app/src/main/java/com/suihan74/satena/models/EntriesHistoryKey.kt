@@ -1,7 +1,7 @@
 package com.suihan74.satena.models
 
 import android.content.Context
-import com.suihan74.HatenaLib.Entry
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo

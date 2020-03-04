@@ -9,8 +9,8 @@ import android.widget.Spinner
 import androidx.appcompat.widget.SearchView
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.Issue
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.Category

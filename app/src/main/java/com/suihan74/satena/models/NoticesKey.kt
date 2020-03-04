@@ -1,6 +1,6 @@
 package com.suihan74.satena.models
 
-import com.suihan74.HatenaLib.Notice
+import com.suihan74.hatenaLib.Notice
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
