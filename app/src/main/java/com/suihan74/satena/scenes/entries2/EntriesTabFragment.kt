@@ -10,7 +10,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.suihan74.hatenaLib.EntriesType
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
@@ -21,7 +20,15 @@ import kotlinx.android.synthetic.main.fragment_entries_tab2.view.*
 
 class EntriesTabFragment : Fragment() {
     companion object {
-        fun createInstance() = EntriesTabFragment()
+        fun createInstance(category: Category, tabPosition: Int = 0) = EntriesTabFragment().apply {
+            arguments = Bundle().apply {
+                putInt(ARG_CATEGORY, category.ordinal)
+                putInt(ARG_TAB_POSITION, tabPosition)
+            }
+        }
+
+        private const val ARG_CATEGORY = "ARG_CATEGORY"
+        private const val ARG_TAB_POSITION = "ARG_TAB_POSITION"
     }
 
     /** EntriesActivityのViewModel */
@@ -43,10 +50,14 @@ class EntriesTabFragment : Fragment() {
         activityViewModel = ViewModelProviders.of(requireActivity())[EntriesViewModel::class.java]
 
         if (savedInstanceState == null) {
+            val arguments = requireArguments()
+            val category = Category.fromInt(arguments.getInt(ARG_CATEGORY))
+            val tabPosition = arguments.getInt(ARG_TAB_POSITION, 0)
+
             val factory = EntriesTabFragmentViewModel.Factory(
                 activityViewModel.repository,
-                Category.All,
-                EntriesType.Hot
+                category,
+                tabPosition
             )
             viewModel = ViewModelProviders.of(this, factory)[EntriesTabFragmentViewModel::class.java]
             viewModel.init(onErrorRefreshEntries)

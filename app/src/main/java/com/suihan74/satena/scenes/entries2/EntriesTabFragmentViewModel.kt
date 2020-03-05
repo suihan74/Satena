@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 class EntriesTabFragmentViewModel(
     private val repository: EntriesRepository,
     private val category: Category,
-    private val entriesType: EntriesType
+    private val tabPosition: Int
 ) : ViewModel() {
     /** タブで表示するエントリーリスト */
     val items by lazy {
@@ -22,6 +22,12 @@ class EntriesTabFragmentViewModel(
 
     fun init(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch(Dispatchers.Main) {
         try {
+            val entriesType = when(tabPosition) {
+                0 -> EntriesType.Hot
+                1 -> EntriesType.Recent
+                else -> throw NotImplementedError("invalid tab position")
+            }
+
             val entries = repository.refreshEntries(
                 category = category,
                 issue = null,
@@ -37,10 +43,10 @@ class EntriesTabFragmentViewModel(
     class Factory(
         private val repository: EntriesRepository,
         private val category: Category,
-        private val entriesType: EntriesType
+        private val tabPosition: Int = 0
     ) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) =
-            EntriesTabFragmentViewModel(repository, category, entriesType) as T
+            EntriesTabFragmentViewModel(repository, category, tabPosition) as T
     }
 }

@@ -5,14 +5,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityEntries2Binding
@@ -79,8 +76,8 @@ class EntriesActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(context)
             adapter = object : CategoriesAdapter() {
                 override fun onItemClicked(category: Category) {
-                    viewModel.currentCategory.value = category
                     drawer_layout.closeDrawers()
+                    showCategory(category)
                 }
             }
         }
@@ -108,7 +105,7 @@ class EntriesActivity : AppCompatActivity() {
             closeFABMenu()
             if (viewModel.signedIn.value == true) {
                 // マイブックマークを表示
-                viewModel.currentCategory.value = Category.MyBookmarks
+                showCategory(Category.MyBookmarks)
             }
             else {
                 // サインイン画面に遷移
@@ -126,25 +123,6 @@ class EntriesActivity : AppCompatActivity() {
 
         // --- Observers ---
 
-        var isActionBarInitialized = false
-        // コンテンツ部分のフラグメントを設定
-        viewModel.currentCategory.observe(this, Observer {
-            if (!isActionBarInitialized) {
-                // アクションバー設定
-                setSupportActionBar(toolbar)
-                isActionBarInitialized = true
-            }
-
-            val fragment =
-                if (it.singleColumns) SingleTabEntriesFragment.createInstance()
-                else TwinTabsEntriesFragment.createInstance()
-
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.main_layout, fragment)
-                .addToBackStack(null)
-                .commit()
-        })
-
         viewModel.signedIn.observe(this, Observer {
             if (it) {
                 entries_menu_notices_button.show()
@@ -154,6 +132,16 @@ class EntriesActivity : AppCompatActivity() {
             }
             entries_menu_notices_desc.visibility = it.toVisibility()
         })
+
+        // ホームカテゴリを表示
+        showCategory(viewModel.homeCategory)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // アクションバー設定
+        setSupportActionBar(toolbar)
     }
 
     /** 戻るボタンの挙動 */
@@ -171,6 +159,20 @@ class EntriesActivity : AppCompatActivity() {
             super.onBackPressed()
         }
     }
+
+    /** カテゴリを選択 */
+    private fun showCategory(category: Category) {
+        val fragment =
+            if (category.singleColumns) SingleTabEntriesFragment.createInstance(category)
+            else TwinTabsEntriesFragment.createInstance(category)
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_layout, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    // --- FAB表示アニメーション ---
 
     /** FABメニュー各項目のオープン時移動アニメーション */
     private fun openFABMenuAnimation(layout: View, desc: View, dimenId: Int) {

@@ -1,16 +1,23 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
+import com.suihan74.satena.models.Category
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 class TwinTabsEntriesFragment : EntriesFragment() {
     companion object {
-        fun createInstance() = TwinTabsEntriesFragment()
+        fun createInstance(category: Category) = TwinTabsEntriesFragment().apply {
+            arguments = Bundle().apply {
+                putInt(ARG_CATEGORY, category.ordinal)
+            }
+        }
     }
 
     // タブ管理に関する設定

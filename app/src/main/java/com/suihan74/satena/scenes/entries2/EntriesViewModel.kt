@@ -4,8 +4,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.R
+import com.suihan74.satena.models.Category
 import kotlinx.coroutines.launch
 
 /**
@@ -31,16 +31,6 @@ class EntriesViewModel(
     /** カテゴリリスト */
     val categories by lazy {
         repository.categoriesLiveData
-    }
-
-    /** 現在表示中のカテゴリ */
-    val currentCategory by lazy {
-        SingleUpdateMutableLiveData(repository.homeCategory)
-    }
-
-    /** 現在表示中のIssue */
-    val currentIssue by lazy {
-        MutableLiveData<Issue>(null)
     }
 
     /** サインイン状態 */
@@ -73,6 +63,10 @@ class EntriesViewModel(
     fun initialize(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
         repository.initialize(onError)
     }
+
+    /** ホームカテゴリ */
+    val homeCategory: Category
+        get() = repository.homeCategory
 
     /** FABメニューにタップ防止背景を表示する */
     val isFABMenuBackgroundActive : Boolean

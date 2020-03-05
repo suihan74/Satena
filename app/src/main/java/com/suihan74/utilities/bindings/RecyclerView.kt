@@ -11,7 +11,7 @@ import com.suihan74.satena.scenes.entries2.EntriesAdapter
 @BindingAdapter("src")
 fun RecyclerView.setEntries(entries: List<Entry>?) {
     if (entries == null) return
-    (adapter as EntriesAdapter).submitEntries(entries)
+    (adapter as? EntriesAdapter)?.submitEntries(entries)
 }
 
 /** カテゴリリスト */

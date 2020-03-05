@@ -8,10 +8,15 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProviders
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
+import com.suihan74.satena.models.Category
 
 class SingleTabEntriesFragment : EntriesFragment() {
     companion object {
-        fun createInstance() = SingleTabEntriesFragment()
+        fun createInstance(category: Category) = SingleTabEntriesFragment().apply {
+            arguments = Bundle().apply {
+                putInt(ARG_CATEGORY, category.ordinal)
+            }
+        }
     }
 
     private lateinit var tabViewModel: EntriesTabFragmentViewModel
@@ -19,14 +24,28 @@ class SingleTabEntriesFragment : EntriesFragment() {
     override fun getTabTitleId(position: Int) = 0
     override val tabCount = 0
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (savedInstanceState == null) {
+            val factory = EntriesTabFragmentViewModel.Factory(
+                activityViewModel.repository,
+                Category.All
+            )
+            tabViewModel = ViewModelProviders.of(this, factory)[EntriesTabFragmentViewModel::class.java]
+            tabViewModel.init()
+        }
+        else {
+            tabViewModel = ViewModelProviders.of(this)[EntriesTabFragmentViewModel::class.java]
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-
-        tabViewModel = ViewModelProviders.of(this)[EntriesTabFragmentViewModel::class.java]
 
         val binding = DataBindingUtil.inflate<FragmentEntriesTab2Binding>(inflater, R.layout.fragment_entries_tab2, container, false).apply {
             lifecycleOwner = this@SingleTabEntriesFragment
