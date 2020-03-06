@@ -166,6 +166,6 @@
 
 ##---------------Begin: proguard configuration for ViewModel  ----------
 
--keep class com.suihan74.HatenaLib.** { *; }
+-keep class com.suihan74.hatenaLib.** { *; }
 -keep class com.suihan74.satena.** { *; }
 -keep class com.suihan74.utilities.** { *; }
