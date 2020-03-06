@@ -4,10 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProviders
 import com.suihan74.satena.R
-import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
 
 class SingleTabEntriesFragment : EntriesFragment() {
@@ -19,39 +16,20 @@ class SingleTabEntriesFragment : EntriesFragment() {
         }
     }
 
-    private lateinit var tabViewModel: EntriesTabFragmentViewModel
-
-    override fun getTabTitleId(position: Int) = 0
-    override val tabCount = 0
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (savedInstanceState == null) {
-            val factory = EntriesTabFragmentViewModel.Factory(
-                activityViewModel.repository,
-                Category.All
-            )
-            tabViewModel = ViewModelProviders.of(this, factory)[EntriesTabFragmentViewModel::class.java]
-            tabViewModel.init()
-        }
-        else {
-            tabViewModel = ViewModelProviders.of(this)[EntriesTabFragmentViewModel::class.java]
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
+        val root = inflater.inflate(R.layout.fragment_entries2_single, container, false)
 
-        val binding = DataBindingUtil.inflate<FragmentEntriesTab2Binding>(inflater, R.layout.fragment_entries_tab2, container, false).apply {
-            lifecycleOwner = this@SingleTabEntriesFragment
-            vm = tabViewModel
+        if (savedInstanceState == null) {
+            childFragmentManager.beginTransaction()
+                .add(R.id.content_layout, EntriesTabFragment.createInstance(category))
+                .commit()
         }
 
-        return binding.root
+        return root
     }
 }

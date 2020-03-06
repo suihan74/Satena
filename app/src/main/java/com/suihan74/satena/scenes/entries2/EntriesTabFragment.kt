@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.entries2
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.showToast
@@ -83,8 +85,23 @@ class EntriesTabFragment : Fragment() {
 
         // エントリリストの設定
         view.entries_list.apply {
-            val entriesAdapter = EntriesAdapter()
+            val entriesAdapter = EntriesAdapter().apply {
+                // TODO: クリック時の挙動をカスタマイズ可能にする
+                setOnItemClickedListener { entry ->
+                    val intent = Intent(context, BookmarksActivity::class.java).apply {
+                        putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+                    }
+                    startActivity(intent)
+                }
+
+                setOnItemLongClickedListener { entry ->
+                    // TODO: 長押し時の挙動をカスタマイズ可能にする
+                    true
+                }
+            }
+
             adapter = entriesAdapter
+            layoutManager = LinearLayoutManager(context)
             addItemDecoration(
                 DividerItemDecorator(
                     ContextCompat.getDrawable(
@@ -93,7 +110,6 @@ class EntriesTabFragment : Fragment() {
                     )!!
                 )
             )
-            layoutManager = LinearLayoutManager(context)
         }
 
         // 引っ張って更新

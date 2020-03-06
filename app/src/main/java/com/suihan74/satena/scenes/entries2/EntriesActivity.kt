@@ -133,8 +133,12 @@ class EntriesActivity : AppCompatActivity() {
             entries_menu_notices_desc.visibility = it.toVisibility()
         })
 
-        // ホームカテゴリを表示
-        showCategory(viewModel.homeCategory)
+        // -----------------
+
+        if (savedInstanceState == null) {
+            // ホームカテゴリを表示
+            showCategory(viewModel.homeCategory)
+        }
     }
 
     override fun onResume() {

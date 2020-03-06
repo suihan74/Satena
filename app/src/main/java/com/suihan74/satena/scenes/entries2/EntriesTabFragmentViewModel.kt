@@ -30,7 +30,6 @@ class EntriesTabFragmentViewModel(
 
             val entries = repository.refreshEntries(
                 category = category,
-                issue = null,
                 entriesType = entriesType
             )
             items.postValue(entries)

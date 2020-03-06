@@ -2,24 +2,31 @@ package com.suihan74.satena.scenes.entries2
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
-import com.suihan74.utilities.FooterViewHolder
 import com.suihan74.utilities.LoadableFooterViewHolder
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
-import kotlinx.android.synthetic.main.footer_recycler_view_loadable.view.*
 
 class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
+    private var onItemClicked : ((Entry)->Unit)? = null
+    private var onItemLongClicked : ((Entry)->Boolean)? = null
+
+    /** 項目クリック時の挙動をセットする */
+    fun setOnItemClickedListener(listener: ((Entry)->Unit)?) {
+        onItemClicked = listener
+    }
+
+    /** 項目長押し時の挙動をセットする */
+    fun setOnItemLongClickedListener(listener: ((Entry)->Boolean)?) {
+        onItemLongClicked = listener
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
@@ -44,7 +51,20 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
         when (holder.itemViewType) {
             RecyclerType.BODY.int -> {
                 holder as ViewHolder
-                holder.entry = currentList[position].body
+                val entry = currentList[position].body
+
+                holder.entry = entry
+                holder.itemView.apply {
+                    setOnClickListener {
+                        if (entry != null) {
+                            onItemClicked?.invoke(entry)
+                        }
+                    }
+                    setOnLongClickListener {
+                        if (entry != null) onItemLongClicked?.invoke(entry) ?: false
+                        else true
+                    }
+                }
             }
         }
     }

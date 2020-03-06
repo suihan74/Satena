@@ -55,14 +55,30 @@ class EntriesRepository(
         }
     }
 
-    /** 最新のエントリーリストを読み込む */
-    suspend fun refreshEntries(category: Category, issue: Issue? = null, entriesType: EntriesType? = null) : List<Entry> {
+    /** 最新のエントリーリストを読み込む(Category指定) */
+    suspend fun refreshEntries(category: Category, entriesType: EntriesType? = null) : List<Entry> {
         return when (val apiCat = category.categoryInApi) {
-            null -> emptyList()
+            null -> refreshSpecificEntries(category)
             else -> {
                 client.getEntriesAsync(entriesType!!, apiCat).await()
             }
         }
+    }
+
+    /** はてなから提供されているカテゴリ以外のエントリ情報を取得する */
+    private suspend fun refreshSpecificEntries(category: Category) : List<Entry> {
+        return when (category) {
+            Category.History -> historyPrefs.get(EntriesHistoryKey.ENTRIES)
+
+            Category.MyHotEntries -> client.getMyHotEntriesAsync().await()
+
+            else -> throw NotImplementedError("refreshing \"${category.name}\" is not implemented")
+        }
+    }
+
+    /** 最新のエントリーリストを読み込む(Issue指定) */
+    suspend fun refreshEntries(issue: Issue, entriesType: EntriesType) : List<Entry> {
+        return client.getEntriesAsync(entriesType, issue).await()
     }
 
     /** サインイン状態の変更を通知する */

@@ -9,7 +9,7 @@ import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
 import kotlinx.coroutines.launch
 
-class EntriesFragmentViewModel : ViewModel() {
+abstract class EntriesFragmentViewModel : ViewModel() {
     /** この画面で表示しているCategory */
     val category by lazy {
         MutableLiveData<Category>()
@@ -38,4 +38,13 @@ class EntriesFragmentViewModel : ViewModel() {
             }
         }
     }
+
+    // タブ管理に関する設定
+
+    abstract val tabTitles : Array<Int>
+    fun getTabTitleId(position: Int) = tabTitles[position]
+    val tabCount: Int
+        get() = tabTitles.size
+
+    // タブ設定に関する設定ここまで
 }

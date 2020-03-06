@@ -20,17 +20,6 @@ class TwinTabsEntriesFragment : EntriesFragment() {
         }
     }
 
-    // タブ管理に関する設定
-
-    private val tabTitles = arrayOf(
-        R.string.entries_tab_hot,
-        R.string.entries_tab_recent
-    )
-    override fun getTabTitleId(position: Int) = tabTitles[position]
-    override val tabCount = tabTitles.size
-
-    // タブ設定に関する設定ここまで
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

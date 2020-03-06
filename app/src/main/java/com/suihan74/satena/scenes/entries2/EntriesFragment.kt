@@ -12,6 +12,8 @@ import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.initialize
+import com.suihan74.satena.scenes.entries2.pages.HatenaEntriesViewModel
+import com.suihan74.satena.scenes.entries2.pages.MyBookmarksViewModel
 import kotlinx.android.synthetic.main.activity_entries2.*
 
 abstract class EntriesFragment : Fragment() {
@@ -34,8 +36,8 @@ abstract class EntriesFragment : Fragment() {
         get() = viewModel.issue.value
 
     /** タブタイトルを取得する */
-    abstract fun getTabTitleId(position: Int) : Int
-    abstract val tabCount : Int
+    fun getTabTitleId(position: Int) = viewModel.getTabTitleId(position)
+    val tabCount get() = viewModel.tabCount
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +45,11 @@ abstract class EntriesFragment : Fragment() {
         activityViewModel = ViewModelProviders.of(requireActivity())[EntriesViewModel::class.java]
         val category = Category.fromInt(requireArguments().getInt(ARG_CATEGORY))
 
-        viewModel = ViewModelProviders.of(this)[EntriesFragmentViewModel::class.java]
+        val viewModelType =
+            if (category == Category.MyBookmarks) MyBookmarksViewModel::class.java
+            else HatenaEntriesViewModel::class.java
+
+        viewModel = ViewModelProviders.of(this)[viewModelType]
         viewModel.category.value = category
         setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
 
@@ -56,19 +62,11 @@ abstract class EntriesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val toolbar = requireActivity().toolbar.apply {
+        // ツールバーを更新
+        requireActivity().toolbar.apply {
             setTitle(viewModel.category.value?.textId ?: 0)
             subtitle = viewModel.issue.value?.name
         }
-
-        viewModel.category.observe(viewLifecycleOwner, Observer {
-            toolbar.setTitle(it.textId)
-        })
-
-        viewModel.issue.observe(viewLifecycleOwner, Observer {
-            toolbar.subtitle = it?.name
-        })
-
         return null
     }
 
