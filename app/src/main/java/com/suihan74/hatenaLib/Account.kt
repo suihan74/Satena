@@ -1,6 +1,4 @@
-@file:Suppress("SpellCheckingInspection", "SpellCheckingInspection")
-
-package com.suihan74.HatenaLib
+package com.suihan74.hatenaLib
 
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable

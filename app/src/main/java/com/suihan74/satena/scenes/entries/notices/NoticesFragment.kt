@@ -14,8 +14,8 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.Notice
+import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment

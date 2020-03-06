@@ -2,7 +2,7 @@ package com.suihan74.satena.scenes.entries.notices
 
 import android.content.Context
 import androidx.core.content.ContextCompat
-import com.suihan74.HatenaLib.Notice
+import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
 
 /**

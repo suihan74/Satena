@@ -3,11 +3,8 @@ package com.suihan74.satena.scenes.authentication
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import androidx.core.content.ContextCompat
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication

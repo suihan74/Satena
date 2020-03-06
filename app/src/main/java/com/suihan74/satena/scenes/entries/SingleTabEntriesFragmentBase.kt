@@ -12,7 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.suihan74.HatenaLib.Entry
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
@@ -113,6 +113,7 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
             val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
                 R.drawable.recycler_view_item_divider
             )!!)
+            var scrollPosition = 0
             val recyclerView = mRoot.findViewById<RecyclerView>(R.id.entries_list)
             recyclerView.apply {
                 addItemDecoration(dividerItemDecoration)
@@ -126,7 +127,10 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
                     ).apply {
                         registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
                             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                                recyclerView.scrollToPosition(positionStart)
+                                if (scrollPosition >= 0) {
+                                    recyclerView.scrollToPosition(scrollPosition)
+                                    scrollPosition = -1
+                                }
                             }
                         })
                     }

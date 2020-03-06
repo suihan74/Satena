@@ -9,9 +9,9 @@ import android.util.Log
 import android.widget.RemoteViews
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.SearchType
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import kotlinx.coroutines.Dispatchers

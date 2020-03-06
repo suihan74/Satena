@@ -14,7 +14,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
-import com.suihan74.HatenaLib.*
+import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.utilities.hideSoftInputMethod
 import kotlinx.android.synthetic.main.dialog_title_bookmark.view.*

@@ -10,17 +10,15 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.suihan74.HatenaLib.CategoryEntry
-import com.suihan74.HatenaLib.HatenaClient
-import com.suihan74.HatenaLib.SearchType
+import com.suihan74.hatenaLib.CategoryEntry
+import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -216,7 +214,7 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
                 catch (e: Exception) {
                     Log.e("CategoryEntry", Log.getStackTraceString(e))
                     showToast(R.string.msg_get_categories_failed)
-                    categoryEntries = com.suihan74.HatenaLib.Category.values().map {
+                    categoryEntries = com.suihan74.hatenaLib.Category.values().map {
                         val nameId = resources.getIdentifier("category_${it.name.toLowerCase(Locale.ROOT)}", "string", packageName)
                         CategoryEntry(
                             name = if (nameId == 0) it.name else getString(nameId),

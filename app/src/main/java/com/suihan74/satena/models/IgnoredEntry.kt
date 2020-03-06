@@ -1,6 +1,6 @@
 package com.suihan74.satena.models
 
-import com.suihan74.HatenaLib.Entry
+import com.suihan74.hatenaLib.Entry
 import org.threeten.bp.LocalDateTime
 import java.io.Serializable
 

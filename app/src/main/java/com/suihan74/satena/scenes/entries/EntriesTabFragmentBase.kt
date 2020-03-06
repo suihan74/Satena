@@ -1,7 +1,7 @@
 package com.suihan74.satena.scenes.entries
 
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.TappedActionLauncher
 import com.suihan74.satena.dialogs.EntryMenuDialog

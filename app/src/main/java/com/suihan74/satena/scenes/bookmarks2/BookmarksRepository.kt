@@ -1,7 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks2
 
 import androidx.lifecycle.LiveData
-import com.suihan74.HatenaLib.*
+import com.suihan74.hatenaLib.*
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.lock

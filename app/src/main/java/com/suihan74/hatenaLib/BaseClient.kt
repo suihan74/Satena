@@ -1,4 +1,4 @@
-package com.suihan74.HatenaLib
+package com.suihan74.hatenaLib
 
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder

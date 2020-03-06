@@ -13,9 +13,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.suihan74.HatenaLib.EntriesType
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.EntriesType
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
@@ -171,6 +171,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         }
 
         // initialize entries list
+        var scrollPosition = 0
         val recyclerView = view.findViewById<RecyclerView>(R.id.entries_list)
         val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
             R.drawable.recycler_view_item_divider
@@ -185,11 +186,14 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             ).apply {
                 registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
                     override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                        recyclerView.scrollToPosition(positionStart)
+                        if (scrollPosition >= 0) {
+                            recyclerView.scrollToPosition(scrollPosition)
+                            scrollPosition = -1
+                        }
                     }
                 })
             }
-            mEntriesAdapter!!.setEntries(mEntries)
+//            mEntriesAdapter!!.setEntries(mEntries)
             adapter = mEntriesAdapter
             mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter!!) {
                 override fun load() {

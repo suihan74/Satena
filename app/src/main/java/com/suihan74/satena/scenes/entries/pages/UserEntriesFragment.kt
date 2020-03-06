@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Spinner
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category

@@ -23,8 +23,8 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayout
-import com.suihan74.HatenaLib.Bookmark
-import com.suihan74.HatenaLib.StarColor
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment

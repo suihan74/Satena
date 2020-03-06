@@ -3,7 +3,7 @@ package com.suihan74.satena.scenes.bookmarks2.tab
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.suihan74.HatenaLib.Bookmark
+import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.utilities.SafeSharedPreferences

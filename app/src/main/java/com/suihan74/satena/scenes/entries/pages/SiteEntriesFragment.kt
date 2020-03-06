@@ -3,8 +3,8 @@ package com.suihan74.satena.scenes.entries.pages
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
-import com.suihan74.HatenaLib.EntriesType
-import com.suihan74.HatenaLib.HatenaClient
+import com.suihan74.hatenaLib.EntriesType
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category

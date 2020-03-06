@@ -1,10 +1,8 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.android.gms.oss-licenses-plugin'
-
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-
 apply plugin: 'kotlin-kapt'
+apply plugin: 'com.google.android.gms.oss-licenses-plugin'
 
 androidExtensions {
     experimental = true
@@ -16,8 +14,8 @@ android {
     defaultConfig {
         applicationId "com.suihan74.satena"
         // バージョン情報
-        versionCode 105
-        versionName "1.1.6"
+        versionCode 108
+        versionName "1.1.7"
 
         minSdkVersion 23
         targetSdkVersion 28
@@ -59,18 +57,18 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation "androidx.fragment:fragment-ktx:1.2.0-rc04"
+    implementation "androidx.fragment:fragment-ktx:1.2.2"
 
     // ViewModel and LiveData
-    def lifecycle_version = "2.1.0"
+    def lifecycle_version = "2.2.0"
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
 //   kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
-    testImplementation "androidx.arch.core:core-testing:$lifecycle_version"
+    testImplementation "androidx.arch.core:core-testing:2.1.0"
 
     // room; database access
-    def room_version = "2.2.3"
+    def room_version = "2.2.4"
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"  // optional - Kotlin Extensions and Coroutines support for Room
@@ -84,7 +82,7 @@ dependencies {
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
 
     // recyclerview
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     // async/await
@@ -117,9 +115,6 @@ dependencies {
     // for using LocalDateTime
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 
-    // show licenses
-    implementation 'com.google.android.gms:play-services-oss-licenses:16.0.2'
-
     // Google Sign-in
     //implementation 'com.google.android.gms:play-services-auth:17.0.0'
 
@@ -127,5 +122,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    // show licenses
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
 }
 

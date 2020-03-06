@@ -4,10 +4,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.HatenaLib.Bookmark
-import com.suihan74.HatenaLib.BookmarksEntry
-import com.suihan74.HatenaLib.Entry
-import com.suihan74.HatenaLib.Report
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.BookmarksEntry
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.Report
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.models.userTag.Tag
