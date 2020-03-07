@@ -2,16 +2,20 @@ package com.suihan74.satena.scenes.entries2
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
+import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.LoadableFooterViewHolder
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
+import kotlinx.android.synthetic.main.listview_item_entries2.view.*
 
 class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
     private var onItemClicked : ((Entry)->Unit)? = null
@@ -72,8 +76,10 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
     override fun getItemViewType(position: Int) =
         currentList[position].type.int
 
-    fun submitEntries(items: List<Entry>) {
-        val newList = RecyclerState.makeStatesWithFooter(items)
+    fun submitEntries(items: List<Entry>?) {
+        val newList : List<RecyclerState<Entry>> =
+            if (items == null) emptyList()
+            else RecyclerState.makeStatesWithFooter(items)
         submitList(newList)
     }
 
@@ -93,11 +99,28 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
                 oldItem.body?.bookmarkedData == newItem.body?.bookmarkedData
     }
 
-    class ViewHolder(private val binding: ListviewItemEntries2Binding) : RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder(
+        private val binding: ListviewItemEntries2Binding
+    ) : RecyclerView.ViewHolder(binding.root) {
         var entry: Entry? = null
             set(value) {
                 field = value
                 binding.entry = value
             }
+
+        init {
+            binding.root.comments_list.apply {
+                adapter = BookmarkCommentsAdapter()
+                layoutManager = LinearLayoutManager(context)
+                addItemDecoration(
+                    DividerItemDecorator(
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.recycler_view_item_divider
+                        )!!
+                    )
+                )
+            }
+        }
     }
 }

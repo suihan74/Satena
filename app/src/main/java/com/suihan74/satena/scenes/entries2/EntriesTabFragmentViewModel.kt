@@ -4,7 +4,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.hatenaLib.EntriesType
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.models.Category
 import kotlinx.coroutines.Dispatchers
@@ -22,16 +21,7 @@ class EntriesTabFragmentViewModel(
 
     fun init(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch(Dispatchers.Main) {
         try {
-            val entriesType = when(tabPosition) {
-                0 -> EntriesType.Hot
-                1 -> EntriesType.Recent
-                else -> throw NotImplementedError("invalid tab position")
-            }
-
-            val entries = repository.refreshEntries(
-                category = category,
-                entriesType = entriesType
-            )
+            val entries = repository.refreshEntries(category, tabPosition)
             items.postValue(entries)
         }
         catch (e: Throwable) {

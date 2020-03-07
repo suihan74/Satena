@@ -1,10 +1,7 @@
 package com.suihan74.satena.scenes.entries2
 
 import androidx.lifecycle.LiveData
-import com.suihan74.hatenaLib.EntriesType
-import com.suihan74.hatenaLib.Entry
-import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.hatenaLib.Issue
+import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesHistoryKey
 import com.suihan74.satena.models.PreferenceKey
@@ -56,21 +53,26 @@ class EntriesRepository(
     }
 
     /** 最新のエントリーリストを読み込む(Category指定) */
-    suspend fun refreshEntries(category: Category, entriesType: EntriesType? = null) : List<Entry> {
+    suspend fun refreshEntries(category: Category, tabPosition: Int) : List<Entry> {
         return when (val apiCat = category.categoryInApi) {
-            null -> refreshSpecificEntries(category)
+            null -> refreshSpecificEntries(category, tabPosition)
             else -> {
-                client.getEntriesAsync(entriesType!!, apiCat).await()
+                val entriesType = EntriesType.fromInt(tabPosition)
+                client.getEntriesAsync(entriesType, apiCat).await()
             }
         }
     }
 
     /** はてなから提供されているカテゴリ以外のエントリ情報を取得する */
-    private suspend fun refreshSpecificEntries(category: Category) : List<Entry> {
+    private suspend fun refreshSpecificEntries(category: Category, tabPosition: Int) : List<Entry> {
         return when (category) {
             Category.History -> historyPrefs.get(EntriesHistoryKey.ENTRIES)
 
             Category.MyHotEntries -> client.getMyHotEntriesAsync().await()
+
+            Category.MyBookmarks ->
+                if (tabPosition == 0) client.getMyBookmarkedEntriesAsync().await()
+                else client.searchMyEntriesAsync("あとで読む", SearchType.Tag).await()
 
             else -> throw NotImplementedError("refreshing \"${category.name}\" is not implemented")
         }
