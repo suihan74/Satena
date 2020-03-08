@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -52,10 +52,10 @@ class EntriesActivity : AppCompatActivity() {
                         historyPrefs = SafeSharedPreferences.create(this)
                     )
                 )
-                ViewModelProviders.of(this, factory)[EntriesViewModel::class.java]
+                ViewModelProvider(this, factory)[EntriesViewModel::class.java]
             }
             else {
-                ViewModelProviders.of(this)[EntriesViewModel::class.java]
+                ViewModelProvider(this)[EntriesViewModel::class.java]
             }.apply {
                 initialize { e ->
                     showToast(R.string.msg_auth_failed)

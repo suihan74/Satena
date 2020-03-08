@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
@@ -49,7 +49,7 @@ class EntriesTabFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        activityViewModel = ViewModelProviders.of(requireActivity())[EntriesViewModel::class.java]
+        activityViewModel = ViewModelProvider(requireActivity())[EntriesViewModel::class.java]
 
         if (savedInstanceState == null) {
             val arguments = requireArguments()
@@ -61,11 +61,11 @@ class EntriesTabFragment : Fragment() {
                 category,
                 tabPosition
             )
-            viewModel = ViewModelProviders.of(this, factory)[EntriesTabFragmentViewModel::class.java]
+            viewModel = ViewModelProvider(this, factory)[EntriesTabFragmentViewModel::class.java]
             viewModel.init(onErrorRefreshEntries)
         }
         else {
-            viewModel = ViewModelProviders.of(this)[EntriesTabFragmentViewModel::class.java]
+            viewModel = ViewModelProvider(this)[EntriesTabFragmentViewModel::class.java]
         }
     }
 

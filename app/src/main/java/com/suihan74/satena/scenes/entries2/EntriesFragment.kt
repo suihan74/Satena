@@ -5,7 +5,7 @@ import android.view.*
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.transition.Fade
 import androidx.transition.TransitionSet
 import com.suihan74.hatenaLib.Issue
@@ -42,14 +42,14 @@ abstract class EntriesFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        activityViewModel = ViewModelProviders.of(requireActivity())[EntriesViewModel::class.java]
+        activityViewModel = ViewModelProvider(requireActivity())[EntriesViewModel::class.java]
         val category = Category.fromInt(requireArguments().getInt(ARG_CATEGORY))
 
         val viewModelType =
             if (category == Category.MyBookmarks) MyBookmarksViewModel::class.java
             else HatenaEntriesViewModel::class.java
 
-        viewModel = ViewModelProviders.of(this)[viewModelType]
+        viewModel = ViewModelProvider(this)[viewModelType]
         viewModel.category.value = category
         setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
 
