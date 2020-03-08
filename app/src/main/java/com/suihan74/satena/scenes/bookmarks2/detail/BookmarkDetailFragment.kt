@@ -19,7 +19,7 @@ import androidx.activity.addCallback
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayout
@@ -70,12 +70,12 @@ class BookmarkDetailFragment :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        activityViewModel = ViewModelProviders.of(requireActivity())[BookmarksViewModel::class.java]
+        activityViewModel = ViewModelProvider(requireActivity())[BookmarksViewModel::class.java]
 
         val bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val factory = BookmarkDetailViewModel.Factory(activityViewModel.repository, prefs, bookmark)
-        viewModel = ViewModelProviders.of(this, factory)[BookmarkDetailViewModel::class.java].apply {
+        viewModel = ViewModelProvider(this, factory)[BookmarkDetailViewModel::class.java].apply {
             // スターロード失敗時の挙動
             setOnLoadedStarsFailureListener { e ->
                 requireActivity().showToast(R.string.msg_update_stars_failed)

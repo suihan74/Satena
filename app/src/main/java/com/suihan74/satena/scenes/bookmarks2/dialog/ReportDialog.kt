@@ -12,7 +12,6 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
@@ -92,7 +91,7 @@ class ReportDialog : DialogFragment() {
         val bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
 
         val factory = ViewModel.Factory(entry, bookmark)
-        viewModel = ViewModelProviders.of(this, factory)[ViewModel::class.java]
+        viewModel = ViewModelProvider(this, factory)[ViewModel::class.java]
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

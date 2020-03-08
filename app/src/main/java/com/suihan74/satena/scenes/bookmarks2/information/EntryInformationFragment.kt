@@ -10,7 +10,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
@@ -38,7 +38,7 @@ class EntryInformationFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        activityViewModel = ViewModelProviders.of(requireActivity())[BookmarksViewModel::class.java]
+        activityViewModel = ViewModelProvider(requireActivity())[BookmarksViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -52,7 +52,7 @@ class EntryInformationFragment : Fragment() {
             text = makeSpannedFromHtml("<u>${Uri.decode(entry.url)}</u>")
 
             setOnClickListener {
-                activity!!.showCustomTabsIntent(entry)
+                requireActivity().showCustomTabsIntent(entry)
             }
         }
 
@@ -72,7 +72,7 @@ class EntryInformationFragment : Fragment() {
         }
 
         view.tags_list.apply {
-            layoutManager = ChipsLayoutManager.newBuilder(context!!)
+            layoutManager = ChipsLayoutManager.newBuilder(requireContext())
                 .setMaxViewsInRow(4)
                 .setRowStrategy(ChipsLayoutManager.STRATEGY_DEFAULT)
                 .build()

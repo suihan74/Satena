@@ -4,7 +4,7 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
@@ -21,7 +21,7 @@ class CustomTabSettingsDialog : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(this)[ViewModel::class.java]
+        viewModel = ViewModelProvider(this)[ViewModel::class.java]
 
         if (savedInstanceState == null) {
             val listener =

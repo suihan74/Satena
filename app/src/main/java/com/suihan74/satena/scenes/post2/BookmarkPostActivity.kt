@@ -11,7 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
@@ -91,7 +91,7 @@ class BookmarkPostActivity :
                 mastodonClientHolder = MastodonClientHolder
             )
         )
-        viewModel = ViewModelProviders.of(this, factory)[ViewModel::class.java]
+        viewModel = ViewModelProvider(this, factory)[ViewModel::class.java]
 
         // データバインド
         binding = DataBindingUtil.setContentView<ActivityBookmarkPost2Binding>(

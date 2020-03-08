@@ -4,8 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProviders
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -46,7 +45,7 @@ class PreferencesUserTagsFragment :
             UserTagRepository(SatenaApplication.instance.userTagDao)
         )
 
-        viewModel = ViewModelProviders.of(this, factory)[UserTagViewModel::class.java]
+        viewModel = ViewModelProvider(this, factory)[UserTagViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesGeneralsBinding
@@ -32,7 +32,7 @@ class PreferencesGeneralsFragment :
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val factory = PreferencesGeneralsViewModel.Factory(prefs)
-        viewModel = ViewModelProviders.of(this, factory)[PreferencesGeneralsViewModel::class.java]
+        viewModel = ViewModelProvider(this, factory)[PreferencesGeneralsViewModel::class.java]
 
         val binding = DataBindingUtil.inflate<FragmentPreferencesGeneralsBinding>(
             inflater,
