@@ -13,7 +13,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
@@ -111,7 +111,7 @@ class BookmarksActivity :
                     SatenaApplication.instance.ignoredEntryDao
                 )
             )
-            viewModel = ViewModelProviders.of(this, factory)[BookmarksViewModel::class.java]
+            viewModel = ViewModelProvider(this, factory)[BookmarksViewModel::class.java]
 
             if (entry == null) {
                 // Entryのロードが必要
@@ -156,7 +156,7 @@ class BookmarksActivity :
             }
         }
         else {
-            viewModel = ViewModelProviders.of(this)[BookmarksViewModel::class.java]
+            viewModel = ViewModelProvider(this)[BookmarksViewModel::class.java]
             init(firstLaunching, viewModel.entry, targetUser)
         }
 

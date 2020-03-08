@@ -12,7 +12,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
@@ -47,7 +47,7 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
             .addTransition(Slide(GravityCompat.END))
 
         val parentFragment = requireParentFragment() as PreferencesUserTagsFragment
-        model = ViewModelProviders.of(parentFragment)[UserTagViewModel::class.java]
+        model = ViewModelProvider(parentFragment)[UserTagViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

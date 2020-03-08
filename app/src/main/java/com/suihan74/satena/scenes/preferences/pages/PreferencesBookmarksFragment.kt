@@ -9,7 +9,7 @@ import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesBookmarksBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -59,7 +59,7 @@ class PreferencesBookmarksFragment :
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val factory = PreferencesBookmarksViewModel.Factory(prefs)
-        viewModel = ViewModelProviders.of(this, factory)[PreferencesBookmarksViewModel::class.java]
+        viewModel = ViewModelProvider(this, factory)[PreferencesBookmarksViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

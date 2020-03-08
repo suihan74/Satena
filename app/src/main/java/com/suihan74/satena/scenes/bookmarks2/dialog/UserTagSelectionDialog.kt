@@ -7,7 +7,7 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.UserTagDialogFragment
@@ -39,7 +39,7 @@ class UserTagSelectionDialog : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(this)[UserTagSelectionViewModel::class.java]
+        viewModel = ViewModelProvider(this)[UserTagSelectionViewModel::class.java]
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

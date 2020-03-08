@@ -11,7 +11,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
@@ -105,7 +105,7 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
         val vmFactory = EntriesActivityViewModel.Factory(
             IgnoredEntryRepository(SatenaApplication.instance.ignoredEntryDao)
         )
-        model = ViewModelProviders.of(this, vmFactory)[EntriesActivityViewModel::class.java]
+        model = ViewModelProvider(this, vmFactory)[EntriesActivityViewModel::class.java]
 
         // 設定ロード
         val prefs = SafeSharedPreferences.create<PreferenceKey>(applicationContext)

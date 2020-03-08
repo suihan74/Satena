@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
@@ -32,7 +32,7 @@ class BookmarksFragmentViewModel : ViewModel() {
 class BookmarksFragment : Fragment() {
     /** BookmarksFragmentの状態管理用ViewModel */
     private val viewModel: BookmarksFragmentViewModel by lazy {
-        ViewModelProviders.of(this)[BookmarksFragmentViewModel::class.java]
+        ViewModelProvider(this)[BookmarksFragmentViewModel::class.java]
     }
 
     companion object {
