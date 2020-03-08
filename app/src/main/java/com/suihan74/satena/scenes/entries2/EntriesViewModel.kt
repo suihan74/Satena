@@ -65,12 +65,16 @@ class EntriesViewModel(
     }
 
     /** ホームカテゴリ */
-    val homeCategory: Category
+    val homeCategory : Category
         get() = repository.homeCategory
 
     /** FABメニューにタップ防止背景を表示する */
     val isFABMenuBackgroundActive : Boolean
         get() = repository.isFABMenuBackgroundActive
+
+    /** スクロールにあわせてツールバーを隠す */
+    val hideToolbarByScroll : Boolean
+        get() = repository.hideToolbarByScroll
 
     class Factory(private val repository: EntriesRepository) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")

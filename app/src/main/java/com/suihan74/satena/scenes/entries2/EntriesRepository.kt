@@ -36,6 +36,10 @@ class EntriesRepository(
     val isFABMenuBackgroundActive : Boolean
         get() = prefs.getBoolean(PreferenceKey.ENTRIES_MENU_TAP_GUARD)
 
+    /** スクロールにあわせてツールバーを隠す */
+    val hideToolbarByScroll : Boolean
+        get() = prefs.getBoolean(PreferenceKey.ENTRIES_HIDING_TOOLBAR_BY_SCROLLING)
+
     suspend fun initialize(onError: ((Throwable)->Unit)? = null) {
         signIn(false, onError)
     }

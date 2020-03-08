@@ -5,11 +5,13 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityEntries2Binding
@@ -143,6 +145,13 @@ class EntriesActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        // ツールバーを隠す設定を反映
+        toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
+            scrollFlags =
+                if (viewModel.hideToolbarByScroll) AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
+                else 0
+        }
 
         // アクションバー設定
         setSupportActionBar(toolbar)
