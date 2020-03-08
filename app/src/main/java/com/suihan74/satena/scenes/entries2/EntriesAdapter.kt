@@ -8,27 +8,32 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
-import com.suihan74.utilities.DividerItemDecorator
-import com.suihan74.utilities.LoadableFooterViewHolder
-import com.suihan74.utilities.RecyclerState
-import com.suihan74.utilities.RecyclerType
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_entries2.view.*
 
 class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
-    private var onItemClicked : ((Entry)->Unit)? = null
-    private var onItemLongClicked : ((Entry)->Boolean)? = null
+    private var onItemClicked : ItemClickedListener<Entry>? = null
+    private var onItemLongClicked : ItemLongClickedListener<Entry>? = null
+
+    private var onCommentClicked : ((Entry, BookmarkResult)->Unit)? = null
 
     /** 項目クリック時の挙動をセットする */
-    fun setOnItemClickedListener(listener: ((Entry)->Unit)?) {
+    fun setOnItemClickedListener(listener: ItemClickedListener<Entry>?) {
         onItemClicked = listener
     }
 
     /** 項目長押し時の挙動をセットする */
-    fun setOnItemLongClickedListener(listener: ((Entry)->Boolean)?) {
+    fun setOnItemLongClickedListener(listener: ItemLongClickedListener<Entry>?) {
         onItemLongClicked = listener
+    }
+
+    /** エントリに含まれるコメントをクリックしたときの挙動をセットする */
+    fun setOnCommentClickedListener(listener: ((Entry, BookmarkResult)->Unit)?) {
+        onCommentClicked = listener
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
@@ -99,7 +104,7 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
                 oldItem.body?.bookmarkedData == newItem.body?.bookmarkedData
     }
 
-    class ViewHolder(
+    inner class ViewHolder(
         private val binding: ListviewItemEntries2Binding
     ) : RecyclerView.ViewHolder(binding.root) {
         var entry: Entry? = null
@@ -110,7 +115,12 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
 
         init {
             binding.root.comments_list.apply {
-                adapter = BookmarkCommentsAdapter()
+                adapter = CommentsAdapter().apply {
+                    setOnItemClickedListener listener@ { comment ->
+                        val entry = entry ?: return@listener
+                        onCommentClicked?.invoke(entry, comment)
+                    }
+                }
                 layoutManager = LinearLayoutManager(context)
                 addItemDecoration(
                     DividerItemDecorator(
