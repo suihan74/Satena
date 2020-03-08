@@ -85,7 +85,9 @@ open class EntriesAdapter(
         entireOffset = e.size
         entries = e
 
-        submitList(newStates)
+        submitList(emptyList()) {
+            submitList(newStates)
+        }
     }
 
     fun addEntries(e: List<Entry>) {
