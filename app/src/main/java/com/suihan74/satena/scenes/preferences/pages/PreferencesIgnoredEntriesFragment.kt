@@ -6,10 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -40,7 +38,7 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
         val vmFactory = IgnoredEntryViewModel.Factory(
             IgnoredEntryRepository(SatenaApplication.instance.ignoredEntryDao)
         )
-        viewModel = ViewModelProviders.of(this, vmFactory)[IgnoredEntryViewModel::class.java]
+        viewModel = ViewModelProvider(this, vmFactory)[IgnoredEntryViewModel::class.java]
         viewModel.init()
     }
 

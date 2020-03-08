@@ -13,7 +13,7 @@ import androidx.activity.addCallback
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
@@ -27,12 +27,12 @@ class FloatingActionButtonsFragment :
 {
     /** BookmarksActivityのViewModel */
     private val activityViewModel: BookmarksViewModel by lazy {
-        ViewModelProviders.of(activity as BookmarksActivity)[BookmarksViewModel::class.java]
+        ViewModelProvider(activity as BookmarksActivity)[BookmarksViewModel::class.java]
     }
 
     /** BookmarksFragmentの状態管理用ViewModel */
     private val fragmentViewModel: BookmarksFragmentViewModel by lazy {
-        ViewModelProviders.of((activity as BookmarksActivity).bookmarksFragment)[BookmarksFragmentViewModel::class.java]
+        ViewModelProvider((activity as BookmarksActivity).bookmarksFragment)[BookmarksFragmentViewModel::class.java]
     }
 
     /** 現在表示中のタブのViewModel */

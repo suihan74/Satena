@@ -15,7 +15,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
@@ -123,7 +123,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         isEditMode = arguments?.getBoolean(ARG_EDIT_MODE) ?: false
-        model = ViewModelProviders.of(this)[IgnoredEntryDialogViewModel::class.java].apply {
+        model = ViewModelProvider(this)[IgnoredEntryDialogViewModel::class.java].apply {
             if (savedInstanceState == null) {
                 editingUrl.postValue(arguments?.getString(ARG_EDITING_URL) ?: "")
                 editingText.postValue(arguments?.getString(ARG_EDITING_TEXT) ?: "")
@@ -138,7 +138,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
 
         // 最初に表示するタブを選択
-        val modifyingEntry = (arguments!!.getSerializable(ARG_MODIFYING_ENTRY) as? IgnoredEntry)?.also {
+        val modifyingEntry = (requireArguments().getSerializable(ARG_MODIFYING_ENTRY) as? IgnoredEntry)?.also {
             model.selectTab(it.type)
         } ?: let {
             model.selectedTab.postValue(

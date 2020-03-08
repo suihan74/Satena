@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
@@ -22,14 +22,14 @@ class BookmarksTabFragment :
 {
     /** BookmarksActivityのViewModel */
     private val activityViewModel: BookmarksViewModel by lazy {
-        ViewModelProviders.of(bookmarksActivity)[BookmarksViewModel::class.java]
+        ViewModelProvider(bookmarksActivity)[BookmarksViewModel::class.java]
     }
 
     lateinit var viewModel: BookmarksTabViewModel
         private set
 
     private val bookmarksFragmentViewModel: BookmarksFragmentViewModel by lazy {
-        ViewModelProviders.of(bookmarksFragment)[BookmarksFragmentViewModel::class.java]
+        ViewModelProvider(bookmarksFragment)[BookmarksFragmentViewModel::class.java]
     }
 
     /** このフラグメントが配置されているBookmarksActivity */
@@ -56,16 +56,16 @@ class BookmarksTabFragment :
         viewModel =
             when (BookmarksTabType.fromInt(requireArguments().getInt(ARG_TAB_TYPE))) {
                 BookmarksTabType.POPULAR ->
-                    ViewModelProviders.of(this, factory)[PopularTabViewModel::class.java]
+                    ViewModelProvider(this, factory)[PopularTabViewModel::class.java]
 
                 BookmarksTabType.RECENT ->
-                    ViewModelProviders.of(this, factory)[RecentTabViewModel::class.java]
+                    ViewModelProvider(this, factory)[RecentTabViewModel::class.java]
 
                 BookmarksTabType.ALL ->
-                    ViewModelProviders.of(this, factory)[AllBookmarksTabViewModel::class.java]
+                    ViewModelProvider(this, factory)[AllBookmarksTabViewModel::class.java]
 
                 BookmarksTabType.CUSTOM ->
-                    ViewModelProviders.of(this, factory)[CustomTabViewModel::class.java]
+                    ViewModelProvider(this, factory)[CustomTabViewModel::class.java]
             }
 
         if (savedInstanceState == null) {

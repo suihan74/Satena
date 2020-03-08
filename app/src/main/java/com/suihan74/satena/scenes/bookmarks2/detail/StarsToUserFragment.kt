@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
@@ -18,7 +18,7 @@ import kotlinx.android.synthetic.main.fragment_stars_tab.view.*
 
 class StarsToUserFragment : Fragment(), ScrollableToTop {
     private val detailViewModel: BookmarkDetailViewModel by lazy {
-        ViewModelProviders.of(parentFragment as BookmarkDetailFragment)[BookmarkDetailViewModel::class.java]
+        ViewModelProvider(parentFragment as BookmarkDetailFragment)[BookmarkDetailViewModel::class.java]
     }
 
     companion object {
