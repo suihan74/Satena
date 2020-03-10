@@ -16,9 +16,14 @@ import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_entries2.view.*
 
 class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
-    private var onItemClicked : ItemClickedListener<Entry>? = null
-    private var onItemLongClicked : ItemLongClickedListener<Entry>? = null
+    /** ロード中表示のできるフッタ */
+    private var footer: LoadableFooterViewHolder? = null
 
+    /** エントリクリック時の挙動 */
+    private var onItemClicked : ItemClickedListener<Entry>? = null
+    /** エントリ長押し時の挙動 */
+    private var onItemLongClicked : ItemLongClickedListener<Entry>? = null
+    /** コメント部分クリック時の挙動 */
     private var onCommentClicked : ((Entry, BookmarkResult)->Unit)? = null
 
     /** 項目クリック時の挙動をセットする */
@@ -47,10 +52,11 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
                 ViewHolder(binding)
             }
 
-            RecyclerType.FOOTER.int ->
-                LoadableFooterViewHolder(
-                    inflater.inflate(R.layout.footer_recycler_view_loadable, parent, false)
-                )
+            RecyclerType.FOOTER.int -> LoadableFooterViewHolder(
+                inflater.inflate(R.layout.footer_recycler_view_loadable, parent, false)
+            ).also {
+                this.footer = it
+            }
 
             else -> throw NotImplementedError()
         }
@@ -81,11 +87,22 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
     override fun getItemViewType(position: Int) =
         currentList[position].type.int
 
+    /** エントリはこのメソッドを使ってセットする */
     fun submitEntries(items: List<Entry>?) {
         val newList : List<RecyclerState<Entry>> =
             if (items == null) emptyList()
             else RecyclerState.makeStatesWithFooter(items)
-        submitList(newList)
+        submitList(newList) {
+            hideProgressBar()
+        }
+    }
+
+    fun showProgressBar() {
+        footer?.showProgressBar()
+    }
+
+    fun hideProgressBar() {
+        footer?.hideProgressBar(false)
     }
 
     private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entry>>() {

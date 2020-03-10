@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityEntries2Binding
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
@@ -51,7 +52,8 @@ class EntriesActivity : AppCompatActivity() {
                             MastodonClientHolder
                         ),
                         prefs = prefs,
-                        historyPrefs = SafeSharedPreferences.create(this)
+                        historyPrefs = SafeSharedPreferences.create(this),
+                        ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
                     )
                 )
                 ViewModelProvider(this, factory)[EntriesViewModel::class.java]

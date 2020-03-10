@@ -16,6 +16,7 @@ import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_entries_tab2.view.*
@@ -64,7 +65,7 @@ class EntriesTabFragment : Fragment() {
                 tabPosition
             )
             viewModel = ViewModelProvider(this, factory)[EntriesTabFragmentViewModel::class.java]
-            viewModel.init(onErrorRefreshEntries)
+            viewModel.refresh(onErrorRefreshEntries)
         }
         else {
             viewModel = ViewModelProvider(this)[EntriesTabFragmentViewModel::class.java]
@@ -131,11 +132,26 @@ class EntriesTabFragment : Fragment() {
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
-                viewModel.init(onErrorRefreshEntries).invokeOnCompletion {
+                viewModel.refresh(onErrorRefreshEntries).invokeOnCompletion {
                     this.isRefreshing = false
                 }
             }
         }
+
+        // スクロールで追加ロード
+        val scrollingUpdater = object : RecyclerViewScrollingUpdater(entriesAdapter) {
+            override fun load() {
+                entriesAdapter.showProgressBar()
+                viewModel.loadAdditional(
+                    onFinally = { loadCompleted() },
+                    onError = { e ->
+                        context.showToast(R.string.msg_get_entry_failed)
+                        Log.e("loadAdditional", Log.getStackTraceString(e))
+                    }
+                )
+            }
+        }
+        view.entries_list.addOnScrollListener(scrollingUpdater)
 
         return view
     }

@@ -5,14 +5,18 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesHistoryKey
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class EntriesRepository(
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
     private val prefs: SafeSharedPreferences<PreferenceKey>,
-    private val historyPrefs: SafeSharedPreferences<EntriesHistoryKey>
+    private val historyPrefs: SafeSharedPreferences<EntriesHistoryKey>,
+    private val ignoredEntryDao: IgnoredEntryDao
 ) {
     /** サインイン状態 */
     val signedIn : Boolean
@@ -57,25 +61,29 @@ class EntriesRepository(
     }
 
     /** 最新のエントリーリストを読み込む(Category指定) */
-    suspend fun refreshEntries(category: Category, tabPosition: Int) : List<Entry> {
+    suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int? = null) : List<Entry> {
         return when (val apiCat = category.categoryInApi) {
-            null -> refreshSpecificEntries(category, tabPosition)
+            null -> loadSpecificEntries(category, tabPosition)
             else -> {
                 val entriesType = EntriesType.fromInt(tabPosition)
-                client.getEntriesAsync(entriesType, apiCat).await()
+                client.getEntriesAsync(
+                    entriesType = entriesType,
+                    category = apiCat,
+                    of = offset
+                ).await()
             }
         }
     }
 
     /** はてなから提供されているカテゴリ以外のエントリ情報を取得する */
-    private suspend fun refreshSpecificEntries(category: Category, tabPosition: Int) : List<Entry> {
+    private suspend fun loadSpecificEntries(category: Category, tabPosition: Int, offset: Int? = null) : List<Entry> {
         return when (category) {
             Category.History -> historyPrefs.get(EntriesHistoryKey.ENTRIES)
 
             Category.MyHotEntries -> client.getMyHotEntriesAsync().await()
 
             Category.MyBookmarks ->
-                if (tabPosition == 0) client.getMyBookmarkedEntriesAsync().await()
+                if (tabPosition == 0) client.getMyBookmarkedEntriesAsync(of = offset).await()
                 else client.searchMyEntriesAsync("あとで読む", SearchType.Tag).await()
 
             else -> throw NotImplementedError("refreshing \"${category.name}\" is not implemented")
@@ -83,8 +91,20 @@ class EntriesRepository(
     }
 
     /** 最新のエントリーリストを読み込む(Issue指定) */
-    suspend fun refreshEntries(issue: Issue, entriesType: EntriesType) : List<Entry> {
-        return client.getEntriesAsync(entriesType, issue).await()
+    suspend fun loadEntries(issue: Issue, entriesType: EntriesType, offset: Int? = null) : List<Entry> {
+        return client.getEntriesAsync(
+            entriesType = entriesType,
+            issue = issue,
+            of = offset
+        ).await()
+    }
+
+    /** エントリをフィルタリングする */
+    suspend fun filterEntries(entries: List<Entry>) : List<Entry> = withContext(Dispatchers.IO) {
+        val ignoredEntries = ignoredEntryDao.getAllEntries()
+        return@withContext entries.filterNot { entry ->
+            ignoredEntries.any { it.isMatched(entry) }
+        }
     }
 
     /** サインイン状態の変更を通知する */
