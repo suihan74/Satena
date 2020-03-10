@@ -3,7 +3,6 @@ package com.suihan74.utilities
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 
 abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContainer {
 
@@ -118,9 +117,3 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
     }
 }
 
-
-inline fun <reified T> FragmentManager.get() : T? =
-    this.fragments.lastOrNull { it is T } as? T
-
-inline fun <reified T> FragmentManager.get(predicate: (Fragment) -> Boolean) : T? =
-    this.fragments.lastOrNull(predicate) as? T

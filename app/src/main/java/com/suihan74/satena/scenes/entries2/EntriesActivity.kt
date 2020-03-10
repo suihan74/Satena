@@ -179,14 +179,22 @@ class EntriesActivity : AppCompatActivity() {
 
     /** カテゴリを選択 */
     private fun showCategory(category: Category) {
+        // 現在トップにある画面と同じカテゴリには連続して遷移しない
+        if (supportFragmentManager.topBackStackEntry?.name == category.name) return
+
+        // 既に一度表示されているカテゴリの場合再利用する
+        val existed = supportFragmentManager.findFragmentByTag(category.name)
+
         val fragment =
+            existed ?:
             if (category.singleColumns) SingleTabEntriesFragment.createInstance(category)
             else TwinTabsEntriesFragment.createInstance(category)
 
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_layout, fragment)
-            .addToBackStack(null)
-            .commit()
+        supportFragmentManager.beginTransaction().run {
+            replace(R.id.main_layout, fragment, category.name)
+            addToBackStack(category.name)
+            commit()
+        }
     }
 
     // --- FAB表示アニメーション ---
