@@ -25,11 +25,12 @@ import kotlinx.android.synthetic.main.activity_entries2.*
 
 class EntriesActivity : AppCompatActivity() {
     private lateinit var viewModel : EntriesViewModel
-    private lateinit var binding : ActivityEntries2Binding
 
+    /** ドロワーの開閉状態 */
     private val isDrawerOpened : Boolean
         get() = drawer_layout.isDrawerOpen(categories_list)
 
+    /** FABメニューの開閉状態 */
     private var isFABMenuOpened : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,7 +68,8 @@ class EntriesActivity : AppCompatActivity() {
                 }
             }
 
-        binding = DataBindingUtil.setContentView<ActivityEntries2Binding>(
+        // データバインディング
+        DataBindingUtil.setContentView<ActivityEntries2Binding>(
             this,
             R.layout.activity_entries2
         ).apply {
@@ -78,8 +80,8 @@ class EntriesActivity : AppCompatActivity() {
         // カテゴリリスト初期化
         categories_list.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = object : CategoriesAdapter() {
-                override fun onItemClicked(category: Category) {
+            adapter = CategoriesAdapter().apply {
+                setOnItemClickedListener { category ->
                     drawer_layout.closeDrawers()
                     showCategory(category)
                 }
@@ -161,17 +163,17 @@ class EntriesActivity : AppCompatActivity() {
 
     /** 戻るボタンの挙動 */
     override fun onBackPressed() {
-        if (isDrawerOpened) {
-            drawer_layout.closeDrawer(categories_list)
-        }
-        else if (isFABMenuOpened) {
-            closeFABMenu()
-        }
-        else if (supportFragmentManager.backStackEntryCount <= 1) {
-            finish()
-        }
-        else {
-            super.onBackPressed()
+        when {
+            isDrawerOpened ->
+                drawer_layout.closeDrawer(categories_list)
+
+            isFABMenuOpened ->
+                closeFABMenu()
+
+            supportFragmentManager.backStackEntryCount <= 1 ->
+                finish()
+
+            else -> super.onBackPressed()
         }
     }
 
@@ -242,13 +244,11 @@ class EntriesActivity : AppCompatActivity() {
 
         entries_menu_background_guard.visibility = View.VISIBLE
 
-//        if (viewModel.signedIn.value == true && viewModel.currentCategory.value != Category.Notices) {
-            openFABMenuAnimation(
-                entries_menu_notices_layout,
-                entries_menu_notices_desc,
-                R.dimen.dp_238
-            )
-//        }
+        openFABMenuAnimation(
+            entries_menu_notices_layout,
+            entries_menu_notices_desc,
+            R.dimen.dp_238
+        )
         openFABMenuAnimation(
             entries_menu_categories_layout,
             entries_menu_categories_desc,
