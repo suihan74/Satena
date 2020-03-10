@@ -8,10 +8,12 @@ import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.showCustomTabsIntent
 
@@ -22,6 +24,32 @@ class MenuDialog : DialogFragment() {
             arguments = Bundle().apply {
                 putSerializable(ARG_ENTRY, entry)
             }
+        }
+
+        /** タップ/ロングタップ時の挙動を処理する */
+        fun act(entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
+            val instance = createInstance(entry)
+            when (actionEnum) {
+                TapEntryAction.SHOW_MENU ->
+                    instance.show(fragmentManager, tag)
+
+                else ->
+                    act(instance, entry, actionEnum, fragmentManager, tag)
+            }
+        }
+
+        /** タップ/ロングタップ時の挙動を処理する(メニュー表示以外の挙動) */
+        private fun act(instance: MenuDialog, entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
+            fragmentManager.beginTransaction()
+                .add(instance, tag)
+                .runOnCommit {
+                    val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
+                    action?.second?.invoke(entry)
+
+                    fragmentManager.beginTransaction()
+                        .remove(instance)
+                        .commit()
+                }.commit()
         }
 
         private const val ARG_ENTRY = "ARG_ENTRY"

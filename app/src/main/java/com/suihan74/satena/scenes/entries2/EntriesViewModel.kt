@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.TapEntryAction
 import kotlinx.coroutines.launch
 
 /**
@@ -75,6 +76,14 @@ class EntriesViewModel(
     /** スクロールにあわせてツールバーを隠す */
     val hideToolbarByScroll : Boolean
         get() = repository.hideToolbarByScroll
+
+    /** エントリ項目クリック時の挙動 */
+    val entryClickedAction : TapEntryAction
+        get() = repository.entryClickedAction
+
+    /** エントリ項目長押し時の挙動 */
+    val entryLongClickedAction : TapEntryAction
+        get() = repository.entryLongClickedAction
 
     class Factory(private val repository: EntriesRepository) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")

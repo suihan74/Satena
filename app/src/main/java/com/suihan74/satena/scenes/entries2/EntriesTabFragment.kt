@@ -88,18 +88,12 @@ class EntriesTabFragment : Fragment() {
 
         // エントリリスト用のアダプタ
         val entriesAdapter = EntriesAdapter().apply {
-            // TODO: クリック時の挙動をカスタマイズ可能にする
             setOnItemClickedListener { entry ->
-                val intent = Intent(context, BookmarksActivity::class.java).apply {
-                    putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
-                }
-                startActivity(intent)
+                MenuDialog.act(entry, activityViewModel.entryClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
             }
 
             setOnItemLongClickedListener { entry ->
-                // TODO: 長押し時の挙動をカスタマイズ可能にする
-                val dialog = MenuDialog.createInstance(entry)
-                dialog.show(childFragmentManager, DIALOG_ENTRY_MENU)
+                MenuDialog.act(entry, activityViewModel.entryLongClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
                 true
             }
 

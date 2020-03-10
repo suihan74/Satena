@@ -5,6 +5,7 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesHistoryKey
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
@@ -44,6 +45,15 @@ class EntriesRepository(
     val hideToolbarByScroll : Boolean
         get() = prefs.getBoolean(PreferenceKey.ENTRIES_HIDING_TOOLBAR_BY_SCROLLING)
 
+    /** エントリ項目クリック時の挙動 */
+    val entryClickedAction : TapEntryAction
+        get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
+
+    /** エントリ項目長押し時の挙動 */
+    val entryLongClickedAction : TapEntryAction
+        get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
+
+    /** 初期化処理 */
     suspend fun initialize(onError: ((Throwable)->Unit)? = null) {
         signIn(false, onError)
     }
