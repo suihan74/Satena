@@ -16,17 +16,15 @@ fun RecyclerView.setEntries(entries: List<Entry>?) {
 }
 
 /** エントリについたブコメリスト */
+@ExperimentalStdlibApi
 @BindingAdapter("src")
 fun RecyclerView.setEntryComments(entry: Entry?) {
     if (entry == null) return
 
-    val comments = sequence {
-        if (entry.bookmarkedData != null)
-            yield(entry.bookmarkedData!!)
-
-        if (entry.myHotEntryComments != null)
-            yieldAll(entry.myHotEntryComments!!)
-    }.toList()
+    val comments = buildList {
+        entry.bookmarkedData?.let { add(it) }
+        entry.myHotEntryComments?.let { addAll(it) }
+    }
 
     (adapter as? CommentsAdapter)?.submitComments(comments)
     visibility = (!comments.isNullOrEmpty()).toVisibility()
