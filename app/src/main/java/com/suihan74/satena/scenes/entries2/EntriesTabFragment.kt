@@ -31,6 +31,8 @@ class EntriesTabFragment : Fragment() {
 
         private const val ARG_CATEGORY = "ARG_CATEGORY"
         private const val ARG_TAB_POSITION = "ARG_TAB_POSITION"
+
+        private const val DIALOG_ENTRY_MENU = "entry_menu_dialog"
     }
 
     /** EntriesActivityのViewModel */
@@ -83,32 +85,35 @@ class EntriesTabFragment : Fragment() {
         val view = binding.root
         val context = requireContext()
 
-        // エントリリストの設定
-        view.entries_list.apply {
-            val entriesAdapter = EntriesAdapter().apply {
-                // TODO: クリック時の挙動をカスタマイズ可能にする
-                setOnItemClickedListener { entry ->
-                    val intent = Intent(context, BookmarksActivity::class.java).apply {
-                        putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
-                    }
-                    startActivity(intent)
+        // エントリリスト用のアダプタ
+        val entriesAdapter = EntriesAdapter().apply {
+            // TODO: クリック時の挙動をカスタマイズ可能にする
+            setOnItemClickedListener { entry ->
+                val intent = Intent(context, BookmarksActivity::class.java).apply {
+                    putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
                 }
-
-                setOnItemLongClickedListener { entry ->
-                    // TODO: 長押し時の挙動をカスタマイズ可能にする
-                    true
-                }
-
-                // コメント部分クリック時の挙動
-                setOnCommentClickedListener { entry, bookmark ->
-                    val intent = Intent(context, BookmarksActivity::class.java).apply {
-                        putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
-                        putExtra(BookmarksActivity.EXTRA_TARGET_USER, bookmark.user)
-                    }
-                    startActivity(intent)
-                }
+                startActivity(intent)
             }
 
+            setOnItemLongClickedListener { entry ->
+                // TODO: 長押し時の挙動をカスタマイズ可能にする
+                val dialog = MenuDialog.createInstance(entry)
+                dialog.show(childFragmentManager, DIALOG_ENTRY_MENU)
+                true
+            }
+
+            // コメント部分クリック時の挙動
+            setOnCommentClickedListener { entry, bookmark ->
+                val intent = Intent(context, BookmarksActivity::class.java).apply {
+                    putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+                    putExtra(BookmarksActivity.EXTRA_TARGET_USER, bookmark.user)
+                }
+                startActivity(intent)
+            }
+        }
+
+        // エントリリストの設定
+        view.entries_list.apply {
             adapter = entriesAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(
