@@ -35,6 +35,7 @@ class MenuDialog : DialogFragment() {
         activityViewModel = ViewModelProvider(requireActivity())[EntriesViewModel::class.java]
     }
 
+    @ExperimentalStdlibApi
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = requireContext()
         val arguments = requireArguments()
@@ -53,11 +54,11 @@ class MenuDialog : DialogFragment() {
         }
 
         // メニュー項目の作成
-        val items = sequence<Pair<Int, (Entry)->Unit>> {
-            yield(R.string.entry_action_show_comments to { entry -> showBookmarks(entry) })
-            yield(R.string.entry_action_show_page to { entry -> showPage(entry) })
-            yield(R.string.entry_action_show_page_in_browser to { entry -> showPageInBrowser(entry) })
-        }.toList()
+        val items = buildList<Pair<Int, (Entry)->Unit>> {
+            add(R.string.entry_action_show_comments to { entry -> showBookmarks(entry) })
+            add(R.string.entry_action_show_page to { entry -> showPage(entry) })
+            add(R.string.entry_action_show_page_in_browser to { entry -> showPageInBrowser(entry) })
+        }
 
         return AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setCustomTitle(titleViewBinding.root)
