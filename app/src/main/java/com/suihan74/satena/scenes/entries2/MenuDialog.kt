@@ -30,12 +30,20 @@ class MenuDialog : DialogFragment() {
     /** EntriesActivityのViewModel */
     private lateinit var activityViewModel: EntriesViewModel
 
+    /** メニュー項目 */
+    @OptIn(ExperimentalStdlibApi::class)
+    private val menuItems = buildList<Pair<Int, (Entry)->Unit>> {
+        add(R.string.entry_action_show_comments to { entry -> showBookmarks(entry) })
+        add(R.string.entry_action_show_page to { entry -> showPage(entry) })
+        add(R.string.entry_action_show_page_in_browser to { entry -> showPageInBrowser(entry) })
+        add(R.string.entry_action_show_entries to { entry -> showEntries(entry) })
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activityViewModel = ViewModelProvider(requireActivity())[EntriesViewModel::class.java]
     }
 
-    @ExperimentalStdlibApi
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = requireContext()
         val arguments = requireArguments()
@@ -53,18 +61,11 @@ class MenuDialog : DialogFragment() {
             this.entry = entry
         }
 
-        // メニュー項目の作成
-        val items = buildList<Pair<Int, (Entry)->Unit>> {
-            add(R.string.entry_action_show_comments to { entry -> showBookmarks(entry) })
-            add(R.string.entry_action_show_page to { entry -> showPage(entry) })
-            add(R.string.entry_action_show_page_in_browser to { entry -> showPageInBrowser(entry) })
-        }
-
         return AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setItems(items.map { getString(it.first) }.toTypedArray()) { _, which ->
-                items[which].second.invoke(entry)
+            .setItems(menuItems.map { getString(it.first) }.toTypedArray()) { _, which ->
+                menuItems[which].second.invoke(entry)
             }
             .create()
     }
@@ -86,5 +87,10 @@ class MenuDialog : DialogFragment() {
     private fun showPageInBrowser(entry: Entry) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(entry.url))
         startActivity(intent)
+    }
+
+    /** サイトのエントリリストを開く */
+    private fun showEntries(entry: Entry) {
+        // TODO: サイトのエントリリストを開く
     }
 }

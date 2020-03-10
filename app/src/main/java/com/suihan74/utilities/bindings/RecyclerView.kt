@@ -16,7 +16,7 @@ fun RecyclerView.setEntries(entries: List<Entry>?) {
 }
 
 /** エントリについたブコメリスト */
-@ExperimentalStdlibApi
+@OptIn(ExperimentalStdlibApi::class)
 @BindingAdapter("src")
 fun RecyclerView.setEntryComments(entry: Entry?) {
     if (entry == null) return
