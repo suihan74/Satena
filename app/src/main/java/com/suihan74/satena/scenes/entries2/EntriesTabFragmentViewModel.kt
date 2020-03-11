@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
+import com.suihan74.utilities.SingleUpdateMutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -15,6 +17,9 @@ class EntriesTabFragmentViewModel(
     private val category: Category,
     private val tabPosition: Int
 ) : ViewModel() {
+    /** 選択中のIssue */
+    var issue : Issue? = null
+
     /** フィルタされていない全エントリリスト */
     private val items by lazy {
         MutableLiveData<List<Entry>>()
@@ -34,7 +39,7 @@ class EntriesTabFragmentViewModel(
     /** エントリリストを初期化 */
     fun refresh(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch(Dispatchers.Main) {
         try {
-            val entries = repository.loadEntries(category, tabPosition)
+            val entries = repository.loadEntries(category, issue, tabPosition)
             items.value = entries
         }
         catch (e: Throwable) {
@@ -50,7 +55,7 @@ class EntriesTabFragmentViewModel(
         var error : Throwable? = null
         try {
             val offset = items.value?.size ?: 0
-            val entries = repository.loadEntries(category, tabPosition, offset)
+            val entries = repository.loadEntries(category, issue, tabPosition, offset)
             val oldItems = items.value ?: emptyList()
             items.postValue(
                 oldItems.plus(entries).distinctBy { it.id }

@@ -9,7 +9,10 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
@@ -23,14 +26,21 @@ import kotlinx.android.synthetic.main.fragment_entries_tab2.view.*
 
 class EntriesTabFragment : Fragment() {
     companion object {
-        fun createInstance(category: Category, tabPosition: Int = 0) = EntriesTabFragment().apply {
+        fun createInstance(fragmentViewModelKey: String, category: Category, tabPosition: Int = 0) = EntriesTabFragment().apply {
             arguments = Bundle().apply {
+                putString(ARG_FRAGMENT_VIEW_MODEL_KEY, fragmentViewModelKey)
                 putInt(ARG_CATEGORY, category.ordinal)
                 putInt(ARG_TAB_POSITION, tabPosition)
             }
         }
 
+        /** このタブを表示しているEntriesFragmentのID */
+        private const val ARG_FRAGMENT_VIEW_MODEL_KEY = "ARG_FRAGMENT_VIEW_MODEL_KEY"
+
+        /** このタブで表示するエントリのカテゴリ */
         private const val ARG_CATEGORY = "ARG_CATEGORY"
+
+        /** このタブの表示位置 */
         private const val ARG_TAB_POSITION = "ARG_TAB_POSITION"
 
         private const val DIALOG_ENTRY_MENU = "entry_menu_dialog"
@@ -133,19 +143,35 @@ class EntriesTabFragment : Fragment() {
         }
 
         // スクロールで追加ロード
-        val scrollingUpdater = object : RecyclerViewScrollingUpdater(entriesAdapter) {
-            override fun load() {
-                entriesAdapter.showProgressBar()
-                viewModel.loadAdditional(
-                    onFinally = { loadCompleted() },
-                    onError = { e ->
-                        context.showToast(R.string.msg_get_entry_failed)
-                        Log.e("loadAdditional", Log.getStackTraceString(e))
-                    }
-                )
-            }
+        val scrollingUpdater = RecyclerViewScrollingUpdater {
+            entriesAdapter.showProgressBar()
+            viewModel.loadAdditional(
+                onFinally = { loadCompleted() },
+                onError = { e ->
+                    context.showToast(R.string.msg_get_entry_failed)
+                    Log.e("loadAdditional", Log.getStackTraceString(e))
+                }
+            )
         }
         view.entries_list.addOnScrollListener(scrollingUpdater)
+
+        // Issueの変更を監視する
+        // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる
+        val parentViewModelKey = requireArguments().getString(ARG_FRAGMENT_VIEW_MODEL_KEY)!!
+        val parentViewModel = ViewModelProvider(requireActivity())[parentViewModelKey, EntriesFragmentViewModel::class.java]
+        var isIssueInitialized = false
+        parentViewModel.issue.observe(viewLifecycleOwner, Observer {
+            if (!isIssueInitialized) {
+                isIssueInitialized = true
+                return@Observer
+            }
+
+            viewModel.issue = it
+            // 一度クリアしておかないとスクロール位置が滅茶苦茶になる
+            entriesAdapter.submitEntries(null) {
+                viewModel.refresh(onErrorRefreshEntries)
+            }
+        })
 
         return view
     }

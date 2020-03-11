@@ -88,12 +88,14 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
         currentList[position].type.int
 
     /** エントリはこのメソッドを使ってセットする */
-    fun submitEntries(items: List<Entry>?) {
+    fun submitEntries(items: List<Entry>?, commitCallback: (()->Any?)? = null) {
         val newList : List<RecyclerState<Entry>> =
-            if (items == null) emptyList()
+            if (items.isNullOrEmpty()) emptyList()
             else RecyclerState.makeStatesWithFooter(items)
+
         submitList(newList) {
             hideProgressBar()
+            commitCallback?.invoke()
         }
     }
 

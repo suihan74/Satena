@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
+import com.suihan74.utilities.SingleUpdateMutableLiveData
 import kotlinx.coroutines.launch
 
 abstract class EntriesFragmentViewModel : ViewModel() {
@@ -17,7 +18,9 @@ abstract class EntriesFragmentViewModel : ViewModel() {
 
     /** この画面で表示しているIssue */
     val issue by lazy {
-        MutableLiveData<Issue?>()
+        SingleUpdateMutableLiveData<Issue?>(
+            selector = { it?.code }
+        )
     }
 
     /** 現在categoryが内包するissueのリスト */

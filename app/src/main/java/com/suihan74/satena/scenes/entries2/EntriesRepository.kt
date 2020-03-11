@@ -70,8 +70,13 @@ class EntriesRepository(
         }
     }
 
+    /** 最新のエントリーリストを読み込む */
+    suspend fun loadEntries(category: Category, issue: Issue?, tabPosition: Int, offset: Int? = null) : List<Entry> =
+        if (issue == null) loadEntries(category, tabPosition, offset)
+        else loadEntries(issue, tabPosition, offset)
+
     /** 最新のエントリーリストを読み込む(Category指定) */
-    suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int? = null) : List<Entry> {
+    private suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int? = null) : List<Entry> {
         return when (val apiCat = category.categoryInApi) {
             null -> loadSpecificEntries(category, tabPosition)
             else -> {
@@ -101,7 +106,8 @@ class EntriesRepository(
     }
 
     /** 最新のエントリーリストを読み込む(Issue指定) */
-    suspend fun loadEntries(issue: Issue, entriesType: EntriesType, offset: Int? = null) : List<Entry> {
+    private suspend fun loadEntries(issue: Issue, tabPosition: Int, offset: Int? = null) : List<Entry> {
+        val entriesType = EntriesType.fromInt(tabPosition)
         return client.getEntriesAsync(
             entriesType = entriesType,
             issue = issue,

@@ -15,17 +15,32 @@ import com.suihan74.satena.scenes.entries.initialize
 import com.suihan74.satena.scenes.entries2.pages.HatenaEntriesViewModel
 import com.suihan74.satena.scenes.entries2.pages.MyBookmarksViewModel
 import kotlinx.android.synthetic.main.activity_entries2.*
+import java.util.*
 
 abstract class EntriesFragment : Fragment() {
     companion object {
         @JvmStatic
         protected val ARG_CATEGORY = "ARG_CATEGORY"
+
+        private const val ARG_UUID = "ARG_UUID"
     }
+
+    /**
+     * フラグメント識別用のユニークID
+     *
+     * viewModelを子フラグメントから参照するために使用する
+     * そのためBundleを使用して管理する
+     */
+    private lateinit var uuid: String
 
     /** EntriesActivityのViewModel */
     protected lateinit var activityViewModel : EntriesViewModel
 
     protected lateinit var viewModel : EntriesFragmentViewModel
+
+    /** タブ側からこのフラグメントのVMにアクセスするためのキー */
+    val viewModelKey: String
+        get() = "EntriesFragment_${uuid}"
 
     /** この画面のCategory */
     val category : Category
@@ -42,14 +57,23 @@ abstract class EntriesFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        activityViewModel = ViewModelProvider(requireActivity())[EntriesViewModel::class.java]
-        val category = Category.fromInt(requireArguments().getInt(ARG_CATEGORY))
+        val activity = requireActivity()
+
+        val arguments = arguments ?: Bundle.EMPTY
+        this.arguments = arguments
+
+        // UUIDを生成
+        uuid = arguments.getString(ARG_UUID) ?: UUID.randomUUID().toString()
+        arguments.putString(ARG_UUID, uuid)
+
+        activityViewModel = ViewModelProvider(activity)[EntriesViewModel::class.java]
+        val category = Category.fromInt(arguments.getInt(ARG_CATEGORY))
 
         val viewModelType =
             if (category == Category.MyBookmarks) MyBookmarksViewModel::class.java
             else HatenaEntriesViewModel::class.java
 
-        viewModel = ViewModelProvider(this)[viewModelType]
+        viewModel = ViewModelProvider(activity)[viewModelKey, viewModelType]
         viewModel.category.value = category
         setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
 
@@ -62,11 +86,19 @@ abstract class EntriesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val toolbar = requireActivity().toolbar
+
         // ツールバーを更新
-        requireActivity().toolbar.apply {
+        toolbar.apply {
             setTitle(viewModel.category.value?.textId ?: 0)
             subtitle = viewModel.issue.value?.name
         }
+
+        // Issue選択時にサブタイトルを表示する
+        viewModel.issue.observe(viewLifecycleOwner, Observer {
+            toolbar.subtitle = it?.name
+        })
+
         return null
     }
 

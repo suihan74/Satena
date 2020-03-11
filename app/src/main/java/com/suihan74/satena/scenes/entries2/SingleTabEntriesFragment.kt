@@ -26,7 +26,7 @@ class SingleTabEntriesFragment : EntriesFragment() {
 
         if (savedInstanceState == null) {
             childFragmentManager.beginTransaction()
-                .replace(R.id.content_layout, EntriesTabFragment.createInstance(category))
+                .replace(R.id.content_layout, EntriesTabFragment.createInstance(viewModelKey, category))
                 .commit()
         }
 

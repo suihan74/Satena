@@ -8,7 +8,7 @@ class EntriesTabAdapter(
 ) : FragmentPagerAdapter(fragment.childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     override fun getItem(position: Int) : Fragment {
-        return EntriesTabFragment.createInstance(fragment.category, position)
+        return EntriesTabFragment.createInstance(fragment.viewModelKey, fragment.category, position)
     }
 
     override fun getPageTitle(position: Int): CharSequence? {
