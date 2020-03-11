@@ -127,17 +127,15 @@ class BookmarksTabFragment :
 
             // スクロールで追加分を取得
             addOnScrollListener(
-                object : RecyclerViewScrollingUpdater(bookmarksAdapter) {
-                    override fun load() {
-                        bookmarksAdapter.startLoading()
-                        viewModel.loadNextBookmarks().invokeOnCompletion { e->
-                            if (e != null) {
-                                context?.showToast(R.string.msg_update_bookmarks_failed)
-                                Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
-                            }
-                            bookmarksAdapter.stopLoading()
-                            loadCompleted()
+                RecyclerViewScrollingUpdater {
+                    bookmarksAdapter.startLoading()
+                    viewModel.loadNextBookmarks().invokeOnCompletion { e->
+                        if (e != null) {
+                            context?.showToast(R.string.msg_update_bookmarks_failed)
+                            Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
                         }
+                        bookmarksAdapter.stopLoading()
+                        loadCompleted()
                     }
                 }
             )
@@ -176,7 +174,7 @@ class BookmarksTabFragment :
         // --- Observers --- //
 
         // ブクマリストの更新を監視
-        viewModel.bookmarks.observe(this, Observer {
+        viewModel.bookmarks.observe(viewLifecycleOwner, Observer {
             val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@Observer
             val userTags = activityViewModel.taggedUsers.value ?: emptyList()
             val ignoredUsers = activityViewModel.ignoredUsers.value
@@ -185,7 +183,7 @@ class BookmarksTabFragment :
         })
 
         // ユーザータグの更新を監視
-        activityViewModel.taggedUsers.observe(this, Observer {
+        activityViewModel.taggedUsers.observe(viewLifecycleOwner, Observer {
             val bookmarks = viewModel.bookmarks.value
             if (bookmarks != null) {
                 val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@Observer
