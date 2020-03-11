@@ -9,23 +9,6 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.TapEntryAction
 import kotlinx.coroutines.launch
 
-/**
- * 現在値と同じ値のセット時に通知を発生しないMutableLiveData
- */
-class SingleUpdateMutableLiveData<T>(initialValue: T? = null) : MutableLiveData<T>(initialValue) {
-    override fun setValue(value: T?) {
-        if (value != this.value) {
-            super.setValue(value)
-        }
-    }
-
-    override fun postValue(value: T?) {
-        if (value != this.value) {
-            super.postValue(value)
-        }
-    }
-}
-
 class EntriesViewModel(
     val repository : EntriesRepository
 ) : ViewModel() {
