@@ -76,34 +76,42 @@ class EntriesRepository(
         else loadEntries(issue, tabPosition, offset)
 
     /** 最新のエントリーリストを読み込む(Category指定) */
-    private suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int? = null) : List<Entry> {
-        return when (val apiCat = category.categoryInApi) {
+    private suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int? = null) : List<Entry> =
+        when (val apiCat = category.categoryInApi) {
             null -> loadSpecificEntries(category, tabPosition)
-            else -> {
-                val entriesType = EntriesType.fromInt(tabPosition)
-                client.getEntriesAsync(
-                    entriesType = entriesType,
-                    category = apiCat,
-                    of = offset
-                ).await()
-            }
+            else -> loadHatenaEntries(tabPosition, apiCat, offset)
         }
-    }
 
     /** はてなから提供されているカテゴリ以外のエントリ情報を取得する */
-    private suspend fun loadSpecificEntries(category: Category, tabPosition: Int, offset: Int? = null) : List<Entry> {
-        return when (category) {
-            Category.History -> historyPrefs.get(EntriesHistoryKey.ENTRIES)
+    private suspend fun loadSpecificEntries(category: Category, tabPosition: Int, offset: Int? = null) : List<Entry> =
+        when (category) {
+            Category.History -> loadHistory()
 
             Category.MyHotEntries -> client.getMyHotEntriesAsync().await()
 
-            Category.MyBookmarks ->
-                if (tabPosition == 0) client.getMyBookmarkedEntriesAsync(of = offset).await()
-                else client.searchMyEntriesAsync("あとで読む", SearchType.Tag).await()
+            Category.MyBookmarks -> loadMyBookmarks(tabPosition, offset)
 
             else -> throw NotImplementedError("refreshing \"${category.name}\" is not implemented")
         }
+
+    /** はてなの通常のエントリーリストを取得する */
+    private suspend fun loadHatenaEntries(tabPosition: Int, category: com.suihan74.hatenaLib.Category, offset: Int?) : List<Entry> {
+        val entriesType = EntriesType.fromInt(tabPosition)
+        return client.getEntriesAsync(
+            entriesType = entriesType,
+            category = category,
+            of = offset
+        ).await()
     }
+
+    /** エントリ閲覧履歴を取得する */
+    private fun loadHistory() : List<Entry> =
+        historyPrefs.get<List<Entry>>(EntriesHistoryKey.ENTRIES).reversed()
+
+    /** マイブックマークを取得する */
+    private suspend fun loadMyBookmarks(tabPosition: Int, offset: Int?) : List<Entry> =
+        if (tabPosition == 0) client.getMyBookmarkedEntriesAsync(of = offset).await()
+        else client.searchMyEntriesAsync("あとで読む", SearchType.Tag).await()
 
     /** 最新のエントリーリストを読み込む(Issue指定) */
     private suspend fun loadEntries(issue: Issue, tabPosition: Int, offset: Int? = null) : List<Entry> {
