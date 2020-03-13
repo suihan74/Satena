@@ -96,12 +96,15 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
             }
         }
 
+        val activity = requireActivity()
+        val context = requireContext()
+
         root.ignored_users_list.apply {
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
+            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context,
                 R.drawable.recycler_view_item_divider
             )!!)
             adapter = mIgnoredUsersAdapter
-            layoutManager = LinearLayoutManager(context!!)
+            layoutManager = LinearLayoutManager(context)
             addItemDecoration(dividerItemDecoration)
             setHasFixedSize(true)
         }
@@ -109,8 +112,8 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
         // スワイプ更新機能の設定
         root.swipe_layout.apply {
             val swipeLayout = this
-            setProgressBackgroundColorSchemeColor(activity!!.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(activity!!.getThemeColor(R.attr.colorPrimary))
+            setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
+            setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
                 launch(Dispatchers.Main) {
                     refresh()

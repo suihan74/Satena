@@ -84,7 +84,7 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
         }
 
         root.ignored_entries_list.apply {
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
+            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(requireContext(),
                 R.drawable.recycler_view_item_divider
             )!!)
             addItemDecoration(dividerItemDecoration)

@@ -35,7 +35,7 @@ class FilePickerDialog : AlertDialogFragment() {
         private const val DIRECTORY_ONLY = "DIRECTORY_ONLY"
     }
 
-    val directoryOnly: Boolean by lazy { arguments!!.getBoolean(DIRECTORY_ONLY, false) }
+    val directoryOnly: Boolean by lazy { requireArguments().getBoolean(DIRECTORY_ONLY, false) }
     private lateinit var mItemsAdapter: ItemsAdapter
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -66,7 +66,7 @@ class FilePickerDialog : AlertDialogFragment() {
 
         val listener = parentFragment as? Listener ?: activity as? Listener
 
-        return createBuilder(arguments!!, savedInstanceState)
+        return createBuilder(requireArguments(), savedInstanceState)
             .setView(root)
             .setPositiveButton(R.string.dialog_open) { _, _ ->
                 listener?.onOpen(mItemsAdapter.currentFile, this)

@@ -17,7 +17,7 @@ class UserEntriesFragment : SingleTabEntriesFragmentBase() {
 
     private var mUser : String? = null
     private val user: String
-        get() = mUser ?: arguments!!.getString(ARG_KEY_USER)!!
+        get() = mUser ?: requireArguments().getString(ARG_KEY_USER)!!
 
     private var mTag : String? = null
     private var mTags : ArrayList<String>? = null
@@ -52,7 +52,7 @@ class UserEntriesFragment : SingleTabEntriesFragmentBase() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments!!.let {
+        requireArguments().let {
             mUser = it.getString(ARG_KEY_USER)!!
         }
 

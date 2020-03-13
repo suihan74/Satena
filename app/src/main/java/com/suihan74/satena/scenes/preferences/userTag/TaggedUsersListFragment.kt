@@ -107,7 +107,7 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
         inflater.inflate(R.menu.tagged_users_list, menu)
 
         menu.findItem(R.id.button).apply {
-            val color = ActivityCompat.getColor(activity!!, R.color.colorPrimaryText)
+            val color = ActivityCompat.getColor(requireActivity(), R.color.colorPrimaryText)
             icon.mutate().setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
 
             setOnMenuItemClickListener {
