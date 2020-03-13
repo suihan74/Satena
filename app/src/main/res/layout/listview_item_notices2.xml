@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable
+                name="notice"
+                type="com.suihan74.hatenaLib.Notice" />
+    </data>
+
+    <RelativeLayout
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/notice_icon"
+                noticeImage="@{notice}"
+                android:contentDescription="@null"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"/>
+
+        <TextView
+                android:id="@+id/notice_message"
+                noticeText="@{notice}"
+                android:textColor="?attr/textColor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/notice_icon"/>
+
+        <TextView
+                android:id="@+id/notice_timestamp"
+                timestamp="@{notice.modified}"
+                android:textColor="@color/timestampColor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/notice_message"
+                android:layout_alignStart="@id/notice_message"
+                android:layout_marginTop="8dp"/>
+
+    </RelativeLayout>
+</layout>

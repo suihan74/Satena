@@ -3,16 +3,24 @@ package com.suihan74.utilities.bindings
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.CategoriesAdapter
 import com.suihan74.satena.scenes.entries2.CommentsAdapter
 import com.suihan74.satena.scenes.entries2.EntriesAdapter
+import com.suihan74.satena.scenes.entries2.NoticesAdapter
 import com.suihan74.utilities.toVisibility
 
 /** エントリリスト */
-@BindingAdapter("src")
-fun RecyclerView.setEntries(entries: List<Entry>?) {
-    (adapter as? EntriesAdapter)?.submitEntries(entries)
+@BindingAdapter("category", "entries", "notices")
+fun RecyclerView.setEntries(category: Category, entries: List<Entry>?, notices: List<Notice>?) {
+    when (category) {
+        Category.Notices ->
+            (adapter as? NoticesAdapter)?.submitNotices(notices)
+
+        else ->
+            (adapter as? EntriesAdapter)?.submitEntries(entries)
+    }
 }
 
 /** エントリについたブコメリスト */

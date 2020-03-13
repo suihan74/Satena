@@ -113,6 +113,11 @@ class EntriesRepository(
         if (tabPosition == 0) client.getMyBookmarkedEntriesAsync(of = offset).await()
         else client.searchMyEntriesAsync("あとで読む", SearchType.Tag).await()
 
+    /** 通知リストを取得する */
+    suspend fun loadNotices() : List<Notice> {
+        return client.getNoticesAsync().await().notices
+    }
+
     /** 最新のエントリーリストを読み込む(Issue指定) */
     private suspend fun loadEntries(issue: Issue, tabPosition: Int, offset: Int? = null) : List<Entry> {
         val entriesType = EntriesType.fromInt(tabPosition)

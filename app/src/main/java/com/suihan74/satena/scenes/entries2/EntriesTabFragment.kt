@@ -3,25 +3,19 @@ package com.suihan74.satena.scenes.entries2
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.satena.R
-import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.utilities.*
-import kotlinx.android.synthetic.main.fragment_entries_tab2.view.*
 
-class EntriesTabFragment : Fragment() {
+class EntriesTabFragment : EntriesTabFragmentBase() {
     companion object {
         fun createInstance(fragmentViewModelKey: String, category: Category, tabPosition: Int = 0) = EntriesTabFragment().apply {
             arguments = Bundle().apply {
@@ -31,76 +25,20 @@ class EntriesTabFragment : Fragment() {
             }
         }
 
-        /** このタブを表示しているEntriesFragmentのID */
-        private const val ARG_FRAGMENT_VIEW_MODEL_KEY = "ARG_FRAGMENT_VIEW_MODEL_KEY"
-
-        /** このタブで表示するエントリのカテゴリ */
-        private const val ARG_CATEGORY = "ARG_CATEGORY"
-
-        /** このタブの表示位置 */
-        private const val ARG_TAB_POSITION = "ARG_TAB_POSITION"
-
         private const val DIALOG_ENTRY_MENU = "entry_menu_dialog"
     }
 
-    /** EntriesActivityのViewModel */
-    private lateinit var activityViewModel : EntriesViewModel
-
-    /** タブの表示内容に関するViewModel */
-    private lateinit var viewModel : EntriesTabFragmentViewModel
-
-    private var binding : FragmentEntriesTab2Binding? = null
-
-    private val onErrorRefreshEntries: (Throwable)->Unit = { e ->
-        Log.e("error", Log.getStackTraceString(e))
-        activity?.showToast("リスト更新失敗")
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        activityViewModel = ViewModelProvider(requireActivity())[EntriesViewModel::class.java]
-
-        if (savedInstanceState == null) {
-            val arguments = requireArguments()
-            val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
-            val tabPosition = arguments.getInt(ARG_TAB_POSITION, 0)
-
-            val factory = EntriesTabFragmentViewModel.Factory(
-                activityViewModel.repository,
-                category,
-                tabPosition
-            )
-            viewModel = ViewModelProvider(this, factory)[EntriesTabFragmentViewModel::class.java]
-            viewModel.refresh(onErrorRefreshEntries)
-        }
-        else {
-            viewModel = ViewModelProvider(this)[EntriesTabFragmentViewModel::class.java]
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val binding = DataBindingUtil.inflate<FragmentEntriesTab2Binding>(inflater, R.layout.fragment_entries_tab2, container, false).apply {
-            lifecycleOwner = this@EntriesTabFragment
-            vm = viewModel
-        }
-        this.binding = binding
-
-        val view = binding.root
+    override fun initializeRecyclerView(entriesList: RecyclerView, swipeLayout: SwipeRefreshLayout) {
         val context = requireContext()
 
         // エントリリスト用のアダプタ
         val entriesAdapter = EntriesAdapter().apply {
             setOnItemClickedListener { entry ->
-                MenuDialog.act(entry, activityViewModel.entryClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
+                EntryMenuDialog.act(entry, activityViewModel.entryClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
             }
 
             setOnItemLongClickedListener { entry ->
-                MenuDialog.act(entry, activityViewModel.entryLongClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
+                EntryMenuDialog.act(entry, activityViewModel.entryLongClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
                 true
             }
 
@@ -115,7 +53,7 @@ class EntriesTabFragment : Fragment() {
         }
 
         // エントリリストの設定
-        view.entries_list.apply {
+        entriesList.apply {
             adapter = entriesAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(
@@ -129,7 +67,7 @@ class EntriesTabFragment : Fragment() {
         }
 
         // 引っ張って更新
-        view.swipe_layout.apply swipeLayout@ {
+        swipeLayout.apply swipeLayout@ {
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
@@ -150,7 +88,7 @@ class EntriesTabFragment : Fragment() {
                 }
             )
         }
-        view.entries_list.addOnScrollListener(scrollingUpdater)
+        entriesList.addOnScrollListener(scrollingUpdater)
 
         // Issueの変更を監視する
         // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる
@@ -169,13 +107,6 @@ class EntriesTabFragment : Fragment() {
                 viewModel.refresh(onErrorRefreshEntries)
             }
         })
-
-        return view
-    }
-
-    /** リストを上端までスクロールする */
-    fun scrollToTop() {
-        binding?.entriesList?.scrollToPosition(0)
     }
 }
 

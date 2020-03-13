@@ -3,13 +3,11 @@ package com.suihan74.utilities.bindings
 import android.net.Uri
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
+import com.suihan74.hatenaLib.Notice
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
-import com.suihan74.utilities.appendStarText
-import com.suihan74.utilities.getThemeColor
-import com.suihan74.utilities.setHtml
-import com.suihan74.utilities.toVisibility
+import com.suihan74.utilities.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -65,4 +63,10 @@ fun TextView.setBookmarkResult(comment: String?, starsCount: List<Star>?) {
 
     setHtml(commentBuilder.toString())
     visibility = (!comment.isNullOrBlank()).toVisibility()
+}
+
+/** 通知項目のテキスト */
+@BindingAdapter("noticeText")
+fun TextView.setNoticeText(notice: Notice) {
+    setHtml(notice.message(context))
 }

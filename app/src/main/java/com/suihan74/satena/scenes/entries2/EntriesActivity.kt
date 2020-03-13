@@ -100,6 +100,12 @@ class EntriesActivity : AppCompatActivity() {
             }
         }
 
+        // 通知リスト画面表示ボタン
+        entries_menu_notices_button.setOnClickListener {
+            closeFABMenu()
+            showCategory(Category.Notices)
+        }
+
         // カテゴリリスト表示ボタン
         entries_menu_categories_button.setOnClickListener {
             closeFABMenu()

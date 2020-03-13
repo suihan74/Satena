@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.entries2
+package com.suihan74.satena.scenes.entries2.dialog
 
 import android.app.Dialog
 import android.content.Intent
@@ -15,12 +15,14 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.entries2.EntriesViewModel
 import com.suihan74.satena.showCustomTabsIntent
 
 /** エントリメニューダイアログ */
-class MenuDialog : DialogFragment() {
+class EntryMenuDialog : DialogFragment() {
     companion object {
-        fun createInstance(entry: Entry) = MenuDialog().apply {
+        fun createInstance(entry: Entry) = EntryMenuDialog()
+            .apply {
             arguments = Bundle().apply {
                 putSerializable(ARG_ENTRY, entry)
             }
@@ -28,18 +30,27 @@ class MenuDialog : DialogFragment() {
 
         /** タップ/ロングタップ時の挙動を処理する */
         fun act(entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
-            val instance = createInstance(entry)
+            val instance =
+                createInstance(
+                    entry
+                )
             when (actionEnum) {
                 TapEntryAction.SHOW_MENU ->
                     instance.show(fragmentManager, tag)
 
                 else ->
-                    act(instance, entry, actionEnum, fragmentManager, tag)
+                    act(
+                        instance,
+                        entry,
+                        actionEnum,
+                        fragmentManager,
+                        tag
+                    )
             }
         }
 
         /** タップ/ロングタップ時の挙動を処理する(メニュー表示以外の挙動) */
-        private fun act(instance: MenuDialog, entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
+        private fun act(instance: EntryMenuDialog, entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
             fragmentManager.beginTransaction()
                 .add(instance, tag)
                 .runOnCommit {

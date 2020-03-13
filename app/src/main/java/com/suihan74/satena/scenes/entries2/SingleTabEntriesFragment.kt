@@ -26,8 +26,14 @@ class SingleTabEntriesFragment : EntriesFragment() {
         val root = inflater.inflate(R.layout.fragment_entries2_single, container, false)
 
         if (savedInstanceState == null) {
+            val fragment =
+                when (category) {
+                    Category.Notices -> NoticesFragment.createInstance(viewModelKey)
+                    else -> EntriesTabFragment.createInstance(viewModelKey, category)
+                }
+
             childFragmentManager.beginTransaction()
-                .replace(R.id.content_layout, EntriesTabFragment.createInstance(viewModelKey, category))
+                .replace(R.id.content_layout, fragment)
                 .commit()
         }
 
