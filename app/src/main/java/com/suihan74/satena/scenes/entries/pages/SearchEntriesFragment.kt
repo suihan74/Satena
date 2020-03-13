@@ -11,6 +11,8 @@ import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
+import com.suihan74.utilities.putEnum
+import com.suihan74.utilities.selectEnum
 
 class SearchEntriesFragment : SingleTabEntriesFragmentBase(), AlertDialogFragment.Listener {
     private lateinit var mRoot : View
@@ -42,17 +44,17 @@ class SearchEntriesFragment : SingleTabEntriesFragmentBase(), AlertDialogFragmen
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(BUNDLE_QUERY, mQuery)
-        outState.putInt(BUNDLE_SEARCH_TYPE, mSearchType.int)
-        outState.putInt(BUNDLE_ENTRIES_TYPE, mEntriesType.int)
+        outState.putEnum(BUNDLE_SEARCH_TYPE, mSearchType) { it.int }
+        outState.putEnum(BUNDLE_ENTRIES_TYPE, mEntriesType) { it.int }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mRoot = super.onCreateView(inflater, container, savedInstanceState)!!
 
-        savedInstanceState?.let {
-            mQuery = it.getString(BUNDLE_QUERY)!!
-            mSearchType = SearchType.fromInt(it.getInt(BUNDLE_SEARCH_TYPE))
-            mEntriesType = EntriesType.fromInt(it.getInt(BUNDLE_ENTRIES_TYPE))
+        savedInstanceState?.let { bundle ->
+            mQuery = bundle.getString(BUNDLE_QUERY)!!
+            mSearchType = bundle.selectEnum<SearchType>(BUNDLE_SEARCH_TYPE) { it.int }!!
+            mEntriesType = bundle.selectEnum<EntriesType>(BUNDLE_ENTRIES_TYPE) { it.int }!!
         }
 
         setHasOptionsMenu(true)

@@ -21,6 +21,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
+import com.suihan74.utilities.putEnum
+import com.suihan74.utilities.selectEnum
 import com.suihan74.utilities.showToast
 import com.suihan74.utilities.toVisibility
 
@@ -112,7 +114,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 putString(ARG_EDITING_URL, ignoredEntry.query)
                 putString(ARG_EDITING_TEXT, ignoredEntry.query)
                 putSerializable(ARG_MODIFYING_ENTRY, ignoredEntry)
-                putInt(ARG_INITIAL_TARGET, ignoredEntry.target.int)
+                putEnum(ARG_INITIAL_TARGET, ignoredEntry.target) { it.int }
                 putBoolean(ARG_EDIT_MODE, true)
             }
 
@@ -127,7 +129,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             if (savedInstanceState == null) {
                 editingUrl.postValue(arguments?.getString(ARG_EDITING_URL) ?: "")
                 editingText.postValue(arguments?.getString(ARG_EDITING_TEXT) ?: "")
-                ignoreTarget.postValue(IgnoreTarget.fromInt(arguments?.getInt(ARG_INITIAL_TARGET) ?: IgnoreTarget.ENTRY.int))
+                ignoreTarget.postValue(arguments?.selectEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.int } ?: IgnoreTarget.ENTRY)
             }
         }
     }

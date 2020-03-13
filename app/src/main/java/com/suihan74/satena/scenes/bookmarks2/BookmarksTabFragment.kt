@@ -42,7 +42,7 @@ class BookmarksTabFragment :
     companion object {
         fun createInstance(tabType: BookmarksTabType) = BookmarksTabFragment().apply {
             arguments = Bundle().apply {
-                putInt(ARG_TAB_TYPE, tabType.ordinal)
+                putEnum(ARG_TAB_TYPE, tabType)
             }
         }
         private const val ARG_TAB_TYPE = "ARG_TAB_TYPE"
@@ -54,7 +54,7 @@ class BookmarksTabFragment :
         val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
         val factory = BookmarksTabViewModel.Factory(activityViewModel, prefs)
         viewModel =
-            when (BookmarksTabType.fromInt(requireArguments().getInt(ARG_TAB_TYPE))) {
+            when (requireArguments().getEnum(ARG_TAB_TYPE, BookmarksTabType.POPULAR)) {
                 BookmarksTabType.POPULAR ->
                     ViewModelProvider(this, factory)[PopularTabViewModel::class.java]
 

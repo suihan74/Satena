@@ -18,10 +18,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.utilities.DividerItemDecorator
-import com.suihan74.utilities.RecyclerViewScrollingUpdater
-import com.suihan74.utilities.getThemeColor
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_entries_tab2.view.*
 
 class EntriesTabFragment : Fragment() {
@@ -29,7 +26,7 @@ class EntriesTabFragment : Fragment() {
         fun createInstance(fragmentViewModelKey: String, category: Category, tabPosition: Int = 0) = EntriesTabFragment().apply {
             arguments = Bundle().apply {
                 putString(ARG_FRAGMENT_VIEW_MODEL_KEY, fragmentViewModelKey)
-                putInt(ARG_CATEGORY, category.ordinal)
+                putEnum(ARG_CATEGORY, category)
                 putInt(ARG_TAB_POSITION, tabPosition)
             }
         }
@@ -66,7 +63,7 @@ class EntriesTabFragment : Fragment() {
 
         if (savedInstanceState == null) {
             val arguments = requireArguments()
-            val category = Category.fromInt(arguments.getInt(ARG_CATEGORY))
+            val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
             val tabPosition = arguments.getInt(ARG_TAB_POSITION, 0)
 
             val factory = EntriesTabFragmentViewModel.Factory(
