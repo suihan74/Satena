@@ -14,6 +14,7 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.initialize
 import com.suihan74.satena.scenes.entries2.pages.HatenaEntriesViewModel
 import com.suihan74.satena.scenes.entries2.pages.MyBookmarksViewModel
+import com.suihan74.utilities.getEnum
 import kotlinx.android.synthetic.main.activity_entries2.*
 import java.util.*
 
@@ -67,7 +68,7 @@ abstract class EntriesFragment : Fragment() {
         arguments.putString(ARG_UUID, uuid)
 
         activityViewModel = ViewModelProvider(activity)[EntriesViewModel::class.java]
-        val category = Category.fromInt(arguments.getInt(ARG_CATEGORY))
+        val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
 
         val viewModelType =
             if (category == Category.MyBookmarks) MyBookmarksViewModel::class.java

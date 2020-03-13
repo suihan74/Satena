@@ -9,13 +9,14 @@ import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
 import com.suihan74.satena.models.Category
+import com.suihan74.utilities.putEnum
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 class TwinTabsEntriesFragment : EntriesFragment() {
     companion object {
         fun createInstance(category: Category) = TwinTabsEntriesFragment().apply {
             arguments = Bundle().apply {
-                putInt(ARG_CATEGORY, category.ordinal)
+                putEnum(ARG_CATEGORY, category)
             }
         }
     }

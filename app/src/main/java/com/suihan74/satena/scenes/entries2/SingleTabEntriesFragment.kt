@@ -6,12 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
+import com.suihan74.utilities.putEnum
 
 class SingleTabEntriesFragment : EntriesFragment() {
     companion object {
         fun createInstance(category: Category) = SingleTabEntriesFragment().apply {
             arguments = Bundle().apply {
-                putInt(ARG_CATEGORY, category.ordinal)
+                putEnum(ARG_CATEGORY, category)
             }
         }
     }
