@@ -38,7 +38,7 @@ inline fun <reified T : Enum<T>> Bundle.putEnum(key: String, value: T, selector:
 }
 
 /** BundleからEnumを取得する(ordinal以外を使用, 失敗時null) */
-inline fun <reified T : Enum<T>> Bundle.getEnum(key: String, selector: (T)->Int) : T? =
+inline fun <reified T : Enum<T>> Bundle.selectEnum(key: String, selector: (T)->Int) : T? =
     try {
         (get(key) as? Int)?.let { intValue ->
             T::class.getEnumConstants().firstOrNull { selector(it) == intValue }
@@ -49,5 +49,5 @@ inline fun <reified T : Enum<T>> Bundle.getEnum(key: String, selector: (T)->Int)
     }
 
 /** BundleからEnumを取得する(ordinal以外を使用, 失敗時デフォルト値) */
-inline fun <reified T : Enum<T>> Bundle.getEnum(key: String, defaultValue: T, selector: (T) -> Int) : T =
-    getEnum(key, selector) ?: defaultValue
+inline fun <reified T : Enum<T>> Bundle.selectEnum(key: String, defaultValue: T, selector: (T)->Int) : T =
+    selectEnum(key, selector) ?: defaultValue
