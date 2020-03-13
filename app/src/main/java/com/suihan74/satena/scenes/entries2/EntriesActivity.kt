@@ -203,6 +203,11 @@ class EntriesActivity : AppCompatActivity() {
         }
     }
 
+    /** AppBarを強制的に表示する */
+    fun showAppBar() {
+        appbar_layout.setExpanded(true, true)
+    }
+
     // --- FAB表示アニメーション ---
 
     /** FABメニュー各項目のオープン時移動アニメーション */

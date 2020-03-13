@@ -87,7 +87,8 @@ abstract class EntriesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val toolbar = requireActivity().toolbar
+        val activity = requireActivity() as EntriesActivity
+        val toolbar = activity.toolbar
 
         // ツールバーを更新
         toolbar.apply {
@@ -99,6 +100,8 @@ abstract class EntriesFragment : Fragment() {
         viewModel.issue.observe(viewLifecycleOwner, Observer {
             toolbar.subtitle = it?.name
         })
+
+        activity.showAppBar()
 
         return null
     }

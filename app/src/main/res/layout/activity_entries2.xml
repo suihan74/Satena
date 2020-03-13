@@ -27,6 +27,7 @@
                     android:layout_height="match_parent">
 
                 <com.google.android.material.appbar.AppBarLayout
+                        android:id="@+id/appbar_layout"
                         app:elevation="0dp"
                         android:stateListAnimator="@null"
                         android:layout_width="match_parent"
