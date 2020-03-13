@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.entries2
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.putEnum
@@ -31,11 +33,18 @@ class NoticesFragment : EntriesTabFragmentBase() {
 
         // エントリリスト用のアダプタ
         val noticesAdapter = NoticesAdapter().apply {
-            setOnItemClickedListener { entry ->
-                //MenuDialog.act(entry, activityViewModel.entryClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
+            setOnItemClickedListener { notice ->
+                val intent = Intent(requireContext(), BookmarksActivity::class.java).apply {
+                    putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
+                    putExtra(
+                        BookmarksActivity.EXTRA_TARGET_USER,
+                        notice.user
+                    )
+                }
+                startActivity(intent)
             }
 
-            setOnItemLongClickedListener { entry ->
+            setOnItemLongClickedListener { notice ->
                 //MenuDialog.act(entry, activityViewModel.entryLongClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
                 true
             }
