@@ -34,7 +34,7 @@ class NumberPickerDialogFragment : AlertDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val listener = parentFragment as? Listener ?: activity as? Listener
-        val arguments = arguments!!
+        val arguments = requireArguments()
         val minValue = arguments.getInt(MIN_VALUE)
         val maxValue = arguments.getInt(MAX_VALUE)
         val defaultValue = arguments.getInt(DEFAULT_VALUE)

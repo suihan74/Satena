@@ -6,9 +6,11 @@ import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.lock
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class BookmarksRepository(
     private val client: HatenaClient,
     private val accountLoader: AccountLoader
@@ -332,7 +334,7 @@ class BookmarksRepository(
                     if (e == null) {
                         val result = it.getCompleted()
 
-                        result?.forEach { starEntry ->
+                        result.forEach { starEntry ->
                             val user = userAndUrls.firstOrNull { pair ->
                                 pair.second == starEntry.url
                             }?.first

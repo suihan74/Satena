@@ -48,8 +48,8 @@ class PreferencesInformationFragment :
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_preferences_information, container, false)
-        val activity = activity as PreferencesActivity
-        val context = context!!
+        val activity = requireActivity() as PreferencesActivity
+        val context = requireContext()
 
         val pm = context.packageManager
         val packageInfo = pm.getPackageInfo(context.packageName, 0)
@@ -69,7 +69,7 @@ class PreferencesInformationFragment :
         // 更新履歴ダイアログ
         root.findViewById<Button>(R.id.show_release_notes_button).setOnClickListener {
             val dialog = ReleaseNotesDialogFragment.createInstance()
-            dialog.show(fragmentManager!!, "release_notes")
+            dialog.show(parentFragmentManager, "release_notes")
         }
 
         // ライセンス表示アクティビティ
@@ -130,7 +130,7 @@ class PreferencesInformationFragment :
             }
         }
         else {
-            activity!!.showToast(R.string.msg_pref_information_save_load_permission_failed)
+            activity?.showToast(R.string.msg_pref_information_save_load_permission_failed)
         }
     }
 

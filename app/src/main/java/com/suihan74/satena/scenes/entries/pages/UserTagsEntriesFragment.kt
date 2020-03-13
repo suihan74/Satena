@@ -84,7 +84,7 @@ class UserTagsEntriesFragment : SingleTabEntriesFragmentBase() {
 
             spinner.apply {
                 adapter = ArrayAdapter(
-                    context!!,
+                    requireContext(),
                     android.R.layout.simple_spinner_item,
                     mTags.map { "${it.text}  (${it.count})" }.toTypedArray()
                 ).apply {

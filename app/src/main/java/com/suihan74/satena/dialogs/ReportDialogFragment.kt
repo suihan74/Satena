@@ -77,9 +77,11 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mEntry = arguments!!.getSerializable(ARG_ENTRY) as? Entry
-        mBookmark = arguments!!.getSerializable(ARG_BOOKMARK) as? Bookmark
-        mUser = arguments!!.getString(ARG_USER)
+        requireArguments().let {
+            mEntry = it.getSerializable(ARG_ENTRY) as? Entry
+            mBookmark = it.getSerializable(ARG_BOOKMARK) as? Bookmark
+            mUser = it.getString(ARG_USER)
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -115,7 +117,7 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
 
         content.findViewById<Spinner>(R.id.category_spinner).apply {
             adapter = ArrayAdapter(
-                context!!,
+                requireContext(),
                 R.layout.spinner_report,
                 ReportCategory.values().map { it.description }
             ).apply {

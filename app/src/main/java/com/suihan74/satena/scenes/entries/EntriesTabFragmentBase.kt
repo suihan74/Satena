@@ -46,16 +46,17 @@ abstract class EntriesTabFragmentBase : CoroutineScopeFragment(), EntryMenuDialo
 
     override fun onItemSelected(item: String, dialog: EntryMenuDialog) {
         val entry = dialog.entry
+        val context = requireContext()
 
         when (item) {
             getString(R.string.entry_action_show_comments) ->
-                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_COMMENTS, entry)
+                TappedActionLauncher.launch(context, TapEntryAction.SHOW_COMMENTS, entry)
 
             getString(R.string.entry_action_show_page) ->
-                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_PAGE, entry)
+                TappedActionLauncher.launch(context, TapEntryAction.SHOW_PAGE, entry)
 
             getString(R.string.entry_action_show_page_in_browser) ->
-                TappedActionLauncher.launch(context!!, TapEntryAction.SHOW_PAGE_IN_BROWSER, entry)
+                TappedActionLauncher.launch(context, TapEntryAction.SHOW_PAGE_IN_BROWSER, entry)
 
             getString(R.string.entry_action_show_entries) ->
                 showEntries(entry)

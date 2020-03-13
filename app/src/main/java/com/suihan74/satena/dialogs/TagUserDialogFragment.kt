@@ -66,7 +66,7 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
             })
         }
 
-        val builder = createBuilder(arguments!!, savedInstanceState).apply {
+        val builder = createBuilder(requireArguments(), savedInstanceState).apply {
             setView(content)
             setMessage("ユーザーを追加")
             setPositiveButton(R.string.dialog_register, null)

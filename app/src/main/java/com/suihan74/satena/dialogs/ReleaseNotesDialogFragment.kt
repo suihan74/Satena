@@ -41,7 +41,7 @@ class ReleaseNotesDialogFragment : DialogFragment(), CoroutineScope {
         mRoot = content
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
 
-        val titleColor = ContextCompat.getColor(activity!!, R.color.colorPrimary)
+        val titleColor = ContextCompat.getColor(requireActivity(), R.color.colorPrimary)
 
         // 履歴の読み込み
         launch(Dispatchers.IO) {

@@ -57,7 +57,7 @@ open class AlertDialogFragment : DialogFragment() {
         arguments?.getSerializable(key) as? T
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = createBuilder(arguments!!, savedInstanceState)
+        val builder = createBuilder(requireArguments(), savedInstanceState)
         return builder.create()
     }
 
