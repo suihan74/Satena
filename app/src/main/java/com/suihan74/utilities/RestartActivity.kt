@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Process
-import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 
 class RestartActivity : Activity() {
     companion object {
