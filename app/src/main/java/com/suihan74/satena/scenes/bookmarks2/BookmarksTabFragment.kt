@@ -39,10 +39,8 @@ class BookmarksTabFragment :
         get() = requireParentFragment() as BookmarksFragment
 
     companion object {
-        fun createInstance(tabType: BookmarksTabType) = BookmarksTabFragment().apply {
-            arguments = Bundle().apply {
-                putEnum(ARG_TAB_TYPE, tabType)
-            }
+        fun createInstance(tabType: BookmarksTabType) = BookmarksTabFragment().withArguments {
+            putEnum(ARG_TAB_TYPE, tabType)
         }
         private const val ARG_TAB_TYPE = "ARG_TAB_TYPE"
     }

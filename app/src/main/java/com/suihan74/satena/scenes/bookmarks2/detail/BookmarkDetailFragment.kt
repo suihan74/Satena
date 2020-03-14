@@ -52,10 +52,8 @@ class BookmarkDetailFragment :
         get() = viewModel.bookmark
 
     companion object {
-        fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().apply {
-            arguments = Bundle().apply {
-                putSerializable(ARG_BOOKMARK, bookmark)
-            }
+        fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().withArguments {
+            putSerializable(ARG_BOOKMARK, bookmark)
         }
 
         // argument keys

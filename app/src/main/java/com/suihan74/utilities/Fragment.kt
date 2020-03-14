@@ -9,10 +9,10 @@ import androidx.fragment.app.Fragment
  * example -> HogeFragment().withArguments { putInt(ARG_NUM, 1) }
  */
 @Suppress("unused")
-inline fun <reified T : Fragment> T.withArguments(initializer: (Bundle.()->Unit)) : T {
+inline fun <reified T : Fragment> T.withArguments(initializer: (Bundle.(T)->Unit)) : T {
     val arguments = this.arguments ?: Bundle()
     this.arguments = arguments
-    initializer.invoke(arguments)
+    initializer.invoke(arguments, this)
     return this
 }
 
