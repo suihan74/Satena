@@ -5,6 +5,12 @@ import androidx.core.content.ContextCompat
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
 
+private val spamRegex by lazy { Regex("""はてなブックマーク\s*-\s*\d+に関する.+のブックマーク""") }
+
+/** スパムからのスターの特徴に当てはまるか確認する */
+fun Notice.checkFromSpam() =
+    spamRegex.matches(this.metadata?.subjectTitle ?: "")
+
 /**
  * 通知に含まれるユーザー名を抽出する
  */

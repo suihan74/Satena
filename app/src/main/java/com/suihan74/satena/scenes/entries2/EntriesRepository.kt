@@ -2,21 +2,22 @@ package com.suihan74.satena.scenes.entries2
 
 import androidx.lifecycle.LiveData
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.models.EntriesHistoryKey
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.checkFromSpam
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.threeten.bp.LocalDateTime
 
 class EntriesRepository(
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
     private val prefs: SafeSharedPreferences<PreferenceKey>,
     private val historyPrefs: SafeSharedPreferences<EntriesHistoryKey>,
+    private val noticesPrefs: SafeSharedPreferences<NoticesKey>,
     private val ignoredEntryDao: IgnoredEntryDao
 ) {
     /** サインイン状態 */
@@ -115,7 +116,62 @@ class EntriesRepository(
 
     /** 通知リストを取得する */
     suspend fun loadNotices() : List<Notice> {
-        return client.getNoticesAsync().await().notices
+        val fetchedNotices = client.getNoticesAsync().await().notices
+
+        // 通知の既読状態を更新
+        val lastSeenUpdatable = prefs.getBoolean(PreferenceKey.NOTICES_LAST_SEEN_UPDATABLE)
+        if (lastSeenUpdatable) {
+            try {
+                client.updateNoticesLastSeenAsync().await()
+            }
+            catch (e: Exception) {
+            }
+        }
+        prefs.edit {
+            putObject(PreferenceKey.NOTICES_LAST_SEEN, LocalDateTime.now())
+        }
+
+        val savedNotices = noticesPrefs.get<List<Notice>>(NoticesKey.NOTICES)
+        val noticesSize = noticesPrefs.getInt(NoticesKey.NOTICES_SIZE)
+        val removedNotices = noticesPrefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
+        val ignoreNoticesFromSpam = prefs.getBoolean(PreferenceKey.IGNORE_NOTICES_FROM_SPAM)
+
+        // 取得したものと重複しないように保存済みのものを取得する
+        val oldNotices = savedNotices.filterNot { existed ->
+            fetchedNotices.any { newer ->
+                newer.created == existed.created
+            }
+        }
+
+        val allNotices =
+            if (ignoreNoticesFromSpam) oldNotices.plus(fetchedNotices).filterNot { it.checkFromSpam() }
+            else oldNotices.plus(fetchedNotices)
+
+        // 過去に削除指定されたものが含まれていたら除ける
+        var oldestMatched = LocalDateTime.MAX
+        val notices = allNotices
+            .filterNot { n ->
+                removedNotices.any { it.created == n.created && it.modified == n.modified }.also { result ->
+                    if (result) {
+                        oldestMatched = minOf(n.modified, oldestMatched)
+                    }
+                }
+            }
+            .sortedByDescending { it.modified }
+            .take(noticesSize)
+
+        noticesPrefs.edit {
+            put(NoticesKey.NOTICES, notices)
+
+            // 古い削除指定を消去する
+            if (oldestMatched < LocalDateTime.MAX) {
+                put(NoticesKey.REMOVED_NOTICE_TIMESTAMPS, removedNotices.filter {
+                    it.modified >= oldestMatched
+                })
+            }
+        }
+
+        return notices
     }
 
     /** 最新のエントリーリストを読み込む(Issue指定) */

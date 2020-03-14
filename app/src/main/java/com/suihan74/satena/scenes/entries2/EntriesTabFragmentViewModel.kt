@@ -42,7 +42,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** 表示項目リストを初期化 */
-    fun refresh(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch(Dispatchers.Main) {
+    fun refresh(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
         when (category) {
             Category.Notices -> refreshNotices(onError)
 
@@ -51,22 +51,26 @@ class EntriesTabFragmentViewModel(
     }
 
     /** エントリリストを初期化 */
-    private suspend fun refreshEntries(onError: ((Throwable)->Unit)?) {
+    private suspend fun refreshEntries(onError: ((Throwable)->Unit)?) = withContext(Dispatchers.Default) {
         try {
-            entries.value = repository.loadEntries(category, issue, tabPosition)
+            entries.postValue(repository.loadEntries(category, issue, tabPosition))
         }
         catch (e: Throwable) {
-            onError?.invoke(e)
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
         }
     }
 
     /** 通知リストを初期化 */
-    private suspend fun refreshNotices(onError: ((Throwable) -> Unit)?) {
+    private suspend fun refreshNotices(onError: ((Throwable) -> Unit)?) = withContext(Dispatchers.Default) {
         try {
-            notices.value = repository.loadNotices()
+            notices.postValue(repository.loadNotices())
         }
         catch (e: Throwable) {
-            onError?.invoke(e)
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
         }
     }
 

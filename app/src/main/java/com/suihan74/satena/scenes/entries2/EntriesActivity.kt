@@ -53,6 +53,7 @@ class EntriesActivity : AppCompatActivity() {
                             MastodonClientHolder
                         ),
                         prefs = prefs,
+                        noticesPrefs = SafeSharedPreferences.create(this),
                         historyPrefs = SafeSharedPreferences.create(this),
                         ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
                     )
