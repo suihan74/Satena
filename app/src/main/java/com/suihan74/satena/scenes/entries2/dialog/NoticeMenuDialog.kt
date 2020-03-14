@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.DialogFragment
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemNotices2Binding
@@ -21,7 +20,7 @@ class NoticeMenuDialog : AlertDialogFragment() {
             putSerializable(ARG_NOTICE, notice)
         }
 
-        /** 通知に含まれるユーザー名のArray */
+        /** 通知 */
         private const val ARG_NOTICE = "ARG_NOTICE"
     }
 
