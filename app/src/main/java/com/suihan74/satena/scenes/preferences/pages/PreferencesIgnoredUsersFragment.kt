@@ -8,15 +8,17 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
-import com.suihan74.utilities.*
+import com.suihan74.utilities.BackPressable
+import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.getThemeColor
+import com.suihan74.utilities.showToast
+import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.fragment_preferences_ignored_users.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -97,15 +99,10 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
         }
 
         val activity = requireActivity()
-        val context = requireContext()
 
         root.ignored_users_list.apply {
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context,
-                R.drawable.recycler_view_item_divider
-            )!!)
             adapter = mIgnoredUsersAdapter
-            layoutManager = LinearLayoutManager(context)
-            addItemDecoration(dividerItemDecoration)
+            setDivider(R.drawable.recycler_view_item_divider)
             setHasFixedSize(true)
         }
 

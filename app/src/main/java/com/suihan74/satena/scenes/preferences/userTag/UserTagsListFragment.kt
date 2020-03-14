@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,7 +14,7 @@ import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.CoroutineScopeFragment
-import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.bindings.setDivider
 import kotlinx.coroutines.launch
 
 class UserTagsListFragment : CoroutineScopeFragment() {
@@ -66,10 +65,7 @@ class UserTagsListFragment : CoroutineScopeFragment() {
         }
 
         root.findViewById<RecyclerView>(R.id.user_tags_list)?.apply {
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(this@UserTagsListFragment.requireContext(),
-                R.drawable.recycler_view_item_divider
-            )!!)
-            addItemDecoration(dividerItemDecoration)
+            setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(context)
             adapter = mUserTagsAdapter
         }

@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +16,7 @@ import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesAdapter
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryViewModel
-import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_preferences_ignored_entries.view.*
 
@@ -84,10 +83,7 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
         }
 
         root.ignored_entries_list.apply {
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(requireContext(),
-                R.drawable.recycler_view_item_divider
-            )!!)
-            addItemDecoration(dividerItemDecoration)
+            setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(context)
             adapter = mIgnoredEntriesAdapter
         }

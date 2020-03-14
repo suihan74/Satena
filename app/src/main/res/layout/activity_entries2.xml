@@ -291,16 +291,11 @@
         <!-- カテゴリリスト -->
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/categories_list"
+                style="@style/RecyclerView.Linear"
                 app:src="@{vm.categories}"
-                android:orientation="vertical"
                 android:layout_width="240dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
-                android:divider="@android:color/transparent"
-                android:dividerHeight="0dp"
-                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
-                android:scrollbarSize="4dp"
-                android:scrollbars="vertical"
                 android:background="?attr/panelBackground"/>
     </androidx.drawerlayout.widget.DrawerLayout>
 </layout>

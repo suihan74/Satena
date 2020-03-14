@@ -10,7 +10,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -79,13 +78,10 @@ class EntriesActivity : AppCompatActivity() {
         }
 
         // カテゴリリスト初期化
-        categories_list.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = CategoriesAdapter().apply {
-                setOnItemClickedListener { category ->
-                    drawer_layout.closeDrawers()
-                    showCategory(category)
-                }
+        categories_list.adapter = CategoriesAdapter().apply {
+            setOnItemClickedListener { category ->
+                drawer_layout.closeDrawers()
+                showCategory(category)
             }
         }
 

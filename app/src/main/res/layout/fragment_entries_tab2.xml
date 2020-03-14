@@ -13,14 +13,13 @@
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/entries_list"
+                style="@style/RecyclerView.Linear"
                 category="@{vm.category}"
                 entries="@{vm.filteredEntries}"
                 notices="@{vm.notices}"
+                divider="@{@drawable/recycler_view_item_divider}"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
-                android:scrollbarSize="4dp"
-                android:scrollbars="vertical"/>
+                android:layout_height="match_parent"/>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </layout>

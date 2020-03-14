@@ -3,8 +3,6 @@ package com.suihan74.satena.scenes.entries2
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.hatenaLib.HatenaClient
@@ -12,7 +10,6 @@ import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.putEnum
 
@@ -50,18 +47,7 @@ class NoticesFragment : EntriesTabFragmentBase() {
         }
 
         // エントリリストの設定
-        entriesList.apply {
-            adapter = noticesAdapter
-            layoutManager = LinearLayoutManager(context)
-            addItemDecoration(
-                DividerItemDecorator(
-                    ContextCompat.getDrawable(
-                        context,
-                        R.drawable.recycler_view_item_divider
-                    )!!
-                )
-            )
-        }
+        entriesList.adapter = noticesAdapter
 
         // 引っ張って更新
         swipeLayout.apply swipeLayout@ {

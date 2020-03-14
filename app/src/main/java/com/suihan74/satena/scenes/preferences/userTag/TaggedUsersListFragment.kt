@@ -9,7 +9,6 @@ import android.transition.TransitionSet
 import android.view.*
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -22,7 +21,7 @@ import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.scenes.entries.EntriesActivity
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.CoroutineScopeFragment
-import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.bindings.setDivider
 import kotlinx.coroutines.launch
 
 class TaggedUsersListFragment : CoroutineScopeFragment() {
@@ -77,10 +76,7 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
         }
 
         root.findViewById<RecyclerView>(R.id.users_list)?.apply {
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(this@TaggedUsersListFragment.requireContext(),
-                R.drawable.recycler_view_item_divider
-            )!!)
-            addItemDecoration(dividerItemDecoration)
+            setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(context)
             adapter = mTaggedUsersAdapter
         }

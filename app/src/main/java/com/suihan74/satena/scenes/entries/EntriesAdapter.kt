@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -28,6 +27,7 @@ import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.*
+import com.suihan74.utilities.bindings.setDivider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -350,10 +350,7 @@ open class EntriesAdapter(
                             removeItemDecorationAt(0)
                         }
 
-                        val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context,
-                            R.drawable.recycler_view_item_divider
-                        )!!)
-                        addItemDecoration(dividerItemDecoration)
+                        setDivider(R.drawable.recycler_view_item_divider)
                     }
                 }
             }

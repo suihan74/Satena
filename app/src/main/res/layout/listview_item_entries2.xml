@@ -76,7 +76,9 @@
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/comments_list"
+                style="@style/RecyclerView.Linear"
                 src="@{entry}"
+                divider="@{@drawable/recycler_view_item_divider}"
                 android:background="?attr/entryCommentBackground"
                 android:layout_alignStart="@id/title"
                 android:layout_alignEnd="@id/image"

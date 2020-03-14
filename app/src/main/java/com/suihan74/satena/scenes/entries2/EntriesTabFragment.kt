@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.entries2
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,7 +12,10 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
-import com.suihan74.utilities.*
+import com.suihan74.utilities.RecyclerViewScrollingUpdater
+import com.suihan74.utilities.getThemeColor
+import com.suihan74.utilities.putEnum
+import com.suihan74.utilities.showToast
 
 class EntriesTabFragment : EntriesTabFragmentBase() {
     companion object {
@@ -52,20 +54,6 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             }
         }
 
-        // エントリリストの設定
-        entriesList.apply {
-            adapter = entriesAdapter
-            layoutManager = LinearLayoutManager(context)
-            addItemDecoration(
-                DividerItemDecorator(
-                    ContextCompat.getDrawable(
-                        context,
-                        R.drawable.recycler_view_item_divider
-                    )!!
-                )
-            )
-        }
-
         // 引っ張って更新
         swipeLayout.apply swipeLayout@ {
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
@@ -88,7 +76,13 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                 }
             )
         }
-        entriesList.addOnScrollListener(scrollingUpdater)
+
+        // エントリリストの設定
+        entriesList.run {
+            adapter = entriesAdapter
+            addOnScrollListener(scrollingUpdater)
+            layoutManager = LinearLayoutManager(context)
+        }
 
         // Issueの変更を監視する
         // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる

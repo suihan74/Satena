@@ -2,10 +2,8 @@ package com.suihan74.satena.scenes.entries2
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.BookmarkResult
@@ -133,22 +131,11 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
             }
 
         init {
-            binding.root.comments_list.apply {
-                adapter = CommentsAdapter().apply {
-                    setOnItemClickedListener listener@ { comment ->
-                        val entry = entry ?: return@listener
-                        onCommentClicked?.invoke(entry, comment)
-                    }
+            binding.root.comments_list.adapter = CommentsAdapter().apply {
+                setOnItemClickedListener listener@ { comment ->
+                    val entry = entry ?: return@listener
+                    onCommentClicked?.invoke(entry, comment)
                 }
-                layoutManager = LinearLayoutManager(context)
-                addItemDecoration(
-                    DividerItemDecorator(
-                        ContextCompat.getDrawable(
-                            context,
-                            R.drawable.recycler_view_item_divider
-                        )!!
-                    )
-                )
             }
         }
     }

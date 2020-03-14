@@ -207,4 +207,15 @@
         <item name="colorControlNormal">@color/textColor</item>
     </style>
 
+    <!-- RecyclerView -->
+    <style name="RecyclerView">
+        <item name="android:scrollbarThumbVertical">@drawable/scrollbar_thumb</item>
+        <item name="android:scrollbarSize">4dp</item>
+    </style>
+
+    <style name="RecyclerView.Linear" parent="RecyclerView">
+        <item name="layoutManager">androidx.recyclerview.widget.LinearLayoutManager</item>
+        <item name="android:scrollbars">vertical</item>
+    </style>
+
 </resources>
