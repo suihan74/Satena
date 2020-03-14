@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.content.Intent
-import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -12,19 +11,14 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
-import com.suihan74.utilities.RecyclerViewScrollingUpdater
-import com.suihan74.utilities.getThemeColor
-import com.suihan74.utilities.putEnum
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 
 class EntriesTabFragment : EntriesTabFragmentBase() {
     companion object {
-        fun createInstance(fragmentViewModelKey: String, category: Category, tabPosition: Int = 0) = EntriesTabFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARG_FRAGMENT_VIEW_MODEL_KEY, fragmentViewModelKey)
-                putEnum(ARG_CATEGORY, category)
-                putInt(ARG_TAB_POSITION, tabPosition)
-            }
+        fun createInstance(fragmentViewModelKey: String, category: Category, tabPosition: Int = 0) = EntriesTabFragment().withArguments {
+            putString(ARG_FRAGMENT_VIEW_MODEL_KEY, fragmentViewModelKey)
+            putEnum(ARG_CATEGORY, category)
+            putInt(ARG_TAB_POSITION, tabPosition)
         }
 
         private const val DIALOG_ENTRY_MENU = "entry_menu_dialog"

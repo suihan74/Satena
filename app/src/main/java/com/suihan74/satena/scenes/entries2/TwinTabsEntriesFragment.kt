@@ -10,14 +10,13 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.putEnum
+import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 class TwinTabsEntriesFragment : EntriesFragment() {
     companion object {
-        fun createInstance(category: Category) = TwinTabsEntriesFragment().apply {
-            arguments = Bundle().apply {
-                putEnum(ARG_CATEGORY, category)
-            }
+        fun createInstance(category: Category) = TwinTabsEntriesFragment().withArguments {
+            putEnum(ARG_CATEGORY, category)
         }
     }
 

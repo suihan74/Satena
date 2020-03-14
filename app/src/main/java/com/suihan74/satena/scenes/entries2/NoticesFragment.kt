@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.entries2
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.hatenaLib.HatenaClient
@@ -10,18 +9,21 @@ import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.entries2.dialog.NoticeMenuDialog
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.putEnum
+import com.suihan74.utilities.withArguments
 
 class NoticesFragment : EntriesTabFragmentBase() {
     companion object {
-        fun createInstance(fragmentViewModelKey: String) = NoticesFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARG_FRAGMENT_VIEW_MODEL_KEY, fragmentViewModelKey)
-                putEnum(ARG_CATEGORY, Category.Notices)
-            }
+        fun createInstance(fragmentViewModelKey: String) = NoticesFragment().withArguments {
+            putString(ARG_FRAGMENT_VIEW_MODEL_KEY, fragmentViewModelKey)
+            putEnum(ARG_CATEGORY, Category.Notices)
         }
     }
+
+    /** tag for NoticeMenuDialog */
+    private val DIALOG_NOTICE_MENU by lazy { "DIALOG_NOTICE_MENU" }
 
     override fun initializeRecyclerView(
         entriesList: RecyclerView,
@@ -41,7 +43,8 @@ class NoticesFragment : EntriesTabFragmentBase() {
             }
 
             setOnItemLongClickedListener { notice ->
-                //MenuDialog.act(entry, activityViewModel.entryLongClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
+                val dialog = NoticeMenuDialog.createInstance(notice)
+                dialog.show(childFragmentManager, DIALOG_NOTICE_MENU)
                 true
             }
         }

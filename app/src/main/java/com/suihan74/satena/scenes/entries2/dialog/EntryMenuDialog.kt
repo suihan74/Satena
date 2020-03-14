@@ -17,23 +17,18 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesViewModel
 import com.suihan74.satena.showCustomTabsIntent
+import com.suihan74.utilities.withArguments
 
 /** エントリメニューダイアログ */
 class EntryMenuDialog : DialogFragment() {
     companion object {
-        fun createInstance(entry: Entry) = EntryMenuDialog()
-            .apply {
-            arguments = Bundle().apply {
-                putSerializable(ARG_ENTRY, entry)
-            }
+        fun createInstance(entry: Entry) = EntryMenuDialog().withArguments {
+            putSerializable(ARG_ENTRY, entry)
         }
 
         /** タップ/ロングタップ時の挙動を処理する */
         fun act(entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
-            val instance =
-                createInstance(
-                    entry
-                )
+            val instance = createInstance(entry)
             when (actionEnum) {
                 TapEntryAction.SHOW_MENU ->
                     instance.show(fragmentManager, tag)
