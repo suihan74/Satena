@@ -18,6 +18,8 @@ import com.suihan74.satena.databinding.ActivityEntries2Binding
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
+import com.suihan74.satena.scenes.entries2.pages.SingleTabEntriesFragment
+import com.suihan74.satena.scenes.entries2.pages.TwinTabsEntriesFragment
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_entries2.*

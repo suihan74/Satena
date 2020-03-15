@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.entries2
+package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Intent
 import android.net.Uri
@@ -9,6 +9,8 @@ import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
+import com.suihan74.satena.scenes.entries2.NoticesAdapter
 import com.suihan74.satena.scenes.entries2.dialog.NoticeMenuDialog
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.putEnum
@@ -32,7 +34,8 @@ class NoticesFragment : EntriesTabFragmentBase() {
         val context = requireContext()
 
         // エントリリスト用のアダプタ
-        val noticesAdapter = NoticesAdapter().apply {
+        val noticesAdapter = NoticesAdapter()
+            .apply {
             setOnItemClickedListener { notice ->
                 when (notice.verb) {
                     Notice.VERB_STAR -> onClickedForStar(notice)

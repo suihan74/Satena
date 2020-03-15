@@ -20,8 +20,7 @@ import java.util.*
 
 abstract class EntriesFragment : Fragment() {
     companion object {
-        @JvmStatic
-        protected val ARG_CATEGORY = "ARG_CATEGORY"
+        const val ARG_CATEGORY = "ARG_CATEGORY"
 
         private const val ARG_UUID = "ARG_UUID"
     }

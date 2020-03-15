@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.entries2
+package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.entries2.EntriesFragment
+import com.suihan74.satena.scenes.entries2.EntriesTabFragment
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 

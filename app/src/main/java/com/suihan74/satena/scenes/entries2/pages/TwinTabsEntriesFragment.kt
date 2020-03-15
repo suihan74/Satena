@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.entries2
+package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,6 +9,9 @@ import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.entries2.EntriesFragment
+import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
+import com.suihan74.satena.scenes.entries2.EntriesTabFragment
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
@@ -35,7 +38,8 @@ class TwinTabsEntriesFragment : EntriesFragment() {
         val view = binding.root
 
         // タブ設定
-        view.entries_tab_pager.adapter = EntriesTabAdapter(this)
+        view.entries_tab_pager.adapter =
+            EntriesTabAdapter(this)
         view.main_tab_layout.apply {
             setupWithViewPager(view.entries_tab_pager)
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {

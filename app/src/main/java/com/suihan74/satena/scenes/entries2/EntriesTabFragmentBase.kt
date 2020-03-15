@@ -21,16 +21,13 @@ import kotlinx.android.synthetic.main.fragment_entries_tab2.view.*
 abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     companion object {
         /** このタブを表示しているEntriesFragmentのID */
-        @JvmStatic
-        protected val ARG_FRAGMENT_VIEW_MODEL_KEY = "ARG_FRAGMENT_VIEW_MODEL_KEY"
+        const val ARG_FRAGMENT_VIEW_MODEL_KEY = "ARG_FRAGMENT_VIEW_MODEL_KEY"
 
         /** このタブで表示するエントリのカテゴリ */
-        @JvmStatic
-        protected val ARG_CATEGORY = "ARG_CATEGORY"
+        const val ARG_CATEGORY = "ARG_CATEGORY"
 
         /** このタブの表示位置 */
-        @JvmStatic
-        protected val ARG_TAB_POSITION = "ARG_TAB_POSITION"
+        const val ARG_TAB_POSITION = "ARG_TAB_POSITION"
     }
 
     /** EntriesActivityのViewModel */
