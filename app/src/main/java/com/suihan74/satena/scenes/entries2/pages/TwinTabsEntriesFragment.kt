@@ -1,14 +1,17 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.Spinner
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import com.google.android.material.tabs.TabLayout
+import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.entries.initialize
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragment
@@ -54,6 +57,62 @@ class TwinTabsEntriesFragment : EntriesFragment() {
             })
         }
 
+        setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
+
         return view
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+
+        when (category) {
+            Category.MyBookmarks -> inflateMyBookmarksMenu(menu, inflater)
+
+            else -> {
+                viewModel.issues.observe(viewLifecycleOwner, Observer { issues ->
+                    if (issues != null) {
+                        inflateIssuesMenu(menu, inflater, issues)
+                    }
+                })
+            }
+        }
+    }
+
+    /** マイブックマーク画面用のメニュー */
+    private fun inflateMyBookmarksMenu(menu: Menu, inflater: MenuInflater) {
+        val activity = requireActivity()
+        inflater.inflate(R.menu.spinner_issues, menu)
+        (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
+            initialize(activity, emptyList(), R.drawable.spinner_allow_tags, getString(R.string.desc_issues_spinner)) { position ->
+                // TODO: Tagスピナーの挙動
+            }
+        }
+    }
+
+    /** カテゴリごとの特集を選択する追加メニュー */
+    private fun inflateIssuesMenu(menu: Menu, inflater: MenuInflater, issues: List<Issue>) {
+        val activity = requireActivity() as EntriesActivity
+        val spinnerItems = issues.map { it.name }
+
+        inflater.inflate(R.menu.spinner_issues, menu)
+
+        (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
+            initialize(activity, spinnerItems, R.drawable.spinner_allow_issues, getString(R.string.desc_issues_spinner)) { position ->
+                viewModel.issue.value =
+                    if (position == null) null
+                    else {
+                        val item = spinnerItems[position]
+                        issues.firstOrNull { it.name == item }
+                    }
+            }
+
+            if (viewModel.issue.value != null) {
+                val currentIssueName = viewModel.issue.value?.name
+                val position = spinnerItems.indexOfFirst { it == currentIssueName }
+                if (position >= 0) {
+                    setSelection(position + 1)
+                }
+            }
+        }
     }
 }

@@ -1,17 +1,16 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.os.Bundle
-import android.view.*
-import android.widget.Spinner
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.transition.Fade
 import androidx.transition.TransitionSet
 import com.suihan74.hatenaLib.Issue
-import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries.initialize
 import com.suihan74.satena.scenes.entries2.pages.HatenaEntriesViewModel
 import com.suihan74.satena.scenes.entries2.pages.MyBookmarksViewModel
 import com.suihan74.utilities.getEnum
@@ -75,7 +74,6 @@ abstract class EntriesFragment : Fragment() {
 
         viewModel = ViewModelProvider(activity)[viewModelKey, viewModelType]
         viewModel.category.value = category
-        setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
 
         // 画面遷移時にフェードする
         enterTransition = TransitionSet().addTransition(Fade())
@@ -103,42 +101,5 @@ abstract class EntriesFragment : Fragment() {
         activity.showAppBar()
 
         return null
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
-        viewModel.issues.observe(viewLifecycleOwner, Observer { issues ->
-            if (issues != null) {
-                inflateIssuesMenu(menu, inflater, issues)
-            }
-        })
-    }
-
-    /** カテゴリごとの特集を選択する追加メニュー */
-    private fun inflateIssuesMenu(menu: Menu, inflater: MenuInflater, issues: List<Issue>) {
-        val activity = requireActivity() as EntriesActivity
-        val spinnerItems = issues.map { it.name }
-
-        inflater.inflate(R.menu.spinner_issues, menu)
-
-        (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
-            initialize(activity, spinnerItems, R.drawable.spinner_allow_issues, getString(R.string.desc_issues_spinner)) { position ->
-                viewModel.issue.value =
-                    if (position == null) null
-                    else {
-                        val item = spinnerItems[position]
-                        issues.firstOrNull { it.name == item }
-                    }
-            }
-
-            if (viewModel.issue.value != null) {
-                val currentIssueName = viewModel.issue.value?.name
-                val position = spinnerItems.indexOfFirst { it == currentIssueName }
-                if (position >= 0) {
-                    setSelection(position + 1)
-                }
-            }
-        }
     }
 }
