@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.entries2
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
@@ -130,6 +131,18 @@ class EntriesActivity : AppCompatActivity() {
             closeFABMenu()
             val intent = Intent(this, PreferencesActivity::class.java)
             startActivity(intent)
+        }
+
+        // メニューを表示している間の黒背景
+        entries_menu_background_guard_full.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_UP -> {
+                    closeFABMenu()
+                    true
+                }
+
+                else -> false
+            }
         }
 
         // --- Observers ---
