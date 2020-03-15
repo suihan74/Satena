@@ -8,7 +8,7 @@ Androidの要求バージョンは6.0(M)以上としています．
 ## ファイルの場所など
 * Kotlinコード
   * [com.suihan74.*](/app/src/main/java/com/suihan74)
-    * [はてなAPI](/app/src/main/java/com/suihan74/HatenaLib)
+    * [はてなAPI](/app/src/main/java/com/suihan74/hatenaLib)
     * [アプリ部分](/app/src/main/java/com/suihan74/satena)
       * [ダイアログ](/app/src/main/java/com/suihan74/satena/dialogs)
       * [モデル](/app/src/main/java/com/suihan74/satena/models)
