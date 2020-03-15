@@ -30,7 +30,12 @@ class SingleTabEntriesFragment : EntriesFragment() {
             val fragment =
                 when (category) {
                     Category.Notices -> NoticesFragment.createInstance(viewModelKey)
-                    else -> EntriesTabFragment.createInstance(viewModelKey, category)
+                    Category.MyTags,
+                    Category.User -> UserEntriesFragment.createInstance(viewModelKey)
+                    else -> EntriesTabFragment.createInstance(
+                        viewModelKey,
+                        category
+                    )
                 }
 
             childFragmentManager.beginTransaction()
