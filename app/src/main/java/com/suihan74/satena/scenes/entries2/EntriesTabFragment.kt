@@ -95,6 +95,12 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                 viewModel.refresh(onErrorRefreshEntries)
             }
         })
+
+        // SiteUrlを監視する
+        parentViewModel.siteUrl.observe(viewLifecycleOwner, Observer {
+            viewModel.siteUrl = it
+            viewModel.refresh(onErrorRefreshEntries)
+        })
     }
 }
 

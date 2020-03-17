@@ -12,6 +12,36 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 
+/** エントリリストの取得時にカテゴリによっては必要な必要な追加パラメータ */
+class LoadEntryParameter {
+    companion object {
+        /** 検索クエリ(String) : Category.Search */
+        const val SEARCH_QUERY = "LoadEntryParameter.SEARCH_QUERY"
+
+        /** サイトURL(String) : Category.Site */
+        const val SITE_URL = "LoadEntryParameter.SITE_URL"
+
+        /** ページ(Int) : Category.Site */
+        const val PAGE = "LoadEntryParameter.PAGE"
+    }
+
+    /** データ */
+    private val map = HashMap<String, Any?>()
+
+    /** 値を追加 */
+    fun put(key: String, value: Any?) {
+        map[key] = value
+    }
+
+    /** 値をT型として取得(失敗時null) */
+    @Suppress("UNCHECKED_CAST")
+    fun <T> get(key: String) : T? = map[key] as? T
+
+    /** 値をT型として取得(失敗時default) */
+    @Suppress("UNCHECKED_CAST")
+    fun <T> get(key: String, defaultValue: T) : T = (map[key] as? T) ?: defaultValue
+}
+
 class EntriesRepository(
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
@@ -72,20 +102,32 @@ class EntriesRepository(
     }
 
     /** 最新のエントリーリストを読み込む */
-    suspend fun loadEntries(category: Category, issue: Issue?, tabPosition: Int, offset: Int? = null) : List<Entry> =
-        if (issue == null) loadEntries(category, tabPosition, offset)
+    suspend fun loadEntries(
+        category: Category,
+        issue: Issue?,
+        tabPosition: Int,
+        offset: Int? = null,
+        params: LoadEntryParameter? = null
+    ) : List<Entry> =
+        if (issue == null) loadEntries(category, tabPosition, offset, params)
         else loadEntries(issue, tabPosition, offset)
 
     /** 最新のエントリーリストを読み込む(Category指定) */
-    private suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int? = null) : List<Entry> =
+    private suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int?, params: LoadEntryParameter?) : List<Entry> =
         when (val apiCat = category.categoryInApi) {
-            null -> loadSpecificEntries(category, tabPosition)
+            null -> loadSpecificEntries(category, tabPosition, offset, params)
             else -> loadHatenaEntries(tabPosition, apiCat, offset)
         }
 
     /** はてなから提供されているカテゴリ以外のエントリ情報を取得する */
-    private suspend fun loadSpecificEntries(category: Category, tabPosition: Int, offset: Int? = null) : List<Entry> =
+    private suspend fun loadSpecificEntries(category: Category, tabPosition: Int, offset: Int?, params: LoadEntryParameter?) : List<Entry> =
         when (category) {
+            Category.Site -> {
+                val url = params?.get<String>(LoadEntryParameter.SITE_URL) ?: ""
+                val page = params?.get<Int>(LoadEntryParameter.PAGE) ?: 0
+                loadSiteEntries(url, tabPosition, page)
+            }
+
             Category.History -> loadHistory()
 
             Category.MyHotEntries -> client.getMyHotEntriesAsync().await()
@@ -181,6 +223,17 @@ class EntriesRepository(
             entriesType = entriesType,
             issue = issue,
             of = offset
+        ).await()
+    }
+
+    /** 指定したサイトのエントリーリストを読み込む */
+    private suspend fun loadSiteEntries(url: String, tabPosition: Int, page: Int? = null) : List<Entry> {
+        val entriesType = EntriesType.fromInt(tabPosition)
+        return client.getEntriesAsync(
+            url = url,
+            entriesType = entriesType,
+            allMode = true,
+            page = page ?: 0
         ).await()
     }
 

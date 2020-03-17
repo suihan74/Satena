@@ -20,6 +20,15 @@ class EntriesTabFragmentViewModel(
     /** 選択中のIssue */
     var issue : Issue? = null
 
+    /** 追加パラメータ */
+    private val params by lazy { LoadEntryParameter() }
+
+    var siteUrl: String?
+        get() = params.get(LoadEntryParameter.SITE_URL)
+        set(value) {
+            params.put(LoadEntryParameter.SITE_URL, value)
+        }
+
     /** フィルタされていない全エントリリスト */
     private val entries by lazy {
         MutableLiveData<List<Entry>>()
@@ -45,15 +54,35 @@ class EntriesTabFragmentViewModel(
     fun refresh(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
         when (category) {
             Category.Notices -> refreshNotices(onError)
-
             else -> refreshEntries(onError)
         }
+    }
+
+    private suspend fun fetchEntries(offset: Int? = null) : List<Entry> {
+        val params = when (category) {
+            Category.Site -> {
+                if (siteUrl == null) return emptyList()
+                params.also {
+                    if (offset != null && offset > 0) {
+                        val prev = it.get(LoadEntryParameter.PAGE, 1)
+                        it.put(LoadEntryParameter.PAGE, prev + 1)
+                    }
+                    else {
+                        it.put(LoadEntryParameter.PAGE, 1)
+                    }
+                }
+            }
+
+            else -> null
+        }
+
+        return repository.loadEntries(category, issue, tabPosition, offset, params)
     }
 
     /** エントリリストを初期化 */
     private suspend fun refreshEntries(onError: ((Throwable)->Unit)?) = withContext(Dispatchers.Default) {
         try {
-            entries.postValue(repository.loadEntries(category, issue, tabPosition))
+            entries.postValue(fetchEntries())
         }
         catch (e: Throwable) {
             withContext(Dispatchers.Main) {
@@ -61,6 +90,7 @@ class EntriesTabFragmentViewModel(
             }
         }
     }
+
 
     /** 通知リストを初期化 */
     private suspend fun refreshNotices(onError: ((Throwable) -> Unit)?) = withContext(Dispatchers.Default) {
@@ -82,7 +112,7 @@ class EntriesTabFragmentViewModel(
         var error : Throwable? = null
         try {
             val offset = entries.value?.size ?: 0
-            val entries = repository.loadEntries(category, issue, tabPosition, offset)
+            val entries = fetchEntries(offset)
             val oldItems = this@EntriesTabFragmentViewModel.entries.value ?: emptyList()
             this@EntriesTabFragmentViewModel.entries.postValue(
                 oldItems.plus(entries).distinctBy { it.id }

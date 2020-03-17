@@ -24,6 +24,15 @@ class TwinTabsEntriesFragment : EntriesFragment() {
         fun createInstance(category: Category) = TwinTabsEntriesFragment().withArguments {
             putEnum(ARG_CATEGORY, category)
         }
+
+        fun createInstance(category: Category, siteUrl: String?) = TwinTabsEntriesFragment().withArguments {
+            putEnum(ARG_CATEGORY, category)
+            if (siteUrl != null) {
+                putString(ARG_SITE_URL, siteUrl)
+            }
+        }
+
+        private const val ARG_SITE_URL = "ARG_SITE_URL"
     }
 
     override fun onCreateView(
@@ -32,6 +41,9 @@ class TwinTabsEntriesFragment : EntriesFragment() {
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
+
+        val arguments = requireArguments()
+        viewModel.siteUrl.value = arguments.getString(ARG_SITE_URL)
 
         val binding = DataBindingUtil.inflate<FragmentEntries2Binding>(inflater, R.layout.fragment_entries2, container, false).apply {
             lifecycleOwner = this@TwinTabsEntriesFragment

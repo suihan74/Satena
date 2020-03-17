@@ -196,7 +196,7 @@ class EntriesActivity : AppCompatActivity() {
     }
 
     /** カテゴリを選択 */
-    private fun showCategory(category: Category) {
+    private fun showCategory(category: Category, siteUrl: String? = null) {
         // 現在トップにある画面と同じカテゴリには連続して遷移しない
         if (supportFragmentManager.topBackStackEntry?.name == category.name) return
 
@@ -206,7 +206,7 @@ class EntriesActivity : AppCompatActivity() {
         val fragment =
             existed ?:
             if (category.singleColumns) SingleTabEntriesFragment.createInstance(category)
-            else TwinTabsEntriesFragment.createInstance(category)
+            else TwinTabsEntriesFragment.createInstance(category, siteUrl)
 
         supportFragmentManager.beginTransaction().run {
             replace(R.id.main_layout, fragment, category.name)
@@ -214,6 +214,10 @@ class EntriesActivity : AppCompatActivity() {
             commit()
         }
     }
+
+    /** サイトを指定してエントリリストを取得する */
+    fun showSiteEntries(url: String) =
+        showCategory(Category.Site, url)
 
     /** AppBarを強制的に表示する */
     fun showAppBar() {

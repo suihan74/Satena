@@ -23,6 +23,11 @@ abstract class EntriesFragmentViewModel : ViewModel() {
         )
     }
 
+    /** エントリリストを取得するサイトURL */
+    val siteUrl by lazy {
+        SingleUpdateMutableLiveData<String>()
+    }
+
     /** 現在categoryが内包するissueのリスト */
     val issues by lazy {
         MutableLiveData<List<Issue>?>(null).also { issuesLiveData ->

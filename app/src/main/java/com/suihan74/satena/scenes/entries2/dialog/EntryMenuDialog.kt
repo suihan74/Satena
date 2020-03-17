@@ -15,6 +15,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesViewModel
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.withArguments
@@ -126,5 +127,13 @@ class EntryMenuDialog : DialogFragment() {
     /** サイトのエントリリストを開く */
     private fun showEntries(entry: Entry) {
         // TODO: サイトのエントリリストを開く
+        when (val activity = requireActivity() as? EntriesActivity) {
+            null -> {
+            }
+
+            else -> {
+                activity.showSiteEntries(entry.rootUrl)
+            }
+        }
     }
 }

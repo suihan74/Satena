@@ -88,9 +88,10 @@ abstract class EntriesFragment : Fragment() {
         val toolbar = activity.toolbar
 
         // ツールバーを更新
-        toolbar.apply {
-            setTitle(viewModel.category.value?.textId ?: 0)
-            subtitle = viewModel.issue.value?.name
+        toolbar.also {
+//            setTitle(viewModel.category.value?.textId ?: 0)
+            it.title = title
+            it.subtitle = viewModel.issue.value?.name
         }
 
         // Issue選択時にサブタイトルを表示する
@@ -98,8 +99,19 @@ abstract class EntriesFragment : Fragment() {
             toolbar.subtitle = it?.name
         })
 
+        viewModel.siteUrl.observe(viewLifecycleOwner, Observer {
+            toolbar.title = title
+        })
+
         activity.showAppBar()
 
         return null
     }
+
+    /** ツールバーのタイトル部分に表示する内容 */
+    private val title : String?
+        get() = when (viewModel.category.value) {
+            Category.Site -> viewModel.siteUrl.value
+            else -> getString(viewModel.category.value?.textId!!)
+        }
 }
