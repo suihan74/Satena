@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -18,26 +17,9 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.bindings.setBookmarksTabTypeText
+import com.suihan74.utilities.bindings.setLinkTapActionText
 import kotlinx.android.synthetic.main.fragment_preferences_bookmarks.view.*
-
-/** ブクマ設定画面用のBindingAdapter */
-object PreferencesBookmarksAdapter {
-    /** 「最初に表示するタブ」のボタンテキスト */
-    @BindingAdapter("app:bookmarksTabType")
-    @JvmStatic
-    fun setBookmarksTabTypeText(button: Button, ordinal: Int) {
-        val tab = BookmarksTabType.fromInt(ordinal)
-        button.setText(tab.textId)
-    }
-
-    /** 「リンク文字列をタップしたときの動作」のボタンテキスト */
-    @BindingAdapter("app:linkTapAction")
-    @JvmStatic
-    fun setLinkTapActionText(button: Button, ordinal: Int) {
-        val act = TapEntryAction.fromInt(ordinal)
-        button.setText(act.titleId)
-    }
-}
 
 class PreferencesBookmarksFragment :
     PreferencesFragmentBase(),
@@ -119,16 +101,16 @@ class PreferencesBookmarksFragment :
 
         // --- observers --- //
 
-        viewModel.initialTabPosition.observe(this, Observer {
-            PreferencesBookmarksAdapter.setBookmarksTabTypeText(view.button_initial_tab, it)
+        viewModel.initialTabPosition.observe(viewLifecycleOwner, Observer {
+            view.button_initial_tab.setBookmarksTabTypeText(it)
         })
 
-        viewModel.linkSingleTapAction.observe(this, Observer {
-            PreferencesBookmarksAdapter.setLinkTapActionText(view.button_link_single_tap_action, it)
+        viewModel.linkSingleTapAction.observe(viewLifecycleOwner, Observer {
+            view.button_link_single_tap_action.setLinkTapActionText(it)
         })
 
-        viewModel.linkLongTapAction.observe(this, Observer {
-            PreferencesBookmarksAdapter.setLinkTapActionText(view.button_link_long_tap_action, it)
+        viewModel.linkLongTapAction.observe(viewLifecycleOwner, Observer {
+            view.button_link_single_tap_action.setLinkTapActionText(it)
         })
 
         return view
