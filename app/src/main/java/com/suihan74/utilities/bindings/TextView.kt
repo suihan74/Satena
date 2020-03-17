@@ -1,8 +1,12 @@
 package com.suihan74.utilities.bindings
 
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarColor
@@ -10,6 +14,22 @@ import com.suihan74.satena.R
 import com.suihan74.utilities.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
+
+/** 左付き画像 */
+@BindingAdapter("drawableLeft")
+fun TextView.setDrawableLeft(url: String) {
+    Glide.with(context)
+        .load(url)
+        .into(object : CustomTarget<Drawable>() {
+            override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                setCompoundDrawablesWithIntrinsicBounds(resource, null, null, null)
+            }
+
+            override fun onLoadCleared(placeholder: Drawable?) {
+                setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
+            }
+        })
+}
 
 /** ドメイン表示 */
 @BindingAdapter("rootUrl", "url")
