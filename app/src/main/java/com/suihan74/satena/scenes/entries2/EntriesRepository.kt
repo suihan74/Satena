@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.entries2
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
@@ -9,6 +10,7 @@ import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.checkFromSpam
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 
@@ -147,6 +149,9 @@ class EntriesRepository(
         ).await()
     }
 
+    /** ユーザーのタグ一覧を取得する */
+    suspend fun loadUserTags(user: String) : List<Tag> = client.getUserTagsAsync(user).await()
+
     /** エントリ閲覧履歴を取得する */
     private fun loadHistory() : List<Entry> =
         historyPrefs.get<List<Entry>>(EntriesHistoryKey.ENTRIES).reversed()
@@ -259,6 +264,40 @@ class EntriesRepository(
                 if (signedIn == true) Category.valuesWithSignedIn()
                 else Category.valuesWithoutSignedIn()
             )
+        }
+    }
+
+    /** Issueリストの変更を通知する */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    inner class IssuesLiveData(
+        private val categoryLiveData: MutableLiveData<Category>
+    ) : LiveData<List<Issue>>() {
+        override fun onActive() {
+            categoryLiveData.observeForever { category ->
+                if (!category.hasIssues) return@observeForever
+                val apiCategory = category.categoryInApi ?: return@observeForever
+                val task = client.getIssuesAsync(apiCategory)
+                task.invokeOnCompletion { e ->
+                    if (e == null) {
+                        postValue(task.getCompleted())
+                    }
+                }
+            }
+        }
+    }
+
+    /** タグ一覧の取得を通知する */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    inner class TagsLiveData(
+        private val user: String
+    ) : LiveData<List<Tag>>() {
+        override fun onActive() {
+            val task = client.getUserTagsAsync(user)
+            task.invokeOnCompletion { e ->
+                if (e == null) {
+                    postValue(task.getCompleted())
+                }
+            }
         }
     }
 }

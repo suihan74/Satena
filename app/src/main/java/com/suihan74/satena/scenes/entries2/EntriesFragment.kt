@@ -67,12 +67,26 @@ abstract class EntriesFragment : Fragment() {
 
         activityViewModel = ViewModelProvider(activity)[EntriesViewModel::class.java]
         val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
+        val repository = activityViewModel.repository
 
         val viewModelType =
-            if (category == Category.MyBookmarks) MyBookmarksViewModel::class.java
-            else HatenaEntriesViewModel::class.java
+            when (category) {
+                Category.MyBookmarks -> MyBookmarksViewModel::class.java
+                else -> HatenaEntriesViewModel::class.java
+            }
 
-        viewModel = ViewModelProvider(activity)[viewModelKey, viewModelType]
+        if (savedInstanceState != null) {
+            viewModel = ViewModelProvider(activity)[viewModelKey, viewModelType]
+        }
+        else {
+            val factory =
+                when (category) {
+                    Category.MyBookmarks -> MyBookmarksViewModel.Factory("suihan74", repository) // TODO
+                    else -> HatenaEntriesViewModel.Factory(repository)
+                }
+
+            viewModel = ViewModelProvider(activity, factory)[viewModelKey, viewModelType]
+        }
         viewModel.category.value = category
 
         // 画面遷移時にフェードする
@@ -99,6 +113,13 @@ abstract class EntriesFragment : Fragment() {
             toolbar.subtitle = it?.name
         })
 
+        // タグ選択時にサブタイトルを表示する
+        viewModel.tag.observe(viewLifecycleOwner, Observer {
+            val tag = it ?: return@Observer
+            toolbar.subtitle = "${tag.text}(${tag.count})"
+        })
+
+        // Category.SiteではサイトURLをタイトルに表示する
         viewModel.siteUrl.observe(viewLifecycleOwner, Observer {
             toolbar.title = title
         })

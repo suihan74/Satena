@@ -1,14 +1,11 @@
 package com.suihan74.satena.scenes.entries2
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Issue
+import com.suihan74.hatenaLib.Tag
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.SingleUpdateMutableLiveData
-import kotlinx.coroutines.launch
 
 abstract class EntriesFragmentViewModel : ViewModel() {
     /** この画面で表示しているCategory */
@@ -23,28 +20,16 @@ abstract class EntriesFragmentViewModel : ViewModel() {
         )
     }
 
+    /** この画面で表示しているタグ(Category.MyBookmarks) */
+    val tag by lazy {
+        SingleUpdateMutableLiveData<Tag?>(
+            selector = { it?.text }
+        )
+    }
+
     /** エントリリストを取得するサイトURL */
     val siteUrl by lazy {
         SingleUpdateMutableLiveData<String>()
-    }
-
-    /** 現在categoryが内包するissueのリスト */
-    val issues by lazy {
-        MutableLiveData<List<Issue>?>(null).also { issuesLiveData ->
-            category.observeForever { c ->
-                if (!c.hasIssues) return@observeForever
-                val apiCategory = c.categoryInApi ?: return@observeForever
-                viewModelScope.launch {
-                    try {
-                        val issues = HatenaClient.getIssuesAsync(apiCategory).await()
-                        issuesLiveData.postValue(issues)
-                    }
-                    catch (e: Throwable) {
-                        Log.e("error", Log.getStackTraceString(e))
-                    }
-                }
-            }
-        }
     }
 
     // タブ管理に関する設定

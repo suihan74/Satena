@@ -6,7 +6,6 @@ import android.widget.Spinner
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import com.google.android.material.tabs.TabLayout
-import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
 import com.suihan74.satena.models.Category
@@ -53,8 +52,7 @@ class TwinTabsEntriesFragment : EntriesFragment() {
         val view = binding.root
 
         // タブ設定
-        view.entries_tab_pager.adapter =
-            EntriesTabAdapter(this)
+        view.entries_tab_pager.adapter = EntriesTabAdapter(this)
         view.main_tab_layout.apply {
             setupWithViewPager(view.entries_tab_pager)
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -78,53 +76,84 @@ class TwinTabsEntriesFragment : EntriesFragment() {
         super.onCreateOptionsMenu(menu, inflater)
 
         when (category) {
-            Category.MyBookmarks -> inflateMyBookmarksMenu(menu, inflater)
+            Category.MyBookmarks ->
+                inflateMyBookmarksMenu(viewModel as MyBookmarksViewModel, menu, inflater)
 
-            else -> {
-                viewModel.issues.observe(viewLifecycleOwner, Observer { issues ->
-                    if (issues != null) {
-                        inflateIssuesMenu(menu, inflater, issues)
-                    }
-                })
-            }
+            else ->
+                inflateIssuesMenu(viewModel as HatenaEntriesViewModel, menu, inflater)
         }
     }
 
     /** マイブックマーク画面用のメニュー */
-    private fun inflateMyBookmarksMenu(menu: Menu, inflater: MenuInflater) {
-        val activity = requireActivity()
-        inflater.inflate(R.menu.spinner_issues, menu)
-        (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
-            initialize(activity, emptyList(), R.drawable.spinner_allow_tags, getString(R.string.desc_issues_spinner)) { position ->
-                // TODO: Tagスピナーの挙動
+    private fun inflateMyBookmarksMenu(viewModel: MyBookmarksViewModel, menu: Menu, inflater: MenuInflater) {
+        var inflated = false
+        viewModel.tags.observe(viewLifecycleOwner, Observer { tags ->
+            val activity = requireActivity()
+
+            if (!inflated) {
+                inflater.inflate(R.menu.spinner_issues, menu)
+                inflated = true
             }
-        }
+
+            (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
+                val spinnerItems = tags.map { "${it.text}(${it.count})" }
+                initialize(
+                    activity,
+                    spinnerItems,
+                    R.drawable.spinner_allow_tags,
+                    getString(R.string.desc_issues_spinner)
+                ) { position ->
+                    val tag =
+                        if (position == null) null
+                        else tags[position]
+
+                    viewModel.tag.value = tag
+                }
+
+                if (viewModel.tag.value != null) {
+                    val currentIssueName = viewModel.tag.value?.text
+                    val position = tags.indexOfFirst { it.text == currentIssueName }
+                    if (position >= 0) {
+                        setSelection(position + 1)
+                    }
+                }
+            }
+        })
     }
 
     /** カテゴリごとの特集を選択する追加メニュー */
-    private fun inflateIssuesMenu(menu: Menu, inflater: MenuInflater, issues: List<Issue>) {
-        val activity = requireActivity() as EntriesActivity
-        val spinnerItems = issues.map { it.name }
+    private fun inflateIssuesMenu(viewModel: HatenaEntriesViewModel, menu: Menu, inflater: MenuInflater) {
+        var inflated = false
+        viewModel.issues.observe(viewLifecycleOwner, Observer { issues ->
+            if (issues == null) return@Observer
 
-        inflater.inflate(R.menu.spinner_issues, menu)
+            val activity = requireActivity() as EntriesActivity
+            val spinnerItems = issues.map { it.name }
 
-        (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
-            initialize(activity, spinnerItems, R.drawable.spinner_allow_issues, getString(R.string.desc_issues_spinner)) { position ->
-                viewModel.issue.value =
-                    if (position == null) null
-                    else {
-                        val item = spinnerItems[position]
-                        issues.firstOrNull { it.name == item }
-                    }
+            if (!inflated) {
+                inflater.inflate(R.menu.spinner_issues, menu)
+                inflated = true
             }
+            (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
+                initialize(
+                    activity,
+                    spinnerItems,
+                    R.drawable.spinner_allow_issues,
+                    getString(R.string.desc_issues_spinner)
+                ) { position ->
+                    viewModel.issue.value =
+                        if (position == null) null
+                        else issues[position]
+                }
 
-            if (viewModel.issue.value != null) {
-                val currentIssueName = viewModel.issue.value?.name
-                val position = spinnerItems.indexOfFirst { it == currentIssueName }
-                if (position >= 0) {
-                    setSelection(position + 1)
+                if (viewModel.issue.value != null) {
+                    val currentIssueName = viewModel.issue.value?.name
+                    val position = spinnerItems.indexOfFirst { it == currentIssueName }
+                    if (position >= 0) {
+                        setSelection(position + 1)
+                    }
                 }
             }
-        }
+        })
     }
 }
