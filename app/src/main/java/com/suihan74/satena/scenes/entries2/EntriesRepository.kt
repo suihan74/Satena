@@ -295,9 +295,10 @@ class EntriesRepository(
     /** タグ一覧の取得を通知する */
     @OptIn(ExperimentalCoroutinesApi::class)
     inner class TagsLiveData(
-        private val user: String
+        private val user: String? = null
     ) : LiveData<List<Tag>>() {
         override fun onActive() {
+            val user = user ?: client.account?.name ?: return
             val task = client.getUserTagsAsync(user)
             task.invokeOnCompletion { e ->
                 if (e == null) {

@@ -82,7 +82,7 @@ abstract class EntriesFragment : Fragment() {
             else {
                 val factory =
                     when (category) {
-                        Category.MyBookmarks -> MyBookmarksViewModel.Factory("suihan74", repository) // TODO
+                        Category.MyBookmarks -> MyBookmarksViewModel.Factory(repository) // TODO
                         else -> HatenaEntriesViewModel.Factory(repository)
                     }
                 ViewModelProvider(activity, factory)[viewModelKey, viewModelType]

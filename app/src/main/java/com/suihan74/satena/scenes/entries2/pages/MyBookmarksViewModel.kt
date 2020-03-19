@@ -9,7 +9,6 @@ import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 
 class MyBookmarksViewModel(
-    private val user : String,
     private val repository : EntriesRepository
 ) : EntriesFragmentViewModel() {
     private val tabTitles = arrayOf(
@@ -19,7 +18,7 @@ class MyBookmarksViewModel(
 
     /** ユーザーのタグ一覧 */
     val tags by lazy {
-        repository.TagsLiveData(user)
+        repository.TagsLiveData()
     }
 
     override val tabCount: Int = 2
@@ -28,11 +27,10 @@ class MyBookmarksViewModel(
         else context.getString(tabTitles[position])
 
     class Factory(
-        private val user : String,
         private val repository : EntriesRepository
     ) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-            MyBookmarksViewModel(user, repository) as T
+            MyBookmarksViewModel(repository) as T
     }
 }
