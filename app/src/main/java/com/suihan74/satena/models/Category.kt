@@ -2,6 +2,7 @@ package com.suihan74.satena.models
 
 import com.suihan74.satena.R
 
+@Suppress("unused")
 enum class Category(
     val textId: Int,
     val iconId: Int,
@@ -80,9 +81,11 @@ enum class Category(
         R.drawable.ic_category_mybookmarks,
         requireSignedIn = true),
 
+    @Deprecated("`MyTags` is integrated into `MyBookmarks`")
     MyTags(
         R.string.category_mytags,
         R.drawable.ic_category_mytags,
+        displayInList = false,
         requireSignedIn = true,
         singleColumns = true),
 
