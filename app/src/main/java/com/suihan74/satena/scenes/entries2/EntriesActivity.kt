@@ -26,6 +26,11 @@ import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_entries2.*
 
 class EntriesActivity : AppCompatActivity() {
+    companion object {
+        /** アクティビティ生成と同時にCategory.Siteに遷移、その画面で表示するURL */
+        const val EXTRA_SITE_URL = "EntriesActivity.EXTRA_SITE_URL"
+    }
+
     private lateinit var viewModel : EntriesViewModel
 
     /** ドロワーの開閉状態 */
@@ -160,8 +165,13 @@ class EntriesActivity : AppCompatActivity() {
         // -----------------
 
         if (savedInstanceState == null) {
-            // ホームカテゴリを表示
-            showCategory(viewModel.homeCategory)
+            intent.getStringExtra(EXTRA_SITE_URL)?.let { siteUrl ->
+                // Category.Siteを表示
+                showCategory(Category.Site, siteUrl)
+            } ?: run {
+                // ホームカテゴリを表示
+                showCategory(viewModel.homeCategory)
+            }
         }
     }
 

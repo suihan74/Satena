@@ -9,14 +9,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.ViewModelProvider
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.entries2.EntriesViewModel
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.withArguments
 
@@ -62,9 +60,6 @@ class EntryMenuDialog : DialogFragment() {
         private const val ARG_ENTRY = "ARG_ENTRY"
     }
 
-    /** EntriesActivityのViewModel */
-    private lateinit var activityViewModel: EntriesViewModel
-
     /** メニュー項目 */
     @OptIn(ExperimentalStdlibApi::class)
     private val menuItems = buildList<Pair<Int, (Entry)->Unit>> {
@@ -72,11 +67,6 @@ class EntryMenuDialog : DialogFragment() {
         add(R.string.entry_action_show_page to { entry -> showPage(entry) })
         add(R.string.entry_action_show_page_in_browser to { entry -> showPageInBrowser(entry) })
         add(R.string.entry_action_show_entries to { entry -> showEntries(entry) })
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activityViewModel = ViewModelProvider(requireActivity())[EntriesViewModel::class.java]
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -126,9 +116,12 @@ class EntryMenuDialog : DialogFragment() {
 
     /** サイトのエントリリストを開く */
     private fun showEntries(entry: Entry) {
-        // TODO: サイトのエントリリストを開く
         when (val activity = requireActivity() as? EntriesActivity) {
             null -> {
+                val intent = Intent(requireContext(), EntriesActivity::class.java).apply {
+                    putExtra(EntriesActivity.EXTRA_SITE_URL, entry.rootUrl)
+                }
+                startActivity(intent)
             }
 
             else -> {

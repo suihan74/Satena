@@ -481,6 +481,20 @@ class BookmarksActivity :
     override fun onItemSelected(item: String, dialog: EntryMenuDialog) {
         val entry = dialog.entry
 
+        val action = when (item) {
+            getString(R.string.entry_action_show_comments) -> TapEntryAction.SHOW_COMMENTS
+            getString(R.string.entry_action_show_page) -> TapEntryAction.SHOW_PAGE
+            getString(R.string.entry_action_show_page_in_browser) -> TapEntryAction.SHOW_PAGE_IN_BROWSER
+            else -> throw RuntimeException()
+        }
+
+        com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog.act(
+            entry,
+            action,
+            supportFragmentManager
+        )
+
+        /*
         when (item) {
             getString(R.string.entry_action_show_comments) ->
                 TappedActionLauncher.launch(this, TapEntryAction.SHOW_COMMENTS, entry.url)
@@ -490,10 +504,12 @@ class BookmarksActivity :
 
             getString(R.string.entry_action_show_page_in_browser) ->
                 TappedActionLauncher.launch(this, TapEntryAction.SHOW_PAGE_IN_BROWSER, entry.url)
-        }
+        }*/
     }
 
     // --- ブックマーク中のリンクの処理 --- //
+
+    // TODO: 新しいEntryMenuDialogに差し替える
 
     fun onBookmarkClicked(bookmark: Bookmark) {
         showBookmarkDetail(bookmark)
