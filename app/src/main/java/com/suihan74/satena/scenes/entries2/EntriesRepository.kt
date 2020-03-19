@@ -25,6 +25,9 @@ class LoadEntryParameter {
 
         /** ページ(Int) : Category.Site */
         const val PAGE = "LoadEntryParameter.PAGE"
+
+        /** タグ : Category.MyBookmarks */
+        const val TAG = "LoadEntryParameter.TAG"
     }
 
     /** データ */
@@ -134,7 +137,7 @@ class EntriesRepository(
 
             Category.MyHotEntries -> client.getMyHotEntriesAsync().await()
 
-            Category.MyBookmarks -> loadMyBookmarks(tabPosition, offset)
+            Category.MyBookmarks -> loadMyBookmarks(tabPosition, offset, params)
 
             else -> throw NotImplementedError("refreshing \"${category.name}\" is not implemented")
         }
@@ -157,9 +160,12 @@ class EntriesRepository(
         historyPrefs.get<List<Entry>>(EntriesHistoryKey.ENTRIES).reversed()
 
     /** マイブックマークを取得する */
-    private suspend fun loadMyBookmarks(tabPosition: Int, offset: Int?) : List<Entry> =
-        if (tabPosition == 0) client.getMyBookmarkedEntriesAsync(of = offset).await()
-        else client.searchMyEntriesAsync("あとで読む", SearchType.Tag).await()
+    private suspend fun loadMyBookmarks(tabPosition: Int, offset: Int?, params: LoadEntryParameter?) : List<Entry> {
+        val tag = params?.get<String>(LoadEntryParameter.TAG)
+
+        return if (tag == null) client.getMyBookmarkedEntriesAsync(of = offset).await()
+               else client.searchMyEntriesAsync(tag, SearchType.Tag).await()
+    }
 
     /** 通知リストを取得する */
     suspend fun loadNotices() : List<Notice> {

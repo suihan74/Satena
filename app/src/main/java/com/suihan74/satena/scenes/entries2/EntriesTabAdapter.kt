@@ -7,15 +7,11 @@ class EntriesTabAdapter(
     private val fragment: EntriesFragment
 ) : FragmentPagerAdapter(fragment.childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
-    override fun getItem(position: Int) : Fragment {
-        return EntriesTabFragment.createInstance(fragment.viewModelKey, fragment.category, position)
-    }
+    override fun getItem(position: Int) : Fragment =
+        EntriesTabFragment.createInstance(fragment.viewModelKey, fragment.category, position)
 
-    override fun getPageTitle(position: Int): CharSequence? {
-        val context = fragment.context ?: return null
-        val textId = fragment.getTabTitleId(position)
-        return if (textId > 0) context.getText(textId) else ""
-    }
+    override fun getPageTitle(position: Int): CharSequence? =
+        fragment.getTabTitle(position)
 
     override fun getCount() = fragment.tabCount
 }

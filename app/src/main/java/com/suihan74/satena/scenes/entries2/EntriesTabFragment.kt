@@ -96,6 +96,20 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             }
         })
 
+        // Tagの変更を監視する
+        var isTagInitialized = false
+        parentViewModel.tag.observe(viewLifecycleOwner, Observer {
+            if (!isTagInitialized) {
+                isTagInitialized = true
+                return@Observer
+            }
+
+            viewModel.tag = it
+            entriesAdapter.submitEntries(null) {
+                viewModel.refresh(onErrorRefreshEntries)
+            }
+        })
+
         // SiteUrlを監視する
         parentViewModel.siteUrl.observe(viewLifecycleOwner, Observer {
             viewModel.siteUrl = it

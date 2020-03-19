@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.entries2
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.suihan74.hatenaLib.Issue
@@ -34,10 +35,10 @@ abstract class EntriesFragmentViewModel : ViewModel() {
 
     // タブ管理に関する設定
 
-    abstract val tabTitles : Array<Int>
-    fun getTabTitleId(position: Int) = tabTitles[position]
-    val tabCount: Int
-        get() = tabTitles.size
+    /** 位置に対応するタブタイトル */
+    abstract fun getTabTitle(context: Context, position: Int) : String
+    /** タブ数 */
+    abstract val tabCount: Int
 
     // タブ設定に関する設定ここまで
 }

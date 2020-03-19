@@ -50,7 +50,7 @@ abstract class EntriesFragment : Fragment() {
         get() = viewModel.issue.value
 
     /** タブタイトルを取得する */
-    fun getTabTitleId(position: Int) = viewModel.getTabTitleId(position)
+    fun getTabTitle(position: Int) = viewModel.getTabTitle(requireContext(), position)
     val tabCount get() = viewModel.tabCount
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,18 +75,18 @@ abstract class EntriesFragment : Fragment() {
                 else -> HatenaEntriesViewModel::class.java
             }
 
-        if (savedInstanceState != null) {
-            viewModel = ViewModelProvider(activity)[viewModelKey, viewModelType]
-        }
-        else {
-            val factory =
-                when (category) {
-                    Category.MyBookmarks -> MyBookmarksViewModel.Factory("suihan74", repository) // TODO
-                    else -> HatenaEntriesViewModel.Factory(repository)
-                }
-
-            viewModel = ViewModelProvider(activity, factory)[viewModelKey, viewModelType]
-        }
+        viewModel =
+            if (savedInstanceState != null) {
+                ViewModelProvider(activity)[viewModelKey, viewModelType]
+            }
+            else {
+                val factory =
+                    when (category) {
+                        Category.MyBookmarks -> MyBookmarksViewModel.Factory("suihan74", repository) // TODO
+                        else -> HatenaEntriesViewModel.Factory(repository)
+                    }
+                ViewModelProvider(activity, factory)[viewModelKey, viewModelType]
+            }
         viewModel.category.value = category
 
         // 画面遷移時にフェードする
@@ -115,8 +115,7 @@ abstract class EntriesFragment : Fragment() {
 
         // タグ選択時にサブタイトルを表示する
         viewModel.tag.observe(viewLifecycleOwner, Observer {
-            val tag = it ?: return@Observer
-            toolbar.subtitle = "${tag.text}(${tag.count})"
+            toolbar.subtitle = it?.let { tag -> "${tag.text}(${tag.count})" }
         })
 
         // Category.SiteではサイトURLをタイトルに表示する

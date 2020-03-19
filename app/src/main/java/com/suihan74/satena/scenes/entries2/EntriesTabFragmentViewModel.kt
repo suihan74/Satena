@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.hatenaLib.Notice
+import com.suihan74.hatenaLib.Tag
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.EntriesTabType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,6 +21,9 @@ class EntriesTabFragmentViewModel(
 ) : ViewModel() {
     /** 選択中のIssue */
     var issue : Issue? = null
+
+    /** 選択中のタグ */
+    var tag : Tag? = null
 
     /** 追加パラメータ */
     private val params by lazy { LoadEntryParameter() }
@@ -58,7 +63,9 @@ class EntriesTabFragmentViewModel(
         }
     }
 
+    /** エントリリストを取得 */
     private suspend fun fetchEntries(offset: Int? = null) : List<Entry> {
+        // 追加パラメータを設定
         val params = when (category) {
             Category.Site -> {
                 if (siteUrl == null) return emptyList()
@@ -70,6 +77,22 @@ class EntriesTabFragmentViewModel(
                     else {
                         it.put(LoadEntryParameter.PAGE, 1)
                     }
+                }
+            }
+
+            Category.MyBookmarks -> {
+                when {
+                    tabPosition == EntriesTabType.READ_LATER.tabPosition ->
+                        params.also {
+                            it.put(LoadEntryParameter.TAG, "あとで読む")
+                        }
+
+                    tag != null ->
+                        params.also {
+                            it.put(LoadEntryParameter.TAG, tag!!.text)
+                        }
+
+                    else -> null
                 }
             }
 
