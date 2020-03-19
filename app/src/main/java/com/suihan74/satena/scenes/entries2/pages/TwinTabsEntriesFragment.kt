@@ -9,11 +9,14 @@ import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.EntriesTabType
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.entries.initialize
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragment
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
@@ -66,6 +69,11 @@ class TwinTabsEntriesFragment : EntriesFragment() {
                 }
             })
         }
+
+        // タブ初期選択
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val initialTab = EntriesTabType.fromInt(prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB))
+        view.entries_tab_pager.setCurrentItem(initialTab.tabPosition, false)
 
         setHasOptionsMenu(category == Category.MyBookmarks || category.hasIssues)
 

@@ -88,10 +88,19 @@ object PreferenceKeyMigration {
      */
     private fun migrateFromVersion1(context: Context) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val homeCategory = prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY)
+        val homeCategoryOrdinal = prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY)
         prefs.edit {
-            if (homeCategory > 0) {
-                putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, homeCategory + 1)
+            if (homeCategoryOrdinal > 0) {
+                val fixedCategoryOrdinal = homeCategoryOrdinal + 1
+                putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, fixedCategoryOrdinal)
+
+                when (Category.fromInt(fixedCategoryOrdinal)) {
+                    Category.MyBookmarks ->
+                        putInt(PreferenceKey.ENTRIES_INITIAL_TAB, EntriesTabType.MYBOOKMARKS.ordinal)
+
+                    else ->
+                        putInt(PreferenceKey.ENTRIES_INITIAL_TAB, EntriesTabType.POPULAR.ordinal)
+                }
             }
         }
         // 以下、次のバージョン移行処理
@@ -109,6 +118,7 @@ object PreferenceKeyMigration {
         prefs.edit {
             if (homeCategory == Category.MyTags) {
                 putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.MyBookmarks.ordinal)
+                putInt(PreferenceKey.ENTRIES_INITIAL_TAB, EntriesTabType.MYBOOKMARKS.ordinal)
             }
         }
     }
