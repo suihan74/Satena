@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.entries2
 import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -21,7 +20,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             putInt(ARG_TAB_POSITION, tabPosition)
         }
 
-        private const val DIALOG_ENTRY_MENU = "entry_menu_dialog"
+        const val DIALOG_ENTRY_MENU = "EntriesTabFragment.DIALOG_ENTRY_MENU"
     }
 
     override fun initializeRecyclerView(entriesList: RecyclerView, swipeLayout: SwipeRefreshLayout) {
@@ -80,9 +79,8 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
 
         // Issueの変更を監視する
         // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる
-        val parentViewModelKey = requireArguments().getString(ARG_FRAGMENT_VIEW_MODEL_KEY)!!
-        val parentViewModel = ViewModelProvider(requireActivity())[parentViewModelKey, EntriesFragmentViewModel::class.java]
         var isIssueInitialized = false
+        val parentViewModel = parentViewModel!!
         parentViewModel.issue.observe(viewLifecycleOwner, Observer {
             if (!isIssueInitialized) {
                 isIssueInitialized = true

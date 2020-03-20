@@ -167,7 +167,7 @@ class EntriesActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             intent.getStringExtra(EXTRA_SITE_URL)?.let { siteUrl ->
                 // Category.Siteを表示
-                showCategory(Category.Site, siteUrl)
+                showSiteEntries(siteUrl)
             } ?: run {
                 // ホームカテゴリを表示
                 showCategory(viewModel.homeCategory)
@@ -206,17 +206,35 @@ class EntriesActivity : AppCompatActivity() {
     }
 
     /** カテゴリを選択 */
-    private fun showCategory(category: Category, siteUrl: String? = null) {
+    private fun showCategory(category: Category) {
+        showContentFragment(category) {
+            if (category.singleColumns) SingleTabEntriesFragment.createInstance(category)
+            else TwinTabsEntriesFragment.createInstance(category)
+        }
+    }
+
+    /** Category.Siteに遷移 */
+    fun showSiteEntries(siteUrl: String) {
+        showContentFragment(Category.Site) {
+            TwinTabsEntriesFragment.createSiteEntriesInstance(siteUrl)
+        }
+    }
+
+    /** Category.Userに遷移 */
+    fun showUserEntries(user: String) {
+        showContentFragment(Category.User) {
+            SingleTabEntriesFragment.createUserEntriesInstance(user)
+        }
+    }
+
+    /** EntriesFragment遷移処理 */
+    private fun showContentFragment(category: Category, fragmentGenerator: ()->EntriesFragment) {
         // 現在トップにある画面と同じカテゴリには連続して遷移しない
         if (supportFragmentManager.topBackStackEntry?.name == category.name) return
 
         // 既に一度表示されているカテゴリの場合再利用する
         val existed = supportFragmentManager.findFragmentByTag(category.name)
-
-        val fragment =
-            existed ?:
-            if (category.singleColumns) SingleTabEntriesFragment.createInstance(category)
-            else TwinTabsEntriesFragment.createInstance(category, siteUrl)
+        val fragment = existed ?: fragmentGenerator()
 
         supportFragmentManager.beginTransaction().run {
             replace(R.id.main_layout, fragment, category.name)
@@ -224,10 +242,6 @@ class EntriesActivity : AppCompatActivity() {
             commit()
         }
     }
-
-    /** サイトを指定してエントリリストを取得する */
-    fun showSiteEntries(url: String) =
-        showCategory(Category.Site, url)
 
     /** AppBarを強制的に表示する */
     fun showAppBar() {

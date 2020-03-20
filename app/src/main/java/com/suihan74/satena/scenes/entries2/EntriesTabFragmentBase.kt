@@ -38,6 +38,13 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     protected var binding : FragmentEntriesTab2Binding? = null
 
+    /** 親のEntriesFragmentのViewModel */
+    protected val parentViewModel : EntriesFragmentViewModel?
+        get() =
+            requireArguments().getString(ARG_FRAGMENT_VIEW_MODEL_KEY)?.let { key ->
+                ViewModelProvider(requireActivity())[key, EntriesFragmentViewModel::class.java]
+            }
+
     /** リスト更新失敗時に呼ばれる */
     protected val onErrorRefreshEntries: (Throwable)->Unit = { e ->
         Log.e("error", Log.getStackTraceString(e))
@@ -65,7 +72,6 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
                 tabPosition
             )
             viewModel = ViewModelProvider(this, factory)[EntriesTabFragmentViewModel::class.java]
-            viewModel.refresh(onErrorRefreshEntries)
         }
         else {
             viewModel = ViewModelProvider(this)[EntriesTabFragmentViewModel::class.java]
@@ -82,6 +88,11 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             vm = viewModel
         }
         this.binding = binding
+
+        // エントリリストの初期ロード
+        if (savedInstanceState == null) {
+            viewModel.refresh(onErrorRefreshEntries)
+        }
 
         return binding.root.also { view ->
             initializeRecyclerView(view.entries_list, view.swipe_layout)

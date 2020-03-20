@@ -480,13 +480,7 @@ class BookmarksActivity :
 
     override fun onItemSelected(item: String, dialog: EntryMenuDialog) {
         val entry = dialog.entry
-
-        val action = when (item) {
-            getString(R.string.entry_action_show_comments) -> TapEntryAction.SHOW_COMMENTS
-            getString(R.string.entry_action_show_page) -> TapEntryAction.SHOW_PAGE
-            getString(R.string.entry_action_show_page_in_browser) -> TapEntryAction.SHOW_PAGE_IN_BROWSER
-            else -> throw RuntimeException()
-        }
+        val action = TapEntryAction.values().first { getString(it.titleId) == item }
 
         com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog.act(
             entry,

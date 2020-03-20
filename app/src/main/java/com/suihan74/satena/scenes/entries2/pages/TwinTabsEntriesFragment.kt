@@ -27,11 +27,10 @@ class TwinTabsEntriesFragment : EntriesFragment() {
             putEnum(ARG_CATEGORY, category)
         }
 
-        fun createInstance(category: Category, siteUrl: String?) = TwinTabsEntriesFragment().withArguments {
-            putEnum(ARG_CATEGORY, category)
-            if (siteUrl != null) {
-                putString(ARG_SITE_URL, siteUrl)
-            }
+        /** Category.Site用のインスタンスを作成する */
+        fun createSiteEntriesInstance(siteUrl: String) = TwinTabsEntriesFragment().withArguments {
+            putEnum(ARG_CATEGORY, Category.Site)
+            putString(ARG_SITE_URL, siteUrl)
         }
 
         private const val ARG_SITE_URL = "ARG_SITE_URL"

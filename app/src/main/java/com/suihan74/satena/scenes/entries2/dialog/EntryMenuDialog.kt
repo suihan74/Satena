@@ -118,6 +118,7 @@ class EntryMenuDialog : DialogFragment() {
     private fun showEntries(entry: Entry) {
         when (val activity = requireActivity() as? EntriesActivity) {
             null -> {
+                // EntriesActivity以外から呼ばれた場合、Activityを遷移する
                 val intent = Intent(requireContext(), EntriesActivity::class.java).apply {
                     putExtra(EntriesActivity.EXTRA_SITE_URL, entry.rootUrl)
                 }

@@ -12,10 +12,11 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleUserBinding
 import com.suihan74.satena.databinding.ListviewItemNotices2Binding
 import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.ReportDialogFragment
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.users
 import com.suihan74.utilities.withArguments
 
-// TODO:
 class NoticeMenuDialog : AlertDialogFragment() {
     companion object {
         fun createInstance(notice: Notice) = NoticeMenuDialog().withArguments {
@@ -26,7 +27,7 @@ class NoticeMenuDialog : AlertDialogFragment() {
         private const val ARG_NOTICE = "ARG_NOTICE"
 
         /** ユーザーに対する操作を決定するダイアログ用タグ */
-        private const val DIALOG_NOTICE_USER_MENU = "DIALOG_NOTICE_USER_MENU"
+        const val DIALOG_NOTICE_USER_MENU = "NoticeMenuDialog.DIALOG_NOTICE_USER_MENU"
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?) : Dialog {
@@ -53,6 +54,8 @@ class NoticeMenuDialog : AlertDialogFragment() {
             .create()
     }
 
+
+    // TODO: ユーザーに対する操作の実装
     /** 通知に含まれるユーザーに対する操作 */
     class NoticeUserMenuDialog : AlertDialogFragment() {
         companion object {
@@ -62,6 +65,9 @@ class NoticeMenuDialog : AlertDialogFragment() {
 
             /** 対象ユーザー名 */
             private const val ARG_USER = "ARG_USER"
+
+            /** 通報ダイアログ用のタグ */
+            const val DIALOG_REPORT = "NoticeUserMenuDialog.DIALOG_REPORT"
         }
 
         override fun onCreateDialog(savedInstanceState: Bundle?) : Dialog {
@@ -78,16 +84,31 @@ class NoticeMenuDialog : AlertDialogFragment() {
                 it.iconUrl = HatenaClient.getUserIconUrl(user)
             }
 
-            val items = arrayOf(
-                getString(R.string.bookmark_show_user_entries),
-                getString(R.string.bookmark_report)
+            val items = arrayOf<Pair<Int, (String)->Unit>>(
+                R.string.bookmark_show_user_entries to { u -> showBookmarkedEntries(u) },
+                R.string.bookmark_report to { u -> showReportDialog(u) }
             )
 
             return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
                 .setCustomTitle(titleViewBinding.root)
-                .setItems(items, null)
+                .setItems(items.map { getString(it.first) }.toTypedArray()) { _, which ->
+                    val action = items[which].second
+                    action.invoke(user)
+                }
                 .setNegativeButton(R.string.dialog_cancel, null)
                 .create()
+        }
+
+        /** ユーザーがブクマしたエントリ一覧画面を表示する */
+        private fun showBookmarkedEntries(user: String) {
+            val activity = requireActivity() as EntriesActivity
+            activity.showUserEntries(user)
+        }
+
+        /** ユーザーを通報する */
+        private fun showReportDialog(user: String) {
+            val dialog = ReportDialogFragment.createInstance(user)
+            dialog.show(parentFragmentManager, DIALOG_REPORT)
         }
     }
 }

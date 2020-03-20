@@ -21,7 +21,7 @@ abstract class EntriesFragmentViewModel : ViewModel() {
         )
     }
 
-    /** この画面で表示しているタグ(Category.MyBookmarks) */
+    /** この画面で表示しているタグ(Category.MyBookmarks, Category.User) */
     val tag by lazy {
         SingleUpdateMutableLiveData<Tag?>(
             selector = { it?.text }
@@ -30,6 +30,11 @@ abstract class EntriesFragmentViewModel : ViewModel() {
 
     /** エントリリストを取得するサイトURL */
     val siteUrl by lazy {
+        SingleUpdateMutableLiveData<String>()
+    }
+
+    /** Category.Userで表示しているユーザー */
+    val user by lazy {
         SingleUpdateMutableLiveData<String>()
     }
 

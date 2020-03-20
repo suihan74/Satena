@@ -22,12 +22,20 @@ class EntriesTabFragmentViewModel(
     /** 選択中のIssue */
     var issue : Issue? = null
 
-    /** 選択中のタグ */
+    /** 選択中のタグ : Category.MyBookmarks, Category.User */
     var tag : Tag? = null
+
+    /** 表示中のユーザー : Category.User */
+    var user : String?
+        get() = params.get(LoadEntryParameter.USER)
+        set(value) {
+            params.put(LoadEntryParameter.USER, value)
+        }
 
     /** 追加パラメータ */
     private val params by lazy { LoadEntryParameter() }
 
+    /** サイトURL : Category.Site */
     var siteUrl: String?
         get() = params.get(LoadEntryParameter.SITE_URL)
         set(value) {
@@ -80,19 +88,18 @@ class EntriesTabFragmentViewModel(
                 }
             }
 
+            Category.User,
             Category.MyBookmarks -> {
-                when {
-                    tabPosition == EntriesTabType.READ_LATER.tabPosition ->
+                when (tabPosition) {
+                    EntriesTabType.READ_LATER.tabPosition ->
                         params.also {
                             it.put(LoadEntryParameter.TAG, "あとで読む")
                         }
 
-                    tag != null ->
+                    else ->
                         params.also {
-                            it.put(LoadEntryParameter.TAG, tag!!.text)
+                            it.put(LoadEntryParameter.TAG, tag?.text)
                         }
-
-                    else -> null
                 }
             }
 

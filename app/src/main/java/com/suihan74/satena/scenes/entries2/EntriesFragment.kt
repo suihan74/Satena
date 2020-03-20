@@ -13,6 +13,7 @@ import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.pages.HatenaEntriesViewModel
 import com.suihan74.satena.scenes.entries2.pages.MyBookmarksViewModel
+import com.suihan74.satena.scenes.entries2.pages.UserEntriesViewModel
 import com.suihan74.utilities.getEnum
 import kotlinx.android.synthetic.main.activity_entries2.*
 import java.util.*
@@ -72,6 +73,7 @@ abstract class EntriesFragment : Fragment() {
         val viewModelType =
             when (category) {
                 Category.MyBookmarks -> MyBookmarksViewModel::class.java
+                Category.User -> UserEntriesViewModel::class.java
                 else -> HatenaEntriesViewModel::class.java
             }
 
@@ -83,6 +85,7 @@ abstract class EntriesFragment : Fragment() {
                 val factory =
                     when (category) {
                         Category.MyBookmarks -> MyBookmarksViewModel.Factory(repository) // TODO
+                        Category.User -> UserEntriesViewModel.Factory(repository)
                         else -> HatenaEntriesViewModel.Factory(repository)
                     }
                 ViewModelProvider(activity, factory)[viewModelKey, viewModelType]
@@ -103,7 +106,6 @@ abstract class EntriesFragment : Fragment() {
 
         // ツールバーを更新
         toolbar.also {
-//            setTitle(viewModel.category.value?.textId ?: 0)
             it.title = title
             it.subtitle = viewModel.issue.value?.name
         }
@@ -123,6 +125,11 @@ abstract class EntriesFragment : Fragment() {
             toolbar.title = title
         })
 
+        // Category.UserではユーザーIDをタイトルに表示する
+        viewModel.user.observe(viewLifecycleOwner, Observer {
+            toolbar.title = title
+        })
+
         activity.showAppBar()
 
         return null
@@ -132,6 +139,7 @@ abstract class EntriesFragment : Fragment() {
     private val title : String?
         get() = when (viewModel.category.value) {
             Category.Site -> viewModel.siteUrl.value
+            Category.User -> "id:${viewModel.user.value}"
             else -> getString(viewModel.category.value?.textId!!)
         }
 }

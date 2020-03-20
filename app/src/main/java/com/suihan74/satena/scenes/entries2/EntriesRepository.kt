@@ -28,6 +28,9 @@ class LoadEntryParameter {
 
         /** タグ : Category.MyBookmarks */
         const val TAG = "LoadEntryParameter.TAG"
+
+        /** ユーザー名 : Category.User */
+        const val USER = "LoadEntryParameter.USER"
     }
 
     /** データ */
@@ -139,6 +142,8 @@ class EntriesRepository(
 
             Category.MyBookmarks -> loadMyBookmarks(tabPosition, offset, params)
 
+            Category.User -> loadUserEntries(offset, params!!)
+
             else -> throw NotImplementedError("refreshing \"${category.name}\" is not implemented")
         }
 
@@ -165,6 +170,14 @@ class EntriesRepository(
 
         return if (tag == null) client.getMyBookmarkedEntriesAsync(of = offset).await()
                else client.searchMyEntriesAsync(tag, SearchType.Tag).await()
+    }
+
+    /** ユーザーがブクマしたエントリ一覧を取得する */
+    private suspend fun loadUserEntries(offset: Int?, params: LoadEntryParameter) : List<Entry> {
+        val user = params.get<String>(LoadEntryParameter.USER)!!
+        val tag = params.get<String>(LoadEntryParameter.TAG)
+
+        return client.getUserEntriesAsync(user = user, tag = tag, of = offset).await()
     }
 
     /** 通知リストを取得する */
@@ -295,9 +308,19 @@ class EntriesRepository(
     /** タグ一覧の取得を通知する */
     @OptIn(ExperimentalCoroutinesApi::class)
     inner class TagsLiveData(
-        private val user: String? = null
+        private var user: String? = null
     ) : LiveData<List<Tag>>() {
         override fun onActive() {
+            load()
+        }
+
+        /** ユーザーを設定してタグリストをリロードする */
+        fun setUser(user: String) {
+            this.user = user
+            load()
+        }
+
+        private fun load() {
             val user = user ?: client.account?.name ?: return
             val task = client.getUserTagsAsync(user)
             task.invokeOnCompletion { e ->

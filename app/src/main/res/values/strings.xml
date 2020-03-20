@@ -8,7 +8,7 @@
     <string name="confirm_dialog_title_simple">確認</string>
     <string name="app_termination_dialog_msg">アプリを終了しますか？</string>
     <string name="dialog_ok">OK</string>
-    <string name="dialog_cancel">@android:string/cancel</string>
+    <string name="dialog_cancel">Cancel</string>
     <string name="dialog_register">登録</string>
     <string name="dialog_open">開く</string>
 
