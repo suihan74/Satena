@@ -22,10 +22,10 @@ class NoticesFragment : EntriesTabFragmentBase() {
             putString(ARG_FRAGMENT_VIEW_MODEL_KEY, fragmentViewModelKey)
             putEnum(ARG_CATEGORY, Category.Notices)
         }
-    }
 
-    /** tag for NoticeMenuDialog */
-    private val DIALOG_NOTICE_MENU by lazy { "DIALOG_NOTICE_MENU" }
+        /** NoticeMenuDialog用のタグ */
+        private const val DIALOG_NOTICE_MENU = "DIALOG_NOTICE_MENU"
+    }
 
     override fun initializeRecyclerView(
         entriesList: RecyclerView,
