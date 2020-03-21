@@ -606,7 +606,7 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
                 replaceFragment(fragment)
             }
 
-            Category.MyStars -> {
+            Category.Stars -> {
                 val fragment = MyStarsFragment.createInstance()
                 replaceFragment(fragment)
             }

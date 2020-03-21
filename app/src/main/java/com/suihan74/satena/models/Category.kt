@@ -94,12 +94,12 @@ enum class Category(
         R.drawable.ic_category_search,
         singleColumns = true),
 
-    MyStars(
+    Stars(
         R.string.category_mystars,
         R.drawable.ic_star,
-        requireSignedIn = true,
-        singleColumns = true),
+        requireSignedIn = true),
 
+    @Deprecated("`MyStars` & `StarsReport` is integrated into `Stars`")
     StarsReport(
         R.string.category_stars_report,
         R.drawable.ic_star,

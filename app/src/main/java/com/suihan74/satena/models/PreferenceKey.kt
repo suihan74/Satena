@@ -110,15 +110,24 @@ object PreferenceKeyMigration {
     /**
      * v2 -> v3
      *
-     * Category.MyTagsをCategory.MyBookmarksに統合した
+     * - Category.MyTagsをCategory.MyBookmarksに統合した
+     * - Category.MyStarsとCategory.StarsReportをCategory.Starに統合した (MyStars→Starsにリネーム、StarsReportをdeprecatedに設定)
      */
     private fun migrateFromVersion2(context: Context) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val homeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
         prefs.edit {
-            if (homeCategory == Category.MyTags) {
-                putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.MyBookmarks.ordinal)
-                putInt(PreferenceKey.ENTRIES_INITIAL_TAB, EntriesTabType.MYBOOKMARKS.ordinal)
+            when (homeCategory) {
+                Category.MyTags -> {
+                    putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.MyBookmarks.ordinal)
+                    putInt(PreferenceKey.ENTRIES_INITIAL_TAB, EntriesTabType.MYBOOKMARKS.ordinal)
+                }
+
+                Category.StarsReport -> {
+                    putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.Stars.ordinal)
+                }
+
+                else -> { /* do nothing */ }
             }
         }
     }

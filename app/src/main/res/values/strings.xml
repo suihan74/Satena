@@ -30,8 +30,12 @@
     <!-- エントリリストタブ -->
     <string name="entries_tab_hot">人気</string>
     <string name="entries_tab_recent">新着</string>
+    <!-- Category.MyBookmarks専用 -->
     <string name="entries_tab_mybookmarks">マイブックマーク</string>
     <string name="entries_tab_read_later">あとで読む</string>
+    <!-- Category.Stars専用 -->
+    <string name="entries_tab_my_stars">最近つけたスター</string>
+    <string name="entries_tab_stars_report">スターレポート</string>
 
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
@@ -50,10 +54,10 @@
     <string name="category_fun">おもしろ</string>
     <string name="category_myhotentries">マイホットエントリ</string>
     <string name="category_mybookmarks">マイブックマーク</string>
-    <string name="category_mytags">タグ</string>
+    <!-- deprecated --><string name="category_mytags">タグ</string>
     <string name="category_search">検索</string>
-    <string name="category_mystars">最近つけたスター</string>
-    <string name="category_stars_report">スターレポート</string>
+    <string name="category_mystars">スター</string>
+    <!-- deprecated --><string name="category_stars_report">スターレポート</string>
     <string name="category_maintenance">障害・メンテナンス情報</string>
     <string name="category_history">ブクマ閲覧履歴</string>
 
