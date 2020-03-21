@@ -10,6 +10,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.models.TapEntryAction
@@ -23,6 +24,10 @@ class EntryMenuDialog : DialogFragment() {
     companion object {
         fun createInstance(entry: Entry) = EntryMenuDialog().withArguments {
             putSerializable(ARG_ENTRY, entry)
+        }
+
+        fun createInstance(url: String) = EntryMenuDialog().withArguments {
+            putString(ARG_ENTRY_URL, url)
         }
 
         /** タップ/ロングタップ時の挙動を処理する */
@@ -43,13 +48,31 @@ class EntryMenuDialog : DialogFragment() {
             }
         }
 
+        /** タップ/ロングタップ時の挙動を処理する */
+        fun act(url: String, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
+            val instance = createInstance(url)
+            when (actionEnum) {
+                TapEntryAction.SHOW_MENU ->
+                    instance.show(fragmentManager, tag)
+
+                else ->
+                    act(
+                        instance,
+                        url,
+                        actionEnum,
+                        fragmentManager,
+                        tag
+                    )
+            }
+        }
+
         /** タップ/ロングタップ時の挙動を処理する(メニュー表示以外の挙動) */
         private fun act(instance: EntryMenuDialog, entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
             fragmentManager.beginTransaction()
                 .add(instance, tag)
                 .runOnCommit {
                     val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
-                    action?.second?.invoke(entry)
+                    action?.second?.invoke(entry, null)
 
                     fragmentManager.beginTransaction()
                         .remove(instance)
@@ -57,23 +80,51 @@ class EntryMenuDialog : DialogFragment() {
                 }.commit()
         }
 
+        /** タップ/ロングタップ時の挙動を処理する(メニュー表示以外の挙動) */
+        private fun act(instance: EntryMenuDialog, url: String, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
+            fragmentManager.beginTransaction()
+                .add(instance, tag)
+                .runOnCommit {
+                    val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
+                    action?.second?.invoke(null, url)
+
+                    fragmentManager.beginTransaction()
+                        .remove(instance)
+                        .commit()
+                }.commit()
+        }
+
+        /** (はてなから取得できた完全な)エントリ */
         private const val ARG_ENTRY = "ARG_ENTRY"
+
+        /** エントリが得られない場合のURL */
+        private const val ARG_ENTRY_URL = "ARG_ENTRY_URL"
     }
 
     /** メニュー項目 */
     @OptIn(ExperimentalStdlibApi::class)
-    private val menuItems = buildList<Pair<Int, (Entry)->Unit>> {
-        add(R.string.entry_action_show_comments to { entry -> showBookmarks(entry) })
-        add(R.string.entry_action_show_page to { entry -> showPage(entry) })
-        add(R.string.entry_action_show_page_in_browser to { entry -> showPageInBrowser(entry) })
-        add(R.string.entry_action_show_entries to { entry -> showEntries(entry) })
+    private val menuItems = buildList<Pair<Int, (Entry?,String?)->Unit>> {
+        add(R.string.entry_action_show_comments to { entry, url -> showBookmarks(entry, url) })
+        add(R.string.entry_action_show_page to { entry, url -> showPage(entry, url) })
+        add(R.string.entry_action_show_page_in_browser to { entry, url -> showPageInBrowser(entry, url) })
+        add(R.string.entry_action_show_entries to { entry, url -> showEntries(entry, url) })
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = requireContext()
         val arguments = requireArguments()
 
-        val entry = arguments.get(ARG_ENTRY) as Entry
+        val url = arguments.getString(ARG_ENTRY_URL)
+        val entry = (arguments.get(ARG_ENTRY) as? Entry) ?: Entry(
+            id = 0,
+            title = url!!,
+            description = "",
+            count = 0,
+            url = url,
+            rootUrl = HatenaClient.getTemporaryRootUrl(url),
+            faviconUrl = HatenaClient.getFaviconUrl(url),
+            imageUrl = ""
+        )
 
         // カスタムタイトルを生成
         val inflater = LayoutInflater.from(context)
@@ -90,43 +141,51 @@ class EntryMenuDialog : DialogFragment() {
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setItems(menuItems.map { getString(it.first) }.toTypedArray()) { _, which ->
-                menuItems[which].second.invoke(entry)
+                menuItems[which].second.invoke(entry, url)
             }
             .create()
     }
 
     /** ブックマーク画面に遷移 */
-    private fun showBookmarks(entry: Entry) {
+    private fun showBookmarks(entry: Entry?, url: String?) {
         val intent = Intent(requireContext(), BookmarksActivity::class.java).apply {
-            putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+            if (entry != null) putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+            if (url != null) putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
         }
         startActivity(intent)
     }
 
     /** ページを内部ブラウザで開く */
-    private fun showPage(entry: Entry) {
-        requireContext().showCustomTabsIntent(entry)
+    private fun showPage(entry: Entry?, url: String?) {
+        if (entry != null) requireContext().showCustomTabsIntent(entry)
+        if (url != null) requireContext().showCustomTabsIntent(url)
     }
 
     /** ページを外部ブラウザで開く */
-    private fun showPageInBrowser(entry: Entry) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(entry.url))
+    private fun showPageInBrowser(entry: Entry?, url: String?) {
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            if (entry != null) Uri.parse(entry.url)
+            else Uri.parse(url!!)
+        )
+
         startActivity(intent)
     }
 
     /** サイトのエントリリストを開く */
-    private fun showEntries(entry: Entry) {
+    private fun showEntries(entry: Entry?, url: String?) {
+        val siteUrl = entry?.rootUrl ?: url!!
         when (val activity = requireActivity() as? EntriesActivity) {
             null -> {
                 // EntriesActivity以外から呼ばれた場合、Activityを遷移する
                 val intent = Intent(requireContext(), EntriesActivity::class.java).apply {
-                    putExtra(EntriesActivity.EXTRA_SITE_URL, entry.rootUrl)
+                    putExtra(EntriesActivity.EXTRA_SITE_URL, siteUrl)
                 }
                 startActivity(intent)
             }
 
             else -> {
-                activity.showSiteEntries(entry.rootUrl)
+                activity.showSiteEntries(siteUrl)
             }
         }
     }

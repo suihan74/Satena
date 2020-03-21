@@ -716,7 +716,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 val title = doc.allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:title" }
                     ?.attr("content")
-                    ?: doc.select("title").html()
+                    ?: doc.select("title").html().let { title ->
+                        if (title.isNullOrEmpty()) url
+                        else title
+                    }
 
                 val description = doc.allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:description" }
@@ -740,8 +743,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     description = description,
                     count = 0,
                     url = actualUrl,
-                    rootUrl = uri.let { it.scheme!! + "://" + it.host!! },
-                    faviconUrl = "https://www.google.com/s2/favicons?domain=${uri.host}",
+                    rootUrl = getTemporaryRootUrl(uri),
+                    faviconUrl = getFaviconUrl(uri),
                     imageUrl = imageUrl)
             }
             else {
@@ -752,8 +755,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     description = "",
                     count = 0,
                     url = url,
-                    rootUrl = uri.let { it.scheme!! + "://" + it.host!! },
-                    faviconUrl = "https://www.google.com/s2/favicons?domain=${uri.host}",
+                    rootUrl = getTemporaryRootUrl(uri),
+                    faviconUrl = getFaviconUrl(uri),
                     imageUrl = "")
             }
         }
@@ -1115,6 +1118,26 @@ object HatenaClient : BaseClient(), CoroutineScope {
         require(signedIn()) { "need to sign-in to get user's tags" }
         return getUserTagsAsync(account!!.name)
     }
+
+    /**
+     * 暫定的なrootUrlを生成する
+     */
+    fun getTemporaryRootUrl(url: String) : String = getTemporaryRootUrl(Uri.parse(url))
+
+    /**
+     * 暫定的なrootUrlを生成する
+     */
+    fun getTemporaryRootUrl(uri: Uri) : String = uri.let { it.scheme!! + "://" + it.host!! }
+
+    /**
+     * URLからファビコンURLを取得する
+     */
+    fun getFaviconUrl(url: String) : String = getFaviconUrl(Uri.parse(url))
+
+    /**
+     * URLからファビコンURLを取得する
+     */
+    fun getFaviconUrl(uri: Uri) : String = "https://www.google.com/s2/favicons?domain=${uri.host}"
 
     /**
      * ユーザー名からアイコンURLを取得する
