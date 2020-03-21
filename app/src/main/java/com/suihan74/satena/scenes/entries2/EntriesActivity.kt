@@ -173,7 +173,7 @@ class EntriesActivity : AppCompatActivity() {
             when {
                 user != null -> showUserEntries(user)
 
-                siteUrl != null -> showUserEntries(siteUrl)
+                siteUrl != null -> showSiteEntries(siteUrl)
 
                 else -> showCategory(viewModel.homeCategory)
             }
