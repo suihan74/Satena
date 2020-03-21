@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.entries2.pages
 import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -41,6 +42,15 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
         val root = super.onCreateView(inflater, container, savedInstanceState)
         val toolbar = requireActivity().toolbar
 
+        // Issueを選択している場合、戻るボタンで選択を解除する
+        val clearIssueCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (viewModel.issue.value != null) {
+                    viewModel.issue.value = null
+                }
+            }
+        }
+
         // ツールバーを更新
         toolbar.also {
             it.title = getString(category.textId)
@@ -50,7 +60,11 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
         // Issue選択時にサブタイトルを表示する
         viewModel.issue.observe(viewLifecycleOwner, Observer {
             toolbar.subtitle = it?.name
+
+            clearIssueCallback.isEnabled = it != null
         })
+
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, clearIssueCallback)
 
         return root
     }

@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.entries2.pages
 import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -57,9 +58,20 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
         val toolbar = requireActivity().toolbar
 
+        // タグを選択している場合、戻るボタンでタグ選択を解除する
+        val clearTagCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (viewModel.tag.value != null) {
+                    viewModel.tag.value = null
+                }
+            }
+        }
+
         // タグ選択時にサブタイトルを表示する
         viewModel.tag.observe(viewLifecycleOwner, Observer {
             toolbar.subtitle = subtitle
+
+            clearTagCallback.isEnabled = it != null
         })
 
         // ユーザーIDをタイトルに表示する
@@ -68,6 +80,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         })
 
         setHasOptionsMenu(category == Category.User)
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, clearTagCallback)
 
         return root
     }

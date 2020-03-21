@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.entries2.pages
 import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -39,11 +40,25 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
     ): View? {
         val root = super.onCreateView(inflater, container, savedInstanceState)
 
+        // タグを選択している場合、戻るボタンでタグ選択を解除する
+        val clearTagCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (viewModel.tag.value != null) {
+                    viewModel.tag.value = null
+                }
+            }
+        }
+
         // タグ選択時にサブタイトルを表示する
         val toolbar = requireActivity().toolbar
         viewModel.tag.observe(viewLifecycleOwner, Observer {
             toolbar.subtitle = it?.let { tag -> "${tag.text}(${tag.count})" }
+
+            // 戻るボタンの処理に割り込む
+            clearTagCallback.isEnabled = it != null
         })
+
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, clearTagCallback)
 
         setHasOptionsMenu(true)
 
