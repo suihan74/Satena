@@ -4,13 +4,18 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.initialize
 import com.suihan74.satena.scenes.entries2.EntriesFragment
+import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
+import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabFragment
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
+import kotlinx.android.synthetic.main.activity_entries2.*
 
 class SingleTabEntriesFragment : EntriesFragment() {
     companion object {
@@ -26,6 +31,37 @@ class SingleTabEntriesFragment : EntriesFragment() {
 
         private const val ARG_USER = "ARG_USER"
     }
+
+    override fun generateViewModel(
+        owner: ViewModelStoreOwner,
+        viewModelKey: String,
+        repository: EntriesRepository,
+        category: Category
+    ): EntriesFragmentViewModel {
+        return when (category) {
+            Category.User -> {
+                val factory = UserEntriesViewModel.Factory(repository)
+                ViewModelProvider(owner, factory)[viewModelKey, UserEntriesViewModel::class.java]
+            }
+
+            else -> {
+                val factory = HatenaEntriesViewModel.Factory(repository)
+                ViewModelProvider(owner, factory)[viewModelKey, HatenaEntriesViewModel::class.java]
+            }
+        }
+    }
+
+    override val title : String?
+        get() = when(category) {
+            Category.User -> "id:${viewModel.user.value}"
+            else -> super.title
+        }
+
+    override val subtitle : String?
+        get() = when(category) {
+            Category.User -> viewModel.tag.value?.let { tag -> "${tag.text}(${tag.count})" }
+            else -> super.subtitle
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,7 +79,7 @@ class SingleTabEntriesFragment : EntriesFragment() {
                     Category.User -> {
                         val user = requireArguments().getString(ARG_USER)!!
                         viewModel.user.value = user
-                        UserEntriesFragment.createInstance(viewModelKey, user)
+                        UserEntriesTabFragment.createInstance(viewModelKey, user)
                     }
 
                     else -> EntriesTabFragment.createInstance(
@@ -56,6 +92,18 @@ class SingleTabEntriesFragment : EntriesFragment() {
                 .replace(R.id.content_layout, fragment)
                 .commit()
         }
+
+        val toolbar = requireActivity().toolbar
+
+        // タグ選択時にサブタイトルを表示する
+        viewModel.tag.observe(viewLifecycleOwner, Observer {
+            toolbar.subtitle = subtitle
+        })
+
+        // Category.UserではユーザーIDをタイトルに表示する
+        viewModel.user.observe(viewLifecycleOwner, Observer {
+            toolbar.title = title
+        })
 
         setHasOptionsMenu(category == Category.User)
 

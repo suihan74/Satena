@@ -19,8 +19,10 @@ import com.suihan74.satena.databinding.ActivityEntries2Binding
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
+import com.suihan74.satena.scenes.entries2.pages.HatenaEntriesFragment
+import com.suihan74.satena.scenes.entries2.pages.MyBookmarksEntriesFragment
 import com.suihan74.satena.scenes.entries2.pages.SingleTabEntriesFragment
-import com.suihan74.satena.scenes.entries2.pages.TwinTabsEntriesFragment
+import com.suihan74.satena.scenes.entries2.pages.SiteEntriesFragment
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_entries2.*
@@ -209,14 +211,19 @@ class EntriesActivity : AppCompatActivity() {
     private fun showCategory(category: Category) {
         showContentFragment(category) {
             if (category.singleColumns) SingleTabEntriesFragment.createInstance(category)
-            else TwinTabsEntriesFragment.createInstance(category)
+            else {
+                when (category) {
+                    Category.MyBookmarks -> MyBookmarksEntriesFragment.createInstance()
+                    else -> HatenaEntriesFragment.createInstance(category)
+                }
+            }
         }
     }
 
     /** Category.Siteに遷移 */
     fun showSiteEntries(siteUrl: String) {
         showContentFragment(Category.Site) {
-            TwinTabsEntriesFragment.createSiteEntriesInstance(siteUrl)
+            SiteEntriesFragment.createInstance(siteUrl)
         }
     }
 

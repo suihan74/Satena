@@ -3,11 +3,14 @@ package com.suihan74.satena.scenes.entries2.pages
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.TagsLiveDataContainer
 
 class UserEntriesViewModel(
     private val repository : EntriesRepository
-) : UserEntriesViewModelBase() {
+) : EntriesFragmentViewModel(),
+    TagsLiveDataContainer {
     /** ユーザーのタグ一覧 */
     override val tags by lazy {
         repository.TagsLiveData().also { t ->

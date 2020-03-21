@@ -16,9 +16,9 @@ import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.utilities.*
 
-class UserEntriesFragment : EntriesTabFragmentBase() {
+class UserEntriesTabFragment : EntriesTabFragmentBase() {
     companion object {
-        fun createInstance(fragmentViewModelKey: String, user: String) = UserEntriesFragment().withArguments {
+        fun createInstance(fragmentViewModelKey: String, user: String) = UserEntriesTabFragment().withArguments {
             putString(ARG_FRAGMENT_VIEW_MODEL_KEY, fragmentViewModelKey)
             putEnum(ARG_CATEGORY, Category.User)
             putString(ARG_USER, user)

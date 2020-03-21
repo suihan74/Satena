@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
 import com.suihan74.satena.models.EntriesTabType
+import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.TagsLiveDataContainer
 
 class MyBookmarksViewModel(
     private val repository : EntriesRepository
-) : UserEntriesViewModelBase() {
+) : EntriesFragmentViewModel(), TagsLiveDataContainer {
     private val tabTitles = arrayOf(
         R.string.entries_tab_mybookmarks,
         R.string.entries_tab_read_later

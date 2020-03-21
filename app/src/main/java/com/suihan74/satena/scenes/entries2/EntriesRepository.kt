@@ -157,9 +157,6 @@ class EntriesRepository(
         ).await()
     }
 
-    /** ユーザーのタグ一覧を取得する */
-    suspend fun loadUserTags(user: String) : List<Tag> = client.getUserTagsAsync(user).await()
-
     /** エントリ閲覧履歴を取得する */
     private fun loadHistory() : List<Entry> =
         historyPrefs.get<List<Entry>>(EntriesHistoryKey.ENTRIES).reversed()
@@ -239,6 +236,10 @@ class EntriesRepository(
 
         return notices
     }
+
+    /** TODO: 最近つけたスターを取得する */
+
+    /** TODO: 最近つけられたスターを取得する */
 
     /** 最新のエントリーリストを読み込む(Issue指定) */
     private suspend fun loadEntries(issue: Issue, tabPosition: Int, offset: Int? = null) : List<Entry> {

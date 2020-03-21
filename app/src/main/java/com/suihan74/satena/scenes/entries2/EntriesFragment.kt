@@ -5,15 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.transition.Fade
 import androidx.transition.TransitionSet
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.pages.HatenaEntriesViewModel
-import com.suihan74.satena.scenes.entries2.pages.MyBookmarksViewModel
-import com.suihan74.satena.scenes.entries2.pages.UserEntriesViewModel
 import com.suihan74.utilities.getEnum
 import kotlinx.android.synthetic.main.activity_entries2.*
 import java.util.*
@@ -25,6 +22,21 @@ abstract class EntriesFragment : Fragment() {
         private const val ARG_UUID = "ARG_UUID"
     }
 
+    /** ViewModelを生成する */
+    abstract fun generateViewModel(
+        owner: ViewModelStoreOwner,
+        viewModelKey: String,
+        repository: EntriesRepository,
+        category: Category
+    ) : EntriesFragmentViewModel
+
+    /** タイトル */
+    open val title : String?
+        get() = getString(category.textId)
+
+    /** サブタイトル */
+    open val subtitle : String? = null
+
     /**
      * フラグメント識別用のユニークID
      *
@@ -34,7 +46,7 @@ abstract class EntriesFragment : Fragment() {
     private lateinit var uuid: String
 
     /** EntriesActivityのViewModel */
-    protected lateinit var activityViewModel : EntriesViewModel
+    private lateinit var activityViewModel : EntriesViewModel
 
     protected lateinit var viewModel : EntriesFragmentViewModel
 
@@ -59,7 +71,7 @@ abstract class EntriesFragment : Fragment() {
 
         val activity = requireActivity()
 
-        val arguments = arguments ?: Bundle.EMPTY
+        val arguments = arguments ?: Bundle()
         this.arguments = arguments
 
         // UUIDを生成
@@ -70,27 +82,9 @@ abstract class EntriesFragment : Fragment() {
         val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
         val repository = activityViewModel.repository
 
-        val viewModelType =
-            when (category) {
-                Category.MyBookmarks -> MyBookmarksViewModel::class.java
-                Category.User -> UserEntriesViewModel::class.java
-                else -> HatenaEntriesViewModel::class.java
-            }
-
-        viewModel =
-            if (savedInstanceState != null) {
-                ViewModelProvider(activity)[viewModelKey, viewModelType]
-            }
-            else {
-                val factory =
-                    when (category) {
-                        Category.MyBookmarks -> MyBookmarksViewModel.Factory(repository) // TODO
-                        Category.User -> UserEntriesViewModel.Factory(repository)
-                        else -> HatenaEntriesViewModel.Factory(repository)
-                    }
-                ViewModelProvider(activity, factory)[viewModelKey, viewModelType]
-            }
-        viewModel.category.value = category
+        viewModel = generateViewModel(activity, viewModelKey, repository, category).also {
+            it.category.value = category
+        }
 
         // 画面遷移時にフェードする
         enterTransition = TransitionSet().addTransition(Fade())
@@ -107,39 +101,11 @@ abstract class EntriesFragment : Fragment() {
         // ツールバーを更新
         toolbar.also {
             it.title = title
-            it.subtitle = viewModel.issue.value?.name
+            it.subtitle = subtitle
         }
-
-        // Issue選択時にサブタイトルを表示する
-        viewModel.issue.observe(viewLifecycleOwner, Observer {
-            toolbar.subtitle = it?.name
-        })
-
-        // タグ選択時にサブタイトルを表示する
-        viewModel.tag.observe(viewLifecycleOwner, Observer {
-            toolbar.subtitle = it?.let { tag -> "${tag.text}(${tag.count})" }
-        })
-
-        // Category.SiteではサイトURLをタイトルに表示する
-        viewModel.siteUrl.observe(viewLifecycleOwner, Observer {
-            toolbar.title = title
-        })
-
-        // Category.UserではユーザーIDをタイトルに表示する
-        viewModel.user.observe(viewLifecycleOwner, Observer {
-            toolbar.title = title
-        })
 
         activity.showAppBar()
 
         return null
     }
-
-    /** ツールバーのタイトル部分に表示する内容 */
-    private val title : String?
-        get() = when (viewModel.category.value) {
-            Category.Site -> viewModel.siteUrl.value
-            Category.User -> "id:${viewModel.user.value}"
-            else -> getString(viewModel.category.value?.textId!!)
-        }
 }
