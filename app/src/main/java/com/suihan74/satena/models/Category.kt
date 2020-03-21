@@ -103,6 +103,7 @@ enum class Category(
     StarsReport(
         R.string.category_stars_report,
         R.drawable.ic_star,
+        displayInList = false,
         requireSignedIn = true,
         singleColumns = true),
 
