@@ -1,0 +1,34 @@
+package com.suihan74.satena.scenes.entries2
+
+import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.entries2.pages.*
+
+/** カテゴリに対応したフラグメントを生成する */
+internal fun Category.createFragment() : EntriesFragment =
+    when (this) {
+        Category.MyBookmarks -> MyBookmarksEntriesFragment.createInstance()
+
+        Category.MyHotEntries -> MyHotEntriesFragment.createInstance()
+
+        Category.Stars -> StarsFragment.createInstance()
+
+        Category.Notices -> NoticesFragment.createInstance()
+
+        Category.History -> HistoryFragment.createInstance()
+
+        else -> HatenaEntriesFragment.createInstance(this)
+    }
+
+// 以下別途パラメータが必要なインスタンス生成
+
+/** Category.Site用 */
+internal fun Category.createSiteFragment(siteUrl: String) : EntriesFragment {
+    check(this == Category.Site) { "Category.createSiteFragment() is not be able to call with $name" }
+    return SiteEntriesFragment.createInstance(siteUrl)
+}
+
+/** Category.User用 */
+internal fun Category.createUserFragment(user: String) : EntriesFragment {
+    check(this == Category.User) { "Category.createUserFragment() is not be able to call with $name" }
+    return UserEntriesFragment.createInstance(user)
+}
