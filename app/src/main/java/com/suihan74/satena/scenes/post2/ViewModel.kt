@@ -4,7 +4,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.hatenaLib.*
+import com.suihan74.hatenaLib.BookmarkResult
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.Tag
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.sys1yagi.mastodon4j.api.entity.Status
@@ -105,9 +108,7 @@ class ViewModel(
             onError?.invoke(e)
         }
 
-        entry.value = client.searchEntriesAsync(url, SearchType.Text).await()
-            .firstOrNull { it.url == url }
-            ?: client.getEmptyEntryAsync(url).await()
+        entry.value = client.getEntryAsync(url).await()
     }
 
     /** 初期化 */
