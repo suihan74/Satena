@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.entries2
 
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
@@ -11,6 +12,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.checkFromSpam
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 
@@ -49,6 +51,19 @@ class LoadEntryParameter {
     @Suppress("UNCHECKED_CAST")
     fun <T> get(key: String, defaultValue: T) : T = (map[key] as? T) ?: defaultValue
 }
+
+/**
+ * ブコメ単体で取得するために必要な情報
+ *
+ * スター -> ブコメの変換用一時データ
+ */
+private data class BookmarkCommentUrl (
+    val url : String,
+    val user : String,
+    val timestamp : String,
+    val eid : Long,
+    val starsCount: List<Star>
+)
 
 class EntriesRepository(
     private val client: HatenaClient,
@@ -141,6 +156,10 @@ class EntriesRepository(
             Category.MyHotEntries -> client.getMyHotEntriesAsync().await()
 
             Category.MyBookmarks -> loadMyBookmarks(tabPosition, offset, params)
+
+            Category.Stars ->
+                if (tabPosition == 0) loadMyStars(offset)
+                else loadStarsReport(offset)
 
             Category.User -> loadUserEntries(offset, params!!)
 
@@ -237,9 +256,86 @@ class EntriesRepository(
         return notices
     }
 
-    /** TODO: 最近つけたスターを取得する */
+    /** 最近つけたスターを取得する */
+    private suspend fun loadMyStars(offset: Int?) : List<Entry> {
+        val starsEntries = client.getRecentStarsAsync().await()
+        return convertStarsToEntries(starsEntries)
+    }
 
-    /** TODO: 最近つけられたスターを取得する */
+    /** 最近つけられたスターを取得する */
+    private suspend fun loadStarsReport(offset: Int?) : List<Entry> {
+        val starsEntries = client.getRecentStarsReportAsync().await()
+        return convertStarsToEntries(starsEntries)
+    }
+
+    /** スター情報をエントリーリストに変換する */
+    private suspend fun convertStarsToEntries(starsEntries: List<StarsEntry>) : List<Entry> {
+        val urlRegex = Regex("""https?://b\.hatena\.ne\.jp/(.+)/(\d+)#bookmark-(\d+)""")
+        val data = starsEntries
+            .mapNotNull {
+                val match = urlRegex.matchEntire(it.url) ?: return@mapNotNull null
+                val user = match.groups[1]?.value ?: return@mapNotNull null
+                val timestamp = match.groups[2]?.value ?: return@mapNotNull null
+                val eid = match.groups[3]?.value ?: return@mapNotNull null
+                val starsCount = it.allStars
+                BookmarkCommentUrl(
+                    it.url,
+                    user,
+                    timestamp,
+                    eid.toLong(),
+                    starsCount
+                )
+            }
+            .groupBy { it.eid.toString() + "_" + it.user }
+            .map {
+                val starsCount = it.value
+                    .flatMap { e -> e.starsCount }
+                    .groupBy { s -> s.color }
+                    .map { s -> Star("", "", s.key, s.value.size) }
+                it.value.first().copy(
+                    starsCount = starsCount
+                )
+            }
+
+        val tasks = data.map { client.getBookmarkPageAsync(it.eid, it.user) }
+        tasks.awaitAll()
+
+        return tasks.mapIndexedNotNull { index, deferred ->
+                // TODO: 現状だとブクマ消されたらエントリも表示されなくなる
+                if (deferred.isCancelled) return@mapIndexedNotNull null
+
+                val eid = data[index].eid
+                try {
+                    val bookmark = deferred.await()
+                    val bookmarkedData = BookmarkResult(
+                        user = bookmark.user,
+                        comment = bookmark.comment.body,
+                        tags = bookmark.comment.tags,
+                        timestamp = bookmark.timestamp,
+                        userIconUrl = HatenaClient.getUserIconUrl(bookmark.user),
+                        commentRaw = bookmark.comment.raw,
+                        permalink = data[index].url,
+                        success = true,
+                        private = false,
+                        eid = eid,
+                        starsCount = data[index].starsCount
+                    )
+                    bookmark.entry.copy(
+                        rootUrl = Uri.parse(bookmark.entry.url)?.encodedPath ?: bookmark.entry.url,
+                        bookmarkedData = bookmarkedData
+                    )
+                }
+                catch (e: Exception) {
+                    null
+                }
+            }.groupBy { it.id }
+            .map {
+                it.value.first().copy(
+                    bookmarkedData = null,
+                    myhotentryComments = it.value.mapNotNull { e -> e.bookmarkedData }
+                )
+            }
+    }
 
     /** 最新のエントリーリストを読み込む(Issue指定) */
     private suspend fun loadEntries(issue: Issue, tabPosition: Int, offset: Int? = null) : List<Entry> {
