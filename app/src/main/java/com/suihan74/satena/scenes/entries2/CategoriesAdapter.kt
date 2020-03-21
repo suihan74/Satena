@@ -10,7 +10,6 @@ import com.bumptech.glide.Glide
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.ItemClickedListener
-import com.suihan74.utilities.getThemeColor
 import kotlinx.android.synthetic.main.listview_item_categories.view.*
 
 
@@ -64,9 +63,7 @@ class CategoriesAdapter : ListAdapter<Category, CategoriesAdapter.ViewHolder>(Di
 
                     view.category_text.text = context.getString(value.textId)
 
-                    val drawable = context.getDrawable(value.iconId)?.apply {
-                        setTint(context.getThemeColor(R.attr.textColor))
-                    }
+                    val drawable = context.getDrawable(value.iconId)
 
                     Glide.with(view)
                         .load(drawable)
