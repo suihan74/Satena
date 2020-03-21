@@ -5,19 +5,20 @@ import androidx.lifecycle.ViewModelStoreOwner
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.EntriesTabFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 
-class NoticesFragment : SingleTabEntriesFragment() {
+class HistoryFragment : SingleTabEntriesFragment() {
     companion object {
-        fun createInstance() = NoticesFragment().withArguments {
-            putEnum(ARG_CATEGORY, Category.Notices)
+        fun createInstance() = HistoryFragment().withArguments {
+            putEnum(ARG_CATEGORY, Category.History)
         }
     }
 
     /** コンテンツ部分に表示するフラグメントを生成する */
-    override fun generateContentFragment() : EntriesTabFragmentBase = NoticesTabFragment.createInstance(viewModelKey)
+    override fun generateContentFragment() : EntriesTabFragmentBase = EntriesTabFragment.createInstance(viewModelKey, Category.History)
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,

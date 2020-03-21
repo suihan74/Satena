@@ -19,10 +19,7 @@ import com.suihan74.satena.databinding.ActivityEntries2Binding
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
-import com.suihan74.satena.scenes.entries2.pages.HatenaEntriesFragment
-import com.suihan74.satena.scenes.entries2.pages.MyBookmarksEntriesFragment
-import com.suihan74.satena.scenes.entries2.pages.SingleTabEntriesFragment
-import com.suihan74.satena.scenes.entries2.pages.SiteEntriesFragment
+import com.suihan74.satena.scenes.entries2.pages.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_entries2.*
@@ -211,15 +208,19 @@ class EntriesActivity : AppCompatActivity() {
         }
     }
 
-    /** カテゴリを選択 */
+    /** (カテゴリメニューから遷移できる)カテゴリを選択 */
     private fun showCategory(category: Category) {
         showContentFragment(category) {
-            if (category.singleColumns) SingleTabEntriesFragment.createInstance(category)
-            else {
-                when (category) {
-                    Category.MyBookmarks -> MyBookmarksEntriesFragment.createInstance()
-                    else -> HatenaEntriesFragment.createInstance(category)
-                }
+            when (category) {
+                Category.MyBookmarks -> MyBookmarksEntriesFragment.createInstance()
+
+                Category.MyHotEntries -> MyHotEntriesFragment.createInstance()
+
+                Category.Notices -> NoticesFragment.createInstance()
+
+                Category.History -> HistoryFragment.createInstance()
+
+                else -> HatenaEntriesFragment.createInstance(category)
             }
         }
     }
@@ -234,7 +235,7 @@ class EntriesActivity : AppCompatActivity() {
     /** Category.Userに遷移 */
     fun showUserEntries(user: String) {
         showContentFragment(Category.User) {
-            SingleTabEntriesFragment.createUserEntriesInstance(user)
+            UserEntriesFragment.createInstance(user)
         }
     }
 

@@ -109,15 +109,15 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
         override fun areItemsTheSame(
             oldItem: RecyclerState<Entry>,
             newItem: RecyclerState<Entry>
-        ) = oldItem.type == newItem.type && oldItem.body?.id == newItem.body?.id
+        ) = oldItem.type == newItem.type && oldItem.body?.id == newItem.body?.id && oldItem.body?.url == newItem.body?.url
 
         override fun areContentsTheSame(
             oldItem: RecyclerState<Entry>,
             newItem: RecyclerState<Entry>
         ) = oldItem.type == newItem.type &&
-                oldItem.body?.id == newItem.body?.id &&
                 oldItem.body?.count == newItem.body?.count &&
                 oldItem.body?.title == newItem.body?.title &&
+                oldItem.body?.imageUrl == newItem.body?.imageUrl &&
                 oldItem.body?.bookmarkedData == newItem.body?.bookmarkedData
     }
 
