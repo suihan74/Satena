@@ -499,8 +499,6 @@ class BookmarksActivity :
 
     // --- ブックマーク中のリンクの処理 --- //
 
-    // TODO: TapEntryActionを新しいEntryMenuDialogに差し替える
-
     fun onBookmarkClicked(bookmark: Bookmark) {
         showBookmarkDetail(bookmark)
     }
@@ -514,14 +512,12 @@ class BookmarksActivity :
     fun onLinkClicked(url: String) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
-//        TappedActionLauncher.launch(this, act, url, supportFragmentManager)
         EntryMenuDialog.act(url, act, supportFragmentManager)
     }
 
     fun onLinkLongClicked(url: String) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
-//        TappedActionLauncher.launch(this, act, url, supportFragmentManager)
         EntryMenuDialog.act(url, act, supportFragmentManager)
     }
 

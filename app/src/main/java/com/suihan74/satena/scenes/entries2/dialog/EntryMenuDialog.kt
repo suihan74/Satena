@@ -115,16 +115,7 @@ class EntryMenuDialog : DialogFragment() {
         val arguments = requireArguments()
 
         val url = arguments.getString(ARG_ENTRY_URL)
-        val entry = (arguments.get(ARG_ENTRY) as? Entry) ?: Entry(
-            id = 0,
-            title = url!!,
-            description = "",
-            count = 0,
-            url = url,
-            rootUrl = HatenaClient.getTemporaryRootUrl(url),
-            faviconUrl = HatenaClient.getFaviconUrl(url),
-            imageUrl = ""
-        )
+        val entry = (arguments.get(ARG_ENTRY) as? Entry)
 
         // カスタムタイトルを生成
         val inflater = LayoutInflater.from(context)
@@ -134,7 +125,17 @@ class EntryMenuDialog : DialogFragment() {
             null,
             false
         ).apply {
-            this.entry = entry
+            this.entry = entry ?: Entry(
+                id = 0,
+                title = url!!,
+                description = "",
+                count = 0,
+                url = url,
+                rootUrl = HatenaClient.getTemporaryRootUrl(url),
+                faviconUrl = HatenaClient.getFaviconUrl(url),
+                imageUrl = ""
+            )
+            // urlが渡された場合、表示用にオフラインで一時的な内容を作成する
         }
 
         return AlertDialog.Builder(context, R.style.AlertDialogStyle)
