@@ -201,9 +201,12 @@ class EntriesActivity : AppCompatActivity() {
 
             isFABMenuOpened -> closeFABMenu()
 
-            supportFragmentManager.backStackEntryCount <= 1 -> finish()
-
-            else -> super.onBackPressed()
+            else -> {
+                super.onBackPressed()
+                if (supportFragmentManager.backStackEntryCount == 0) {
+                    finish()
+                }
+            }
         }
     }
 
