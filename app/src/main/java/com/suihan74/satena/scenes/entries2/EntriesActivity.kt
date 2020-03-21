@@ -31,6 +31,9 @@ class EntriesActivity : AppCompatActivity() {
     companion object {
         /** アクティビティ生成と同時にCategory.Siteに遷移、その画面で表示するURL */
         const val EXTRA_SITE_URL = "EntriesActivity.EXTRA_SITE_URL"
+
+        /** アクティビティ生成と同時にCategory.Userに遷移、その画面で表示するユーザー */
+        const val EXTRA_USER = "EntriesActivity.EXTRA_USER"
     }
 
     private lateinit var viewModel : EntriesViewModel
@@ -166,13 +169,17 @@ class EntriesActivity : AppCompatActivity() {
 
         // -----------------
 
+        // 最初に表示するコンテンツの用意
         if (savedInstanceState == null) {
-            intent.getStringExtra(EXTRA_SITE_URL)?.let { siteUrl ->
-                // Category.Siteを表示
-                showSiteEntries(siteUrl)
-            } ?: run {
-                // ホームカテゴリを表示
-                showCategory(viewModel.homeCategory)
+            val user = intent.getStringExtra(EXTRA_USER)
+            val siteUrl = intent.getStringExtra(EXTRA_SITE_URL)
+
+            when {
+                user != null -> showUserEntries(user)
+
+                siteUrl != null -> showUserEntries(siteUrl)
+
+                else -> showCategory(viewModel.homeCategory)
             }
         }
     }
@@ -194,14 +201,11 @@ class EntriesActivity : AppCompatActivity() {
     /** 戻るボタンの挙動 */
     override fun onBackPressed() {
         when {
-            isDrawerOpened ->
-                drawer_layout.closeDrawer(categories_list)
+            isDrawerOpened -> drawer_layout.closeDrawer(categories_list)
 
-            isFABMenuOpened ->
-                closeFABMenu()
+            isFABMenuOpened -> closeFABMenu()
 
-            supportFragmentManager.backStackEntryCount <= 1 ->
-                finish()
+            supportFragmentManager.backStackEntryCount <= 1 -> finish()
 
             else -> super.onBackPressed()
         }
