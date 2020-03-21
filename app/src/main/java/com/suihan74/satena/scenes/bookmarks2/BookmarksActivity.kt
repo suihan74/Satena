@@ -30,7 +30,7 @@ import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
-import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
@@ -355,11 +355,10 @@ class BookmarksActivity :
         viewModel.ignoredUsers.value.contains(user)
 
     override fun onShowEntries(user: String) {
-        startActivity(
-            Intent(this, EntriesActivity::class.java).apply {
-                putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
-            }
-        )
+        val intent = Intent(this, EntriesActivity::class.java).apply {
+            putExtra(EntriesActivity.EXTRA_USER, user)
+        }
+        startActivity(intent)
     }
 
     override fun onIgnoreUser(user: String, ignore: Boolean) {
@@ -503,7 +502,7 @@ class BookmarksActivity :
 
     // --- ブックマーク中のリンクの処理 --- //
 
-    // TODO: 新しいEntryMenuDialogに差し替える
+    // TODO: TapEntryActionを新しいEntryMenuDialogに差し替える
 
     fun onBookmarkClicked(bookmark: Bookmark) {
         showBookmarkDetail(bookmark)
