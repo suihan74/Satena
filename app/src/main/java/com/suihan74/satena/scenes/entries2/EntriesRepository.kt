@@ -108,20 +108,15 @@ class EntriesRepository(
         get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
 
     /** 初期化処理 */
-    suspend fun initialize(onError: ((Throwable)->Unit)? = null) {
-        signIn(false, onError)
+    suspend fun initialize() {
+        signIn(false)
     }
 
     /** サインインする */
-    suspend fun signIn(forceUpdate: Boolean = false, onError: ((Throwable)->Unit)? = null) {
-        try {
-            accountLoader.signInAccounts(forceUpdate)
-            signedInLiveData.post(client.signedIn())
-            categoriesLiveData.post(client.signedIn())
-        }
-        catch (e: Throwable) {
-            onError?.invoke(e)
-        }
+    suspend fun signIn(forceUpdate: Boolean = false) {
+        accountLoader.signInAccounts(forceUpdate)
+        signedInLiveData.post(client.signedIn())
+        categoriesLiveData.post(client.signedIn())
     }
 
     /** 最新のエントリーリストを読み込む */

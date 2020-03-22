@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityEntries2Binding
@@ -50,32 +51,32 @@ class EntriesActivity : AppCompatActivity() {
             else R.style.AppTheme_Light
         )
 
-        viewModel =
-            if (savedInstanceState == null) {
-                val factory = EntriesViewModel.Factory(
-                    EntriesRepository(
-                        client = HatenaClient,
-                        accountLoader = AccountLoader(
-                            this,
-                            HatenaClient,
-                            MastodonClientHolder
-                        ),
-                        prefs = prefs,
-                        noticesPrefs = SafeSharedPreferences.create(this),
-                        historyPrefs = SafeSharedPreferences.create(this),
-                        ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
-                    )
-                )
-                ViewModelProvider(this, factory)[EntriesViewModel::class.java]
-            }
-            else {
-                ViewModelProvider(this)[EntriesViewModel::class.java]
-            }.apply {
-                initialize { e ->
-                    showToast(R.string.msg_auth_failed)
-                    Log.e("error", Log.getStackTraceString(e))
+        val factory = EntriesViewModel.Factory(
+            EntriesRepository(
+                client = HatenaClient,
+                accountLoader = AccountLoader(
+                    this,
+                    HatenaClient,
+                    MastodonClientHolder
+                ),
+                prefs = prefs,
+                noticesPrefs = SafeSharedPreferences.create(this),
+                historyPrefs = SafeSharedPreferences.create(this),
+                ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
+            )
+        )
+        viewModel = ViewModelProvider(this, factory)[EntriesViewModel::class.java]
+        viewModel.initialize(
+            onSuccess = {
+                if (savedInstanceState == null) {
+                    showContents()
                 }
+            },
+            onError = { e ->
+                showToast(R.string.msg_auth_failed)
+                Log.e("error", Log.getStackTraceString(e))
             }
+        )
 
         // データバインディング
         DataBindingUtil.setContentView<ActivityEntries2Binding>(
@@ -163,20 +164,31 @@ class EntriesActivity : AppCompatActivity() {
             entries_menu_notices_desc.visibility = it.toVisibility()
         })
 
-        // -----------------
-
-        // 最初に表示するコンテンツの用意
-        if (savedInstanceState == null) {
-            val user = intent.getStringExtra(EXTRA_USER)
-            val siteUrl = intent.getStringExtra(EXTRA_SITE_URL)
-
-            when {
-                user != null -> showUserEntries(user)
-
-                siteUrl != null -> showSiteEntries(siteUrl)
-
-                else -> showCategory(viewModel.homeCategory)
+        // 通信状態の変更を監視
+        var isNetworkReceiverInitialized = false
+        SatenaApplication.instance.networkReceiver.state.observe(this, Observer { state ->
+            if (!isNetworkReceiverInitialized) {
+                isNetworkReceiverInitialized = true
+                return@Observer
             }
+
+            if (state == NetworkReceiver.State.CONNECTED) {
+                viewModel.initialize()
+            }
+        })
+    }
+
+    /** 最初に表示するコンテンツの用意 */
+    private fun showContents() {
+        val user = intent.getStringExtra(EXTRA_USER)
+        val siteUrl = intent.getStringExtra(EXTRA_SITE_URL)
+
+        when {
+            user != null -> showUserEntries(user)
+
+            siteUrl != null -> showSiteEntries(siteUrl)
+
+            else -> showCategory(viewModel.homeCategory)
         }
     }
 

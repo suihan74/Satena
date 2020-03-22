@@ -44,8 +44,24 @@ class EntriesViewModel(
         }
     }
 
-    fun initialize(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
-        repository.initialize(onError)
+    /** 初期化処理 */
+    fun initialize(
+        onSuccess: (()->Unit)? = null,
+        onError: ((Throwable)->Unit)? = null,
+        onFinally: ((Throwable?)->Unit)? = null
+    ) = viewModelScope.launch {
+        var error: Throwable? = null
+        try {
+            repository.initialize()
+            onSuccess?.invoke()
+        }
+        catch (e: Throwable) {
+            error = e
+            onError?.invoke(e)
+        }
+        finally {
+            onFinally?.invoke(error)
+        }
     }
 
     /** ホームカテゴリ */

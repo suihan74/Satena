@@ -25,6 +25,7 @@ import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
+import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -187,7 +188,7 @@ class BookmarkDetailFragment :
 
 
         // スターメニューボタンの状態を監視
-        viewModel.starsMenuOpened.observe(this, Observer {
+        viewModel.starsMenuOpened.observe(viewLifecycleOwner, Observer {
             if (it) {
                 openStarMenu()
             }
@@ -197,7 +198,7 @@ class BookmarkDetailFragment :
         })
 
         // サインイン状態でブコメがあればスターを付けられるようにする
-        activityViewModel.signedIn.observe(this, Observer {
+        activityViewModel.signedIn.observe(viewLifecycleOwner, Observer {
             if (it && bookmark.comment.isNotBlank()) {
                 view.show_stars_button.show()
             }
@@ -207,7 +208,7 @@ class BookmarkDetailFragment :
         })
 
         // 所持スター情報を監視
-        viewModel.userStars.observe(this, Observer {
+        viewModel.userStars.observe(viewLifecycleOwner, Observer {
             view.red_stars_count.text = it.red.toString()
             view.green_stars_count.text = it.green.toString()
             view.blue_stars_count.text = it.blue.toString()
@@ -215,7 +216,7 @@ class BookmarkDetailFragment :
         })
 
         // コメント引用を監視
-        viewModel.quote.observe(this, Observer { comment ->
+        viewModel.quote.observe(viewLifecycleOwner, Observer { comment ->
             view.quote_text_view.run {
                 text = getString(R.string.bookmark_detail_quote_comment, comment)
                 visibility = (!comment.isNullOrBlank()).toVisibility()
@@ -223,34 +224,40 @@ class BookmarkDetailFragment :
         })
 
         // タブタイトルに各タブのアイテム数を表示する
-        viewModel.starsToUser.observe(this, Observer {
+        viewModel.starsToUser.observe(viewLifecycleOwner, Observer {
             val idx = getTabIndex<StarsToUserFragment>(view, tabAdapter) ?: return@Observer
             val tab = view.tab_layout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it?.totalStarsCount ?: 0, tabAdapter.getPageTitle(idx))
         })
 
-        viewModel.starsFromUser.observe(this, Observer {
+        viewModel.starsFromUser.observe(viewLifecycleOwner, Observer {
             val idx = getTabIndex<StarsFromUserFragment>(view, tabAdapter) ?: return@Observer
             val tab = view.tab_layout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it.sumBy { s -> s.star?.count ?: 0 }, tabAdapter.getPageTitle(idx))
         })
 
-        viewModel.mentionsToUser.observe(this, Observer {
+        viewModel.mentionsToUser.observe(viewLifecycleOwner, Observer {
             val idx = getTabIndex<MentionToUserFragment>(view, tabAdapter) ?: return@Observer
             val tab = view.tab_layout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it.size, tabAdapter.getPageTitle(idx))
         })
 
-        viewModel.mentionsFromUser.observe(this, Observer {
+        viewModel.mentionsFromUser.observe(viewLifecycleOwner, Observer {
             val idx = getTabIndex<MentionFromUserFragment>(view, tabAdapter) ?: return@Observer
             val tab = view.tab_layout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it.size, tabAdapter.getPageTitle(idx))
         })
 
         // 接続状態を監視する
+        var isNetworkReceiverInitialized = false
         val networkReceiver = SatenaApplication.instance.networkReceiver
-        networkReceiver.state.observe(this, Observer { connected ->
-            if (connected == true && networkReceiver.previousState != true) {
+        networkReceiver.state.observe(viewLifecycleOwner, Observer { state ->
+            if (!isNetworkReceiverInitialized) {
+                isNetworkReceiverInitialized = true
+                return@Observer
+            }
+
+            if (state == NetworkReceiver.State.CONNECTED) {
                 viewModel.viewModelScope.launch {
                     viewModel.starsToUser.updateAsync().await()
                     viewModel.starsAll.updateAsync().await()
@@ -360,12 +367,12 @@ class BookmarkDetailFragment :
         }
 
         // 非表示ユーザーマーク
-        activityViewModel.ignoredUsers.observe(this, Observer {
+        activityViewModel.ignoredUsers.observe(viewLifecycleOwner, Observer {
             view.ignored_user_mark.visibility = it.contains(bookmark.user).toVisibility()
         })
 
         // ユーザータグ情報の変更を監視
-        activityViewModel.taggedUsers.observe(this, Observer {
+        activityViewModel.taggedUsers.observe(viewLifecycleOwner, Observer {
             initializeUserNameAndUserTags(view)
         })
     }
@@ -436,7 +443,7 @@ class BookmarkDetailFragment :
         }
 
     private fun showStarButtonPortrait(layoutId: Int, counterId: Int, dimenId: Int) {
-        val view = view!!
+        val view = requireView()
         val layout = view.findViewById<View>(layoutId)
         val counter = view.findViewById<View>(counterId)
         val pos = requireContext().resources.getDimension(dimenId)
@@ -458,7 +465,7 @@ class BookmarkDetailFragment :
     }
 
     private fun showStarButtonLandscape(layoutId: Int, counterId: Int, dimenId: Int) {
-        val view = view!!
+        val view = requireView()
         val layout = view.findViewById<View>(layoutId)
         val counter = view.findViewById<View>(counterId)
         val pos = requireContext().resources.getDimension(dimenId)
@@ -487,7 +494,7 @@ class BookmarkDetailFragment :
         }
 
     private fun hideStarButtonPortrait(layoutId: Int, counterId: Int) {
-        val view = view!!
+        val view = requireView()
         val layout = view.findViewById<View>(layoutId)
         val counter = view.findViewById<View>(counterId)
 
@@ -505,7 +512,7 @@ class BookmarkDetailFragment :
     }
 
     private fun hideStarButtonLandscape(layoutId: Int, counterId: Int) {
-        val view = view!!
+        val view = requireView()
         val layout = view.findViewById<View>(layoutId)
         val counter = view.findViewById<View>(counterId)
 
@@ -549,7 +556,7 @@ class BookmarkDetailFragment :
             R.dimen.yellow_star_position
         )
 
-        view!!.show_stars_button.setImageResource(R.drawable.ic_baseline_close)
+        requireView().show_stars_button.setImageResource(R.drawable.ic_baseline_close)
     }
 
     private fun closeStarMenu() {
@@ -559,7 +566,7 @@ class BookmarkDetailFragment :
         hideStarButton(R.id.green_star_layout, R.id.green_stars_count)
         hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
 
-        view!!.show_stars_button.setImageResource(R.drawable.ic_star)
+        requireView().show_stars_button.setImageResource(R.drawable.ic_star)
     }
 
 

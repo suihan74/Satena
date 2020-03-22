@@ -20,6 +20,7 @@ import com.suihan74.hatenaLib.CategoryEntry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.ActivityBase
+import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -296,8 +297,8 @@ class EntriesActivity : ActivityBase(), AlertDialogFragment.Listener {
         }
 
         val networkReceiver = SatenaApplication.instance.networkReceiver
-        networkReceiver.state.observe(this, Observer { connected ->
-            if (connected == true && networkReceiver.previousState != true) {
+        networkReceiver.state.observe(this, Observer { state ->
+            if (state == NetworkReceiver.State.CONNECTED) {
                 model.viewModelScope.launch {
                     try {
                         AccountLoader(

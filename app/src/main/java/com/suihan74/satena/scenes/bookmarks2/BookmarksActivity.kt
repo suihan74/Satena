@@ -16,6 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.UserTagDialogFragment
@@ -178,9 +179,15 @@ class BookmarksActivity :
         }
 
         // 接続状態を監視する
+        var isNetworkReceiverInitialized = false
         val networkReceiver = SatenaApplication.instance.networkReceiver
-        networkReceiver.state.observe(this, Observer { connected ->
-            if (connected == true && networkReceiver.previousState != true) {
+        networkReceiver.state.observe(this, Observer { state ->
+            if (!isNetworkReceiverInitialized) {
+                isNetworkReceiverInitialized = true
+                return@Observer
+            }
+
+            if (state == NetworkReceiver.State.CONNECTED) {
                 viewModel.init(true)
             }
         })

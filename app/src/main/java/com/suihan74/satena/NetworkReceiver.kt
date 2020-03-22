@@ -6,14 +6,23 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import com.suihan74.utilities.SingleUpdateMutableLiveData
 
 class NetworkReceiver(private val context: Context) {
-    private val mState by lazy { MutableLiveData<Boolean>() }
-    val state : LiveData<Boolean>
+    enum class State {
+        /** 初期化前 */
+        INITIALIZING,
+        /** 接続済み */
+        CONNECTED,
+        /** 切断 */
+        DISCONNECTED,
+    }
+
+    private val mState by lazy { SingleUpdateMutableLiveData<State>() }
+    val state : LiveData<State>
         get() = mState
 
-    var previousState : Boolean? = null
+    var previousState = State.INITIALIZING
         private set
 
     @RequiresApi(23)
@@ -25,23 +34,27 @@ class NetworkReceiver(private val context: Context) {
     @RequiresApi(23)
     private fun checkConnection() {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetworks =cm.allNetworks
+        val activeNetworks = cm.allNetworks
             .mapNotNull { cm.getNetworkCapabilities((it)) }
             .filter {
                 it.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
                 it.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
             }
 
-        val isConnected = activeNetworks.isNotEmpty()
-        if (mState.value != isConnected) {
-            // 起動時の状態確認を通知しないようにする
-            // previousStateがnullであるとき、起動時の初回確認であると判断する
-            if (previousState == null) {
-                previousState = isConnected
+        // 「wifi,lteなど問わず何か一つでも通信手段が確立されている状態」をCONNECTEDと判断する
+        val state =
+            if (activeNetworks.isNotEmpty()) State.CONNECTED
+            else State.DISCONNECTED
+
+        if (mState.value != state) {
+            // 初回の状態を通知しないようにする
+            if (previousState == State.INITIALIZING) {
+                previousState = state
+                // mStateはnullのまま
             }
             else {
-                previousState = !isConnected
-                mState.postValue(isConnected)
+                previousState = mState.value ?: previousState
+                mState.postValue(state)
             }
         }
     }
