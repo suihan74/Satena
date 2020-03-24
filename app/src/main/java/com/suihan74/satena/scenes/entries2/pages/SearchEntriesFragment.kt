@@ -1,10 +1,12 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.view.*
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.suihan74.hatenaLib.SearchType
@@ -15,6 +17,7 @@ import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
+import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
@@ -56,6 +59,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
 
         // 検索クエリ入力ボックスの設定
         (menu.findItem(R.id.search_view)?.actionView as? SearchView)?.run {
+            // クエリの設定
             val initialQuery = viewModel.searchQuery.value
             setQuery(initialQuery, !initialQuery.isNullOrBlank())
             queryHint = "検索クエリ"
@@ -68,14 +72,18 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
                 }
                 // 検索ボタン押下時にロードを行う
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    val tabPager = this@SearchEntriesFragment.view?.entries_tab_pager ?: return false
-                    val tabAdapter = tabPager.adapter as? EntriesTabAdapter ?: return false
-                    (0 until tabAdapter.count).forEach { idx ->
-                        val instance = tabAdapter.instantiateItem(tabPager, idx) as? EntriesTabFragmentBase
-                        instance?.refresh()
+                    val tabPager = this@SearchEntriesFragment.view?.entries_tab_pager
+                    val tabAdapter = tabPager?.adapter as? EntriesTabAdapter
+                    if (tabPager != null && tabAdapter != null) {
+                        (0 until tabAdapter.count).forEach { idx ->
+                            val instance = tabAdapter.instantiateItem(tabPager, idx) as? EntriesTabFragmentBase
+                            instance?.refresh()
+                        }
                     }
 
-                    return !query.isNullOrBlank()
+                    return (!query.isNullOrBlank()).also {
+                        if (it) requireActivity().hideSoftInputMethod()
+                    }
                 }
             })
 
@@ -83,23 +91,22 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
             setIconifiedByDefault(false)
             isIconified = false
 
-            if (!initialQuery.isNullOrBlank()) {
-                // TODO: クエリが入力されている状態では画面復元時などにIMEを表示しないようにする
+            // 横幅を最大化
+            // TODO: 「TEXT/TAG」ボタンを表示するための余白(200px)を決め打ちしてしまっているので、もう少しいい感じにやれるようにしたい
+            val dMetrics = DisplayMetrics()
+            requireActivity().windowManager.defaultDisplay.getMetrics(dMetrics)
+            maxWidth = dMetrics.widthPixels - 200
+
+            // 左端の余分なマージンを削るための設定
+            arrayOf(
+                androidx.appcompat.R.id.search_edit_frame,
+                androidx.appcompat.R.id.search_mag_icon
+            ).forEach { targetId ->
+                findViewById<View>(targetId)?.updateLayoutParams<LinearLayout.LayoutParams> {
+                    marginStart = 0
+                    leftMargin = 0
+                }
             }
-
-            // 以下、左端のマージンを削るための設定
-
-            findViewById<View>(androidx.appcompat.R.id.search_edit_frame)
-                ?.updateLayoutParams<LinearLayout.LayoutParams> {
-                    marginStart = 0
-                    leftMargin = 0
-                }
-
-            findViewById<View>(androidx.appcompat.R.id.search_mag_icon)
-                ?.updateLayoutParams<LinearLayout.LayoutParams> {
-                    marginStart = 0
-                    leftMargin = 0
-                }
         }
 
         // 検索タイプ選択メニューの設定
