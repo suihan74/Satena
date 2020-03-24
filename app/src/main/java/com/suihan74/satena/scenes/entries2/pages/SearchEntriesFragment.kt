@@ -110,16 +110,19 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
         }
 
         // 検索タイプ選択メニューの設定
-        menu.findItem(R.id.search_type)?.run {
-            setOnMenuItemClickListener {
+        menu.findItem(R.id.search_type)?.let { item ->
+            item.setOnMenuItemClickListener {
                 AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle(R.string.desc_search_type)
                     .setNegativeButton(R.string.dialog_cancel)
                     .setItems(SearchType.values().map { it.name }.toTypedArray())
                     .show(childFragmentManager, DIALOG_SEARCH_TYPE)
-
                 return@setOnMenuItemClickListener true
             }
+
+            viewModel.searchType.observe(viewLifecycleOwner, Observer {
+                item.title = it.name
+            })
         }
     }
 
