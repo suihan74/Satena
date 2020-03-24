@@ -110,7 +110,13 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         })
 
         // SiteUrlを監視する
+        var isSiteUrlInitialized = false
         parentViewModel.siteUrl.observe(viewLifecycleOwner, Observer {
+            if (!isSiteUrlInitialized) {
+                isSiteUrlInitialized = true
+                return@Observer
+            }
+
             viewModel.siteUrl = it
             viewModel.refresh(onErrorRefreshEntries)
         })

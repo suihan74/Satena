@@ -61,20 +61,20 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
         activityViewModel = ViewModelProvider(requireActivity())[EntriesViewModel::class.java]
 
-        if (savedInstanceState == null) {
-            val arguments = requireArguments()
-            val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
-            val tabPosition = arguments.getInt(ARG_TAB_POSITION, 0)
+        val arguments = requireArguments()
+        val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
+        val tabPosition = arguments.getInt(ARG_TAB_POSITION, 0)
 
-            val factory = EntriesTabFragmentViewModel.Factory(
-                activityViewModel.repository,
-                category,
-                tabPosition
-            )
-            viewModel = ViewModelProvider(this, factory)[EntriesTabFragmentViewModel::class.java]
-        }
-        else {
-            viewModel = ViewModelProvider(this)[EntriesTabFragmentViewModel::class.java]
+        val factory = EntriesTabFragmentViewModel.Factory(
+            activityViewModel.repository,
+            category,
+            tabPosition
+        )
+        viewModel = ViewModelProvider(this, factory)[EntriesTabFragmentViewModel::class.java]
+
+        // エントリリストの初期ロード
+        if (savedInstanceState == null) {
+            viewModel.refresh(onErrorRefreshEntries)
         }
     }
 
@@ -88,11 +88,6 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             vm = viewModel
         }
         this.binding = binding
-
-        // エントリリストの初期ロード
-        if (savedInstanceState == null) {
-            viewModel.refresh(onErrorRefreshEntries)
-        }
 
         return binding.root.also { view ->
             initializeRecyclerView(view.entries_list, view.swipe_layout)
