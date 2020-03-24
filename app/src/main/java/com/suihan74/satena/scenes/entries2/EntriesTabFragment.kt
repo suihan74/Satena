@@ -10,6 +10,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
+import com.suihan74.satena.scenes.entries2.pages.SearchEntriesViewModel
 import com.suihan74.utilities.*
 
 class EntriesTabFragment : EntriesTabFragmentBase() {
@@ -113,6 +114,17 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             viewModel.siteUrl = it
             viewModel.refresh(onErrorRefreshEntries)
         })
+
+        // 検索情報を監視する
+        (parentViewModel as? SearchEntriesViewModel)?.let { parent ->
+            parent.searchQuery.observe(viewLifecycleOwner, Observer {
+                viewModel.searchQuery = it
+            })
+            parent.searchType.observe(viewLifecycleOwner, Observer {
+                viewModel.searchType = it
+                viewModel.refresh(onErrorRefreshEntries)
+            })
+        }
     }
 }
 

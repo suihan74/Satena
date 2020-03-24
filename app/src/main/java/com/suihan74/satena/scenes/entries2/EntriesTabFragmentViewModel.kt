@@ -4,10 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.hatenaLib.Entry
-import com.suihan74.hatenaLib.Issue
-import com.suihan74.hatenaLib.Notice
-import com.suihan74.hatenaLib.Tag
+import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntriesTabType
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +27,20 @@ class EntriesTabFragmentViewModel(
         get() = params.get(LoadEntryParameter.USER)
         set(value) {
             params.put(LoadEntryParameter.USER, value)
+        }
+
+    /** 検索クエリ */
+    var searchQuery: String?
+        get() = params.get(LoadEntryParameter.SEARCH_QUERY)
+        set(value) {
+            params.put(LoadEntryParameter.SEARCH_QUERY, value)
+        }
+
+    /** 検索タイプ */
+    var searchType: SearchType
+        get() = params.get(LoadEntryParameter.SEARCH_TYPE, SearchType.Text)
+        set(value) {
+            params.put(LoadEntryParameter.SEARCH_TYPE, value)
         }
 
     /** 追加パラメータ */
@@ -103,7 +114,12 @@ class EntriesTabFragmentViewModel(
                 }
             }
 
-            else -> null
+            Category.Search -> {
+                if (searchQuery.isNullOrBlank()) return emptyList()
+                else params
+            }
+
+            else -> params
         }
 
         return repository.loadEntries(category, issue, tabPosition, offset, params)

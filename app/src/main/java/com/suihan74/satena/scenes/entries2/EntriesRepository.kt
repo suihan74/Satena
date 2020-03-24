@@ -22,6 +22,9 @@ class LoadEntryParameter {
         /** 検索クエリ(String) : Category.Search */
         const val SEARCH_QUERY = "LoadEntryParameter.SEARCH_QUERY"
 
+        /** 検索タイプ(SearchType: TAG or TEXT) : Category.Search */
+        const val SEARCH_TYPE = "LoadEntryParameter.SEARCH_TYPE"
+
         /** サイトURL(String) : Category.Site */
         const val SITE_URL = "LoadEntryParameter.SITE_URL"
 
@@ -151,6 +154,8 @@ class EntriesRepository(
             Category.MyHotEntries -> client.getMyHotEntriesAsync().await()
 
             Category.MyBookmarks -> loadMyBookmarks(tabPosition, offset, params)
+
+            Category.Search -> searchEntries(tabPosition, offset, params!!)
 
             Category.Stars ->
                 if (tabPosition == 0) loadMyStars(offset)
@@ -330,6 +335,20 @@ class EntriesRepository(
                     myhotentryComments = it.value.mapNotNull { e -> e.bookmarkedData }
                 )
             }
+    }
+
+    /** エントリを検索する */
+    private suspend fun searchEntries(tabPosition: Int, offset: Int?, params: LoadEntryParameter) : List<Entry> {
+        val query = params.get<String>(LoadEntryParameter.SEARCH_QUERY)!!
+        val searchType = params.get<SearchType>(LoadEntryParameter.SEARCH_TYPE)!!
+        val entriesType = EntriesType.fromInt(tabPosition)
+
+        return client.searchEntriesAsync(
+            query = query,
+            searchType = searchType,
+            entriesType = entriesType,
+            of = offset
+        ).await()
     }
 
     /** 最新のエントリーリストを読み込む(Issue指定) */

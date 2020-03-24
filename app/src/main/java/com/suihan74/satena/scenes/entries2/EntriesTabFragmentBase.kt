@@ -99,6 +99,11 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         }
     }
 
+    /** リストを再ロードする */
+    fun refresh() {
+        viewModel.refresh(onErrorRefreshEntries)
+    }
+
     /** リストを上端までスクロールする */
     override fun scrollToTop() {
         binding?.entriesList?.scrollToPosition(0)
