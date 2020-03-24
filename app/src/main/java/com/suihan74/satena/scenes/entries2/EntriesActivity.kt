@@ -95,6 +95,17 @@ class EntriesActivity : AppCompatActivity() {
             }
         }
 
+        // カテゴリリストのドロワ表示状態切り替えを監視する
+        drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerOpened(drawerView: View) {
+                // IMEを明示的に閉じないと被ってしまう
+                hideSoftInputMethod()
+            }
+            override fun onDrawerClosed(drawerView: View) {}
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerStateChanged(newState: Int) {}
+        })
+
         // --- Event listeners ---
 
         // FABメニュー表示ボタン
@@ -309,6 +320,9 @@ class EntriesActivity : AppCompatActivity() {
     /** FABメニューを開く */
     private fun openFABMenu() {
         if (isFABMenuOpened) return
+
+        // メニュー表示中はIMEを隠す
+        hideSoftInputMethod()
 
         isFABMenuOpened = true
 
