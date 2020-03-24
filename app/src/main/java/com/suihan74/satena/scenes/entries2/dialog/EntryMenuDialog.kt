@@ -12,7 +12,9 @@ import androidx.fragment.app.FragmentManager
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
+import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
@@ -21,6 +23,16 @@ import com.suihan74.utilities.withArguments
 
 /** エントリメニューダイアログ */
 class EntryMenuDialog : DialogFragment() {
+    /** メニュー項目 */
+    @OptIn(ExperimentalStdlibApi::class)
+    private val menuItems = buildList<Pair<Int, (Entry?,String?)->Unit>> {
+        add(R.string.entry_action_show_comments to { entry, url -> showBookmarks(entry, url) })
+        add(R.string.entry_action_show_page to { entry, url -> showPage(entry, url) })
+        add(R.string.entry_action_show_page_in_browser to { entry, url -> showPageInBrowser(entry, url) })
+        add(R.string.entry_action_show_entries to { entry, url -> showEntries(entry, url) })
+        add(R.string.entry_action_ignore to { entry, url -> ignoreSite(entry, url) })
+    }
+
     companion object {
         fun createInstance(entry: Entry) = EntryMenuDialog().withArguments {
             putSerializable(ARG_ENTRY, entry)
@@ -99,15 +111,9 @@ class EntryMenuDialog : DialogFragment() {
 
         /** エントリが得られない場合のURL */
         private const val ARG_ENTRY_URL = "ARG_ENTRY_URL"
-    }
 
-    /** メニュー項目 */
-    @OptIn(ExperimentalStdlibApi::class)
-    private val menuItems = buildList<Pair<Int, (Entry?,String?)->Unit>> {
-        add(R.string.entry_action_show_comments to { entry, url -> showBookmarks(entry, url) })
-        add(R.string.entry_action_show_page to { entry, url -> showPage(entry, url) })
-        add(R.string.entry_action_show_page_in_browser to { entry, url -> showPageInBrowser(entry, url) })
-        add(R.string.entry_action_show_entries to { entry, url -> showEntries(entry, url) })
+        /** エントリ非表示設定ダイアログ */
+        private const val DIALOG_IGNORE_SITE = "DIALOG_IGNORE_SITE"
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -189,5 +195,20 @@ class EntryMenuDialog : DialogFragment() {
                 activity.showSiteEntries(siteUrl)
             }
         }
+    }
+
+    /** サイトを非表示に設定する */
+    private fun ignoreSite(entry: Entry?, url: String?) {
+        val siteUrl = entry?.url ?: url ?: return
+        val dialog = IgnoredEntryDialogFragment.createInstance(
+            url = siteUrl,
+            title = entry?.title ?: "",
+            positiveAction = { ignoredEntry ->
+                val dao = SatenaApplication.instance.ignoredEntryDao
+                dao.insert(ignoredEntry)
+                true
+            }
+        )
+        dialog.show(parentFragmentManager, DIALOG_IGNORE_SITE)
     }
 }
