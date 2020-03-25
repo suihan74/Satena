@@ -18,6 +18,7 @@ import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
+import com.suihan74.utilities.getEnum
 import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
@@ -29,6 +30,18 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
             putEnum(ARG_CATEGORY, Category.Search)
         }
 
+        fun createInstance(query: String, searchType: SearchType) = SearchEntriesFragment().withArguments {
+            putEnum(ARG_CATEGORY, Category.Search)
+            putString(ARG_SEARCH_QUERY, query)
+            putEnum(ARG_SEARCH_TYPE, searchType)
+        }
+
+        /** 検索クエリ初期値 */
+        private const val ARG_SEARCH_QUERY = "ARG_SEARCH_QUERY"
+        /** 検索タイプ初期値 */
+        private const val ARG_SEARCH_TYPE = "ARG_SEARCH_TYPE"
+
+        /** 検索タイプを選択するためのダイアログ */
         private const val DIALOG_SEARCH_TYPE = "DIALOG_SEARCH_TYPE"
     }
 
@@ -40,6 +53,16 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
     ): EntriesFragmentViewModel {
         val factory = SearchEntriesViewModel.Factory(repository)
         return ViewModelProvider(owner, factory)[viewModelKey, SearchEntriesViewModel::class.java]
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) {
+            val arguments = requireArguments()
+            val viewModel = viewModel as SearchEntriesViewModel
+            viewModel.searchQuery.value = arguments.getString(ARG_SEARCH_QUERY)
+            viewModel.searchType.value = arguments.getEnum(ARG_SEARCH_TYPE, SearchType.Text)
+        }
     }
 
     override fun onCreateView(

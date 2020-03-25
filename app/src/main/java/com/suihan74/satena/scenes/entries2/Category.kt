@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.entries2
 
+import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.pages.*
 
@@ -33,4 +34,14 @@ internal fun Category.createSiteFragment(siteUrl: String) : EntriesFragment {
 internal fun Category.createUserFragment(user: String) : EntriesFragment {
     check(this == Category.User) { "Category.createUserFragment() is not be able to call with $name" }
     return UserEntriesFragment.createInstance(user)
+}
+
+/**
+ * Category.Search用
+ *
+ * クエリの初期値を指定して開く場合
+ */
+internal fun Category.createSearchFragment(query: String, searchType: SearchType) : EntriesFragment {
+    check(this == Category.Search) { "Category.createSearchFragment() is not be able to call with $name" }
+    return SearchEntriesFragment.createInstance(query, searchType)
 }

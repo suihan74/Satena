@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -26,11 +27,14 @@ import kotlinx.android.synthetic.main.activity_entries2.*
 
 class EntriesActivity : AppCompatActivity() {
     companion object {
-        /** アクティビティ生成と同時にCategory.Siteに遷移、その画面で表示するURL */
+        /** アクティビティ生成時にCategory.Siteに遷移、表示するURL */
         const val EXTRA_SITE_URL = "EntriesActivity.EXTRA_SITE_URL"
 
-        /** アクティビティ生成と同時にCategory.Userに遷移、その画面で表示するユーザー */
+        /** アクティビティ生成時にCategory.Userに遷移、表示するユーザー */
         const val EXTRA_USER = "EntriesActivity.EXTRA_USER"
+
+        /** アクティビティ生成時にCategory.Searchに遷移、タグ検索を行う */
+        const val EXTRA_SEARCH_TAG = "EntriesActivity.EXTRA_SEARCH_TAG"
     }
 
     private lateinit var viewModel : EntriesViewModel
@@ -193,11 +197,14 @@ class EntriesActivity : AppCompatActivity() {
     private fun showContents() {
         val user = intent.getStringExtra(EXTRA_USER)
         val siteUrl = intent.getStringExtra(EXTRA_SITE_URL)
+        val searchTag = intent.getStringExtra(EXTRA_SEARCH_TAG)
 
         when {
             user != null -> showUserEntries(user)
 
             siteUrl != null -> showSiteEntries(siteUrl)
+
+            searchTag != null -> showSearchEntries(searchTag, SearchType.Tag)
 
             else -> showCategory(viewModel.homeCategory)
         }
@@ -251,6 +258,13 @@ class EntriesActivity : AppCompatActivity() {
     fun showUserEntries(user: String) {
         showContentFragment(Category.User) {
             Category.User.createUserFragment(user)
+        }
+    }
+
+    /** Category.Search */
+    fun showSearchEntries(query: String, searchType: SearchType) {
+        showContentFragment(Category.Search) {
+            Category.Search.createSearchFragment(query, searchType)
         }
     }
 
