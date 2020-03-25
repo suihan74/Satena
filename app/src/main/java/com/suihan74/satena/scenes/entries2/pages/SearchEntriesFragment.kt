@@ -5,6 +5,7 @@ import android.util.DisplayMetrics
 import android.view.*
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -62,7 +63,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
             // クエリの設定
             val initialQuery = viewModel.searchQuery.value
             setQuery(initialQuery, !initialQuery.isNullOrBlank())
-            queryHint = "検索クエリ"
+            queryHint = getString(R.string.search_query_hint)
 
             // クエリ文字列の変更を監視する
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -92,10 +93,10 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
             isIconified = false
 
             // 横幅を最大化
-            // TODO: 「TEXT/TAG」ボタンを表示するための余白(200px)を決め打ちしてしまっているので、もう少しいい感じにやれるようにしたい
             val dMetrics = DisplayMetrics()
             requireActivity().windowManager.defaultDisplay.getMetrics(dMetrics)
-            maxWidth = dMetrics.widthPixels - 200
+            val buttonSize = (64 * resources.displayMetrics.density).toInt()  // TEXT/TAGボタンのサイズ分だけ小さくしないとボタンが画面外に出てしまう
+            maxWidth = dMetrics.widthPixels - buttonSize
 
             // 左端の余分なマージンを削るための設定
             arrayOf(
@@ -122,6 +123,16 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
 
             viewModel.searchType.observe(viewLifecycleOwner, Observer {
                 item.title = it.name
+                val context = requireContext()
+                val iconId =
+                    when (it) {
+                        SearchType.Tag -> R.drawable.ic_tag
+                        SearchType.Text -> R.drawable.ic_title
+                        else -> throw RuntimeException()
+                    }
+                item.icon = ContextCompat.getDrawable(context, iconId)!!.apply {
+                    setTint(context.getColor(R.color.colorPrimaryText))
+                }
             })
         }
     }
