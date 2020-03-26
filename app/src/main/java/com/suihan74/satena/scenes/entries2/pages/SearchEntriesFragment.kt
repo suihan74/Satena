@@ -85,7 +85,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
         (menu.findItem(R.id.search_view)?.actionView as? SearchView)?.run {
             // クエリの設定
             val initialQuery = viewModel.searchQuery.value
-            setQuery(initialQuery, !initialQuery.isNullOrBlank())
+            setQuery(initialQuery, false)
             queryHint = getString(R.string.search_query_hint)
 
             // クエリ文字列の変更を監視する
