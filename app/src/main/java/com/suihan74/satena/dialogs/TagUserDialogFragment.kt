@@ -7,6 +7,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.view.WindowManager
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -65,7 +66,6 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
                     updateUserExistence(userName)
                 }
             })
-            requireActivity().showSoftInputMethod(this)
         }
 
         val builder = createBuilder(requireArguments(), savedInstanceState).apply {
@@ -76,6 +76,13 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
         }
 
         return builder.show().apply {
+            // IME表示を維持するための設定
+            window?.run {
+                clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+                setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+            }
+            requireActivity().showSoftInputMethod(content.user_name, WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+
             getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
                 val userName = content.user_name.text?.toString() ?: ""
 

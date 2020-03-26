@@ -7,6 +7,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
@@ -183,7 +184,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
             // フォーカスを当てる
             queryText.let {
-                requireActivity().showSoftInputMethod(it)
+//                requireActivity().showSoftInputMethod(it)
                 it.setSelection(it.text.length)
             }
         })
@@ -229,6 +230,13 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             .setView(content)
             .show()
             .apply {
+                // IME表示を維持するための設定
+                window?.run {
+                    clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+                    setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+                }
+                requireActivity().showSoftInputMethod(queryText, WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+
                 getButton(DialogInterface.BUTTON_POSITIVE).let {
                     // (主にキーボード操作の場合)クエリテキストエディタ上でENTER押したらOKボタンにフォーカス移動する
                     queryText.apply {

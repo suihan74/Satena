@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.WindowManager
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.utilities.hideSoftInputMethod
@@ -58,7 +59,6 @@ class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
             else {
                 R.string.user_tag_dialog_title_create_mode
             }
-        requireActivity().showSoftInputMethod(content.tag_name)
 
         val builder = createBuilder(arguments, savedInstanceState).apply {
             setTitle(dialogTitle)
@@ -68,6 +68,13 @@ class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
         }
 
         return builder.show().apply {
+            // IME表示を維持するための設定
+            window?.run {
+                clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+                setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+            }
+            requireActivity().showSoftInputMethod(content.tag_name, WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+
             getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
                 val name = content.tag_name.text.toString()
 
@@ -104,8 +111,8 @@ class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
     }
 
     override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
         requireActivity().hideSoftInputMethod()
+        super.onDismiss(dialog)
     }
 
     class Builder(themeResId: Int) : AlertDialogFragment.Builder(themeResId) {

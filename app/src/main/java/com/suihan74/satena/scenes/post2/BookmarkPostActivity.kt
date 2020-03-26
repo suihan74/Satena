@@ -7,7 +7,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.MotionEvent
-import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -137,7 +136,6 @@ class BookmarkPostActivity :
                     var initialized = false
                     override fun afterTextChanged(s: Editable?) {
                         if (!initialized) {
-                            showSoftInputMethod(this@run)
                             setSelection(s?.length ?: 0)
                             initialized = true
                         }
@@ -145,6 +143,7 @@ class BookmarkPostActivity :
                     override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
                 })
+                showSoftInputMethod(this@run)
             }
         }
 
