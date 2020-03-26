@@ -24,7 +24,7 @@ fun Activity.showSoftInputMethod(
 
     targetView.requestFocus()
     (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.run {
-        toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0)
+        showSoftInput(targetView, 0)
     }
 
     if (targetView is EditText) {
