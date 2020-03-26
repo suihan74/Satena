@@ -132,7 +132,6 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
             .setView(content)
             .setMessage(R.string.report_bookmark_dialog_title)
             .setPositiveButton(R.string.report_dialog_ok, null)
-//            .setNeutralButton("通報して非表示", null)
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
             .apply {
@@ -140,10 +139,15 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
                     report(mRoot!!, false)
                 }
 
-                getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener {
-                    report(mRoot!!, true)
+                getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener {
+                    dismiss()
                 }
             }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        requireActivity().hideSoftInputMethod()
     }
 
     private fun report(root: View, withMuting: Boolean) {

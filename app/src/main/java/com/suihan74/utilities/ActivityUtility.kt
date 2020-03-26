@@ -12,22 +12,24 @@ import androidx.fragment.app.FragmentManager
 /**
  * キーボードを表示して対象にフォーカスする
  */
-fun Activity.showSoftInputMethod(targetView: View) {
+fun Activity.showSoftInputMethod(targetView: View? = null) {
+    val windowToken = targetView?.windowToken ?: window.decorView.windowToken
     (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.run {
-        toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.SHOW_IMPLICIT)
+        hideSoftInputFromWindow(windowToken, 0)
+        toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
     }
-    targetView.requestFocus()
+    targetView?.requestFocus()
 }
 
 /**
  * キーボードを隠して入力対象のビューをアンフォーカスする
  */
-fun Activity.hideSoftInputMethod() = currentFocus?.let { focusedView ->
-    focusedView.clearFocus()
-    (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.run {
-        hideSoftInputFromWindow(focusedView.windowToken, 0)
-    }
-} ?: false
+fun Activity.hideSoftInputMethod() : Boolean {
+    val windowToken = window.decorView.windowToken
+    currentFocus?.clearFocus()
+    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+    return imm?.hideSoftInputFromWindow(windowToken, 0) ?: false
+}
 
 /**
  * テーマに設定された色を取得する

@@ -229,31 +229,31 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             .setView(content)
             .show()
             .apply {
-                val positiveButton = getButton(DialogInterface.BUTTON_POSITIVE)
-
-                // (主にキーボード操作の場合)クエリテキストエディタ上でENTER押したらOKボタンにフォーカス移動する
-                queryText.apply {
-                    nextFocusForwardId = positiveButton.id
-                    nextFocusDownId = positiveButton.id
-                }
-
-                positiveButton.setOnClickListener {
-                    if (queryText.text.isNullOrBlank()) {
-                        context.showToast(R.string.msg_ignored_entry_dialog_empty_query)
-                        return@setOnClickListener
+                getButton(DialogInterface.BUTTON_POSITIVE).let {
+                    // (主にキーボード操作の場合)クエリテキストエディタ上でENTER押したらOKボタンにフォーカス移動する
+                    queryText.apply {
+                        nextFocusForwardId = it.id
+                        nextFocusDownId = it.id
                     }
 
-                    val ignoredEntry = model.createIgnoredEntry(modifyingEntry?.id ?: 0)
-                    if (positiveAction?.invoke(ignoredEntry) != false) {
-                        this.dismiss()
+                    it.setOnClickListener {
+                        if (queryText.text.isNullOrBlank()) {
+                            context.showToast(R.string.msg_ignored_entry_dialog_empty_query)
+                            return@setOnClickListener
+                        }
+
+                        val ignoredEntry = model.createIgnoredEntry(modifyingEntry?.id ?: 0)
+                        if (positiveAction?.invoke(ignoredEntry) != false) {
+                            dismiss()
+                        }
                     }
                 }
             }
     }
 
-    override fun onDestroyView() {
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
         requireActivity().hideSoftInputMethod()
-        super.onDestroyView()
     }
 
     private fun showIgnoreTargetArea(root: View) {

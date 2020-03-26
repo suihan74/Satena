@@ -103,9 +103,9 @@ class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
         }
     }
 
-    override fun onDestroyView() {
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
         requireActivity().hideSoftInputMethod()
-        super.onDestroyView()
     }
 
     class Builder(themeResId: Int) : AlertDialogFragment.Builder(themeResId) {
