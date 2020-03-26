@@ -26,10 +26,6 @@ fun Activity.showSoftInputMethod(
     (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.run {
         showSoftInput(targetView, 0)
     }
-
-    if (targetView is EditText) {
-        targetView.setSelection(targetView.text.length)
-    }
 }
 
 /**

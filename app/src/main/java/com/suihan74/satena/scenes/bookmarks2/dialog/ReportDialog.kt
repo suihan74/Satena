@@ -114,11 +114,6 @@ class ReportDialog : DialogFragment() {
             .create()
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        requireActivity().hideSoftInputMethod()
-    }
-
     /** コンテンツの初期化 */
     private fun initialize(content: View) {
         // ブクマ表示
