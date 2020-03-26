@@ -193,7 +193,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                     }
                 })
             }
-//            mEntriesAdapter!!.setEntries(mEntries)
+            mEntriesAdapter!!.setEntries(mEntries)
             adapter = mEntriesAdapter
             mEntriesScrollingUpdater = RecyclerViewScrollingUpdater {
                 launch(Dispatchers.Main) {
