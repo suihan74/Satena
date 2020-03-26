@@ -259,11 +259,6 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             }
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        requireActivity().hideSoftInputMethod()
-    }
-
     private fun showIgnoreTargetArea(root: View) {
         root.apply {
             target_desc_text.visibility = View.VISIBLE

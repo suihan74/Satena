@@ -112,11 +112,6 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
         }
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        requireActivity().hideSoftInputMethod()
-    }
-
     /**
      * 入力されたユーザーIDの存在確認
      */
