@@ -77,9 +77,11 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mEntry = arguments!!.getSerializable(ARG_ENTRY) as? Entry
-        mBookmark = arguments!!.getSerializable(ARG_BOOKMARK) as? Bookmark
-        mUser = arguments!!.getString(ARG_USER)
+        requireArguments().let {
+            mEntry = it.getSerializable(ARG_ENTRY) as? Entry
+            mBookmark = it.getSerializable(ARG_BOOKMARK) as? Bookmark
+            mUser = it.getString(ARG_USER)
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -115,7 +117,7 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
 
         content.findViewById<Spinner>(R.id.category_spinner).apply {
             adapter = ArrayAdapter(
-                context!!,
+                requireContext(),
                 R.layout.spinner_report,
                 ReportCategory.values().map { it.description }
             ).apply {
@@ -130,7 +132,6 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
             .setView(content)
             .setMessage(R.string.report_bookmark_dialog_title)
             .setPositiveButton(R.string.report_dialog_ok, null)
-//            .setNeutralButton("通報して非表示", null)
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
             .apply {
@@ -138,10 +139,15 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
                     report(mRoot!!, false)
                 }
 
-                getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener {
-                    report(mRoot!!, true)
+                getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener {
+                    dismiss()
                 }
             }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        requireActivity().hideSoftInputMethod()
     }
 
     private fun report(root: View, withMuting: Boolean) {
@@ -173,7 +179,7 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
         val context = context
 
         // 以下の処理の待機中に操作可能になってしまうので、先に通報ダイアログを消しておく
-        val reportDialog = fragmentManager?.get<ReportDialogFragment>()
+        val reportDialog = parentFragmentManager.get<ReportDialogFragment>()
         reportDialog?.dismiss()
 
         GlobalScope.launch(Dispatchers.Main) {

@@ -51,8 +51,8 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
             }
 
             mSwipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.swipe_layout).apply {
-                setProgressBackgroundColorSchemeColor(activity!!.getThemeColor(R.attr.swipeRefreshBackground))
-                setColorSchemeColors(ContextCompat.getColor(activity!!, R.color.colorPrimary))
+                setProgressBackgroundColorSchemeColor(requireActivity().getThemeColor(R.attr.swipeRefreshBackground))
+                setColorSchemeColors(ContextCompat.getColor(requireActivity(), R.color.colorPrimary))
                 setOnRefreshListener {
                     refreshEntries()
                 }
@@ -71,7 +71,7 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
 
         if (mEntriesAdapter != null) {
             mRoot.findViewById<RecyclerView>(R.id.entries_list).apply {
-                val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
+                val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(requireContext(),
                     R.drawable.recycler_view_item_divider
                 )!!)
                 addItemDecoration(dividerItemDecoration)
@@ -110,7 +110,7 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
         try {
             val entries = updater(null).await()
 
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
+            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(requireContext(),
                 R.drawable.recycler_view_item_divider
             )!!)
             var scrollPosition = 0
@@ -143,20 +143,18 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
                 if (mEntriesScrollingUpdater != null) {
                     removeOnScrollListener(mEntriesScrollingUpdater!!)
                 }
-                mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter) {
-                    override fun load() {
-                        this@SingleTabEntriesFragmentBase.launch(Dispatchers.Main) {
-                            try {
-                                val additionalEntries = updater(mEntriesAdapter.entireOffset).await()
-                                mEntriesAdapter.addEntries(additionalEntries)
-                            }
-                            catch (e: Exception) {
-                                Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                                context?.showToast(errorMessage)
-                            }
-                            finally {
-                                loadCompleted()
-                            }
+                mEntriesScrollingUpdater = RecyclerViewScrollingUpdater {
+                    this@SingleTabEntriesFragmentBase.launch(Dispatchers.Main) {
+                        try {
+                            val additionalEntries = updater(mEntriesAdapter.entireOffset).await()
+                            mEntriesAdapter.addEntries(additionalEntries)
+                        }
+                        catch (e: Exception) {
+                            Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
+                            context?.showToast(errorMessage)
+                        }
+                        finally {
+                            loadCompleted()
                         }
                     }
                 }

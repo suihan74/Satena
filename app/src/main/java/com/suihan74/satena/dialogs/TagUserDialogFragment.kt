@@ -7,13 +7,15 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.EditText
-import android.widget.ImageView
+import android.view.WindowManager
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.lock
+import com.suihan74.utilities.showSoftInputMethod
 import com.suihan74.utilities.showToast
+import kotlinx.android.synthetic.main.fragment_dialog_tagged_user.view.*
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -55,7 +57,7 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
             .connectTimeout(3, TimeUnit.MINUTES)
             .build()
 
-        content.findViewById<EditText>(R.id.user_name).apply {
+        content.user_name.apply {
             addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {}
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -66,7 +68,7 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
             })
         }
 
-        val builder = createBuilder(arguments!!, savedInstanceState).apply {
+        val builder = createBuilder(requireArguments(), savedInstanceState).apply {
             setView(content)
             setMessage("ユーザーを追加")
             setPositiveButton(R.string.dialog_register, null)
@@ -74,9 +76,15 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
         }
 
         return builder.show().apply {
+            // IME表示を維持するための設定
+            window?.run {
+                clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+                setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+            }
+            requireActivity().showSoftInputMethod(content.user_name, WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+
             getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                val nameEditor = content.findViewById<EditText>(R.id.user_name)
-                val userName = nameEditor.text?.toString() ?: ""
+                val userName = content.user_name.text?.toString() ?: ""
 
                 if (userName.isBlank()) {
                     activity?.showToast("はてなIDを入力してください")
@@ -104,12 +112,16 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
         }
     }
 
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        requireActivity().hideSoftInputMethod()
+    }
+
     /**
      * 入力されたユーザーIDの存在確認
      */
     private fun updateUserExistence(userName: String) = launch(Dispatchers.IO) {
         val url = "https://b.hatena.ne.jp/$userName/"
-        val icon = content.findViewById<ImageView>(R.id.user_icon)
 
         try {
             val request = Request.Builder()
@@ -131,11 +143,11 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
                 val iconUrl = HatenaClient.getUserIconUrl(userName)
                 Glide.with(content)
                     .load(iconUrl)
-                    .into(icon)
+                    .into(content.user_icon)
             }
             else {
                 Glide.with(content)
-                    .clear(icon)
+                    .clear(content.user_icon)
             }
         }
     }

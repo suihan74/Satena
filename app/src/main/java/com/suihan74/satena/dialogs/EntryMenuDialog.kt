@@ -23,12 +23,12 @@ class EntryMenuDialog : AlertDialogFragment() {
         const val ENTRY = KEY_BASE + "ENTRY"
     }
 
-    val entry: Entry by lazy { arguments!!.getSerializable(ENTRY) as Entry }
+    val entry: Entry by lazy { requireArguments().getSerializable(ENTRY) as Entry }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val listener = parentFragment as? Listener ?: activity as? Listener
 
-        val arguments = arguments!!
+        val arguments = requireArguments()
         val themeResId = arguments.getInt(THEME_RES_ID)
         val items = arguments.getStringArray(ITEMS) ?: emptyArray()
 

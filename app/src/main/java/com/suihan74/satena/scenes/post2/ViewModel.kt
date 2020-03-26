@@ -17,6 +17,7 @@ import kotlin.math.ceil
 
 typealias OnSuccess = (result: BookmarkResult)->Unit
 typealias OnError = (e: Throwable)->Unit
+typealias OnFinally = (e: Throwable?)->Unit
 
 class ViewModel(
     private val client: HatenaClient,
@@ -29,9 +30,15 @@ class ViewModel(
     /** コメント長すぎ例外 */
     class CommentTooLongException : Throwable("the comment is too long to post.")
 
+    /** 使用タグ数が制限を超える例外 */
+    class TooManyTagsException : Throwable("too many tags (more than 10)")
+
     companion object {
         /** ブコメ最大文字数 */
         const val MAX_COMMENT_LENGTH = 100
+
+        /** 最大使用タグ数 */
+        const val MAX_TAGS_COUNT = 10
     }
 
     /** 対象のエントリ */
@@ -176,37 +183,57 @@ class ViewModel(
         } / 3f).toInt()
 
     /** ブクマを投稿 */
-    fun postBookmark(onSuccess: OnSuccess? = null, onError: OnError? = null) = viewModelScope.launch(
-        Dispatchers.Main + CoroutineExceptionHandler { _, e ->
-            onError?.invoke(e)
-        }
-    ) {
-        val comment = comment.value ?: ""
-        if (getCommentLength(comment) > MAX_COMMENT_LENGTH) {
-            throw CommentTooLongException()
-        }
-
+    fun postBookmark(
+        onSuccess: OnSuccess? = null,
+        onError: OnError? = null,
+        onFinally: OnFinally? = null
+    ) = viewModelScope.launch {
+        var error: Throwable? = null
         val entry = entry.value!!
+        val result =
+            try {
+                val comment = comment.value ?: ""
 
-        val result = client.postBookmarkAsync(
-            url = entry.url,
-            comment = comment,
-            postTwitter = postTwitter.value == true,
-            postFacebook = postFacebook.value == true,
-            isPrivate = isPrivate.value == true
-        ).await()
+                // コメント長チェック
+                if (getCommentLength(comment) > MAX_COMMENT_LENGTH) {
+                    throw CommentTooLongException()
+                }
+
+                // タグ個数チェック
+                val matches = tagRegex.findAll(comment)
+                if (matches.count() > MAX_TAGS_COUNT) {
+                    throw TooManyTagsException()
+                }
+
+                client.postBookmarkAsync(
+                    url = entry.url,
+                    comment = comment,
+                    postTwitter = postTwitter.value == true,
+                    postFacebook = postFacebook.value == true,
+                    isPrivate = isPrivate.value == true
+                ).await()
+            }
+            catch (e: Throwable) {
+                error = e
+                withContext(Dispatchers.Main) {
+                    onError?.invoke(e)
+                }
+                null
+            }
 
         // Mastodonに投稿
-        if (postMastodon.value == true) {
-            val status =
-                if (result.comment.isBlank()) {
-                    "\"${entry.title}\" ${entry.url}"
-                }
-                else {
-                    "${result.comment} / \"${entry.title}\" ${entry.url}"
-                }
+        if (error == null && postMastodon.value == true) {
+            result!!
 
-            withContext(Dispatchers.IO) {
+            try {
+                val status =
+                    if (result.comment.isBlank()) {
+                        "\"${entry.title}\" ${entry.url}"
+                    }
+                    else {
+                        "${result.comment} / \"${entry.title}\" ${entry.url}"
+                    }
+
                 val client = MastodonClientHolder.client!!
                 Statuses(client).postStatus(
                     status = status,
@@ -217,9 +244,20 @@ class ViewModel(
                     spoilerText = null
                 ).execute()
             }
+            catch (e: Throwable) {
+                withContext(Dispatchers.Main) {
+                    onError?.invoke(e)
+                }
+                error = e
+            }
         }
 
-        onSuccess?.invoke(result)
+        withContext(Dispatchers.Main) {
+            if (error == null) {
+                onSuccess?.invoke(result!!)
+            }
+            onFinally?.invoke(error)
+        }
     }
 
     /** コメントの長さをチェックする */
@@ -239,6 +277,12 @@ class ViewModel(
         }
         else {
             val matches = tagRegex.findAll(commentText)
+
+            // タグは10個まで
+            if (matches.count() == MAX_TAGS_COUNT) {
+                throw TooManyTagsException()
+            }
+
             val lastExisted = matches.lastOrNull()
             val pos = lastExisted?.range?.endInclusive?.plus(1) ?: 0
 

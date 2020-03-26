@@ -173,7 +173,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         // initialize entries list
         var scrollPosition = 0
         val recyclerView = view.findViewById<RecyclerView>(R.id.entries_list)
-        val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
+        val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(requireContext(),
             R.drawable.recycler_view_item_divider
         )!!)
         recyclerView.apply {
@@ -193,23 +193,21 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                     }
                 })
             }
-//            mEntriesAdapter!!.setEntries(mEntries)
+            mEntriesAdapter!!.setEntries(mEntries)
             adapter = mEntriesAdapter
-            mEntriesScrollingUpdater = object : RecyclerViewScrollingUpdater(mEntriesAdapter!!) {
-                override fun load() {
-                    launch(Dispatchers.Main) {
-                        try {
-                            mEntriesFragment?.refreshEntries(mTabPosition, mEntriesAdapter!!.entireOffset)?.let {
-                                mEntriesAdapter!!.addEntries(it)
-                            }
+            mEntriesScrollingUpdater = RecyclerViewScrollingUpdater {
+                launch(Dispatchers.Main) {
+                    try {
+                        mEntriesFragment?.refreshEntries(mTabPosition, mEntriesAdapter!!.entireOffset)?.let {
+                            mEntriesAdapter!!.addEntries(it)
                         }
-                        catch (e: Exception) {
-                            Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
-                            activity.showToast(R.string.msg_update_entries_failed)
-                        }
-                        finally {
-                            loadCompleted()
-                        }
+                    }
+                    catch (e: Exception) {
+                        Log.d("FailedToFetchEntries", Log.getStackTraceString(e))
+                        activity.showToast(R.string.msg_update_entries_failed)
+                    }
+                    finally {
+                        loadCompleted()
                     }
                 }
             }
@@ -239,7 +237,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             }
         }
 
-        (activity as EntriesActivity).model.ignoredEntries.observe(this, Observer {
+        (activity as EntriesActivity).model.ignoredEntries.observe(viewLifecycleOwner, Observer {
             mEntriesAdapter?.updateIgnoredEntries()
         })
 

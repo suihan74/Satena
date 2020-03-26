@@ -1,13 +1,13 @@
 package com.suihan74.satena.scenes.post2
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -20,10 +20,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.post2.dialog.ConfirmPostBookmarkDialog
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_bookmark_post_2.*
 
 
@@ -126,7 +123,7 @@ class BookmarkPostActivity :
             setOnEditorActionListener { _, action, _ ->
                 when (action) {
                     EditorInfo.IME_ACTION_DONE -> {
-                        /* DONEボタン押したときの処理 */
+                        postBookmark()
                         true
                     }
                     else -> false
@@ -135,16 +132,30 @@ class BookmarkPostActivity :
 
             // 画面開くと同時にフォーカスする
             if (savedInstanceState == null) {
-                requestFocus()
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(this, 0)
+                addTextChangedListener(object : TextWatcher {
+                    var initialized = false
+                    override fun afterTextChanged(s: Editable?) {
+                        if (!initialized) {
+                            setSelection(s?.length ?: 0)
+                            initialized = true
+                        }
+                    }
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                })
+                showSoftInputMethod(this@run)
             }
         }
 
         // タグリストを初期化
         val tagsListAdapter = object : TagsListAdapter() {
             override fun onItemClicked(tag: String) {
-                viewModel.toggleTag(tag)
+                try {
+                    viewModel.toggleTag(tag)
+                }
+                catch (e: ViewModel.TooManyTagsException) {
+                    showToast(R.string.msg_post_too_many_tags)
+                }
             }
         }
         tags_list.run {
@@ -216,14 +227,35 @@ class BookmarkPostActivity :
     /** 投稿失敗時処理 */
     private val onPostError: OnError = { e ->
         when (e) {
-            is ViewModel.CommentTooLongException -> {
+            is ViewModel.CommentTooLongException ->
                 showToast(R.string.msg_comment_too_long, ViewModel.MAX_COMMENT_LENGTH)
-            }
 
-            else -> {
+            is ViewModel.TooManyTagsException ->
+                showToast(R.string.msg_post_too_many_tags)
+
+            else ->
                 showToast(R.string.msg_post_bookmark_failed)
-            }
         }
+    }
+
+    /** ブクマ投稿を実際に送信する */
+    private fun postBookmarkImpl() {
+        hideSoftInputMethod()
+        comment.isEnabled = false
+        post_button.isEnabled = false
+        tags_list.isEnabled = false
+
+        viewModel.postBookmark(
+            onSuccess = onPostSuccess,
+            onError = onPostError,
+            onFinally = { e ->
+                if (e != null) {
+                    comment.isEnabled = true
+                    post_button.isEnabled = true
+                    tags_list.isEnabled = true
+                }
+            }
+        )
     }
 
     /** ブックマークを投稿する（必要ならダイアログを表示する） */
@@ -237,25 +269,19 @@ class BookmarkPostActivity :
                 .show(supportFragmentManager, DIALOG_CONFIRM_POST_BOOKMARK)
         }
         else {
-            viewModel.postBookmark(
-                onSuccess = onPostSuccess,
-                onError = onPostError
-            )
+            postBookmarkImpl()
         }
     }
 
     override fun onApprovedToPost(dialog: ConfirmPostBookmarkDialog) {
         when (dialog.tag) {
-            DIALOG_CONFIRM_POST_BOOKMARK ->
-                viewModel.postBookmark(
-                    onSuccess = onPostSuccess,
-                    onError = onPostError
-                )
+            DIALOG_CONFIRM_POST_BOOKMARK -> postBookmarkImpl()
         }
     }
 
     /** 戻るボタンで閉じる場合、編集中のコメントを保存しておく */
     override fun onBackPressed() {
+        hideSoftInputMethod()
         val intent = Intent().apply {
             putExtra(RESULT_EDITING_COMMENT, viewModel.comment.value)
         }
@@ -266,6 +292,7 @@ class BookmarkPostActivity :
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         // Activityの外側をタップして閉じる際に、結果を渡しておく
         if (event?.action == MotionEvent.ACTION_DOWN && isOutOfBounds(event)) {
+            hideSoftInputMethod()
             val intent = Intent().apply {
                 putExtra(RESULT_EDITING_COMMENT, viewModel.comment.value)
             }

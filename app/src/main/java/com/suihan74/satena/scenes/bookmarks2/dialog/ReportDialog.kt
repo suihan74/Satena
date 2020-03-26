@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks2.dialog
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -111,6 +112,11 @@ class ReportDialog : DialogFragment() {
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .create()
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        requireActivity().hideSoftInputMethod()
     }
 
     /** コンテンツの初期化 */

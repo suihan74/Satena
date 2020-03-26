@@ -7,9 +7,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.TextView
+import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
@@ -21,8 +19,11 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
+import com.suihan74.utilities.hideSoftInputMethod
+import com.suihan74.utilities.showSoftInputMethod
 import com.suihan74.utilities.showToast
 import com.suihan74.utilities.toVisibility
+import kotlinx.android.synthetic.main.fragment_dialog_ignored_entry.view.*
 
 enum class IgnoredEntryDialogTab(
     val textId: Int
@@ -37,10 +38,10 @@ enum class IgnoredEntryDialogTab(
 }
 
 class IgnoredEntryDialogViewModel : ViewModel() {
-    val editingUrl : MutableLiveData<String> by lazy { MutableLiveData<String>() }
-    val editingText : MutableLiveData<String> by lazy { MutableLiveData<String>() }
-    val selectedTab : MutableLiveData<IgnoredEntryDialogTab> by lazy { MutableLiveData<IgnoredEntryDialogTab>() }
-    val ignoreTarget : MutableLiveData<IgnoreTarget> by lazy { MutableLiveData<IgnoreTarget>() }
+    val editingUrl by lazy { MutableLiveData<String>() }
+    val editingText by lazy { MutableLiveData<String>() }
+    val selectedTab by lazy { MutableLiveData<IgnoredEntryDialogTab>() }
+    val ignoreTarget by lazy { MutableLiveData<IgnoreTarget>() }
 
     init {
         ignoreTarget.value = IgnoreTarget.ENTRY
@@ -125,9 +126,9 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         isEditMode = arguments?.getBoolean(ARG_EDIT_MODE) ?: false
         model = ViewModelProvider(this)[IgnoredEntryDialogViewModel::class.java].apply {
             if (savedInstanceState == null) {
-                editingUrl.postValue(arguments?.getString(ARG_EDITING_URL) ?: "")
-                editingText.postValue(arguments?.getString(ARG_EDITING_TEXT) ?: "")
-                ignoreTarget.postValue(IgnoreTarget.fromInt(arguments?.getInt(ARG_INITIAL_TARGET) ?: IgnoreTarget.ENTRY.int))
+                editingUrl.value = arguments?.getString(ARG_EDITING_URL) ?: ""
+                editingText.value = arguments?.getString(ARG_EDITING_TEXT) ?: ""
+                ignoreTarget.value = IgnoreTarget.fromInt(arguments?.getInt(ARG_INITIAL_TARGET) ?: IgnoreTarget.ENTRY.int)
             }
         }
     }
@@ -148,7 +149,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             null
         }
 
-        val queryText = content.findViewById<EditText>(R.id.query_text).apply {
+        val queryText = content.query_text.apply {
             setText(model.editingUrl.value)
             setHorizontallyScrolling(false)
             maxLines = Int.MAX_VALUE
@@ -157,23 +158,17 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     model.text = s.toString()
                 }
-
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
-                ) {}
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                 override fun afterTextChanged(s: Editable?) {}
             })
         }
 
-        val descText = content.findViewById<TextView>(R.id.desc_text)
+        val descText = content.desc_text
 
         // タブが切り替わったときの表示内容更新
-        model.selectedTab.observe(this, Observer {
-            queryText.setHint(it.textId)
-            when (it) {
+        model.selectedTab.observe(this, Observer { tab ->
+            queryText.setHint(tab.textId)
+            when (tab) {
                 IgnoredEntryDialogTab.URL -> {
                     queryText.setText(model.editingUrl.value)
                     descText.setText(R.string.ignored_entry_dialog_desc_url)
@@ -186,9 +181,15 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 }
                 null -> {}
             }
+
+            // フォーカスを当てる
+            queryText.let {
+//                requireActivity().showSoftInputMethod(it)
+                it.setSelection(it.text.length)
+            }
         })
 
-        content.findViewById<TabLayout>(R.id.tab_layout).apply {
+        content.tab_layout.apply {
             visibility = (!isEditMode).toVisibility()
 
             if (model.selectedTab.value != null) {
@@ -218,8 +219,8 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         val onCheckedChange = {
             model.ignoreTarget.postValue(getIgnoreTarget(content))
         }
-        content.findViewById<CheckBox>(R.id.target_entry_checkbox).setOnCheckedChangeListener { _, _ -> onCheckedChange() }
-        content.findViewById<CheckBox>(R.id.target_bookmark_checkbox).setOnCheckedChangeListener { _, _ -> onCheckedChange() }
+        content.target_entry_checkbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
+        content.target_bookmark_checkbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
         setIgnoreTarget(content, initialIgnoreTarget)
 
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
@@ -229,61 +230,65 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             .setView(content)
             .show()
             .apply {
-                val positiveButton = getButton(DialogInterface.BUTTON_POSITIVE)
-
-                // (主にキーボード操作の場合)クエリテキストエディタ上でENTER押したらOKボタンにフォーカス移動する
-                queryText.apply {
-                    nextFocusForwardId = positiveButton.id
-                    nextFocusDownId = positiveButton.id
+                // IME表示を維持するための設定
+                window?.run {
+                    clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+                    setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
                 }
+                requireActivity().showSoftInputMethod(queryText, WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
 
-                positiveButton.setOnClickListener {
-                    if (queryText.text.isNullOrBlank()) {
-                        context.showToast(R.string.msg_ignored_entry_dialog_empty_query)
-                        return@setOnClickListener
+                getButton(DialogInterface.BUTTON_POSITIVE).let {
+                    // (主にキーボード操作の場合)クエリテキストエディタ上でENTER押したらOKボタンにフォーカス移動する
+                    queryText.apply {
+                        nextFocusForwardId = it.id
+                        nextFocusDownId = it.id
                     }
 
-                    val ignoredEntry = model.createIgnoredEntry(modifyingEntry?.id ?: 0)
-                    if (positiveAction?.invoke(ignoredEntry) != false) {
-                        this.dismiss()
+                    it.setOnClickListener {
+                        if (queryText.text.isNullOrBlank()) {
+                            context.showToast(R.string.msg_ignored_entry_dialog_empty_query)
+                            return@setOnClickListener
+                        }
+
+                        val ignoredEntry = model.createIgnoredEntry(modifyingEntry?.id ?: 0)
+                        if (positiveAction?.invoke(ignoredEntry) != false) {
+                            dismiss()
+                        }
                     }
                 }
             }
     }
 
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        requireActivity().hideSoftInputMethod()
+    }
+
     private fun showIgnoreTargetArea(root: View) {
         root.apply {
-            findViewById<View>(R.id.target_desc_text).visibility = View.VISIBLE
-            findViewById<View>(R.id.target_entry_checkbox).visibility = View.VISIBLE
-            findViewById<View>(R.id.target_bookmark_checkbox).visibility = View.VISIBLE
+            target_desc_text.visibility = View.VISIBLE
+            target_entry_checkbox.visibility = View.VISIBLE
+            target_bookmark_checkbox.visibility = View.VISIBLE
         }
     }
 
     private fun hideIgnoreTargetArea(root: View) {
         root.apply {
-            findViewById<View>(R.id.target_desc_text).visibility = View.GONE
-            findViewById<View>(R.id.target_entry_checkbox).visibility = View.GONE
-            findViewById<View>(R.id.target_bookmark_checkbox).visibility = View.GONE
+            target_desc_text.visibility = View.GONE
+            target_entry_checkbox.visibility = View.GONE
+            target_bookmark_checkbox.visibility = View.GONE
         }
     }
 
     private fun getIgnoreTarget(root: View) : IgnoreTarget {
-        val targetEntryCheckBox = root.findViewById<CheckBox>(R.id.target_entry_checkbox)
-        val targetBookmarkCheckBox = root.findViewById<CheckBox>(R.id.target_bookmark_checkbox)
-
-        val entry = if (targetEntryCheckBox.isChecked) IgnoreTarget.ENTRY else IgnoreTarget.NONE
-        val bookmark = if (targetBookmarkCheckBox.isChecked) IgnoreTarget.BOOKMARK else IgnoreTarget.NONE
+        val entry = if (root.target_entry_checkbox.isChecked) IgnoreTarget.ENTRY else IgnoreTarget.NONE
+        val bookmark = if (root.target_bookmark_checkbox.isChecked) IgnoreTarget.BOOKMARK else IgnoreTarget.NONE
 
         return entry or bookmark
     }
 
     private fun setIgnoreTarget(root: View, target: IgnoreTarget) {
-        root.apply {
-            val targetEntryCheckBox = root.findViewById<CheckBox>(R.id.target_entry_checkbox)
-            val targetBookmarkCheckBox = root.findViewById<CheckBox>(R.id.target_bookmark_checkbox)
-
-            targetEntryCheckBox.isChecked = target.contains(IgnoreTarget.ENTRY)
-            targetBookmarkCheckBox.isChecked = target.contains(IgnoreTarget.BOOKMARK)
-        }
+        root.target_entry_checkbox.isChecked = target.contains(IgnoreTarget.ENTRY)
+        root.target_bookmark_checkbox.isChecked = target.contains(IgnoreTarget.BOOKMARK)
     }
 }

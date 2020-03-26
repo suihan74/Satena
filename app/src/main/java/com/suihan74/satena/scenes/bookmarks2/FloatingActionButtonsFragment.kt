@@ -1,13 +1,11 @@
 package com.suihan74.satena.scenes.bookmarks2
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.core.widget.addTextChangedListener
@@ -18,6 +16,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
+import com.suihan74.utilities.hideSoftInputMethod
+import com.suihan74.utilities.showSoftInputMethod
 import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
 
@@ -177,22 +177,14 @@ class FloatingActionButtonsFragment :
             (view.bookmarks_search_text.visibility != View.VISIBLE).let { isOn ->
                 view.bookmarks_search_text.visibility = isOn.toVisibility(View.GONE)
 
-                // IMEのON/OFF
-                (requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.run {
-                    if (isOn) {
-                        view.bookmarks_search_text.requestFocus()
-                        showSoftInput(view.bookmarks_search_text, 0)
-                    }
-                    else {
-                        hideSoftInputFromWindow(requireActivity().currentFocus?.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-                    }
-                }
-
-                // 非表示にしたらフィルタリングを解除する
+                // IMEのON/OFF + 非表示にしたらフィルタリングを解除する
+                val activity = requireActivity()
                 if (isOn) {
+                    activity.showSoftInputMethod(view.bookmarks_search_text)
                     activityViewModel.filteringWord.postValue(view.bookmarks_search_text.text.toString())
                 }
                 else {
+                    activity.hideSoftInputMethod()
                     activityViewModel.filteringWord.postValue(null)
                 }
                 onBackPressedCallbackForKeyword.isEnabled = isOn
@@ -209,9 +201,7 @@ class FloatingActionButtonsFragment :
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE -> {
-                        (requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.run {
-                            hideSoftInputFromWindow(requireActivity().currentFocus?.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-                        }
+                        requireActivity().hideSoftInputMethod()
                         true
                     }
 

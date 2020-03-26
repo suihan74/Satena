@@ -175,7 +175,7 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
         mNoticesAdapter = noticesAdapter
 
         view.findViewById<RecyclerView>(R.id.notices_list).apply {
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(context!!,
+            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(requireContext(),
                 R.drawable.recycler_view_item_divider
             )!!)
             addItemDecoration(dividerItemDecoration)
@@ -275,7 +275,7 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
 
     private fun reportUser(user: String) {
         val dialog = ReportDialogFragment.createInstance(user)
-        dialog.show(fragmentManager!!, "report_dialog")
+        dialog.show(parentFragmentManager, "report_dialog")
     }
 
     override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {

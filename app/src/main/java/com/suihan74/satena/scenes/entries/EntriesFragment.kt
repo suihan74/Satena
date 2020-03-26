@@ -66,7 +66,7 @@ class EntriesFragment : CoroutineScopeFragment() {
             outState.putSerializable(BUNDLE_ISSUE, currentIssue)
         }
         else {
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(context!!)
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
             outState.putInt(BUNDLE_CURRENT_TAB, prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB))
         }
     }
@@ -93,7 +93,7 @@ class EntriesFragment : CoroutineScopeFragment() {
         // マイブックマーク画面ではツールバーに検索ボタンを表示する
         setHasOptionsMenu(currentCategory == Category.MyBookmarks || currentCategory?.hasIssues == true)
 
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context!!)
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
 
         // タブの設定
         mEntriesTabPager = mView.findViewById(R.id.entries_tab_pager)
