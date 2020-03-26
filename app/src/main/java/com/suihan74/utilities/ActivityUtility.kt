@@ -3,21 +3,30 @@ package com.suihan74.utilities
 import android.app.Activity
 import android.content.Context
 import android.util.TypedValue
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 
 /**
+ * キーボードを表示して対象にフォーカスする
+ */
+fun Activity.showSoftInputMethod(targetView: View) {
+    (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.run {
+        toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.SHOW_IMPLICIT)
+    }
+    targetView.requestFocus()
+}
+
+/**
  * キーボードを隠して入力対象のビューをアンフォーカスする
  */
 fun Activity.hideSoftInputMethod() = currentFocus?.let { focusedView ->
     focusedView.clearFocus()
-    val im = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-    im?.hideSoftInputFromWindow(
-        focusedView.windowToken,
-        InputMethodManager.HIDE_NOT_ALWAYS
-    )
+    (getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.run {
+        hideSoftInputFromWindow(focusedView.windowToken, 0)
+    }
 } ?: false
 
 /**

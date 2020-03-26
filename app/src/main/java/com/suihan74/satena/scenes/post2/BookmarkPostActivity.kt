@@ -1,13 +1,14 @@
 package com.suihan74.satena.scenes.post2
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -20,10 +21,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.post2.dialog.ConfirmPostBookmarkDialog
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_bookmark_post_2.*
 
 
@@ -135,9 +133,18 @@ class BookmarkPostActivity :
 
             // 画面開くと同時にフォーカスする
             if (savedInstanceState == null) {
-                requestFocus()
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(this, 0)
+                addTextChangedListener(object : TextWatcher {
+                    var initialized = false
+                    override fun afterTextChanged(s: Editable?) {
+                        if (!initialized) {
+                            showSoftInputMethod(this@run)
+                            setSelection(s?.length ?: 0)
+                            initialized = true
+                        }
+                    }
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                })
             }
         }
 
@@ -256,6 +263,7 @@ class BookmarkPostActivity :
 
     /** 戻るボタンで閉じる場合、編集中のコメントを保存しておく */
     override fun onBackPressed() {
+        hideSoftInputMethod()
         val intent = Intent().apply {
             putExtra(RESULT_EDITING_COMMENT, viewModel.comment.value)
         }
@@ -266,6 +274,7 @@ class BookmarkPostActivity :
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         // Activityの外側をタップして閉じる際に、結果を渡しておく
         if (event?.action == MotionEvent.ACTION_DOWN && isOutOfBounds(event)) {
+            hideSoftInputMethod()
             val intent = Intent().apply {
                 putExtra(RESULT_EDITING_COMMENT, viewModel.comment.value)
             }
