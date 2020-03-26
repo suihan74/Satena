@@ -175,7 +175,7 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
         val context = context
 
         // 以下の処理の待機中に操作可能になってしまうので、先に通報ダイアログを消しておく
-        val reportDialog = fragmentManager?.get<ReportDialogFragment>()
+        val reportDialog = parentFragmentManager.get<ReportDialogFragment>()
         reportDialog?.dismiss()
 
         GlobalScope.launch(Dispatchers.Main) {

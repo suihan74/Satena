@@ -7,13 +7,14 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.EditText
-import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.lock
+import com.suihan74.utilities.showSoftInputMethod
 import com.suihan74.utilities.showToast
+import kotlinx.android.synthetic.main.fragment_dialog_tagged_user.view.*
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -55,7 +56,7 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
             .connectTimeout(3, TimeUnit.MINUTES)
             .build()
 
-        content.findViewById<EditText>(R.id.user_name).apply {
+        content.user_name.apply {
             addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {}
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -64,6 +65,7 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
                     updateUserExistence(userName)
                 }
             })
+            requireActivity().showSoftInputMethod(this)
         }
 
         val builder = createBuilder(requireArguments(), savedInstanceState).apply {
@@ -75,8 +77,7 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
 
         return builder.show().apply {
             getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                val nameEditor = content.findViewById<EditText>(R.id.user_name)
-                val userName = nameEditor.text?.toString() ?: ""
+                val userName = content.user_name.text?.toString() ?: ""
 
                 if (userName.isBlank()) {
                     activity?.showToast("はてなIDを入力してください")
@@ -104,12 +105,16 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
         }
     }
 
+    override fun onDestroyView() {
+        requireActivity().hideSoftInputMethod()
+        super.onDestroyView()
+    }
+
     /**
      * 入力されたユーザーIDの存在確認
      */
     private fun updateUserExistence(userName: String) = launch(Dispatchers.IO) {
         val url = "https://b.hatena.ne.jp/$userName/"
-        val icon = content.findViewById<ImageView>(R.id.user_icon)
 
         try {
             val request = Request.Builder()
@@ -131,11 +136,11 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
                 val iconUrl = HatenaClient.getUserIconUrl(userName)
                 Glide.with(content)
                     .load(iconUrl)
-                    .into(icon)
+                    .into(content.user_icon)
             }
             else {
                 Glide.with(content)
-                    .clear(icon)
+                    .clear(content.user_icon)
             }
         }
     }

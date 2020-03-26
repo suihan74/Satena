@@ -5,10 +5,12 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.widget.EditText
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
+import com.suihan74.utilities.hideSoftInputMethod
+import com.suihan74.utilities.showSoftInputMethod
 import com.suihan74.utilities.showToast
+import kotlinx.android.synthetic.main.fragment_dialog_user_tag.view.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -48,15 +50,15 @@ class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
         val arguments = requireArguments()
         editingUserTag = arguments.getSerializable(EDITING_USER_TAG) as? Tag
 
-        val tagName = content.findViewById<EditText>(R.id.tag_name)
         val dialogTitle =
             if (isModifyMode) {
-                tagName.setText(editingUserTag!!.name)
+                content.tag_name.setText(editingUserTag!!.name)
                 R.string.user_tag_dialog_title_edit_mode
             }
             else {
                 R.string.user_tag_dialog_title_create_mode
             }
+        requireActivity().showSoftInputMethod(content.tag_name)
 
         val builder = createBuilder(arguments, savedInstanceState).apply {
             setTitle(dialogTitle)
@@ -67,7 +69,7 @@ class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
 
         return builder.show().apply {
             getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                val name = tagName.text.toString()
+                val name = content.tag_name.text.toString()
 
                 if (name.isBlank()) {
                     activity?.showToast(R.string.msg_user_tag_no_name)
@@ -99,6 +101,11 @@ class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        requireActivity().hideSoftInputMethod()
+        super.onDestroyView()
     }
 
     class Builder(themeResId: Int) : AlertDialogFragment.Builder(themeResId) {
