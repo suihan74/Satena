@@ -188,7 +188,7 @@ class ViewModel(
         onSuccess: OnSuccess? = null,
         onError: OnError? = null,
         onFinally: OnFinally? = null
-    ) = viewModelScope.launch {
+    ) = viewModelScope.launch(Dispatchers.Default) {
         var error: Throwable? = null
         val entry = entry.value!!
         val result =
