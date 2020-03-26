@@ -124,7 +124,7 @@ class BookmarkPostActivity :
             setOnEditorActionListener { _, action, _ ->
                 when (action) {
                     EditorInfo.IME_ACTION_DONE -> {
-                        /* DONEボタン押したときの処理 */
+                        postBookmark()
                         true
                     }
                     else -> false
@@ -151,7 +151,12 @@ class BookmarkPostActivity :
         // タグリストを初期化
         val tagsListAdapter = object : TagsListAdapter() {
             override fun onItemClicked(tag: String) {
-                viewModel.toggleTag(tag)
+                try {
+                    viewModel.toggleTag(tag)
+                }
+                catch (e: ViewModel.TooManyTagsException) {
+                    showToast(R.string.msg_post_too_many_tags)
+                }
             }
         }
         tags_list.run {
@@ -223,14 +228,35 @@ class BookmarkPostActivity :
     /** 投稿失敗時処理 */
     private val onPostError: OnError = { e ->
         when (e) {
-            is ViewModel.CommentTooLongException -> {
+            is ViewModel.CommentTooLongException ->
                 showToast(R.string.msg_comment_too_long, ViewModel.MAX_COMMENT_LENGTH)
-            }
 
-            else -> {
+            is ViewModel.TooManyTagsException ->
+                showToast(R.string.msg_post_too_many_tags)
+
+            else ->
                 showToast(R.string.msg_post_bookmark_failed)
-            }
         }
+    }
+
+    /** ブクマ投稿を実際に送信する */
+    private fun postBookmarkImpl() {
+        hideSoftInputMethod()
+        comment.isEnabled = false
+        post_button.isEnabled = false
+        tags_list.isEnabled = false
+
+        viewModel.postBookmark(
+            onSuccess = onPostSuccess,
+            onError = onPostError,
+            onFinally = { e ->
+                if (e != null) {
+                    comment.isEnabled = true
+                    post_button.isEnabled = true
+                    tags_list.isEnabled = true
+                }
+            }
+        )
     }
 
     /** ブックマークを投稿する（必要ならダイアログを表示する） */
@@ -244,20 +270,13 @@ class BookmarkPostActivity :
                 .show(supportFragmentManager, DIALOG_CONFIRM_POST_BOOKMARK)
         }
         else {
-            viewModel.postBookmark(
-                onSuccess = onPostSuccess,
-                onError = onPostError
-            )
+            postBookmarkImpl()
         }
     }
 
     override fun onApprovedToPost(dialog: ConfirmPostBookmarkDialog) {
         when (dialog.tag) {
-            DIALOG_CONFIRM_POST_BOOKMARK ->
-                viewModel.postBookmark(
-                    onSuccess = onPostSuccess,
-                    onError = onPostError
-                )
+            DIALOG_CONFIRM_POST_BOOKMARK -> postBookmarkImpl()
         }
     }
 
