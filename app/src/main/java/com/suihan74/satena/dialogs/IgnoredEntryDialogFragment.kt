@@ -246,7 +246,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
                     it.setOnClickListener {
                         if (queryText.text.isNullOrBlank()) {
-                            context.showToast(R.string.msg_ignored_entry_dialog_empty_query)
+                            activity?.showToast(R.string.msg_ignored_entry_dialog_empty_query)
                             return@setOnClickListener
                         }
 
