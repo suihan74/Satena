@@ -11,6 +11,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/*
+  TODO: それぞれの画面用に切り分けるべきか
+*/
+
 class EntriesTabFragmentViewModel(
     private val repository: EntriesRepository,
     val category: Category,
@@ -74,10 +78,16 @@ class EntriesTabFragmentViewModel(
         MutableLiveData<List<Notice>>()
     }
 
+    /** 障害情報 */
+    val information by lazy {
+        MutableLiveData<List<MaintenanceEntry>>()
+    }
+
     /** 表示項目リストを初期化 */
     fun refresh(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
         when (category) {
             Category.Notices -> refreshNotices(onError)
+            Category.Maintenance -> refreshInformation(onError)
             else -> refreshEntries(onError)
         }
     }
@@ -139,9 +149,21 @@ class EntriesTabFragmentViewModel(
 
 
     /** 通知リストを初期化 */
-    private suspend fun refreshNotices(onError: ((Throwable) -> Unit)?) = withContext(Dispatchers.Default) {
+    private suspend fun refreshNotices(onError: ((Throwable)->Unit)?) = withContext(Dispatchers.Default) {
         try {
             notices.postValue(repository.loadNotices())
+        }
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
+        }
+    }
+
+    /** 障害情報を取得 */
+    private suspend fun refreshInformation(onError: ((Throwable)->Unit)?) = withContext(Dispatchers.Default) {
+        try {
+            information.postValue(repository.loadInformation())
         }
         catch (e: Throwable) {
             withContext(Dispatchers.Main) {

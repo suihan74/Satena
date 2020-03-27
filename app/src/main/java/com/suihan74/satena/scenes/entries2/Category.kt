@@ -19,6 +19,8 @@ internal fun Category.createFragment() : EntriesFragment =
 
         Category.Search -> SearchEntriesFragment.createInstance()
 
+        Category.Maintenance -> InformationFragment.createInstance()
+
         else -> HatenaEntriesFragment.createInstance(this)
     }
 

@@ -1,0 +1,44 @@
+package com.suihan74.satena.scenes.entries2.pages
+
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.suihan74.satena.R
+import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
+import com.suihan74.satena.scenes.entries2.InformationAdapter
+import com.suihan74.utilities.getThemeColor
+import com.suihan74.utilities.putEnum
+import com.suihan74.utilities.withArguments
+
+class InformationTabFragment : EntriesTabFragmentBase() {
+    companion object {
+        fun createInstance(fragmentViewModelKey: String) = InformationTabFragment().withArguments {
+            putString(ARG_FRAGMENT_VIEW_MODEL_KEY, fragmentViewModelKey)
+            putEnum(ARG_CATEGORY, Category.Maintenance)
+        }
+    }
+
+    override fun initializeRecyclerView(
+        entriesList: RecyclerView,
+        swipeLayout: SwipeRefreshLayout
+    ) {
+        val context = requireContext()
+
+        // エントリリスト用のアダプタ
+        val adapter = InformationAdapter()
+
+        // エントリリストの設定
+        entriesList.adapter = adapter
+
+        // 引っ張って更新
+        swipeLayout.apply swipeLayout@ {
+            setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
+            setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
+            setOnRefreshListener {
+                viewModel.refresh(onErrorRefreshEntries).invokeOnCompletion {
+                    this.isRefreshing = false
+                }
+            }
+        }
+    }
+}

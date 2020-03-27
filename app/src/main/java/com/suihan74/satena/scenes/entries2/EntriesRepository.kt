@@ -256,6 +256,11 @@ class EntriesRepository(
         return notices
     }
 
+    /** 障害情報を取得する */
+    suspend fun loadInformation() : List<MaintenanceEntry> {
+        return client.getMaintenanceEntriesAsync().await()
+    }
+
     /** 最近つけたスターを取得する */
     private suspend fun loadMyStars(offset: Int?) : List<Entry> {
         val starsEntries = client.getRecentStarsAsync().await()
