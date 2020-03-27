@@ -171,6 +171,7 @@
     <string name="msg_ignored_entry_dialog_empty_query">クエリを入力してください</string>
     <string name="msg_ignored_entry_dialog_already_existed">既に存在する非表示設定です</string>
     <string name="msg_ignored_entry_dialog_succeeded">「%s」を非表示にしました</string>
+    <string name="msg_ignored_entry_dialog_failed">非表示設定の保存に失敗した</string>
 
     <!-- ブックマーク投稿ダイアログ -->
     <string name="post_bookmark_button_text">B!</string>

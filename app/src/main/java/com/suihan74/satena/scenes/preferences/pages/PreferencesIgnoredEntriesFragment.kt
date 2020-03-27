@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -55,17 +56,24 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
 
         mIgnoredEntriesAdapter = object : IgnoredEntriesAdapter() {
             override fun onItemClicked(entry: IgnoredEntry) {
-                val dialog = IgnoredEntryDialogFragment.createInstance(entry) { modified ->
+                val dialog = IgnoredEntryDialogFragment.createInstance(entry) { dialog, modified ->
                     if (entry.query != modified.query && viewModel.entries.value?.contains(modified) == true) {
                         context?.showToast(R.string.msg_ignored_entry_dialog_already_existed)
-                        return@createInstance false
                     }
                     else {
-                        viewModel.update(modified)
-
-                        context?.showToast(R.string.msg_ignored_entry_dialog_succeeded, modified.query)
-                        return@createInstance true
+                        viewModel.update(
+                            modified,
+                            onSuccess = {
+                                context?.showToast(R.string.msg_ignored_entry_dialog_succeeded, modified.query)
+                                dialog.dismiss()
+                            },
+                            onError = { e ->
+                                context?.showToast(R.string.msg_ignored_entry_dialog_failed)
+                                Log.e("error", Log.getStackTraceString(e))
+                            }
+                        )
                     }
+                    return@createInstance false
                 }
                 dialog.show(childFragmentManager, "dialog")
             }
@@ -89,22 +97,29 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
         }
 
         root.add_button.setOnClickListener {
-            val dialog = IgnoredEntryDialogFragment.createInstance { ignoredEntry ->
+            val dialog = IgnoredEntryDialogFragment.createInstance { dialog, ignoredEntry ->
                 if (viewModel.entries.value?.contains(ignoredEntry) == true) {
                     context?.showToast(R.string.msg_ignored_entry_dialog_already_existed)
-                    return@createInstance false
                 }
                 else {
-                    viewModel.add(ignoredEntry)
-
-                    context?.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
-                    return@createInstance true
+                    viewModel.add(
+                        ignoredEntry,
+                        onSuccess = {
+                            context?.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
+                            dialog.dismiss()
+                        },
+                        onError = { e ->
+                            context?.showToast(R.string.msg_ignored_entry_dialog_failed)
+                            Log.e("error", Log.getStackTraceString(e))
+                        }
+                    )
                 }
+                return@createInstance false
             }
             dialog.show(childFragmentManager, "dialog")
         }
 
-        viewModel.entries.observe(this, Observer {
+        viewModel.entries.observe(viewLifecycleOwner, Observer {
             mIgnoredEntriesAdapter.setItem(it)
         })
 

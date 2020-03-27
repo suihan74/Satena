@@ -78,7 +78,7 @@ class IgnoredEntryDialogViewModel : ViewModel() {
 }
 
 class IgnoredEntryDialogFragment : DialogFragment() {
-    var positiveAction : ((IgnoredEntry)->Boolean)? = null
+    var positiveAction : ((IgnoredEntryDialogFragment, IgnoredEntry)->Boolean)? = null
 
     private lateinit var model: IgnoredEntryDialogViewModel
     private var isEditMode: Boolean = false
@@ -90,7 +90,11 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         private const val ARG_MODIFYING_ENTRY = "ARG_MODIFYING_ENTRY"
         private const val ARG_INITIAL_TARGET = "ARG_INITIAL_TARGET"
 
-        fun createInstance(url: String = "", title: String = "", positiveAction: ((IgnoredEntry)->Boolean)? = null) = IgnoredEntryDialogFragment().withArguments {
+        fun createInstance(
+            url: String = "",
+            title: String = "",
+            positiveAction: ((IgnoredEntryDialogFragment, IgnoredEntry)->Boolean)? = null
+        ) = IgnoredEntryDialogFragment().withArguments {
             val editingUrl =
                 Regex("""^https?://""").find(url)?.let { r ->
                     url.substring(r.range.last + 1)
@@ -103,7 +107,10 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             it.positiveAction = positiveAction
         }
 
-        fun createInstance(ignoredEntry: IgnoredEntry, positiveAction: ((IgnoredEntry) -> Boolean)? = null) = IgnoredEntryDialogFragment().withArguments {
+        fun createInstance(
+            ignoredEntry: IgnoredEntry,
+            positiveAction: ((IgnoredEntryDialogFragment, IgnoredEntry) -> Boolean)? = null
+        ) = IgnoredEntryDialogFragment().withArguments {
             putString(ARG_EDITING_URL, ignoredEntry.query)
             putString(ARG_EDITING_TEXT, ignoredEntry.query)
             putSerializable(ARG_MODIFYING_ENTRY, ignoredEntry)
@@ -244,7 +251,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                         }
 
                         val ignoredEntry = model.createIgnoredEntry(modifyingEntry?.id ?: 0)
-                        if (positiveAction?.invoke(ignoredEntry) != false) {
+                        if (positiveAction?.invoke(this@IgnoredEntryDialogFragment, ignoredEntry) != false) {
                             dismiss()
                         }
                     }

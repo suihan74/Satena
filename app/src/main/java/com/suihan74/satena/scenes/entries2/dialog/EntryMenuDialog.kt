@@ -19,7 +19,12 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
+import com.suihan74.utilities.showToast
 import com.suihan74.utilities.withArguments
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** エントリメニューダイアログ */
 class EntryMenuDialog : DialogFragment() {
@@ -200,13 +205,26 @@ class EntryMenuDialog : DialogFragment() {
     /** サイトを非表示に設定する */
     private fun ignoreSite(entry: Entry?, url: String?) {
         val siteUrl = entry?.url ?: url ?: return
+        val activity = requireActivity()
         val dialog = IgnoredEntryDialogFragment.createInstance(
             url = siteUrl,
             title = entry?.title ?: "",
-            positiveAction = { ignoredEntry ->
-                val dao = SatenaApplication.instance.ignoredEntryDao
-                dao.insert(ignoredEntry)
-                true
+            positiveAction = { dialog, ignoredEntry ->
+                GlobalScope.launch(Dispatchers.Main) {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            val dao = SatenaApplication.instance.ignoredEntryDao
+                            dao.insert(ignoredEntry)
+                        }
+
+                        activity.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
+                        dialog.dismiss()
+                    }
+                    catch (e: Throwable) {
+                        activity.showToast(R.string.msg_ignored_entry_dialog_failed)
+                    }
+                }
+                false
             }
         )
         dialog.show(parentFragmentManager, DIALOG_IGNORE_SITE)
