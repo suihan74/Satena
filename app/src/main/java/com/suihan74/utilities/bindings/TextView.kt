@@ -17,6 +17,14 @@ import com.suihan74.utilities.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
+/** 障害情報のタイトルテキスト装飾 */
+@BindingAdapter("html")
+fun TextView.setHtmlText(title: String) {
+    setHtml(title)
+}
+
+//////////////////////////////////////////////////
+
 /** 左付き画像 */
 @BindingAdapter("drawableLeft")
 fun TextView.setDrawableLeft(url: String) {

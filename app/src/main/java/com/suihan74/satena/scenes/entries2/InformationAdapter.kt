@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.entries2
 
+import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
@@ -39,6 +40,7 @@ class InformationAdapter : ListAdapter<RecyclerState<InformationItem>, RecyclerV
                     inflater,
                     R.layout.listview_item_maintenance_entries_2, parent, false
                 )
+                binding.body.movementMethod = LinkMovementMethod.getInstance()
                 ViewHolder(binding)
             }
 

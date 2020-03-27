@@ -22,7 +22,7 @@
 
         <TextView
                 android:id="@+id/title"
-                android:text="@{item.title}"
+                maintenanceTitle="@{item.title}"
                 android:textColor="?attr/textColor"
                 android:textStyle="bold"
                 android:ellipsize="end"
@@ -43,7 +43,7 @@
 
         <TextView
                 android:id="@+id/body"
-                maintenanceTitle="@{item.body}"
+                html="@{item.body}"
                 android:visibility="@{bodyVisibility}"
                 android:textColor="?attr/textColor"
                 android:paddingTop="12dp"
