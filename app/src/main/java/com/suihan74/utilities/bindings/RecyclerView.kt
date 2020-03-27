@@ -5,12 +5,10 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.MaintenanceEntry
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.CategoriesAdapter
-import com.suihan74.satena.scenes.entries2.CommentsAdapter
-import com.suihan74.satena.scenes.entries2.EntriesAdapter
-import com.suihan74.satena.scenes.entries2.NoticesAdapter
+import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.toVisibility
 
@@ -42,11 +40,14 @@ fun RecyclerView.setDivider(dividerId: Int) {
 
 
 /** エントリリスト */
-@BindingAdapter("category", "entries", "notices")
-fun RecyclerView.setEntries(category: Category, entries: List<Entry>?, notices: List<Notice>?) {
+@BindingAdapter("category", "entries", "notices", "information")
+fun RecyclerView.setEntries(category: Category, entries: List<Entry>?, notices: List<Notice>?, information: List<MaintenanceEntry>?) {
     when (category) {
         Category.Notices ->
             (adapter as? NoticesAdapter)?.submitNotices(notices)
+
+        Category.Maintenance ->
+            (adapter as? InformationAdapter)?.submitInformation(information)
 
         else ->
             (adapter as? EntriesAdapter)?.submitEntries(entries)

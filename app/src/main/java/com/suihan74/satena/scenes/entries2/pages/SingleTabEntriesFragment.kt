@@ -9,8 +9,13 @@ import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 
 abstract class SingleTabEntriesFragment : EntriesFragment() {
+    //////////////////////////////////////////////////
+
     /** コンテンツ部分に表示するフラグメントを生成する */
-    abstract fun generateContentFragment() : EntriesTabFragmentBase
+    abstract fun generateContentFragment(viewModelKey: String) : EntriesTabFragmentBase
+
+    //////////////////////////////////////////////////
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -21,7 +26,7 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
         val root = inflater.inflate(R.layout.fragment_entries2_single, container, false)
 
         if (savedInstanceState == null) {
-            val fragment = generateContentFragment()
+            val fragment = generateContentFragment(viewModelKey)
             childFragmentManager.beginTransaction()
                 .replace(R.id.content_layout, fragment)
                 .commit()

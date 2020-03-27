@@ -22,6 +22,8 @@ abstract class EntriesFragment : Fragment() {
         private const val ARG_UUID = "ARG_UUID"
     }
 
+    //////////////////////////////////////////////////
+
     /** ViewModelを生成する */
     abstract fun generateViewModel(
         owner: ViewModelStoreOwner,
@@ -36,6 +38,8 @@ abstract class EntriesFragment : Fragment() {
 
     /** サブタイトル */
     open val subtitle : String? = null
+
+    //////////////////////////////////////////////////
 
     /**
      * フラグメント識別用のユニークID

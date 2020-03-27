@@ -18,7 +18,8 @@ class MyHotEntriesFragment : SingleTabEntriesFragment() {
     }
 
     /** コンテンツ部分に表示するフラグメントを生成する */
-    override fun generateContentFragment() : EntriesTabFragmentBase = EntriesTabFragment.createInstance(viewModelKey, Category.MyHotEntries)
+    override fun generateContentFragment(viewModelKey: String) : EntriesTabFragmentBase =
+        EntriesTabFragment.createInstance(viewModelKey, Category.MyHotEntries)
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,

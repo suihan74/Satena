@@ -3,10 +3,12 @@ package com.suihan74.utilities.bindings
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.suihan74.hatenaLib.MaintenanceEntry
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarColor
@@ -89,4 +91,27 @@ fun TextView.setBookmarkResult(comment: String?, starsCount: List<Star>?) {
 @BindingAdapter("noticeText")
 fun TextView.setNoticeText(notice: Notice) {
     setHtml(notice.message(context))
+}
+
+/** 障害情報のタイトルテキスト装飾 */
+@BindingAdapter("maintenanceTitle")
+fun TextView.setMaintenanceTitle(title: String) {
+    val resolvedColor = ContextCompat.getColor(context, R.color.maintenanceResolved)
+    setHtml(title.replace("【復旧済み】", "<font color=\"$resolvedColor\">【復旧済み】</font>"))
+}
+
+/** 障害情報のタイムスタンプ */
+@BindingAdapter("maintenanceTimestamp")
+fun TextView.setMaintenanceTimestamp(value: MaintenanceEntry) {
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+    text =
+        if (value.timestamp == value.timestampUpdated) {
+            value.timestamp.format(dateTimeFormatter)
+        }
+        else {
+            buildString {
+                append(value.timestamp.format(dateTimeFormatter))
+                append("  (更新: ", value.timestampUpdated.format(dateTimeFormatter), ")")
+            }
+        }
 }

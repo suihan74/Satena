@@ -37,7 +37,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         return ViewModelProvider(owner, factory)[viewModelKey, UserEntriesViewModel::class.java]
     }
 
-    override fun generateContentFragment() : EntriesTabFragmentBase {
+    override fun generateContentFragment(viewModelKey: String) : EntriesTabFragmentBase {
         val user = requireArguments().getString(ARG_USER)!!
         viewModel.user.value = user
         return UserEntriesTabFragment.createInstance(viewModelKey, user)

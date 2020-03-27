@@ -18,7 +18,8 @@ class HistoryFragment : SingleTabEntriesFragment() {
     }
 
     /** コンテンツ部分に表示するフラグメントを生成する */
-    override fun generateContentFragment() : EntriesTabFragmentBase = EntriesTabFragment.createInstance(viewModelKey, Category.History)
+    override fun generateContentFragment(viewModelKey: String) : EntriesTabFragmentBase =
+        EntriesTabFragment.createInstance(viewModelKey, Category.History)
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,

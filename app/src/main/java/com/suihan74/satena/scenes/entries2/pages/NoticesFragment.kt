@@ -17,7 +17,8 @@ class NoticesFragment : SingleTabEntriesFragment() {
     }
 
     /** コンテンツ部分に表示するフラグメントを生成する */
-    override fun generateContentFragment() : EntriesTabFragmentBase = NoticesTabFragment.createInstance(viewModelKey)
+    override fun generateContentFragment(viewModelKey: String) : EntriesTabFragmentBase =
+        NoticesTabFragment.createInstance(viewModelKey)
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,
