@@ -109,6 +109,10 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             }
         })
 
+        // TODO: なんとかした方がよさそうというかクラス分けた方が良さそうな気もする
+        // 以下はActivity生成と同時に遷移してくる関係上
+        // isInitialized的なやつで初期化時ロードを避けるとロードできなくなってしまうので注意
+
         // SiteUrlを監視する
         parentViewModel.siteUrl.observe(viewLifecycleOwner, Observer {
             viewModel.siteUrl = it

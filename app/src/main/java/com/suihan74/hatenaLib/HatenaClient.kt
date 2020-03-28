@@ -305,7 +305,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * 対象urlのブックマークを削除する
      */
-    fun deleteBookmarkAsync(url: String) : Deferred<Any> = async {
+    fun deleteBookmarkAsync(url: String) = async {
         require(signedIn()) { "need to login for deleting bookmarks" }
         val account = account!!
         val apiUrl = "$B_BASE_URL/${account.name}/api.delete_bookmark.json"

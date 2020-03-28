@@ -1,14 +1,18 @@
 package com.suihan74.satena.scenes.entries2.dialog
 
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -21,21 +25,31 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.showToast
 import com.suihan74.utilities.withArguments
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+
+/** メニュー項目 */
+private typealias MenuItem = Triple<Int, suspend (Context, Entry?, String?)->Unit, ((Entry)->Boolean)?>
+
+/** メニュー項目の追加 */
+private fun MutableList<MenuItem>.add(
+    textId: Int,
+    action: suspend (Context,Entry?,String?)->Unit,
+    checker: ((Entry)->Boolean)? = null
+) {
+    add(Triple(textId, action, checker))
+}
 
 /** エントリメニューダイアログ */
 class EntryMenuDialog : DialogFragment() {
     /** メニュー項目 */
     @OptIn(ExperimentalStdlibApi::class)
-    private val menuItems = buildList<Pair<Int, (Entry?,String?)->Unit>> {
-        add(R.string.entry_action_show_comments to { entry, url -> showBookmarks(entry, url) })
-        add(R.string.entry_action_show_page to { entry, url -> showPage(entry, url) })
-        add(R.string.entry_action_show_page_in_browser to { entry, url -> showPageInBrowser(entry, url) })
-        add(R.string.entry_action_show_entries to { entry, url -> showEntries(entry, url) })
-        add(R.string.entry_action_ignore to { entry, url -> ignoreSite(entry, url) })
+    private val menuItems = buildList<MenuItem> {
+        add(R.string.entry_action_show_comments, { context, entry, url -> showBookmarks(context, entry, url) })
+        add(R.string.entry_action_show_page, { context, entry, url -> showPage(context, entry, url) })
+        add(R.string.entry_action_show_page_in_browser, { context, entry, url -> showPageInBrowser(context, entry, url) })
+        add(R.string.entry_action_show_entries, { context, entry, url -> showEntries(context, entry, url) })
+        add(R.string.entry_action_ignore, { context, entry, url -> ignoreSite(context, entry, url) })
+        add(R.string.bookmark_remove, { context, entry, url -> removeBookmark(context, entry, url) }, { entry -> entry.bookmarkedData != null })
     }
 
     companion object {
@@ -89,7 +103,9 @@ class EntryMenuDialog : DialogFragment() {
                 .add(instance, tag)
                 .runOnCommit {
                     val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
-                    action?.second?.invoke(entry, null)
+                    GlobalScope.launch(Dispatchers.Main) {
+                        action?.second?.invoke(SatenaApplication.instance.applicationContext, entry, null)
+                    }
 
                     fragmentManager.beginTransaction()
                         .remove(instance)
@@ -103,7 +119,9 @@ class EntryMenuDialog : DialogFragment() {
                 .add(instance, tag)
                 .runOnCommit {
                     val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
-                    action?.second?.invoke(null, url)
+                    GlobalScope.launch(Dispatchers.Main) {
+                        action?.second?.invoke(SatenaApplication.instance.applicationContext, null, url)
+                    }
 
                     fragmentManager.beginTransaction()
                         .remove(instance)
@@ -126,7 +144,17 @@ class EntryMenuDialog : DialogFragment() {
         val arguments = requireArguments()
 
         val url = arguments.getString(ARG_ENTRY_URL)
-        val entry = (arguments.get(ARG_ENTRY) as? Entry)
+        val entry = (arguments.get(ARG_ENTRY) as? Entry) ?: Entry(
+            id = 0,
+            title = url!!,
+            description = "",
+            count = 0,
+            url = url,
+            rootUrl = HatenaClient.getTemporaryRootUrl(url),
+            faviconUrl = HatenaClient.getFaviconUrl(url),
+            imageUrl = ""
+        )
+        // urlが渡された場合、表示用にオフラインで一時的な内容を作成する
 
         // カスタムタイトルを生成
         val inflater = LayoutInflater.from(context)
@@ -135,62 +163,59 @@ class EntryMenuDialog : DialogFragment() {
             R.layout.dialog_title_entry2,
             null,
             false
-        ).apply {
-            this.entry = entry ?: Entry(
-                id = 0,
-                title = url!!,
-                description = "",
-                count = 0,
-                url = url,
-                rootUrl = HatenaClient.getTemporaryRootUrl(url),
-                faviconUrl = HatenaClient.getFaviconUrl(url),
-                imageUrl = ""
-            )
-            // urlが渡された場合、表示用にオフラインで一時的な内容を作成する
+        ).also {
+            it.entry = entry
         }
 
+        // メニューに表示する項目リストを作成する
+        val activeItems = menuItems.filter { it.third?.invoke(entry) != false }
+        val activeItemLabels = activeItems.map { getString(it.first) }.toTypedArray()
+
+        val activity = requireActivity()
         return AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setItems(menuItems.map { getString(it.first) }.toTypedArray()) { _, which ->
-                menuItems[which].second.invoke(entry, url)
+            .setItems(activeItemLabels) { _, which ->
+                lifecycleScope.launch(Dispatchers.Main + SupervisorJob()) {
+                    activeItems[which].second.invoke(activity, entry, url)
+                }
             }
             .create()
     }
 
     /** ブックマーク画面に遷移 */
-    private fun showBookmarks(entry: Entry?, url: String?) {
-        val intent = Intent(requireContext(), BookmarksActivity::class.java).apply {
+    private fun showBookmarks(context: Context, entry: Entry?, url: String?) {
+        val intent = Intent(context, BookmarksActivity::class.java).apply {
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
             if (entry != null) putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
             if (url != null) putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
         }
-        startActivity(intent)
+        context.startActivity(intent)
     }
 
     /** ページを内部ブラウザで開く */
-    private fun showPage(entry: Entry?, url: String?) {
-        if (entry != null) requireContext().showCustomTabsIntent(entry)
-        if (url != null) requireContext().showCustomTabsIntent(url)
+    private fun showPage(context: Context, entry: Entry?, url: String?) {
+        if (entry != null) context.showCustomTabsIntent(entry)
+        if (url != null) context.showCustomTabsIntent(url)
     }
 
     /** ページを外部ブラウザで開く */
-    private fun showPageInBrowser(entry: Entry?, url: String?) {
+    private fun showPageInBrowser(context: Context, entry: Entry?, url: String?) {
         val intent = Intent(
             Intent.ACTION_VIEW,
             if (entry != null) Uri.parse(entry.url)
             else Uri.parse(url!!)
         )
-
-        startActivity(intent)
+        context.startActivity(intent)
     }
 
     /** サイトのエントリリストを開く */
-    private fun showEntries(entry: Entry?, url: String?) {
+    private fun showEntries(context: Context, entry: Entry?, url: String?) {
         val siteUrl = entry?.rootUrl ?: url!!
         when (val activity = requireActivity() as? EntriesActivity) {
             null -> {
                 // EntriesActivity以外から呼ばれた場合、Activityを遷移する
-                val intent = Intent(requireContext(), EntriesActivity::class.java).apply {
+                val intent = Intent(context, EntriesActivity::class.java).apply {
                     putExtra(EntriesActivity.EXTRA_SITE_URL, siteUrl)
                 }
                 startActivity(intent)
@@ -203,30 +228,43 @@ class EntryMenuDialog : DialogFragment() {
     }
 
     /** サイトを非表示に設定する */
-    private fun ignoreSite(entry: Entry?, url: String?) {
+    private fun ignoreSite(context: Context, entry: Entry?, url: String?) {
         val siteUrl = entry?.url ?: url ?: return
-        val activity = requireActivity()
         val dialog = IgnoredEntryDialogFragment.createInstance(
             url = siteUrl,
             title = entry?.title ?: "",
             positiveAction = { dialog, ignoredEntry ->
-                GlobalScope.launch(Dispatchers.Main) {
+                lifecycleScope.launch(Dispatchers.Main) {
                     try {
                         withContext(Dispatchers.IO) {
                             val dao = SatenaApplication.instance.ignoredEntryDao
                             dao.insert(ignoredEntry)
                         }
 
-                        activity.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
+                        context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
                         dialog.dismiss()
                     }
                     catch (e: Throwable) {
-                        activity.showToast(R.string.msg_ignored_entry_dialog_failed)
+                        context.showToast(R.string.msg_ignored_entry_dialog_failed)
                     }
                 }
                 false
             }
         )
         dialog.show(parentFragmentManager, DIALOG_IGNORE_SITE)
+    }
+
+    /** ブクマを削除する */
+    private suspend fun removeBookmark(context: Context, entry: Entry?, url: String?) {
+        try {
+            val target = entry?.url ?: url ?: throw RuntimeException("failed to remove a bookmark")
+            // TODO: 「あとで読む」が削除できないっぽい
+            HatenaClient.deleteBookmarkAsync(target).await()
+            context.showToast(R.string.msg_remove_bookmark_succeeded)
+        }
+        catch (e: Throwable) {
+            context.showToast(R.string.msg_remove_bookmark_failed)
+            Log.e("EntryMenuDialog", Log.getStackTraceString(e))
+        }
     }
 }
