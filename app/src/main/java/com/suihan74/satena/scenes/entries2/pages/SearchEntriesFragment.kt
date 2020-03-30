@@ -2,11 +2,8 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.*
-import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
@@ -117,19 +114,6 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
             // 常に開いた状態にしておく
             setIconifiedByDefault(false)
             isIconified = false
-
-            // SearchViewの文字入力部分のスタイルを変更
-            findViewById<EditText>(androidx.appcompat.R.id.search_src_text)?.let { view ->
-                // カーソルの色
-                try {
-                    val res = TextView::class.java.getDeclaredField("mCursorDrawableRes")
-                    res.isAccessible = true
-                    res.set(view, R.drawable.searchview_cursor)
-                }
-                catch(e: Throwable) {
-                    Log.e("error", Log.getStackTraceString(e))
-                }
-            }
 
             // 横幅を最大化
             val dMetrics = DisplayMetrics()

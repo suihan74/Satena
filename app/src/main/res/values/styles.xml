@@ -24,6 +24,7 @@
 
         <!-- SearchView -->
         <item name="searchViewStyle">@style/SearchViewStyle</item>
+        <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView</item>
 
         <!-- TabLayout -->
         <item name="tabSelectedTextColor">@color/colorPrimary</item>
@@ -201,6 +202,12 @@
         <item name="commitIcon">@drawable/ic_baseline_search</item>
         <item name="goIcon">@drawable/ic_baseline_search</item>
         <item name="textColor">@color/colorPrimaryText</item>
+    </style>
+
+    <!-- SearchView上の文字入力部分 -->
+    <style name="AutoCompleteTextView" parent="Widget.AppCompat.AutoCompleteTextView">
+        <!-- 入力位置のカーソル -->
+        <item name="android:textCursorDrawable">@drawable/searchview_cursor</item>
     </style>
 
     <!-- IgnoreTarget @ IgnoredEntryDialog -->
