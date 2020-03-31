@@ -33,7 +33,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
-import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
 import kotlinx.coroutines.launch
@@ -351,7 +351,7 @@ class BookmarkDetailFragment :
                 view.tags.apply {
                     text = BookmarkCommentDecorator.makeClickableTagsText(bookmark.tags) { tag ->
                         val intent = Intent(context, EntriesActivity::class.java).apply {
-                            putExtra(EntriesActivity.EXTRA_DISPLAY_TAG, tag)
+                            putExtra(EntriesActivity.EXTRA_SEARCH_TAG, tag)
                         }
                         startActivity(intent)
                     }

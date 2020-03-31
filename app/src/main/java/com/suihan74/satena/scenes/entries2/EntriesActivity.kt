@@ -27,14 +27,17 @@ import kotlinx.android.synthetic.main.activity_entries2.*
 
 class EntriesActivity : AppCompatActivity() {
     companion object {
-        /** アクティビティ生成時にCategory.Siteに遷移、表示するURL */
+        /** String: アクティビティ生成時にCategory.Siteに遷移、表示するURL */
         const val EXTRA_SITE_URL = "EntriesActivity.EXTRA_SITE_URL"
 
-        /** アクティビティ生成時にCategory.Userに遷移、表示するユーザー */
+        /** String: アクティビティ生成時にCategory.Userに遷移、表示するユーザー */
         const val EXTRA_USER = "EntriesActivity.EXTRA_USER"
 
-        /** アクティビティ生成時にCategory.Searchに遷移、タグ検索を行う */
+        /** String: アクティビティ生成時にCategory.Searchに遷移、タグ検索を行う */
         const val EXTRA_SEARCH_TAG = "EntriesActivity.EXTRA_SEARCH_TAG"
+
+        /** Boolean: アクティビティ生成時にCategory.Noticesに遷移 */
+        const val EXTRA_OPEN_NOTICES = "EntriesActivity.EXTRA_OPEN_NOTICES"
     }
 
     private lateinit var viewModel : EntriesViewModel
@@ -198,8 +201,11 @@ class EntriesActivity : AppCompatActivity() {
         val user = intent.getStringExtra(EXTRA_USER)
         val siteUrl = intent.getStringExtra(EXTRA_SITE_URL)
         val searchTag = intent.getStringExtra(EXTRA_SEARCH_TAG)
+        val openNotices = intent.getBooleanExtra(EXTRA_OPEN_NOTICES, false)
 
         when {
+            openNotices -> showCategory(Category.Notices)
+
             user != null -> showUserEntries(user)
 
             siteUrl != null -> showSiteEntries(siteUrl)

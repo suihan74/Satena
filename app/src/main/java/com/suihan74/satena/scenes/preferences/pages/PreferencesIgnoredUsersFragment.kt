@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
 import com.suihan74.utilities.BackPressable
@@ -68,7 +68,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
         mDialogMenuItems = arrayListOf(
             getString(R.string.pref_ignored_users_show_entries) to { user ->
                 val intent = Intent(context, EntriesActivity::class.java).apply {
-                    putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
+                    putExtra(EntriesActivity.EXTRA_USER, user)
                 }
                 context?.startActivity(intent)
             },
