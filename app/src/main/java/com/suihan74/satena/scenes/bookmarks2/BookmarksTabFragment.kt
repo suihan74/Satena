@@ -21,7 +21,7 @@ class BookmarksTabFragment :
 {
     /** BookmarksActivityのViewModel */
     private val activityViewModel: BookmarksViewModel by lazy {
-        ViewModelProvider(bookmarksActivity)[BookmarksViewModel::class.java]
+        bookmarksActivity.viewModel
     }
 
     lateinit var viewModel: BookmarksTabViewModel
