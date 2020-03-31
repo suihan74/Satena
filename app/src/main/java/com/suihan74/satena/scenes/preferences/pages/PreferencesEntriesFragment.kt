@@ -153,6 +153,17 @@ class PreferencesEntriesFragment :
             }
         }
 
+        // タブ長押しでホームカテゴリ・初期タブを変更する
+        view.preferences_entries_change_home_by_long_tapping.apply {
+            val key = PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB
+            isChecked = prefs.getBoolean(key)
+            setOnCheckedChangeListener { _, isChecked ->
+                prefs.edit {
+                    putBoolean(key, isChecked)
+                }
+            }
+        }
+
         return view
     }
 

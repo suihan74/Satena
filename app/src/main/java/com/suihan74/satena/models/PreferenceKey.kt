@@ -44,6 +44,7 @@ enum class PreferenceKey(
     ENTRIES_INITIAL_TAB(typeInfo<Int>(), 0),
     ENTRIES_MENU_TAP_GUARD(typeInfo<Boolean>(), true),
     ENTRIES_HIDING_TOOLBAR_BY_SCROLLING(typeInfo<Boolean>(), true),
+    ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB(typeInfo<Boolean>(), true),
 
     ////////////////////////////////////////
     // bookmarks

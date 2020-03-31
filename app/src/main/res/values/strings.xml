@@ -130,6 +130,7 @@
     <string name="pref_entries_menu_tap_guard_desc">メニュー表示中に他の操作をできないようにする</string>
     <string name="pref_entries_hiding_toolbar_by_scrolling_desc">スクロールでツールバーを隠す</string>
     <string name="pref_entries_history_max_size_desc">ブクマ閲覧履歴の最大保存数</string>
+    <string name="pref_entries_change_home_by_long_tapping_desc">タブ長押しでホームカテゴリ・初期タブを変更する</string>
     <string name="pref_entries_history_max_size_dialog_title">ブクマ閲覧履歴の最大保存数を設定</string>
     <string name="pref_entries_history_max_size_dialog_msg">1～100件で指定できます</string>
     <string name="pref_entries_history_max_size_text">%d件</string>
