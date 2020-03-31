@@ -95,9 +95,7 @@ class BookmarksRepository(
 
     /** エントリ情報を取得 */
     suspend fun loadEntry(eid: Long) {
-        val url = client.getEntryUrlFromIdAsync(eid).await()
-        val modifiedUrl = modifySpecificUrls(url)!!
-        entry = client.getEntryAsync(modifiedUrl).await()
+        entry = client.getEntryAsync(eid).await()
     }
 
     /** 既にロード済みのエントリ情報をリポジトリにセットする */

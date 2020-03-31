@@ -780,48 +780,71 @@ object HatenaClient : BaseClient(), CoroutineScope {
         }
     }
 
+    /**c
+     * エントリIDからエントリ情報を取得する
+     * 失敗時例外送出: RuntimeException()  ; TODO: 例外型なんとかしたい
+     */
+    fun getEntryAsync(eid: Long) : Deferred<Entry> {
+        val url = "$B_BASE_URL/entry/$eid"
+        return getEntryImplAsync(url)
+    }
+
     /**
-     * エントリが存在するかどうかを調べ、存在する場合はダイジェスト情報を返す。
+     * エントリが存在するかどうかを調べ、存在する場合はエントリ情報を返す。
      * 存在しない場合は疑似的な内容のEntryを作成して返す
      */
-    fun getEntryAsync(url: String) : Deferred<Entry> = async {
-        val commentPageUrl = getCommentPageUrlFromEntryUrl(url)
+    fun getEntryAsync(url: String) : Deferred<Entry> {
+        return try {
+            val commentPageUrl = getCommentPageUrlFromEntryUrl(url)
+            getEntryImplAsync(commentPageUrl)
+        }
+        catch (e: Throwable) {
+            getEmptyEntryAsync(url)
+        }
+    }
+
+    /**
+     * コメントページのURLを渡してエントリが存在するかどうかを調べ、存在する場合はエントリ情報を返す。
+     * 存在しない場合は例外を送出する
+     */
+    private fun getEntryImplAsync(commentPageUrl: String) : Deferred<Entry> = async {
         return@async get(commentPageUrl).use { response ->
-            if (!response.isSuccessful) getEmptyEntryAsync(url).await()
-            else {
-                val bodyBytes = response.body!!.bytes()
-                val bodyStr = bodyBytes.toString(Charsets.UTF_8)
-                val doc = Jsoup.parse(bodyStr)
-                val root = doc.getElementsByTag("html").first()
-
-                val eid = root.attr("data-entry-eid").toLong()
-                val count = root.attr("data-bookmark-count").toInt()
-                val entryUrl = root.attr("data-entry-url")
-
-                val imageUrl = doc.head().getElementsByTag("meta")
-                    .firstOrNull { it.attr("property") == "og:image" || it.attr("name") == "twitter:image:src" }
-                    ?.attr("content")
-                    ?: ""
-
-                val title = doc.getElementsByClass("entry-info-title").firstOrNull()?.text() ?: entryUrl
-
-                val domainElement = doc.getElementsByAttributeValue("data-gtm-label", "entry-info-domain").firstOrNull()
-                val rootUrl = domainElement?.text() ?: getTemporaryRootUrl(entryUrl)
-                val faviconUrl = domainElement?.getElementsByTag("img")?.firstOrNull()?.attr("src") ?: getFaviconUrl(entryUrl)
-
-                val description = doc.getElementsByClass("entry-about-description").firstOrNull()?.text() ?: ""
-
-                Entry(
-                    id = eid,
-                    title = title,
-                    description = description,
-                    count = count,
-                    url = entryUrl,
-                    rootUrl = rootUrl,
-                    faviconUrl = faviconUrl,
-                    imageUrl = imageUrl
-                )
+            if (!response.isSuccessful) {
+                throw RuntimeException("cannot get an entry: $commentPageUrl")
             }
+
+            val bodyBytes = response.body!!.bytes()
+            val bodyStr = bodyBytes.toString(Charsets.UTF_8)
+            val doc = Jsoup.parse(bodyStr)
+            val root = doc.getElementsByTag("html").first()
+
+            val eid = root.attr("data-entry-eid").toLong()
+            val count = root.attr("data-bookmark-count").toInt()
+            val entryUrl = root.attr("data-entry-url")
+
+            val imageUrl = doc.head().getElementsByTag("meta")
+                .firstOrNull { it.attr("property") == "og:image" || it.attr("name") == "twitter:image:src" }
+                ?.attr("content")
+                ?: ""
+
+            val title = doc.getElementsByClass("entry-info-title").firstOrNull()?.text() ?: entryUrl
+
+            val domainElement = doc.getElementsByAttributeValue("data-gtm-label", "entry-info-domain").firstOrNull()
+            val rootUrl = domainElement?.text() ?: getTemporaryRootUrl(entryUrl)
+            val faviconUrl = domainElement?.getElementsByTag("img")?.firstOrNull()?.attr("src") ?: getFaviconUrl(entryUrl)
+
+            val description = doc.getElementsByClass("entry-about-description").firstOrNull()?.text() ?: ""
+
+            Entry(
+                id = eid,
+                title = title,
+                description = description,
+                count = count,
+                url = entryUrl,
+                rootUrl = rootUrl,
+                faviconUrl = faviconUrl,
+                imageUrl = imageUrl
+            )
         }
     }
 
