@@ -42,8 +42,7 @@ class BookmarksActivity :
     BookmarkMenuDialog.Listener,
     UserTagSelectionDialog.Listener,
     ReportDialog.Listener,
-    UserTagDialogFragment.Listener,
-    com.suihan74.satena.dialogs.EntryMenuDialog.Listener
+    UserTagDialogFragment.Listener
 {
     /** ViewModel */
     val viewModel: BookmarksViewModel by lazy {
@@ -480,28 +479,6 @@ class BookmarksActivity :
                 e.printStackTrace()
             }
         )
-    }
-
-    // --- リンクメニューダイアログの処理 --- //
-
-    override fun onItemSelected(item: String, dialog: com.suihan74.satena.dialogs.EntryMenuDialog) {
-        val entry = dialog.entry
-        val action = TapEntryAction.values().first { getString(it.titleId) == item }
-
-        if (entry.id > 0) {
-            EntryMenuDialog.act(
-                entry,
-                action,
-                supportFragmentManager
-            )
-        }
-        else {
-            EntryMenuDialog.act(
-                entry.url,
-                action,
-                supportFragmentManager
-            )
-        }
     }
 
     // --- ブックマーク中のリンクの処理 --- //
