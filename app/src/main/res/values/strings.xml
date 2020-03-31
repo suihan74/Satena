@@ -231,6 +231,7 @@
     <string name="msg_get_categories_failed">カテゴリ・特集情報の取得に失敗しました</string>
     <string name="msg_update_entries_failed">エントリーリスト取得失敗</string>
     <string name="msg_get_stars_report_failed">スターの取得失敗</string>
+    <string name="msg_entries_initial_tab_changed">「%s」カテゴリ「%s」タブを最初に表示するように設定しました</string>
 
     <!-- 通知 -->
     <string name="menu_notice_report">%sを通報</string>

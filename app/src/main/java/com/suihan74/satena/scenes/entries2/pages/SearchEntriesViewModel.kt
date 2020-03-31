@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
-import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.utilities.SingleUpdateMutableLiveData
@@ -29,9 +28,7 @@ class SearchEntriesViewModel(
     }
 
     override val tabCount: Int = 2
-    override fun getTabTitle(context: Context, position: Int) : String =
-        if (position == EntriesTabType.MYBOOKMARKS.ordinal && tag.value != null) tag.value?.text ?: ""
-        else context.getString(tabTitles[position])
+    override fun getTabTitle(context: Context, position: Int) : String = context.getString(tabTitles[position])
 
     class Factory(
         private val repository : EntriesRepository

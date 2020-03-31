@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
-import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.TagsLiveDataContainer
@@ -24,7 +23,7 @@ class MyBookmarksViewModel(
 
     override val tabCount: Int = 2
     override fun getTabTitle(context: Context, position: Int) : String =
-        if (position == EntriesTabType.MYBOOKMARKS.ordinal && tag.value != null) tag.value?.text ?: ""
+        if (position == 0 && tag.value != null) tag.value?.text ?: ""
         else context.getString(tabTitles[position])
 
     class Factory(

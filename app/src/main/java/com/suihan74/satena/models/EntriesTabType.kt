@@ -4,6 +4,7 @@ package com.suihan74.satena.models
 
 import com.suihan74.satena.R
 
+@Deprecated("use tab positions")
 enum class EntriesTabType(val tabPosition: Int, val textId: Int) {
     POPULAR(0, R.string.entries_tab_hot),
     RECENT(1, R.string.entries_tab_recent),

@@ -8,7 +8,6 @@ import androidx.databinding.DataBindingUtil
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
-import com.suihan74.satena.models.EntriesTabType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
@@ -49,8 +48,8 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
 
         // タブ初期選択
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val initialTab = EntriesTabType.fromInt(prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB))
-        view.entries_tab_pager.setCurrentItem(initialTab.tabPosition, false)
+        val initialTabPosition = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
+        view.entries_tab_pager.setCurrentItem(initialTabPosition, false)
 
         return view
     }

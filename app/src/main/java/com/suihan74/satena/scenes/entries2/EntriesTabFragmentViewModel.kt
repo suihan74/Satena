@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.models.EntriesTabType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,6 +19,10 @@ class EntriesTabFragmentViewModel(
     val category: Category,
     private val tabPosition: Int
 ) : ViewModel() {
+    companion object {
+        private const val TAB_POSITION_READ_LATER = 1
+    }
+
     /** 選択中のIssue */
     var issue : Issue? = null
 
@@ -112,7 +115,7 @@ class EntriesTabFragmentViewModel(
             Category.User,
             Category.MyBookmarks -> {
                 when (tabPosition) {
-                    EntriesTabType.READ_LATER.tabPosition ->
+                    TAB_POSITION_READ_LATER ->
                         params.also {
                             it.put(LoadEntryParameter.TAG, "あとで読む")
                         }

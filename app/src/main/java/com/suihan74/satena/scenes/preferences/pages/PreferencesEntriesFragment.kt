@@ -8,7 +8,10 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialogFragment
-import com.suihan74.satena.models.*
+import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.EntriesHistoryKey
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.toVisibility
@@ -70,17 +73,18 @@ class PreferencesEntriesFragment :
                 val currentHomeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
 
                 val categories =
-                    if (HatenaClient.signedIn())
-                        Category.valuesWithSignedIn()
-                    else
-                        Category.valuesWithoutSignedIn()
+                    if (HatenaClient.signedIn()) Category.valuesWithSignedIn()
+                    else Category.valuesWithoutSignedIn()
+
+                val currentOrdinal = categories.indexOf(currentHomeCategory)
 
                 AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle(R.string.pref_home_category_desc)
                     .setNegativeButton(R.string.dialog_cancel)
+                    .setAdditionalData("categories", categories)
                     .setSingleChoiceItems(
                         categories.map { getString(it.textId) },
-                        currentHomeCategory.ordinal)
+                        currentOrdinal)
                     .show(childFragmentManager, DIALOG_HOME_CATEGORY)
             }
         }
@@ -90,28 +94,21 @@ class PreferencesEntriesFragment :
         view.preferences_entries_initial_tab_desc.visibility = initialTabItemVisibility
         view.preferences_entries_initial_tab.apply {
             val key = PreferenceKey.ENTRIES_INITIAL_TAB
-            val tabOffset = if (initialHomeCategory == Category.MyBookmarks) 2 else 0
 
-            setText(EntriesTabType.fromInt(prefs.getInt(key) + tabOffset).textId)
+            val initialTabs = getTabTitleIds(prefs)
+            val tabIdx = prefs.getInt(key)
+            setText(initialTabs[tabIdx])
             visibility = initialTabItemVisibility
 
             setOnClickListener {
-                val currentInitialTab = EntriesTabType.fromInt(prefs.getInt(key) + tabOffset)
-                val currentHomeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
-                val items =
-                    if (currentHomeCategory == Category.MyBookmarks) {
-                        listOf(EntriesTabType.MYBOOKMARKS, EntriesTabType.READ_LATER)
-                    }
-                    else {
-                        listOf(EntriesTabType.POPULAR, EntriesTabType.RECENT)
-                    }
+                val items = getTabTitleIds(prefs)
 
                 AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle(R.string.pref_entries_initial_tab_desc)
                     .setNegativeButton(R.string.dialog_cancel)
                     .setSingleChoiceItems(
-                        items.map { context.getString(it.textId) },
-                        currentInitialTab.ordinal - tabOffset)
+                        items.map { context.getString(it) },
+                        prefs.getInt(key))
                     .show(childFragmentManager, DIALOG_HOME_TAB)
             }
         }
@@ -159,6 +156,13 @@ class PreferencesEntriesFragment :
         return view
     }
 
+    private fun getTabTitleIds(prefs: SafeSharedPreferences<PreferenceKey>) : List<Int> =
+        when (Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))) {
+            Category.MyBookmarks -> listOf(R.string.entries_tab_mybookmarks, R.string.entries_tab_read_later)
+            Category.Stars -> listOf(R.string.entries_tab_my_stars, R.string.entries_tab_stars_report)
+            else -> listOf(R.string.entries_tab_hot, R.string.entries_tab_recent)
+        }
+
     /** ダイアログ項目の選択 */
     override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
@@ -187,7 +191,8 @@ class PreferencesEntriesFragment :
             }
 
             DIALOG_HOME_CATEGORY -> {
-                val cat = Category.fromInt(which)
+                val categories = dialog.getAdditionalData<Array<Category>>("categories")!!
+                val cat = categories[which]
                 prefs.edit {
                     putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, cat.ordinal)
                 }
@@ -195,16 +200,16 @@ class PreferencesEntriesFragment :
                     text = dialog.items!![which]
                 }
 
-                val v = (!cat.singleColumns).toVisibility()
-                view?.preferences_entries_initial_tab_desc?.visibility = v
-                view?.preferences_entries_initial_tab?.run initialTab@ {
-                    this@initialTab.visibility = v
-                    val tabOffset = if (cat == Category.MyBookmarks) 2 else 0
-                    val key = PreferenceKey.ENTRIES_INITIAL_TAB
-                    val currentInitialTab = EntriesTabType.fromInt(prefs.getInt(key) + tabOffset)
-                    this@initialTab.setText(currentInitialTab.textId)
+                view?.run {
+                    val v = (!cat.singleColumns).toVisibility()
+                    preferences_entries_initial_tab_desc?.visibility = v
+                    preferences_entries_initial_tab?.run initialTab@ {
+                        val tabIdx = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
+                        val tabTitles = getTabTitleIds(prefs)
+                        setText(tabTitles[tabIdx])
+                        visibility = v
+                    }
                 }
-
                 dialog.dismiss()
             }
 

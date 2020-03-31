@@ -41,7 +41,7 @@ enum class PreferenceKey(
     ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.ordinal),
     ENTRY_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.ordinal),
     ENTRIES_HOME_CATEGORY(typeInfo<Int>(), Category.All.ordinal),
-    ENTRIES_INITIAL_TAB(typeInfo<Int>(), EntriesTabType.POPULAR.ordinal),
+    ENTRIES_INITIAL_TAB(typeInfo<Int>(), 0),
     ENTRIES_MENU_TAP_GUARD(typeInfo<Boolean>(), true),
     ENTRIES_HIDING_TOOLBAR_BY_SCROLLING(typeInfo<Boolean>(), true),
 
@@ -93,14 +93,7 @@ object PreferenceKeyMigration {
             if (homeCategoryOrdinal > 0) {
                 val fixedCategoryOrdinal = homeCategoryOrdinal + 1
                 putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, fixedCategoryOrdinal)
-
-                when (Category.fromInt(fixedCategoryOrdinal)) {
-                    Category.MyBookmarks ->
-                        putInt(PreferenceKey.ENTRIES_INITIAL_TAB, EntriesTabType.MYBOOKMARKS.ordinal)
-
-                    else ->
-                        putInt(PreferenceKey.ENTRIES_INITIAL_TAB, EntriesTabType.POPULAR.ordinal)
-                }
+                putInt(PreferenceKey.ENTRIES_INITIAL_TAB, 0)
             }
         }
         // 以下、次のバージョン移行処理
@@ -110,25 +103,33 @@ object PreferenceKeyMigration {
     /**
      * v2 -> v3
      *
-     * - Category.MyTagsをCategory.MyBookmarksに統合した
-     * - Category.MyStarsとCategory.StarsReportをCategory.Starに統合した (MyStars→Starsにリネーム、StarsReportをdeprecatedに設定)
+     * 1. Category.MyTagsをCategory.MyBookmarksに統合した
+     * 2. Category.MyStarsとCategory.StarsReportをCategory.Starに統合した (MyStars→Starsにリネーム、StarsReportをdeprecatedに設定)
+     * 3. INITIAL_TAB を EntriesTabTypeのordinalではなく、TabIndex(0or1)に変更
      */
     private fun migrateFromVersion2(context: Context) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val homeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
+        val initialTab = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
+
         prefs.edit {
             when (homeCategory) {
+                // 1.
                 Category.MyTags -> {
                     putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.MyBookmarks.ordinal)
-                    putInt(PreferenceKey.ENTRIES_INITIAL_TAB, EntriesTabType.MYBOOKMARKS.ordinal)
+                    putInt(PreferenceKey.ENTRIES_INITIAL_TAB, 0)
                 }
 
+                // 2.
                 Category.StarsReport -> {
                     putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.Stars.ordinal)
                 }
 
                 else -> { /* do nothing */ }
             }
+
+            // 3.
+            putInt(PreferenceKey.ENTRIES_INITIAL_TAB, initialTab % 2)
         }
     }
 }
