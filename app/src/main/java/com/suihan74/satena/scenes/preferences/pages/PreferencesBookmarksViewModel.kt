@@ -69,6 +69,10 @@ class PreferencesBookmarksViewModel(
         PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION
     )
 
+    /** タブ長押しで初期タブを変更する */
+    val changeHomeByLongTapping = createLiveData<Boolean>(
+        PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB
+    )
 
     class Factory(
         private val prefs: SafeSharedPreferences<PreferenceKey>

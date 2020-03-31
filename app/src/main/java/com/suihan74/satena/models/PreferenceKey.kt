@@ -59,6 +59,7 @@ enum class PreferenceKey(
     USING_POST_STAR_DIALOG(typeInfo<Boolean>(), true),
     BOOKMARK_LINK_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_PAGE.ordinal),
     BOOKMARK_LINK_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.ordinal),
+    BOOKMARKS_CHANGE_HOME_BY_LONG_TAPPING_TAB(typeInfo<Boolean>(), true),
 
     ////////////////////////////////////////
     // custom bookmarks tab
