@@ -50,7 +50,10 @@ abstract class EntriesFragment : Fragment() {
     private lateinit var uuid: String
 
     /** EntriesActivityのViewModel */
-    private lateinit var activityViewModel : EntriesViewModel
+    private val activityViewModel : EntriesViewModel by lazy {
+        val activity = requireActivity() as EntriesActivity
+        activity.viewModel
+    }
 
     protected lateinit var viewModel : EntriesFragmentViewModel
 
@@ -82,7 +85,6 @@ abstract class EntriesFragment : Fragment() {
         uuid = arguments.getString(ARG_UUID) ?: UUID.randomUUID().toString()
         arguments.putString(ARG_UUID, uuid)
 
-        activityViewModel = ViewModelProvider(activity)[EntriesViewModel::class.java]
         val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
         val repository = activityViewModel.repository
 

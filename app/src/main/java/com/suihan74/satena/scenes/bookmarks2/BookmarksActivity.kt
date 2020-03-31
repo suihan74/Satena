@@ -46,7 +46,28 @@ class BookmarksActivity :
     com.suihan74.satena.dialogs.EntryMenuDialog.Listener
 {
     /** ViewModel */
-    private lateinit var viewModel: BookmarksViewModel
+    val viewModel: BookmarksViewModel by lazy {
+        val repository = BookmarksRepository(
+            client = HatenaClient,
+            accountLoader = AccountLoader(
+                applicationContext,
+                HatenaClient,
+                MastodonClientHolder
+            )
+        )
+
+        val factory = BookmarksViewModel.Factory(
+            repository,
+            UserTagRepository(
+                SatenaApplication.instance.userTagDao
+            ),
+            IgnoredEntryRepository(
+                SatenaApplication.instance.ignoredEntryDao
+            )
+        )
+
+        ViewModelProvider(this, factory)[BookmarksViewModel::class.java]
+    }
 
     val bookmarksFragment
         get() = findFragmentByTag<BookmarksFragment>(FRAGMENT_BOOKMARKS)!!
@@ -93,26 +114,6 @@ class BookmarksActivity :
         if (firstLaunching) {
             val entry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
 
-            val repository = BookmarksRepository(
-                client = HatenaClient,
-                accountLoader = AccountLoader(
-                    applicationContext,
-                    HatenaClient,
-                    MastodonClientHolder
-                )
-            )
-
-            val factory = BookmarksViewModel.Factory(
-                repository,
-                UserTagRepository(
-                    SatenaApplication.instance.userTagDao
-                ),
-                IgnoredEntryRepository(
-                    SatenaApplication.instance.ignoredEntryDao
-                )
-            )
-            viewModel = ViewModelProvider(this, factory)[BookmarksViewModel::class.java]
-
             if (entry == null) {
                 // Entryのロードが必要
                 progress_bar.visibility = View.VISIBLE
@@ -151,12 +152,11 @@ class BookmarksActivity :
                 }
             }
             else {
-                repository.setEntry(entry)
+                viewModel.repository.setEntry(entry)
                 init(firstLaunching, entry, targetUser)
             }
         }
         else {
-            viewModel = ViewModelProvider(this)[BookmarksViewModel::class.java]
             init(firstLaunching, viewModel.entry, targetUser)
         }
 

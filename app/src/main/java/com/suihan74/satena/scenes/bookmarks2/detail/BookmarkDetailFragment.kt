@@ -42,7 +42,9 @@ class BookmarkDetailFragment :
     Fragment(),
     AlertDialogFragment.Listener
 {
-    private lateinit var activityViewModel: BookmarksViewModel
+    private val activityViewModel: BookmarksViewModel by lazy {
+        (requireActivity() as BookmarksActivity).viewModel
+    }
     lateinit var viewModel: BookmarkDetailViewModel
 
     private val bookmarksActivity
@@ -68,8 +70,6 @@ class BookmarkDetailFragment :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        activityViewModel = ViewModelProvider(requireActivity())[BookmarksViewModel::class.java]
 
         val bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)

@@ -40,7 +40,25 @@ class EntriesActivity : AppCompatActivity() {
         const val EXTRA_OPEN_NOTICES = "EntriesActivity.EXTRA_OPEN_NOTICES"
     }
 
-    private lateinit var viewModel : EntriesViewModel
+    /** Entry画面全体で使用するViewModel */
+    val viewModel : EntriesViewModel by lazy {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val factory = EntriesViewModel.Factory(
+            EntriesRepository(
+                client = HatenaClient,
+                accountLoader = AccountLoader(
+                    this,
+                    HatenaClient,
+                    MastodonClientHolder
+                ),
+                prefs = prefs,
+                noticesPrefs = SafeSharedPreferences.create(this),
+                historyPrefs = SafeSharedPreferences.create(this),
+                ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
+            )
+        )
+        ViewModelProvider(this, factory)[EntriesViewModel::class.java]
+    }
 
     /** ドロワーの開閉状態 */
     private val isDrawerOpened : Boolean
@@ -58,21 +76,6 @@ class EntriesActivity : AppCompatActivity() {
             else R.style.AppTheme_Light
         )
 
-        val factory = EntriesViewModel.Factory(
-            EntriesRepository(
-                client = HatenaClient,
-                accountLoader = AccountLoader(
-                    this,
-                    HatenaClient,
-                    MastodonClientHolder
-                ),
-                prefs = prefs,
-                noticesPrefs = SafeSharedPreferences.create(this),
-                historyPrefs = SafeSharedPreferences.create(this),
-                ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
-            )
-        )
-        viewModel = ViewModelProvider(this, factory)[EntriesViewModel::class.java]
         viewModel.initialize(
             onSuccess = {
                 if (savedInstanceState == null) {

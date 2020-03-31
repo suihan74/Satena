@@ -27,7 +27,7 @@ class FloatingActionButtonsFragment :
 {
     /** BookmarksActivityのViewModel */
     private val activityViewModel: BookmarksViewModel by lazy {
-        ViewModelProvider(activity as BookmarksActivity)[BookmarksViewModel::class.java]
+        (requireActivity() as BookmarksActivity).viewModel
     }
 
     /** BookmarksFragmentの状態管理用ViewModel */
@@ -58,7 +58,7 @@ class FloatingActionButtonsFragment :
         initFABs(view)
 
         // 「カスタム」タブでは設定ボタンを表示する
-        fragmentViewModel.selectedTab.observe(this, Observer {
+        fragmentViewModel.selectedTab.observe(viewLifecycleOwner, Observer {
             if (it == BookmarksTabType.CUSTOM.ordinal) {
                 view.custom_settings_button.show()
             }
@@ -68,8 +68,8 @@ class FloatingActionButtonsFragment :
         })
 
         // タブのブクマリストにサインインしているユーザーのブクマが存在するかを監視する
-        fragmentViewModel.selectedTabViewModel.observe(this, Observer { vm ->
-            vm.signedUserBookmark.observe(this, Observer { bookmark ->
+        fragmentViewModel.selectedTabViewModel.observe(viewLifecycleOwner, Observer { vm ->
+            vm.signedUserBookmark.observe(viewLifecycleOwner, Observer { bookmark ->
                 if (view.bookmarks_scroll_top_button.isShown) {
                     if (bookmark == null) {
                         view.bookmarks_scroll_my_bookmark_button.hide()
@@ -81,7 +81,7 @@ class FloatingActionButtonsFragment :
             })
         })
 
-        activityViewModel.signedIn.observe(this, Observer {
+        activityViewModel.signedIn.observe(viewLifecycleOwner, Observer {
             if (it) {
                 view.bookmark_button.show()
             }
@@ -97,18 +97,20 @@ class FloatingActionButtonsFragment :
         super.onResume()
         // 戻るボタンを監視
         onBackPressedCallbackForKeyword = requireActivity().onBackPressedDispatcher.addCallback(this, false) {
-            val view = view!!
-            if (view.bookmarks_search_text.visibility == View.VISIBLE) {
-                view.bookmarks_search_text.visibility = View.GONE
-                activityViewModel.filteringWord.postValue(null)
+            requireView().let { view ->
+                if (view.bookmarks_search_text.visibility == View.VISIBLE) {
+                    view.bookmarks_search_text.visibility = View.GONE
+                    activityViewModel.filteringWord.postValue(null)
+                }
             }
             isEnabled = false
         }
         onBackPressedCallbackForScroll = requireActivity().onBackPressedDispatcher.addCallback(this, false) {
-            val view = view!!
-            view.bookmarks_scroll_top_button.hide()
-            view.bookmarks_scroll_bottom_button.hide()
-            view.bookmarks_scroll_my_bookmark_button.hide()
+            requireView().let { view ->
+                view.bookmarks_scroll_top_button.hide()
+                view.bookmarks_scroll_bottom_button.hide()
+                view.bookmarks_scroll_my_bookmark_button.hide()
+            }
             isEnabled = false
         }
     }
