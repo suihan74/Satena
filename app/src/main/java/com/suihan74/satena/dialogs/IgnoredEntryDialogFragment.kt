@@ -19,10 +19,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
-import com.suihan74.utilities.hideSoftInputMethod
-import com.suihan74.utilities.showSoftInputMethod
-import com.suihan74.utilities.showToast
-import com.suihan74.utilities.toVisibility
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_dialog_ignored_entry.view.*
 
 enum class IgnoredEntryDialogTab(
@@ -81,7 +78,7 @@ class IgnoredEntryDialogViewModel : ViewModel() {
 }
 
 class IgnoredEntryDialogFragment : DialogFragment() {
-    var positiveAction : ((IgnoredEntry)->Boolean)? = null
+    var positiveAction : ((IgnoredEntryDialogFragment, IgnoredEntry)->Boolean)? = null
 
     private lateinit var model: IgnoredEntryDialogViewModel
     private var isEditMode: Boolean = false
@@ -93,31 +90,34 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         private const val ARG_MODIFYING_ENTRY = "ARG_MODIFYING_ENTRY"
         private const val ARG_INITIAL_TARGET = "ARG_INITIAL_TARGET"
 
-        fun createInstance(url: String = "", title: String = "", positiveAction: ((IgnoredEntry)->Boolean)? = null) = IgnoredEntryDialogFragment().apply {
+        fun createInstance(
+            url: String = "",
+            title: String = "",
+            positiveAction: ((IgnoredEntryDialogFragment, IgnoredEntry)->Boolean)? = null
+        ) = IgnoredEntryDialogFragment().withArguments {
             val editingUrl =
-                Regex("""^https?://""").find(url)?.let {
-                    url.substring(it.range.last + 1)
+                Regex("""^https?://""").find(url)?.let { r ->
+                    url.substring(r.range.last + 1)
                 } ?: url
 
-            arguments = Bundle().apply {
-                putString(ARG_EDITING_URL, editingUrl)
-                putString(ARG_EDITING_TEXT, title)
-                putBoolean(ARG_EDIT_MODE, false)
-            }
+            putString(ARG_EDITING_URL, editingUrl)
+            putString(ARG_EDITING_TEXT, title)
+            putBoolean(ARG_EDIT_MODE, false)
 
-            this.positiveAction = positiveAction
+            it.positiveAction = positiveAction
         }
 
-        fun createInstance(ignoredEntry: IgnoredEntry, positiveAction: ((IgnoredEntry) -> Boolean)? = null) = IgnoredEntryDialogFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARG_EDITING_URL, ignoredEntry.query)
-                putString(ARG_EDITING_TEXT, ignoredEntry.query)
-                putSerializable(ARG_MODIFYING_ENTRY, ignoredEntry)
-                putInt(ARG_INITIAL_TARGET, ignoredEntry.target.int)
-                putBoolean(ARG_EDIT_MODE, true)
-            }
+        fun createInstance(
+            ignoredEntry: IgnoredEntry,
+            positiveAction: ((IgnoredEntryDialogFragment, IgnoredEntry) -> Boolean)? = null
+        ) = IgnoredEntryDialogFragment().withArguments {
+            putString(ARG_EDITING_URL, ignoredEntry.query)
+            putString(ARG_EDITING_TEXT, ignoredEntry.query)
+            putSerializable(ARG_MODIFYING_ENTRY, ignoredEntry)
+            putEnum(ARG_INITIAL_TARGET, ignoredEntry.target) { it.int }
+            putBoolean(ARG_EDIT_MODE, true)
 
-            this.positiveAction = positiveAction
+            it.positiveAction = positiveAction
         }
     }
 
@@ -128,7 +128,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             if (savedInstanceState == null) {
                 editingUrl.value = arguments?.getString(ARG_EDITING_URL) ?: ""
                 editingText.value = arguments?.getString(ARG_EDITING_TEXT) ?: ""
-                ignoreTarget.value = IgnoreTarget.fromInt(arguments?.getInt(ARG_INITIAL_TARGET) ?: IgnoreTarget.ENTRY.int)
+                ignoreTarget.value = arguments?.selectEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.int } ?: IgnoreTarget.ENTRY
             }
         }
     }
@@ -246,12 +246,12 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
                     it.setOnClickListener {
                         if (queryText.text.isNullOrBlank()) {
-                            context.showToast(R.string.msg_ignored_entry_dialog_empty_query)
+                            activity?.showToast(R.string.msg_ignored_entry_dialog_empty_query)
                             return@setOnClickListener
                         }
 
                         val ignoredEntry = model.createIgnoredEntry(modifyingEntry?.id ?: 0)
-                        if (positiveAction?.invoke(ignoredEntry) != false) {
+                        if (positiveAction?.invoke(this@IgnoredEntryDialogFragment, ignoredEntry) != false) {
                             dismiss()
                         }
                     }

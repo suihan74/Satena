@@ -22,7 +22,9 @@
         <item name="android:statusBarColor">@color/colorPrimary</item>
         <item name="android:textColorPrimary">@color/colorPrimaryText</item>
 
+        <!-- SearchView -->
         <item name="searchViewStyle">@style/SearchViewStyle</item>
+        <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView</item>
 
         <!-- TabLayout -->
         <item name="tabSelectedTextColor">@color/colorPrimary</item>
@@ -202,9 +204,26 @@
         <item name="textColor">@color/colorPrimaryText</item>
     </style>
 
+    <!-- SearchView上の文字入力部分 -->
+    <style name="AutoCompleteTextView" parent="Widget.AppCompat.AutoCompleteTextView">
+        <!-- 入力位置のカーソル -->
+        <item name="android:textCursorDrawable">@drawable/searchview_cursor</item>
+    </style>
+
     <!-- IgnoreTarget @ IgnoredEntryDialog -->
     <style name="IgnoreTargetCheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
         <item name="colorControlNormal">@color/textColor</item>
+    </style>
+
+    <!-- RecyclerView -->
+    <style name="RecyclerView">
+        <item name="android:scrollbarThumbVertical">@drawable/scrollbar_thumb</item>
+        <item name="android:scrollbarSize">4dp</item>
+    </style>
+
+    <style name="RecyclerView.Linear" parent="RecyclerView">
+        <item name="layoutManager">androidx.recyclerview.widget.LinearLayoutManager</item>
+        <item name="android:scrollbars">vertical</item>
     </style>
 
 </resources>

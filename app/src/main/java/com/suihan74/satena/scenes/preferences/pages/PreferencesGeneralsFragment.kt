@@ -46,7 +46,7 @@ class PreferencesGeneralsFragment :
 
         // ダークテーマか否か
         val initialTheme = prefs.getBoolean(PreferenceKey.DARK_THEME)
-        viewModel.darkTheme.observe(this, Observer {
+        viewModel.darkTheme.observe(viewLifecycleOwner, Observer {
             // ユーザーの操作によって値が変更された場合のみテーマの再設定とアプリ再起動を行う
             // この判別をしないと無限ループする
             if (initialTheme == it) return@Observer
@@ -64,7 +64,7 @@ class PreferencesGeneralsFragment :
         })
 
         // バックグラウンドで通知を確認する
-        viewModel.checkNotices.observe(this, Observer {
+        viewModel.checkNotices.observe(viewLifecycleOwner, Observer {
             if (it) SatenaApplication.instance.startNotificationService()
             else SatenaApplication.instance.stopNotificationService()
         })
@@ -80,7 +80,7 @@ class PreferencesGeneralsFragment :
                 .show(childFragmentManager, "notices_intervals_picker")
         }
         // ボタンテキストに変更を反映
-        viewModel.checkNoticesInterval.observe(this, Observer {
+        viewModel.checkNoticesInterval.observe(viewLifecycleOwner, Observer {
             view.button_checking_notices_interval.text = getString(R.string.pref_generals_notices_intervals_button_text, it)
         })
 

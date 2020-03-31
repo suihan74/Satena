@@ -13,13 +13,8 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.satena.scenes.entries.EntriesActivity
-import com.suihan74.satena.scenes.entries.notices.checkFromSpam
-import com.suihan74.satena.scenes.entries.notices.message
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.makeSpannedFromHtml
+import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.utilities.*
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
 import kotlin.coroutines.CoroutineContext
@@ -221,7 +216,7 @@ class NotificationService : Service(), CoroutineScope {
                 }
 
                 val openNoticesIntent = Intent(context, EntriesActivity::class.java).apply {
-                    putExtra(EntriesActivity.EXTRA_DISPLAY_NOTICES, true)
+                    putExtra(EntriesActivity.EXTRA_OPEN_NOTICES, true)
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 }
 
@@ -241,7 +236,7 @@ class NotificationService : Service(), CoroutineScope {
 
             else -> {
                 Intent(context, EntriesActivity::class.java).apply {
-                    putExtra(EntriesActivity.EXTRA_DISPLAY_NOTICES, true)
+                    putExtra(EntriesActivity.EXTRA_OPEN_NOTICES, true)
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 }
             }

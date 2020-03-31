@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable name="entry" type="com.suihan74.hatenaLib.Entry"/>
+    </data>
+
+    <RelativeLayout
+            android:background="?android:attr/selectableItemBackground"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="6dp"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/favicon"
+                src="@{entry.faviconUrl}"
+                android:contentDescription="@null"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="8dp"/>
+
+        <ImageView
+                android:id="@+id/image"
+                src="@{entry.imageUrl}"
+                android:contentDescription="@null"
+                android:layout_alignParentEnd="true"
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                android:layout_alignTop="@id/favicon"
+                android:layout_marginStart="10dp"/>
+
+        <TextView
+                android:id="@+id/title"
+                android:text="@{entry.title}"
+                android:contentDescription="@null"
+                android:textColor="?attr/textColor"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:lines="3"
+                android:lineSpacingExtra="3sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/favicon"
+                android:layout_toStartOf="@id/image"
+                android:layout_alignTop="@id/favicon"/>
+
+        <TextView
+                android:id="@+id/bookmark_users"
+                android:text="@{entry.count + ` users`}"
+                android:background="@color/bookmarkUsersCountBackground"
+                android:textColor="@color/bookmarkUsersCountText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/title"
+                android:layout_toEndOf="@id/favicon"
+                android:layout_marginTop="6dp"/>
+
+        <TextView
+                android:id="@+id/domain"
+                rootUrl="@{entry.rootUrl}"
+                url="@{entry.url}"
+                android:textColor="#888"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="viewEnd"
+                android:layout_toStartOf="@id/image"
+                android:layout_toEndOf="@id/bookmark_users"
+                android:layout_alignBaseline="@id/bookmark_users"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:layout_marginStart="16dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/comments_list"
+                style="@style/RecyclerView.Linear"
+                src="@{entry}"
+                divider="@{@drawable/recycler_view_item_divider}"
+                android:background="?attr/entryCommentBackground"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/image"
+                android:layout_below="@id/domain"
+                android:layout_marginTop="4dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+</layout>

@@ -16,10 +16,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.TappedActionLauncher
-import com.suihan74.satena.dialogs.EntryMenuDialog
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
@@ -30,7 +29,8 @@ import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
-import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
@@ -43,7 +43,7 @@ class BookmarksActivity :
     UserTagSelectionDialog.Listener,
     ReportDialog.Listener,
     UserTagDialogFragment.Listener,
-    EntryMenuDialog.Listener
+    com.suihan74.satena.dialogs.EntryMenuDialog.Listener
 {
     /** ViewModel */
     private lateinit var viewModel: BookmarksViewModel
@@ -179,9 +179,15 @@ class BookmarksActivity :
         }
 
         // 接続状態を監視する
+        var isNetworkReceiverInitialized = false
         val networkReceiver = SatenaApplication.instance.networkReceiver
-        networkReceiver.state.observe(this, Observer { connected ->
-            if (connected == true && networkReceiver.previousState != true) {
+        networkReceiver.state.observe(this, Observer { state ->
+            if (!isNetworkReceiverInitialized) {
+                isNetworkReceiverInitialized = true
+                return@Observer
+            }
+
+            if (state == NetworkReceiver.State.CONNECTED) {
                 viewModel.init(true)
             }
         })
@@ -195,19 +201,20 @@ class BookmarksActivity :
     }
 
     /** Intentから適切なエントリーURLを受け取る */
-    private fun getUrlFromIntent(intent: Intent) : String =
-        when (intent.action) {
-            // 閲覧中のURLが送られてくる場合
-            Intent.ACTION_SEND ->
-                intent.getStringExtra(Intent.EXTRA_TEXT)!!
+    private fun getUrlFromIntent(intent: Intent) : String {
+        return intent.getStringExtra(EXTRA_ENTRY_URL)
+            ?: when (intent.action) {
+                // 閲覧中のURLが送られてくる場合
+                Intent.ACTION_SEND ->
+                    intent.getStringExtra(Intent.EXTRA_TEXT)!!
 
-            // ブコメページのURLが送られてくる場合
-            Intent.ACTION_VIEW ->
-                HatenaClient.getEntryUrlFromCommentPageUrl(intent.dataString!!)
+                // ブコメページのURLが送られてくる場合
+                Intent.ACTION_VIEW ->
+                    HatenaClient.getEntryUrlFromCommentPageUrl(intent.dataString!!)
 
-            else ->
-                intent.getStringExtra(EXTRA_ENTRY_URL)!!
-        }
+                else -> throw RuntimeException("cannot get url")
+            }
+    }
 
     /** entryロード完了後に画面を初期化 */
     private fun init(firstLaunching: Boolean, entry: Entry, targetUser: String?) {
@@ -355,11 +362,10 @@ class BookmarksActivity :
         viewModel.ignoredUsers.value.contains(user)
 
     override fun onShowEntries(user: String) {
-        startActivity(
-            Intent(this, EntriesActivity::class.java).apply {
-                putExtra(EntriesActivity.EXTRA_DISPLAY_USER, user)
-            }
-        )
+        val intent = Intent(this, EntriesActivity::class.java).apply {
+            putExtra(EntriesActivity.EXTRA_USER, user)
+        }
+        startActivity(intent)
     }
 
     override fun onIgnoreUser(user: String, ignore: Boolean) {
@@ -478,18 +484,23 @@ class BookmarksActivity :
 
     // --- リンクメニューダイアログの処理 --- //
 
-    override fun onItemSelected(item: String, dialog: EntryMenuDialog) {
+    override fun onItemSelected(item: String, dialog: com.suihan74.satena.dialogs.EntryMenuDialog) {
         val entry = dialog.entry
+        val action = TapEntryAction.values().first { getString(it.titleId) == item }
 
-        when (item) {
-            getString(R.string.entry_action_show_comments) ->
-                TappedActionLauncher.launch(this, TapEntryAction.SHOW_COMMENTS, entry.url)
-
-            getString(R.string.entry_action_show_page) ->
-                TappedActionLauncher.launch(this, TapEntryAction.SHOW_PAGE, entry.url)
-
-            getString(R.string.entry_action_show_page_in_browser) ->
-                TappedActionLauncher.launch(this, TapEntryAction.SHOW_PAGE_IN_BROWSER, entry.url)
+        if (entry.id > 0) {
+            EntryMenuDialog.act(
+                entry,
+                action,
+                supportFragmentManager
+            )
+        }
+        else {
+            EntryMenuDialog.act(
+                entry.url,
+                action,
+                supportFragmentManager
+            )
         }
     }
 
@@ -508,13 +519,13 @@ class BookmarksActivity :
     fun onLinkClicked(url: String) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
-        TappedActionLauncher.launch(this, act, url, supportFragmentManager)
+        EntryMenuDialog.act(url, act, supportFragmentManager)
     }
 
     fun onLinkLongClicked(url: String) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
-        TappedActionLauncher.launch(this, act, url, supportFragmentManager)
+        EntryMenuDialog.act(url, act, supportFragmentManager)
     }
 
     fun onEntryIdClicked(eid: Long) {

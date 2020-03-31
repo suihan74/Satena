@@ -2,6 +2,7 @@ package com.suihan74.satena.models
 
 import com.suihan74.satena.R
 
+@Suppress("unused")
 enum class Category(
     val textId: Int,
     val iconId: Int,
@@ -80,9 +81,11 @@ enum class Category(
         R.drawable.ic_category_mybookmarks,
         requireSignedIn = true),
 
+    @Deprecated("`MyTags` is integrated into `MyBookmarks`")
     MyTags(
         R.string.category_mytags,
         R.drawable.ic_category_mytags,
+        displayInList = false,
         requireSignedIn = true,
         singleColumns = true),
 
@@ -91,15 +94,16 @@ enum class Category(
         R.drawable.ic_category_search,
         singleColumns = true),
 
-    MyStars(
+    Stars(
         R.string.category_mystars,
         R.drawable.ic_star,
-        requireSignedIn = true,
-        singleColumns = true),
+        requireSignedIn = true),
 
+    @Deprecated("`MyStars` & `StarsReport` is integrated into `Stars`")
     StarsReport(
         R.string.category_stars_report,
         R.drawable.ic_star,
+        displayInList = false,
         requireSignedIn = true,
         singleColumns = true),
 
@@ -119,7 +123,14 @@ enum class Category(
         displayInList = false),
 
     User(0, 0,
-        displayInList = false)
+        displayInList = false),
+
+    Notices(
+        R.string.notices_desc,
+        R.drawable.ic_notifications,
+        displayInList = false,
+        requireSignedIn = true,
+        singleColumns = true)
 
     ;
 

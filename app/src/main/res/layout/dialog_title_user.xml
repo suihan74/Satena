@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable name="userName" type="String"/>
+        <variable name="iconUrl" type="String"/>
+    </data>
+
+    <TextView
+            android:paddingTop="14dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textSize="18sp"
+            android:textColor="?attr/textColor"
+            drawableLeft="@{iconUrl}"
+            android:drawablePadding="4dp"
+            android:text="@{`id:` + userName}"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+</layout>

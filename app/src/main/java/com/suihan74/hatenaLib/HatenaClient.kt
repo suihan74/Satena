@@ -23,6 +23,7 @@ import kotlin.coroutines.CoroutineContext
 
 /////////////////////////////////////////////////////////////////
 
+@Suppress("unused")
 object HatenaClient : BaseClient(), CoroutineScope {
     internal const val W_BASE_URL = "https://www.hatena.ne.jp"
     internal const val B_BASE_URL = "https://b.hatena.ne.jp"
@@ -304,7 +305,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * 対象urlのブックマークを削除する
      */
-    fun deleteBookmarkAsync(url: String) : Deferred<Any> = async {
+    fun deleteBookmarkAsync(url: String) = async {
         require(signedIn()) { "need to login for deleting bookmarks" }
         val account = account!!
         val apiUrl = "$B_BASE_URL/${account.name}/api.delete_bookmark.json"
@@ -716,7 +717,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 val title = doc.allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:title" }
                     ?.attr("content")
-                    ?: doc.select("title").html()
+                    ?: doc.select("title").html().let { title ->
+                        if (title.isNullOrEmpty()) url
+                        else title
+                    }
 
                 val description = doc.allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:description" }
@@ -740,8 +744,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     description = description,
                     count = 0,
                     url = actualUrl,
-                    rootUrl = uri.let { it.scheme!! + "://" + it.host!! },
-                    faviconUrl = "https://www.google.com/s2/favicons?domain=${uri.host}",
+                    rootUrl = getTemporaryRootUrl(uri),
+                    faviconUrl = getFaviconUrl(uri),
                     imageUrl = imageUrl)
             }
             else {
@@ -752,8 +756,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     description = "",
                     count = 0,
                     url = url,
-                    rootUrl = uri.let { it.scheme!! + "://" + it.host!! },
-                    faviconUrl = "https://www.google.com/s2/favicons?domain=${uri.host}",
+                    rootUrl = getTemporaryRootUrl(uri),
+                    faviconUrl = getFaviconUrl(uri),
                     imageUrl = "")
             }
         }
@@ -772,6 +776,74 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 url = it.url,
                 entryUrl = it.url,
                 screenshot = it.imageUrl
+            )
+        }
+    }
+
+    /**c
+     * エントリIDからエントリ情報を取得する
+     * 失敗時例外送出: RuntimeException()  ; TODO: 例外型なんとかしたい
+     */
+    fun getEntryAsync(eid: Long) : Deferred<Entry> {
+        val url = "$B_BASE_URL/entry/$eid"
+        return getEntryImplAsync(url)
+    }
+
+    /**
+     * エントリが存在するかどうかを調べ、存在する場合はエントリ情報を返す。
+     * 存在しない場合は疑似的な内容のEntryを作成して返す
+     */
+    fun getEntryAsync(url: String) : Deferred<Entry> {
+        return try {
+            val commentPageUrl = getCommentPageUrlFromEntryUrl(url)
+            getEntryImplAsync(commentPageUrl)
+        }
+        catch (e: Throwable) {
+            getEmptyEntryAsync(url)
+        }
+    }
+
+    /**
+     * コメントページのURLを渡してエントリが存在するかどうかを調べ、存在する場合はエントリ情報を返す。
+     * 存在しない場合は例外を送出する
+     */
+    private fun getEntryImplAsync(commentPageUrl: String) : Deferred<Entry> = async {
+        return@async get(commentPageUrl).use { response ->
+            if (!response.isSuccessful) {
+                throw RuntimeException("cannot get an entry: $commentPageUrl")
+            }
+
+            val bodyBytes = response.body!!.bytes()
+            val bodyStr = bodyBytes.toString(Charsets.UTF_8)
+            val doc = Jsoup.parse(bodyStr)
+            val root = doc.getElementsByTag("html").first()
+
+            val eid = root.attr("data-entry-eid").toLong()
+            val count = root.attr("data-bookmark-count").toInt()
+            val entryUrl = root.attr("data-entry-url")
+
+            val imageUrl = doc.head().getElementsByTag("meta")
+                .firstOrNull { it.attr("property") == "og:image" || it.attr("name") == "twitter:image:src" }
+                ?.attr("content")
+                ?: ""
+
+            val title = doc.getElementsByClass("entry-info-title").firstOrNull()?.text() ?: entryUrl
+
+            val domainElement = doc.getElementsByAttributeValue("data-gtm-label", "entry-info-domain").firstOrNull()
+            val rootUrl = domainElement?.text() ?: getTemporaryRootUrl(entryUrl)
+            val faviconUrl = domainElement?.getElementsByTag("img")?.firstOrNull()?.attr("src") ?: getFaviconUrl(entryUrl)
+
+            val description = doc.getElementsByClass("entry-about-description").firstOrNull()?.text() ?: ""
+
+            Entry(
+                id = eid,
+                title = title,
+                description = description,
+                count = count,
+                url = entryUrl,
+                rootUrl = rootUrl,
+                faviconUrl = faviconUrl,
+                imageUrl = imageUrl
             )
         }
     }
@@ -1115,6 +1187,26 @@ object HatenaClient : BaseClient(), CoroutineScope {
         require(signedIn()) { "need to sign-in to get user's tags" }
         return getUserTagsAsync(account!!.name)
     }
+
+    /**
+     * 暫定的なrootUrlを生成する
+     */
+    fun getTemporaryRootUrl(url: String) : String = getTemporaryRootUrl(Uri.parse(url))
+
+    /**
+     * 暫定的なrootUrlを生成する
+     */
+    fun getTemporaryRootUrl(uri: Uri) : String = uri.let { it.scheme!! + "://" + it.host!! }
+
+    /**
+     * URLからファビコンURLを取得する
+     */
+    fun getFaviconUrl(url: String) : String = getFaviconUrl(Uri.parse(url))
+
+    /**
+     * URLからファビコンURLを取得する
+     */
+    fun getFaviconUrl(uri: Uri) : String = "https://www.google.com/s2/favicons?domain=${uri.host}"
 
     /**
      * ユーザー名からアイコンURLを取得する

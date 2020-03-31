@@ -5,16 +5,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.*
 import com.suihan74.utilities.*
+import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
 
 class BookmarksTabFragment :
@@ -40,10 +39,8 @@ class BookmarksTabFragment :
         get() = requireParentFragment() as BookmarksFragment
 
     companion object {
-        fun createInstance(tabType: BookmarksTabType) = BookmarksTabFragment().apply {
-            arguments = Bundle().apply {
-                putInt(ARG_TAB_TYPE, tabType.ordinal)
-            }
+        fun createInstance(tabType: BookmarksTabType) = BookmarksTabFragment().withArguments {
+            putEnum(ARG_TAB_TYPE, tabType)
         }
         private const val ARG_TAB_TYPE = "ARG_TAB_TYPE"
     }
@@ -54,7 +51,7 @@ class BookmarksTabFragment :
         val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
         val factory = BookmarksTabViewModel.Factory(activityViewModel, prefs)
         viewModel =
-            when (BookmarksTabType.fromInt(requireArguments().getInt(ARG_TAB_TYPE))) {
+            when (requireArguments().getEnum(ARG_TAB_TYPE, BookmarksTabType.POPULAR)) {
                 BookmarksTabType.POPULAR ->
                     ViewModelProvider(this, factory)[PopularTabViewModel::class.java]
 
@@ -118,11 +115,7 @@ class BookmarksTabFragment :
 
         // recycler view
         view.bookmarks_list.apply {
-            val dividerItemDecoration = DividerItemDecorator(
-                ContextCompat.getDrawable(requireContext(), R.drawable.recycler_view_item_divider)!!
-            )
-            addItemDecoration(dividerItemDecoration)
-            layoutManager = LinearLayoutManager(requireContext())
+            setDivider(R.drawable.recycler_view_item_divider)
             adapter = bookmarksAdapter
 
             // スクロールで追加分を取得

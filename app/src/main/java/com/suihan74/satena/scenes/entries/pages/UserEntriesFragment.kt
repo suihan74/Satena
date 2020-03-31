@@ -10,6 +10,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.SingleTabEntriesFragmentBase
 import com.suihan74.satena.scenes.entries.initialize
+import com.suihan74.utilities.withArguments
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -31,10 +32,8 @@ class UserEntriesFragment : SingleTabEntriesFragmentBase() {
     override val currentCategory = Category.User
 
     companion object {
-        fun createInstance(user: String) = UserEntriesFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARG_KEY_USER, user)
-            }
+        fun createInstance(user: String) = UserEntriesFragment().withArguments {
+            putString(ARG_KEY_USER, user)
         }
 
         private const val ARG_KEY_USER = "user"

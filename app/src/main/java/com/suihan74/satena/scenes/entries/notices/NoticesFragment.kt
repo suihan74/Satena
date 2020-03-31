@@ -11,7 +11,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.HatenaClient
@@ -25,8 +24,8 @@ import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.CoroutineScopeFragment
-import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -175,10 +174,7 @@ class NoticesFragment : CoroutineScopeFragment(), AlertDialogFragment.Listener {
         mNoticesAdapter = noticesAdapter
 
         view.findViewById<RecyclerView>(R.id.notices_list).apply {
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(requireContext(),
-                R.drawable.recycler_view_item_divider
-            )!!)
-            addItemDecoration(dividerItemDecoration)
+            setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(context)
             adapter = noticesAdapter
         }

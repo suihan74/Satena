@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -19,6 +18,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.utilities.*
+import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.footer_recycler_view_loadable.view.*
 import kotlinx.android.synthetic.main.listview_item_bookmarks.view.*
 import org.threeten.bp.format.DateTimeFormatter
@@ -321,10 +321,7 @@ open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>
                         removeItemDecorationAt(0)
                     }
 
-                    val dividerItemDecoration = DividerItemDecorator(
-                        ContextCompat.getDrawable(context, R.drawable.recycler_view_item_divider)!!
-                    )
-                    addItemDecoration(dividerItemDecoration)
+                    setDivider(R.drawable.recycler_view_item_divider)
                 }
             }
         }
