@@ -31,7 +31,10 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     }
 
     /** EntriesActivityのViewModel */
-    protected lateinit var activityViewModel : EntriesViewModel
+    protected val activityViewModel : EntriesViewModel by lazy {
+        val activity = requireActivity() as EntriesActivity
+        activity.viewModel
+    }
 
     /** タブの表示内容に関するViewModel */
     protected lateinit var viewModel : EntriesTabFragmentViewModel
@@ -58,8 +61,6 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        activityViewModel = ViewModelProvider(requireActivity())[EntriesViewModel::class.java]
 
         val arguments = requireArguments()
         val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
