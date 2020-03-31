@@ -13,6 +13,8 @@ import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragment
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.setOnTabLongClickListener
+import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 abstract class TwinTabsEntriesFragment : EntriesFragment() {
@@ -44,6 +46,28 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
                     fragment?.scrollToTop()
                 }
             })
+
+            // タブを長押しで最初に表示するタブを変更
+            setOnTabLongClickListener { idx ->
+                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                val category = viewModel.category.value!!
+                val homeCategoryInt = prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY)
+                val initialTab = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
+
+                if (category.ordinal != homeCategoryInt || initialTab != idx) {
+                    val tabText = viewModel.getTabTitle(requireContext(), idx)
+                    prefs.edit {
+                        put(PreferenceKey.ENTRIES_HOME_CATEGORY, category.ordinal)
+                        put(PreferenceKey.ENTRIES_INITIAL_TAB, idx)
+                    }
+                    activity?.showToast(
+                        R.string.msg_entries_initial_tab_changed,
+                        getString(category.textId),
+                        tabText
+                    )
+                }
+                return@setOnTabLongClickListener true
+            }
         }
 
         // タブ初期選択
