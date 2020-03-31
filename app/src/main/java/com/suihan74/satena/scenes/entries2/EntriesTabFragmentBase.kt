@@ -71,11 +71,6 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             tabPosition
         )
         viewModel = ViewModelProvider(this, factory)[EntriesTabFragmentViewModel::class.java]
-
-        // エントリリストの初期ロード
-        if (savedInstanceState == null) {
-            viewModel.refresh(onErrorRefreshEntries)
-        }
     }
 
     override fun onCreateView(
@@ -88,6 +83,11 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             vm = viewModel
         }
         this.binding = binding
+
+        // エントリリストの初期ロード
+        if (savedInstanceState == null) {
+            viewModel.refresh(onErrorRefreshEntries)
+        }
 
         return binding.root.also { view ->
             initializeRecyclerView(view.entries_list, view.swipe_layout)
