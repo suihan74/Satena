@@ -162,7 +162,7 @@ class EntriesActivity : AppCompatActivity() {
         }
 
         // メニューを表示している間の黒背景
-        entries_menu_background_guard_full.setOnTouchListener { v, event ->
+        entries_menu_background_guard_full.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_UP -> {
                     closeFABMenu()

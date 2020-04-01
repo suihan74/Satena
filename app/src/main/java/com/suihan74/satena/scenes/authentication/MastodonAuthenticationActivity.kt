@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.authentication
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -65,7 +64,7 @@ class MastodonAuthenticationActivity : ActivityBase() {
                     try {
                         val instance = uri.host!!
                         val authCode = uri.getQueryParameter("code") ?: throw Exception("invalid code")
-                        continueAuthorizeMastodon(instance, authCode, this@MastodonAuthenticationActivity)
+                        continueAuthorizeMastodon(instance, authCode)
                         showToast("$instance にログイン完了")
 
                         // 前の画面に戻る
@@ -123,7 +122,7 @@ class MastodonAuthenticationActivity : ActivityBase() {
         }
     }
 
-    private suspend fun continueAuthorizeMastodon(instanceName: String, code: String, context: Context) = withContext(Dispatchers.IO) {
+    private suspend fun continueAuthorizeMastodon(instanceName: String, code: String) = withContext(Dispatchers.IO) {
         val client = MastodonClient.Builder(
             instanceName,
             OkHttpClient.Builder(),
