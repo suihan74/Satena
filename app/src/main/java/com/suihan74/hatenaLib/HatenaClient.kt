@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
 import okhttp3.Request
+import okhttp3.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -77,9 +78,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun signedIn() : Boolean = mSignedIn //mRk != null && account != null
     private var mSignedIn : Boolean = false
-        get() = synchronized(this) { field }
+        get() = synchronized(field) { field }
         set(value) {
-            synchronized(this) {
+            synchronized(field) {
                 field = value
             }
         }
@@ -87,7 +88,14 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * HatenaClientがはてなスターのサービスにログイン済みかを確認する
      */
-    fun signedInStar() : Boolean = mRksForStar != null
+    fun signedInStar() : Boolean = mSignedInStar
+    private var mSignedInStar : Boolean = false
+        get() = synchronized(field) { field }
+        set(value) {
+            synchronized(field) {
+                field = value
+            }
+        }
 
     /**
      * ログイン
@@ -98,38 +106,16 @@ object HatenaClient : BaseClient(), CoroutineScope {
         }
 
         val url = "$W_BASE_URL/login"
-
-        val response = post(url, mapOf(
+        val params = mapOf(
             "name" to name,
             "password" to password
-        ))
-        if (response.isSuccessful) {
-            val cookies = cookieManager.cookieStore.cookies
-            cookies.firstOrNull { it.name == "rk" }?.let {
-                mRk = it
+        )
 
-                response.close()
-                try {
-                    account = getAccountAsync().await()
-                    mSignedIn = true
+        val response =
+            try { post(url, params) }
+            catch (e: Throwable) { throw SignInFailureException(e) }
 
-                    listOf(
-                        signInStarAsync(),
-                        getIgnoredUsersAsync()
-                    ).awaitAll()
-                }
-                catch (e: Exception) {
-                    mSignedIn = false
-                    throw e
-                }
-
-                return@async account!!
-            }
-        }
-
-        mSignedIn = false
-        response.close()
-        throw RuntimeException("connection error")
+        signInImpl(response)
     }
 
     /**
@@ -145,33 +131,38 @@ object HatenaClient : BaseClient(), CoroutineScope {
         cookieManager.cookieStore.add(URI(b.domain), b)
         cookieManager.cookieStore.add(URI(rk.domain), rk)
 
-        val response = get(url)
-        if (response.isSuccessful) {
-            val cookies = cookieManager.cookieStore.cookies
-            cookies
-                .firstOrNull {
-                    it.name == "rk"
-                }
-                ?.let {
-                    mRk = it
+        val response =
+            try { get(url) }
+            catch (e: Throwable) { throw SignInFailureException(e) }
 
-                    response.close()
-                    account = getAccountAsync().await()
-                    mSignedIn = true
+        signInImpl(response)
+    }
 
-                    listOf(
-                        signInStarAsync(),
-                        getIgnoredUsersAsync()
-                    ).awaitAll()
-
-                    return@async account!!
-                }
-                ?: throw RuntimeException("failed to sign in")
+    private suspend fun signInImpl(response: Response) : Account = response.use {
+        if (!response.isSuccessful) {
+            mSignedIn = false
+            mSignedInStar = false
+            throw SignInFailureException("connection error")
         }
 
-        mSignedIn = false
-        response.close()
-        throw RuntimeException("connection error")
+        cookieManager.cookieStore.cookies.firstOrNull { it.name == "rk" }?.let {
+            mRk = it
+        }
+
+        try {
+            account = getAccountAsync().await()
+            mSignedIn = true
+        }
+        catch (e: Throwable) {
+            throw SignInFailureException(e)
+        }
+
+        try {
+            getIgnoredUsersAsync().await()
+        }
+        catch(e: Throwable) {}
+
+        return account!!
     }
 
     /**
@@ -183,6 +174,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val response = getJson<StarsEntries>(url)
 
         mRksForStar = response.rks ?: throw RuntimeException("connection error: $S_BASE_URL")
+        mSignedInStar = true
     }
 
 
@@ -192,8 +184,11 @@ object HatenaClient : BaseClient(), CoroutineScope {
     fun signOut() {
         cookieManager.cookieStore.removeAll()
         mRk = null
+        mRksForStar = null
         account = null
         ignoredUsers = emptyList()
+        mSignedIn = false
+        mSignedInStar = false
     }
 
     /**
@@ -1026,11 +1021,28 @@ object HatenaClient : BaseClient(), CoroutineScope {
         return@async response.entries.getOrNull(0) ?: StarsEntry(url = url, stars = emptyList(), coloredStars = null)
     }
 
+    /** はてなスターへのサインインが済んでいるかを確認。必要かつ可能ならばここで再度ログインを試みる */
+    private suspend fun checkSignedInStar(message: String? = null) {
+        if (!signedInStar()) {
+            try {
+                if (signedIn()) {
+                    signInStarAsync().await()
+                }
+                else {
+                    throw RuntimeException()
+                }
+            }
+            catch (e: Throwable) {
+                throw SignInStarFailureException(message, e)
+            }
+        }
+    }
+
     /**
      * 最近自分が付けたスターを取得する
      */
     fun getRecentStarsAsync() : Deferred<List<StarsEntry>> = async {
-        require(signedInStar()) { "need to sign-in to get my stars" }
+        checkSignedInStar("need to sign-in to get my stars")
         val apiUrl = "$S_BASE_URL/${account!!.name}/stars.json?${cacheAvoidance()}"
         val listType = object : TypeToken<List<StarsEntry>>() {}.type
         return@async getJson<List<StarsEntry>>(listType, apiUrl)
@@ -1040,7 +1052,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 最近自分に付けられたスターを取得する
      */
     fun getRecentStarsReportAsync() : Deferred<List<StarsEntry>> = async {
-        require(signedInStar()) { "need to sign-in to get my stars" }
+        checkSignedInStar("need to sign-in to get stars report")
         val apiUrl = "$S_BASE_URL/${account!!.name}/report.json?${cacheAvoidance()}"
         val response = getJson<StarsEntries>(apiUrl)
         return@async response.entries
@@ -1050,7 +1062,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 対象URLにスターをつける
      */
     fun postStarAsync(url: String, color: StarColor = StarColor.Yellow, quote: String = "") : Deferred<Star> = async {
-        require(signedInStar()) { "need to sign-in to post star" }
+        checkSignedInStar("need to sign-in to post star")
         val apiUrl = "$S_BASE_URL/star.add.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
                 "&rks=$mRksForStar" +
@@ -1063,7 +1075,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 一度付けたスターを削除する
      */
     fun deleteStarAsync(url: String, star: Star) : Deferred<Any> = async {
-        require(signedInStar()) { "need to sign-in to delete star" }
+        checkSignedInStar("need to sign-in to delete star")
         val apiUrl = "$S_BASE_URL/star.delete.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
                 "&rks=$mRksForStar" +
@@ -1079,7 +1091,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      *  ログインユーザーが持っているカラースターの情報を取得する
      */
     fun getMyColorStarsAsync() : Deferred<UserColorStarsCount> = async {
-        require(signedIn()) { "need to sign-in to get color stars" }
+        checkSignedInStar("need to sign-in to get color stars")
 
         val url = "$S_BASE_URL/api/v0/me/colorstars?${cacheAvoidance()}"
 

@@ -20,6 +20,9 @@
     <string name="hint_password">パスワード</string>
     <string name="hint_mastodon_instance">インスタンス名 (e.g. mstdn.jp)</string>
     <string name="sign_up"><a href="https://www.hatena.ne.jp/register">アカウントを新規作成</a></string>
+    <string name="msg_hatena_sign_in_info_is_blank">ユーザー名とパスワードを入力してください</string>
+    <string name="msg_hatena_sign_in_succeeded">id:%s でログインしました</string>
+    <string name="msg_hatena_sign_in_failed">ログイン失敗</string>
 
     <!-- ブコメリストタブ -->
     <string name="bookmarks_tab_popular">人気</string>
