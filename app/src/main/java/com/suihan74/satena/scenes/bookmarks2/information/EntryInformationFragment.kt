@@ -17,14 +17,16 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
-import com.suihan74.satena.scenes.entries.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.makeSpannedFromHtml
 import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.fragment_entry_information.view.*
 
 class EntryInformationFragment : Fragment() {
-    lateinit var activityViewModel: BookmarksViewModel
+    private val activityViewModel: BookmarksViewModel by lazy {
+        (requireActivity() as BookmarksActivity).viewModel
+    }
 
     private val bookmarksActivity
         get() = activity as? BookmarksActivity
@@ -33,12 +35,6 @@ class EntryInformationFragment : Fragment() {
 
     companion object {
         fun createInstance() = EntryInformationFragment()
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        activityViewModel = ViewModelProvider(requireActivity())[BookmarksViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -65,7 +61,7 @@ class EntryInformationFragment : Fragment() {
         val tagsAdapter = object : TagsAdapter() {
             override fun onItemClicked(tag: String) {
                 val intent = Intent(activity, EntriesActivity::class.java).apply {
-                    putExtra(EntriesActivity.EXTRA_DISPLAY_TAG, tag)
+                    putExtra(EntriesActivity.EXTRA_SEARCH_TAG, tag)
                 }
                 startActivity(intent)
             }
@@ -101,7 +97,7 @@ class EntryInformationFragment : Fragment() {
         }
 
         // タグ情報を監視
-        activityViewModel.bookmarksEntry.observe(this, Observer {
+        activityViewModel.bookmarksEntry.observe(viewLifecycleOwner, Observer {
             tagsAdapter.setTags(
                 it.tags.map { t -> t.first }.take(10)
             )

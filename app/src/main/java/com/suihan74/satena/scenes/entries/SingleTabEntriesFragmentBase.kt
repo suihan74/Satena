@@ -16,8 +16,8 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
+import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Deferred
@@ -71,10 +71,7 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
 
         if (mEntriesAdapter != null) {
             mRoot.findViewById<RecyclerView>(R.id.entries_list).apply {
-                val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(requireContext(),
-                    R.drawable.recycler_view_item_divider
-                )!!)
-                addItemDecoration(dividerItemDecoration)
+                setDivider(R.drawable.recycler_view_item_divider)
                 layoutManager = LinearLayoutManager(context)
                 adapter = mEntriesAdapter
                 if (mEntriesScrollingUpdater != null) {
@@ -110,13 +107,10 @@ abstract class SingleTabEntriesFragmentBase : EntriesTabFragmentBase() {
         try {
             val entries = updater(null).await()
 
-            val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(requireContext(),
-                R.drawable.recycler_view_item_divider
-            )!!)
             var scrollPosition = 0
             val recyclerView = mRoot.findViewById<RecyclerView>(R.id.entries_list)
             recyclerView.apply {
-                addItemDecoration(dividerItemDecoration)
+                setDivider(R.drawable.recycler_view_item_divider)
                 layoutManager = LinearLayoutManager(context)
 
                 if (mEntriesAdapter == null) {

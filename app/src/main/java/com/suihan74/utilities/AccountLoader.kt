@@ -3,6 +3,7 @@ package com.suihan74.utilities
 import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
+import com.suihan74.hatenaLib.Account
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.PreferenceKey
 import com.sys1yagi.mastodon4j.MastodonClient
@@ -29,7 +30,7 @@ class AccountLoader(
         jobs.awaitAll()
     }
 
-    fun signInHatenaAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
+    fun signInHatenaAsync(reSignIn: Boolean = true) : Deferred<Account?> = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
         hatenaMutex.lock()
         if (client.signedIn() && !reSignIn) {
             hatenaMutex.unlock()

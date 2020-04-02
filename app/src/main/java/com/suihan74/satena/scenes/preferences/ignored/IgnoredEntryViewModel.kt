@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class IgnoredEntryViewModel(
@@ -20,10 +22,21 @@ class IgnoredEntryViewModel(
         entries.postValue(repository.load())
     }
 
-    fun add(entry: IgnoredEntry) = viewModelScope.launch {
-        val result = repository.add(entry)
-        if (result != null) {
+    fun add(entry: IgnoredEntry, onSuccess: (()->Unit)? = null, onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
+        try {
+            repository.add(entry) ?: let {
+                throw IllegalAccessError("failed to add an ignored entry")
+            }
             entries.postValue(repository.ignoredEntries)
+
+            withContext(Dispatchers.Main) {
+                onSuccess?.invoke()
+            }
+        }
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
         }
     }
 
@@ -32,9 +45,20 @@ class IgnoredEntryViewModel(
         entries.postValue(repository.ignoredEntries)
     }
 
-    fun update(entry: IgnoredEntry) = viewModelScope.launch {
-        repository.update(entry)
-        entries.postValue(repository.ignoredEntries)
+    fun update(entry: IgnoredEntry, onSuccess: (()->Unit)? = null, onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
+        try {
+            repository.update(entry)
+            entries.postValue(repository.ignoredEntries)
+
+            withContext(Dispatchers.Main) {
+                onSuccess?.invoke()
+            }
+        }
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
+        }
     }
 
     class Factory(private val repository: IgnoredEntryRepository) : ViewModelProvider.NewInstanceFactory() {

@@ -8,7 +8,7 @@ import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
 
-@SharedPreferencesKey(fileName = "default", version = 2, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 3, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -41,9 +41,10 @@ enum class PreferenceKey(
     ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.ordinal),
     ENTRY_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.ordinal),
     ENTRIES_HOME_CATEGORY(typeInfo<Int>(), Category.All.ordinal),
-    ENTRIES_INITIAL_TAB(typeInfo<Int>(), EntriesTabType.POPULAR.ordinal),
+    ENTRIES_INITIAL_TAB(typeInfo<Int>(), 0),
     ENTRIES_MENU_TAP_GUARD(typeInfo<Boolean>(), true),
     ENTRIES_HIDING_TOOLBAR_BY_SCROLLING(typeInfo<Boolean>(), true),
+    ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB(typeInfo<Boolean>(), true),
 
     ////////////////////////////////////////
     // bookmarks
@@ -58,6 +59,7 @@ enum class PreferenceKey(
     USING_POST_STAR_DIALOG(typeInfo<Boolean>(), true),
     BOOKMARK_LINK_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_PAGE.ordinal),
     BOOKMARK_LINK_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.ordinal),
+    BOOKMARKS_CHANGE_HOME_BY_LONG_TAPPING_TAB(typeInfo<Boolean>(), true),
 
     ////////////////////////////////////////
     // custom bookmarks tab
@@ -69,33 +71,67 @@ enum class PreferenceKey(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// previous versions
-////////////////////////////////////////////////////////////////////////////////
-
-/**************************************
- * version 1 -> 2 での変更
- * Category.GeneralをCategory.AllとCategory.Socialの間に挿入したことによる変更を
- * ENTRIES_HOME_CATEGORYにも適用するための変更
- **************************************/
-
-////////////////////////////////////////////////////////////////////////////////
 // version migration
 ////////////////////////////////////////////////////////////////////////////////
 
+@Suppress("deprecation")
 object PreferenceKeyMigration {
     fun check(context: Context) {
         when (SafeSharedPreferences.version<PreferenceKey>(context)) {
             1 -> migrateFromVersion1(context)
+            2 -> migrateFromVersion2(context)
         }
     }
 
+    /**
+     * v1 -> v2
+     *
+     * Category.GeneralをCategory.AllとCategory.Socialの間に挿入
+     */
     private fun migrateFromVersion1(context: Context) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val homeCategory = prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY)
+        val homeCategoryOrdinal = prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY)
         prefs.edit {
-            if (homeCategory > 0) {
-                putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, homeCategory + 1)
+            if (homeCategoryOrdinal > 0) {
+                val fixedCategoryOrdinal = homeCategoryOrdinal + 1
+                putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, fixedCategoryOrdinal)
+                putInt(PreferenceKey.ENTRIES_INITIAL_TAB, 0)
             }
+        }
+        // 以下、次のバージョン移行処理
+        migrateFromVersion2(context)
+    }
+
+    /**
+     * v2 -> v3
+     *
+     * 1. Category.MyTagsをCategory.MyBookmarksに統合した
+     * 2. Category.MyStarsとCategory.StarsReportをCategory.Starに統合した (MyStars→Starsにリネーム、StarsReportをdeprecatedに設定)
+     * 3. INITIAL_TAB を EntriesTabTypeのordinalではなく、TabIndex(0or1)に変更
+     */
+    private fun migrateFromVersion2(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val homeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
+        val initialTab = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
+
+        prefs.edit {
+            when (homeCategory) {
+                // 1.
+                Category.MyTags -> {
+                    putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.MyBookmarks.ordinal)
+                    putInt(PreferenceKey.ENTRIES_INITIAL_TAB, 0)
+                }
+
+                // 2.
+                Category.StarsReport -> {
+                    putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.Stars.ordinal)
+                }
+
+                else -> { /* do nothing */ }
+            }
+
+            // 3.
+            putInt(PreferenceKey.ENTRIES_INITIAL_TAB, initialTab % 2)
         }
     }
 }

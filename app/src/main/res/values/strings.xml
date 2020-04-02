@@ -8,7 +8,7 @@
     <string name="confirm_dialog_title_simple">確認</string>
     <string name="app_termination_dialog_msg">アプリを終了しますか？</string>
     <string name="dialog_ok">OK</string>
-    <string name="dialog_cancel">@android:string/cancel</string>
+    <string name="dialog_cancel">Cancel</string>
     <string name="dialog_register">登録</string>
     <string name="dialog_open">開く</string>
 
@@ -20,6 +20,9 @@
     <string name="hint_password">パスワード</string>
     <string name="hint_mastodon_instance">インスタンス名 (e.g. mstdn.jp)</string>
     <string name="sign_up"><a href="https://www.hatena.ne.jp/register">アカウントを新規作成</a></string>
+    <string name="msg_hatena_sign_in_info_is_blank">ユーザー名とパスワードを入力してください</string>
+    <string name="msg_hatena_sign_in_succeeded">id:%s でログインしました</string>
+    <string name="msg_hatena_sign_in_failed">ログイン失敗</string>
 
     <!-- ブコメリストタブ -->
     <string name="bookmarks_tab_popular">人気</string>
@@ -30,8 +33,12 @@
     <!-- エントリリストタブ -->
     <string name="entries_tab_hot">人気</string>
     <string name="entries_tab_recent">新着</string>
+    <!-- Category.MyBookmarks専用 -->
     <string name="entries_tab_mybookmarks">マイブックマーク</string>
     <string name="entries_tab_read_later">あとで読む</string>
+    <!-- Category.Stars専用 -->
+    <string name="entries_tab_my_stars">最近つけたスター</string>
+    <string name="entries_tab_stars_report">スターレポート</string>
 
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
@@ -50,10 +57,10 @@
     <string name="category_fun">おもしろ</string>
     <string name="category_myhotentries">マイホットエントリ</string>
     <string name="category_mybookmarks">マイブックマーク</string>
-    <string name="category_mytags">タグ</string>
+    <!-- deprecated --><string name="category_mytags">タグ</string>
     <string name="category_search">検索</string>
-    <string name="category_mystars">最近つけたスター</string>
-    <string name="category_stars_report">スターレポート</string>
+    <string name="category_mystars">スター</string>
+    <!-- deprecated --><string name="category_stars_report">スターレポート</string>
     <string name="category_maintenance">障害・メンテナンス情報</string>
     <string name="category_history">ブクマ閲覧履歴</string>
 
@@ -126,6 +133,7 @@
     <string name="pref_entries_menu_tap_guard_desc">メニュー表示中に他の操作をできないようにする</string>
     <string name="pref_entries_hiding_toolbar_by_scrolling_desc">スクロールでツールバーを隠す</string>
     <string name="pref_entries_history_max_size_desc">ブクマ閲覧履歴の最大保存数</string>
+    <string name="pref_entries_change_home_by_long_tapping_desc">タブ長押しでホームカテゴリ・初期タブを変更する</string>
     <string name="pref_entries_history_max_size_dialog_title">ブクマ閲覧履歴の最大保存数を設定</string>
     <string name="pref_entries_history_max_size_dialog_msg">1～100件で指定できます</string>
     <string name="pref_entries_history_max_size_text">%d件</string>
@@ -140,6 +148,7 @@
     <string name="pref_bookmarks_using_post_star_dialog_desc">スターをつける前に確認する</string>
     <string name="pref_bookmark_link_single_tap_action_desc">ブコメ内のリンクをタップしたときの動作</string>
     <string name="pref_bookmark_link_long_tap_action_desc">ブコメ内のリンクを長押ししたときの動作</string>
+    <string name="pref_bookmarks_change_home_by_long_tapping_desc">タブ長押しで初期タブを変更する</string>
     <!-- ignored users -->
     <string name="pref_ignored_users_show_entries">@string/bookmark_show_user_entries</string>
     <string name="pref_ignored_users_unignore">非表示を解除する</string>
@@ -167,6 +176,7 @@
     <string name="msg_ignored_entry_dialog_empty_query">クエリを入力してください</string>
     <string name="msg_ignored_entry_dialog_already_existed">既に存在する非表示設定です</string>
     <string name="msg_ignored_entry_dialog_succeeded">「%s」を非表示にしました</string>
+    <string name="msg_ignored_entry_dialog_failed">非表示設定の保存に失敗した</string>
 
     <!-- ブックマーク投稿ダイアログ -->
     <string name="post_bookmark_button_text">B!</string>
@@ -224,8 +234,9 @@
     <string name="desc_search_type">検索対象</string>
     <string name="desc_search_order">検索順</string>
     <string name="msg_get_categories_failed">カテゴリ・特集情報の取得に失敗しました</string>
-    <string name="msg_update_entries_failed">エントリ更新失敗</string>
+    <string name="msg_update_entries_failed">エントリーリスト取得失敗</string>
     <string name="msg_get_stars_report_failed">スターの取得失敗</string>
+    <string name="msg_entries_initial_tab_changed">「%s」カテゴリ「%s」タブを最初に表示するように設定しました</string>
 
     <!-- 通知 -->
     <string name="menu_notice_report">%sを通報</string>

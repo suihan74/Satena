@@ -27,7 +27,7 @@ class HatenaAuthenticationActivity : ActivityBase() {
             val password = password.text.toString()
 
             if (name.isBlank() || password.length < 5) {
-                showToast("ユーザー名とパスワードを入力してください")
+                showToast(R.string.msg_hatena_sign_in_info_is_blank)
             }
             else {
                 launch {
@@ -47,7 +47,7 @@ class HatenaAuthenticationActivity : ActivityBase() {
         try {
             val account = HatenaClient.signInAsync(name, password).await()
 
-            showToast("id:${account.name} でログインしました")
+            showToast(R.string.msg_hatena_sign_in_succeeded, account.name)
 
             AccountLoader(
                 applicationContext,
@@ -60,8 +60,20 @@ class HatenaAuthenticationActivity : ActivityBase() {
             finish()
         }
         catch (e: Exception) {
-            Log.d("FailedToSignIn", e.message)
-            showToast("ログイン失敗")
+            Log.d("Hatena", e.message)
+            showToast(R.string.msg_hatena_sign_in_failed)
+        }
+
+        // 現在のアカウントがある場合、ログイン状態を復元する
+        try {
+            AccountLoader(
+                applicationContext,
+                HatenaClient,
+                MastodonClientHolder
+            ).signInHatenaAsync()
+        }
+        catch (e: Exception) {
+            Log.e("Hatena", e.message)
         }
     }
 }

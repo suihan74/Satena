@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
 import okhttp3.Request
+import okhttp3.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -23,6 +24,7 @@ import kotlin.coroutines.CoroutineContext
 
 /////////////////////////////////////////////////////////////////
 
+@Suppress("unused")
 object HatenaClient : BaseClient(), CoroutineScope {
     internal const val W_BASE_URL = "https://www.hatena.ne.jp"
     internal const val B_BASE_URL = "https://b.hatena.ne.jp"
@@ -76,9 +78,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun signedIn() : Boolean = mSignedIn //mRk != null && account != null
     private var mSignedIn : Boolean = false
-        get() = synchronized(this) { field }
+        get() = synchronized(field) { field }
         set(value) {
-            synchronized(this) {
+            synchronized(field) {
                 field = value
             }
         }
@@ -86,7 +88,14 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * HatenaClientがはてなスターのサービスにログイン済みかを確認する
      */
-    fun signedInStar() : Boolean = mRksForStar != null
+    fun signedInStar() : Boolean = mSignedInStar
+    private var mSignedInStar : Boolean = false
+        get() = synchronized(field) { field }
+        set(value) {
+            synchronized(field) {
+                field = value
+            }
+        }
 
     /**
      * ログイン
@@ -97,38 +106,16 @@ object HatenaClient : BaseClient(), CoroutineScope {
         }
 
         val url = "$W_BASE_URL/login"
-
-        val response = post(url, mapOf(
+        val params = mapOf(
             "name" to name,
             "password" to password
-        ))
-        if (response.isSuccessful) {
-            val cookies = cookieManager.cookieStore.cookies
-            cookies.firstOrNull { it.name == "rk" }?.let {
-                mRk = it
+        )
 
-                response.close()
-                try {
-                    account = getAccountAsync().await()
-                    mSignedIn = true
+        val response =
+            try { post(url, params) }
+            catch (e: Throwable) { throw SignInFailureException(e) }
 
-                    listOf(
-                        signInStarAsync(),
-                        getIgnoredUsersAsync()
-                    ).awaitAll()
-                }
-                catch (e: Exception) {
-                    mSignedIn = false
-                    throw e
-                }
-
-                return@async account!!
-            }
-        }
-
-        mSignedIn = false
-        response.close()
-        throw RuntimeException("connection error")
+        signInImpl(response)
     }
 
     /**
@@ -144,33 +131,38 @@ object HatenaClient : BaseClient(), CoroutineScope {
         cookieManager.cookieStore.add(URI(b.domain), b)
         cookieManager.cookieStore.add(URI(rk.domain), rk)
 
-        val response = get(url)
-        if (response.isSuccessful) {
-            val cookies = cookieManager.cookieStore.cookies
-            cookies
-                .firstOrNull {
-                    it.name == "rk"
-                }
-                ?.let {
-                    mRk = it
+        val response =
+            try { get(url) }
+            catch (e: Throwable) { throw SignInFailureException(e) }
 
-                    response.close()
-                    account = getAccountAsync().await()
-                    mSignedIn = true
+        signInImpl(response)
+    }
 
-                    listOf(
-                        signInStarAsync(),
-                        getIgnoredUsersAsync()
-                    ).awaitAll()
-
-                    return@async account!!
-                }
-                ?: throw RuntimeException("failed to sign in")
+    private suspend fun signInImpl(response: Response) : Account = response.use {
+        if (!response.isSuccessful) {
+            mSignedIn = false
+            mSignedInStar = false
+            throw SignInFailureException("connection error")
         }
 
-        mSignedIn = false
-        response.close()
-        throw RuntimeException("connection error")
+        cookieManager.cookieStore.cookies.firstOrNull { it.name == "rk" }?.let {
+            mRk = it
+        }
+
+        try {
+            account = getAccountAsync().await()
+            mSignedIn = true
+        }
+        catch (e: Throwable) {
+            throw SignInFailureException(e)
+        }
+
+        try {
+            getIgnoredUsersAsync().await()
+        }
+        catch(e: Throwable) {}
+
+        return account!!
     }
 
     /**
@@ -182,6 +174,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val response = getJson<StarsEntries>(url)
 
         mRksForStar = response.rks ?: throw RuntimeException("connection error: $S_BASE_URL")
+        mSignedInStar = true
     }
 
 
@@ -191,8 +184,11 @@ object HatenaClient : BaseClient(), CoroutineScope {
     fun signOut() {
         cookieManager.cookieStore.removeAll()
         mRk = null
+        mRksForStar = null
         account = null
         ignoredUsers = emptyList()
+        mSignedIn = false
+        mSignedInStar = false
     }
 
     /**
@@ -304,7 +300,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * 対象urlのブックマークを削除する
      */
-    fun deleteBookmarkAsync(url: String) : Deferred<Any> = async {
+    fun deleteBookmarkAsync(url: String) = async {
         require(signedIn()) { "need to login for deleting bookmarks" }
         val account = account!!
         val apiUrl = "$B_BASE_URL/${account.name}/api.delete_bookmark.json"
@@ -716,7 +712,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 val title = doc.allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:title" }
                     ?.attr("content")
-                    ?: doc.select("title").html()
+                    ?: doc.select("title").html().let { title ->
+                        if (title.isNullOrEmpty()) url
+                        else title
+                    }
 
                 val description = doc.allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:description" }
@@ -740,8 +739,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     description = description,
                     count = 0,
                     url = actualUrl,
-                    rootUrl = uri.let { it.scheme!! + "://" + it.host!! },
-                    faviconUrl = "https://www.google.com/s2/favicons?domain=${uri.host}",
+                    rootUrl = getTemporaryRootUrl(uri),
+                    faviconUrl = getFaviconUrl(uri),
                     imageUrl = imageUrl)
             }
             else {
@@ -752,8 +751,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     description = "",
                     count = 0,
                     url = url,
-                    rootUrl = uri.let { it.scheme!! + "://" + it.host!! },
-                    faviconUrl = "https://www.google.com/s2/favicons?domain=${uri.host}",
+                    rootUrl = getTemporaryRootUrl(uri),
+                    faviconUrl = getFaviconUrl(uri),
                     imageUrl = "")
             }
         }
@@ -772,6 +771,74 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 url = it.url,
                 entryUrl = it.url,
                 screenshot = it.imageUrl
+            )
+        }
+    }
+
+    /**c
+     * エントリIDからエントリ情報を取得する
+     * 失敗時例外送出: RuntimeException()  ; TODO: 例外型なんとかしたい
+     */
+    fun getEntryAsync(eid: Long) : Deferred<Entry> {
+        val url = "$B_BASE_URL/entry/$eid"
+        return getEntryImplAsync(url)
+    }
+
+    /**
+     * エントリが存在するかどうかを調べ、存在する場合はエントリ情報を返す。
+     * 存在しない場合は疑似的な内容のEntryを作成して返す
+     */
+    fun getEntryAsync(url: String) : Deferred<Entry> {
+        return try {
+            val commentPageUrl = getCommentPageUrlFromEntryUrl(url)
+            getEntryImplAsync(commentPageUrl)
+        }
+        catch (e: Throwable) {
+            getEmptyEntryAsync(url)
+        }
+    }
+
+    /**
+     * コメントページのURLを渡してエントリが存在するかどうかを調べ、存在する場合はエントリ情報を返す。
+     * 存在しない場合は例外を送出する
+     */
+    private fun getEntryImplAsync(commentPageUrl: String) : Deferred<Entry> = async {
+        return@async get(commentPageUrl).use { response ->
+            if (!response.isSuccessful) {
+                throw RuntimeException("cannot get an entry: $commentPageUrl")
+            }
+
+            val bodyBytes = response.body!!.bytes()
+            val bodyStr = bodyBytes.toString(Charsets.UTF_8)
+            val doc = Jsoup.parse(bodyStr)
+            val root = doc.getElementsByTag("html").first()
+
+            val eid = root.attr("data-entry-eid").toLong()
+            val count = root.attr("data-bookmark-count").toInt()
+            val entryUrl = root.attr("data-entry-url")
+
+            val imageUrl = doc.head().getElementsByTag("meta")
+                .firstOrNull { it.attr("property") == "og:image" || it.attr("name") == "twitter:image:src" }
+                ?.attr("content")
+                ?: ""
+
+            val title = doc.getElementsByClass("entry-info-title").firstOrNull()?.text() ?: entryUrl
+
+            val domainElement = doc.getElementsByAttributeValue("data-gtm-label", "entry-info-domain").firstOrNull()
+            val rootUrl = domainElement?.text() ?: getTemporaryRootUrl(entryUrl)
+            val faviconUrl = domainElement?.getElementsByTag("img")?.firstOrNull()?.attr("src") ?: getFaviconUrl(entryUrl)
+
+            val description = doc.getElementsByClass("entry-about-description").firstOrNull()?.text() ?: ""
+
+            Entry(
+                id = eid,
+                title = title,
+                description = description,
+                count = count,
+                url = entryUrl,
+                rootUrl = rootUrl,
+                faviconUrl = faviconUrl,
+                imageUrl = imageUrl
             )
         }
     }
@@ -954,11 +1021,28 @@ object HatenaClient : BaseClient(), CoroutineScope {
         return@async response.entries.getOrNull(0) ?: StarsEntry(url = url, stars = emptyList(), coloredStars = null)
     }
 
+    /** はてなスターへのサインインが済んでいるかを確認。必要かつ可能ならばここで再度ログインを試みる */
+    private suspend fun checkSignedInStar(message: String? = null) {
+        if (!signedInStar()) {
+            try {
+                if (signedIn()) {
+                    signInStarAsync().await()
+                }
+                else {
+                    throw RuntimeException()
+                }
+            }
+            catch (e: Throwable) {
+                throw SignInStarFailureException(message, e)
+            }
+        }
+    }
+
     /**
      * 最近自分が付けたスターを取得する
      */
     fun getRecentStarsAsync() : Deferred<List<StarsEntry>> = async {
-        require(signedInStar()) { "need to sign-in to get my stars" }
+        checkSignedInStar("need to sign-in to get my stars")
         val apiUrl = "$S_BASE_URL/${account!!.name}/stars.json?${cacheAvoidance()}"
         val listType = object : TypeToken<List<StarsEntry>>() {}.type
         return@async getJson<List<StarsEntry>>(listType, apiUrl)
@@ -968,7 +1052,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 最近自分に付けられたスターを取得する
      */
     fun getRecentStarsReportAsync() : Deferred<List<StarsEntry>> = async {
-        require(signedInStar()) { "need to sign-in to get my stars" }
+        checkSignedInStar("need to sign-in to get stars report")
         val apiUrl = "$S_BASE_URL/${account!!.name}/report.json?${cacheAvoidance()}"
         val response = getJson<StarsEntries>(apiUrl)
         return@async response.entries
@@ -978,7 +1062,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 対象URLにスターをつける
      */
     fun postStarAsync(url: String, color: StarColor = StarColor.Yellow, quote: String = "") : Deferred<Star> = async {
-        require(signedInStar()) { "need to sign-in to post star" }
+        checkSignedInStar("need to sign-in to post star")
         val apiUrl = "$S_BASE_URL/star.add.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
                 "&rks=$mRksForStar" +
@@ -991,7 +1075,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 一度付けたスターを削除する
      */
     fun deleteStarAsync(url: String, star: Star) : Deferred<Any> = async {
-        require(signedInStar()) { "need to sign-in to delete star" }
+        checkSignedInStar("need to sign-in to delete star")
         val apiUrl = "$S_BASE_URL/star.delete.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
                 "&rks=$mRksForStar" +
@@ -1007,7 +1091,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      *  ログインユーザーが持っているカラースターの情報を取得する
      */
     fun getMyColorStarsAsync() : Deferred<UserColorStarsCount> = async {
-        require(signedIn()) { "need to sign-in to get color stars" }
+        checkSignedInStar("need to sign-in to get color stars")
 
         val url = "$S_BASE_URL/api/v0/me/colorstars?${cacheAvoidance()}"
 
@@ -1115,6 +1199,26 @@ object HatenaClient : BaseClient(), CoroutineScope {
         require(signedIn()) { "need to sign-in to get user's tags" }
         return getUserTagsAsync(account!!.name)
     }
+
+    /**
+     * 暫定的なrootUrlを生成する
+     */
+    fun getTemporaryRootUrl(url: String) : String = getTemporaryRootUrl(Uri.parse(url))
+
+    /**
+     * 暫定的なrootUrlを生成する
+     */
+    fun getTemporaryRootUrl(uri: Uri) : String = uri.let { it.scheme!! + "://" + it.host!! }
+
+    /**
+     * URLからファビコンURLを取得する
+     */
+    fun getFaviconUrl(url: String) : String = getFaviconUrl(Uri.parse(url))
+
+    /**
+     * URLからファビコンURLを取得する
+     */
+    fun getFaviconUrl(uri: Uri) : String = "https://www.google.com/s2/favicons?domain=${uri.host}"
 
     /**
      * ユーザー名からアイコンURLを取得する

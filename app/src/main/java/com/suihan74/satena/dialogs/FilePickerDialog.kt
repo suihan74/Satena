@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
-import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.bindings.setDivider
 import java.io.File
 
 /*
@@ -57,9 +57,7 @@ class FilePickerDialog : AlertDialogFragment() {
         mItemsAdapter = ItemsAdapter(externalStorage, directoryOnly, root.findViewById(R.id.current_path))
 
         root.findViewById<RecyclerView>(R.id.file_list).apply {
-            val dividerItemDecoration = DividerItemDecorator(
-                ContextCompat.getDrawable(context, R.drawable.recycler_view_item_divider)!!)
-            addItemDecoration(dividerItemDecoration)
+            setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(context)
             adapter = mItemsAdapter
         }

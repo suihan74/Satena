@@ -90,18 +90,12 @@ class BookmarksRepository(
     /** エントリ情報を取得 */
     suspend fun loadEntry(url: String) {
         val modifiedUrl = modifySpecificUrls(url)!!
-        val existed = client.searchEntriesAsync(modifiedUrl, SearchType.Text).await()
-            .firstOrNull { it.url == modifiedUrl }
-        entry = existed ?: client.getEmptyEntryAsync(modifiedUrl).await()
+        entry = client.getEntryAsync(modifiedUrl).await()
     }
 
     /** エントリ情報を取得 */
     suspend fun loadEntry(eid: Long) {
-        val url = client.getEntryUrlFromIdAsync(eid).await()
-        val modifiedUrl = modifySpecificUrls(url)!!
-        val existed = client.searchEntriesAsync(modifiedUrl, SearchType.Text).await()
-            .firstOrNull { it.id == eid }
-        entry = existed ?: client.getEmptyEntryAsync(modifiedUrl).await()
+        entry = client.getEntryAsync(eid).await()
     }
 
     /** 既にロード済みのエントリ情報をリポジトリにセットする */

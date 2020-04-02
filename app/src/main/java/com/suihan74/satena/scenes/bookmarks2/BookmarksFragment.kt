@@ -80,6 +80,9 @@ class BookmarksFragment : Fragment() {
             // タブを長押しで最初に表示するタブを変更
             setOnTabLongClickListener { idx ->
                 val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                val isOn = prefs.getBoolean(PreferenceKey.BOOKMARKS_CHANGE_HOME_BY_LONG_TAPPING_TAB)
+                if (!isOn) return@setOnTabLongClickListener false
+
                 val key = PreferenceKey.BOOKMARKS_INITIAL_TAB
                 if (prefs.getInt(key) != idx) {
                     prefs.edit {

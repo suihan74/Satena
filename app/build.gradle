@@ -14,8 +14,8 @@ android {
     defaultConfig {
         applicationId "com.suihan74.satena"
         // バージョン情報
-        versionCode 116
-        versionName "1.1.10"
+        versionCode 124
+        versionName "1.2.0"
 
         minSdkVersion 23
         targetSdkVersion 28
@@ -68,7 +68,7 @@ dependencies {
     testImplementation "androidx.arch.core:core-testing:2.1.0"
 
     // room; database access
-    def room_version = "2.2.4"
+    def room_version = "2.2.5"
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"  // optional - Kotlin Extensions and Coroutines support for Room

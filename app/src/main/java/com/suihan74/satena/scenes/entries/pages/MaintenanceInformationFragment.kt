@@ -18,7 +18,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries.MaintenanceEntriesAdapter
 import com.suihan74.utilities.CoroutineScopeFragment
-import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.showToast
 import kotlinx.android.parcel.Parcelize
@@ -68,9 +68,7 @@ class MaintenanceInformationFragment : CoroutineScopeFragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = null
 
-            val dividerItemDecoration = DividerItemDecorator(
-                ContextCompat.getDrawable(context, R.drawable.recycler_view_item_divider)!!)
-            addItemDecoration(dividerItemDecoration)
+            setDivider(R.drawable.recycler_view_item_divider)
         }
 
         launch(Dispatchers.Main) {

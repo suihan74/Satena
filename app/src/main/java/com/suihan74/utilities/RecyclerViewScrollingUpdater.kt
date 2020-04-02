@@ -71,7 +71,7 @@ class RecyclerViewScrollingUpdater(
     }
 
     private fun checkInvoking(invokingPosition: Int, lastInScreen: Int) =
-        invokingPosition != 0 && !isLoading && invokingPosition <= lastInScreen
+        invokingPosition > 0 && !isLoading && invokingPosition <= lastInScreen
 
     private fun load() {
         var error : Throwable? = null

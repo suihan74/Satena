@@ -11,7 +11,6 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import kotlinx.coroutines.Dispatchers
@@ -71,8 +70,9 @@ class BrowserToolbarManager : BroadcastReceiver() {
         fun createRemoteViews(context: Context, url: String) : RemoteViews {
             entryLoadingJob = GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    entry = HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
-                        .firstOrNull { it.url == url }
+                    entry = HatenaClient.getEntryAsync(url).await()
+                    /*HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
+                        .firstOrNull { it.url == url }*/
                 }
                 catch (e: Exception) {
                     Log.d("BrowserToolbarManager", Log.getStackTraceString(e))

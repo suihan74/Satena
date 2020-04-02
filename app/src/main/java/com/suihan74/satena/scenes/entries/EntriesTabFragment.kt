@@ -21,8 +21,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
-import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
+import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
@@ -173,11 +173,8 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         // initialize entries list
         var scrollPosition = 0
         val recyclerView = view.findViewById<RecyclerView>(R.id.entries_list)
-        val dividerItemDecoration = DividerItemDecorator(ContextCompat.getDrawable(requireContext(),
-            R.drawable.recycler_view_item_divider
-        )!!)
         recyclerView.apply {
-            addItemDecoration(dividerItemDecoration)
+            setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(context)
             mEntriesAdapter = EntriesAdapter(
                 this@EntriesTabFragment,

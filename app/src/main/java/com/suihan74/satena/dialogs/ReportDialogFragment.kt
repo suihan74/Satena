@@ -19,6 +19,7 @@ import com.suihan74.satena.R
 import com.suihan74.utilities.get
 import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.showToast
+import com.suihan74.utilities.withArguments
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -40,17 +41,13 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
     private var mUser: String? = null
 
     companion object {
-        fun createInstance(entry: Entry, bookmark: Bookmark) = ReportDialogFragment().apply {
-            arguments = Bundle().apply {
-                putSerializable(ARG_ENTRY, entry)
-                putSerializable(ARG_BOOKMARK, bookmark)
-            }
+        fun createInstance(entry: Entry, bookmark: Bookmark) = ReportDialogFragment().withArguments {
+            putSerializable(ARG_ENTRY, entry)
+            putSerializable(ARG_BOOKMARK, bookmark)
         }
 
-        fun createInstance(user: String) = ReportDialogFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARG_USER, user)
-            }
+        fun createInstance(user: String) = ReportDialogFragment().withArguments {
+            putString(ARG_USER, user)
         }
 
         private const val ARG_ENTRY = "ARG_ENTRY"

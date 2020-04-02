@@ -4,15 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_stars_tab.view.*
 
 class MentionToUserFragment : Fragment(), ScrollableToTop {
@@ -43,11 +42,7 @@ class MentionToUserFragment : Fragment(), ScrollableToTop {
         }
 
         view.stars_list.apply {
-            addItemDecoration(
-                DividerItemDecorator(
-                    ContextCompat.getDrawable(requireContext(), R.drawable.recycler_view_item_divider)!!
-                )
-            )
+            setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(requireContext())
             adapter = starsAdapter
         }

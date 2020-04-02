@@ -1,5 +1,6 @@
 package com.suihan74.satena
 
+import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -35,15 +36,20 @@ suspend fun modifySpecificUrls(url: String?) : String? = when {
                 .url(url)
                 .build()
 
-            client.newCall(request).execute().use { response ->
+            val modified = client.newCall(request).execute().use { response ->
                 Jsoup.parse(response.body!!.string()).head()
                     .allElements
                     .firstOrNull { elem ->
                         elem.tagName() == "meta" && (elem.attr("property") == "og:url" || elem.attr("name") == "twitter:url")
                     }
                     ?.attr("content")
-                    ?: url
-            }
+            } ?: url
+
+            val modifiedUri = Uri.parse(modified)
+            val urlUri = Uri.parse(url)
+
+            if (modifiedUri.scheme != urlUri.scheme && url.removePrefix(urlUri.scheme ?: "") == modified.removePrefix(modifiedUri.scheme ?: "")) url
+            else modified
         }
         catch (e: Exception) {
             url

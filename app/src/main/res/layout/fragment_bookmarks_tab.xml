@@ -7,10 +7,8 @@
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/bookmarks_list"
+            style="@style/RecyclerView.Linear"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
-            android:scrollbarSize="4dp"
-            android:scrollbars="vertical"/>
+            android:layout_height="match_parent"/>
 
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
