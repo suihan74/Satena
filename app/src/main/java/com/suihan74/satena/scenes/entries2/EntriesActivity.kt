@@ -18,6 +18,7 @@ import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityEntries2Binding
+import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
@@ -38,6 +39,9 @@ class EntriesActivity : AppCompatActivity() {
 
         /** Boolean: アクティビティ生成時にCategory.Noticesに遷移 */
         const val EXTRA_OPEN_NOTICES = "EntriesActivity.EXTRA_OPEN_NOTICES"
+
+        /** リリースノートダイアログ */
+        private const val DIALOG_RELEASE_NOTES = "DIALOG_RELEASE_NOTES"
     }
 
     /** Entry画面全体で使用するViewModel */
@@ -216,6 +220,37 @@ class EntriesActivity : AppCompatActivity() {
             searchTag != null -> showSearchEntries(searchTag, SearchType.Tag)
 
             else -> showCategory(viewModel.homeCategory)
+        }
+
+        // 初回起動時にログイン画面に遷移する
+        if (SatenaApplication.instance.isFirstLaunch) {
+            SatenaApplication.instance.isFirstLaunch = false
+            val intent = Intent(this, HatenaAuthenticationActivity::class.java)
+            startActivity(intent)
+        }
+        else {
+            // アップデート後最初の起動時に更新履歴を表示
+            showReleaseNotes()
+        }
+    }
+
+    /** 必要ならリリースノートを表示する */
+    private fun showReleaseNotes() {
+        // アプリのバージョン名を取得
+        val packageInfo = packageManager.getPackageInfo(packageName, 0)
+        val versionName = packageInfo.versionName
+
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val lastVersionName = prefs.getString(PreferenceKey.APP_VERSION_LAST_LAUNCH)
+        val showReleaseNotes = prefs.getBoolean(PreferenceKey.SHOW_RELEASE_NOTES_AFTER_UPDATE)
+
+        prefs.edit {
+            putString(PreferenceKey.APP_VERSION_LAST_LAUNCH, versionName)
+        }
+
+        if (showReleaseNotes && lastVersionName != versionName) {
+            val dialog = ReleaseNotesDialogFragment.createInstance()
+            dialog.show(supportFragmentManager, DIALOG_RELEASE_NOTES)
         }
     }
 
