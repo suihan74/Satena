@@ -10,7 +10,6 @@ Androidの要求バージョンは6.0(M)以上としています．
   * [com.suihan74.*](/app/src/main/java/com/suihan74)
     * [はてなAPI](/app/src/main/java/com/suihan74/hatenaLib)
     * [アプリ部分](/app/src/main/java/com/suihan74/satena)
-      * [ダイアログ](/app/src/main/java/com/suihan74/satena/dialogs)
       * [モデル](/app/src/main/java/com/suihan74/satena/models)
       * [各画面](/app/src/main/java/com/suihan74/satena/scenes)
     * [ユーティリティ・拡張](/app/src/main/java/com/suihan74/utilities)
