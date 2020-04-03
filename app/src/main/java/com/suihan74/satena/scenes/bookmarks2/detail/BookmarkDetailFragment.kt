@@ -77,20 +77,20 @@ class BookmarkDetailFragment :
         viewModel = ViewModelProvider(this, factory)[BookmarkDetailViewModel::class.java].apply {
             // スターロード失敗時の挙動
             setOnLoadedStarsFailureListener { e ->
-                requireActivity().showToast(R.string.msg_update_stars_failed)
+                activity?.showToast(R.string.msg_update_stars_failed)
                 Log.e("UserStars", Log.getStackTraceString(e))
             }
             // スター付与完了時の挙動を設定
             setOnCompletedPostStarListener {
-                requireActivity().showToast(R.string.msg_post_star_succeeded, viewModel.bookmark.user)
+                activity?.showToast(R.string.msg_post_star_succeeded, viewModel.bookmark.user)
             }
             setOnPostStarFailureListener { color, throwable ->
                 when (throwable) {
                     is BookmarkDetailViewModel.StarExhaustedException -> {
-                        requireActivity().showToast(R.string.msg_no_color_stars, color)
+                        activity?.showToast(R.string.msg_no_color_stars, color)
                     }
                     else -> {
-                        requireActivity().showToast(R.string.msg_post_star_failed, viewModel.bookmark.user)
+                        activity?.showToast(R.string.msg_post_star_failed, viewModel.bookmark.user)
                     }
                 }
                 Log.e("PostStar", Log.getStackTraceString(throwable))
@@ -98,13 +98,6 @@ class BookmarkDetailFragment :
         }
 
         viewModel.init()
-
-        // 非表示ユーザーリストが更新されたら各リストを更新する
-        activityViewModel.ignoredUsers.observe(this, Observer {
-            viewModel.loadMentions()
-            viewModel.starsToUser.notifyReload()
-            viewModel.starsAll.notifyReload()
-        })
 
         // 画面遷移アニメーション
         enterTransition = TransitionSet()
@@ -186,6 +179,12 @@ class BookmarkDetailFragment :
         view.blue_star_button.setOnClickListener { postStar(StarColor.Blue) }
         view.purple_star_button.setOnClickListener { postStar(StarColor.Purple) }
 
+        // 非表示ユーザーリストが更新されたら各リストを更新する
+        activityViewModel.ignoredUsers.observe(viewLifecycleOwner, Observer {
+            viewModel.loadMentions()
+            viewModel.starsToUser.notifyReload()
+            viewModel.starsAll.notifyReload()
+        })
 
         // スターメニューボタンの状態を監視
         viewModel.starsMenuOpened.observe(viewLifecycleOwner, Observer {
