@@ -195,18 +195,31 @@ class EntryMenuDialog : DialogFragment() {
 
     /** ページを内部ブラウザで開く */
     private fun showPage(context: Context, entry: Entry?, url: String?) {
-        if (entry != null) context.showCustomTabsIntent(entry)
-        if (url != null) context.showCustomTabsIntent(url)
+        try {
+            if (entry != null) context.showCustomTabsIntent(entry)
+            if (url != null) context.showCustomTabsIntent(url)
+        }
+        catch (e: Throwable) {
+            Log.e("innerBrowser", Log.getStackTraceString(e))
+            context.showToast(R.string.msg_show_page_failed)
+            showPageInBrowser(context, entry, url)
+        }
     }
 
     /** ページを外部ブラウザで開く */
     private fun showPageInBrowser(context: Context, entry: Entry?, url: String?) {
-        val intent = Intent(
-            Intent.ACTION_VIEW,
-            if (entry != null) Uri.parse(entry.url)
-            else Uri.parse(url!!)
-        )
-        context.startActivity(intent)
+        try {
+            val intent = Intent(
+                Intent.ACTION_VIEW,
+                if (entry != null) Uri.parse(entry.url)
+                else Uri.parse(url!!)
+            )
+            context.startActivity(intent)
+        }
+        catch (e: Throwable) {
+            Log.e("browser", Log.getStackTraceString(e))
+            context.showToast(R.string.msg_show_page_in_browser_failed)
+        }
     }
 
     /** サイトのエントリリストを開く */

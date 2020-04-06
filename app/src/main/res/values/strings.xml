@@ -81,6 +81,9 @@
     <string name="entry_action_delete_bookmark">ブックマークを削除する</string>
     <string name="entry_action_ignore">このサイトを非表示にする</string>
 
+    <string name="msg_show_page_failed">内部ブラウザを開けませんでした。外部ブラウザを開きます</string>
+    <string name="msg_show_page_in_browser_failed">外部ブラウザを開けませんでした</string>
+
     <!-- ブックマークに対する操作メニュー -->
     <string name="bookmark_show_user_entries">最近のブックマークを見る</string>
     <string name="bookmark_remove">ブックマークを削除</string>
