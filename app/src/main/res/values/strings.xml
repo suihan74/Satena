@@ -231,6 +231,7 @@
     <string name="my_bookmarks_button_desc_my_bookmarks">マイブックマーク</string>
     <string name="my_bookmarks_button_desc_sign_in">ログイン</string>
     <string name="desc_issues_spinner">特集を選択します</string>
+    <string name="desc_tags_spinner">タグを選択します</string>
     <string name="hint_search_my_bookmarks">検索クエリ</string>
     <string name="option_menu_spinner_no_selected">指定なし</string>
     <string name="desc_site_entries_order">表示順</string>

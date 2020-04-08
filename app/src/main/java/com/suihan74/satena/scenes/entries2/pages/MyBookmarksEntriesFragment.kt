@@ -73,18 +73,14 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         viewModel.tags.observe(viewLifecycleOwner, Observer { tags ->
             val activity = requireActivity()
 
-            if (!inflated) {
-                inflater.inflate(R.menu.spinner_issues, menu)
-                inflated = true
-            }
-
+            // タグ選択
             (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
                 val spinnerItems = tags.map { "${it.text}(${it.count})" }
                 initialize(
                     activity,
                     spinnerItems,
                     R.drawable.spinner_allow_tags,
-                    getString(R.string.desc_issues_spinner)
+                    getString(R.string.desc_tags_spinner)
                 ) { position ->
                     val tag =
                         if (position == null) null
