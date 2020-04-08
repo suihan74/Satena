@@ -2,8 +2,12 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
 import android.view.*
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
@@ -13,6 +17,7 @@ import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.initialize
 import com.suihan74.utilities.putEnum
+import com.suihan74.utilities.showToast
 import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.activity_entries2.*
 
@@ -69,7 +74,35 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         super.onCreateOptionsMenu(menu, inflater)
         val viewModel = viewModel as MyBookmarksViewModel
 
-        inflater.inflate(R.menu.spinner_issues, menu)
+        inflater.inflate(R.menu.my_bookmarks, menu)
+
+        // TODO: ブクマ検索
+        (menu.findItem(R.id.search_view)?.actionView as? SearchView)?.run {
+            queryHint = getString(R.string.hint_search_my_bookmarks)
+
+            // デフォルトでアイコン化する
+            setIconifiedByDefault(true)
+            isIconified = true
+
+            // ツールバーアイコン長押しで説明を表示する
+            findViewById<ImageView>(androidx.appcompat.R.id.search_button)?.run {
+                setOnLongClickListener {
+                    activity?.showToast(R.string.desc_search_mybookmarks)
+                    true
+                }
+            }
+
+            // 左端の余分なマージンを削るための設定
+            arrayOf(
+                androidx.appcompat.R.id.search_edit_frame,
+                androidx.appcompat.R.id.search_mag_icon
+            ).forEach { targetId ->
+                findViewById<View>(targetId)?.updateLayoutParams<LinearLayout.LayoutParams> {
+                    marginStart = 0
+                    leftMargin = 0
+                }
+            }
+        }
 
         viewModel.tags.observe(viewLifecycleOwner) { tags ->
             val activity = requireActivity()
