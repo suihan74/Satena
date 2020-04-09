@@ -69,7 +69,8 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         super.onCreateOptionsMenu(menu, inflater)
         val viewModel = viewModel as MyBookmarksViewModel
 
-        var inflated = false
+        inflater.inflate(R.menu.spinner_issues, menu)
+
         viewModel.tags.observe(viewLifecycleOwner, Observer { tags ->
             val activity = requireActivity()
 
