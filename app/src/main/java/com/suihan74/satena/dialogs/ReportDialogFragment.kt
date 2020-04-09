@@ -7,8 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.suihan74.hatenaLib.Bookmark
@@ -20,25 +18,23 @@ import com.suihan74.utilities.get
 import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.showToast
 import com.suihan74.utilities.withArguments
-import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
+import kotlinx.android.synthetic.main.fragment_dialog_report.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
-class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragment.Listener {
-    private val mJob: Job = SupervisorJob()
-    override val coroutineContext: CoroutineContext
-        get() = mJob
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mJob.cancel()
+class ReportDialogFragment : DialogFragment(), AlertDialogFragment.Listener {
+    private val mEntry : Entry? by lazy {
+        requireArguments().getSerializable(ARG_ENTRY) as? Entry
+    }
+    private val mBookmark: Bookmark? by lazy {
+        requireArguments().getSerializable(ARG_BOOKMARK) as? Bookmark
     }
 
-    private var mRoot: View? = null
-    private var mEntry: Entry? = null
-    private var mBookmark: Bookmark? = null
-
     /** ユーザー名だけで通報する場合，値が入る */
-    private var mUser: String? = null
+    private val mUser: String? by lazy {
+        requireArguments().getString(ARG_USER)
+    }
 
     companion object {
         fun createInstance(entry: Entry, bookmark: Bookmark) = ReportDialogFragment().withArguments {
@@ -61,10 +57,9 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        val root = mRoot
-        if (root != null) {
-            val spinner = root.findViewById<Spinner>(R.id.category_spinner)
-            val editText = root.findViewById<EditText>(R.id.text)
+        view?.let { root ->
+            val spinner = root.category_spinner
+            val editText = root.text
             outState.run {
                 putInt(BUNDLE_CATEGORY, spinner.selectedItemPosition)
                 putString(BUNDLE_TEXT, editText.text.toString())
@@ -72,19 +67,9 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireArguments().let {
-            mEntry = it.getSerializable(ARG_ENTRY) as? Entry
-            mBookmark = it.getSerializable(ARG_BOOKMARK) as? Bookmark
-            mUser = it.getString(ARG_USER)
-        }
-    }
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
         val content = inflater.inflate(R.layout.fragment_dialog_report, null)
-        mRoot = content
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
 
         if (mBookmark != null) {
@@ -94,7 +79,7 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
             content.setCustomTitle(mUser!!)
         }
 
-        content.findViewById<EditText>(R.id.text).run {
+        content.text.run {
             setText(
                 savedInstanceState?.getString(BUNDLE_TEXT) ?: ""
             )
@@ -112,7 +97,7 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
             }
         }
 
-        content.findViewById<Spinner>(R.id.category_spinner).apply {
+        content.category_spinner.apply {
             adapter = ArrayAdapter(
                 requireContext(),
                 R.layout.spinner_report,
@@ -133,7 +118,8 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
             .show()
             .apply {
                 getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                    report(mRoot!!, false)
+                    val withMuting = content.ignore_user_after_reporting.isChecked
+                    report(content, withMuting)
                 }
 
                 getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener {
@@ -148,8 +134,8 @@ class ReportDialogFragment : DialogFragment(), CoroutineScope, AlertDialogFragme
     }
 
     private fun report(root: View, withMuting: Boolean) {
-        val spinner = root.findViewById<Spinner>(R.id.category_spinner)
-        val editText = root.findViewById<EditText>(R.id.text)
+        val spinner = root.category_spinner
+        val editText = root.text
 
         val category = ReportCategory.values()[spinner.selectedItemPosition]
         val text = editText.text.toString()
