@@ -46,13 +46,14 @@ class EntriesViewModel(
 
     /** 初期化処理 */
     fun initialize(
+        forceUpdate: Boolean,
         onSuccess: (()->Unit)? = null,
         onError: ((Throwable)->Unit)? = null,
         onFinally: ((Throwable?)->Unit)? = null
     ) = viewModelScope.launch {
         var error: Throwable? = null
         try {
-            repository.initialize()
+            repository.signIn(forceUpdate)
             onSuccess?.invoke()
         }
         catch (e: Throwable) {

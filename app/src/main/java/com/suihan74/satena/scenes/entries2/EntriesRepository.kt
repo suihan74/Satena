@@ -110,11 +110,6 @@ class EntriesRepository(
     val entryLongClickedAction : TapEntryAction
         get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
 
-    /** 初期化処理 */
-    suspend fun initialize() {
-        signIn(false)
-    }
-
     /** サインインする */
     suspend fun signIn(forceUpdate: Boolean = false) {
         accountLoader.signInAccounts(forceUpdate)

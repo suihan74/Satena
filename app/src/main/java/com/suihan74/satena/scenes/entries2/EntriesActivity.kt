@@ -81,6 +81,7 @@ class EntriesActivity : AppCompatActivity() {
         )
 
         viewModel.initialize(
+            forceUpdate = true,
             onSuccess = {
                 if (savedInstanceState == null) {
                     showContents()
@@ -198,7 +199,7 @@ class EntriesActivity : AppCompatActivity() {
             }
 
             if (state == NetworkReceiver.State.CONNECTED) {
-                viewModel.initialize()
+                viewModel.initialize(forceUpdate = false)
             }
         })
     }
@@ -266,6 +267,18 @@ class EntriesActivity : AppCompatActivity() {
 
         // アクションバー設定
         setSupportActionBar(toolbar)
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        // アカウントの状態を更新する
+        viewModel.initialize(
+            forceUpdate = false,
+            onError = { e ->
+                showToast(R.string.msg_auth_failed)
+                Log.e("error", Log.getStackTraceString(e))
+            }
+        )
     }
 
     /** 戻るボタンの挙動 */
