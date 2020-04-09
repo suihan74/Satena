@@ -13,7 +13,10 @@ import com.suihan74.satena.databinding.DialogTitleUserBinding
 import com.suihan74.satena.databinding.ListviewItemNotices2Binding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.ReportDialogFragment
+import com.suihan74.satena.models.NoticeTimestamp
+import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.users
 import com.suihan74.utilities.withArguments
 
@@ -30,6 +33,14 @@ class NoticeMenuDialog : AlertDialogFragment() {
         const val DIALOG_NOTICE_USER_MENU = "NoticeMenuDialog.DIALOG_NOTICE_USER_MENU"
     }
 
+    /** 通知削除時のイベントリスナ */
+    private var onNoticeRemovedListener: ((Notice)->Unit)? = null
+
+    /** 通知削除時のイベントリスナを設定 */
+    fun setOnNoticeRemovedListener(listener: ((Notice)->Unit)?) {
+        onNoticeRemovedListener = listener
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?) : Dialog {
         val arguments = requireArguments()
         val notice = arguments.getSerializable(ARG_NOTICE) as Notice
@@ -44,18 +55,37 @@ class NoticeMenuDialog : AlertDialogFragment() {
             it.notice = notice
         }
 
+        val items : List<Pair<String, ()->Unit>> = users
+            .map { "id:$it" to {
+                val userMenuDialog = NoticeUserMenuDialog.createInstance(it)
+                userMenuDialog.show(parentFragmentManager, DIALOG_NOTICE_USER_MENU)
+            } }
+            .plus(
+                getString(R.string.menu_notice_remove) to { removeNotice(notice) }
+            )
+
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setItems(users.map { "id:$it" }.toTypedArray()) { _, which ->
-                val userMenuDialog = NoticeUserMenuDialog.createInstance(users[which])
-                userMenuDialog.show(parentFragmentManager, DIALOG_NOTICE_USER_MENU)
+            .setItems(items.map { it.first }.toTypedArray()) { _, which ->
+                items[which].second.invoke()
             }
             .create()
     }
 
+    /** 通知を削除 */
+    private fun removeNotice(notice: Notice) {
+        val prefs = SafeSharedPreferences.create<NoticesKey>(context)
+        val removedNotices = prefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
+            .plus(NoticeTimestamp(notice.created, notice.modified))
 
-    // TODO: ユーザーに対する操作の実装
+        prefs.edit {
+            put(NoticesKey.REMOVED_NOTICE_TIMESTAMPS, removedNotices)
+        }
+
+        onNoticeRemovedListener?.invoke(notice)
+    }
+
     /** 通知に含まれるユーザーに対する操作 */
     class NoticeUserMenuDialog : AlertDialogFragment() {
         companion object {

@@ -46,7 +46,12 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
             }
 
             setOnItemLongClickedListener { notice ->
-                val dialog = NoticeMenuDialog.createInstance(notice)
+                val dialog = NoticeMenuDialog.createInstance(notice).apply {
+                    setOnNoticeRemovedListener {
+                        viewModel.refresh(onErrorRefreshEntries)
+                    }
+                }
+
                 dialog.show(childFragmentManager, DIALOG_NOTICE_MENU)
                 true
             }
