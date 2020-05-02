@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.entries
+package com.suihan74.satena.scenes.entries2
 
 import android.content.Context
 import android.content.res.ColorStateList

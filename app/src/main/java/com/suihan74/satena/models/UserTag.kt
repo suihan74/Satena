@@ -4,6 +4,7 @@ import java.io.Serializable
 
 /** ユーザーをタグ付けするやつ */
 @Deprecated("DBに移行")
+@Suppress("deprecation")
 class UserTagsContainer : Serializable {
     @Suppress("UseSparseArrays")
     private val mTags = HashMap<Int, UserTag>()
@@ -231,6 +232,7 @@ class UserTagsContainer : Serializable {
 
 /** タグ情報 */
 @Deprecated("DBに移行")
+@Suppress("deprecation")
 data class UserTag (
     val id: Int,
     val name: String,
@@ -259,6 +261,7 @@ data class UserTag (
 
 /** ユーザー情報 */
 @Deprecated("DBに移行")
+@Suppress("deprecation")
 data class TaggedUser (
     val id: Int,
     val name: String
