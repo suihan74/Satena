@@ -11,6 +11,7 @@ enum class IgnoredEntryType {
 }
 
 @Deprecated("DBに移行")
+@Suppress("deprecation")
 enum class IgnoreTarget(val int: Int) {
     NONE(0),
     ENTRY(1),
@@ -26,6 +27,7 @@ enum class IgnoreTarget(val int: Int) {
 }
 
 @Deprecated("DBに移行")
+@Suppress("deprecation")
 data class IgnoredEntry (
     val type: IgnoredEntryType,
     val query: String,
