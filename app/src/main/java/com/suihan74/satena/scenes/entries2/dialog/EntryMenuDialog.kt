@@ -209,12 +209,15 @@ class EntryMenuDialog : DialogFragment() {
     /** ページを外部ブラウザで開く */
     private fun showPageInBrowser(context: Context, entry: Entry?, url: String?) {
         try {
-            val intent = Intent(
-                Intent.ACTION_VIEW,
-                if (entry != null) Uri.parse(entry.url)
-                else Uri.parse(url!!)
-            )
-            context.startActivity(intent)
+            val extraUrl = entry?.url ?: url!!
+            val intent = Intent().apply {
+                action = Intent.ACTION_VIEW
+                data = Uri.parse(extraUrl)
+                addFlags(FLAG_ACTIVITY_NEW_TASK)
+            }
+
+            checkNotNull(intent.resolveActivity(context.packageManager)) { "cannot resolve intent for browsing the website: $extraUrl" }
+            context.startActivity(Intent.createChooser(intent, null))
         }
         catch (e: Throwable) {
             Log.e("browser", Log.getStackTraceString(e))
