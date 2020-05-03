@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -207,8 +208,11 @@ class EntryMenuDialog : DialogFragment() {
     }
 
     /** ページを外部ブラウザで開く */
+    @OptIn(ExperimentalStdlibApi::class)
     private fun showPageInBrowser(context: Context, entry: Entry?, url: String?) {
         try {
+            val packageManager = context.packageManager
+
             val extraUrl = entry?.url ?: url!!
             val intent = Intent().apply {
                 action = Intent.ACTION_VIEW
@@ -216,9 +220,26 @@ class EntryMenuDialog : DialogFragment() {
                 addFlags(FLAG_ACTIVITY_NEW_TASK)
             }
 
-            checkNotNull(intent.resolveActivity(context.packageManager)) { "cannot resolve intent for browsing the website: $extraUrl" }
+            checkNotNull(intent.resolveActivity(packageManager)) { "cannot resolve intent for browsing the website: $extraUrl" }
+
             if (extraUrl.startsWith("https://b.hatena.ne.jp/entry/")) {
-                context.startActivity(Intent.createChooser(intent, null))
+                // ブコメページURLが「Satenaで開く」に紐づけられている場合「外部ブラウザで開く」でSatenaから出られなくなってしまうので
+                // 以下、強制的にchooserを開くための処理
+
+                // ブコメページ以外のURLを使用することで「Satenaで開く」以外のURLを開く純粋な方法を収集する
+                val dummyIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://dummy"))
+
+                val intentActivities = packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY)
+                val bookmarksActivities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+
+                val intents = bookmarksActivities.plus(intentActivities)
+                    .distinctBy { it.activityInfo.name }
+                    .map { Intent(intent).apply { setPackage(it.activityInfo.packageName) } }
+
+                val chooser = Intent.createChooser(Intent(), "Choose a browser").apply {
+                    putExtra(Intent.EXTRA_INITIAL_INTENTS, intents.toTypedArray())
+                }
+                context.startActivity(chooser)
             }
             else {
                 context.startActivity(intent)
