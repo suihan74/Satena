@@ -217,7 +217,12 @@ class EntryMenuDialog : DialogFragment() {
             }
 
             checkNotNull(intent.resolveActivity(context.packageManager)) { "cannot resolve intent for browsing the website: $extraUrl" }
-            context.startActivity(Intent.createChooser(intent, null))
+            if (extraUrl.startsWith("https://b.hatena.ne.jp/entry/")) {
+                context.startActivity(Intent.createChooser(intent, null))
+            }
+            else {
+                context.startActivity(intent)
+            }
         }
         catch (e: Throwable) {
             Log.e("browser", Log.getStackTraceString(e))
