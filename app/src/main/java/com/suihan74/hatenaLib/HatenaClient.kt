@@ -788,13 +788,13 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * エントリが存在するかどうかを調べ、存在する場合はエントリ情報を返す。
      * 存在しない場合は疑似的な内容のEntryを作成して返す
      */
-    fun getEntryAsync(url: String) : Deferred<Entry> {
-        return try {
+    fun getEntryAsync(url: String) : Deferred<Entry> = async {
+        try {
             val commentPageUrl = getCommentPageUrlFromEntryUrl(url)
-            getEntryImplAsync(commentPageUrl)
+            getEntryImplAsync(commentPageUrl).await()
         }
         catch (e: Throwable) {
-            getEmptyEntryAsync(url)
+            getEmptyEntryAsync(url).await()
         }
     }
 
