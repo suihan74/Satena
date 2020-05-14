@@ -86,9 +86,16 @@ open class StarsAdapter : ListAdapter<RecyclerState<StarWithBookmark>, RecyclerV
                             .into(view.star_user_icon)
                     }
 
-                    // ユーザーのブコメ
-                    view.star_comment.text = bookmark.comment
-                    view.star_comment.visibility = (!bookmark.comment.isBlank()).toVisibility()
+                    // ユーザーのブコメと引用文
+                    val quote = star?.quote
+                    val comment =
+                        when {
+                            quote.isNullOrBlank() -> bookmark.comment
+                            bookmark.comment.isBlank() -> quote
+                            else -> "\"$quote\"\n${bookmark.comment}"
+                        }
+                    view.star_comment.text = comment
+                    view.star_comment.visibility = (!comment.isBlank()).toVisibility()
 
                     // 非表示ブクマかどうかのマークを表示
                     view.muted_mark.visibility = (value.state == StarWithBookmark.DisplayState.COVER).toVisibility()
