@@ -73,7 +73,6 @@
                 android:layout_height="46dp">
 
             <LinearLayout
-                    android:enabled="@{!vm.isPrivate}"
                     android:alpha="@{!vm.isPrivate}"
                     android:orientation="horizontal"
                     android:layout_width="wrap_content"
@@ -108,6 +107,7 @@
                         android:id="@+id/post_facebook_toggle"
                         android:checked="@={vm.postFacebook}"
                         android:visibility="@{vm.signedInFacebook ? View.VISIBLE : View.GONE}"
+                        android:enabled="@{!vm.isPrivate}"
                         android:background="@drawable/toggle_button_post_facebook"
                         android:textColor="#00000000"
                         android:layout_marginEnd="16dp"
