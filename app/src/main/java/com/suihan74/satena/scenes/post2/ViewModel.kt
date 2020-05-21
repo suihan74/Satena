@@ -191,6 +191,13 @@ class ViewModel(
     ) = viewModelScope.launch(Dispatchers.Default) {
         var error: Throwable? = null
         val entry = entry.value!!
+
+        // private投稿の場合他サービスに共有しない
+        val privateEnabled = isPrivate.value == true
+        val postTwitterEnabled = !privateEnabled && postTwitter.value == true
+        val postFacebookEnabled = !privateEnabled && postFacebook.value == true
+        val postMastodonEnabled = !privateEnabled && postMastodon.value == true
+
         val result =
             try {
                 val comment = comment.value ?: ""
@@ -209,9 +216,9 @@ class ViewModel(
                 client.postBookmarkAsync(
                     url = entry.url,
                     comment = comment,
-                    postTwitter = postTwitter.value == true,
-                    postFacebook = postFacebook.value == true,
-                    isPrivate = isPrivate.value == true
+                    postTwitter = postTwitterEnabled,
+                    postFacebook = postFacebookEnabled,
+                    isPrivate = privateEnabled
                 ).await()
             }
             catch (e: Throwable) {
@@ -223,7 +230,7 @@ class ViewModel(
             }
 
         // Mastodonに投稿
-        if (error == null && postMastodon.value == true) {
+        if (error == null && postMastodonEnabled) {
             result!!
 
             try {
