@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -21,6 +22,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
@@ -29,28 +31,40 @@ import com.suihan74.utilities.withArguments
 import kotlinx.coroutines.*
 
 /** メニュー項目 */
-private typealias MenuItem = Triple<Int, suspend (Context, Entry?, String?)->Unit, ((Entry)->Boolean)?>
+private typealias MenuItem = Triple<Int, suspend (Context, Entry?, String?, EntryMenuDialogListeners?)->Unit, ((Entry)->Boolean)?>
 
 /** メニュー項目の追加 */
 private fun MutableList<MenuItem>.add(
     textId: Int,
-    action: suspend (Context,Entry?,String?)->Unit,
+    action: suspend (Context, Entry?, String?, EntryMenuDialogListeners?)->Unit,
     checker: ((Entry)->Boolean)? = null
 ) {
     add(Triple(textId, action, checker))
 }
 
+class EntryMenuDialogListeners {
+    /** ミュート完了時の処理 */
+    var onIgnoredEntry : ((IgnoredEntry)->Unit)? = null
+
+    /** ブクマ削除完了時の処理 */
+    var onDeletedBookmark : ((Entry)->Unit)? = null
+}
+
 /** エントリメニューダイアログ */
 class EntryMenuDialog : DialogFragment() {
+    class ViewModel : androidx.lifecycle.ViewModel() {
+        var listeners : EntryMenuDialogListeners? = null
+    }
+
     /** メニュー項目 */
     @OptIn(ExperimentalStdlibApi::class)
     private val menuItems = buildList<MenuItem> {
-        add(R.string.entry_action_show_comments, { context, entry, url -> showBookmarks(context, entry, url) })
-        add(R.string.entry_action_show_page, { context, entry, url -> showPage(context, entry, url) })
-        add(R.string.entry_action_show_page_in_browser, { context, entry, url -> showPageInBrowser(context, entry, url) })
-        add(R.string.entry_action_show_entries, { context, entry, url -> showEntries(context, entry, url) })
-        add(R.string.entry_action_ignore, { context, entry, url -> ignoreSite(context, entry, url) })
-        add(R.string.bookmark_remove, { context, entry, url -> removeBookmark(context, entry, url) }, { entry -> entry.bookmarkedData != null })
+        add(R.string.entry_action_show_comments, { context, entry, url, _ -> showBookmarks(context, entry, url) })
+        add(R.string.entry_action_show_page, { context, entry, url, _ -> showPage(context, entry, url) })
+        add(R.string.entry_action_show_page_in_browser, { context, entry, url, _ -> showPageInBrowser(context, entry, url) })
+        add(R.string.entry_action_show_entries, { context, entry, url, _ -> showEntries(context, entry, url) })
+        add(R.string.entry_action_ignore, { context, entry, url, listeners -> ignoreSite(context, entry, url, listeners?.onIgnoredEntry) })
+        add(R.string.bookmark_remove, { context, entry, url, listeners -> removeBookmark(context, entry, url, listeners?.onDeletedBookmark) }, { entry -> entry.bookmarkedData != null })
     }
 
     companion object {
@@ -98,14 +112,35 @@ class EntryMenuDialog : DialogFragment() {
             }
         }
 
+        /** タップ/ロングタップ時の挙動を処理する */
+        fun act(entry: Entry, actionEnum: TapEntryAction, listeners: EntryMenuDialogListeners, fragmentManager: FragmentManager, tag: String? = null) {
+            val instance = createInstance(entry).also {
+                it.listeners = listeners
+            }
+            when (actionEnum) {
+                TapEntryAction.SHOW_MENU ->
+                    instance.show(fragmentManager, tag)
+
+                else ->
+                    act(
+                        instance,
+                        entry,
+                        actionEnum,
+                        fragmentManager,
+                        tag
+                    )
+            }
+        }
+
         /** タップ/ロングタップ時の挙動を処理する(メニュー表示以外の挙動) */
         private fun act(instance: EntryMenuDialog, entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
             fragmentManager.beginTransaction()
                 .add(instance, tag)
                 .runOnCommit {
                     val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
+                    val listeners = instance.listeners
                     GlobalScope.launch(Dispatchers.Main) {
-                        action?.second?.invoke(SatenaApplication.instance.applicationContext, entry, null)
+                        action?.second?.invoke(SatenaApplication.instance.applicationContext, entry, null, listeners)
                     }
 
                     fragmentManager.beginTransaction()
@@ -121,7 +156,7 @@ class EntryMenuDialog : DialogFragment() {
                 .runOnCommit {
                     val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
                     GlobalScope.launch(Dispatchers.Main) {
-                        action?.second?.invoke(SatenaApplication.instance.applicationContext, null, url)
+                        action?.second?.invoke(SatenaApplication.instance.applicationContext, null, url, null)
                     }
 
                     fragmentManager.beginTransaction()
@@ -140,8 +175,22 @@ class EntryMenuDialog : DialogFragment() {
         private const val DIALOG_IGNORE_SITE = "DIALOG_IGNORE_SITE"
     }
 
+    /** 永続化するデータ */
+    private lateinit var viewModel : ViewModel
+
+    /** 追加のイベントリスナセット(作成時にvmに渡すためだけに使用する) */
+    private var listeners : EntryMenuDialogListeners? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this)[ViewModel::class.java].apply {
+            listeners = listeners ?: this@EntryMenuDialog.listeners
+        }
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = requireContext()
+        val activity = requireActivity()
         val arguments = requireArguments()
 
         val url = arguments.getString(ARG_ENTRY_URL)
@@ -172,13 +221,12 @@ class EntryMenuDialog : DialogFragment() {
         val activeItems = menuItems.filter { it.third?.invoke(entry) != false }
         val activeItemLabels = activeItems.map { getString(it.first) }.toTypedArray()
 
-        val activity = requireActivity()
         return AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setItems(activeItemLabels) { _, which ->
                 lifecycleScope.launch(Dispatchers.Main + SupervisorJob()) {
-                    activeItems[which].second.invoke(activity, entry, url)
+                    activeItems[which].second.invoke(activity, entry, url, viewModel.listeners)
                 }
             }
             .create()
@@ -271,7 +319,7 @@ class EntryMenuDialog : DialogFragment() {
     }
 
     /** サイトを非表示に設定する */
-    private fun ignoreSite(context: Context, entry: Entry?, url: String?) {
+    private fun ignoreSite(context: Context, entry: Entry?, url: String?, onCompleted: ((IgnoredEntry)->Unit)?) {
         val siteUrl = entry?.url ?: url ?: return
         val dialog = IgnoredEntryDialogFragment.createInstance(
             url = siteUrl,
@@ -285,6 +333,8 @@ class EntryMenuDialog : DialogFragment() {
                         }
 
                         context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
+                        onCompleted?.invoke(ignoredEntry)
+
                         dialog.dismiss()
                     }
                     catch (e: Throwable) {
@@ -298,12 +348,15 @@ class EntryMenuDialog : DialogFragment() {
     }
 
     /** ブクマを削除する */
-    private suspend fun removeBookmark(context: Context, entry: Entry?, url: String?) {
+    private suspend fun removeBookmark(context: Context, entry: Entry?, url: String?, onCompleted: ((Entry)->Unit)?) {
         try {
             val target = entry?.url ?: url ?: throw RuntimeException("failed to remove a bookmark")
             // TODO: 「あとで読む」が削除できないっぽい
             HatenaClient.deleteBookmarkAsync(target).await()
             context.showToast(R.string.msg_remove_bookmark_succeeded)
+            if (entry != null) {
+                onCompleted?.invoke(entry)
+            }
         }
         catch (e: Throwable) {
             context.showToast(R.string.msg_remove_bookmark_failed)
