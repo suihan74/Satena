@@ -17,7 +17,7 @@ open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>
     private var states = emptyList<RecyclerState<IgnoredEntry>>()
 
     fun setItem(entries: List<IgnoredEntry>) {
-        val newEntries = RecyclerState.makeStatesWithFooter(entries)
+        val newEntries = RecyclerState.makeStatesWithFooter(entries.reversed())
 
         val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize() = states.size
