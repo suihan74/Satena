@@ -145,7 +145,7 @@ class BookmarksViewModel(
         CoroutineExceptionHandler { _, e -> onError?.invoke(e) }
     ) {
         try {
-            ignoredEntryRepository.load()
+            ignoredEntryRepository.load(forceUpdate = true)
             muteWords = ignoredEntryRepository.ignoredEntries
                 .filter { it.type == IgnoredEntryType.TEXT && it.target.contains(IgnoreTarget.BOOKMARK) }
                 .map { it.query }
