@@ -75,6 +75,8 @@ class IgnoredEntryDialogViewModel : ViewModel() {
             IgnoredEntryDialogTab.TEXT -> editingText.postValue(value)
             else -> Unit
         }
+
+    var positiveAction : ((IgnoredEntryDialogFragment, IgnoredEntry)->Boolean)? = null
 }
 
 class IgnoredEntryDialogFragment : DialogFragment() {
@@ -129,6 +131,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 editingUrl.value = arguments?.getString(ARG_EDITING_URL) ?: ""
                 editingText.value = arguments?.getString(ARG_EDITING_TEXT) ?: ""
                 ignoreTarget.value = arguments?.selectEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.int } ?: IgnoreTarget.ENTRY
+                positiveAction = positiveAction ?: this@IgnoredEntryDialogFragment.positiveAction
             }
         }
     }
@@ -251,7 +254,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                         }
 
                         val ignoredEntry = model.createIgnoredEntry(modifyingEntry?.id ?: 0)
-                        if (positiveAction?.invoke(this@IgnoredEntryDialogFragment, ignoredEntry) != false) {
+                        if (model.positiveAction?.invoke(this@IgnoredEntryDialogFragment, ignoredEntry) != false) {
                             dismiss()
                         }
                     }
