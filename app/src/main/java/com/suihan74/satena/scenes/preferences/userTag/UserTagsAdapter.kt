@@ -17,7 +17,7 @@ open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var states = emptyList<RecyclerState<TagAndUsers>>()
 
     fun setItems(tags: List<TagAndUsers>) {
-        val newStates = RecyclerState.makeStatesWithFooter(tags)
+        val newStates = RecyclerState.makeStatesWithFooter(tags.reversed())
         val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize() = states.size
             override fun getNewListSize() = newStates.size

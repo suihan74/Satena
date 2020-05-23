@@ -86,6 +86,16 @@ class EntriesTabFragmentViewModel(
         MutableLiveData<List<MaintenanceEntry>>()
     }
 
+    /** フィルタリングを任意で実行する */
+    fun filter() {
+        entries.value = entries.value
+    }
+
+    /** 指定したエントリを削除する */
+    fun delete(entry: Entry) {
+        entries.value = entries.value?.filterNot { it.id == entry.id }
+    }
+
     /** 表示項目リストを初期化 */
     fun refresh(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
         when (category) {

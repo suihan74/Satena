@@ -17,11 +17,12 @@ class IgnoredEntryRepository(
     val ignoredEntries : List<IgnoredEntry>
         get() = mIgnoredEntries ?: emptyList()
 
-    suspend fun load() = withContext(Dispatchers.IO) {
-        return@withContext mIgnoredEntries ?: let {
+    suspend fun load(forceUpdate: Boolean = false) = withContext(Dispatchers.IO) {
+        return@withContext if (forceUpdate || mIgnoredEntries == null) {
             mIgnoredEntries = ArrayList(dao.getAllEntries())
             ignoredEntries
         }
+        else mIgnoredEntries
     }
 
     suspend fun add(entry: IgnoredEntry) : IgnoredEntry? = withContext(Dispatchers.IO) {

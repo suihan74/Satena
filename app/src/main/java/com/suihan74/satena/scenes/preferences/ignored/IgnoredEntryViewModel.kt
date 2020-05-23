@@ -19,7 +19,7 @@ class IgnoredEntryViewModel(
     }
 
     fun init() = viewModelScope.launch {
-        entries.postValue(repository.load())
+        entries.postValue(repository.load(forceUpdate = true))
     }
 
     fun add(entry: IgnoredEntry, onSuccess: (()->Unit)? = null, onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {

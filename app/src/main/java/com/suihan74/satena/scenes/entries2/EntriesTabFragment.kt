@@ -10,6 +10,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
+import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialogListeners
 import com.suihan74.satena.scenes.entries2.pages.SearchEntriesViewModel
 import com.suihan74.utilities.*
 
@@ -29,12 +30,23 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
 
         // エントリリスト用のアダプタ
         val entriesAdapter = EntriesAdapter().apply {
+
+            // TODO: 他のタブにも反映されるようにしたい
+            val listeners = EntryMenuDialogListeners().apply {
+                onIgnoredEntry = { _ ->
+                    viewModel.filter()
+                }
+                onDeletedBookmark = { entry ->
+                    viewModel.delete(entry)
+                }
+            }
+
             setOnItemClickedListener { entry ->
-                EntryMenuDialog.act(entry, activityViewModel.entryClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
+                EntryMenuDialog.act(entry, activityViewModel.entryClickedAction, listeners, childFragmentManager, DIALOG_ENTRY_MENU)
             }
 
             setOnItemLongClickedListener { entry ->
-                EntryMenuDialog.act(entry, activityViewModel.entryLongClickedAction, childFragmentManager, DIALOG_ENTRY_MENU)
+                EntryMenuDialog.act(entry, activityViewModel.entryLongClickedAction, listeners, childFragmentManager, DIALOG_ENTRY_MENU)
                 true
             }
 

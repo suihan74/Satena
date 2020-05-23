@@ -20,7 +20,7 @@ open class TaggedUsersAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
     private var states = emptyList<RecyclerState<User>>()
 
     fun setItems(users: List<User>) {
-        val newStates = RecyclerState.makeStatesWithFooter(users)
+        val newStates = RecyclerState.makeStatesWithFooter(users.reversed())
         val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize() = states.size
             override fun getNewListSize() = newStates.size

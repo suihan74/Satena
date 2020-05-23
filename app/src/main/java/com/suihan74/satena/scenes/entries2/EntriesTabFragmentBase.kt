@@ -37,7 +37,19 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     }
 
     /** タブの表示内容に関するViewModel */
-    protected lateinit var viewModel : EntriesTabFragmentViewModel
+    protected val viewModel : EntriesTabFragmentViewModel by lazy {
+        val arguments = requireArguments()
+        val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
+        val tabPosition = arguments.getInt(ARG_TAB_POSITION, 0)
+
+        val factory = EntriesTabFragmentViewModel.Factory(
+            activityViewModel.repository,
+            category,
+            tabPosition
+        )
+
+        ViewModelProvider(this, factory)[EntriesTabFragmentViewModel::class.java]
+    }
 
     protected var binding : FragmentEntriesTab2Binding? = null
 
@@ -58,21 +70,6 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
      * コンテンツを表示するRecyclerViewを設定する
      */
     abstract fun initializeRecyclerView(entriesList: RecyclerView, swipeLayout: SwipeRefreshLayout)
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val arguments = requireArguments()
-        val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
-        val tabPosition = arguments.getInt(ARG_TAB_POSITION, 0)
-
-        val factory = EntriesTabFragmentViewModel.Factory(
-            activityViewModel.repository,
-            category,
-            tabPosition
-        )
-        viewModel = ViewModelProvider(this, factory)[EntriesTabFragmentViewModel::class.java]
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
