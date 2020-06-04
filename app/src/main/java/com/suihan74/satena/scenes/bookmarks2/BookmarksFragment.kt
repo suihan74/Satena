@@ -63,17 +63,18 @@ class BookmarksFragment : Fragment() {
         view.tab_layout.apply {
             setupWithViewPager(viewPager)
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                /** タブを切替え */
                 override fun onTabSelected(tab: TabLayout.Tab?) {
                     tab?.position?.let {
                         viewModel.selectedTab.postValue(it)
                     }
-                    // タブを切り替えたら画面下部のボタンを再表示する
-                    (activity as? BookmarksActivity)?.showButtons()
+                    showFloatingActionButtons()
                 }
-                override fun onTabUnselected(p0: TabLayout.Tab?) {
-                }
+                override fun onTabUnselected(p0: TabLayout.Tab?) {}
+                /** タブ再選択で最新までスクロール */
                 override fun onTabReselected(tab: TabLayout.Tab?) {
                     viewModel.selectedTabViewModel.value?.scrollToTop()
+                    showFloatingActionButtons()
                 }
             })
 
@@ -95,5 +96,10 @@ class BookmarksFragment : Fragment() {
         }
 
         return view
+    }
+
+    /** 明示的にFABを再表示する */
+    fun showFloatingActionButtons() {
+        (activity as? BookmarksActivity)?.showButtons()
     }
 }
