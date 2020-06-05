@@ -128,6 +128,7 @@
     <string name="pref_generals_notices_intervals_dialog_title">通知確認間隔を設定</string>
     <string name="pref_generals_notices_intervals_dialog_msg">1分～180分で指定できます</string>
     <string name="pref_generals_notices_intervals_button_text">%d分</string>
+    <string name="minutes">分</string>
     <!-- entries -->
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
