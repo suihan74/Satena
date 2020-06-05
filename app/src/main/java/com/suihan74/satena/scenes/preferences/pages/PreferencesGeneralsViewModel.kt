@@ -1,23 +1,14 @@
 package com.suihan74.satena.scenes.preferences.pages
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
 
 class PreferencesGeneralsViewModel(
-    private val prefs: SafeSharedPreferences<PreferenceKey>
-) : ViewModel() {
-    /** SafeSharedPreferencesと紐づいたLiveDataを作成する */
-    private inline fun <reified T> createLiveData(key: PreferenceKey) =
-        MutableLiveData<T>(prefs.get<T>(key)).apply {
-            observeForever {
-                prefs.edit {
-                    put(key, it)
-                }
-            }
-        }
+    prefs: SafeSharedPreferences<PreferenceKey>
+) : PreferencesViewModel(prefs) {
 
     /** テーマ(ダークテーマか否か) */
     val darkTheme = createLiveData<Boolean>(

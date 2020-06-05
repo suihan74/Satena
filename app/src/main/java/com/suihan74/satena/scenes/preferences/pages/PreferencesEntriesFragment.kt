@@ -8,10 +8,7 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialogFragment
-import com.suihan74.satena.models.Category
-import com.suihan74.satena.models.EntriesHistoryKey
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.toVisibility
@@ -161,6 +158,15 @@ class PreferencesEntriesFragment :
                 prefs.edit {
                     putBoolean(key, isChecked)
                 }
+            }
+        }
+
+        // 「あとで読む」エントリを「読んだ」したときの挙動
+        view.preferences_entries_read_action_type.apply {
+            val key = PreferenceKey.ENTRY_READ_ACTION_TYPE
+            val initialValue = EntryReadActionType.values()[prefs.getInt(PreferenceKey.ENTRY_READ_ACTION_TYPE)]
+            text = getString(initialValue.textId)
+            setOnClickListener {
             }
         }
 
