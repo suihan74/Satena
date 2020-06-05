@@ -12,6 +12,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.appbar.AppBarLayout
+import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.SearchType
@@ -357,6 +358,12 @@ class EntriesActivity : AppCompatActivity() {
     fun removeBookmark(entry: Entry) {
         val fragment = supportFragmentManager.get<EntriesFragment>()
         fragment?.removeBookmark(entry)
+    }
+
+    /** エントリに付けたブクマを更新する */
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+        val fragment = supportFragmentManager.get<EntriesFragment>()
+        fragment?.updateBookmark(entry, bookmarkResult)
     }
 
     // --- FAB表示アニメーション ---

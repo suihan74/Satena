@@ -38,6 +38,9 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                 onDeletedBookmark = { entry ->
                     (activity as? EntriesActivity)?.removeBookmark(entry)
                 }
+                onPostedBookmark = { entry, bookmarkResult ->
+                    (activity as? EntriesActivity)?.updateBookmark(entry, bookmarkResult)
+                }
             }
 
             setOnItemClickedListener { entry ->

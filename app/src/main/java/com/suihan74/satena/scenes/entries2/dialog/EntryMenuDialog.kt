@@ -15,6 +15,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -58,7 +59,7 @@ class EntryMenuDialogListeners {
     var onDeletedBookmark : ((Entry)->Unit)? = null
 
     /** ブクマ登録完了時の処理 */
-    var onPostedBookmark : ((Entry)->Unit)? = null
+    var onPostedBookmark : ((Entry, BookmarkResult)->Unit)? = null
 }
 
 /** エントリメニューダイアログ */
@@ -398,10 +399,10 @@ class EntryMenuDialog : DialogFragment() {
         val entry = args.entry
         try {
             val target = entry?.url ?: args.url ?: throw RuntimeException("failed to post a bookmark")
-            HatenaClient.postBookmarkAsync(target, readLater = true).await()
+            val bookmarkResult = HatenaClient.postBookmarkAsync(target, readLater = true).await()
             context.showToast(R.string.msg_post_bookmark_succeeded)
             if (entry != null) {
-                args.listeners?.onPostedBookmark?.invoke(entry)
+                args.listeners?.onPostedBookmark?.invoke(entry, bookmarkResult)
             }
         }
         catch (e: Throwable) {
@@ -415,9 +416,9 @@ class EntryMenuDialog : DialogFragment() {
         val context = args.context
         try {
             val entry = args.entry!!
-            HatenaClient.postBookmarkAsync(entry.url, readLater = false).await()
+            val bookmarkResult = HatenaClient.postBookmarkAsync(entry.url, readLater = false).await()
             context.showToast(R.string.msg_post_bookmark_succeeded)
-            args.listeners?.onPostedBookmark?.invoke(entry)
+            args.listeners?.onPostedBookmark?.invoke(entry, bookmarkResult)
         }
         catch (e:Throwable) {
             context.showToast(R.string.msg_post_bookmark_failed)
