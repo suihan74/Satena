@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
@@ -116,4 +117,20 @@ class PreferencesBookmarksFragment :
         }
         dialog.dismiss()
     }
+}
+
+/** 「最初に表示するタブ」のボタンテキスト */
+@BindingAdapter("bookmarksTabType")
+fun Button.setBookmarksTabTypeText(ordinal: Int?) {
+    if (ordinal == null) return
+    val tab = BookmarksTabType.fromInt(ordinal)
+    setText(tab.textId)
+}
+
+/** 「リンク文字列をタップしたときの動作」のボタンテキスト */
+@BindingAdapter("linkTapAction")
+fun Button.setLinkTapActionText(ordinal: Int?) {
+    if (ordinal == null) return
+    val act = TapEntryAction.fromInt(ordinal)
+    setText(act.titleId)
 }
