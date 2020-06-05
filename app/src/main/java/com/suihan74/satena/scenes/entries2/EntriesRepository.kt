@@ -295,32 +295,48 @@ class EntriesRepository(
                 )
             }
 
-        var tasks: List<Deferred<BookmarkPage>>? = null
+        // ブクマ自体のページを取得する
+        var tasks: List<Deferred<BookmarkPage?>>? = null
+        var myBookmarks: List<Deferred<BookmarkPage?>>? = null
         coroutineScope {
-            tasks = data.map {
-                client.getBookmarkPageAsync(it.eid, it.user).apply {
-                    invokeOnCompletion {
-                        if (it != null) {
-                            Log.e("removed", Log.getStackTraceString(it))
-                        }
+            tasks = data.map { async {
+                try {
+                    client.getBookmarkPageAsync(it.eid, it.user).await()
+                }
+                catch (e: Throwable) {
+                    Log.i("removed", Log.getStackTraceString(e))
+                    null
+                }
+            } }
+
+            // 自分のブクマを取得する(StarReportでは無視)
+            val accountUser = client.account?.name ?: ""
+            myBookmarks = data.map { async {
+                if (it.user == accountUser) null
+                else {
+                    try {
+                        client.getBookmarkPageAsync(it.eid, accountUser).await()
+                    }
+                    catch (e: Throwable) {
+                        Log.i("not_bookmarked", Log.getStackTraceString(e))
+                        null
                     }
                 }
-            }
+            } }
         }
 
         return (tasks ?: emptyList()).mapIndexedNotNull { index, deferred ->
-                // TODO: 現状だとブクマ消されたらエントリも表示されなくなる
                 if (deferred.isCancelled) return@mapIndexedNotNull null
 
                 val eid = data[index].eid
                 try {
-                    val bookmark = deferred.await()
+                    val bookmark = deferred.await() ?: return@mapIndexedNotNull null
                     val bookmarkedData = BookmarkResult(
                         user = bookmark.user,
                         comment = bookmark.comment.body,
                         tags = bookmark.comment.tags,
                         timestamp = bookmark.timestamp,
-                        userIconUrl = HatenaClient.getUserIconUrl(bookmark.user),
+                        userIconUrl = client.getUserIconUrl(bookmark.user),
                         commentRaw = bookmark.comment.raw,
                         permalink = data[index].url,
                         success = true,
@@ -328,21 +344,41 @@ class EntriesRepository(
                         eid = eid,
                         starsCount = data[index].starsCount
                     )
-                    bookmark.entry.copy(
-                        rootUrl = Uri.parse(bookmark.entry.url)?.encodedPath ?: bookmark.entry.url,
-                        bookmarkedData = bookmarkedData
-                    )
+                    if (bookmark.user == client.account?.name) {
+                        bookmark.entry.copy(
+                            rootUrl = Uri.parse(bookmark.entry.url)?.encodedPath ?: bookmark.entry.url,
+                            bookmarkedData = bookmarkedData
+                        )
+                    }
+                    else {
+                        val myBookmark = myBookmarks?.get(index)?.await()?.let { my ->
+                            BookmarkResult(
+                                user = my.user,
+                                comment = my.comment.body,
+                                tags = my.comment.tags,
+                                timestamp = my.timestamp,
+                                userIconUrl = client.getUserIconUrl(my.user),
+                                commentRaw = my.comment.raw,
+                                permalink = data[index].url,
+                                success = true,
+                                private = false,
+                                eid = eid,
+                                starsCount = null
+                            )
+                        }
+
+                        bookmark.entry.copy(
+                            rootUrl = Uri.parse(bookmark.entry.url)?.encodedPath ?: bookmark.entry.url,
+                            bookmarkedData = myBookmark,
+                            myhotentryComments = listOf(bookmarkedData)
+                        )
+                    }
                 }
                 catch (e: Exception) {
                     null
                 }
             }.groupBy { it.id }
-            .map {
-                it.value.first().copy(
-                    bookmarkedData = null,
-                    myhotentryComments = it.value.mapNotNull { e -> e.bookmarkedData }
-                )
-            }
+            .map { it.value.first() }
     }
 
     /** エントリを検索する */
