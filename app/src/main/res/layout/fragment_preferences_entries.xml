@@ -1,129 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.preferences.pages.PreferencesEntriesViewModel" />
+    </data>
+
+    <ScrollView
         android:scrollbars="vertical"
         android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
         android:scrollbarSize="4dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:paddingEnd="16dp"
-            android:paddingStart="15dp"
-            android:orientation="vertical">
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:paddingEnd="16dp"
+                android:paddingStart="15dp"
+                android:orientation="vertical">
 
-        <TextView
-                android:text="@string/pref_entries_single_tap_action_desc"
-                android:textColor="?attr/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_entries_single_tap_action_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <Button
-                android:id="@+id/preferences_entries_single_tap_action"
-                android:textColor="@color/textColor"
-                style="@style/Widget.AppCompat.Button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <Button
+                    android:id="@+id/preferences_entries_single_tap_action"
+                    android:textColor="@color/textColor"
+                    style="@style/Widget.AppCompat.Button"
+                    android:text="@{vm.singleTapAction.titleId}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_entries_long_tap_action_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_entries_long_tap_action_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <Button
-                android:id="@+id/preferences_entries_long_tap_action"
-                android:textColor="@color/textColor"
-                style="@style/Widget.AppCompat.Button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <Button
+                    android:id="@+id/preferences_entries_long_tap_action"
+                    android:textColor="@color/textColor"
+                    style="@style/Widget.AppCompat.Button"
+                    android:text="@{vm.longTapAction.titleId}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_home_category_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_home_category_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <Button
-                android:id="@+id/preferences_home_category"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <Button
+                    android:id="@+id/preferences_home_category"
+                    style="@style/Widget.AppCompat.Button"
+                    android:text="@{vm.homeCategory.textId}"
+                    android:textColor="@color/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:id="@+id/preferences_entries_initial_tab_desc"
-                android:text="@string/pref_entries_initial_tab_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:id="@+id/preferences_entries_initial_tab_desc"
+                    android:visibility="@{!vm.homeCategory.singleColumns}"
+                    android:text="@string/pref_entries_initial_tab_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <Button
-                android:id="@+id/preferences_entries_initial_tab"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <Button
+                    android:id="@+id/preferences_entries_initial_tab"
+                    android:visibility="@{!vm.homeCategory.singleColumns}"
+                    app:homeCategory="@{vm.homeCategory}"
+                    app:initialTab="@{vm.initialTab}"
+                    style="@style/Widget.AppCompat.Button"
+                    android:textColor="@color/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_entries_change_home_by_long_tapping_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_entries_change_home_by_long_tapping_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <ToggleButton
-                android:id="@+id/preferences_entries_change_home_by_long_tapping"
-                style="@style/PreferencesToggleButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <ToggleButton
+                    android:id="@+id/preferences_entries_change_home_by_long_tapping"
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:checked="@={vm.changeHomeByLongTappingTab}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_entries_menu_tap_guard_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_entries_menu_tap_guard_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <ToggleButton
-                android:id="@+id/preferences_entries_menu_tap_guard"
-                style="@style/PreferencesToggleButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <ToggleButton
+                    android:id="@+id/preferences_entries_menu_tap_guard"
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:checked="@={vm.menuTapGuard}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_entries_hiding_toolbar_by_scrolling_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_entries_hiding_toolbar_by_scrolling_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <ToggleButton
-                android:id="@+id/preferences_entries_hiding_toolbar_by_scrolling"
-                style="@style/PreferencesToggleButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <ToggleButton
+                    android:id="@+id/preferences_entries_hiding_toolbar_by_scrolling"
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:checked="@={vm.hideToolbarWithScroll}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <TextView
-                android:text="@string/pref_entries_history_max_size_desc"
-                android:textColor="?attr/textColor"
-                android:layout_marginTop="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <TextView
+                    android:text="@string/pref_entries_history_max_size_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-        <Button
-                android:id="@+id/preferences_entries_history_max_size"
-                style="@style/Widget.AppCompat.Button"
-                android:textColor="@color/textColor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <Button
+                    android:id="@+id/preferences_entries_history_max_size"
+                    style="@style/Widget.AppCompat.Button"
+                    android:text="@{vm.historyMaxSize + @string/pref_entries_history_max_size_text}"
+                    android:textColor="@color/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-    </LinearLayout>
-</ScrollView>
+        </LinearLayout>
+    </ScrollView>
+</layout>
