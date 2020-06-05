@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
@@ -10,10 +11,7 @@ import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.checkFromSpam
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
 
 /** エントリリストの取得時にカテゴリによっては必要な必要な追加パラメータ */
@@ -297,10 +295,20 @@ class EntriesRepository(
                 )
             }
 
-        val tasks = data.map { client.getBookmarkPageAsync(it.eid, it.user) }
-        tasks.awaitAll()
+        var tasks: List<Deferred<BookmarkPage>>? = null
+        coroutineScope {
+            tasks = data.map {
+                client.getBookmarkPageAsync(it.eid, it.user).apply {
+                    invokeOnCompletion {
+                        if (it != null) {
+                            Log.e("removed", Log.getStackTraceString(it))
+                        }
+                    }
+                }
+            }
+        }
 
-        return tasks.mapIndexedNotNull { index, deferred ->
+        return (tasks ?: emptyList()).mapIndexedNotNull { index, deferred ->
                 // TODO: 現状だとブクマ消されたらエントリも表示されなくなる
                 if (deferred.isCancelled) return@mapIndexedNotNull null
 
