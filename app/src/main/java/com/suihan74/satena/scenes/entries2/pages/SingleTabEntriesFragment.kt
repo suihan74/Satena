@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
@@ -39,3 +40,9 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
         val fragment = childFragmentManager.findFragmentByTag("main") as? EntriesTabFragmentBase ?: return
         fragment.refreshList()
     }
+
+    override fun removeBookmark(entry: Entry) {
+        val fragment = childFragmentManager.findFragmentByTag("main") as? EntriesTabFragmentBase ?: return
+        fragment.removeBookmark(entry)
+    }
+}

@@ -36,7 +36,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                     (activity as? EntriesActivity)?.refreshLists()
                 }
                 onDeletedBookmark = { entry ->
-                    viewModel.delete(entry)
+                    (activity as? EntriesActivity)?.removeBookmark(entry)
                 }
             }
 

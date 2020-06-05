@@ -96,6 +96,19 @@ class EntriesTabFragmentViewModel(
         entries.value = entries.value?.filterNot { it.id == entry.id }
     }
 
+    /** 指定したエントリのブクマを削除する */
+    fun deleteBookmark(entry: Entry) {
+        if (category == Category.MyBookmarks) {
+            delete(entry)
+        }
+        else {
+            entries.value = entries.value?.map {
+                if (it.id == entry.id) it.copy(bookmarkedData = null)
+                else it
+            }
+        }
+    }
+
     /** 表示項目リストを初期化 */
     fun refresh(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
         when (category) {
