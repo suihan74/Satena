@@ -92,9 +92,14 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         }
     }
 
-    /** リストを再ロードする */
-    fun refresh() {
+    /** エントリリストを再取得する */
+    fun reload() {
         viewModel.refresh(onErrorRefreshEntries)
+    }
+
+    /** リストを再構成する(取得はしない) */
+    fun refreshList() {
+        viewModel.filter()
     }
 
     /** リストを上端までスクロールする */

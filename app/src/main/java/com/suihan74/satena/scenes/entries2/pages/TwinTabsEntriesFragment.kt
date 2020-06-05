@@ -18,6 +18,8 @@ import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 abstract class TwinTabsEntriesFragment : EntriesFragment() {
+    private var binding : FragmentEntries2Binding? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -29,11 +31,12 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
             lifecycleOwner = this@TwinTabsEntriesFragment
             vm = viewModel
         }
+        this.binding = binding
 
         val view = binding.root
 
         // タブ設定
-        view.entries_tab_pager.adapter = EntriesTabAdapter(this)
+        view.entries_tab_pager.adapter = EntriesTabAdapter(view.entries_tab_pager, this)
         view.main_tab_layout.apply {
             setupWithViewPager(view.entries_tab_pager)
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -82,4 +85,9 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
 
         return view
     }
-}
+
+    /** 全てのタブのリストを再構成する */
+    override fun refreshLists() {
+        val adapter = binding?.entriesTabPager?.adapter as? EntriesTabAdapter ?: return
+        adapter.refreshLists()
+    }

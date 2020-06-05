@@ -30,11 +30,10 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
 
         // エントリリスト用のアダプタ
         val entriesAdapter = EntriesAdapter().apply {
-
-            // TODO: 他のタブにも反映されるようにしたい
+            // メニューアクション実行後に画面表示を更新する
             val listeners = EntryMenuDialogListeners().apply {
                 onIgnoredEntry = { _ ->
-                    viewModel.filter()
+                    (activity as? EntriesActivity)?.refreshLists()
                 }
                 onDeletedBookmark = { entry ->
                     viewModel.delete(entry)

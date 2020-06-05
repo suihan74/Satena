@@ -73,6 +73,9 @@ abstract class EntriesFragment : Fragment() {
     fun getTabTitle(position: Int) = viewModel.getTabTitle(requireContext(), position)
     val tabCount get() = viewModel.tabCount
 
+    /** リストを再構成する */
+    abstract fun refreshLists()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

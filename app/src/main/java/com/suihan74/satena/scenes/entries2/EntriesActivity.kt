@@ -346,6 +346,12 @@ class EntriesActivity : AppCompatActivity() {
         appbar_layout.setExpanded(true, true)
     }
 
+    /** エントリリストを再構成する */
+    fun refreshLists() {
+        val fragment = supportFragmentManager.get<EntriesFragment>()
+        fragment?.refreshLists()
+    }
+
     // --- FAB表示アニメーション ---
 
     /** FABメニュー各項目のオープン時移動アニメーション */

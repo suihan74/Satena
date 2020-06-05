@@ -28,10 +28,14 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
         if (savedInstanceState == null) {
             val fragment = generateContentFragment(viewModelKey)
             childFragmentManager.beginTransaction()
-                .replace(R.id.content_layout, fragment)
+                .replace(R.id.content_layout, fragment, "main")
                 .commit()
         }
 
         return root
     }
-}
+
+    override fun refreshLists() {
+        val fragment = childFragmentManager.findFragmentByTag("main") as? EntriesTabFragmentBase ?: return
+        fragment.refreshList()
+    }
