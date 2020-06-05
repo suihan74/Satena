@@ -86,6 +86,12 @@ enum class PreferenceKey(
     /** タブ部分をロングタップしてホームカテゴリ・ホームタブを変更できるようにする */
     ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB(typeInfo<Boolean>(), true),
 
+    /** 「あとで読む」エントリを「読んだ」したときの挙動 */
+    ENTRY_READ_ACTION_TYPE(typeInfo<Int>(), EntryReadActionType.SILENT_BOOKMARK.ordinal),
+
+    /** EntryReadActionType.BOILERPLATE時の定型文 */
+    ENTRY_READ_ACTION_BOILERPLATE(typeInfo<String>(), ""),
+
     ////////////////////////////////////////
     // bookmarks
     ////////////////////////////////////////

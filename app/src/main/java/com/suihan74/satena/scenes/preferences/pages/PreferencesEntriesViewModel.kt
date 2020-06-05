@@ -52,6 +52,16 @@ class PreferencesEntriesViewModel(
         PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB
     )
 
+    /** 「あとで読む」エントリを「読んだ」したときの挙動 */
+    val entryReadActionType = createLiveDataEnum<EntryReadActionType>(
+        PreferenceKey.ENTRY_READ_ACTION_TYPE
+    )
+
+    /** EntryReadActionType.BOILERPLATE時の定型文 */
+    val entryReadActionBoilerPlate = createLiveData<String>(
+        PreferenceKey.ENTRY_READ_ACTION_BOILERPLATE
+    )
+
     class Factory(
         private val prefs: SafeSharedPreferences<PreferenceKey>,
         private val historyPrefs: SafeSharedPreferences<EntriesHistoryKey>
