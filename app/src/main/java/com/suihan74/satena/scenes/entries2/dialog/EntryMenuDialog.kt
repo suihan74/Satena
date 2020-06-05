@@ -30,13 +30,21 @@ import com.suihan74.utilities.showToast
 import com.suihan74.utilities.withArguments
 import kotlinx.coroutines.*
 
+/** メニュー処理用の引数セット */
+private data class MenuItemArguments(
+    val context: Context,
+    val entry: Entry? = null,
+    val url: String? = null,
+    val listeners: EntryMenuDialogListeners? = null
+)
+
 /** メニュー項目 */
-private typealias MenuItem = Triple<Int, suspend (Context, Entry?, String?, EntryMenuDialogListeners?)->Unit, ((Entry)->Boolean)?>
+private typealias MenuItem = Triple<Int, suspend (MenuItemArguments)->Unit, ((Entry)->Boolean)?>
 
 /** メニュー項目の追加 */
 private fun MutableList<MenuItem>.add(
     textId: Int,
-    action: suspend (Context, Entry?, String?, EntryMenuDialogListeners?)->Unit,
+    action: suspend (MenuItemArguments)->Unit,
     checker: ((Entry)->Boolean)? = null
 ) {
     add(Triple(textId, action, checker))
@@ -48,6 +56,9 @@ class EntryMenuDialogListeners {
 
     /** ブクマ削除完了時の処理 */
     var onDeletedBookmark : ((Entry)->Unit)? = null
+
+    /** ブクマ登録完了時の処理 */
+    var onPostedBookmark : ((Entry)->Unit)? = null
 }
 
 /** エントリメニューダイアログ */
@@ -59,12 +70,14 @@ class EntryMenuDialog : DialogFragment() {
     /** メニュー項目 */
     @OptIn(ExperimentalStdlibApi::class)
     private val menuItems = buildList<MenuItem> {
-        add(R.string.entry_action_show_comments, { context, entry, url, _ -> showBookmarks(context, entry, url) })
-        add(R.string.entry_action_show_page, { context, entry, url, _ -> showPage(context, entry, url) })
-        add(R.string.entry_action_show_page_in_browser, { context, entry, url, _ -> showPageInBrowser(context, entry, url) })
-        add(R.string.entry_action_show_entries, { context, entry, url, _ -> showEntries(context, entry, url) })
-        add(R.string.entry_action_ignore, { context, entry, url, listeners -> ignoreSite(context, entry, url, listeners?.onIgnoredEntry) })
-        add(R.string.bookmark_remove, { context, entry, url, listeners -> removeBookmark(context, entry, url, listeners?.onDeletedBookmark) }, { entry -> entry.bookmarkedData != null })
+        add(R.string.entry_action_show_comments, { args -> showBookmarks(args.context, args.entry, args.url) })
+        add(R.string.entry_action_show_page, { args -> showPage(args.context, args.entry, args.url) })
+        add(R.string.entry_action_show_page_in_browser, { args -> showPageInBrowser(args.context, args.entry, args.url) })
+        add(R.string.entry_action_show_entries, { args -> showEntries(args.context, args.entry, args.url) })
+        add(R.string.entry_action_ignore, { args -> ignoreSite(args.context, args.entry, args.url, args.listeners?.onIgnoredEntry) })
+        add(R.string.entry_action_read_later, { args -> readLater(args) }, { entry -> HatenaClient.signedIn() && entry.bookmarkedData == null })
+        add(R.string.entry_action_read, { args -> readEntry(args) }, { entry -> HatenaClient.signedIn() && entry.bookmarkedData?.tags?.contains("あとで読む") == true })
+        add(R.string.bookmark_remove, { args -> removeBookmark(args.context, args.entry, args.url, args.listeners?.onDeletedBookmark) }, { entry -> entry.bookmarkedData != null })
     }
 
     companion object {
@@ -140,7 +153,12 @@ class EntryMenuDialog : DialogFragment() {
                     val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
                     val listeners = instance.listeners
                     GlobalScope.launch(Dispatchers.Main) {
-                        action?.second?.invoke(SatenaApplication.instance.applicationContext, entry, null, listeners)
+                        val args = MenuItemArguments(
+                            context = SatenaApplication.instance.applicationContext,
+                            entry = entry,
+                            listeners = listeners
+                        )
+                        action?.second?.invoke(args)
                     }
 
                     fragmentManager.beginTransaction()
@@ -156,7 +174,11 @@ class EntryMenuDialog : DialogFragment() {
                 .runOnCommit {
                     val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
                     GlobalScope.launch(Dispatchers.Main) {
-                        action?.second?.invoke(SatenaApplication.instance.applicationContext, null, url, null)
+                        val args = MenuItemArguments(
+                            context = SatenaApplication.instance.applicationContext,
+                            url = url
+                        )
+                        action?.second?.invoke(args)
                     }
 
                     fragmentManager.beginTransaction()
@@ -226,7 +248,13 @@ class EntryMenuDialog : DialogFragment() {
             .setNegativeButton(R.string.dialog_cancel, null)
             .setItems(activeItemLabels) { _, which ->
                 lifecycleScope.launch(Dispatchers.Main + SupervisorJob()) {
-                    activeItems[which].second.invoke(activity, entry, url, viewModel.listeners)
+                    val args = MenuItemArguments(
+                        context = activity,
+                        entry = entry,
+                        url = url,
+                        listeners = viewModel.listeners
+                    )
+                    activeItems[which].second.invoke(args)
                 }
             }
             .create()
@@ -360,6 +388,39 @@ class EntryMenuDialog : DialogFragment() {
         }
         catch (e: Throwable) {
             context.showToast(R.string.msg_remove_bookmark_failed)
+            Log.e("EntryMenuDialog", Log.getStackTraceString(e))
+        }
+    }
+
+    /** あとで読む */
+    private suspend fun readLater(args: MenuItemArguments) {
+        val context = args.context
+        val entry = args.entry
+        try {
+            val target = entry?.url ?: args.url ?: throw RuntimeException("failed to post a bookmark")
+            HatenaClient.postBookmarkAsync(target, readLater = true).await()
+            context.showToast(R.string.msg_post_bookmark_succeeded)
+            if (entry != null) {
+                args.listeners?.onPostedBookmark?.invoke(entry)
+            }
+        }
+        catch (e: Throwable) {
+            context.showToast(R.string.msg_post_bookmark_failed)
+            Log.e("EntryMenuDialog", Log.getStackTraceString(e))
+        }
+    }
+
+    /** 「あとで読む」を解除してブクマする */
+    private suspend fun readEntry(args: MenuItemArguments) {
+        val context = args.context
+        try {
+            val entry = args.entry!!
+            HatenaClient.postBookmarkAsync(entry.url, readLater = false).await()
+            context.showToast(R.string.msg_post_bookmark_succeeded)
+            args.listeners?.onPostedBookmark?.invoke(entry)
+        }
+        catch (e:Throwable) {
+            context.showToast(R.string.msg_post_bookmark_failed)
             Log.e("EntryMenuDialog", Log.getStackTraceString(e))
         }
     }
