@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
+import com.suihan74.utilities.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -106,6 +107,14 @@ class EntriesTabFragmentViewModel(
                 if (it.id == entry.id) it.copy(bookmarkedData = null)
                 else it
             }
+        }
+    }
+
+    /** エントリに付けたブクマを更新する */
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+        entries.value = entries.value?.map {
+            if (it.id == entry.id) it.copy(bookmarkedData = bookmarkResult)
+            else it
         }
     }
 

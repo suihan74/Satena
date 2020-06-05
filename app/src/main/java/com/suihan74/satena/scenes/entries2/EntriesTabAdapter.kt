@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.entries2
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
+import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.utilities.map
 
@@ -30,6 +31,13 @@ class EntriesTabAdapter(
     fun removeBookmark(entry: Entry) {
         map<EntriesTabFragment>(container) {
             it.removeBookmark(entry)
+        }
+    }
+
+    /** エントリに付けたブクマを更新する */
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+        map<EntriesTabFragment>(container) {
+            it.updateBookmark(entry, bookmarkResult)
         }
     }
 }

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.tabs.TabLayout
+import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
@@ -97,5 +98,11 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
     override fun removeBookmark(entry: Entry) {
         val adapter = binding?.entriesTabPager?.adapter as? EntriesTabAdapter ?: return
         adapter.removeBookmark(entry)
+    }
+
+    /** エントリに付けたブクマを更新する */
+    override fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+        val adapter = binding?.entriesTabPager?.adapter as? EntriesTabAdapter ?: return
+        adapter.updateBookmark(entry, bookmarkResult)
     }
 }

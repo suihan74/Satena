@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.transition.Fade
 import androidx.transition.TransitionSet
+import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
@@ -79,6 +80,9 @@ abstract class EntriesFragment : Fragment() {
 
     /** エントリに付けたブクマを削除 */
     abstract fun removeBookmark(entry: Entry)
+
+    /** エントリに付けたブクマを更新する */
+    abstract fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

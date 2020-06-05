@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.EntriesFragment
+import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 
 abstract class SingleTabEntriesFragment : EntriesFragment() {
@@ -44,5 +46,11 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
     override fun removeBookmark(entry: Entry) {
         val fragment = childFragmentManager.findFragmentByTag("main") as? EntriesTabFragmentBase ?: return
         fragment.removeBookmark(entry)
+    }
+
+    /** エントリに付けたブクマを更新する */
+    override fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+        val fragment = childFragmentManager.findFragmentByTag("main") as? EntriesTabFragmentBase ?: return
+        fragment.updateBookmark(entry, bookmarkResult)
     }
 }
