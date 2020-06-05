@@ -12,6 +12,8 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.appbar.AppBarLayout
+import com.suihan74.hatenaLib.BookmarkResult
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.NetworkReceiver
@@ -344,6 +346,24 @@ class EntriesActivity : AppCompatActivity() {
     /** AppBarを強制的に表示する */
     fun showAppBar() {
         appbar_layout.setExpanded(true, true)
+    }
+
+    /** エントリリストを再構成する */
+    fun refreshLists() {
+        val fragment = supportFragmentManager.get<EntriesFragment>()
+        fragment?.refreshLists()
+    }
+
+    /** エントリに付けたブクマを削除する */
+    fun removeBookmark(entry: Entry) {
+        val fragment = supportFragmentManager.get<EntriesFragment>()
+        fragment?.removeBookmark(entry)
+    }
+
+    /** エントリに付けたブクマを更新する */
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+        val fragment = supportFragmentManager.get<EntriesFragment>()
+        fragment?.updateBookmark(entry, bookmarkResult)
     }
 
     // --- FAB表示アニメーション ---

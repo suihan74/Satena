@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.transition.Fade
 import androidx.transition.TransitionSet
+import com.suihan74.hatenaLib.BookmarkResult
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.getEnum
@@ -72,6 +74,15 @@ abstract class EntriesFragment : Fragment() {
     /** タブタイトルを取得する */
     fun getTabTitle(position: Int) = viewModel.getTabTitle(requireContext(), position)
     val tabCount get() = viewModel.tabCount
+
+    /** リストを再構成する */
+    abstract fun refreshLists()
+
+    /** エントリに付けたブクマを削除 */
+    abstract fun removeBookmark(entry: Entry)
+
+    /** エントリに付けたブクマを更新する */
+    abstract fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

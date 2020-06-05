@@ -10,6 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.suihan74.hatenaLib.BookmarkResult
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
@@ -92,9 +94,24 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         }
     }
 
-    /** リストを再ロードする */
-    fun refresh() {
+    /** エントリリストを再取得する */
+    fun reload() {
         viewModel.refresh(onErrorRefreshEntries)
+    }
+
+    /** リストを再構成する(取得はしない) */
+    fun refreshList() {
+        viewModel.filter()
+    }
+
+    /** エントリに付けたブクマを削除 */
+    fun removeBookmark(entry: Entry) {
+        viewModel.deleteBookmark(entry)
+    }
+
+    /** エントリに付けたブクマを更新する */
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+        viewModel.updateBookmark(entry, bookmarkResult)
     }
 
     /** リストを上端までスクロールする */

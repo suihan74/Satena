@@ -14,10 +14,7 @@ import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
-import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
-import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
+import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.getEnum
 import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.putEnum
@@ -96,13 +93,8 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
                 }
                 // 検索ボタン押下時にロードを行う
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    val tabPager = this@SearchEntriesFragment.view?.entries_tab_pager
-                    val tabAdapter = tabPager?.adapter as? EntriesTabAdapter
-                    if (tabPager != null && tabAdapter != null) {
-                        (0 until tabAdapter.count).forEach { idx ->
-                            val instance = tabAdapter.instantiateItem(tabPager, idx) as? EntriesTabFragmentBase
-                            instance?.refresh()
-                        }
+                    (this@SearchEntriesFragment.view?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.let { adapter ->
+                        adapter.refreshLists()
                     }
 
                     return (!query.isNullOrBlank()).also {

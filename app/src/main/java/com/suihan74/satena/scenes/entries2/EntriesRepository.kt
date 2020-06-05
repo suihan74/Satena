@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
@@ -10,10 +11,7 @@ import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.checkFromSpam
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
 
 /** エントリリストの取得時にカテゴリによっては必要な必要な追加パラメータ */
@@ -297,22 +295,48 @@ class EntriesRepository(
                 )
             }
 
-        val tasks = data.map { client.getBookmarkPageAsync(it.eid, it.user) }
-        tasks.awaitAll()
+        // ブクマ自体のページを取得する
+        var tasks: List<Deferred<BookmarkPage?>>? = null
+        var myBookmarks: List<Deferred<BookmarkPage?>>? = null
+        coroutineScope {
+            tasks = data.map { async {
+                try {
+                    client.getBookmarkPageAsync(it.eid, it.user).await()
+                }
+                catch (e: Throwable) {
+                    Log.i("removed", Log.getStackTraceString(e))
+                    null
+                }
+            } }
 
-        return tasks.mapIndexedNotNull { index, deferred ->
-                // TODO: 現状だとブクマ消されたらエントリも表示されなくなる
+            // 自分のブクマを取得する(StarReportでは無視)
+            val accountUser = client.account?.name ?: ""
+            myBookmarks = data.map { async {
+                if (it.user == accountUser) null
+                else {
+                    try {
+                        client.getBookmarkPageAsync(it.eid, accountUser).await()
+                    }
+                    catch (e: Throwable) {
+                        Log.i("not_bookmarked", Log.getStackTraceString(e))
+                        null
+                    }
+                }
+            } }
+        }
+
+        return (tasks ?: emptyList()).mapIndexedNotNull { index, deferred ->
                 if (deferred.isCancelled) return@mapIndexedNotNull null
 
                 val eid = data[index].eid
                 try {
-                    val bookmark = deferred.await()
+                    val bookmark = deferred.await() ?: return@mapIndexedNotNull null
                     val bookmarkedData = BookmarkResult(
                         user = bookmark.user,
                         comment = bookmark.comment.body,
                         tags = bookmark.comment.tags,
                         timestamp = bookmark.timestamp,
-                        userIconUrl = HatenaClient.getUserIconUrl(bookmark.user),
+                        userIconUrl = client.getUserIconUrl(bookmark.user),
                         commentRaw = bookmark.comment.raw,
                         permalink = data[index].url,
                         success = true,
@@ -320,21 +344,41 @@ class EntriesRepository(
                         eid = eid,
                         starsCount = data[index].starsCount
                     )
-                    bookmark.entry.copy(
-                        rootUrl = Uri.parse(bookmark.entry.url)?.encodedPath ?: bookmark.entry.url,
-                        bookmarkedData = bookmarkedData
-                    )
+                    if (bookmark.user == client.account?.name) {
+                        bookmark.entry.copy(
+                            rootUrl = Uri.parse(bookmark.entry.url)?.encodedPath ?: bookmark.entry.url,
+                            bookmarkedData = bookmarkedData
+                        )
+                    }
+                    else {
+                        val myBookmark = myBookmarks?.get(index)?.await()?.let { my ->
+                            BookmarkResult(
+                                user = my.user,
+                                comment = my.comment.body,
+                                tags = my.comment.tags,
+                                timestamp = my.timestamp,
+                                userIconUrl = client.getUserIconUrl(my.user),
+                                commentRaw = my.comment.raw,
+                                permalink = data[index].url,
+                                success = true,
+                                private = false,
+                                eid = eid,
+                                starsCount = null
+                            )
+                        }
+
+                        bookmark.entry.copy(
+                            rootUrl = Uri.parse(bookmark.entry.url)?.encodedPath ?: bookmark.entry.url,
+                            bookmarkedData = myBookmark,
+                            myhotentryComments = listOf(bookmarkedData)
+                        )
+                    }
                 }
                 catch (e: Exception) {
                     null
                 }
             }.groupBy { it.id }
-            .map {
-                it.value.first().copy(
-                    bookmarkedData = null,
-                    myhotentryComments = it.value.mapNotNull { e -> e.bookmarkedData }
-                )
-            }
+            .map { it.value.first() }
     }
 
     /** エントリを検索する */

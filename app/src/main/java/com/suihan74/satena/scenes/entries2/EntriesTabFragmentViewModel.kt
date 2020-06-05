@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
+import com.suihan74.utilities.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -94,6 +95,27 @@ class EntriesTabFragmentViewModel(
     /** 指定したエントリを削除する */
     fun delete(entry: Entry) {
         entries.value = entries.value?.filterNot { it.id == entry.id }
+    }
+
+    /** 指定したエントリのブクマを削除する */
+    fun deleteBookmark(entry: Entry) {
+        if (category == Category.MyBookmarks) {
+            delete(entry)
+        }
+        else {
+            entries.value = entries.value?.map {
+                if (it.id == entry.id) it.copy(bookmarkedData = null)
+                else it
+            }
+        }
+    }
+
+    /** エントリに付けたブクマを更新する */
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+        entries.value = entries.value?.map {
+            if (it.id == entry.id) it.copy(bookmarkedData = bookmarkResult)
+            else it
+        }
     }
 
     /** 表示項目リストを初期化 */
