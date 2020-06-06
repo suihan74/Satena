@@ -174,7 +174,7 @@
                     android:text="@={vm.entryReadActionBoilerPlate}"
                     android:hint="@string/pref_entries_read_action_boilerplate_hint"
                     android:inputType="text"
-                    android:textColor="@color/textColor"
+                    android:textColor="?attr/textColor"
                     android:autofillHints="@null"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
