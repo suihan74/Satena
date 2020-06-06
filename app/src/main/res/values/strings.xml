@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Satena</string>
-    <string name="copyright">Copyright \u00A9 2019 &lt;a href=&quot;https://www.twitter.com/suihan742&quot;&gt;suihan&lt;/a&gt;</string>
+    <string name="copyright">Copyright \u00A9 2019-2020 &lt;a href=&quot;https://www.twitter.com/suihan742&quot;&gt;suihan&lt;/a&gt;</string>
 
     <string name="drawer_open">開く</string>
     <string name="drawer_close">閉じる</string>
@@ -92,6 +92,13 @@
     <string name="bookmark_report">通報する</string>
     <string name="bookmark_user_tags">ユーザータグ</string>
 
+    <!-- 「あとで読む」エントリを「読んだ」したときの挙動 -->
+    <string name="entry_read_action_silent">無言ブクマ</string>
+    <string name="entry_read_action_read_tag">「読んだ」タグを付けて無言ブクマ</string>
+    <string name="entry_read_action_boilerplate">定型文でブクマ</string>
+    <string name="entry_read_action_dialog">ブコメ投稿ダイアログ</string>
+    <string name="entry_read_action_remove">削除</string>
+
     <!-- 設定項目の説明 -->
     <string name="pref_title_information">情報</string>
     <string name="pref_title_account">アカウント</string>
@@ -127,7 +134,7 @@
     <string name="pref_generals_show_release_notes_after_update_desc">アプリ更新後の初回起動時に更新履歴を表示する</string>
     <string name="pref_generals_notices_intervals_dialog_title">通知確認間隔を設定</string>
     <string name="pref_generals_notices_intervals_dialog_msg">1分～180分で指定できます</string>
-    <string name="pref_generals_notices_intervals_button_text">%d分</string>
+    <string name="minutes">分</string>
     <!-- entries -->
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
@@ -139,7 +146,10 @@
     <string name="pref_entries_change_home_by_long_tapping_desc">タブ長押しでホームカテゴリ・初期タブを変更する</string>
     <string name="pref_entries_history_max_size_dialog_title">ブクマ閲覧履歴の最大保存数を設定</string>
     <string name="pref_entries_history_max_size_dialog_msg">1～100件で指定できます</string>
-    <string name="pref_entries_history_max_size_text">%d件</string>
+    <string name="pref_entries_history_max_size_text">件</string>
+    <string name="pref_entries_read_action_type_desc">「あとで読む」エントリを「読んだ」したときの挙動</string>
+    <string name="pref_entries_read_action_boilerplate_desc">「読んだ」ときに投稿する定型文</string>
+    <string name="pref_entries_read_action_boilerplate_hint">ブコメの入力ルールに従います</string>
     <!-- bookmarks -->
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
     <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>

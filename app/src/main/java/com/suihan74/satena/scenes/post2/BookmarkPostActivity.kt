@@ -32,8 +32,12 @@ class BookmarkPostActivity :
         // Extra keys
         /** ブクマ対象のエントリ */
         const val EXTRA_ENTRY = "BookmarkPostActivity.EXTRA_ENTRY"
+
         /** 初期表示するコメント */
         const val EXTRA_EDITING_COMMENT = "BookmarkPostActivity.EXTRA_EDITING_COMMENT"
+
+        /** 呼び出し元がBookmarksActivityである */
+        const val EXTRA_INVOKED_BY_BOOKMARKS_ACTIVITY = "BookmarkPostActivity.EXTRA_INVOKED_FROM_BOOKMARKS_ACTIVITY"
 
         // Request codes
         val REQUEST_CODE
@@ -88,7 +92,10 @@ class BookmarkPostActivity :
                 mastodonClientHolder = MastodonClientHolder
             )
         )
-        viewModel = ViewModelProvider(this, factory)[ViewModel::class.java]
+        viewModel = ViewModelProvider(this, factory)[ViewModel::class.java].apply {
+            displayEntryTitle.value =
+                !intent.getBooleanExtra(EXTRA_INVOKED_BY_BOOKMARKS_ACTIVITY, false)
+        }
 
         // データバインド
         binding = DataBindingUtil.setContentView<ActivityBookmarkPost2Binding>(
@@ -193,6 +200,14 @@ class BookmarkPostActivity :
         viewModel.isPrivate.observe(this, Observer {
             if (it) showToast(R.string.hint_private_toggle)
         })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (viewModel.displayEntryTitle.value == true) {
+            // エントリタイトル部分をマーキーするために必要
+            entry_title.isSelected = true
+        }
     }
 
     /** 初期化失敗時処理 */

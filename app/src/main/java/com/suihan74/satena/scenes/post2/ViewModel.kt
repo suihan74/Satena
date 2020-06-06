@@ -8,6 +8,7 @@ import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Tag
+import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.sys1yagi.mastodon4j.api.entity.Status
@@ -93,6 +94,9 @@ class ViewModel(
     /** Facebookに投稿するか否か */
     val postFacebook by lazy { MutableLiveData<Boolean>() }
 
+    /** エントリタイトル部分を表示する */
+    val displayEntryTitle by lazy { MutableLiveData(false) }
+
     /** 初期化 */
     fun init(url: String, editingComment: String?, onError: OnError? = null) = viewModelScope.launch(
         Dispatchers.Main + CoroutineExceptionHandler { _, e ->
@@ -115,7 +119,8 @@ class ViewModel(
             onError?.invoke(e)
         }
 
-        entry.value = client.getEntryAsync(url).await()
+        val modifiedUrl = modifySpecificUrls(url) ?: url
+        entry.value = client.getEntryAsync(modifiedUrl).await()
     }
 
     /** 初期化 */

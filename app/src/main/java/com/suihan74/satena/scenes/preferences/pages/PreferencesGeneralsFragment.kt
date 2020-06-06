@@ -41,6 +41,7 @@ class PreferencesGeneralsFragment :
             false
         ).apply {
             vm = viewModel
+            lifecycleOwner = viewLifecycleOwner
         }
         val view = binding.root
 
@@ -79,10 +80,6 @@ class PreferencesGeneralsFragment :
                 .setDefaultValue(viewModel.checkNoticesInterval.value!!.toInt())
                 .show(childFragmentManager, "notices_intervals_picker")
         }
-        // ボタンテキストに変更を反映
-        viewModel.checkNoticesInterval.observe(viewLifecycleOwner, Observer {
-            view.button_checking_notices_interval.text = getString(R.string.pref_generals_notices_intervals_button_text, it)
-        })
 
         return view
     }

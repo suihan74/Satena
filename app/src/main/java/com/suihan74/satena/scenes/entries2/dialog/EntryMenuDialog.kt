@@ -22,11 +22,15 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
+import com.suihan74.satena.models.EntryReadActionType
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.showCustomTabsIntent
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.showToast
 import com.suihan74.utilities.withArguments
 import kotlinx.coroutines.*
@@ -415,8 +419,37 @@ class EntryMenuDialog : DialogFragment() {
     private suspend fun readEntry(args: MenuItemArguments) {
         val context = args.context
         try {
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val action = EntryReadActionType.fromInt(prefs.getInt(PreferenceKey.ENTRY_READ_ACTION_TYPE))
+
             val entry = args.entry!!
-            val bookmarkResult = HatenaClient.postBookmarkAsync(entry.url, readLater = false).await()
+            val bookmarkResult = when(action) {
+                EntryReadActionType.SILENT_BOOKMARK ->
+                    HatenaClient.postBookmarkAsync(entry.url, readLater = false).await()
+
+                EntryReadActionType.READ_TAG ->
+                    HatenaClient.postBookmarkAsync(entry.url, comment = "[読んだ]", readLater = false).await()
+
+                EntryReadActionType.BOILERPLATE -> {
+                    val boilerplate = prefs.getString(PreferenceKey.ENTRY_READ_ACTION_BOILERPLATE) ?: ""
+                    HatenaClient.postBookmarkAsync(entry.url, comment = boilerplate).await()
+                }
+
+                EntryReadActionType.DIALOG -> {
+                    val intent = Intent(context, BookmarkPostActivity::class.java).apply {
+                        putExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
+                    }
+                    startActivityForResult(intent, BookmarkPostActivity.REQUEST_CODE)
+                    return
+                    // TODO: 結果の受け取り方をなんとかする
+                }
+
+                EntryReadActionType.REMOVE -> {
+                    removeBookmark(context, entry, url = null, onCompleted = args.listeners?.onDeletedBookmark)
+                    return
+                }
+            }
+
             context.showToast(R.string.msg_post_bookmark_succeeded)
             args.listeners?.onPostedBookmark?.invoke(entry, bookmarkResult)
         }

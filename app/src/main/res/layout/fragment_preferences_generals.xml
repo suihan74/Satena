@@ -90,6 +90,7 @@
             <Button
                     android:id="@+id/button_checking_notices_interval"
                     style="@style/Widget.AppCompat.Button"
+                    android:text='@{vm.checkNoticesInterval + @string/minutes}'
                     android:textColor="@color/textColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>

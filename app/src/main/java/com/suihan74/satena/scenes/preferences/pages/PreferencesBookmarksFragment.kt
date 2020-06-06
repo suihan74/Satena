@@ -5,9 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesBookmarksBinding
@@ -17,8 +17,6 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.bindings.setBookmarksTabTypeText
-import com.suihan74.utilities.bindings.setLinkTapActionText
 import kotlinx.android.synthetic.main.fragment_preferences_bookmarks.view.*
 
 class PreferencesBookmarksFragment :
@@ -52,6 +50,7 @@ class PreferencesBookmarksFragment :
             false
         ).apply {
             vm = viewModel
+            lifecycleOwner = viewLifecycleOwner
         }
         val view = binding.root
 
@@ -99,20 +98,6 @@ class PreferencesBookmarksFragment :
             DIALOG_LINK_LONG_TAP_ACTION
         )
 
-        // --- observers --- //
-
-        viewModel.initialTabPosition.observe(viewLifecycleOwner, Observer {
-            view.button_initial_tab.setBookmarksTabTypeText(it)
-        })
-
-        viewModel.linkSingleTapAction.observe(viewLifecycleOwner, Observer {
-            view.button_link_single_tap_action.setLinkTapActionText(it)
-        })
-
-        viewModel.linkLongTapAction.observe(viewLifecycleOwner, Observer {
-            view.button_link_single_tap_action.setLinkTapActionText(it)
-        })
-
         return view
     }
 
@@ -132,4 +117,20 @@ class PreferencesBookmarksFragment :
         }
         dialog.dismiss()
     }
+}
+
+/** 「最初に表示するタブ」のボタンテキスト */
+@BindingAdapter("bookmarksTabType")
+fun Button.setBookmarksTabTypeText(ordinal: Int?) {
+    if (ordinal == null) return
+    val tab = BookmarksTabType.fromInt(ordinal)
+    setText(tab.textId)
+}
+
+/** 「リンク文字列をタップしたときの動作」のボタンテキスト */
+@BindingAdapter("linkTapAction")
+fun Button.setLinkTapActionText(ordinal: Int?) {
+    if (ordinal == null) return
+    val act = TapEntryAction.fromInt(ordinal)
+    setText(act.titleId)
 }
