@@ -17,8 +17,45 @@
             android:layout_height="wrap_content"
             android:padding="8dp">
 
+        <!-- marquee有効化のためにTextViewをViewGroupで包んでいる -->
+        <LinearLayout
+                android:id="@+id/entry_title_area"
+                android:visibility="@{vm.displayEntryTitle}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:id="@+id/entry_title"
+                    android:visibility="@{vm.displayEntryTitle}"
+                    android:text="@{vm.entry.title}"
+                    android:textColor="?attr/textColor"
+                    android:textSize="16sp"
+
+                    android:singleLine="true"
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="-1"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <TextView
+                android:id="@+id/entry_url"
+                android:visibility="@{vm.displayEntryTitle}"
+                android:text="@{vm.entry.url}"
+                android:textColor="@color/tagColor"
+                android:textSize="13sp"
+
+                android:singleLine="true"
+                android:ellipsize="end"
+
+                android:layout_below="@id/entry_title_area"
+                android:layout_marginBottom="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/tags_list"
+                android:layout_below="@id/entry_url"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>

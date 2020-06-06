@@ -92,7 +92,10 @@ class BookmarkPostActivity :
                 mastodonClientHolder = MastodonClientHolder
             )
         )
-        viewModel = ViewModelProvider(this, factory)[ViewModel::class.java]
+        viewModel = ViewModelProvider(this, factory)[ViewModel::class.java].apply {
+            displayEntryTitle.value =
+                !intent.getBooleanExtra(EXTRA_INVOKED_BY_BOOKMARKS_ACTIVITY, false)
+        }
 
         // データバインド
         binding = DataBindingUtil.setContentView<ActivityBookmarkPost2Binding>(
@@ -197,6 +200,14 @@ class BookmarkPostActivity :
         viewModel.isPrivate.observe(this, Observer {
             if (it) showToast(R.string.hint_private_toggle)
         })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (viewModel.displayEntryTitle.value == true) {
+            // エントリタイトル部分をマーキーするために必要
+            entry_title.isSelected = true
+        }
     }
 
     /** 初期化失敗時処理 */

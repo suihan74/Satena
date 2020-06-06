@@ -93,6 +93,9 @@ class ViewModel(
     /** Facebookに投稿するか否か */
     val postFacebook by lazy { MutableLiveData<Boolean>() }
 
+    /** エントリタイトル部分を表示する */
+    val displayEntryTitle by lazy { MutableLiveData(false) }
+
     /** 初期化 */
     fun init(url: String, editingComment: String?, onError: OnError? = null) = viewModelScope.launch(
         Dispatchers.Main + CoroutineExceptionHandler { _, e ->
