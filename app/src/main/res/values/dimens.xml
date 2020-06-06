@@ -10,7 +10,7 @@
     <dimen name="dp_80">80dp</dimen>
 
     <!-- ブクマ投稿ダイアログの画面幅占有比率 -->
-    <item type="dimen" name="post_bookmark_dialog_width_ratio">95%</item>
+    <item type="dimen" name="post_bookmark_dialog_width_ratio">98%</item>
 
     <!-- トースト通知の表示位置調整用 -->
     <dimen name="toast_offset_y">8dp</dimen>
