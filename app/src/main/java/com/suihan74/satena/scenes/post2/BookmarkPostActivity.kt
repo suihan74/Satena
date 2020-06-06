@@ -32,8 +32,12 @@ class BookmarkPostActivity :
         // Extra keys
         /** ブクマ対象のエントリ */
         const val EXTRA_ENTRY = "BookmarkPostActivity.EXTRA_ENTRY"
+
         /** 初期表示するコメント */
         const val EXTRA_EDITING_COMMENT = "BookmarkPostActivity.EXTRA_EDITING_COMMENT"
+
+        /** 呼び出し元がBookmarksActivityである */
+        const val EXTRA_INVOKED_BY_BOOKMARKS_ACTIVITY = "BookmarkPostActivity.EXTRA_INVOKED_FROM_BOOKMARKS_ACTIVITY"
 
         // Request codes
         val REQUEST_CODE
