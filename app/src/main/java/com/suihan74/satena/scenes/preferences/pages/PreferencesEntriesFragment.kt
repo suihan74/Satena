@@ -150,7 +150,9 @@ class PreferencesEntriesFragment :
 
             DIALOG_HOME_TAB ->
                 viewModel.initialTab.value = which
-            
+
+            DIALOG_ENTRY_READ_ACTION_TYPE ->
+                viewModel.entryReadActionType.value = EntryReadActionType.fromInt(which)
         }
         dialog.dismiss()
     }

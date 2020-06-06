@@ -2,6 +2,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
+        <import type="com.suihan74.satena.models.EntryReadActionType"/>
         <variable
                 name="vm"
                 type="com.suihan74.satena.scenes.preferences.pages.PreferencesEntriesViewModel" />
@@ -141,6 +142,41 @@
                     android:text="@{vm.historyMaxSize + @string/pref_entries_history_max_size_text}"
                     android:textColor="@color/textColor"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:text="@string/pref_entries_read_action_type_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <Button
+                    android:id="@+id/preferences_entries_read_action_type"
+                    style="@style/Widget.AppCompat.Button"
+                    android:text="@{vm.entryReadActionType.textId}"
+                    android:textColor="@color/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:text="@string/pref_entries_read_action_boilerplate_desc"
+                    android:visibility="@{vm.entryReadActionType == EntryReadActionType.BOILERPLATE}"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <EditText
+                    android:id="@+id/preferences_entries_read_action_boilerplate"
+                    style="@style/Widget.AppCompat.EditText"
+                    android:visibility="@{vm.entryReadActionType == EntryReadActionType.BOILERPLATE}"
+                    android:text="@={vm.entryReadActionBoilerPlate}"
+                    android:hint="@string/pref_entries_read_action_boilerplate_hint"
+                    android:inputType="text"
+                    android:textColor="@color/textColor"
+                    android:autofillHints="@null"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
 
         </LinearLayout>
