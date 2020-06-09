@@ -70,11 +70,6 @@ abstract class ActivityBase(
         updateToolbar(fragment)
     }
 
-    override fun setContentView(layoutResID: Int) {
-        super.setContentView(layoutResID)
-        SatenaApplication.instance.currentActivity = this
-    }
-
     protected fun setShowingProgressBarAction(action: (progressBar: ProgressBar?, background: View?)->Unit) {
         showAction = action
     }
