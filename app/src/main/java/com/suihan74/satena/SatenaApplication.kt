@@ -26,8 +26,6 @@ class SatenaApplication : Application() {
         const val APP_DATABASE_FILE_NAME = "satena_db"
     }
 
-    var currentActivity : ActivityBase? = null
-
     var isFirstLaunch : Boolean = false
 
     lateinit var appDatabase: AppDatabase
