@@ -106,7 +106,7 @@ private fun Context.showCustomTabsIntent(remoteViews: RemoteViews, url: String) 
     .let {
         val packageName = CustomTabsHelper.getPackageNameToUse(this)
         it.intent.setPackage(packageName)
-        it.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        it.intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         it.launchUrl(this, Uri.parse(url))
     }
 
