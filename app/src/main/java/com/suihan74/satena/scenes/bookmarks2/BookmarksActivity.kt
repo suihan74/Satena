@@ -496,13 +496,13 @@ class BookmarksActivity :
     fun onLinkClicked(url: String) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
-        EntryMenuDialog.act(url, act, supportFragmentManager)
+        EntryMenuDialog.act(this, url, act, supportFragmentManager)
     }
 
     fun onLinkLongClicked(url: String) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
-        EntryMenuDialog.act(url, act, supportFragmentManager)
+        EntryMenuDialog.act(this, url, act, supportFragmentManager)
     }
 
     fun onEntryIdClicked(eid: Long) {
