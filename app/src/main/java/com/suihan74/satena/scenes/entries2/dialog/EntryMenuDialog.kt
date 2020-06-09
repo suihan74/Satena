@@ -95,7 +95,7 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** タップ/ロングタップ時の挙動を処理する */
-        fun act(entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
+        fun act(context: Context, entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
             val instance = createInstance(entry)
             when (actionEnum) {
                 TapEntryAction.SHOW_MENU ->
@@ -104,6 +104,7 @@ class EntryMenuDialog : DialogFragment() {
                 else ->
                     act(
                         instance,
+                        context,
                         entry,
                         actionEnum,
                         fragmentManager,
@@ -113,7 +114,7 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** タップ/ロングタップ時の挙動を処理する */
-        fun act(url: String, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
+        fun act(context: Context, url: String, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
             val instance = createInstance(url)
             when (actionEnum) {
                 TapEntryAction.SHOW_MENU ->
@@ -122,6 +123,7 @@ class EntryMenuDialog : DialogFragment() {
                 else ->
                     act(
                         instance,
+                        context,
                         url,
                         actionEnum,
                         fragmentManager,
@@ -131,7 +133,7 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** タップ/ロングタップ時の挙動を処理する */
-        fun act(entry: Entry, actionEnum: TapEntryAction, listeners: EntryMenuDialogListeners, fragmentManager: FragmentManager, tag: String? = null) {
+        fun act(context: Context, entry: Entry, actionEnum: TapEntryAction, listeners: EntryMenuDialogListeners, fragmentManager: FragmentManager, tag: String? = null) {
             val instance = createInstance(entry).also {
                 it.listeners = listeners
             }
@@ -142,6 +144,7 @@ class EntryMenuDialog : DialogFragment() {
                 else ->
                     act(
                         instance,
+                        context,
                         entry,
                         actionEnum,
                         fragmentManager,
@@ -151,7 +154,7 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** タップ/ロングタップ時の挙動を処理する(メニュー表示以外の挙動) */
-        private fun act(instance: EntryMenuDialog, entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
+        private fun act(instance: EntryMenuDialog, context: Context, entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
             fragmentManager.beginTransaction()
                 .add(instance, tag)
                 .runOnCommit {
@@ -159,7 +162,7 @@ class EntryMenuDialog : DialogFragment() {
                     val listeners = instance.listeners
                     GlobalScope.launch(Dispatchers.Main) {
                         val args = MenuItemArguments(
-                            context = SatenaApplication.instance.applicationContext,
+                            context = context,
                             entry = entry,
                             listeners = listeners
                         )
@@ -173,14 +176,14 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** タップ/ロングタップ時の挙動を処理する(メニュー表示以外の挙動) */
-        private fun act(instance: EntryMenuDialog, url: String, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
+        private fun act(instance: EntryMenuDialog, context: Context, url: String, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
             fragmentManager.beginTransaction()
                 .add(instance, tag)
                 .runOnCommit {
                     val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
                     GlobalScope.launch(Dispatchers.Main) {
                         val args = MenuItemArguments(
-                            context = SatenaApplication.instance.applicationContext,
+                            context = context,
                             url = url
                         )
                         action?.second?.invoke(args)

@@ -44,11 +44,11 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             }
 
             setOnItemClickedListener { entry ->
-                EntryMenuDialog.act(entry, activityViewModel.entryClickedAction, listeners, childFragmentManager, DIALOG_ENTRY_MENU)
+                EntryMenuDialog.act(context, entry, activityViewModel.entryClickedAction, listeners, childFragmentManager, DIALOG_ENTRY_MENU)
             }
 
             setOnItemLongClickedListener { entry ->
-                EntryMenuDialog.act(entry, activityViewModel.entryLongClickedAction, listeners, childFragmentManager, DIALOG_ENTRY_MENU)
+                EntryMenuDialog.act(context, entry, activityViewModel.entryLongClickedAction, listeners, childFragmentManager, DIALOG_ENTRY_MENU)
                 true
             }
 

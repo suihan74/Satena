@@ -43,6 +43,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         val entriesAdapter = EntriesAdapter().apply {
             setOnItemClickedListener { entry ->
                 EntryMenuDialog.act(
+                    context,
                     entry,
                     activityViewModel.entryClickedAction,
                     childFragmentManager,
@@ -52,6 +53,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
 
             setOnItemLongClickedListener { entry ->
                 EntryMenuDialog.act(
+                    context,
                     entry,
                     activityViewModel.entryLongClickedAction,
                     childFragmentManager,
