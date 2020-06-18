@@ -251,6 +251,7 @@ class BookmarkPostActivity :
             else ->
                 showToast(R.string.msg_post_bookmark_failed)
         }
+        Log.e("postBookmark", Log.getStackTraceString(e))
     }
 
     /** ブクマ投稿を実際に送信する */
