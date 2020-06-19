@@ -1233,31 +1233,47 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * ブコメページのURLからエントリのURLを取得する
      * e.g.)
-     * https://b.hatena.ne.jp/entry/s/www.hoge.com/ ==> https://www.hoge.com/
-     * https://b.hatena.ne.jp/entry?url=https~~~
+     * 1) https://b.hatena.ne.jp/entry/s/www.hoge.com/ ==> https://www.hoge.com/
+     * 2) https://b.hatena.ne.jp/entry/https://www.hoge.com/ ==> https://www.hoge.com/
+     * 3) https://b.hatena.ne.jp/entry/{eid}/comment/{username} ==> https://b.hatena.ne.jp/entry/{eid}  (modifySpecificUrls()を参照)
+     * 4) https://b.hatena.ne.jp/entry?url=https~~~
      */
     fun getEntryUrlFromCommentPageUrl(url: String) : String {
         if (url.startsWith("$B_BASE_URL/entry?url=")) {
-            return Uri.parse(url).getQueryParameter("url") ?: ""
+            // 4)
+            return Uri.parse(url).getQueryParameter("url") ?: throw RuntimeException("invalid comment page url: $url")
         }
         else {
-            val regex = Regex("""https?://b\.hatena\.ne\.jp/entry/(https://|s/)?(.+)""")
-            val matches =
-                regex.matchEntire(url) ?: throw RuntimeException("invalid comment page url: $url")
-
-            val path =
-                matches.groups[2]?.value ?: throw RuntimeException("invalid comment page url: $url")
-
-            return if (matches.groups[1]?.value.isNullOrEmpty()) {
-                if (path.startsWith("http://")) {
-                    path
-                }
-                else {
-                    "http://$path"
-                }
+            val commentUrlRegex = Regex("""https?://b\.hatena\.ne\.jp/entry/(\d+)/comment/\w+""")
+            val commentUrlMatch = commentUrlRegex.matchEntire(url)
+            if (commentUrlMatch != null) {
+                // 3)
+                return "$B_BASE_URL/entry/${commentUrlMatch.groups[1]!!.value}"
             }
             else {
-                "https://$path"
+                val regex = Regex("""https?://b\.hatena\.ne\.jp/entry/(https://|s/)?(.+)""")
+                val matches =
+                    regex.matchEntire(url)
+                        ?: throw RuntimeException("invalid comment page url: $url")
+
+                val path =
+                    matches.groups[2]?.value
+                        ?: throw RuntimeException("invalid comment page url: $url")
+
+                return if (matches.groups[1]?.value.isNullOrEmpty()) {
+                    if (path.startsWith("http://")) {
+                        // 2)
+                        path
+                    }
+                    else {
+                        // 1)
+                        "http://$path"
+                    }
+                }
+                else {
+                    // 1,2)
+                    "https://$path"
+                }
             }
         }
     }

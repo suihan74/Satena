@@ -1,6 +1,7 @@
 package com.suihan74.satena
 
 import android.net.Uri
+import com.suihan74.hatenaLib.HatenaClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -37,12 +38,30 @@ suspend fun modifySpecificUrls(url: String?) : String? = when {
                 .build()
 
             val modified = client.newCall(request).execute().use { response ->
-                Jsoup.parse(response.body!!.string()).head()
-                    .allElements
-                    .firstOrNull { elem ->
-                        elem.tagName() == "meta" && (elem.attr("property") == "og:url" || elem.attr("name") == "twitter:url")
+                val root = Jsoup.parse(response.body!!.string())
+                val entryRegex = Regex("""https?://b\.hatena\.ne\.jp/entry/\d+/?$""")
+                if (url.startsWith(HatenaClient.B_BASE_URL+"/entry")) {
+                    if (entryRegex.matches(url)) {
+                        // "https://b.hatena.ne.jp/entry/{eid}"は通常の法則に則ったURLのブコメページにリダイレクトされる
+                        // modifySpecificUrls()では、さらにそのブコメページのブコメ先エントリURLに変換する
+                        // 例) [in] /entry/18625960 ==> /entry/s/www.google.com ==> https://www.google.com [out]
+                        root.getElementsByTag("html").first()
+                            .attr("data-entry-url")
                     }
-                    ?.attr("content")
+                    else {
+                        url
+                    }
+                }
+                else {
+                    root.head()
+                        .allElements
+                        .firstOrNull { elem ->
+                            elem.tagName() == "meta" && (elem.attr("property") == "og:url" || elem.attr(
+                                "name"
+                            ) == "twitter:url")
+                        }
+                        ?.attr("content")
+                }
             } ?: url
 
             val modifiedUri = Uri.parse(modified)

@@ -195,7 +195,16 @@ class ViewModel(
         onFinally: OnFinally? = null
     ) = viewModelScope.launch(Dispatchers.Default) {
         var error: Throwable? = null
-        val entry = entry.value!!
+
+        val entry =
+            withContext(Dispatchers.Main) {
+                try { entry.value!! }
+                catch (e: Throwable) {
+                    onError?.invoke(e)
+                    null
+                }
+            } ?: return@launch
+
 
         // private投稿の場合他サービスに共有しない
         val privateEnabled = isPrivate.value == true
