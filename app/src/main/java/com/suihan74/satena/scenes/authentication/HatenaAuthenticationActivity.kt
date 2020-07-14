@@ -59,8 +59,8 @@ class HatenaAuthenticationActivity : ActivityBase() {
             // 前の画面に戻る
             finish()
         }
-        catch (e: Exception) {
-            Log.d("Hatena", e.message)
+        catch (e: Throwable) {
+            Log.d("Hatena", e.message ?: "")
             showToast(R.string.msg_hatena_sign_in_failed)
         }
 
@@ -72,8 +72,8 @@ class HatenaAuthenticationActivity : ActivityBase() {
                 MastodonClientHolder
             ).signInHatenaAsync()
         }
-        catch (e: Exception) {
-            Log.e("Hatena", e.message)
+        catch (e: Throwable) {
+            Log.e("Hatena", e.message ?: "")
         }
     }
 }

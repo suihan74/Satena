@@ -167,7 +167,7 @@ class NotificationService : Service(), CoroutineScope {
                 try {
                     HatenaClient.updateNoticesLastSeenAsync().start()
                 }
-                catch (e: Exception) {
+                catch (e: Throwable) {
                     Log.e("failedToUpdateLastSeen", Log.getStackTraceString(e))
                 }
             }
@@ -187,7 +187,7 @@ class NotificationService : Service(), CoroutineScope {
                 }
             }
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             Log.e("failedToFetchNotices", Log.getStackTraceString(e))
         }
     }

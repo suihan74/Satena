@@ -32,7 +32,7 @@ class IgnoredEntryRepository(
                 mIgnoredEntries?.add(it)
             }
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             Log.e("IgnoredEntryVM", "the entry is duplicated")
             null
         }
@@ -45,7 +45,7 @@ class IgnoredEntryRepository(
 
             return@withContext
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             Log.e("IgnoredEntryVM", "the entry does not exist")
         }
     }
@@ -60,7 +60,7 @@ class IgnoredEntryRepository(
             }
             return@withContext
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             Log.e("IgnoredEntryVM", "failed to update the entry")
         }
     }

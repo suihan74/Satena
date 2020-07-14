@@ -79,7 +79,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
                         HatenaClient.unignoreUserAsync(user).await()
                         mIgnoredUsersAdapter!!.removeUser(user)
                     }
-                    catch (e: Exception) {
+                    catch (e: Throwable) {
                         Log.d("unIgnoreFailure", Log.getStackTraceString(e))
                     }
                 }
@@ -132,7 +132,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
             val ignoredUsers = HatenaClient.getIgnoredUsersAsync(forciblyUpdate = true).await()
             mIgnoredUsersAdapter!!.setUsers(ignoredUsers)
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             activity?.showToast(R.string.msg_pref_ignored_users_update_failed)
             Log.d("FailedToUpdateIgnores", Log.getStackTraceString(e))
         }

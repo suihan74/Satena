@@ -70,7 +70,7 @@ suspend fun modifySpecificUrls(url: String?) : String? = when {
             if (modifiedUri.scheme != urlUri.scheme && url.removePrefix(urlUri.scheme ?: "") == modified.removePrefix(modifiedUri.scheme ?: "")) url
             else modified
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             url
         }
     }

@@ -22,7 +22,7 @@ internal class BooleanDeserializer : JsonSerializer<Boolean>, JsonDeserializer<B
                 it == "1" || it == "true"
             } ?: false
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             false
         }
 }

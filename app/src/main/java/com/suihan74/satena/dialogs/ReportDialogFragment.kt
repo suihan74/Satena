@@ -190,7 +190,7 @@ class ReportDialogFragment : DialogFragment(), AlertDialogFragment.Listener {
                     context?.showToast(R.string.msg_report_succeeded, user)
                 }
             }
-            catch (e: Exception) {
+            catch (e: Throwable) {
                 context?.showToast(R.string.msg_report_failed)
             }
         }

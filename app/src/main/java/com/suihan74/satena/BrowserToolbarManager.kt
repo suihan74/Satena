@@ -74,7 +74,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
                     /*HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
                         .firstOrNull { it.url == url }*/
                 }
-                catch (e: Exception) {
+                catch (e: Throwable) {
                     Log.d("BrowserToolbarManager", Log.getStackTraceString(e))
                 }
             }

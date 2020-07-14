@@ -132,8 +132,8 @@ object IgnoredEntriesKeyMigration {
                     )
                 )
             }
-            catch (e: Exception) {
-                Log.e("migrationError", e.message)
+            catch (e: Throwable) {
+                Log.e("migrationError", e.message ?: "")
                 success = false
             }
         }

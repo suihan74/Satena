@@ -63,7 +63,7 @@ class ReleaseNotesDialogFragment : DialogFragment(), CoroutineScope {
                     }
                 }
             }
-            catch (e: Exception) {
+            catch (e: Throwable) {
                 activity?.showToast("更新履歴の読み込み失敗")
             }
         }
