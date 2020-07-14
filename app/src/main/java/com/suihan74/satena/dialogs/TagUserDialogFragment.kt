@@ -11,7 +11,6 @@ import android.view.WindowManager
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
-import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.lock
 import com.suihan74.utilities.showSoftInputMethod
 import com.suihan74.utilities.showToast
@@ -129,7 +128,7 @@ class TagUserDialogFragment : AlertDialogFragment(), CoroutineScope {
                 }
             }
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             mIsUserExisted = false
         }
 

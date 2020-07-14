@@ -170,7 +170,7 @@ class PreferencesMigration {
                         file.copyTo(backup, true)
                         true
                     }
-                    catch (e: Exception) {
+                    catch (e: Throwable) {
                         Log.e("migration", "failed to backup the already existed file: $path")
                         false
                     }
@@ -190,7 +190,7 @@ class PreferencesMigration {
                     it.write(data.data)
                 }
             }
-            catch (e: Exception) {
+            catch (e: Throwable) {
                 Log.e("migration", "failed to load: ${data.fileName}")
                 result = false
 
@@ -215,7 +215,7 @@ class PreferencesMigration {
                         file.copyTo(backup, true)
                         true
                     }
-                    catch (e: Exception) {
+                    catch (e: Throwable) {
                         Log.e("migration", "failed to backup the already existed database file: ${data.fileName}")
                         false
                     }
@@ -235,7 +235,7 @@ class PreferencesMigration {
                 }
                 result = true
             }
-            catch (e: Exception) {
+            catch (e: Throwable) {
                 Log.e("migration", "failed to load a database: ${data.fileName}")
                 if (backupSuccess) {
                     backup.copyTo(file, true)

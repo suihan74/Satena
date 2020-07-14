@@ -23,7 +23,7 @@ object MastodonClientHolder {
         account = try {
             c.get("accounts/verify_credentials").fromJson(Gson(), Account::class.java)
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             client = null
             throw RuntimeException("failed to sign-in mastodon", e)
         }

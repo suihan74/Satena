@@ -16,8 +16,8 @@ class AccountLoader(
     private val client: HatenaClient,
     private val mastodonClientHolder: MastodonClientHolder
 ) {
-    class HatenaSignInException(message: String? = null) : Exception(message)
-    class MastodonSignInException(message: String? = null) : Exception(message)
+    class HatenaSignInException(message: String? = null) : Throwable(message)
+    class MastodonSignInException(message: String? = null) : Throwable(message)
 
     private val hatenaMutex = Mutex()
     private val mastodonMutex = Mutex()
@@ -55,7 +55,7 @@ class AccountLoader(
 
                 client.signInAsync(name, password).await()
             }
-            catch (e: Exception) {
+            catch (e: Throwable) {
                 Log.d("HatenaLogin", Log.getStackTraceString(e))
                 throw HatenaSignInException(e.message)
             }
@@ -98,7 +98,7 @@ class AccountLoader(
 
                 mastodonClientHolder.signInAsync(client).await()
             }
-            catch (e: Exception) {
+            catch (e: Throwable) {
                 Log.d("MastodonLogin", Log.getStackTraceString(e))
                 throw MastodonSignInException(e.message)
             }

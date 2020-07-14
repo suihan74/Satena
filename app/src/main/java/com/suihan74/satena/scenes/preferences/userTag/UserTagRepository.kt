@@ -1,7 +1,10 @@
 package com.suihan74.satena.scenes.preferences.userTag
 
 import android.util.Log
-import com.suihan74.satena.models.userTag.*
+import com.suihan74.satena.models.userTag.Tag
+import com.suihan74.satena.models.userTag.TagAndUsers
+import com.suihan74.satena.models.userTag.User
+import com.suihan74.satena.models.userTag.UserTagDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -50,7 +53,7 @@ class UserTagRepository(
         try {
             dao.insertRelation(tag, user)
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             Log.d("UserTag", "deprecated relation: tag: ${tag.name}, user: ${user.name}")
         }
     }
@@ -61,7 +64,7 @@ class UserTagRepository(
             val user = dao.makeUser(userName)
             dao.insertRelation(tag, user)
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             Log.d("UserTag", "deprecated relation: tag: ${tag.name}, user: $userName")
         }
     }

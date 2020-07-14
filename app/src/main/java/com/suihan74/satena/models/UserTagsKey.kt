@@ -84,8 +84,8 @@ object UserTagsKeyMigration {
             // バージョンを更新する
             prefs.edit {}
         }
-        catch (e: Exception) {
-            Log.e("migrationUserTags", e.message)
+        catch (e: Throwable) {
+            Log.e("migrationUserTags", e.message ?: "")
             dao.clearAll()
         }
     }

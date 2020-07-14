@@ -109,54 +109,51 @@ class BookmarksActivity :
 
         val targetUser = intent.getStringExtra(EXTRA_TARGET_USER)
 
-        val firstLaunching = savedInstanceState == null
-        if (firstLaunching) {
-            val entry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
+        val firstLaunching = !viewModel.repository.isInitialized //savedInstanceState == null
+        val entry =
+            if (firstLaunching) intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
+            else viewModel.repository.entry
 
-            if (entry == null) {
-                // Entryのロードが必要
-                progress_bar.visibility = View.VISIBLE
+        if (entry == null) {
+            // Entryのロードが必要
+            progress_bar.visibility = View.VISIBLE
 
-                val eid = intent.getLongExtra(EXTRA_ENTRY_ID, 0L)
-                if (eid > 0L) {
-                    toolbar.title = "eid=$eid"
+            val eid = intent.getLongExtra(EXTRA_ENTRY_ID, 0L)
+            if (eid > 0L) {
+                toolbar.title = "eid=$eid"
 
-                    viewModel.loadEntry(
-                        eid = eid,
-                        onSuccess = { e ->
-                            init(firstLaunching, e, targetUser)
-                        },
-                        onError = { e ->
-                            showToast(R.string.msg_update_bookmarks_failed)
-                            Log.e("BookmarksActivity", Log.getStackTraceString(e))
-                            progress_bar.visibility = View.INVISIBLE
-                        }
-                    )
-                }
-                else {
-                    val url = getUrlFromIntent(intent)
-                    toolbar.title = url
-
-                    viewModel.loadEntry(
-                        url = url,
-                        onSuccess = { e ->
-                            init(firstLaunching, e, targetUser)
-                        },
-                        onError = { e ->
-                            showToast(R.string.msg_update_bookmarks_failed)
-                            Log.e("BookmarksActivity", Log.getStackTraceString(e))
-                            progress_bar.visibility = View.INVISIBLE
-                        }
-                    )
-                }
+                viewModel.loadEntry(
+                    eid = eid,
+                    onSuccess = { e ->
+                        init(firstLaunching, e, targetUser)
+                    },
+                    onError = { e ->
+                        showToast(R.string.msg_update_bookmarks_failed)
+                        Log.e("BookmarksActivity", Log.getStackTraceString(e))
+                        progress_bar.visibility = View.INVISIBLE
+                    }
+                )
             }
             else {
-                viewModel.repository.setEntry(entry)
-                init(firstLaunching, entry, targetUser)
+                val url = getUrlFromIntent(intent)
+                toolbar.title = url
+
+                viewModel.loadEntry(
+                    url = url,
+                    onSuccess = { e ->
+                        init(firstLaunching, e, targetUser)
+                    },
+                    onError = { e ->
+                        showToast(R.string.msg_update_bookmarks_failed)
+                        Log.e("BookmarksActivity", Log.getStackTraceString(e))
+                        progress_bar.visibility = View.INVISIBLE
+                    }
+                )
             }
         }
         else {
-            init(firstLaunching, viewModel.entry, targetUser)
+            viewModel.repository.setEntry(entry)
+            init(firstLaunching, entry, targetUser)
         }
 
         // スクロールでツールバーを隠す

@@ -125,8 +125,8 @@ open class BaseClient {
             val response = get(url)
             return responseTo(type, response, gsonBuilder)
         }
-        catch (e: Exception) {
-            throw RuntimeException("${e.message}: $url")
+        catch (e: Throwable) {
+            throw RuntimeException("${e.message ?: ""}: $url")
         }
     }
 
@@ -137,10 +137,10 @@ open class BaseClient {
         }
         catch (e: SocketTimeoutException) {
             client.connectionPool.evictAll()
-            throw RuntimeException("${e.message}: $url", e)
+            throw RuntimeException("${e.message ?: ""}: $url", e)
         }
-        catch (e: Exception) {
-            throw RuntimeException("${e.message}: $url", e)
+        catch (e: Throwable) {
+            throw RuntimeException("${e.message ?: ""}: $url", e)
         }
     }
 

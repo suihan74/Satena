@@ -1,11 +1,7 @@
 package com.suihan74.utilities
 
 import android.util.Base64
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.io.Serializable
+import java.io.*
 
 class ObjectSerializer<T : Serializable>(private val klass: Class<T>) {
     companion object {
@@ -21,7 +17,7 @@ class ObjectSerializer<T : Serializable>(private val klass: Class<T>) {
             oos.flush()
             return Base64.encodeToString(ostream.toByteArray(), Base64.NO_WRAP)
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             throw ClassCastException("failed to serialize from ${klass.name}}")
         }
         finally {
@@ -37,7 +33,7 @@ class ObjectSerializer<T : Serializable>(private val klass: Class<T>) {
             val obj = ois.readObject()
             return klass.cast(obj) ?: throw Exception()
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             throw ClassCastException("failed to deserialize to ${klass.name}}")
         }
         finally {

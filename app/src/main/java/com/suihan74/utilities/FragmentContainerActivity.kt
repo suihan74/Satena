@@ -90,7 +90,7 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
                 backActivity()
             }
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             Log.e("onBackPressed", Log.getStackTraceString(e))
             backActivity()
         }

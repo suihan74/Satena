@@ -242,7 +242,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             catch (e: RuntimeException) {
                 ignoredUsers = emptyList()
             }
-            catch (e: Exception) {
+            catch (e: Throwable) {
                 throw RuntimeException(e.message)
             }
             finally {
@@ -1345,8 +1345,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 }
             }
         }
-        catch (e: Exception) {
-            throw RuntimeException("failed to get maintenance entries: ${e.message}")
+        catch (e: Throwable) {
+            throw RuntimeException("failed to get maintenance entries: ${e.message ?: ""}")
         }
     }
 
@@ -1597,7 +1597,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 )
             }
         }
-        catch (e: Exception) {
+        catch (e: Throwable) {
             return@async Profile.Bookmark.createEmpty()
         }
     }

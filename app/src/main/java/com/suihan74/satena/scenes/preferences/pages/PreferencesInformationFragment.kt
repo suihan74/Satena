@@ -125,8 +125,8 @@ class PreferencesInformationFragment :
                     }
                 }
             }
-            catch (e: Exception) {
-                Log.e("filePicker", e.message)
+            catch (e: Throwable) {
+                Log.e("filePicker", e.message ?: "")
             }
         }
         else {
@@ -153,8 +153,8 @@ class PreferencesInformationFragment :
 
                 context.showToast(R.string.msg_pref_information_save_succeeded, file.absolutePath)
             }
-            catch (e: Exception) {
-                Log.e("SavingSettings", e.message)
+            catch (e: Throwable) {
+                Log.e("SavingSettings", e.message ?: "")
                 context.showToast(R.string.msg_pref_information_save_failed)
             }
             finally {
@@ -194,10 +194,11 @@ class PreferencesInformationFragment :
                 startActivity(intent)
                  */
             }
-            catch (e: Exception) {
-                Log.e("LoadingSettings", e.message)
+            catch (e: Throwable) {
+                val msg = e.message ?: ""
+                Log.e("LoadingSettings", msg)
                 if (e is IllegalStateException) {
-                    context.showToast("${getString(R.string.msg_pref_information_load_failed)}\n${e.message}")
+                    context.showToast("${getString(R.string.msg_pref_information_load_failed)}\n${msg}")
                 }
                 else {
                     context.showToast(R.string.msg_pref_information_load_failed)

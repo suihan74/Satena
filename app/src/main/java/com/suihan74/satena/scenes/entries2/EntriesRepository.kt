@@ -199,7 +199,7 @@ class EntriesRepository(
             try {
                 client.updateNoticesLastSeenAsync().await()
             }
-            catch (e: Exception) {
+            catch (e: Throwable) {
             }
         }
         prefs.edit {
@@ -374,7 +374,7 @@ class EntriesRepository(
                         )
                     }
                 }
-                catch (e: Exception) {
+                catch (e: Throwable) {
                     null
                 }
             }.groupBy { it.id }

@@ -157,8 +157,8 @@ class PreferencesActivity : ActivityBase() {
                 MastodonClientHolder
             ).signInAccounts(true)
         }
-        catch (e: Exception) {
-            Log.e("FailedToReload", e.message)
+        catch (e: Throwable) {
+            Log.e("FailedToReload", e.message ?: "")
         }
 
         // 通知サービス開始

@@ -42,8 +42,8 @@ class MastodonAuthenticationActivity : ActivityBase() {
                 try {
                     startAuthorizeMastodon(instance_name.text.toString())
                 }
-                catch (e: Exception) {
-                    Log.e("FailedToSignIn", e.message)
+                catch (e: Throwable) {
+                    Log.w("FailedToSignIn", e)
                     showToast("インスタンスが見つかりません")
                 }
                 finally {
@@ -70,8 +70,8 @@ class MastodonAuthenticationActivity : ActivityBase() {
                         // 前の画面に戻る
                         finish()
                     }
-                    catch (e: Exception) {
-                        Log.e("FailedToSignIn", e.message)
+                    catch (e: Throwable) {
+                        Log.e("FailedToSignIn", e.message ?: "")
                         showToast("ログイン失敗")
                     }
                     finally {
