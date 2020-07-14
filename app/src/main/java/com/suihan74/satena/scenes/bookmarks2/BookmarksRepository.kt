@@ -15,6 +15,10 @@ class BookmarksRepository(
     private val client: HatenaClient,
     private val accountLoader: AccountLoader
 ) {
+    /** エントリ情報が正しく設定されているか */
+    val isInitialized : Boolean =
+        this::entry.isInitialized
+
     /** エントリ情報 */
     lateinit var entry: Entry
         private set
