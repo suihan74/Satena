@@ -85,6 +85,17 @@
             </intent-filter>
         </activity>
 
+        <!-- 他ツール類 -->
+        <!-- ブコメページをブラウザで開く共有機能 -->
+        <activity android:name=".scenes.tools.OpenBookmarksPageActivity" android:noHistory="true" android:launchMode="singleTask">
+            <intent-filter android:label="ブコメページURLを共有">
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+        </activity>
+
         <!-- ライセンス一覧 -->
         <activity
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
