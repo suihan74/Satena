@@ -1,7 +1,9 @@
 package com.suihan74.satena
 
 import android.net.Uri
+import com.suihan74.hatenaLib.EntriesType
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.SearchType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -12,9 +14,9 @@ import org.jsoup.Jsoup
  * ブックマーク情報が正常に取得できるURLに修正する
  */
 suspend fun modifySpecificUrls(url: String?) : String? =
-    when (val modifiedTemp = modifySpecificUrlsWithoutConnection(url)) {
-        null -> null
-        url -> modifySpecificUrlsWithConnection(url)
+    if (url == null) null
+    else when (val modifiedTemp = modifySpecificUrlsWithoutConnection(url)) {
+        url -> modifySpecificUrlsForEntry(url) /*modifySpecificUrlsWithConnection(url)*/
         else -> modifiedTemp
     }
 
@@ -24,9 +26,7 @@ suspend fun modifySpecificUrls(url: String?) : String? =
  * ブックマーク情報が正常に取得できるURLに修正する
  * (OGP検証など通信を必要とする補正は行わない)
  */
-fun modifySpecificUrlsWithoutConnection(url: String?) : String? = when {
-    url == null -> null
-
+private fun modifySpecificUrlsWithoutConnection(url: String) : String = when {
     url.startsWith("https://m.youtube.com/") ->
         Regex("""https://m\.youtube\.com/(.*)""").replace(url) { m ->
             "https://www.youtube.com/${m.groupValues.last()}"
@@ -49,51 +49,60 @@ fun modifySpecificUrlsWithoutConnection(url: String?) : String? = when {
  * ブックマーク情報が正常に取得できるURLに修正する
  * (eidから元URLを取得する・OGPタグやTwitterカードなどのmetaタグを参照する)
  */
-suspend fun modifySpecificUrlsWithConnection(url: String?) : String? = when (url) {
-    null -> null
-    else -> withContext(Dispatchers.IO) {
-        try {
-            val client = OkHttpClient()
-            val request = Request.Builder()
-                .get()
-                .url(url)
-                .build()
+private suspend fun modifySpecificUrlsWithConnection(url: String) : String = withContext(Dispatchers.IO) {
+    try {
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .get()
+            .url(url)
+            .build()
 
-            val modified = client.newCall(request).execute().use { response ->
-                val root = Jsoup.parse(response.body!!.string())
-                val entryRegex = Regex("""https?://b\.hatena\.ne\.jp/entry/\d+/?$""")
-                if (url.startsWith(HatenaClient.B_BASE_URL+"/entry")) {
-                    if (entryRegex.matches(url)) {
-                        // "https://b.hatena.ne.jp/entry/{eid}"は通常の法則に則ったURLのブコメページにリダイレクトされる
-                        // modifySpecificUrls()では、さらにそのブコメページのブコメ先エントリURLに変換する
-                        // 例) [in] /entry/18625960 ==> /entry/s/www.google.com ==> https://www.google.com [out]
-                        root.getElementsByTag("html").first()
-                            .attr("data-entry-url")
-                    }
-                    else {
-                        url
-                    }
+        val modified = client.newCall(request).execute().use { response ->
+            val root = Jsoup.parse(response.body!!.string())
+            val entryRegex = Regex("""https?://b\.hatena\.ne\.jp/entry/\d+/?$""")
+            if (url.startsWith(HatenaClient.B_BASE_URL+"/entry")) {
+                if (entryRegex.matches(url)) {
+                    // "https://b.hatena.ne.jp/entry/{eid}"は通常の法則に則ったURLのブコメページにリダイレクトされる
+                    // modifySpecificUrls()では、さらにそのブコメページのブコメ先エントリURLに変換する
+                    // 例) [in] /entry/18625960 ==> /entry/s/www.google.com ==> https://www.google.com [out]
+                    root.getElementsByTag("html").first()
+                        .attr("data-entry-url")
                 }
                 else {
-                    root.head()
-                        .allElements
-                        .firstOrNull { elem ->
-                            elem.tagName() == "meta" && (elem.attr("property") == "og:url" || elem.attr(
-                                "name"
-                            ) == "twitter:url")
-                        }
-                        ?.attr("content")
+                    url
                 }
-            } ?: url
+            }
+            else {
+                root.head()
+                    .allElements
+                    .firstOrNull { elem ->
+                        elem.tagName() == "meta" && (elem.attr("property") == "og:url" || elem.attr(
+                            "name"
+                        ) == "twitter:url")
+                    }
+                    ?.attr("content")
+            }
+        } ?: url
 
-            val modifiedUri = Uri.parse(modified)
-            val urlUri = Uri.parse(url)
+        val modifiedUri = Uri.parse(modified)
+        val urlUri = Uri.parse(url)
 
-            if (modifiedUri.scheme != urlUri.scheme && url.removePrefix(urlUri.scheme ?: "") == modified.removePrefix(modifiedUri.scheme ?: "")) url
-            else modified
-        }
-        catch (e: Throwable) {
-            url
-        }
+        if (modifiedUri.scheme != urlUri.scheme && url.removePrefix(urlUri.scheme ?: "") == modified.removePrefix(modifiedUri.scheme ?: "")) url
+        else modified
     }
+    catch (e: Throwable) {
+        url
+    }
+}
+
+/**
+ * URLが既にエントリ登録済みかどうかを確認し、そうであるならそのURLを、
+ * 未登録なら妥当なURLを推定して補正する
+ */
+private suspend fun modifySpecificUrlsForEntry(srcUrl: String) : String = withContext(Dispatchers.IO) {
+    val modifiedUrl = modifySpecificUrlsWithoutConnection(srcUrl)
+    val searchResult = HatenaClient.searchEntriesAsync(modifiedUrl, SearchType.Text, EntriesType.Recent).await()
+
+    if (searchResult.any { it.url == modifiedUrl }) modifiedUrl
+    else modifySpecificUrlsWithConnection(modifiedUrl)
 }

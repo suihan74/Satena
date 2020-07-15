@@ -5,11 +5,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.suihan74.hatenaLib.EntriesType
 import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.hatenaLib.SearchType
-import com.suihan74.satena.modifySpecificUrlsWithConnection
-import com.suihan74.satena.modifySpecificUrlsWithoutConnection
+import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.openUrlExcludeApplication
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +32,7 @@ class OpenBookmarksPageActivity : AppCompatActivity() {
                 throw RuntimeException("passed text is not a URL")
             }
 
-            val commentPageUrl = modifyUrl(srcUrl)
+            val commentPageUrl = modifySpecificUrls(srcUrl)!!
             val intent = Intent(
                 Intent.ACTION_VIEW,
                 Uri.parse(HatenaClient.getCommentPageUrlFromEntryUrl(commentPageUrl))
@@ -49,13 +46,5 @@ class OpenBookmarksPageActivity : AppCompatActivity() {
         finally {
             finish()
         }
-    }
-
-    private suspend fun modifyUrl(srcUrl: String) : String = withContext(Dispatchers.IO) {
-        val modifiedUrl = modifySpecificUrlsWithoutConnection(srcUrl)!!
-        val searchResult = HatenaClient.searchEntriesAsync(modifiedUrl, SearchType.Text, EntriesType.Recent).await()
-
-        if (searchResult.any { it.url == modifiedUrl }) modifiedUrl
-        else modifySpecificUrlsWithConnection(modifiedUrl)!!
     }
 }
