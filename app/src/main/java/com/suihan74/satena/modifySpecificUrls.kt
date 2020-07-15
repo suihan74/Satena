@@ -11,7 +11,20 @@ import org.jsoup.Jsoup
 /**
  * ブックマーク情報が正常に取得できるURLに修正する
  */
-suspend fun modifySpecificUrls(url: String?) : String? = when {
+suspend fun modifySpecificUrls(url: String?) : String? =
+    when (val modifiedTemp = modifySpecificUrlsWithoutConnection(url)) {
+        null -> null
+        url -> modifySpecificUrlsWithConnection(url)
+        else -> modifiedTemp
+    }
+
+
+/**
+ * 幾つかの頻出するサイトに対して
+ * ブックマーク情報が正常に取得できるURLに修正する
+ * (OGP検証など通信を必要とする補正は行わない)
+ */
+fun modifySpecificUrlsWithoutConnection(url: String?) : String? = when {
     url == null -> null
 
     url.startsWith("https://m.youtube.com/") ->
@@ -29,6 +42,15 @@ suspend fun modifySpecificUrls(url: String?) : String? = when {
             "https://www.facebook.com/${m.groupValues.last()}"
         }
 
+    else -> url
+}
+
+/**
+ * ブックマーク情報が正常に取得できるURLに修正する
+ * (eidから元URLを取得する・OGPタグやTwitterカードなどのmetaタグを参照する)
+ */
+suspend fun modifySpecificUrlsWithConnection(url: String?) : String? = when (url) {
+    null -> null
     else -> withContext(Dispatchers.IO) {
         try {
             val client = OkHttpClient()
