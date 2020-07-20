@@ -11,6 +11,7 @@ import com.suihan74.hatenaLib.Tag
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
+import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.sys1yagi.mastodon4j.api.entity.Status
 import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -119,8 +120,13 @@ class ViewModel(
             onError?.invoke(e)
         }
 
-        val modifiedUrl = modifySpecificUrls(url) ?: url
-        entry.value = client.getEntryAsync(modifiedUrl).await()
+        if (!(url.startsWith("http://") || url.startsWith("https://"))) {
+            onError?.invoke(InvalidUrlException(url))
+        }
+        else {
+            val modifiedUrl = modifySpecificUrls(url) ?: url
+            entry.value = client.getEntryAsync(modifiedUrl).await()
+        }
     }
 
     /** 初期化 */

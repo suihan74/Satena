@@ -35,6 +35,7 @@ import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
+import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
 
 class BookmarksActivity :
@@ -144,7 +145,14 @@ class BookmarksActivity :
                         init(firstLaunching, e, targetUser)
                     },
                     onError = { e ->
-                        showToast(R.string.msg_update_bookmarks_failed)
+                        when(e) {
+                            is InvalidUrlException -> {
+                                showToast(R.string.invalid_url_error)
+                                finish()
+                            }
+
+                            else -> showToast(R.string.msg_update_bookmarks_failed)
+                        }
                         Log.e("BookmarksActivity", Log.getStackTraceString(e))
                         progress_bar.visibility = View.INVISIBLE
                     }
@@ -208,7 +216,7 @@ class BookmarksActivity :
                 Intent.ACTION_VIEW ->
                     HatenaClient.getEntryUrlFromCommentPageUrl(intent.dataString!!)
 
-                else -> throw RuntimeException("cannot get url")
+                else -> throw InvalidUrlException()
             }
     }
 

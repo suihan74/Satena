@@ -12,6 +12,8 @@
     <string name="dialog_register">登録</string>
     <string name="dialog_open">開く</string>
 
+    <string name="invalid_url_error">無効なURLです</string>
+
     <!-- ログイン画面 -->
     <string name="cancel">キャンセル</string>
     <string name="sign_in">ログイン</string>
@@ -203,6 +205,7 @@
     <string name="hint_facebook_toggle">Facebookに投稿します</string>
     <string name="hint_private_toggle">非公開でブクマします</string>
     <string name="msg_post_too_many_tags">使用できるタグは最大10個です</string>
+    <string name="msg_fetch_tags_failed">タグリストを取得できませんでした</string>
 
     <!-- hints -->
     <string name="search_query_hint">検索キーワード</string>

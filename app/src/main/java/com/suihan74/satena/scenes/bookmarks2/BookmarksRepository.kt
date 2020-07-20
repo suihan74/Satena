@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.lock
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -93,6 +94,10 @@ class BookmarksRepository(
 
     /** エントリ情報を取得 */
     suspend fun loadEntry(url: String) {
+        if (!(url.startsWith("http://") || url.startsWith("https://"))) {
+            throw InvalidUrlException(url)
+        }
+
         val modifiedUrl = modifySpecificUrls(url)!!
         entry = client.getEntryAsync(modifiedUrl).await()
     }
