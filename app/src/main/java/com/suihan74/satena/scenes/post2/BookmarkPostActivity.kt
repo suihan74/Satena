@@ -21,6 +21,7 @@ import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.post2.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.utilities.*
+import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.android.synthetic.main.activity_bookmark_post_2.*
 
 
@@ -108,10 +109,10 @@ class BookmarkPostActivity :
 
         when {
             entry != null ->
-                viewModel.init(entry, editingComment, onError = onAuthError)
+                viewModel.init(entry, editingComment, onError = onInitError)
 
             !entryUrl.isNullOrBlank() ->
-                viewModel.init(entryUrl, editingComment, onError = onAuthError)
+                viewModel.init(entryUrl, editingComment, onError = onInitError)
 
             else -> {
                 showToast(R.string.msg_get_entry_information_failed)
@@ -211,14 +212,15 @@ class BookmarkPostActivity :
     }
 
     /** 初期化失敗時処理 */
-    private val onAuthError: OnError = { e ->
+    private val onInitError: OnError = { e ->
         when (e) {
-            is AccountLoader.MastodonSignInException -> {
-                showToast(R.string.msg_auth_mastodon_failed)
-            }
+            is AccountLoader.MastodonSignInException -> showToast(R.string.msg_auth_mastodon_failed)
 
-            is ViewModel.LoadingTagsFailureException -> {
-                showToast("タグリストを取得できませんでした")
+            is ViewModel.LoadingTagsFailureException -> showToast(R.string.msg_fetch_tags_failed)
+
+            is InvalidUrlException -> {
+                showToast(R.string.invalid_url_error)
+                finish()
             }
 
             else -> {

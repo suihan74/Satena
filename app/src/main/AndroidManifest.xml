@@ -87,7 +87,10 @@
 
         <!-- 他ツール類 -->
         <!-- ブコメページをブラウザで開く共有機能 -->
-        <activity android:name=".scenes.tools.OpenBookmarksPageActivity" android:noHistory="true" android:launchMode="singleTask">
+        <activity android:name=".scenes.tools.OpenBookmarksPageActivity"
+                android:theme="@style/Theme.AppCompat.NoActionBar"
+                android:noHistory="true"
+                android:launchMode="singleTask">
             <intent-filter android:label="ブコメページURLを共有">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>

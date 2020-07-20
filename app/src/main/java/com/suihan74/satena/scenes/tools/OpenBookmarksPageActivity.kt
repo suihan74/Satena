@@ -6,7 +6,9 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.satena.R
 import com.suihan74.satena.modifySpecificUrls
+import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.openUrlExcludeApplication
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
@@ -27,9 +29,8 @@ class OpenBookmarksPageActivity : AppCompatActivity() {
 
     private suspend fun redirect(srcUrl: String) = withContext(Dispatchers.Main) {
         try {
-            val srcUri = Uri.parse(srcUrl)
-            if (srcUri.scheme != "http" && srcUri.scheme != "https") {
-                throw RuntimeException("passed text is not a URL")
+            if (!(srcUrl.startsWith("http://") || srcUrl.startsWith("https://"))) {
+                throw InvalidUrlException(srcUrl)
             }
 
             val commentPageUrl = modifySpecificUrls(srcUrl)!!
@@ -38,6 +39,9 @@ class OpenBookmarksPageActivity : AppCompatActivity() {
                 Uri.parse(HatenaClient.getCommentPageUrlFromEntryUrl(commentPageUrl))
             )
             startActivity(intent.openUrlExcludeApplication(baseContext))
+        }
+        catch (e: InvalidUrlException) {
+            showToast(R.string.invalid_url_error)
         }
         catch (e: Throwable) {
             Log.w("OpenBookmarksPage", e)

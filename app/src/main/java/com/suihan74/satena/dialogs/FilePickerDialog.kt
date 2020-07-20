@@ -35,7 +35,7 @@ class FilePickerDialog : AlertDialogFragment() {
         private const val DIRECTORY_ONLY = "DIRECTORY_ONLY"
     }
 
-    val directoryOnly: Boolean by lazy { requireArguments().getBoolean(DIRECTORY_ONLY, false) }
+    private val directoryOnly: Boolean by lazy { requireArguments().getBoolean(DIRECTORY_ONLY, false) }
     private lateinit var mItemsAdapter: ItemsAdapter
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -102,9 +102,6 @@ class FilePickerDialog : AlertDialogFragment() {
         private val currentPathView: TextView
     ) : RecyclerView.Adapter<ItemsAdapter.ViewHolder>() {
 
-        val fullPath: String
-            get() = (selectedFile ?: mCurrentFile).absolutePath
-
         val currentDirectory: File
             get() = mCurrentFile
 
@@ -129,12 +126,12 @@ class FilePickerDialog : AlertDialogFragment() {
                 listOf(current.parentFile)
             }.plus(
                 if (directoryOnly) {
-                    current.listFiles()
+                    (current.listFiles() ?: emptyArray())
                         .filter { it.isDirectory }
                         .sortedBy { it.name }
                 }
                 else {
-                    val list = current.listFiles()
+                    val list = current.listFiles() ?: emptyArray()
                     list.filter { it.isDirectory }
                         .sortedBy { it.name }
                         .plus(
