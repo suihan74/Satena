@@ -129,7 +129,7 @@ class BookmarksActivity :
                         finish()
                     }
 
-                    is FetchIgnoreUsersFailureException -> {
+                    is FetchIgnoredUsersFailureException -> {
                         showToast(R.string.msg_fetch_ignored_users_failed)
                     }
 

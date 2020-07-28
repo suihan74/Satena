@@ -242,7 +242,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             }
             catch (e: Throwable) {
                 ignoredUsers = emptyList()
-                throw FetchIgnoreUsersFailureException(e.message)
+                throw FetchIgnoredUsersFailureException(e.message)
             }
         }
         return@async ignoredUsers

@@ -13,7 +13,7 @@ class SignInStarFailureException : RuntimeException {
 }
 
 /** 非表示ユーザーリスト更新失敗 */
-class FetchIgnoreUsersFailureException : RuntimeException {
+class FetchIgnoredUsersFailureException : RuntimeException {
     constructor(cause: Throwable?) : super(cause)
     constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
 }
