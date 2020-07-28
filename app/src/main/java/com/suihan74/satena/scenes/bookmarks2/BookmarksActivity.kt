@@ -37,6 +37,7 @@ import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
+import kotlinx.coroutines.CompletionHandler
 
 class BookmarksActivity :
     AppCompatActivity(),
@@ -116,50 +117,41 @@ class BookmarksActivity :
             else viewModel.repository.entry
 
         if (entry == null) {
-            // Entryのロードが必要
+            // Entryのロードが必要な場合
             progress_bar.visibility = View.VISIBLE
+
+            val onSuccess : (Entry)->Unit = { init(firstLaunching, it, targetUser) }
+
+            val onError : CompletionHandler = { e ->
+                when(e) {
+                    is InvalidUrlException -> {
+                        showToast(R.string.invalid_url_error)
+                        finish()
+                    }
+
+                    is FetchIgnoredUsersFailureException -> {
+                        showToast(R.string.msg_fetch_ignored_users_failed)
+                    }
+
+                    else -> showToast(R.string.msg_update_bookmarks_failed)
+                }
+                Log.e("BookmarksActivity", Log.getStackTraceString(e))
+                progress_bar.visibility = View.INVISIBLE
+            }
 
             val eid = intent.getLongExtra(EXTRA_ENTRY_ID, 0L)
             if (eid > 0L) {
                 toolbar.title = "eid=$eid"
-
-                viewModel.loadEntry(
-                    eid = eid,
-                    onSuccess = { e ->
-                        init(firstLaunching, e, targetUser)
-                    },
-                    onError = { e ->
-                        showToast(R.string.msg_update_bookmarks_failed)
-                        Log.e("BookmarksActivity", Log.getStackTraceString(e))
-                        progress_bar.visibility = View.INVISIBLE
-                    }
-                )
+                viewModel.loadEntry(eid, onSuccess, onError)
             }
             else {
                 val url = getUrlFromIntent(intent)
                 toolbar.title = url
-
-                viewModel.loadEntry(
-                    url = url,
-                    onSuccess = { e ->
-                        init(firstLaunching, e, targetUser)
-                    },
-                    onError = { e ->
-                        when(e) {
-                            is InvalidUrlException -> {
-                                showToast(R.string.invalid_url_error)
-                                finish()
-                            }
-
-                            else -> showToast(R.string.msg_update_bookmarks_failed)
-                        }
-                        Log.e("BookmarksActivity", Log.getStackTraceString(e))
-                        progress_bar.visibility = View.INVISIBLE
-                    }
-                )
+                viewModel.loadEntry(url, onSuccess, onError)
             }
         }
         else {
+            // Entryは既に取得済みの場合
             viewModel.repository.setEntry(entry)
             init(firstLaunching, entry, targetUser)
         }
@@ -337,22 +329,30 @@ class BookmarksActivity :
 
     /** ブクマ詳細画面を開く */
     fun showBookmarkDetail(bookmark: Bookmark) {
+        val backStackName = "detail: ${bookmark.user}"
+        if (backStackName == supportFragmentManager.topBackStackEntry?.name)
+            return
+
         val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
         supportFragmentManager.beginTransaction()
             .add(R.id.detail_content_layout, bookmarkDetailFragment)
-            .addToBackStack("detail: ${bookmark.user}")
+            .addToBackStack(backStackName)
             .commitAllowingStateLoss()
     }
 
     /** ブクマ詳細画面を開く */
     fun showBookmarkDetail(user: String) {
+        val backStackName = "detail: $user"
+        if (backStackName == supportFragmentManager.topBackStackEntry?.name)
+            return
+
         var observer: Observer<BookmarksEntry>? = null
         observer = Observer { bEntry: BookmarksEntry ->
             val bookmark = bEntry.bookmarks.firstOrNull { it.user == user } ?: return@Observer
             val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
             supportFragmentManager.beginTransaction()
                 .add(R.id.detail_content_layout, bookmarkDetailFragment)
-                .addToBackStack("detail: $user}")
+                .addToBackStack(backStackName)
                 .commitAllowingStateLoss()
 
             viewModel.bookmarksEntry.removeObserver(observer!!)

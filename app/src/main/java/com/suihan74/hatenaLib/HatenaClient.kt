@@ -187,6 +187,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         mRksForStar = null
         account = null
         ignoredUsers = emptyList()
+        mIgnoredUsersLastUpdated = LocalDateTime.MIN
         mSignedIn = false
         mSignedInStar = false
     }
@@ -238,15 +239,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
         ) {
             try {
                 getIgnoredUsersAsync(null, null).await()
-            }
-            catch (e: RuntimeException) {
-                ignoredUsers = emptyList()
+                mIgnoredUsersLastUpdated = LocalDateTime.now()
             }
             catch (e: Throwable) {
-                throw RuntimeException(e.message)
-            }
-            finally {
-                mIgnoredUsersLastUpdated = LocalDateTime.now()
+                throw FetchIgnoredUsersFailureException(e.message)
             }
         }
         return@async ignoredUsers

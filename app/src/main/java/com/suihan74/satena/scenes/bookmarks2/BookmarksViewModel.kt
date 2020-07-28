@@ -159,8 +159,14 @@ class BookmarksViewModel(
         if (loading) {
             loadUserTags()
 
+            try {
+                repository.loadIgnoredUsersAsync().await()
+            }
+            catch (e: Throwable) {
+                onError?.invoke(e)
+            }
+
             listOf(
-                repository.loadIgnoredUsersAsync(),
                 repository.loadBookmarksEntryAsync(),
                 repository.loadBookmarksDigestAsync(),
                 repository.loadBookmarksRecentAsync()
@@ -192,14 +198,12 @@ class BookmarksViewModel(
      * 通信OFF状態でinit()し，通信ONに変更した後でブクマロードをする場合のため
      */
     private suspend fun loadBasics(onError: CompletionHandler? = null) {
-        if (!repository.signedIn) {
-            try {
-                repository.init()
-                repository.loadIgnoredUsersAsync().await()
-            }
-            catch (e: Throwable) {
-                onError?.invoke(e)
-            }
+        try {
+            repository.init()
+            repository.loadIgnoredUsersAsync().await()
+        }
+        catch (e: Throwable) {
+            onError?.invoke(e)
         }
 
         if (bookmarksEntry.value == null) {

@@ -2,16 +2,18 @@ package com.suihan74.hatenaLib
 
 /** はてなへのサインイン失敗 */
 class SignInFailureException : RuntimeException {
-    constructor() : super()
-    constructor(message: String?) : super(message)
     constructor(cause: Throwable?) : super(cause)
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
 }
 
 /** はてなスターへのサインイン失敗 */
 class SignInStarFailureException : RuntimeException {
-    constructor() : super()
-    constructor(message: String?) : super(message)
     constructor(cause: Throwable?) : super(cause)
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
+}
+
+/** 非表示ユーザーリスト更新失敗 */
+class FetchIgnoredUsersFailureException : RuntimeException {
+    constructor(cause: Throwable?) : super(cause)
+    constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
 }

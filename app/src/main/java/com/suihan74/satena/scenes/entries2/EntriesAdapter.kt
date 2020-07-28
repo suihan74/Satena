@@ -24,6 +24,9 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
     /** コメント部分クリック時の挙動 */
     private var onCommentClicked : ((Entry, BookmarkResult)->Unit)? = null
 
+    /** クリック処理済みフラグ（複数回タップされないようにする） */
+    private var itemClicked = false
+
     /** 項目クリック時の挙動をセットする */
     fun setOnItemClickedListener(listener: ItemClickedListener<Entry>?) {
         onItemClicked = listener
@@ -37,6 +40,11 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
     /** エントリに含まれるコメントをクリックしたときの挙動をセットする */
     fun setOnCommentClickedListener(listener: ((Entry, BookmarkResult)->Unit)?) {
         onCommentClicked = listener
+    }
+
+    /** 復帰時に実行する */
+    fun onResume() {
+        itemClicked = false
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
@@ -69,7 +77,8 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
                 holder.entry = entry
                 holder.itemView.apply {
                     setOnClickListener {
-                        if (entry != null) {
+                        if (entry != null && !itemClicked) {
+                            itemClicked = true
                             onItemClicked?.invoke(entry)
                         }
                     }
