@@ -159,8 +159,14 @@ class BookmarksViewModel(
         if (loading) {
             loadUserTags()
 
+            try {
+                repository.loadIgnoredUsersAsync().await()
+            }
+            catch (e: Throwable) {
+                onError?.invoke(e)
+            }
+
             listOf(
-                repository.loadIgnoredUsersAsync(),
                 repository.loadBookmarksEntryAsync(),
                 repository.loadBookmarksDigestAsync(),
                 repository.loadBookmarksRecentAsync()
