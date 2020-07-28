@@ -94,6 +94,12 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        (view?.entries_list?.adapter as? EntriesAdapter)?.onResume()
+    }
+
     /** エントリリストを再取得する */
     fun reload() {
         viewModel.refresh(onErrorRefreshEntries)

@@ -329,22 +329,30 @@ class BookmarksActivity :
 
     /** ブクマ詳細画面を開く */
     fun showBookmarkDetail(bookmark: Bookmark) {
+        val backStackName = "detail: ${bookmark.user}"
+        if (backStackName == supportFragmentManager.topBackStackEntry?.name)
+            return
+
         val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
         supportFragmentManager.beginTransaction()
             .add(R.id.detail_content_layout, bookmarkDetailFragment)
-            .addToBackStack("detail: ${bookmark.user}")
+            .addToBackStack(backStackName)
             .commitAllowingStateLoss()
     }
 
     /** ブクマ詳細画面を開く */
     fun showBookmarkDetail(user: String) {
+        val backStackName = "detail: $user"
+        if (backStackName == supportFragmentManager.topBackStackEntry?.name)
+            return
+
         var observer: Observer<BookmarksEntry>? = null
         observer = Observer { bEntry: BookmarksEntry ->
             val bookmark = bEntry.bookmarks.firstOrNull { it.user == user } ?: return@Observer
             val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
             supportFragmentManager.beginTransaction()
                 .add(R.id.detail_content_layout, bookmarkDetailFragment)
-                .addToBackStack("detail: $user}")
+                .addToBackStack(backStackName)
                 .commitAllowingStateLoss()
 
             viewModel.bookmarksEntry.removeObserver(observer!!)
