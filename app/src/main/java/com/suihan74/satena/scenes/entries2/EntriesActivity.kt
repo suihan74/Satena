@@ -84,7 +84,7 @@ class EntriesActivity : AppCompatActivity() {
 
         viewModel.initialize(
             forceUpdate = true,
-            onSuccess = {
+            onFinally = {
                 if (savedInstanceState == null) {
                     showContents()
                 }
