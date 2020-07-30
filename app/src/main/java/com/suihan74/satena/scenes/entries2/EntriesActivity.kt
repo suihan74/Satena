@@ -222,7 +222,16 @@ class EntriesActivity : AppCompatActivity() {
 
             searchTag != null -> showSearchEntries(searchTag, SearchType.Tag)
 
-            else -> showCategory(viewModel.homeCategory)
+            else -> {
+                val category =
+                    if (viewModel.signedIn.value != true && viewModel.homeCategory.requireSignedIn) {
+                        showToast(R.string.msg_force_default_home_category)
+                        Category.All
+                    }
+                    else viewModel.homeCategory
+
+                showCategory(category)
+            }
         }
 
         // 初回起動時にログイン画面に遷移する
