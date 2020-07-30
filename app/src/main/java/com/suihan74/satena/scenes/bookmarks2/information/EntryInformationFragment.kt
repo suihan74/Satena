@@ -9,8 +9,7 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
@@ -97,11 +96,11 @@ class EntryInformationFragment : Fragment() {
         }
 
         // タグ情報を監視
-        activityViewModel.bookmarksEntry.observe(viewLifecycleOwner, Observer {
+        activityViewModel.bookmarksEntry.observe(viewLifecycleOwner) {
             tagsAdapter.setTags(
                 it.tags.map { t -> t.first }.take(10)
             )
-        })
+        }
 
         return view
     }

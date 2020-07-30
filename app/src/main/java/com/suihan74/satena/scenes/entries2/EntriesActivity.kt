@@ -9,8 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
@@ -182,7 +182,7 @@ class EntriesActivity : AppCompatActivity() {
 
         // --- Observers ---
 
-        viewModel.signedIn.observe(this, Observer {
+        viewModel.signedIn.observe(this) {
             if (it) {
                 entries_menu_notices_button.show()
             }
@@ -190,20 +190,20 @@ class EntriesActivity : AppCompatActivity() {
                 entries_menu_notices_button.hide()
             }
             entries_menu_notices_desc.visibility = it.toVisibility()
-        })
+        }
 
         // 通信状態の変更を監視
         var isNetworkReceiverInitialized = false
-        SatenaApplication.instance.networkReceiver.state.observe(this, Observer { state ->
+        SatenaApplication.instance.networkReceiver.state.observe(this) { state ->
             if (!isNetworkReceiverInitialized) {
                 isNetworkReceiverInitialized = true
-                return@Observer
+                return@observe
             }
 
             if (state == NetworkReceiver.State.CONNECTED) {
                 viewModel.initialize(forceUpdate = false)
             }
-        })
+        }
     }
 
     /** 最初に表示するコンテンツの用意 */

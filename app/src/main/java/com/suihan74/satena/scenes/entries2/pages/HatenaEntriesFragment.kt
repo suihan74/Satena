@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
@@ -58,11 +58,11 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
         }
 
         // Issue選択時にサブタイトルを表示する
-        viewModel.issue.observe(viewLifecycleOwner, Observer {
+        viewModel.issue.observe(viewLifecycleOwner) {
             toolbar.subtitle = it?.name
 
             clearIssueCallback.isEnabled = it != null
-        })
+        }
 
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, clearIssueCallback)
 
@@ -79,8 +79,8 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
         val viewModel = viewModel as HatenaEntriesViewModel
 
         var inflated = false
-        viewModel.issues.observe(viewLifecycleOwner, Observer { issues ->
-            if (issues == null) return@Observer
+        viewModel.issues.observe(viewLifecycleOwner) { issues ->
+            if (issues == null) return@observe
 
             val activity = requireActivity() as EntriesActivity
             val spinnerItems = issues.map { it.name }
@@ -109,6 +109,6 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
                     }
                 }
             }
-        })
+        }
     }
 }

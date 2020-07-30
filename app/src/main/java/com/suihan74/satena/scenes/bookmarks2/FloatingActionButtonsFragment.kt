@@ -10,8 +10,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
@@ -61,18 +61,18 @@ class FloatingActionButtonsFragment :
         initFABs(view)
 
         // 「カスタム」タブでは設定ボタンを表示する
-        fragmentViewModel.selectedTab.observe(viewLifecycleOwner, Observer {
+        fragmentViewModel.selectedTab.observe(viewLifecycleOwner) {
             if (it == BookmarksTabType.CUSTOM.ordinal) {
                 view.custom_settings_button.show()
             }
             else {
                 view.custom_settings_button.hide()
             }
-        })
+        }
 
         // タブのブクマリストにサインインしているユーザーのブクマが存在するかを監視する
-        fragmentViewModel.selectedTabViewModel.observe(viewLifecycleOwner, Observer { vm ->
-            vm.signedUserBookmark.observe(viewLifecycleOwner, Observer { bookmark ->
+        fragmentViewModel.selectedTabViewModel.observe(viewLifecycleOwner) { vm ->
+            vm.signedUserBookmark.observe(viewLifecycleOwner) { bookmark ->
                 if (view.bookmarks_scroll_top_button.isShown) {
                     if (bookmark == null) {
                         view.bookmarks_scroll_my_bookmark_button.hide()
@@ -81,17 +81,17 @@ class FloatingActionButtonsFragment :
                         view.bookmarks_scroll_my_bookmark_button.show()
                     }
                 }
-            })
-        })
+            }
+        }
 
-        activityViewModel.signedIn.observe(viewLifecycleOwner, Observer {
+        activityViewModel.signedIn.observe(viewLifecycleOwner) {
             if (it) {
                 view.bookmark_button.show()
             }
             else {
                 view.bookmark_button.hide()
             }
-        })
+        }
 
         return view
     }

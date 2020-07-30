@@ -2,7 +2,7 @@ package com.suihan74.satena.scenes.entries2
 
 import android.content.Intent
 import android.util.Log
-import androidx.lifecycle.Observer
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -96,10 +96,10 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる
         var isIssueInitialized = false
         val parentViewModel = parentViewModel!!
-        parentViewModel.issue.observe(viewLifecycleOwner, Observer {
+        parentViewModel.issue.observe(viewLifecycleOwner) {
             if (!isIssueInitialized) {
                 isIssueInitialized = true
-                return@Observer
+                return@observe
             }
 
             viewModel.issue = it
@@ -107,41 +107,41 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             entriesAdapter.submitEntries(null) {
                 viewModel.refresh(onErrorRefreshEntries)
             }
-        })
+        }
 
         // Tagの変更を監視する
         var isTagInitialized = false
-        parentViewModel.tag.observe(viewLifecycleOwner, Observer {
+        parentViewModel.tag.observe(viewLifecycleOwner) {
             if (!isTagInitialized) {
                 isTagInitialized = true
-                return@Observer
+                return@observe
             }
 
             viewModel.tag = it
             entriesAdapter.submitEntries(null) {
                 viewModel.refresh(onErrorRefreshEntries)
             }
-        })
+        }
 
         // TODO: なんとかした方がよさそうというかクラス分けた方が良さそうな気もする
         // 以下はActivity生成と同時に遷移してくる関係上
         // isInitialized的なやつで初期化時ロードを避けるとロードできなくなってしまうので注意
 
         // SiteUrlを監視する
-        parentViewModel.siteUrl.observe(viewLifecycleOwner, Observer {
+        parentViewModel.siteUrl.observe(viewLifecycleOwner) {
             viewModel.siteUrl = it
             viewModel.refresh(onErrorRefreshEntries)
-        })
+        }
 
         // 検索情報を監視する
         (parentViewModel as? SearchEntriesViewModel)?.let { parent ->
-            parent.searchQuery.observe(viewLifecycleOwner, Observer {
+            parent.searchQuery.observe(viewLifecycleOwner) {
                 viewModel.searchQuery = it
-            })
-            parent.searchType.observe(viewLifecycleOwner, Observer {
+            }
+            parent.searchType.observe(viewLifecycleOwner) {
                 viewModel.searchType = it
                 viewModel.refresh(onErrorRefreshEntries)
-            })
+            }
         }
     }
 }

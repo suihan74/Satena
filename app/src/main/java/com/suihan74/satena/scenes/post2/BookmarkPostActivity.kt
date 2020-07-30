@@ -10,8 +10,8 @@ import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
@@ -179,28 +179,28 @@ class BookmarkPostActivity :
         }
 
         // 利用タグ情報をロード完了したらリストに反映する
-        viewModel.tags.observe(this, Observer {
+        viewModel.tags.observe(this) {
             tagsListAdapter.setTags(
                 it.map { t -> t.text }
             )
-        })
+        }
 
         // 各トグルボタンをONにしたときにメッセージを表示する
-        viewModel.postMastodon.observe(this, Observer {
+        viewModel.postMastodon.observe(this) {
             if (it) showToast(R.string.hint_mastodon_toggle)
-        })
+        }
 
-        viewModel.postTwitter.observe(this, Observer {
+        viewModel.postTwitter.observe(this) {
             if (it) showToast(R.string.hint_twitter_toggle)
-        })
+        }
 
-        viewModel.postFacebook.observe(this, Observer {
+        viewModel.postFacebook.observe(this) {
             if (it) showToast(R.string.hint_facebook_toggle)
-        })
+        }
 
-        viewModel.isPrivate.observe(this, Observer {
+        viewModel.isPrivate.observe(this) {
             if (it) showToast(R.string.hint_private_toggle)
-        })
+        }
     }
 
     override fun onResume() {

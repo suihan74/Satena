@@ -2,7 +2,7 @@ package com.suihan74.satena.scenes.bookmarks2.detail
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
-import androidx.lifecycle.Observer
+import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
 import com.suihan74.satena.R
 
@@ -29,19 +29,19 @@ class DetailTabAdapter(
         val tabsArrayList = arrayListOf(TabType.STARS_TO_USER, TabType.STARS_FROM_USER)
         tabs = tabsArrayList
 
-        detailFragment.viewModel.mentionsToUser.observe(detailFragment, Observer {
+        detailFragment.viewModel.mentionsToUser.observe(detailFragment.viewLifecycleOwner) {
             if (it.isNotEmpty() && !tabsArrayList.contains(TabType.MENTION_TO_USER)) {
                 tabsArrayList.add(TabType.MENTION_TO_USER)
                 notifyDataSetChanged()
             }
-        })
+        }
 
-        detailFragment.viewModel.mentionsFromUser.observe(detailFragment, Observer {
+        detailFragment.viewModel.mentionsFromUser.observe(detailFragment.viewLifecycleOwner) {
             if (it.isNotEmpty() && !tabsArrayList.contains(TabType.MENTION_FROM_USER)) {
                 tabsArrayList.add(TabType.MENTION_FROM_USER)
                 notifyDataSetChanged()
             }
-        })
+        }
     }
 
     override fun getCount() = tabs.size

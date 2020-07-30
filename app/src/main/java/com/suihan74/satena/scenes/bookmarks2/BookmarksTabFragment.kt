@@ -6,8 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
@@ -167,24 +167,24 @@ class BookmarksTabFragment :
         // --- Observers --- //
 
         // ブクマリストの更新を監視
-        viewModel.bookmarks.observe(viewLifecycleOwner, Observer {
-            val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@Observer
+        viewModel.bookmarks.observe(viewLifecycleOwner) {
+            val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
             val userTags = activityViewModel.taggedUsers.value ?: emptyList()
             val ignoredUsers = activityViewModel.ignoredUsers.value
             val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
             bookmarksAdapter.setBookmarks(it, bookmarksEntry, userTags, ignoredUsers, displayMutedMention)
-        })
+        }
 
         // ユーザータグの更新を監視
-        activityViewModel.taggedUsers.observe(viewLifecycleOwner, Observer {
+        activityViewModel.taggedUsers.observe(viewLifecycleOwner) {
             val bookmarks = viewModel.bookmarks.value
             if (bookmarks != null) {
-                val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@Observer
+                val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
                 val ignoredUsers = activityViewModel.ignoredUsers.value
                 val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
                 bookmarksAdapter.setBookmarks(bookmarks, bookmarksEntry, it, ignoredUsers, displayMutedMention)
             }
-        })
+        }
 
         // ------ //
 

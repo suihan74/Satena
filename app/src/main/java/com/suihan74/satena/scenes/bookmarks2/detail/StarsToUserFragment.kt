@@ -5,8 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
@@ -60,11 +60,11 @@ class StarsToUserFragment : Fragment(), ScrollableToTop {
         }
 
         // ユーザーに付けられたスターリストの更新を監視する
-        detailViewModel.starsToUser.observe(this, Observer {
+        detailViewModel.starsToUser.observe(viewLifecycleOwner) {
             starsAdapter.setStars(
                 detailViewModel.getStarsWithBookmarkTo(detailViewModel.bookmark.user)
             )
-        })
+        }
 
         return view
     }

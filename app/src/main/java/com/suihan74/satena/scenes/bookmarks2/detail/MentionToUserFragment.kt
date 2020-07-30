@@ -5,8 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
@@ -51,9 +51,9 @@ class MentionToUserFragment : Fragment(), ScrollableToTop {
         view.stars_swipe_layout.isEnabled = false
 
         // メンション先をリストに追加
-        detailViewModel.mentionsToUser.observe(this, Observer {
+        detailViewModel.mentionsToUser.observe(viewLifecycleOwner) {
             starsAdapter.setStars(it)
-        })
+        }
 
         return view
     }

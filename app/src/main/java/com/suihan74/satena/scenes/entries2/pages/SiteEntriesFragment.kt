@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.observe
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
@@ -51,9 +51,9 @@ class SiteEntriesFragment : TwinTabsEntriesFragment() {
 
         // Category.SiteではサイトURLをタイトルに表示する
         val toolbar = requireActivity().toolbar
-        viewModel.siteUrl.observe(viewLifecycleOwner, Observer {
+        viewModel.siteUrl.observe(viewLifecycleOwner) {
             toolbar.title = title
-        })
+        }
 
         return root
     }

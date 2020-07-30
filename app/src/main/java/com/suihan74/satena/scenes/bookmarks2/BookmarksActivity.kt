@@ -14,6 +14,7 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.NetworkReceiver
@@ -177,16 +178,16 @@ class BookmarksActivity :
         // 接続状態を監視する
         var isNetworkReceiverInitialized = false
         val networkReceiver = SatenaApplication.instance.networkReceiver
-        networkReceiver.state.observe(this, Observer { state ->
+        networkReceiver.state.observe(this) { state ->
             if (!isNetworkReceiverInitialized) {
                 isNetworkReceiverInitialized = true
-                return@Observer
+                return@observe
             }
 
             if (state == NetworkReceiver.State.CONNECTED) {
                 viewModel.init(true)
             }
-        })
+        }
     }
 
     fun showButtons() {
@@ -253,13 +254,13 @@ class BookmarksActivity :
         drawerToggle.syncState()
 
         // Observers
-        viewModel.bookmarksEntry.observe(this, Observer {
+        viewModel.bookmarksEntry.observe(this) {
             toolbar.subtitle = getString(
                 R.string.toolbar_subtitle_bookmarks,
                 it.bookmarks.size,
                 it.bookmarks.count { b -> b.comment.isNotBlank() }
             )
-        })
+        }
 
         // 戻るボタンを監視
         onBackPressedCallback = onBackPressedDispatcher.addCallback(this) {

@@ -9,9 +9,8 @@ import android.transition.TransitionSet
 import android.view.*
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
-import androidx.core.view.GravityCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
@@ -43,7 +42,7 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
         setHasOptionsMenu(true)
         enterTransition = TransitionSet()
             .addTransition(Fade())
-            .addTransition(Slide(GravityCompat.END))
+            .addTransition(Slide(Gravity.END))
 
         val parentFragment = requireParentFragment() as PreferencesUserTagsFragment
         model = ViewModelProvider(parentFragment)[UserTagViewModel::class.java]
@@ -81,12 +80,12 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
             adapter = mTaggedUsersAdapter
         }
 
-        model.currentTag.observe(viewLifecycleOwner, Observer {
-            if (it == null) return@Observer
+        model.currentTag.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
             root.findViewById<TextView>(R.id.tag_name).text = it.userTag.name
             root.findViewById<TextView>(R.id.users_count).text = String.format("%d users", it.users.size)
             mTaggedUsersAdapter.setItems(it.users)
-        })
+        }
 
         return root
     }

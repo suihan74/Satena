@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
@@ -18,7 +18,9 @@ import com.suihan74.utilities.bindings.setDivider
 import kotlinx.coroutines.launch
 
 class UserTagsListFragment : CoroutineScopeFragment() {
-    private lateinit var model: UserTagViewModel
+    private val model: UserTagViewModel by lazy {
+        ViewModelProvider(requireParentFragment())[UserTagViewModel::class.java]
+    }
     private lateinit var mUserTagsAdapter : UserTagsAdapter
 
     var menuItems: Array<out Pair<String, (TagAndUsers)->Unit>>? = null
@@ -28,12 +30,6 @@ class UserTagsListFragment : CoroutineScopeFragment() {
         fun createInstance() = UserTagsListFragment()
 
         const val DIALOG_TAG_MENU = "UserTagsListFragment.DIALOG_TAG_MENU"
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        model = ViewModelProvider(parentFragment!!)[UserTagViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -71,9 +67,9 @@ class UserTagsListFragment : CoroutineScopeFragment() {
         }
 
         // リストの変更を監視
-        model.tags.observe(this, Observer { tags ->
+        model.tags.observe(viewLifecycleOwner) { tags ->
             mUserTagsAdapter.setItems(tags)
-        })
+        }
 
         return root
     }
@@ -85,6 +81,6 @@ class UserTagsListFragment : CoroutineScopeFragment() {
     private fun modifyItem(tag: TagAndUsers) {
         UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
             .setUserTag(tag.userTag)
-            .show(parentFragment!!.childFragmentManager, "modify_tag_dialog")
+            .show(requireParentFragment().childFragmentManager, "modify_tag_dialog")
     }
 }

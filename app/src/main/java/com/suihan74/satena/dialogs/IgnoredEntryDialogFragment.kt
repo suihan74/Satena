@@ -11,9 +11,9 @@ import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
@@ -169,7 +169,8 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         val descText = content.desc_text
 
         // タブが切り替わったときの表示内容更新
-        model.selectedTab.observe(this, Observer { tab ->
+        // ここで他のフラグメントのようにthisではなくviewLifecycleOwner使うと落ちる
+        model.selectedTab.observe(this) { tab ->
             queryText.setHint(tab.textId)
             when (tab) {
                 IgnoredEntryDialogTab.URL -> {
@@ -190,7 +191,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 //                requireActivity().showSoftInputMethod(it)
                 it.setSelection(it.text.length)
             }
-        })
+        }
 
         content.tab_layout.apply {
             visibility = (!isEditMode).toVisibility()

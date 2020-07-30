@@ -367,7 +367,7 @@ class BookmarksRepository(
         private val entry: Entry,
         private val bookmark: Bookmark,
         private val repository: BookmarksRepository
-    ) : LiveData<StarsEntry>() {
+    ) : LiveData<StarsEntry?>() {
         private var task: Deferred<StarsEntry>? = null
 
         override fun onActive() {

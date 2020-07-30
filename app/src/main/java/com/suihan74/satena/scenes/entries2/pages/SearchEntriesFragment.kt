@@ -7,14 +7,16 @@ import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.*
+import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
+import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.utilities.getEnum
 import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.putEnum
@@ -136,7 +138,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
                 return@setOnMenuItemClickListener true
             }
 
-            viewModel.searchType.observe(viewLifecycleOwner, Observer {
+            viewModel.searchType.observe(viewLifecycleOwner) {
                 item.title = it.name
                 val context = requireContext()
                 val iconId =
@@ -148,7 +150,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
                 item.icon = ContextCompat.getDrawable(context, iconId)!!.apply {
                     setTint(context.getColor(R.color.colorPrimaryText))
                 }
-            })
+            }
         }
     }
 
