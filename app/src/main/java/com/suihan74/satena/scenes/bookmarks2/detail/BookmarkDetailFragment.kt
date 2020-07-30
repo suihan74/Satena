@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.bookmarks2.detail
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
-import android.graphics.PorterDuff
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.SpannableString
@@ -121,14 +120,12 @@ class BookmarkDetailFragment :
                 (0 until count).forEach { i ->
                     val context = requireContext()
                     val tab = view.tab_layout.getTabAt(i) ?: return@forEach
-                    tab.icon = context.getDrawable(getPageTitleIcon(i))?.apply {
-                        setColorFilter(
-                            context.getThemeColor(
-                                if (i == view.tab_layout.selectedTabPosition) R.attr.tabSelectedTextColor
-                                else R.attr.tabTextColor
-                            ),
-                            PorterDuff.Mode.SRC_IN
+                    tab.icon = context.getDrawable(getPageTitleIcon(i))?.also {
+                        val color = context.getThemeColor(
+                            if (i == view.tab_layout.selectedTabPosition) R.attr.tabSelectedTextColor
+                            else R.attr.tabTextColor
                         )
+                        DrawableCompat.setColorFilter(it, color)
                     }
                 }
             }
@@ -140,16 +137,12 @@ class BookmarkDetailFragment :
 
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
-                    tab?.icon?.setColorFilter(
-                        requireContext().getThemeColor(R.attr.tabSelectedTextColor),
-                        PorterDuff.Mode.SRC_IN
-                    )
+                    val icon = tab?.icon ?: return
+                    DrawableCompat.setColorFilter(icon, requireContext().getThemeColor(R.attr.tabSelectedTextColor))
                 }
                 override fun onTabUnselected(tab: TabLayout.Tab?) {
-                    tab?.icon?.setColorFilter(
-                        requireContext().getThemeColor(R.attr.tabTextColor),
-                        PorterDuff.Mode.SRC_IN
-                    )
+                    val icon = tab?.icon ?: return
+                    DrawableCompat.setColorFilter(icon, requireContext().getThemeColor(R.attr.tabTextColor))
                 }
                 override fun onTabReselected(tab: TabLayout.Tab?) {
                     (tabAdapter.findFragment(view.tab_pager, tab!!.position) as? ScrollableToTop)?.scrollToTop()

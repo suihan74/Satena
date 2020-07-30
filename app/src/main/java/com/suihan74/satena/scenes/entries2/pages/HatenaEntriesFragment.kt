@@ -80,8 +80,6 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
 
         var inflated = false
         viewModel.issues.observe(viewLifecycleOwner) { issues ->
-            if (issues == null) return@observe
-
             val activity = requireActivity() as EntriesActivity
             val spinnerItems = issues.map { it.name }
 

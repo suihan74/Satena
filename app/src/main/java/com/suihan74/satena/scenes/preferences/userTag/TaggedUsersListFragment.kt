@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.preferences.userTag
 
 import android.content.Intent
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.transition.Fade
 import android.transition.Slide
@@ -20,6 +19,7 @@ import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.CoroutineScopeFragment
+import com.suihan74.utilities.DrawableCompat
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.coroutines.launch
 
@@ -103,7 +103,7 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
 
         menu.findItem(R.id.button).apply {
             val color = ActivityCompat.getColor(requireActivity(), R.color.colorPrimaryText)
-            icon.mutate().setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
+            DrawableCompat.setColorFilter(icon.mutate(), color)
 
             setOnMenuItemClickListener {
                 activity?.onBackPressed()
