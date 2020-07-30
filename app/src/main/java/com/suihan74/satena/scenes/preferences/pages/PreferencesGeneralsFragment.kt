@@ -6,8 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesGeneralsBinding
@@ -47,10 +47,10 @@ class PreferencesGeneralsFragment :
 
         // ダークテーマか否か
         val initialTheme = prefs.getBoolean(PreferenceKey.DARK_THEME)
-        viewModel.darkTheme.observe(viewLifecycleOwner, Observer {
+        viewModel.darkTheme.observe(viewLifecycleOwner) {
             // ユーザーの操作によって値が変更された場合のみテーマの再設定とアプリ再起動を行う
             // この判別をしないと無限ループする
-            if (initialTheme == it) return@Observer
+            if (initialTheme == it) return@observe
 
             // 再起動
             val intent = Intent(activity, PreferencesActivity::class.java).apply {
@@ -62,13 +62,13 @@ class PreferencesGeneralsFragment :
                 putExtra(PreferencesActivity.EXTRA_THEME_CHANGED, true)
             }
             startActivity(intent)
-        })
+        }
 
         // バックグラウンドで通知を確認する
-        viewModel.checkNotices.observe(viewLifecycleOwner, Observer {
+        viewModel.checkNotices.observe(viewLifecycleOwner) {
             if (it) SatenaApplication.instance.startNotificationService()
             else SatenaApplication.instance.stopNotificationService()
-        })
+        }
 
         // 通知確認の間隔
         view.button_checking_notices_interval.setOnClickListener {

@@ -10,8 +10,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
@@ -39,6 +39,9 @@ class FloatingActionButtonsFragment :
     private val tabViewModel
         get() = fragmentViewModel.selectedTabViewModel.value
 
+    /** ブクマ投稿ダイアログを開くボタンを複数回押されてもダイアログが複数出ないようにする */
+    private var bookmarkButtonClicked = false
+
     /** 戻るボタンの監視用コールバック */
     private lateinit var onBackPressedCallbackForKeyword: OnBackPressedCallback
     private lateinit var onBackPressedCallbackForScroll: OnBackPressedCallback
@@ -58,18 +61,18 @@ class FloatingActionButtonsFragment :
         initFABs(view)
 
         // 「カスタム」タブでは設定ボタンを表示する
-        fragmentViewModel.selectedTab.observe(viewLifecycleOwner, Observer {
+        fragmentViewModel.selectedTab.observe(viewLifecycleOwner) {
             if (it == BookmarksTabType.CUSTOM.ordinal) {
                 view.custom_settings_button.show()
             }
             else {
                 view.custom_settings_button.hide()
             }
-        })
+        }
 
         // タブのブクマリストにサインインしているユーザーのブクマが存在するかを監視する
-        fragmentViewModel.selectedTabViewModel.observe(viewLifecycleOwner, Observer { vm ->
-            vm.signedUserBookmark.observe(viewLifecycleOwner, Observer { bookmark ->
+        fragmentViewModel.selectedTabViewModel.observe(viewLifecycleOwner) { vm ->
+            vm.signedUserBookmark.observe(viewLifecycleOwner) { bookmark ->
                 if (view.bookmarks_scroll_top_button.isShown) {
                     if (bookmark == null) {
                         view.bookmarks_scroll_my_bookmark_button.hide()
@@ -78,23 +81,24 @@ class FloatingActionButtonsFragment :
                         view.bookmarks_scroll_my_bookmark_button.show()
                     }
                 }
-            })
-        })
+            }
+        }
 
-        activityViewModel.signedIn.observe(viewLifecycleOwner, Observer {
+        activityViewModel.signedIn.observe(viewLifecycleOwner) {
             if (it) {
                 view.bookmark_button.show()
             }
             else {
                 view.bookmark_button.hide()
             }
-        })
+        }
 
         return view
     }
 
     override fun onResume() {
         super.onResume()
+        bookmarkButtonClicked = false
         // 戻るボタンを監視
         onBackPressedCallbackForKeyword = requireActivity().onBackPressedDispatcher.addCallback(this, false) {
             requireView().let { view ->
@@ -126,7 +130,7 @@ class FloatingActionButtonsFragment :
 
             view.bookmarks_scroll_my_bookmark_button.apply {
                 setOnClickListener {
-                    // TODO: (暫定的な動作)詳細画面に遷移
+                    // 自分のブコメの詳細画面に遷移
                     tabViewModel?.signedUserBookmark?.value?.let { target ->
                         (activity as? BookmarksActivity)?.showBookmarkDetail(target)
                     }
@@ -150,6 +154,9 @@ class FloatingActionButtonsFragment :
         // ブクマ投稿ボタン
         view.bookmark_button.hide()
         view.bookmark_button.setOnClickListener {
+            if (bookmarkButtonClicked) return@setOnClickListener
+            bookmarkButtonClicked = true
+
             val intent = Intent(context, BookmarkPostActivity::class.java).apply {
                 putExtra(BookmarkPostActivity.EXTRA_INVOKED_BY_BOOKMARKS_ACTIVITY, true)
                 putExtra(BookmarkPostActivity.EXTRA_ENTRY, activityViewModel.entry)

@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
@@ -68,16 +68,16 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         }
 
         // タグ選択時にサブタイトルを表示する
-        viewModel.tag.observe(viewLifecycleOwner, Observer {
+        viewModel.tag.observe(viewLifecycleOwner) {
             toolbar.subtitle = subtitle
 
             clearTagCallback.isEnabled = it != null
-        })
+        }
 
         // ユーザーIDをタイトルに表示する
-        viewModel.user.observe(viewLifecycleOwner, Observer {
+        viewModel.user.observe(viewLifecycleOwner) {
             toolbar.title = title
-        })
+        }
 
         setHasOptionsMenu(category == Category.User)
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, clearTagCallback)
@@ -90,7 +90,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
         val viewModel = viewModel as UserEntriesViewModel
         var inflated = false
-        viewModel.tags.observe(viewLifecycleOwner, Observer { tags ->
+        viewModel.tags.observe(viewLifecycleOwner) { tags ->
             val activity = requireActivity()
 
             if (!inflated) {
@@ -121,6 +121,6 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
                     }
                 }
             }
-        })
+        }
     }
 }

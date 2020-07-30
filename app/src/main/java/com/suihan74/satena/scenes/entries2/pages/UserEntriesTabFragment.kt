@@ -3,7 +3,7 @@ package com.suihan74.satena.scenes.entries2.pages
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.lifecycle.Observer
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -105,16 +105,16 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         // タグの変更を監視
         var isTagInitialized = false
         val parentViewModel = parentViewModel!!
-        parentViewModel.tag.observe(viewLifecycleOwner, Observer {
+        parentViewModel.tag.observe(viewLifecycleOwner) {
             if (!isTagInitialized) {
                 isTagInitialized = true
-                return@Observer
+                return@observe
             }
 
             viewModel.tag = it
             entriesAdapter.submitEntries(null) {
                 viewModel.refresh(onErrorRefreshEntries)
             }
-        })
+        }
     }
 }

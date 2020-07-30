@@ -15,7 +15,7 @@ class UserEntriesViewModel(
     override val tags by lazy {
         repository.TagsLiveData().also { t ->
             user.observeForever { u ->
-                t.setUser(u)
+                if (u != null) t.setUser(u)
             }
         }
     }

@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.bookmarks2.detail
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
-import android.graphics.PorterDuff
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.SpannableString
@@ -16,10 +15,9 @@ import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
 import androidx.activity.addCallback
-import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayout
@@ -102,7 +100,7 @@ class BookmarkDetailFragment :
         // 画面遷移アニメーション
         enterTransition = TransitionSet()
             .addTransition(Fade())
-            .addTransition(Slide(GravityCompat.END))
+            .addTransition(Slide(Gravity.END))
     }
 
     override fun onCreateView(
@@ -122,14 +120,12 @@ class BookmarkDetailFragment :
                 (0 until count).forEach { i ->
                     val context = requireContext()
                     val tab = view.tab_layout.getTabAt(i) ?: return@forEach
-                    tab.icon = context.getDrawable(getPageTitleIcon(i))?.apply {
-                        setColorFilter(
-                            context.getThemeColor(
-                                if (i == view.tab_layout.selectedTabPosition) R.attr.tabSelectedTextColor
-                                else R.attr.tabTextColor
-                            ),
-                            PorterDuff.Mode.SRC_IN
+                    tab.icon = context.getDrawable(getPageTitleIcon(i))?.also {
+                        val color = context.getThemeColor(
+                            if (i == view.tab_layout.selectedTabPosition) R.attr.tabSelectedTextColor
+                            else R.attr.tabTextColor
                         )
+                        DrawableCompat.setColorFilter(it, color)
                     }
                 }
             }
@@ -141,16 +137,12 @@ class BookmarkDetailFragment :
 
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
-                    tab?.icon?.setColorFilter(
-                        requireContext().getThemeColor(R.attr.tabSelectedTextColor),
-                        PorterDuff.Mode.SRC_IN
-                    )
+                    val icon = tab?.icon ?: return
+                    DrawableCompat.setColorFilter(icon, requireContext().getThemeColor(R.attr.tabSelectedTextColor))
                 }
                 override fun onTabUnselected(tab: TabLayout.Tab?) {
-                    tab?.icon?.setColorFilter(
-                        requireContext().getThemeColor(R.attr.tabTextColor),
-                        PorterDuff.Mode.SRC_IN
-                    )
+                    val icon = tab?.icon ?: return
+                    DrawableCompat.setColorFilter(icon, requireContext().getThemeColor(R.attr.tabTextColor))
                 }
                 override fun onTabReselected(tab: TabLayout.Tab?) {
                     (tabAdapter.findFragment(view.tab_pager, tab!!.position) as? ScrollableToTop)?.scrollToTop()
@@ -180,80 +172,80 @@ class BookmarkDetailFragment :
         view.purple_star_button.setOnClickListener { postStar(StarColor.Purple) }
 
         // 非表示ユーザーリストが更新されたら各リストを更新する
-        activityViewModel.ignoredUsers.observe(viewLifecycleOwner, Observer {
+        activityViewModel.ignoredUsers.observe(viewLifecycleOwner) {
             viewModel.loadMentions()
             viewModel.starsToUser.notifyReload()
             viewModel.starsAll.notifyReload()
-        })
+        }
 
         // スターメニューボタンの状態を監視
-        viewModel.starsMenuOpened.observe(viewLifecycleOwner, Observer {
+        viewModel.starsMenuOpened.observe(viewLifecycleOwner) {
             if (it) {
                 openStarMenu()
             }
             else {
                 closeStarMenu()
             }
-        })
+        }
 
         // サインイン状態でブコメがあればスターを付けられるようにする
-        activityViewModel.signedIn.observe(viewLifecycleOwner, Observer {
+        activityViewModel.signedIn.observe(viewLifecycleOwner) {
             if (it && bookmark.comment.isNotBlank()) {
                 view.show_stars_button.show()
             }
             else {
                 view.show_stars_button.hide()
             }
-        })
+        }
 
         // 所持スター情報を監視
-        viewModel.userStars.observe(viewLifecycleOwner, Observer {
+        viewModel.userStars.observe(viewLifecycleOwner) {
             view.red_stars_count.text = it.red.toString()
             view.green_stars_count.text = it.green.toString()
             view.blue_stars_count.text = it.blue.toString()
             view.purple_stars_count.text = it.purple.toString()
-        })
+        }
 
         // コメント引用を監視
-        viewModel.quote.observe(viewLifecycleOwner, Observer { comment ->
+        viewModel.quote.observe(viewLifecycleOwner) { comment ->
             view.quote_text_view.run {
                 text = getString(R.string.bookmark_detail_quote_comment, comment)
                 visibility = (!comment.isNullOrBlank()).toVisibility()
             }
-        })
+        }
 
         // タブタイトルに各タブのアイテム数を表示する
-        viewModel.starsToUser.observe(viewLifecycleOwner, Observer {
-            val idx = getTabIndex<StarsToUserFragment>(view, tabAdapter) ?: return@Observer
+        viewModel.starsToUser.observe(viewLifecycleOwner) {
+            val idx = getTabIndex<StarsToUserFragment>(view, tabAdapter) ?: return@observe
             val tab = view.tab_layout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it?.totalStarsCount ?: 0, tabAdapter.getPageTitle(idx))
-        })
+        }
 
-        viewModel.starsFromUser.observe(viewLifecycleOwner, Observer {
-            val idx = getTabIndex<StarsFromUserFragment>(view, tabAdapter) ?: return@Observer
+        viewModel.starsFromUser.observe(viewLifecycleOwner) {
+            val idx = getTabIndex<StarsFromUserFragment>(view, tabAdapter) ?: return@observe
             val tab = view.tab_layout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it.sumBy { s -> s.star?.count ?: 0 }, tabAdapter.getPageTitle(idx))
-        })
+        }
 
-        viewModel.mentionsToUser.observe(viewLifecycleOwner, Observer {
-            val idx = getTabIndex<MentionToUserFragment>(view, tabAdapter) ?: return@Observer
+        viewModel.mentionsToUser.observe(viewLifecycleOwner) {
+            val idx = getTabIndex<MentionToUserFragment>(view, tabAdapter) ?: return@observe
             val tab = view.tab_layout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it.size, tabAdapter.getPageTitle(idx))
-        })
+        }
 
-        viewModel.mentionsFromUser.observe(viewLifecycleOwner, Observer {
-            val idx = getTabIndex<MentionFromUserFragment>(view, tabAdapter) ?: return@Observer
+        viewModel.mentionsFromUser.observe(viewLifecycleOwner) {
+            val idx = getTabIndex<MentionFromUserFragment>(view, tabAdapter) ?: return@observe
             val tab = view.tab_layout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it.size, tabAdapter.getPageTitle(idx))
-        })
+        }
 
         // 接続状態を監視する
         var isNetworkReceiverInitialized = false
         val networkReceiver = SatenaApplication.instance.networkReceiver
-        networkReceiver.state.observe(viewLifecycleOwner, Observer { state ->
+        networkReceiver.state.observe(viewLifecycleOwner) { state ->
             if (!isNetworkReceiverInitialized) {
                 isNetworkReceiverInitialized = true
-                return@Observer
+                return@observe
             }
 
             if (state == NetworkReceiver.State.CONNECTED) {
@@ -262,7 +254,7 @@ class BookmarkDetailFragment :
                     viewModel.starsAll.updateAsync().await()
                 }
             }
-        })
+        }
 
         return view
     }
@@ -366,14 +358,14 @@ class BookmarkDetailFragment :
         }
 
         // 非表示ユーザーマーク
-        activityViewModel.ignoredUsers.observe(viewLifecycleOwner, Observer {
+        activityViewModel.ignoredUsers.observe(viewLifecycleOwner) {
             view.ignored_user_mark.visibility = it.contains(bookmark.user).toVisibility()
-        })
+        }
 
         // ユーザータグ情報の変更を監視
-        activityViewModel.taggedUsers.observe(viewLifecycleOwner, Observer {
+        activityViewModel.taggedUsers.observe(viewLifecycleOwner) {
             initializeUserNameAndUserTags(view)
-        })
+        }
     }
 
     /** ユーザー名・ユーザータグ表示を初期化 */

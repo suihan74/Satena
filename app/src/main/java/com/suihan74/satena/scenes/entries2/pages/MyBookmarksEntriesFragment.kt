@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
@@ -51,12 +51,12 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
 
         // タグ選択時にサブタイトルを表示する
         val toolbar = requireActivity().toolbar
-        viewModel.tag.observe(viewLifecycleOwner, Observer {
+        viewModel.tag.observe(viewLifecycleOwner) {
             toolbar.subtitle = it?.let { tag -> "${tag.text}(${tag.count})" }
 
             // 戻るボタンの処理に割り込む
             clearTagCallback.isEnabled = it != null
-        })
+        }
 
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, clearTagCallback)
 
@@ -71,7 +71,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
 
         inflater.inflate(R.menu.spinner_issues, menu)
 
-        viewModel.tags.observe(viewLifecycleOwner, Observer { tags ->
+        viewModel.tags.observe(viewLifecycleOwner) { tags ->
             val activity = requireActivity()
 
             // タグ選択
@@ -98,6 +98,6 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
                     }
                 }
             }
-        })
+        }
     }
 }

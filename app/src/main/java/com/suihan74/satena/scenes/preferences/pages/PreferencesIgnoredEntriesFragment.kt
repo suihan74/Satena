@@ -5,8 +5,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -119,9 +119,9 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
             dialog.show(childFragmentManager, "dialog")
         }
 
-        viewModel.entries.observe(viewLifecycleOwner, Observer {
+        viewModel.entries.observe(viewLifecycleOwner) {
             mIgnoredEntriesAdapter.setItem(it)
-        })
+        }
 
         return root
     }
