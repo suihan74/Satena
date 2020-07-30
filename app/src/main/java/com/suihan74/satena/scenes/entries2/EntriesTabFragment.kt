@@ -129,6 +129,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
 
         // SiteUrlを監視する
         parentViewModel.siteUrl.observe(viewLifecycleOwner) {
+            if (viewModel.category != Category.Site && (it == null || viewModel.siteUrl == it)) return@observe
             viewModel.siteUrl = it
             viewModel.refresh(onErrorRefreshEntries)
         }

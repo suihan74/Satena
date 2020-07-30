@@ -30,12 +30,12 @@ abstract class EntriesFragmentViewModel : ViewModel() {
 
     /** エントリリストを取得するサイトURL */
     val siteUrl by lazy {
-        SingleUpdateMutableLiveData<String>()
+        SingleUpdateMutableLiveData<String?>()
     }
 
     /** Category.Userで表示しているユーザー */
     val user by lazy {
-        SingleUpdateMutableLiveData<String>()
+        SingleUpdateMutableLiveData<String?>()
     }
 
     // タブ管理に関する設定
