@@ -200,7 +200,7 @@ class EntriesActivity : AppCompatActivity() {
                 return@observe
             }
 
-            if (state == NetworkReceiver.State.CONNECTED) {
+            if (state == NetworkReceiver.State.CONNECTED && viewModel.signedIn.value != true) {
                 viewModel.initialize(
                     forceUpdate = false,
                     onSuccess = {
