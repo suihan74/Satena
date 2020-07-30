@@ -201,7 +201,13 @@ class EntriesActivity : AppCompatActivity() {
             }
 
             if (state == NetworkReceiver.State.CONNECTED) {
-                viewModel.initialize(forceUpdate = false)
+                viewModel.initialize(
+                    forceUpdate = false,
+                    onSuccess = {
+                        val accountName = HatenaClient.account?.name ?: return@initialize
+                        showToast(R.string.msg_retry_sign_in_succeeded, accountName)
+                    }
+                )
             }
         }
     }
