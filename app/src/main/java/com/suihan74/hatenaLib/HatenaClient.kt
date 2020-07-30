@@ -512,14 +512,11 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     countRegex.find(it.wholeText())?.groupValues?.get(1)?.toIntOrNull()
                 } ?: return@m null
 
-                val (rootUrl, faviconUrl) = entry.getElementsByClass("$classNamePrefix-detail").firstOrNull()?.let {
-                    val rootUrl = it.getElementsByAttributeValue("data-gtm-click-label", "entry-info-root-url").firstOrNull()?.attr("href")?.let { path ->
-                        Uri.decode(path.replace("/entrylist?url=", ""))
-                    } ?: entryUrl
-                    val faviconUrl = it.getElementsByClass("favicon").firstOrNull()?.attr("src") ?: ""
+                val rootUrl = entry.getElementsByAttributeValue("data-gtm-click-label", "entry-info-root-url").firstOrNull()?.attr("href")?.let { path ->
+                    Uri.decode(path.replace("/entrylist?url=", ""))
+                } ?: entryUrl
 
-                    rootUrl to faviconUrl
-                } ?: return@m null
+                val faviconUrl = entry.getElementsByClass("favicon").firstOrNull()?.attr("src") ?: ""
 
                 val (description, imageUrl) = entry.getElementsByClass("$classNamePrefix-body").firstOrNull()?.let {
                     val description = it.wholeText() ?: ""
