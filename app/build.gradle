@@ -111,7 +111,7 @@ dependencies {
     implementation project(':shared')
 
     // using GIF on ImageView
-    implementation 'com.github.bumptech.glide:glide:4.10.0'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
 
     // using autofit gridlayout
     implementation 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'
