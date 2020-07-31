@@ -65,21 +65,19 @@ open class BaseClient {
 
     protected fun <T> send(type: Type, request: Request, gsonBuilder: GsonBuilder) : T {
         try {
-            val response = send(request)
-            if (response.isSuccessful) {
-                val gson = gsonBuilder
-                    .serializeNulls()
-                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                    .create()
-                val json = response.body!!.string()
-                val result = gson.fromJson<T>(json, type)
+            send(request).use { response ->
+                if (response.isSuccessful) {
+                    val gson = gsonBuilder
+                        .serializeNulls()
+                        .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                        .create()
 
-                response.close()
-                return result
+                    val json = response.body!!.use { it.string() }
+                    return gson.fromJson<T>(json, type)
+                }
+
+                throw RuntimeException("connection failed")
             }
-
-            response.close()
-            throw RuntimeException("connection failed")
         }
         catch (e: SocketTimeoutException) {
             client.connectionPool.evictAll()
@@ -96,34 +94,30 @@ open class BaseClient {
     protected inline fun <reified T> send(request: Request) : T
             = send(T::class.java, request, GsonBuilder())
 
-    private fun <T> responseTo(type: Type, response: Response, gsonBuilder: GsonBuilder) : T {
-        return if (response.isSuccessful) {
-            val json = response.body!!.charStream()
+    private fun <T> responseTo(type: Type, response: Response, gsonBuilder: GsonBuilder) : T =
+        if (response.isSuccessful) {
+            val json = response.body!!.use { it.string() }
 
-            val result = gsonBuilder
+            gsonBuilder
                 .serializeNulls()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .registerTypeAdapter(Boolean::class.java, BooleanDeserializer())
                 .create()
                 .fromJson<T>(json, type)
-
-            response.close()
-            result
         }
         else {
             val code = response.code
-            response.close()
             throw RuntimeException("connection error: $code")
         }
-    }
 
     private fun <T> responseTo(type: Type, response: Response, dateFormat: String? = null) : T =
         responseTo(type, response, GsonBuilder().registerTypeAdapter(LocalDateTime::class.java, TimestampDeserializer(dateFormat)))
 
     protected fun <T> getJson(type: Type, url: String, gsonBuilder: GsonBuilder) : T {
         try {
-            val response = get(url)
-            return responseTo(type, response, gsonBuilder)
+            get(url).use { response ->
+                return responseTo(type, response, gsonBuilder)
+            }
         }
         catch (e: Throwable) {
             throw RuntimeException("${e.message ?: ""}: $url")
@@ -132,8 +126,9 @@ open class BaseClient {
 
     protected fun <T> getJson(type: Type, url: String, dateFormat: String? = null, withCookie: Boolean = true) : T {
         try {
-            val response = get(url, withCookie)
-            return responseTo(type, response, dateFormat)
+            get(url, withCookie).use { response ->
+                return responseTo(type, response, dateFormat)
+            }
         }
         catch (e: SocketTimeoutException) {
             client.connectionPool.evictAll()
