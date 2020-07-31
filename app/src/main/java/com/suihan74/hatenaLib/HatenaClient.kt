@@ -275,21 +275,21 @@ object HatenaClient : BaseClient(), CoroutineScope {
             "rks" to account!!.rks
         )
 
-        val response = post(apiUrl, params)
-        if (response.isSuccessful) {
-            val gson = GsonBuilder()
-                .serializeNulls()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .registerTypeAdapter(Boolean::class.java, BooleanDeserializer())
-                .create()
-            val json = response.body!!.string()
-            val result = gson.fromJson<BookmarkResult>(json, BookmarkResult::class.java)
+        post(apiUrl, params).use { response ->
+            if (response.isSuccessful) {
+                val gson = GsonBuilder()
+                    .serializeNulls()
+                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                    .registerTypeAdapter(Boolean::class.java, BooleanDeserializer())
+                    .create()
 
-            response.close()
-            return@async result
+                response.body!!.use { body ->
+                    val json = body.string()
+                    return@async gson.fromJson<BookmarkResult>(json, BookmarkResult::class.java)
+                }
+            }
         }
 
-        response.close()
         throw RuntimeException("failed to bookmark")
     }
 
@@ -304,7 +304,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         try {
             post(apiUrl, mapOf(
                 "url" to url,
-                "rks" to account.rks))
+                "rks" to account.rks)).close()
         }
         catch (e: IOException) {
             throw RuntimeException(e)
@@ -499,7 +499,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val entryIdsTasks = ArrayList<Deferred<Long?>>()
 
         val entries = get(apiUrl).use { response ->
-            val responseStr = response.body?.string() ?: throw RuntimeException("failed to get entries: $url")
+            val responseStr = response.body?.use { it.string() } ?: throw RuntimeException("failed to get entries: $url")
             val html = Jsoup.parse(responseStr)
             html.body().getElementsByClass("$classNamePrefix-main").mapNotNull m@ { entry ->
                 val (title, entryUrl) = entry.getElementsByClass("$classNamePrefix-title").firstOrNull()?.let {
@@ -558,7 +558,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         return@async get(bookmarkUrl).use { response ->
             if (response.code != 200) return@use null
 
-            val html = Jsoup.parse(response.body!!.string())
+            val html = Jsoup.parse(response.body!!.use { it.string() })
             html.getElementsByTag("html")?.firstOrNull()?.attr("data-entry-eid")?.toLongOrNull()
         }
     }
@@ -637,7 +637,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
     fun getEmptyEntryAsync(url: String) : Deferred<Entry> = async {
         return@async get(url).use { response ->
             if (response.isSuccessful) {
-                val bodyBytes = response.body!!.bytes()
+                val bodyBytes = response.body!!.use { it.bytes() }
 
                 // 文字コードを判別してからHTMLを読む
                 val defaultCharsetName = Charset.defaultCharset().name().toLowerCase(Locale.ROOT)
@@ -801,7 +801,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 throw RuntimeException("cannot get an entry: $commentPageUrl")
             }
 
-            val bodyBytes = response.body!!.bytes()
+            val bodyBytes = response.body!!.use { it.bytes() }
             val bodyStr = bodyBytes.toString(Charsets.UTF_8)
             val doc = Jsoup.parse(bodyStr)
             val root = doc.getElementsByTag("html").first()
@@ -872,20 +872,19 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val request = Request.Builder().url(url).build()
         val call = client.newCall(request)
 
-        val response = call.execute()
-        if (response.isSuccessful) {
-            val commentPageUrl = response.request.url.toString()
-            response.close()
+        call.execute().use { response ->
+            if (response.isSuccessful) {
+                val commentPageUrl = response.request.url.toString()
 
-            val headHttps = "$B_BASE_URL/entry/s/"
-            val head = "$B_BASE_URL/entry/"
+                val headHttps = "$B_BASE_URL/entry/s/"
+                val head = "$B_BASE_URL/entry/"
 
-            val isHttps = commentPageUrl.startsWith(headHttps)
-            val tail = commentPageUrl.substring(if (isHttps) headHttps.length else head.length)
-            return@async "${if (isHttps) "https" else "http"}://$tail"
+                val isHttps = commentPageUrl.startsWith(headHttps)
+                val tail = commentPageUrl.substring(if (isHttps) headHttps.length else head.length)
+                return@async "${if (isHttps) "https" else "http"}://$tail"
+            }
         }
 
-        response.close()
         throw RuntimeException("connection error")
     }
 
@@ -1076,8 +1075,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 "&color=${star.color.name.toLowerCase(Locale.ROOT)}" +
                 "&quote=${Uri.encode(star.quote)}"
 
-        val response = get(apiUrl)
-        if (!response.isSuccessful) throw RuntimeException("failed to delete a star")
+        get(apiUrl).use { response ->
+            if (!response.isSuccessful) throw RuntimeException("failed to delete a star")
+        }
     }
 
     /**
@@ -1122,9 +1122,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val url = "$W_BASE_URL/notify/api/read"
 
         try {
-            val response = post(url, mapOf("rks" to account!!.rks))
-            if (!response.isSuccessful) {
-                throw RuntimeException("failed to update notices last seen")
+            post(url, mapOf("rks" to account!!.rks)).use { response ->
+                if (!response.isSuccessful) {
+                    throw RuntimeException("failed to update notices last seen")
+                }
             }
         }
         catch (e: IOException) {
@@ -1152,13 +1153,15 @@ object HatenaClient : BaseClient(), CoroutineScope {
         require(signedIn()) { "need to sign-in to mute users" }
         val url = "$B_BASE_URL/${account!!.name}/api.ignore.json"
         try {
-            val response = post(url, mapOf(
+            val params = mapOf(
                 "username" to user,
                 "rks" to account!!.rks
-            ))
-            if (!response.isSuccessful) throw RuntimeException("failed to mute an user: $user")
-            if (!ignoredUsers.contains(user)) {
-                ignoredUsers = ignoredUsers.plus(user)
+            )
+            post(url, params).use { response ->
+                if (!response.isSuccessful) throw RuntimeException("failed to mute an user: $user")
+                if (!ignoredUsers.contains(user)) {
+                    ignoredUsers = ignoredUsers.plus(user)
+                }
             }
         }
         catch (e: IOException) {
@@ -1173,12 +1176,14 @@ object HatenaClient : BaseClient(), CoroutineScope {
         require(signedIn()) { "need to sign-in to mute users" }
         val url = "$B_BASE_URL/${account!!.name}/api.unignore.json"
         try {
-            val response = post(url, mapOf(
+            val params = mapOf(
                 "username" to user,
                 "rks" to account!!.rks
-            ))
-            if (!response.isSuccessful) throw RuntimeException("failed to mute an user: $user")
-            ignoredUsers = ignoredUsers.filterNot { it == user }.toList()
+            )
+            post(url, params).use { response ->
+                if (!response.isSuccessful) throw RuntimeException("failed to mute an user: $user")
+                ignoredUsers = ignoredUsers.filterNot { it == user }.toList()
+            }
         }
         catch (e: IOException) {
             throw RuntimeException("failed to mute an user: $user")
@@ -1306,7 +1311,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                         LocalDateTime.parse(timestampString, dateTimeFormatter)
                     }
 
-                val body = response.body!!.string()
+                val body = response.body!!.use { it.string() }
                 val documentRoot = Jsoup.parse(body)
 
                 return@async documentRoot.getElementsByTag("article").mapNotNull { article ->
@@ -1415,7 +1420,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             if (!response.isSuccessful) return@async null
             val bookmarkInfoTask = getUserBookmarkInfoAsync(user)
 
-            val html = Jsoup.parse(response.body!!.string())
+            val html = Jsoup.parse(response.body!!.use { it.string() })
             val spaceRegex = Regex("""\s+""")
 
             // 基本情報
@@ -1483,7 +1488,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             get("$B_BASE_URL/$user/").use { response ->
                 if (!response.isSuccessful) return@async Profile.Bookmark.createEmpty()
 
-                val html = Jsoup.parse(response.body!!.string())
+                val html = Jsoup.parse(response.body!!.use { it.string() })
                 val dataAttr = "data-gtm-click-label"
                 val userAttr = if (signedIn()) "user-my" else "user"
 

@@ -200,12 +200,15 @@ class EntriesActivity : AppCompatActivity() {
                 return@observe
             }
 
-            if (state == NetworkReceiver.State.CONNECTED && viewModel.signedIn.value != true) {
+            if (state == NetworkReceiver.State.CONNECTED) {
+                val needToSignIn = viewModel.signedIn.value != true
                 viewModel.initialize(
                     forceUpdate = false,
                     onSuccess = {
-                        val accountName = HatenaClient.account?.name ?: return@initialize
-                        showToast(R.string.msg_retry_sign_in_succeeded, accountName)
+                        if (needToSignIn) {
+                            val accountName = HatenaClient.account?.name ?: return@initialize
+                            showToast(R.string.msg_retry_sign_in_succeeded, accountName)
+                        }
                     }
                 )
             }
