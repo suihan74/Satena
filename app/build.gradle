@@ -117,7 +117,7 @@ dependencies {
     implementation 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'
 
     // for using LocalDateTime
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
 
     // Google Sign-in
     //implementation 'com.google.android.gms:play-services-auth:17.0.0'
