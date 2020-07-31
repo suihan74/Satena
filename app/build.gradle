@@ -104,7 +104,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.2.2'
 
     // html parser
-    implementation 'org.jsoup:jsoup:1.12.1'
+    implementation 'org.jsoup:jsoup:1.13.1'
 
     // chrome custom tabs
     implementation 'androidx.browser:browser:1.2.0'
