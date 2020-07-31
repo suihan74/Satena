@@ -179,7 +179,7 @@ class PreferencesMigration {
 
             try {
                 // shared_prefsディレクトリが存在しないとファイルが作成できないので予め確認して作成する
-                val dir = File(file.parent)
+                val dir = File(file.parent!!)
                 if (!dir.exists()) {
                     dir.mkdir()
                 }
@@ -225,7 +225,7 @@ class PreferencesMigration {
             var result = false
             try {
                 // 初回起動時にはdatabasesディレクトリが存在しないので作成する必要がある
-                val dir = File(file.parent)
+                val dir = File(file.parent!!)
                 if (!dir.exists()) {
                     dir.mkdir()
                 }

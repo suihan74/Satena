@@ -43,7 +43,7 @@ open class MutableLinkMovementMethod2 : LinkMovementMethod() {
                 when (action) {
                     MotionEvent.ACTION_UP -> {
                         if (mLongPressedRunnable != null) {
-                            mHandler.removeCallbacks(mLongPressedRunnable)
+                            mHandler.removeCallbacks(mLongPressedRunnable!!)
                         }
                         if (!mHandled) {
                             mHandled = true
@@ -60,7 +60,7 @@ open class MutableLinkMovementMethod2 : LinkMovementMethod() {
                             }
                         }
                         mHandler.postDelayed(
-                            mLongPressedRunnable,
+                            mLongPressedRunnable!!,
                             ViewConfiguration.getLongPressTimeout().toLong()
                         )
 

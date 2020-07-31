@@ -88,7 +88,7 @@ class UserTagSelectionDialog : DialogFragment() {
                             listener?.reloadUserTags()
                         }
                         catch (e: Throwable) {
-                            Log.e("userTagDialog", e.message)
+                            Log.e("userTagDialog", e.message ?: "")
                         }
 
                         dismiss()

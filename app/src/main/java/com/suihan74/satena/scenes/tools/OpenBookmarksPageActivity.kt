@@ -27,9 +27,9 @@ class OpenBookmarksPageActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun redirect(srcUrl: String) = withContext(Dispatchers.Main) {
+    private suspend fun redirect(srcUrl: String?) = withContext(Dispatchers.Main) {
         try {
-            if (!(srcUrl.startsWith("http://") || srcUrl.startsWith("https://"))) {
+            if (srcUrl == null || !(srcUrl.startsWith("http://") || srcUrl.startsWith("https://"))) {
                 throw InvalidUrlException(srcUrl)
             }
 
