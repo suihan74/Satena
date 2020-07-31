@@ -100,8 +100,8 @@ dependencies {
     implementation "com.github.sys1yagi.mastodon4j:mastodon4j-rx:$mastodon4j_version"
 
     // http client
-    implementation 'com.squareup.okhttp3:okhttp:4.2.2'
-    implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.2.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.8.0'
+    implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.8.0'
 
     // html parser
     implementation 'org.jsoup:jsoup:1.13.1'
