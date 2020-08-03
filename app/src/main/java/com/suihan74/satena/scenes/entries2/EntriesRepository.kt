@@ -179,6 +179,11 @@ class EntriesRepository(
         val query = params?.get<String>(LoadEntryParameter.SEARCH_QUERY)
 
         return when {
+            query != null && tag != null -> {
+                val entries = client.searchMyEntriesAsync(query, SearchType.Text, of = offset).await()
+                entries.filter { it.bookmarkedData?.tags?.contains(tag) == true }
+            }
+
             query != null ->
                 client.searchMyEntriesAsync(query, SearchType.Text, of = offset).await()
 
