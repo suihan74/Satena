@@ -2,13 +2,13 @@ package com.suihan74.satena.scenes.entries2
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
-import androidx.core.view.GravityCompat
 import com.suihan74.satena.R
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.showToast
@@ -22,9 +22,10 @@ fun Spinner.initialize(
 ) {
     val innerItems = listOf("*").plus(items)
 
-    gravity = GravityCompat.END
+    gravity = Gravity.END
     background = context.getDrawable(iconId)
     backgroundTintList = ColorStateList.valueOf(context.getColor(R.color.colorPrimaryText))
+
     adapter = object : ArrayAdapter<String>(
         context,
         R.layout.spinner_drop_down_item,
@@ -33,7 +34,8 @@ fun Spinner.initialize(
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             return super.getView(position, convertView, parent).apply {
                 if (this is TextView) {
-                    this.text = ""
+                    text = ""
+                    setPadding(0, 0, 0, 0)
                 }
             }
         }
