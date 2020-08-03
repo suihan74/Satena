@@ -75,8 +75,9 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
 
         inflater.inflate(R.menu.my_bookmarks, menu)
 
-        // TODO: ブクマ検索
         (menu.findItem(R.id.search_view)?.actionView as? SearchView)?.run {
+            val searchView = this
+
             queryHint = getString(R.string.hint_search_my_bookmarks)
             setQuery(viewModel.searchQuery.value, false)
 
@@ -117,6 +118,33 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
                     }
                 }
             })
+
+            // 戻るボタンで検索窓を閉じる
+            val onBackPressedCallback = object : OnBackPressedCallback(!isIconified) {
+                override fun handleOnBackPressed() {
+                    if (!searchView.isIconified) {
+                        searchView.isIconified = true
+                    }
+                }
+            }
+            activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, onBackPressedCallback)
+
+            // 検索窓を開いたら戻るボタンの割込みをONにする
+            setOnSearchClickListener {
+                onBackPressedCallback.isEnabled = true
+            }
+
+            // 検索窓を閉じたらクエリを除去する
+            setOnCloseListener {
+                onBackPressedCallback.isEnabled = false
+
+                val root = this@MyBookmarksEntriesFragment.view
+                viewModel.searchQuery.value = null
+                (root?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
+                    refreshLists()
+                }
+                return@setOnCloseListener false
+            }
 
             // 横幅を最大化
             stretchWidth(requireActivity(), 1)
