@@ -3,12 +3,10 @@ package com.suihan74.satena
 import android.content.pm.ActivityInfo
 import android.view.View
 import android.widget.ProgressBar
-import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import com.suihan74.utilities.FragmentBase
 import com.suihan74.utilities.FragmentContainerActivity
-import com.suihan74.utilities.toVisibility
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,9 +33,6 @@ abstract class ActivityBase(
     open val toolbar : Toolbar?
         get() = findViewById(R.id.toolbar)
 
-    open val searchView : SearchView?
-        get() = findViewById(R.id.toolbar_search_view)
-
     override fun setTitle(title: CharSequence?) {
         super.setTitle(title)
         supportActionBar?.title = title
@@ -56,7 +51,6 @@ abstract class ActivityBase(
             title = currentFragment.title
             subtitle = currentFragment.subtitle
 
-            searchView?.visibility = currentFragment.isSearchViewVisible.toVisibility()
             if (currentFragment.isToolbarVisible) {
                 supportActionBar?.show()
             }
