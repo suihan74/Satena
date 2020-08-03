@@ -6,7 +6,6 @@ import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -31,12 +30,12 @@ fun Activity.showSoftInputMethod(
 /**
  * キーボードを隠して入力対象のビューをアンフォーカスする
  */
-fun Activity.hideSoftInputMethod() : Boolean {
+fun Activity.hideSoftInputMethod(focusTarget: View? = null) : Boolean {
     val windowToken = window.decorView.windowToken
     val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
     val result = imm?.hideSoftInputFromWindow(windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
     currentFocus?.clearFocus()
-    window.decorView.rootView?.requestFocus()
+    (focusTarget ?: window.decorView.rootView)?.requestFocus()
     return result ?: false
 }
 
