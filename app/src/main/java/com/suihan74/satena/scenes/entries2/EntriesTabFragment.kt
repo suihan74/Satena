@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.entries2
 
 import android.content.Intent
 import android.util.Log
-import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -11,7 +10,6 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialogListeners
-import com.suihan74.satena.scenes.entries2.pages.SearchEntriesViewModel
 import com.suihan74.utilities.*
 
 class EntriesTabFragment : EntriesTabFragmentBase() {
@@ -92,58 +90,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             layoutManager = LinearLayoutManager(context)
         }
 
-        // Issueの変更を監視する
-        // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる
-        var isIssueInitialized = false
-        val parentViewModel = parentViewModel!!
-        parentViewModel.issue.observe(viewLifecycleOwner) {
-            if (!isIssueInitialized) {
-                isIssueInitialized = true
-                return@observe
-            }
-
-            viewModel.issue = it
-            // 一度クリアしておかないとスクロール位置が滅茶苦茶になる
-            entriesAdapter.submitEntries(null) {
-                viewModel.refresh(onErrorRefreshEntries)
-            }
-        }
-
-        // Tagの変更を監視する
-        var isTagInitialized = false
-        parentViewModel.tag.observe(viewLifecycleOwner) {
-            if (!isTagInitialized) {
-                isTagInitialized = true
-                return@observe
-            }
-
-            viewModel.tag = it
-            entriesAdapter.submitEntries(null) {
-                viewModel.refresh(onErrorRefreshEntries)
-            }
-        }
-
-        // TODO: なんとかした方がよさそうというかクラス分けた方が良さそうな気もする
-        // 以下はActivity生成と同時に遷移してくる関係上
-        // isInitialized的なやつで初期化時ロードを避けるとロードできなくなってしまうので注意
-
-        // SiteUrlを監視する
-        parentViewModel.siteUrl.observe(viewLifecycleOwner) {
-            if (viewModel.category != Category.Site && (it == null || viewModel.siteUrl == it)) return@observe
-            viewModel.siteUrl = it
-            viewModel.refresh(onErrorRefreshEntries)
-        }
-
-        // 検索情報を監視する
-        (parentViewModel as? SearchEntriesViewModel)?.let { parent ->
-            parent.searchQuery.observe(viewLifecycleOwner) {
-                viewModel.searchQuery = it
-            }
-            parent.searchType.observe(viewLifecycleOwner) {
-                viewModel.searchType = it
-                viewModel.refresh(onErrorRefreshEntries)
-            }
-        }
+        parentViewModel?.connectToTab(viewLifecycleOwner, entriesAdapter, viewModel, onErrorRefreshEntries)
     }
 }
 
