@@ -199,6 +199,7 @@
         <item name="submitBackground">@android:color/transparent</item>
         <item name="closeIcon">@drawable/ic_baseline_close</item>
         <item name="searchIcon">@drawable/ic_baseline_search</item>
+        <item name="searchHintIcon">@drawable/ic_baseline_search</item>
         <item name="commitIcon">@drawable/ic_baseline_search</item>
         <item name="goIcon">@drawable/ic_baseline_search</item>
         <item name="textColor">@color/colorPrimaryText</item>
