@@ -42,13 +42,6 @@
                             android:contentInsetStart="8dp"
                             app:layout_scrollFlags="scroll|enterAlways">
 
-                        <androidx.appcompat.widget.SearchView
-                                android:id="@+id/toolbar_search_view"
-                                android:visibility="gone"
-                                app:iconifiedByDefault="false"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"/>
-
                     </androidx.appcompat.widget.Toolbar>
                 </com.google.android.material.appbar.AppBarLayout>
 

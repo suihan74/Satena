@@ -1,8 +1,10 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.content.Context
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.hatenaLib.Tag
 import com.suihan74.satena.models.Category
@@ -46,4 +48,45 @@ abstract class EntriesFragmentViewModel : ViewModel() {
     abstract val tabCount: Int
 
     // タブ設定に関する設定ここまで
+
+    /** タブ用ViewModelへの値変更の伝播 */
+    open fun connectToTab(lifecycleOwner: LifecycleOwner, entriesAdapter: EntriesAdapter, viewModel: EntriesTabFragmentViewModel, onError: ((Throwable)->Unit)?) {
+
+        // Issueの変更を監視する
+        // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる
+        var isIssueInitialized = false
+        issue.observe(lifecycleOwner) {
+            if (!isIssueInitialized) {
+                isIssueInitialized = true
+                return@observe
+            }
+
+            viewModel.issue = it
+            // 一度クリアしておかないとスクロール位置が滅茶苦茶になる
+            entriesAdapter.submitEntries(null) {
+                viewModel.refresh(onError)
+            }
+        }
+
+        // Tagの変更を監視する
+        var isTagInitialized = false
+        tag.observe(lifecycleOwner) {
+            if (!isTagInitialized) {
+                isTagInitialized = true
+                return@observe
+            }
+
+            viewModel.tag = it
+            entriesAdapter.submitEntries(null) {
+                viewModel.refresh(onError)
+            }
+        }
+
+        // サイトURL指定
+        siteUrl.observe(lifecycleOwner) {
+            if (category.value != Category.Site && (it == null || viewModel.siteUrl == it)) return@observe
+            viewModel.siteUrl = it
+            viewModel.refresh(onError)
+        }
+    }
 }

@@ -1,12 +1,9 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.view.*
-import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
-import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
@@ -17,10 +14,7 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
-import com.suihan74.utilities.getEnum
-import com.suihan74.utilities.hideSoftInputMethod
-import com.suihan74.utilities.putEnum
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Listener {
@@ -95,12 +89,14 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
                 }
                 // 検索ボタン押下時にロードを行う
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    (this@SearchEntriesFragment.view?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.let { adapter ->
-                        adapter.refreshLists()
+                    val root = this@SearchEntriesFragment.view
+
+                    (root?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
+                        refreshLists()
                     }
 
                     return (!query.isNullOrBlank()).also {
-                        if (it) requireActivity().hideSoftInputMethod()
+                        if (it) requireActivity().hideSoftInputMethod(root?.contentLayout)
                     }
                 }
             })
@@ -110,21 +106,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
             isIconified = false
 
             // 横幅を最大化
-            val dMetrics = DisplayMetrics()
-            requireActivity().windowManager.defaultDisplay.getMetrics(dMetrics)
-            val buttonSize = (64 * resources.displayMetrics.density).toInt()  // TEXT/TAGボタンのサイズ分だけ小さくしないとボタンが画面外に出てしまう
-            maxWidth = dMetrics.widthPixels - buttonSize
-
-            // 左端の余分なマージンを削るための設定
-            arrayOf(
-                androidx.appcompat.R.id.search_edit_frame,
-                androidx.appcompat.R.id.search_mag_icon
-            ).forEach { targetId ->
-                findViewById<View>(targetId)?.updateLayoutParams<LinearLayout.LayoutParams> {
-                    marginStart = 0
-                    leftMargin = 0
-                }
-            }
+            stretchWidth(requireActivity(), 1)
         }
 
         // 検索タイプ選択メニューの設定

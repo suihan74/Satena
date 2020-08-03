@@ -176,9 +176,23 @@ class EntriesRepository(
     /** マイブックマークを取得する */
     private suspend fun loadMyBookmarks(tabPosition: Int, offset: Int?, params: LoadEntryParameter?) : List<Entry> {
         val tag = params?.get<String>(LoadEntryParameter.TAG)
+        val query = params?.get<String>(LoadEntryParameter.SEARCH_QUERY)
 
-        return if (tag == null) client.getMyBookmarkedEntriesAsync(of = offset).await()
-               else client.searchMyEntriesAsync(tag, SearchType.Tag).await()
+        return when {
+            query != null && tag != null -> {
+                val entries = client.searchMyEntriesAsync(query, SearchType.Text, of = offset).await()
+                entries.filter { it.bookmarkedData?.tags?.contains(tag) == true }
+            }
+
+            query != null ->
+                client.searchMyEntriesAsync(query, SearchType.Text, of = offset).await()
+
+            tag != null ->
+                client.searchMyEntriesAsync(tag, SearchType.Tag, of = offset).await()
+
+            else ->
+                client.getMyBookmarkedEntriesAsync(of = offset).await()
+        }
     }
 
     /** ユーザーがブクマしたエントリ一覧を取得する */
