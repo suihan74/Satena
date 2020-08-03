@@ -5,6 +5,7 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -120,14 +121,11 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
             })
 
             // 戻るボタンで検索窓を閉じる
-            val onBackPressedCallback = object : OnBackPressedCallback(!isIconified) {
-                override fun handleOnBackPressed() {
-                    if (!searchView.isIconified) {
-                        searchView.isIconified = true
-                    }
+            val onBackPressedCallback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, !isIconified) {
+                if (!searchView.isIconified) {
+                    searchView.isIconified = true
                 }
             }
-            activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, onBackPressedCallback)
 
             // 検索窓を開いたら戻るボタンの割込みをONにする
             setOnSearchClickListener {
