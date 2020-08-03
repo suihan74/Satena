@@ -106,7 +106,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
             isIconified = false
 
             // 横幅を最大化
-            stretchWidth(requireActivity())
+            stretchWidth(requireActivity(), 1)
         }
 
         // 検索タイプ選択メニューの設定

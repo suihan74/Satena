@@ -19,6 +19,7 @@ import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_entries2.*
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
+
 class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
     companion object {
         fun createInstance() = MyBookmarksEntriesFragment().withArguments {
@@ -118,7 +119,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
             })
 
             // 横幅を最大化
-            stretchWidth(requireActivity())
+            stretchWidth(requireActivity(), 1)
         }
 
         viewModel.tags.observe(viewLifecycleOwner) { tags ->

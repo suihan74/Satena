@@ -7,11 +7,12 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
 
 /** 横幅いっぱいに表示する */
-fun SearchView.stretchWidth(activity: Activity) {
+fun SearchView.stretchWidth(activity: Activity, numOtherButtons: Int = 0) {
+    val numBtn = if (numOtherButtons < 0) 0 else numOtherButtons
     val dMetrics = android.util.DisplayMetrics()
     activity.windowManager.defaultDisplay.getMetrics(dMetrics)
-    val buttonSize = (64 * resources.displayMetrics.density).toInt()  // TEXT/TAGボタンのサイズ分だけ小さくしないとボタンが画面外に出てしまう
-    maxWidth = dMetrics.widthPixels - buttonSize
+    val buttonSize = (64 * resources.displayMetrics.density).toInt()  // ボタンのサイズ分だけ小さくしないとボタンが画面外に出てしまう
+    maxWidth = dMetrics.widthPixels - numBtn * buttonSize
 
     // 左端の余分なマージンを削るための設定
     arrayOf(
