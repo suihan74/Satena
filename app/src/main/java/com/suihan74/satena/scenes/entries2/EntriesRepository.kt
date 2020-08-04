@@ -183,8 +183,13 @@ class EntriesRepository(
 
         return when {
             isQueryEnabled && isTagEnabled -> {
-                val entries = client.searchMyEntriesAsync(query!!, SearchType.Text, of = offset).await()
-                entries.filter { it.bookmarkedData?.tags?.contains(tag) == true }
+                val queries = Regex("""\s+""").split(query!!)
+                val regex = Regex(queries.joinToString(separator = "|") { Regex.escape(it) })
+
+                val entries = client.searchMyEntriesAsync(tag!!, SearchType.Tag, of = offset).await()
+                entries.filter {
+                    regex.containsMatchIn(it.title) || regex.containsMatchIn(it.description) || regex.containsMatchIn(it.bookmarkedData?.commentRaw ?: "")
+                }
             }
 
             isQueryEnabled ->
