@@ -27,6 +27,9 @@ class MyBookmarksViewModel(
         SingleUpdateMutableLiveData<String>()
     }
 
+    /** 検索窓の展開状態 */
+    var isSearchViewExpanded : Boolean = false
+
     override val tabCount: Int = 2
     override fun getTabTitle(context: Context, position: Int) : String =
         context.getString(tabTitles[position])

@@ -72,21 +72,23 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         onBackPressedCallback?.remove()
         onBackPressedCallback = activity.onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
-            detectBackPressedCallbackStatus(viewModel, searchView)
+            detectBackPressedCallbackStatus(viewModel)
         ) {
-            if (tagsSpinner != null && viewModel.tag.value != null) {
+            if (viewModel.tag.value != null) {
                 viewModel.tag.value = null
             }
 
             if (searchView != null && !searchView.isIconified) {
                 searchView.isIconified = true
             }
+
+            isEnabled = detectBackPressedCallbackStatus(viewModel)
         }
     }
 
     /** 戻るボタン割り込みを有効にするべきかを判別する */
-    private fun detectBackPressedCallbackStatus(viewModel: MyBookmarksViewModel, searchView: SearchView? = null) =
-        searchView?.isIconified == false || viewModel.tag.value != null
+    private fun detectBackPressedCallbackStatus(viewModel: MyBookmarksViewModel) =
+        viewModel.isSearchViewExpanded || viewModel.tag.value != null
 
     /** SearchViewを設定 */
     private fun initializeSearchView(searchView: SearchView, viewModel: MyBookmarksViewModel) = searchView.run {
@@ -106,6 +108,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
             requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
             clearFocus()
         }
+        viewModel.isSearchViewExpanded = !isIconified
 
         // ツールバーアイコン長押しで説明を表示する
         findViewById<ImageView>(androidx.appcompat.R.id.search_button)?.run {
@@ -137,11 +140,13 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
 
         // 検索窓を開いたら戻るボタンの割込みをONにする
         setOnSearchClickListener {
+            viewModel.isSearchViewExpanded = true
             onBackPressedCallback?.isEnabled = true
         }
 
         // 検索窓を閉じたらクエリを除去する
         setOnCloseListener {
+            viewModel.isSearchViewExpanded = false
             viewModel.searchQuery.value = null
             onBackPressedCallback?.isEnabled = detectBackPressedCallbackStatus(viewModel)
 
@@ -196,8 +201,15 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         viewModel.tag.observe(viewLifecycleOwner) {
             toolbar.subtitle = it?.let { tag -> "${tag.text}(${tag.count})" }
 
-            // 戻るボタンの割り込みを有効化する
-            onBackPressedCallback?.isEnabled = true
+            if (it == null) {
+                // リセット時
+                spinner.setSelection(0)
+                onBackPressedCallback?.isEnabled = detectBackPressedCallbackStatus(viewModel)
+            }
+            else {
+                // 戻るボタンの割り込みを有効化する
+                onBackPressedCallback?.isEnabled = true
+            }
         }
     }
 }
