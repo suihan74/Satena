@@ -287,6 +287,9 @@ class EntriesActivity : AppCompatActivity() {
 
         // アクションバー設定
         setSupportActionBar(toolbar)
+
+        // 画面遷移後や復元後にツールバーを強制的に再表示する
+        appbar_layout.setExpanded(true, false)
     }
 
     override fun onRestart() {

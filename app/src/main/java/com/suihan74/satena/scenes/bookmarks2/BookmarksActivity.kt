@@ -190,6 +190,11 @@ class BookmarksActivity :
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        appbar_layout.setExpanded(true, false)
+    }
+
     fun showButtons() {
         val behavior = (buttons_layout.layoutParams as? CoordinatorLayout.LayoutParams)
             ?.behavior as? HideBottomViewOnScrollBehavior
