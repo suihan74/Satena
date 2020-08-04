@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
@@ -49,6 +50,8 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
     override val subtitle : String?
         get() = viewModel.tag.value?.let { tag -> "${tag.text}(${tag.count})" }
 
+    private var clearTagCallback : OnBackPressedCallback? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -59,19 +62,11 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         val toolbar = requireActivity().toolbar
 
         // タグを選択している場合、戻るボタンでタグ選択を解除する
-        val clearTagCallback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (viewModel.tag.value != null) {
-                    viewModel.tag.value = null
-                }
+        clearTagCallback?.remove()
+        clearTagCallback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, viewModel.tag.value != null) {
+            if (viewModel.tag.value != null) {
+                viewModel.tag.value = null
             }
-        }
-
-        // タグ選択時にサブタイトルを表示する
-        viewModel.tag.observe(viewLifecycleOwner) {
-            toolbar.subtitle = subtitle
-
-            clearTagCallback.isEnabled = it != null
         }
 
         // ユーザーIDをタイトルに表示する
@@ -80,25 +75,27 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         }
 
         setHasOptionsMenu(category == Category.User)
-        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, clearTagCallback)
 
         return root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-
         val viewModel = viewModel as UserEntriesViewModel
-        var inflated = false
+        inflater.inflate(R.menu.spinner_issues, menu)
+
+        val spinner = (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.apply {
+            visibility = View.GONE
+        }
+
         viewModel.tags.observe(viewLifecycleOwner) { tags ->
             val activity = requireActivity()
 
-            if (!inflated) {
-                inflater.inflate(R.menu.spinner_issues, menu)
-                inflated = true
-            }
+            spinner?.run {
+                if (tags.isNotEmpty()) {
+                    spinner?.visibility = View.VISIBLE
+                }
 
-            (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
                 val spinnerItems = tags.map { "${it.text}(${it.count})" }
                 initialize(
                     activity,
@@ -120,6 +117,18 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
                         setSelection(position + 1)
                     }
                 }
+            }
+        }
+
+        // タグ選択時にサブタイトルを表示する
+        viewModel.tag.observe(viewLifecycleOwner) {
+            val toolbar = requireActivity().toolbar
+            toolbar.subtitle = subtitle
+
+            clearTagCallback?.isEnabled = it != null
+
+            if (it == null) {
+                spinner?.setSelection(0)
             }
         }
     }

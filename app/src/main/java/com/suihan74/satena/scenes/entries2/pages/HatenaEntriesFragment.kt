@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
@@ -24,6 +25,8 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
         }
     }
 
+    private var clearIssueCallback : OnBackPressedCallback? = null
+
     override fun generateViewModel(
         owner: ViewModelStoreOwner,
         viewModelKey: String,
@@ -43,11 +46,10 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
         val toolbar = requireActivity().toolbar
 
         // Issueを選択している場合、戻るボタンで選択を解除する
-        val clearIssueCallback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (viewModel.issue.value != null) {
-                    viewModel.issue.value = null
-                }
+        clearIssueCallback?.remove()
+        clearIssueCallback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, viewModel.issue.value != null) {
+            if (viewModel.issue.value != null) {
+                viewModel.issue.value = null
             }
         }
 
@@ -56,15 +58,6 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
             it.title = getString(category.textId)
             it.subtitle = viewModel.issue.value?.name
         }
-
-        // Issue選択時にサブタイトルを表示する
-        viewModel.issue.observe(viewLifecycleOwner) {
-            toolbar.subtitle = it?.name
-
-            clearIssueCallback.isEnabled = it != null
-        }
-
-        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, clearIssueCallback)
 
         return root
     }
@@ -78,16 +71,21 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
         super.onCreateOptionsMenu(menu, inflater)
         val viewModel = viewModel as HatenaEntriesViewModel
 
-        var inflated = false
+        inflater.inflate(R.menu.spinner_issues, menu)
+
+        val spinner = (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.apply {
+            visibility = View.GONE
+        }
+
         viewModel.issues.observe(viewLifecycleOwner) { issues ->
             val activity = requireActivity() as EntriesActivity
             val spinnerItems = issues.map { it.name }
 
-            if (!inflated) {
-                inflater.inflate(R.menu.spinner_issues, menu)
-                inflated = true
+            if (issues.isNotEmpty()) {
+                spinner?.visibility = View.VISIBLE
             }
-            (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.run {
+
+            spinner?.run {
                 initialize(
                     activity,
                     spinnerItems,
@@ -106,6 +104,18 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
                         setSelection(position + 1)
                     }
                 }
+            }
+        }
+
+        // Issue選択時にサブタイトルを表示する
+        viewModel.issue.observe(viewLifecycleOwner) {
+            val toolbar = requireActivity().toolbar
+            toolbar.subtitle = it?.name
+
+            clearIssueCallback?.isEnabled = it != null
+
+            if (it == null) {
+                spinner?.setSelection(0)
             }
         }
     }

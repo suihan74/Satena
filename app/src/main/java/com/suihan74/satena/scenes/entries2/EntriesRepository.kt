@@ -178,17 +178,25 @@ class EntriesRepository(
         val tag = params?.get<String>(LoadEntryParameter.TAG)
         val query = params?.get<String>(LoadEntryParameter.SEARCH_QUERY)
 
+        val isQueryEnabled = !query.isNullOrBlank()
+        val isTagEnabled = !tag.isNullOrBlank()
+
         return when {
-            query != null && tag != null -> {
-                val entries = client.searchMyEntriesAsync(query, SearchType.Text, of = offset).await()
-                entries.filter { it.bookmarkedData?.tags?.contains(tag) == true }
+            isQueryEnabled && isTagEnabled -> {
+                val queries = Regex("""\s+""").split(query!!)
+                val regex = Regex(queries.joinToString(separator = "|") { Regex.escape(it) })
+
+                val entries = client.searchMyEntriesAsync(tag!!, SearchType.Tag, of = offset).await()
+                entries.filter {
+                    regex.containsMatchIn(it.title) || regex.containsMatchIn(it.description) || regex.containsMatchIn(it.bookmarkedData?.commentRaw ?: "")
+                }
             }
 
-            query != null ->
-                client.searchMyEntriesAsync(query, SearchType.Text, of = offset).await()
+            isQueryEnabled ->
+                client.searchMyEntriesAsync(query!!, SearchType.Text, of = offset).await()
 
-            tag != null ->
-                client.searchMyEntriesAsync(tag, SearchType.Tag, of = offset).await()
+            isTagEnabled ->
+                client.searchMyEntriesAsync(tag!!, SearchType.Tag, of = offset).await()
 
             else ->
                 client.getMyBookmarkedEntriesAsync(of = offset).await()

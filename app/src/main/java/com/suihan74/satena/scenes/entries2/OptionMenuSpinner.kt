@@ -46,16 +46,16 @@ fun Spinner.initialize(
             parent: ViewGroup
         ): View {
             val view = super.getDropDownView(position, convertView, parent)
-            if (position == 0) {
-                (view as TextView).apply {
+            (view as TextView).apply {
+                if (position == 0) {
                     setText(R.string.option_menu_spinner_no_selected)
-                    setTextColor(context.getColor(R.color.colorPrimary))
                 }
-            }
-            else {
-                (view as TextView).apply {
-                    setTextColor(context.getThemeColor(R.attr.textColor))
-                }
+                setTextColor(
+                    if (position == this@initialize.selectedItemPosition)
+                        context.getColor(R.color.colorPrimary)
+                    else
+                        context.getThemeColor(R.attr.textColor)
+                )
             }
             return view
         }

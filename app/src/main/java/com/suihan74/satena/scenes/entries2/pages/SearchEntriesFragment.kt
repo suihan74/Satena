@@ -72,6 +72,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.search_entries2, menu)
 
+        val fragment = this
         val viewModel = viewModel as SearchEntriesViewModel
 
         // 検索クエリ入力ボックスの設定
@@ -89,7 +90,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
                 }
                 // 検索ボタン押下時にロードを行う
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    val root = this@SearchEntriesFragment.view
+                    val root = fragment.view
 
                     (root?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
                         refreshLists()
@@ -104,6 +105,12 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
             // 常に開いた状態にしておく
             setIconifiedByDefault(false)
             isIconified = false
+
+            // 初回遷移時などの未入力状態以外の場合は自動的にキーボードを表示しないようにする
+            if (!viewModel.searchQuery.value.isNullOrBlank()) {
+                requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+                clearFocus()
+            }
 
             // 横幅を最大化
             stretchWidth(requireActivity(), 1)
