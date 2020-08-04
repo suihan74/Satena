@@ -57,19 +57,6 @@ fun Spinner.initialize(
                         context.getThemeColor(R.attr.textColor)
                 )
             }
-/*
-            if (position == 0) {
-                (view as TextView).apply {
-                    setText(R.string.option_menu_spinner_no_selected)
-                    setTextColor(context.getColor(R.color.colorPrimary))
-                }
-            }
-            else {
-                (view as TextView).apply {
-                    setTextColor(context.getThemeColor(R.attr.textColor))
-                }
-            }
-*/
             return view
         }
     }
