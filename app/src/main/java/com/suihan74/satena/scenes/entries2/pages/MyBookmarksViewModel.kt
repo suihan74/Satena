@@ -29,8 +29,7 @@ class MyBookmarksViewModel(
 
     override val tabCount: Int = 2
     override fun getTabTitle(context: Context, position: Int) : String =
-        if (position == 0 && tag.value != null) tag.value?.text ?: ""
-        else context.getString(tabTitles[position])
+        context.getString(tabTitles[position])
 
     /** タブ用ViewModelへの値変更の伝播 */
     override fun connectToTab(
