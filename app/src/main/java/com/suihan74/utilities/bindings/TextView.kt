@@ -2,6 +2,7 @@ package com.suihan74.utilities.bindings
 
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.util.TypedValue
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
@@ -13,14 +14,20 @@ import com.suihan74.hatenaLib.Notice
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
+import com.suihan74.satena.models.FontSettings
 import com.suihan74.utilities.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
-/** 障害情報のタイトルテキスト装飾 */
-@BindingAdapter("html")
-fun TextView.setHtmlText(title: String) {
-    setHtml(title)
+/** フォントサイズを指定(sp), バインディング用 */
+@BindingAdapter("textSizeSp")
+fun TextView.textSizeSp(size: Float) {
+    setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
+}
+
+@BindingAdapter("fontFamily")
+fun TextView.userFontFamily(font: FontSettings?) {
+    this.typeface = font?.typeface ?: return
 }
 
 //////////////////////////////////////////////////
@@ -43,7 +50,9 @@ fun TextView.setDrawableLeft(url: String) {
 
 /** ドメイン表示 */
 @BindingAdapter("rootUrl", "url")
-fun TextView.setDomain(rootUrl: String, url: String) {
+fun TextView.setDomain(rootUrl: String?, url: String?) {
+    if (rootUrl == null || url == null) return
+
     val rootUrlRegex = Regex("""https?://(.+)/$""")
     text = rootUrlRegex.find(rootUrl)?.groupValues?.get(1) ?: Uri.parse(url).host
 }
@@ -56,6 +65,8 @@ fun TextView.setTimestamp(timestamp: LocalDateTime?) {
         text = timestamp.format(formatter)
     }
 }
+
+//////////////////////////////////////////////////
 
 /** エントリリストでのブコメユーザー名表示 */
 @BindingAdapter("user", "private")
@@ -95,17 +106,28 @@ fun TextView.setBookmarkResult(comment: String?, starsCount: List<Star>?) {
     visibility = (!comment.isNullOrBlank()).toVisibility()
 }
 
+//////////////////////////////////////////////////
+
 /** 通知項目のテキスト */
 @BindingAdapter("noticeText")
 fun TextView.setNoticeText(notice: Notice) {
     setHtml(notice.message(context))
 }
 
+//////////////////////////////////////////////////
+
 /** 障害情報のタイトルテキスト装飾 */
 @BindingAdapter("maintenanceTitle")
 fun TextView.setMaintenanceTitle(title: String) {
     val resolvedColor = ContextCompat.getColor(context, R.color.maintenanceResolved)
     setHtml(title.replace("【復旧済み】", "<font color=\"$resolvedColor\">【復旧済み】</font>"))
+}
+
+
+/** 障害情報のタイトルテキスト装飾 */
+@BindingAdapter("html")
+fun TextView.setHtmlText(title: String) {
+    setHtml(title)
 }
 
 /** 障害情報のタイムスタンプ */

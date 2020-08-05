@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.entries2
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -10,10 +11,12 @@ import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
+import com.suihan74.satena.models.FontSettings
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_entries2.view.*
 
-class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
+class EntriesAdapter(private val fragment: Fragment) : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
     /** ロード中表示のできるフッタ */
     private var footer: LoadableFooterViewHolder? = null
 
@@ -26,6 +29,8 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
 
     /** クリック処理済みフラグ（複数回タップされないようにする） */
     private var itemClicked = false
+
+    private val entryTitleFontLiveData = SingleUpdateMutableLiveData<FontSettings>()
 
     /** 項目クリック時の挙動をセットする */
     fun setOnItemClickedListener(listener: ItemClickedListener<Entry>?) {
@@ -45,6 +50,9 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
     /** 復帰時に実行する */
     fun onResume() {
         itemClicked = false
+
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(fragment.context)
+        entryTitleFontLiveData.value = prefs.get<FontSettings>(PreferenceKey.FONT_ENTRY_TITLE)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
@@ -54,7 +62,10 @@ class EntriesAdapter : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder
                 val binding = DataBindingUtil.inflate<ListviewItemEntries2Binding>(
                     inflater,
                     R.layout.listview_item_entries2, parent, false
-                )
+                ).also {
+                    it.entryTitleFont = entryTitleFontLiveData
+                    it.lifecycleOwner = fragment.viewLifecycleOwner
+                }
                 ViewHolder(binding)
             }
 

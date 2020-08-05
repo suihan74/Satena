@@ -27,7 +27,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         val context = requireContext()
 
         // エントリリスト用のアダプタ
-        val entriesAdapter = EntriesAdapter().apply {
+        val entriesAdapter = EntriesAdapter(this).apply {
             // メニューアクション実行後に画面表示を更新する
             val listeners = EntryMenuDialogListeners().apply {
                 onIgnoredEntry = { _ ->

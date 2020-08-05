@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
+        <import type="com.suihan74.utilities.SingleUpdateMutableLiveData"/>
+        <import type="com.suihan74.satena.models.FontSettings"/>
+
         <variable name="entry" type="com.suihan74.hatenaLib.Entry"/>
+        <variable name="entryTitleFont" type="SingleUpdateMutableLiveData&lt;FontSettings&gt;"/>
     </data>
 
     <RelativeLayout
@@ -35,6 +40,7 @@
         <TextView
                 android:id="@+id/title"
                 android:text="@{entry.title}"
+                app:fontFamily="@{entryTitleFont}"
                 android:contentDescription="@null"
                 android:textColor="?attr/textColor"
                 android:textStyle="bold"

@@ -40,7 +40,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         val context = requireContext()
 
         // エントリリスト用のアダプタ
-        val entriesAdapter = EntriesAdapter().apply {
+        val entriesAdapter = EntriesAdapter(this).apply {
             setOnItemClickedListener { entry ->
                 EntryMenuDialog.act(
                     context,
