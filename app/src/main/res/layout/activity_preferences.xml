@@ -109,6 +109,15 @@
                             android:layout_height="48dp"
                             android:onClick="onClickedTab"
                             android:contentDescription="@string/pref_title_user_tags" />
+
+                    <ImageButton
+                            android:id="@+id/preferences_tab_fonts"
+                            android:src="@drawable/ic_preferences_fonts"
+                            android:background="@null"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:onClick="onClickedTab"
+                            android:contentDescription="@string/pref_title_fonts" />
                 </LinearLayout>
             </ScrollView>
 

@@ -56,7 +56,13 @@ enum class PreferencesTabMode(
         R.id.preferences_tab_user_tags,
         { PreferencesUserTagsFragment.createInstance() }),
 
-    DUMMY_TAIL(9);
+    FONTS(9,
+        R.string.pref_title_fonts,
+        R.id.preferences_tab_fonts,
+        { PreferencesFontsFragment.createInstance() }
+    ),
+
+    DUMMY_TAIL(10);
 
     companion object {
         fun fromInt(i: Int) = values().firstOrNull { it.int == i } ?: INFORMATION
