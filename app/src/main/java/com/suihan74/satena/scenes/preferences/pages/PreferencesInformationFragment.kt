@@ -1,21 +1,19 @@
 package com.suihan74.satena.scenes.preferences.pages
 
-import android.Manifest
+import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.FilePickerDialog
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.AppDatabase
 import com.suihan74.satena.models.EntriesHistoryKey
@@ -23,28 +21,22 @@ import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
-import com.suihan74.utilities.*
+import com.suihan74.utilities.RestartActivity
+import com.suihan74.utilities.setHtml
+import com.suihan74.utilities.showToast
+import kotlinx.android.synthetic.main.fragment_preferences_information.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
-import java.io.File
 
-class PreferencesInformationFragment :
-    PreferencesFragmentBase(),
-    PermissionRequestable,
-    FilePickerDialog.Listener
+class PreferencesInformationFragment : PreferencesFragmentBase()
 {
     companion object {
-        fun createInstance() =
-            PreferencesInformationFragment()
-    }
+        fun createInstance() = PreferencesInformationFragment()
 
-    enum class FilePickerMode {
-        SAVE,
-        LOAD
+        private const val WRITE_REQUEST_CODE = 42
+        private const val READ_REQUEST_CODE = 43
     }
-
-    private var mFilePickerMode: FilePickerMode? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_preferences_information, container, false)
@@ -56,85 +48,51 @@ class PreferencesInformationFragment :
         val versionName = packageInfo.versionName
 
         // アプリバージョン
-        root.findViewById<TextView>(R.id.app_version).text =
-            String.format("version: %s", versionName)
+        root.app_version.text = String.format("version: %s", versionName)
 
         // コピーライト
-        val copyrightStr = getString(R.string.copyright)
-        root.findViewById<TextView>(R.id.copyright).apply {
-            setHtml(copyrightStr)
+        root.copyright.run {
+            setHtml(getString(R.string.copyright))
             movementMethod = LinkMovementMethod.getInstance()
         }
 
         // 更新履歴ダイアログ
-        root.findViewById<Button>(R.id.show_release_notes_button).setOnClickListener {
+        root.show_release_notes_button.setOnClickListener {
             val dialog = ReleaseNotesDialogFragment.createInstance()
             dialog.show(parentFragmentManager, "release_notes")
         }
 
         // ライセンス表示アクティビティ
-        root.findViewById<Button>(R.id.show_licenses_button).setOnClickListener {
-            val intent = Intent(activity, OssLicensesMenuActivity::class.java)
-            intent.putExtra("title", "Licenses")
+        root.show_licenses_button.setOnClickListener {
+            val intent = Intent(activity, OssLicensesMenuActivity::class.java).apply {
+                putExtra("title", "Licenses")
+            }
             startActivity(intent)
         }
 
         // ファイルに設定を出力
-        root.findViewById<Button>(R.id.save_settings_button).setOnClickListener {
-            mFilePickerMode =
-                FilePickerMode.SAVE
-
-            val rp = RuntimePermission(arrayOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE))
-            rp.request(activity)
+        root.save_settings_button.setOnClickListener {
+            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/octet-stream"
+                putExtra(Intent.EXTRA_TITLE, "${LocalDateTime.now()}.satena-settings")
+            }
+            startActivityForResult(intent, WRITE_REQUEST_CODE)
         }
 
         // ファイルから設定を復元
-        root.findViewById<Button>(R.id.load_settings_button).setOnClickListener {
-            mFilePickerMode =
-                FilePickerMode.LOAD
-
-            val rp = RuntimePermission(arrayOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE))
-            rp.request(activity)
+        root.load_settings_button.setOnClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/octet-stream"
+            }
+            startActivityForResult(intent, READ_REQUEST_CODE)
         }
 
         return root
     }
 
-    override fun onRequestPermissionsResult(pairs: List<Pair<String, Int>>) {
-        val granted = pairs.all { p -> p.second == RuntimePermission.PERMISSION_GRANTED }
-
-        if (granted) {
-            try {
-                when (mFilePickerMode) {
-                    FilePickerMode.SAVE -> {
-                        FilePickerDialog.Builder(R.style.AlertDialogStyle)
-                            .setDirectoryOnly(true)
-                            .setTitle(R.string.dialog_title_pref_information_save_settings)
-                            .show(childFragmentManager, "save_dialog")
-                    }
-
-                    FilePickerMode.LOAD -> {
-                        FilePickerDialog.Builder(R.style.AlertDialogStyle)
-                            .setDirectoryOnly(false)
-                            .setTitle(R.string.dialog_title_pref_information_load_settings)
-                            .show(childFragmentManager, "load_dialog")
-                    }
-                }
-            }
-            catch (e: Throwable) {
-                Log.e("filePicker", e.message ?: "")
-            }
-        }
-        else {
-            activity?.showToast(R.string.msg_pref_information_save_load_permission_failed)
-        }
-    }
-
-    private fun savePreferencesToFile(file: File) {
+    private fun savePreferencesToFile(targetUri: Uri) {
         val activity = activity as? ActivityBase
         activity?.showProgressBar()
 
@@ -148,10 +106,10 @@ class PreferencesInformationFragment :
                     addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME)
                     addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME + "-shm")
                     addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME + "-wal")
-                    write(file)
+                    write(targetUri)
                 }
 
-                context.showToast(R.string.msg_pref_information_save_succeeded, file.absolutePath)
+                context.showToast(R.string.msg_pref_information_save_succeeded, targetUri.path!!)
             }
             catch (e: Throwable) {
                 Log.e("SavingSettings", e.message ?: "")
@@ -163,7 +121,7 @@ class PreferencesInformationFragment :
         }
     }
 
-    private fun loadPreferencesFromFile(file: File) {
+    private fun loadPreferencesFromFile(targetUri: Uri) {
         val activity = activity as? ActivityBase
         activity?.showProgressBar()
 
@@ -171,28 +129,13 @@ class PreferencesInformationFragment :
             val context = SatenaApplication.instance.applicationContext
             try {
                 PreferencesMigration.Input(context)
-                    .read(file)
+                    .read(targetUri)
 
-                context.showToast(R.string.msg_pref_information_load_succeeded, file.absolutePath)
+                context.showToast(R.string.msg_pref_information_load_succeeded, targetUri.path!!)
 
                 // アプリを再起動
                 val intent = RestartActivity.createIntent(context)
                 context.startActivity(intent)
-
-                /*
-                val intent = Intent(context, PreferencesActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or
-                            Intent.FLAG_ACTIVITY_NEW_TASK or
-                            Intent.FLAG_ACTIVITY_NO_ANIMATION
-                    putExtra(
-                        PreferencesActivity.EXTRA_CURRENT_TAB,
-                        PreferencesTabMode.INFORMATION
-                    )
-                    putExtra(PreferencesActivity.EXTRA_THEME_CHANGED, true)
-                    putExtra(PreferencesActivity.EXTRA_RELOAD_ALL_PREFERENCES, true)
-                }
-                startActivity(intent)
-                 */
             }
             catch (e: Throwable) {
                 val msg = e.message ?: ""
@@ -210,17 +153,23 @@ class PreferencesInformationFragment :
         }
     }
 
-    override fun onOpen(file: File, dialog: FilePickerDialog) {
-        when (dialog.tag) {
-            "save_dialog" -> {
-                Log.d("FilePickerDialog", file.absolutePath)
-                val target = File(file, "${LocalDateTime.now()}.satena-settings")
-                savePreferencesToFile(target)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val targetUri = data?.data
+
+        if (resultCode != Activity.RESULT_OK || targetUri == null) {
+            Log.d("FilePick", "canceled")
+            return
+        }
+
+        when (requestCode) {
+            WRITE_REQUEST_CODE -> {
+                Log.d("SaveSettings", targetUri.path ?: "")
+                savePreferencesToFile(targetUri)
             }
 
-            "load_dialog" -> {
-                Log.d("FilePickerDialog", file.absolutePath)
-                loadPreferencesFromFile(file)
+            READ_REQUEST_CODE -> {
+                Log.d("LoadSettings", targetUri.path ?: "")
+                loadPreferencesFromFile(targetUri)
             }
         }
     }

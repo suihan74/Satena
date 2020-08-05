@@ -1,6 +1,7 @@
 package com.suihan74.satena
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.room.Database
 import com.suihan74.satena.models.MigrationData
@@ -9,9 +10,7 @@ import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.getMd5Bytes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 import kotlin.experimental.and
 
 class PreferencesMigration {
@@ -75,22 +74,24 @@ class PreferencesMigration {
             items.add(MigrationData(MigrationData.DataType.DATABASE, "database__$fileName", version, fileName, bytes.size, bytes))
         }
 
-        suspend fun write(dest: File) = withContext(Dispatchers.IO) {
+        suspend fun write(targetUri: Uri) = withContext(Dispatchers.IO) {
             val headerHash = getMd5Bytes(VERSION.plus(items.size.toByteArray()))
             val bodyHash = getMd5Bytes(items.flatMap { data ->
                 getMd5Bytes(data.toByteArray()).toList()
             }.toByteArray())
 
-            dest.setReadable(true)
-            dest.outputStream().buffered().use { stream ->
-                stream.write(SIGNATURE)
-                stream.write(headerHash)
-                stream.write(bodyHash)
-                stream.write(VERSION)
-                stream.writeInt(items.size)
+            val contentResolver = context.contentResolver
+            contentResolver.openFileDescriptor(targetUri, "w")?.use {
+                FileOutputStream(it.fileDescriptor).buffered().use { stream ->
+                    stream.write(SIGNATURE)
+                    stream.write(headerHash)
+                    stream.write(bodyHash)
+                    stream.write(VERSION)
+                    stream.writeInt(items.size)
 
-                items.forEach { data ->
-                    data.write(stream)
+                    items.forEach { data ->
+                        data.write(stream)
+                    }
                 }
             }
 
@@ -99,47 +100,52 @@ class PreferencesMigration {
     }
 
     class Input(private val context: Context) {
-        suspend fun read(src: File, onErrorAction: ((MigrationData) -> Unit)? = null) =
+        suspend fun read(targetUri: Uri, onErrorAction: ((MigrationData) -> Unit)? = null) =
             withContext(Dispatchers.IO) {
                 SatenaApplication.instance.appDatabase.run {
                     close()
                 }
 
-                src.inputStream().buffered().use { stream ->
-                    val signature = stream.readByteArray(SIGNATURE_SIZE)
-                    check(signature.contentEquals(SIGNATURE)) { "the file is not a settings for Satena: ${src.absolutePath}" }
+                val path = targetUri.path!!
+                val contentResolver = context.contentResolver
+                contentResolver.openFileDescriptor(targetUri, "r")?.use {
+                    FileInputStream(it.fileDescriptor).buffered().use { stream ->
+                        val signature = stream.readByteArray(SIGNATURE_SIZE)
+                        check(signature.contentEquals(SIGNATURE)) { "the file is not a settings for Satena: $path" }
 
-                    val headerHash = stream.readByteArray(HASH_SIZE)
-                    val bodyHash = stream.readByteArray(HASH_SIZE)
+                        val headerHash = stream.readByteArray(HASH_SIZE)
+                        val bodyHash = stream.readByteArray(HASH_SIZE)
 
-                    val version = stream.readByteArray(1)
-                    check(version.contentEquals(VERSION)) { "cannot read an old settings file: ${src.absolutePath}" }
+                        val version = stream.readByteArray(1)
+                        check(version.contentEquals(VERSION)) { "cannot read an old settings file: $path" }
 
-                    val itemsCount = stream.readInt()
+                        val itemsCount = stream.readInt()
 
-                    val actualHeaderHash =
-                        getMd5Bytes(version.plus(itemsCount.toByteArray()))
-                    check(actualHeaderHash.contentEquals(headerHash)) { "the file is falsified: ${src.absolutePath}" }
+                        val actualHeaderHash =
+                            getMd5Bytes(version.plus(itemsCount.toByteArray()))
+                        check(actualHeaderHash.contentEquals(headerHash)) { "the file is falsified: $path" }
 
-                    val items = ArrayList<MigrationData>(itemsCount)
-                    for (i in 0 until itemsCount) {
-                        items.add(MigrationData.read(stream))
-                    }
-
-                    val actualBodyHash =
-                        getMd5Bytes(items.flatMap { getMd5Bytes(it.toByteArray()).toList() }.toByteArray())
-                    check(actualBodyHash.contentEquals(bodyHash)) { "the file is falsified: ${src.absolutePath}" }
-
-                    for (item in items) {
-                        val result = apply(item)
-                        if (!result) {
-                            onErrorAction?.invoke(item)
+                        val items = ArrayList<MigrationData>(itemsCount)
+                        for (i in 0 until itemsCount) {
+                            items.add(MigrationData.read(stream))
                         }
-                    }
 
-                    // バージョン移行
-                    SatenaApplication.instance.updatePreferencesVersion()
-                    SatenaApplication.instance.initializeDataBase()
+                        val actualBodyHash =
+                            getMd5Bytes(items.flatMap { getMd5Bytes(it.toByteArray()).toList() }
+                                .toByteArray())
+                        check(actualBodyHash.contentEquals(bodyHash)) { "the file is falsified: $path" }
+
+                        for (item in items) {
+                            val result = apply(item)
+                            if (!result) {
+                                onErrorAction?.invoke(item)
+                            }
+                        }
+
+                        // バージョン移行
+                        SatenaApplication.instance.updatePreferencesVersion()
+                        SatenaApplication.instance.initializeDataBase()
+                    }
                 }
 
                 Log.d("migration", "completed loading")
