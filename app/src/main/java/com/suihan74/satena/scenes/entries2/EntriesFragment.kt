@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.transition.Fade
 import androidx.transition.TransitionSet
@@ -89,8 +88,7 @@ abstract class EntriesFragment : Fragment() {
 
         val activity = requireActivity()
 
-        val arguments = arguments ?: Bundle()
-        this.arguments = arguments
+        val arguments = requireArguments()
 
         // UUIDを生成
         uuid = arguments.getString(ARG_UUID) ?: UUID.randomUUID().toString()
