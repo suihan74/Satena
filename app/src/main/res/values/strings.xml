@@ -11,6 +11,7 @@
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_register">登録</string>
     <string name="dialog_open">開く</string>
+    <string name="dialog_close">閉じる</string>
 
     <string name="invalid_url_error">無効なURLです</string>
 
@@ -240,6 +241,11 @@
     <string name="msg_user_tagged">id:%sに%d個のタグを設定しました</string>
     <string name="msg_user_tagged_single">id:%s にタグをつけました</string>
     <string name="msg_user_has_already_tagged">タグ「%s」はid:%sに既についています</string>
+
+    <!-- リリースノートダイアログ -->
+    <string name="release_notes_dialog_title">更新履歴</string>
+    <string name="release_notes_dialog_update_message">updated from v%s to v%s</string>
+    <string name="msg_read_release_notes_failed">更新履歴の読み込みに失敗</string>
 
     <!-- 認証 -->
     <string name="msg_auth_failed">アカウント認証失敗</string>

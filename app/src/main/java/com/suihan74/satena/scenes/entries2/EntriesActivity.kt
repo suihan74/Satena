@@ -259,18 +259,18 @@ class EntriesActivity : AppCompatActivity() {
     private fun showReleaseNotes() {
         // アプリのバージョン名を取得
         val packageInfo = packageManager.getPackageInfo(packageName, 0)
-        val versionName = packageInfo.versionName
+        val currentVersionName = packageInfo.versionName
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val lastVersionName = prefs.getString(PreferenceKey.APP_VERSION_LAST_LAUNCH)
         val showReleaseNotes = prefs.getBoolean(PreferenceKey.SHOW_RELEASE_NOTES_AFTER_UPDATE)
 
         prefs.edit {
-            putString(PreferenceKey.APP_VERSION_LAST_LAUNCH, versionName)
+            putString(PreferenceKey.APP_VERSION_LAST_LAUNCH, currentVersionName)
         }
 
-        if (showReleaseNotes && lastVersionName != versionName) {
-            val dialog = ReleaseNotesDialogFragment.createInstance()
+        if (showReleaseNotes && lastVersionName != null && lastVersionName != currentVersionName) {
+            val dialog = ReleaseNotesDialogFragment.createInstance(lastVersionName, currentVersionName)
             dialog.show(supportFragmentManager, DIALOG_RELEASE_NOTES)
         }
     }
