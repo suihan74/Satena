@@ -143,7 +143,20 @@ enum class PreferenceKey(
     CUSTOM_BOOKMARKS_IS_NO_COMMENT_USERS_ACTIVE(typeInfo<Boolean>(), false),
 
     /** 「カスタム」タブで非表示ユーザーを表示する */
-    CUSTOM_BOOKMARKS_IS_MUTED_USERS_ACTIVE(typeInfo<Boolean>(), false)
+    CUSTOM_BOOKMARKS_IS_MUTED_USERS_ACTIVE(typeInfo<Boolean>(), false),
+
+    ////////////////////////////////////////
+    // fonts
+    ////////////////////////////////////////
+
+    /** エントリタイトルのフォントサイズ */
+    FONT_ENTRY_TITLE(typeInfo<FontSettings>(), FontSettings("sans-serif", 14f, bold = true)),
+
+    /** ブコメ本文のフォントサイズ */
+    FONT_BOOKMARK_COMMENT(typeInfo<FontSettings>(), FontSettings("sans-serif", 14f)),
+
+    /** ブコメユーザー名のフォントサイズ */
+    FONT_BOOKMARK_USER(typeInfo<FontSettings>(), FontSettings("sans-serif", 14f, bold = true)),
 }
 
 ////////////////////////////////////////////////////////////////////////////////
