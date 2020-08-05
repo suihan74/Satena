@@ -43,18 +43,9 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val root = super.onCreateView(inflater, container, savedInstanceState)
-        val toolbar = requireActivity().toolbar
-
-        // Issueを選択している場合、戻るボタンで選択を解除する
-        clearIssueCallback?.remove()
-        clearIssueCallback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, viewModel.issue.value != null) {
-            if (viewModel.issue.value != null) {
-                viewModel.issue.value = null
-            }
-        }
 
         // ツールバーを更新
-        toolbar.also {
+        activity?.toolbar?.also {
             it.title = getString(category.textId)
             it.subtitle = viewModel.issue.value?.name
         }
@@ -116,6 +107,14 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
 
             if (it == null) {
                 spinner?.setSelection(0)
+            }
+        }
+
+        // Issueを選択している場合、戻るボタンで選択を解除する
+        clearIssueCallback?.remove()
+        clearIssueCallback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, viewModel.issue.value != null) {
+            if (viewModel.issue.value != null) {
+                viewModel.issue.value = null
             }
         }
     }

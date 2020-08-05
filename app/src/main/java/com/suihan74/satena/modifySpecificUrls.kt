@@ -58,6 +58,8 @@ private suspend fun modifySpecificUrlsWithConnection(url: String) : String = wit
             .build()
 
         val modified = client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) return@use url
+
             val root = Jsoup.parse(response.body!!.use { it.string() })
             val entryRegex = Regex("""https?://b\.hatena\.ne\.jp/entry/\d+/?$""")
             if (url.startsWith(HatenaClient.B_BASE_URL+"/entry")) {

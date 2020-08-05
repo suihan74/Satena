@@ -360,7 +360,7 @@ class EntriesActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().run {
             replace(R.id.main_layout, fragment, category.name)
             addToBackStack(category.name)
-            commit()
+            commitAllowingStateLoss()
         }
     }
 

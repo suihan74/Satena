@@ -59,19 +59,9 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
     ): View? {
         val root = super.onCreateView(inflater, container, savedInstanceState)
 
-        val toolbar = requireActivity().toolbar
-
-        // タグを選択している場合、戻るボタンでタグ選択を解除する
-        clearTagCallback?.remove()
-        clearTagCallback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, viewModel.tag.value != null) {
-            if (viewModel.tag.value != null) {
-                viewModel.tag.value = null
-            }
-        }
-
         // ユーザーIDをタイトルに表示する
         viewModel.user.observe(viewLifecycleOwner) {
-            toolbar.title = title
+            activity?.toolbar?.title = title
         }
 
         setHasOptionsMenu(category == Category.User)
@@ -93,7 +83,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
             spinner?.run {
                 if (tags.isNotEmpty()) {
-                    spinner?.visibility = View.VISIBLE
+                    spinner.visibility = View.VISIBLE
                 }
 
                 val spinnerItems = tags.map { "${it.text}(${it.count})" }
@@ -129,6 +119,14 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
             if (it == null) {
                 spinner?.setSelection(0)
+            }
+        }
+
+        // タグを選択している場合、戻るボタンでタグ選択を解除する
+        clearTagCallback?.remove()
+        clearTagCallback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, viewModel.tag.value != null) {
+            if (viewModel.tag.value != null) {
+                viewModel.tag.value = null
             }
         }
     }
