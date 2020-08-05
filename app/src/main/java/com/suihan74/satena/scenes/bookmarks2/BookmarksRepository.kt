@@ -17,7 +17,7 @@ class BookmarksRepository(
     private val accountLoader: AccountLoader
 ) {
     /** エントリ情報が正しく設定されているか */
-    val isInitialized : Boolean =
+    val isInitialized : Boolean get() =
         this::entry.isInitialized
 
     /** エントリ情報 */
