@@ -1235,17 +1235,24 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 2) https://b.hatena.ne.jp/entry/https://www.hoge.com/ ==> https://www.hoge.com/
      * 3) https://b.hatena.ne.jp/entry/{eid}/comment/{username} ==> https://b.hatena.ne.jp/entry/{eid}  (modifySpecificUrls()を参照)
      * 4) https://b.hatena.ne.jp/entry?url=https~~~
+     * 5) https://b.hatena.ne.jp/entry?eid=1234
+     * 6) https://b.hatena.ne.jp/entry/{eid}
      */
     fun getEntryUrlFromCommentPageUrl(url: String) : String {
         if (url.startsWith("$B_BASE_URL/entry?url=")) {
             // 4)
             return Uri.parse(url).getQueryParameter("url") ?: throw RuntimeException("invalid comment page url: $url")
         }
+        else if (url.startsWith("$B_BASE_URL/entry?eid=")) {
+            // 5)
+            val eid = Uri.parse(url).getQueryParameter("eid") ?: throw RuntimeException("invalid comment page url: $url")
+            return "$B_BASE_URL/entry/$eid"
+        }
         else {
-            val commentUrlRegex = Regex("""https?://b\.hatena\.ne\.jp/entry/(\d+)/comment/\w+""")
+            val commentUrlRegex = Regex("""https?://b\.hatena\.ne\.jp/entry/(\d+)(/comment/\w+)?""")
             val commentUrlMatch = commentUrlRegex.matchEntire(url)
             if (commentUrlMatch != null) {
-                // 3)
+                // 3, 6)
                 return "$B_BASE_URL/entry/${commentUrlMatch.groups[1]!!.value}"
             }
             else {
