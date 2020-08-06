@@ -1,7 +1,6 @@
 package com.suihan74.satena.models.userTag
 
 import androidx.room.*
-import java.io.Serializable
 
 /**
  * ユーザータグ
@@ -18,7 +17,7 @@ data class Tag (
 
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
-) : Serializable
+)
 
 /**
  * ユーザー
@@ -35,7 +34,7 @@ data class User (
 
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
-) : Serializable
+)
 
 /**
  * ユーザーがタグ付けされていることを示す
@@ -59,7 +58,7 @@ data class User (
         Index(value = ["user_id", "tag_id"], name = "relation_tag_id_user_id", unique = true)
     ]
 )
-class TagAndUserRelation : Serializable {
+class TagAndUserRelation {
     constructor(tagId: Int, userId: Int) {
         this.tagId = tagId
         this.userId = userId
@@ -81,7 +80,7 @@ class TagAndUserRelation : Serializable {
 /**
  * タグとそのタグが付いたユーザーリスト
  */
-class TagAndUsers : Serializable {
+class TagAndUsers {
     @Embedded
     lateinit var userTag: Tag
 
@@ -101,7 +100,7 @@ class TagAndUsers : Serializable {
 /**
  * ユーザーとそのユーザーについたタグリスト
  */
-class UserAndTags : Serializable {
+class UserAndTags {
     @Embedded
     lateinit var user: User
 

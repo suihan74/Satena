@@ -54,7 +54,7 @@ class BookmarkDetailFragment :
 
     companion object {
         fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().withArguments {
-            putSerializable(ARG_BOOKMARK, bookmark)
+            putObject(ARG_BOOKMARK, bookmark)
         }
 
         // argument keys
@@ -69,7 +69,7 @@ class BookmarkDetailFragment :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
+        val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val factory = BookmarkDetailViewModel.Factory(activityViewModel.repository, prefs, bookmark)
         viewModel = ViewModelProvider(this, factory)[BookmarkDetailViewModel::class.java].apply {

@@ -99,6 +99,7 @@ enum class Category(
         R.drawable.ic_star,
         requireSignedIn = true),
 
+    // 消さないで
     @Deprecated("`MyStars` & `StarsReport` is integrated into `Stars`")
     StarsReport(
         R.string.category_stars_report,

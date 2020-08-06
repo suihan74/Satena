@@ -11,16 +11,25 @@ data class Profile (
 
     val bookmark: Bookmark
 ) {
+    // for Gson
+    private constructor() : this("", "", "", "", emptyList(), emptyList(), emptyList(), Bookmark())
+
     data class Address (
         val text: String,
         val url: String
-    )
+    ) {
+        // for Gson
+        private constructor() : this("", "")
+    }
 
     data class Service (
         val name : String,
         val url : String,
         val imageUrl : String
-    )
+    ) {
+        // for Gson
+        private constructor() : this("", "", "")
+    }
 
     data class Bookmark (
         val count: Int,
@@ -29,19 +38,15 @@ data class Profile (
         val tags: List<Tag>,
         val entries: List<Entry>
     ) {
+        // for Gson
+        internal constructor() : this(0, 0, 0, emptyList(), emptyList())
+
         data class Tag (
             val name: String,
             val count: Int
-        )
-
-        companion object {
-            fun createEmpty() = Bookmark(
-                count = 0,
-                followingCount = 0,
-                followerCount = 0,
-                tags = emptyList(),
-                entries = emptyList()
-            )
+        ) {
+            // for Gson
+            private constructor() : this("", 0)
         }
     }
 }

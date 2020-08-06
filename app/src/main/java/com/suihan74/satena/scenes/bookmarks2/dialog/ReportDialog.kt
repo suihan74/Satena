@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks2.dialog
 
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,7 +15,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
+import com.suihan74.utilities.getObject
 import com.suihan74.utilities.hideSoftInputMethod
+import com.suihan74.utilities.putObject
 import kotlinx.android.synthetic.main.dialog_title_bookmark.view.*
 import kotlinx.android.synthetic.main.fragment_dialog_report.view.*
 
@@ -76,8 +77,8 @@ class ReportDialog : DialogFragment() {
     companion object {
         fun createInstance(entry: Entry, bookmark: Bookmark) = ReportDialog().apply {
             arguments = Bundle().apply {
-                putSerializable(ARG_ENTRY, entry)
-                putSerializable(ARG_BOOKMARK, bookmark)
+                putObject(ARG_ENTRY, entry)
+                putObject(ARG_BOOKMARK, bookmark)
             }
         }
 
@@ -88,8 +89,8 @@ class ReportDialog : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val entry = requireArguments().getSerializable(ARG_ENTRY) as Entry
-        val bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
+        val entry = requireArguments().getObject<Entry>(ARG_ENTRY)!!
+        val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
 
         val factory = ViewModel.Factory(entry, bookmark)
         viewModel = ViewModelProvider(this, factory)[ViewModel::class.java]

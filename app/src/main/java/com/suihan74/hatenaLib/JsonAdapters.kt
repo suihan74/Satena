@@ -2,7 +2,6 @@ package com.suihan74.hatenaLib
 
 import com.google.gson.*
 import org.threeten.bp.Instant
-import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
@@ -73,12 +72,6 @@ internal class TimestampDeserializer(private val format : String? = null) : Json
         } else {
             LocalDateTime.parse(json!!.asString, DateTimeFormatter.ofPattern(format))
         }
-}
-
-internal class DateTimestampDeserializer : JsonDeserializer<LocalDate> {
-    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): LocalDate {
-        return LocalDate.parse(json!!.asString, DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-    }
 }
 
 internal class EpochTimeDeserializer(

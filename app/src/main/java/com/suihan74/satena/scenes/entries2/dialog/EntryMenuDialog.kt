@@ -30,9 +30,7 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.showCustomTabsIntent
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.showToast
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
 import kotlinx.coroutines.*
 
 /** メニュー処理用の引数セット */
@@ -87,7 +85,7 @@ class EntryMenuDialog : DialogFragment() {
 
     companion object {
         fun createInstance(entry: Entry) = EntryMenuDialog().withArguments {
-            putSerializable(ARG_ENTRY, entry)
+            putObject(ARG_ENTRY, entry)
         }
 
         fun createInstance(url: String) = EntryMenuDialog().withArguments {
@@ -224,7 +222,7 @@ class EntryMenuDialog : DialogFragment() {
         val arguments = requireArguments()
 
         val url = arguments.getString(ARG_ENTRY_URL)
-        val entry = (arguments.get(ARG_ENTRY) as? Entry) ?: Entry(
+        val entry = arguments.getObject<Entry>(ARG_ENTRY) ?: Entry(
             id = 0,
             title = url!!,
             description = "",
@@ -272,7 +270,7 @@ class EntryMenuDialog : DialogFragment() {
     private fun showBookmarks(context: Context, entry: Entry?, url: String?) {
         val intent = Intent(context, BookmarksActivity::class.java).apply {
             addFlags(FLAG_ACTIVITY_NEW_TASK)
-            if (entry != null) putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+            if (entry != null) putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry)
             if (url != null) putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
         }
         context.startActivity(intent)
@@ -440,7 +438,7 @@ class EntryMenuDialog : DialogFragment() {
 
                 EntryReadActionType.DIALOG -> {
                     val intent = Intent(context, BookmarkPostActivity::class.java).apply {
-                        putExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
+                        putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
                     }
                     startActivityForResult(intent, BookmarkPostActivity.REQUEST_CODE)
                     return

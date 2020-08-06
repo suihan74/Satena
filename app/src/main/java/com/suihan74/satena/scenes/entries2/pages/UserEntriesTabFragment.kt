@@ -65,7 +65,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
             // コメント部分クリック時の挙動
             setOnCommentClickedListener { entry, bookmark ->
                 val intent = Intent(context, BookmarksActivity::class.java).apply {
-                    putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+                    putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry)
                     putExtra(BookmarksActivity.EXTRA_TARGET_USER, bookmark.user)
                 }
                 startActivity(intent)

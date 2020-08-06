@@ -5,7 +5,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import java.io.Serializable
+import com.suihan74.utilities.getObject
+import com.suihan74.utilities.putObject
 
 /**
  * 画面復元で落ちないようにしたAlertDialog
@@ -52,9 +53,8 @@ open class AlertDialogFragment : DialogFragment() {
     var multiChoiceItemsInitialStates: BooleanArray? = null
         private set
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T> getAdditionalData(key: String) where T : Serializable =
-        arguments?.getSerializable(key) as? T
+    inline fun <reified T> getAdditionalData(key: String) : T? =
+        arguments?.getObject<T>(key)
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = createBuilder(requireArguments(), savedInstanceState)
@@ -218,8 +218,8 @@ open class AlertDialogFragment : DialogFragment() {
         fun setMultiChoiceItems(items: Collection<String>, booleanArray: BooleanArray) =
             setMultiChoiceItems(items.toTypedArray(), booleanArray)
 
-        fun setAdditionalData(key: String, obj: Serializable?) = this.apply {
-            arguments.putSerializable(key, obj)
+        fun setAdditionalData(key: String, obj: Any?) = this.apply {
+            arguments.putObject(key, obj)
         }
     }
 

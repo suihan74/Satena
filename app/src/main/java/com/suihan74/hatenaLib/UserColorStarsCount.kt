@@ -1,16 +1,20 @@
 package com.suihan74.hatenaLib
 
-import java.io.Serializable
-
 data class UserColorStarsCount (
     val red : Int,
     val green : Int,
     val blue : Int,
     val purple : Int
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this(0, 0, 0, 0)
+}
 
 data class UserColorStarsResponse (
     val success : Boolean,
     val Message : String,
     val result : Map<String, UserColorStarsCount>
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this(false, "", emptyMap())
+}

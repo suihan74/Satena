@@ -8,6 +8,8 @@ import androidx.fragment.app.DialogFragment
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.setCustomTitle
+import com.suihan74.utilities.getObject
+import com.suihan74.utilities.putObject
 
 class BookmarkMenuDialog : DialogFragment() {
     private lateinit var bookmark : Bookmark
@@ -15,7 +17,7 @@ class BookmarkMenuDialog : DialogFragment() {
     companion object {
         fun createInstance(bookmark: Bookmark) = BookmarkMenuDialog().apply {
             arguments = Bundle().apply {
-                putSerializable(ARG_BOOKMARK, bookmark)
+                putObject(ARG_BOOKMARK, bookmark)
             }
         }
 
@@ -24,7 +26,7 @@ class BookmarkMenuDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val listener = parentFragment as? Listener ?: activity as? Listener
-        bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
+        bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
 
         val titleView = LayoutInflater.from(context).inflate(R.layout.dialog_title_bookmark, null).apply {
             setCustomTitle(bookmark)

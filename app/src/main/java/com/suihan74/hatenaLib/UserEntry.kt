@@ -2,13 +2,15 @@ package com.suihan74.hatenaLib
 
 import android.net.Uri
 import org.threeten.bp.LocalDateTime
-import java.io.Serializable
 
 data class UserEntryComment (
     val raw : String,
     val tags : List<String>,
     val body : String
-) : Serializable
+) {
+    // for Gson
+    internal constructor() : this("", emptyList(), "")
+}
 
 data class UserEntryBody (
     val totalBookmarks : Int,
@@ -19,7 +21,10 @@ data class UserEntryBody (
     val content : String,
     val title : String,
     val url : String
-) : Serializable
+) {
+    // for Gson
+    internal constructor() : this(0, 0, LocalDateTime.MIN, null, null, "", "", "")
+}
 
 data class UserEntry (
     val comment : UserEntryComment,
@@ -28,7 +33,10 @@ data class UserEntry (
     val createdAt: LocalDateTime,
     val userName : String,
     val status : String // public/private
-) : Serializable {
+) {
+
+    // for Gson
+    private constructor() : this(UserEntryComment(), UserEntryBody(), 0, LocalDateTime.MIN, "", "")
 
     fun toEntry() : Entry = Entry(
         id = entryId,
@@ -57,4 +65,7 @@ data class UserEntry (
 
 internal data class UserEntryResponse (
     val bookmarks : List<UserEntry>
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this(emptyList())
+}

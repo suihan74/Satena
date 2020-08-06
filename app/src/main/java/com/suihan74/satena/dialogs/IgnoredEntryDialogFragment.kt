@@ -115,7 +115,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         ) = IgnoredEntryDialogFragment().withArguments {
             putString(ARG_EDITING_URL, ignoredEntry.query)
             putString(ARG_EDITING_TEXT, ignoredEntry.query)
-            putSerializable(ARG_MODIFYING_ENTRY, ignoredEntry)
+            putObject(ARG_MODIFYING_ENTRY, ignoredEntry)
             putEnum(ARG_INITIAL_TARGET, ignoredEntry.target) { it.int }
             putBoolean(ARG_EDIT_MODE, true)
 
@@ -142,7 +142,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
 
         // 最初に表示するタブを選択
-        val modifyingEntry = (requireArguments().getSerializable(ARG_MODIFYING_ENTRY) as? IgnoredEntry)?.also {
+        val modifyingEntry = requireArguments().getObject<IgnoredEntry>(ARG_MODIFYING_ENTRY)?.also {
             model.selectTab(it.type)
         } ?: let {
             model.selectedTab.postValue(

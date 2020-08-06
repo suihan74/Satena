@@ -5,7 +5,6 @@ import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
-import java.io.Serializable
 
 /**
  * 通常のブクマ情報
@@ -16,7 +15,10 @@ data class Bookmark (
     val tags : List<String> = emptyList(),
     val timestamp : LocalDateTime = LocalDateTime.MIN,
     val starCount : List<Star>? = null
-) : Serializable {
+) {
+    // for Gson
+    internal constructor() : this("", "")
+
     companion object {
         fun createFrom(src: BookmarkWithStarCount) = Bookmark(
             user = src.user,
@@ -87,12 +89,7 @@ data class BookmarkResult (
     val eid : Long? = null,
 
     val starsCount : List<Star>? = null
-) : Serializable
-
-
-
-fun BookmarkResult.getBookmarkUrl() : String {
-    val dateFormat = DateTimeFormatter.ofPattern("yyyMMdd")
-    val date = timestamp.format(dateFormat)
-    return "${HatenaClient.B_BASE_URL}/$user/$date#bookmark-$eid"
+) {
+    // for Gson
+    private constructor() : this("", "", emptyList(), LocalDateTime.MIN, "", "", "")
 }

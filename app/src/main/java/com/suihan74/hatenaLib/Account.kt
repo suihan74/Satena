@@ -1,7 +1,6 @@
 package com.suihan74.hatenaLib
 
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 
 data class Account (
     val login : Boolean,
@@ -27,5 +26,8 @@ data class Account (
 
     @SerializedName("is_oauth_evernote")
     val isOAuthEvernote : Boolean
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this(false, "", "", false, 0, 0, "", false, false, false)
+}
 

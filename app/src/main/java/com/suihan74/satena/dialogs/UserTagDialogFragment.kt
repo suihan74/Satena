@@ -8,7 +8,8 @@ import android.view.LayoutInflater
 import android.view.WindowManager
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
-import com.suihan74.utilities.hideSoftInputMethod
+import com.suihan74.utilities.getObject
+import com.suihan74.utilities.putObject
 import com.suihan74.utilities.showSoftInputMethod
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_dialog_user_tag.view.*
@@ -49,7 +50,7 @@ class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
         val listener = parentFragment as? Listener ?: activity as? Listener
 
         val arguments = requireArguments()
-        editingUserTag = arguments.getSerializable(EDITING_USER_TAG) as? Tag
+        editingUserTag = arguments.getObject<Tag>(EDITING_USER_TAG)
 
         val dialogTitle =
             if (isModifyMode) {
@@ -117,7 +118,7 @@ class UserTagDialogFragment : AlertDialogFragment(), CoroutineScope {
             }
 
         fun setUserTag(tag: Tag) = this.apply {
-            arguments.putSerializable(EDITING_USER_TAG, tag)
+            arguments.putObject(EDITING_USER_TAG, tag)
         }
 
         fun setTargetUser(user: String) = this.apply {

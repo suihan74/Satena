@@ -2,7 +2,6 @@ package com.suihan74.hatenaLib
 
 import android.net.Uri
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 
 class Entry (
     @SerializedName("eid", alternate = ["entry_id"])
@@ -33,13 +32,17 @@ class Entry (
     // ホットエントリにのみ含まれる情報
     @SerializedName("myhotentry_comments")
     val myHotEntryComments : List<BookmarkResult>? = null
-) : Serializable {
+) {
+
+    // for Gson
+    internal constructor() : this(0, "", "", 0, "", null, null, "")
 
     @SerializedName("title")
     private val mTitle : String = title
 
-    val title : String
-        get() = mTitle.indexOfFirst { it == '\n' }.let {
+    @delegate:Transient
+    val title : String by lazy {
+        mTitle.indexOfFirst { it == '\n' }.let {
             if (it < 0) {
                 mTitle
             }
@@ -47,38 +50,33 @@ class Entry (
                 mTitle.substring(0 until it)
             }
         }
+    }
 
 
     @SerializedName("root_url")
     private var mRootUrl : String? = rootUrl
-    val rootUrl : String
-        get() {
-            val rootUrl = mRootUrl
-            return if (rootUrl.isNullOrBlank()) {
-                val uri = Uri.parse(url)
-                val scheme = uri.scheme
-                val authority = uri.authority
 
-                mRootUrl = if (scheme != null && authority != null) "$scheme://$authority/" else ""
-                mRootUrl!!
-            }
-            else rootUrl
+    @delegate:Transient
+    val rootUrl : String by lazy {
+        if (mRootUrl.isNullOrBlank()) {
+            val uri = Uri.parse(url)
+            val scheme = uri.scheme
+            val authority = uri.authority
+
+            if (scheme != null && authority != null) "$scheme://$authority/" else ""
         }
+        else mRootUrl!!
+    }
 
     @SerializedName("favicon_url")
     private var mFaviconUrl : String? = faviconUrl
-    val faviconUrl : String
-        get() = mFaviconUrl ?: run {
-            val uri = Uri.parse(url)
-            mFaviconUrl = "https://www.google.com/s2/favicons?domain=${uri.host}"
-            return@run mFaviconUrl!!
+
+    @delegate:Transient
+    val faviconUrl : String by lazy {
+        mFaviconUrl ?: run {
+            "https://www.google.com/s2/favicons?domain=${Uri.parse(url).host}"
         }
-
-
-    fun plusBookmarkedData(bookmark: BookmarkResult) = copy(
-        count = if (bookmarkedData == null) count + 1 else count,
-        bookmarkedData = bookmark
-    )
+    }
 
     fun copy(
         id: Long = this.id,
@@ -105,22 +103,12 @@ class Entry (
         bookmarkedData = bookmarkedData,
         myHotEntryComments = myhotentryComments
     )
-
-    companion object {
-        fun createEmpty() = Entry(
-            id = 0,
-            title = "",
-            description = "",
-            count = 0,
-            url = "",
-            rootUrl = "",
-            faviconUrl = null,
-            imageUrl = ""
-        )
-    }
 }
 
 internal data class EntriesWithIssue(
     val issue: Issue,
     val entries: List<Entry>
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this(Issue(), emptyList())
+}

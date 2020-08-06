@@ -2,7 +2,6 @@ package com.suihan74.satena.models.ignoredEntry
 
 import androidx.room.*
 import com.suihan74.hatenaLib.Entry
-import java.io.Serializable
 
 @Entity(
     tableName = "ignored_entry",
@@ -21,7 +20,7 @@ data class IgnoredEntry (
 
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
-) : Serializable {
+) {
 
     fun isMatched(entry: Entry) = when (type) {
         IgnoredEntryType.URL -> entry.url.startsWith("https://$query") || entry.url.startsWith("http://$query")

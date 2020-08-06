@@ -5,13 +5,15 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
-import java.io.Serializable
 import java.lang.reflect.Type
 
 data class NoticeTimestamp(
     val created: LocalDateTime,
     val modified: LocalDateTime
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this(LocalDateTime.MIN, LocalDateTime.MIN)
+}
 
 ////////////////////////////////////////
 // notices

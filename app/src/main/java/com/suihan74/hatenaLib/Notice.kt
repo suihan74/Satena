@@ -3,7 +3,6 @@ package com.suihan74.hatenaLib
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.threeten.bp.LocalDateTime
-import java.io.Serializable
 
 data class Notice (
     @JsonAdapter(EpochTimeDeserializer::class)
@@ -25,7 +24,10 @@ data class Notice (
     @SerializedName("user_name")
     val user : String
 
-) : Serializable {
+) {
+
+    // for Gson
+    private constructor() : this(LocalDateTime.MIN, LocalDateTime.MIN, emptyList(), "", "", null, "")
 
     companion object {
         const val VERB_ADD_FAVORITE = "add_favorite"
@@ -33,16 +35,17 @@ data class Notice (
         const val VERB_STAR = "star"
     }
 
-    val eid : Long
-        get() {
-            if (verb == VERB_STAR) {
-                val idx = link.lastIndexOf('-') + 1
-                return link.substring(idx).toLong()
-            }
-            else {
-                throw IllegalArgumentException("notice's verb: $verb")
-            }
+
+    @delegate:Transient
+    val eid : Long by lazy {
+        if (verb == VERB_STAR) {
+            val idx = link.lastIndexOf('-') + 1
+            link.substring(idx).toLong()
         }
+        else {
+            throw IllegalArgumentException("notice's verb: $verb")
+        }
+    }
 }
 
 
@@ -54,7 +57,10 @@ data class NoticeResponse (
 
     val notices : List<Notice>
 
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this("", LocalDateTime.MIN, emptyList())
+}
 
 
 data class NoticeObject (
@@ -62,8 +68,14 @@ data class NoticeObject (
 
     @JsonAdapter(StarColorDeserializer::class)
     val color : StarColor
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this("", StarColor.Yellow)
+}
 
 data class NoticeMetadata (
     val subjectTitle : String
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this("")
+}

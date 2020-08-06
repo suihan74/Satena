@@ -4,13 +4,14 @@ import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
-import java.io.Serializable
 
 data class StarCount (
     @JsonAdapter(StarColorDeserializer::class)
     val color : StarColor,
     val count : Int
-) : Serializable {
+) {
+    // for Gson
+    private constructor() : this(StarColor.Yellow, 0)
 
     internal fun toStar() = Star(
         user = "",
@@ -18,7 +19,6 @@ data class StarCount (
         color = color,
         count = count
     )
-
 }
 
 class BookmarkWithStarCount (
@@ -32,21 +32,28 @@ class BookmarkWithStarCount (
     @JsonAdapter(TimestampDeserializer::class)
     val timestamp : LocalDateTime,
     val starCount : List<StarCount>
-) : Serializable {
+) {
 
     data class User (
         val name : String,
         val profileImageUrl : String
-    ) : Serializable
+    ) {
+        internal constructor() : this("", "")
+    }
+
+    // for Gson
+    private constructor() : this(User(), "", false, "", emptyList(), LocalDateTime.MIN, emptyList())
 
     @SerializedName("user")
     private val mUser : User = user
 
-    val user: String
-        get() = mUser.name
 
-    val userIconUrl: String
-        get() = mUser.profileImageUrl
+    @delegate:Transient
+    val user: String by lazy { mUser.name }
+
+
+    @delegate:Transient
+    val userIconUrl: String by lazy { mUser.profileImageUrl }
 
 
     fun getBookmarkUrl(entry: Entry) : String {
@@ -60,4 +67,7 @@ data class BookmarksDigest (
     val referredBlogEntries : List<Entry>?,
     val scoredBookmarks : List<BookmarkWithStarCount>,
     val favoriteBookmarks : List<BookmarkWithStarCount>
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this(null, emptyList(), emptyList())
+}

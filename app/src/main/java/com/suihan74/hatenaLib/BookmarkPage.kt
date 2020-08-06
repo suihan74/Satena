@@ -6,11 +6,17 @@ import org.threeten.bp.LocalDateTime
 
 data class BookmarkPageResponse (
     val bookmark : BookmarkPage
-)
+) {
+    // for Gson
+    private constructor() : this(BookmarkPage())
+}
 
 data class FollowingBookmarksResponse (
     val bookmarks : List<BookmarkPage>
-)
+) {
+    // for Gson
+    private constructor() : this(emptyList())
+}
 
 data class BookmarkPage (
     @SerializedName("entry_id")
@@ -24,10 +30,16 @@ data class BookmarkPage (
     @SerializedName("created_at")
     @JsonAdapter(TimestampDeserializer::class)
     val timestamp : LocalDateTime
-)
+) {
+    // for Gson
+    internal constructor() : this(0, Entry(), "", BookmarkPageComment(), "", LocalDateTime.MIN)
+}
 
 data class BookmarkPageComment (
     val body : String,
     val raw : String,
     val tags : List<String>
-)
+) {
+    // for Gson
+    internal constructor() : this("", "", emptyList())
+}

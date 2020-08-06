@@ -13,6 +13,7 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
+import com.suihan74.utilities.putObjectExtra
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -31,7 +32,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, url)
                     if (url == entry?.url || url == entry?.ampUrl) {
-                        putExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
+                        putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
                     }
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
@@ -41,7 +42,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, url)
                     if (url == entry?.url || url == entry?.ampUrl) {
-                        putExtra(BookmarksActivity.EXTRA_ENTRY, entry)
+                        putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry)
                     }
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }

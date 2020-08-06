@@ -29,6 +29,9 @@ enum class ReportCategory(
         "その他"
     );
 
+    // for Gson
+    private constructor() : this("", "")
+
     companion object {
         fun fromInt(int: Int) = values()[int]
     }

@@ -1,7 +1,6 @@
 package com.suihan74.hatenaLib
 
 import org.threeten.bp.LocalDateTime
-import java.io.Serializable
 
 data class MaintenanceEntry (
     val id: String,
@@ -11,4 +10,7 @@ data class MaintenanceEntry (
     val url: String,
     val timestamp: LocalDateTime,
     val timestampUpdated: LocalDateTime
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this("", "", "", false, "", LocalDateTime.MIN, LocalDateTime.MIN)
+}

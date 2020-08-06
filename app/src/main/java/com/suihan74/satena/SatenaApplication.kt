@@ -10,7 +10,9 @@ import androidx.annotation.RequiresApi
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.jakewharton.threetenabp.AndroidThreeTen
-import com.suihan74.satena.models.*
+import com.suihan74.satena.models.AppDatabase
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.PreferenceKeyMigration
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
 import com.suihan74.utilities.lock
@@ -120,10 +122,8 @@ class SatenaApplication : Application() {
         get() = appDatabase.ignoredEntryDao()
 
     /** 各種設定のバージョン移行が必要か確認 */
-    suspend fun updatePreferencesVersion() {
+    fun updatePreferencesVersion() {
         PreferenceKeyMigration.check(applicationContext)
-        IgnoredEntriesKeyMigration.check(applicationContext)
-        UserTagsKeyMigration.check(applicationContext)
     }
 
     /** 通知サービスを開始 */

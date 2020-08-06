@@ -114,7 +114,7 @@ class BookmarksActivity :
 
         val firstLaunching = !viewModel.repository.isInitialized //savedInstanceState == null
         val entry =
-            if (firstLaunching) intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
+            if (firstLaunching) intent.getObjectExtra<Entry>(EXTRA_ENTRY)
             else viewModel.repository.entry
 
         if (entry == null) {
@@ -316,7 +316,7 @@ class BookmarksActivity :
             BookmarkPostActivity.REQUEST_CODE -> {
                 when (resultCode) {
                     Activity.RESULT_OK -> {
-                        val result = data?.getSerializableExtra(BookmarkPostActivity.RESULT_BOOKMARK) as? BookmarkResult
+                        val result = data?.getObjectExtra<BookmarkResult>(BookmarkPostActivity.RESULT_BOOKMARK)
                             ?: return
                         viewModel.resetEntry(
                             viewModel.entry.copy(bookmarkedData = result)

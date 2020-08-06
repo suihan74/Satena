@@ -71,7 +71,7 @@ class BookmarkPostActivity :
         )
 
         // Extraの取得
-        val entry = intent.getSerializableExtra(EXTRA_ENTRY) as? Entry
+        val entry = intent.getObjectExtra<Entry>(EXTRA_ENTRY)
         val editingComment = intent.getStringExtra(EXTRA_EDITING_COMMENT)
         val entryUrl =
             when (intent.action) {
@@ -235,7 +235,7 @@ class BookmarkPostActivity :
     private val onPostSuccess = { result: BookmarkResult ->
         showToast(R.string.msg_post_bookmark_succeeded)
         val intent = Intent().apply {
-            putExtra(RESULT_BOOKMARK, result)
+            putObjectExtra(RESULT_BOOKMARK, result)
         }
         setResult(RESULT_OK, intent)
         finish()

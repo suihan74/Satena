@@ -16,14 +16,12 @@ import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.users
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
 
 class NoticeMenuDialog : AlertDialogFragment() {
     companion object {
         fun createInstance(notice: Notice) = NoticeMenuDialog().withArguments {
-            putSerializable(ARG_NOTICE, notice)
+            putObject(ARG_NOTICE, notice)
         }
 
         /** 通知 */
@@ -43,7 +41,7 @@ class NoticeMenuDialog : AlertDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?) : Dialog {
         val arguments = requireArguments()
-        val notice = arguments.getSerializable(ARG_NOTICE) as Notice
+        val notice = arguments.getObject<Notice>(ARG_NOTICE)!!
         val users = notice.users
 
         val titleViewBinding = DataBindingUtil.inflate<ListviewItemNotices2Binding>(

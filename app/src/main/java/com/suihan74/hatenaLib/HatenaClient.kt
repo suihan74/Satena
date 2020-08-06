@@ -66,13 +66,6 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /** 非表示ユーザーリストのキャッシュを保持する時間 */
     private val mIgnoredUsersUpdateIntervals = Duration.ofMinutes(3)
 
-
-    /** スター関連のjsonデシリアライザ */
-    private fun getGsonBuilderForStars() =
-         GsonBuilder()
-            .registerTypeAdapter(Star::class.java, StarDeserializer())
-            .registerTypeAdapter(StarColor::class.java, StarColorDeserializer())
-
     /**
      * HatenaClientがログイン済みか確認する
      */
@@ -958,8 +951,6 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val params = urls.joinToString(uriParamKey) { Uri.encode(it) }
         var apiUrl = apiBaseUrl + params
 
-        val gsonBuilder = getGsonBuilderForStars()
-
         // urlの長さは2048を超えてはいけない
         val urlLengthLimit = 2000
 
@@ -978,13 +969,13 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 }
 
                 tasks.add(async inner@ {
-                    return@inner try { getJson<StarsEntries>(curApiUrl, gsonBuilder) } catch (e: SocketTimeoutException) { null }
+                    return@inner try { getJson<StarsEntries>(curApiUrl) } catch (e: SocketTimeoutException) { null }
                 })
             }
 
             tasks.add(async inner@ {
                 return@inner try {
-                    getJson<StarsEntries>(apiUrl, gsonBuilder)
+                    getJson<StarsEntries>(apiUrl)
                 }
                 catch (e: SocketTimeoutException) {
                     null
@@ -998,7 +989,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 .flatMap { it.entries }
         }
         else {
-            val response = getJson<StarsEntries>(apiUrl, gsonBuilder)
+            val response = getJson<StarsEntries>(apiUrl)
             return@async response.entries
         }
     }
@@ -1008,8 +999,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getStarsEntryAsync(url: String) : Deferred<StarsEntry> = async {
         val apiUrl = "$S_BASE_URL/entry.json?${cacheAvoidance()}&uri=${Uri.encode(url)}"
-        val gsonBuilder = getGsonBuilderForStars()
-        val response = getJson<StarsEntries>(apiUrl, gsonBuilder)
+        val response = getJson<StarsEntries>(apiUrl)
         return@async response.entries.getOrNull(0) ?: StarsEntry(url = url, stars = emptyList(), coloredStars = null)
     }
 
@@ -1493,7 +1483,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
     private fun getUserBookmarkInfoAsync(user: String) : Deferred<Profile.Bookmark> = async {
         try {
             get("$B_BASE_URL/$user/").use { response ->
-                if (!response.isSuccessful) return@async Profile.Bookmark.createEmpty()
+                if (!response.isSuccessful) return@async Profile.Bookmark()
 
                 val html = Jsoup.parse(response.body!!.use { it.string() })
                 val dataAttr = "data-gtm-click-label"
@@ -1603,7 +1593,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             }
         }
         catch (e: Throwable) {
-            return@async Profile.Bookmark.createEmpty()
+            return@async Profile.Bookmark()
         }
     }
 }

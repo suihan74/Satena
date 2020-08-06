@@ -1,7 +1,6 @@
 package com.suihan74.hatenaLib
 
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 
 enum class Category (
     val int: Int,
@@ -19,6 +18,9 @@ enum class Category (
     Fun(9, "302115476506048236");
 //    CurrentEvents(10, "83497569613451046"),
 
+    // for Gson
+    private constructor() : this(0, "")
+
     companion object {
         fun fromInt(i: Int) : Category = values().firstOrNull { it.int == i } ?: All
     }
@@ -32,7 +34,10 @@ data class Issue (
 
     val imageUrl: String? = null,
     val entry: Entry? = null
-) : Serializable
+) {
+    // for Gson
+    internal constructor() : this("", "")
+}
 
 data class CategoryEntry (
     val name: String,
@@ -41,12 +46,21 @@ data class CategoryEntry (
     val imageUrl: String?,
     val pickupEntry: Entry?,
     val issues: List<Issue>
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this("", "", null, null, emptyList())
+}
 
 internal data class CategoryEntriesResponse (
     val categories : List<CategoryEntry>
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this(emptyList())
+}
 
 internal data class IssuesResponse (
     val issues: List<Issue>
-) : Serializable
+) {
+    // for Gson
+    private constructor() : this(emptyList())
+}

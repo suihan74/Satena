@@ -14,10 +14,7 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.ReportCategory
 import com.suihan74.satena.R
-import com.suihan74.utilities.get
-import com.suihan74.utilities.hideSoftInputMethod
-import com.suihan74.utilities.showToast
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_dialog_report.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -25,10 +22,10 @@ import kotlinx.coroutines.launch
 
 class ReportDialogFragment : DialogFragment(), AlertDialogFragment.Listener {
     private val mEntry : Entry? by lazy {
-        requireArguments().getSerializable(ARG_ENTRY) as? Entry
+        requireArguments().getObject<Entry>(ARG_ENTRY)
     }
     private val mBookmark: Bookmark? by lazy {
-        requireArguments().getSerializable(ARG_BOOKMARK) as? Bookmark
+        requireArguments().getObject<Bookmark>(ARG_BOOKMARK)
     }
 
     /** ユーザー名だけで通報する場合，値が入る */
@@ -38,8 +35,8 @@ class ReportDialogFragment : DialogFragment(), AlertDialogFragment.Listener {
 
     companion object {
         fun createInstance(entry: Entry, bookmark: Bookmark) = ReportDialogFragment().withArguments {
-            putSerializable(ARG_ENTRY, entry)
-            putSerializable(ARG_BOOKMARK, bookmark)
+            putObject(ARG_ENTRY, entry)
+            putObject(ARG_BOOKMARK, bookmark)
         }
 
         fun createInstance(user: String) = ReportDialogFragment().withArguments {

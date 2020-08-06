@@ -43,7 +43,7 @@ class PreferencesActivity : ActivityBase() {
         super.onSaveInstanceState(outState)
         if (this::mViewPager.isInitialized) {
             outState.run {
-                putSerializable(BUNDLE_CURRENT_TAB, mViewPager.currentItem)
+                putObject(BUNDLE_CURRENT_TAB, mViewPager.currentItem)
             }
         }
     }
@@ -118,7 +118,7 @@ class PreferencesActivity : ActivityBase() {
         }
 
         val tab = savedInstanceState?.run { PreferencesTabMode.fromInt(getInt(BUNDLE_CURRENT_TAB)) }
-            ?: intent.getSerializableExtra(EXTRA_CURRENT_TAB) as? PreferencesTabMode
+            ?: intent.getObjectExtra<PreferencesTabMode>(EXTRA_CURRENT_TAB)
             ?: PreferencesTabMode.INFORMATION
 
         val position = tab.int
