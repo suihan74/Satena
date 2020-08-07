@@ -366,6 +366,14 @@ class BookmarksActivity :
         viewModel.bookmarksEntry.observe(this, observer)
     }
 
+    /** エントリ情報ドロワを閉じる */
+    fun closeDrawer() : Boolean =
+        if (drawer_layout.isDrawerOpen(GravityCompat.END)) {
+            drawer_layout.closeDrawer(GravityCompat.END)
+            true
+        }
+        else false
+
     // --- BookmarkMenuDialogの処理 --- //
 
     override fun isIgnored(user: String) =
