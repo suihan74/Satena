@@ -141,9 +141,7 @@ class BookmarksViewModel(
     }
 
     /** 初期化 */
-    fun init(loading: Boolean, onError: CompletionHandler? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e -> onError?.invoke(e) }
-    ) {
+    fun init(loading: Boolean, onError: CompletionHandler? = null, onFinally: (()->Unit)? = null) = viewModelScope.launch {
         try {
             ignoredEntryRepository.load(forceUpdate = true)
             muteWords = ignoredEntryRepository.ignoredEntries
@@ -153,26 +151,44 @@ class BookmarksViewModel(
             signIn()
         }
         catch (e: Throwable) {
-            onError?.invoke(e)
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
         }
 
         if (loading) {
-            loadUserTags()
+            try {
+                loadUserTags()
+            }
+            catch (e: Throwable) {
+                withContext(Dispatchers.Main) {
+                    onError?.invoke(e)
+                }
+            }
 
             try {
                 repository.loadIgnoredUsersAsync().await()
             }
             catch (e: Throwable) {
-                onError?.invoke(e)
+                withContext(Dispatchers.Main) {
+                    onError?.invoke(e)
+                }
             }
 
-            listOf(
-                repository.loadBookmarksEntryAsync(),
-                repository.loadBookmarksDigestAsync(),
-                repository.loadBookmarksRecentAsync()
-            ).run {
-                awaitAll()
-                reloadLists()
+            try {
+                listOf(
+                    repository.loadBookmarksEntryAsync(),
+                    repository.loadBookmarksDigestAsync(),
+                    repository.loadBookmarksRecentAsync()
+                ).run {
+                    awaitAll()
+                    reloadLists()
+                }
+            }
+            catch (e: Throwable) {
+                withContext(Dispatchers.Main) {
+                    onError?.invoke(e)
+                }
             }
         }
 
@@ -184,6 +200,10 @@ class BookmarksViewModel(
         // 非表示ユーザーリストの更新を監視
         ignoredUsers.observeForever {
             reloadLists()
+        }
+
+        withContext(Dispatchers.Main) {
+            onFinally?.invoke()
         }
     }
 

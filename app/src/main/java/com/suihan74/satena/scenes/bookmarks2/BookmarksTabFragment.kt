@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.NotFoundException
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.*
@@ -123,9 +124,18 @@ class BookmarksTabFragment :
                 RecyclerViewScrollingUpdater {
                     bookmarksAdapter.startLoading()
                     viewModel.loadNextBookmarks().invokeOnCompletion { e->
-                        if (e != null) {
-                            context?.showToast(R.string.msg_update_bookmarks_failed)
-                            Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
+                        when (e) {
+                            null -> {}
+
+                            is NotFoundException -> {
+                                context?.showToast(R.string.msg_no_bookmarks)
+                                Log.w("FailedToUpdateBookmarks", Log.getStackTraceString(e))
+                            }
+
+                            else -> {
+                                context?.showToast(R.string.msg_update_bookmarks_failed)
+                                Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
+                            }
                         }
                         bookmarksAdapter.stopLoading()
                         loadCompleted()
@@ -140,9 +150,18 @@ class BookmarksTabFragment :
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
                 viewModel.updateBookmarks().invokeOnCompletion { e ->
-                    if (e != null) {
-                        context.showToast(R.string.msg_update_bookmarks_failed)
-                        Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
+                    when (e) {
+                        null -> {}
+
+                        is NotFoundException -> {
+                            context?.showToast(R.string.msg_no_bookmarks)
+                            Log.w("FailedToUpdateBookmarks", Log.getStackTraceString(e))
+                        }
+
+                        else -> {
+                            context?.showToast(R.string.msg_update_bookmarks_failed)
+                            Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
+                        }
                     }
                     this@swipeLayout.isRefreshing = false
                 }
