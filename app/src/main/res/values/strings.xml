@@ -282,6 +282,7 @@
     <string name="msg_get_entry_failed">エントリ取得失敗</string>
     <string name="msg_fetch_ignored_users_failed">非表示ユーザーリスト取得失敗</string>
     <string name="msg_update_bookmarks_failed">ブクマリスト更新失敗</string>
+    <string name="msg_no_bookmarks">まだ誰もブクマしていません</string>
     <string name="msg_ignore_user_succeeded">id:%sを非表示にしました</string>
     <string name="msg_ignore_user_failed">id:%sの非表示に失敗しました</string>
     <string name="msg_unignore_user_succeeded">id:%sの非表示を解除しました</string>

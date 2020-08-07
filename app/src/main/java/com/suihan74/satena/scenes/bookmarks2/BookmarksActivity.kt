@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.bookmarks2
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -134,6 +135,8 @@ class BookmarksActivity :
                         showToast(R.string.msg_fetch_ignored_users_failed)
                     }
 
+                    is NotFoundException -> {}
+
                     else -> showToast(R.string.msg_update_bookmarks_failed)
                 }
                 Log.e("BookmarksActivity", Log.getStackTraceString(e))
@@ -220,7 +223,10 @@ class BookmarksActivity :
 
     /** entryロード完了後に画面を初期化 */
     private fun init(firstLaunching: Boolean, entry: Entry, targetUser: String?) {
-        viewModel.init(loading = firstLaunching) { e ->
+        // ロード中の画面回転による初期化処理重複を抑制する
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+
+        val onError: CompletionHandler = { e ->
             when (e) {
                 is AccountLoader.HatenaSignInException ->
                     showToast(R.string.msg_auth_failed)
@@ -228,14 +234,64 @@ class BookmarksActivity :
                 is AccountLoader.MastodonSignInException ->
                     showToast(R.string.msg_auth_mastodon_failed)
 
+                is NotFoundException -> {
+                    showToast(R.string.msg_no_bookmarks)
+                    toolbar.subtitle = getString(R.string.toolbar_subtitle_bookmarks, 0, 0)
+                }
+
                 else ->
                     showToast(R.string.msg_update_bookmarks_failed)
             }
         }
 
+        val onFinally: ()->Unit = {
+            // コンテンツの初期化
+            if (firstLaunching) {
+                // 表示履歴に追加
+                entry.saveHistory(this@BookmarksActivity)
+
+                val bookmarksFragment = BookmarksFragment.createInstance()
+                val entryInformationFragment = EntryInformationFragment.createInstance()
+                val buttonsFragment = FloatingActionButtonsFragment.createInstance()
+
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.content_layout, bookmarksFragment, FRAGMENT_BOOKMARKS)
+                    .replace(R.id.buttons_layout, buttonsFragment, FRAGMENT_BUTTONS)
+                    .replace(R.id.entry_information_layout, entryInformationFragment, FRAGMENT_INFORMATION)
+                    .commitAllowingStateLoss()
+
+                // ユーザーが指定されている場合そのユーザーのブクマ詳細画面に直接遷移する
+                if (!targetUser.isNullOrBlank()) {
+                    showBookmarkDetail(targetUser)
+                }
+            }
+
+            progress_bar.visibility = View.INVISIBLE
+
+            // 画面回転を解放する
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+
+        viewModel.init(
+            loading = firstLaunching,
+            onError = onError,
+            onFinally = onFinally
+        )
+
         // Toolbar
         toolbar.apply {
             title = entry.title
+            if (!firstLaunching) {
+                val bookmarksEntry = viewModel.bookmarksEntry.value
+                val entireBookmarksCount = bookmarksEntry?.bookmarks?.size ?: 0
+                val commentsCount = bookmarksEntry?.bookmarks?.count { it.comment.isNotBlank() } ?: 0
+
+                toolbar.subtitle = getString(
+                    R.string.toolbar_subtitle_bookmarks,
+                    entireBookmarksCount,
+                    commentsCount
+                )
+            }
         }
 
         // Drawerの開閉を監視する
@@ -269,10 +325,7 @@ class BookmarksActivity :
 
         // 戻るボタンを監視
         onBackPressedCallback = onBackPressedDispatcher.addCallback(this) {
-            if (drawer_layout.isDrawerOpen(GravityCompat.END)) {
-                drawer_layout.closeDrawer(GravityCompat.END)
-            }
-            else {
+            if (!closeDrawer()) {
                 val backStackEntryCount = supportFragmentManager.backStackEntryCount
                 if (backStackEntryCount > 0) {
                     supportFragmentManager.popBackStack()
@@ -282,29 +335,6 @@ class BookmarksActivity :
                 }
             }
         }
-
-        // コンテンツの初期化
-        if (firstLaunching) {
-            // 表示履歴に追加
-            entry.saveHistory(this@BookmarksActivity)
-
-            val bookmarksFragment = BookmarksFragment.createInstance()
-            val entryInformationFragment = EntryInformationFragment.createInstance()
-            val buttonsFragment = FloatingActionButtonsFragment.createInstance()
-
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.content_layout, bookmarksFragment, FRAGMENT_BOOKMARKS)
-                .replace(R.id.buttons_layout, buttonsFragment, FRAGMENT_BUTTONS)
-                .replace(R.id.entry_information_layout, entryInformationFragment, FRAGMENT_INFORMATION)
-                .commitAllowingStateLoss()
-
-            // ユーザーが指定されている場合そのユーザーのブクマ詳細画面に直接遷移する
-            if (!targetUser.isNullOrBlank()) {
-                showBookmarkDetail(targetUser)
-            }
-        }
-
-        progress_bar.visibility = View.INVISIBLE
     }
 
     /** BookmarkPostActivityからの結果を受け取る */
@@ -365,6 +395,14 @@ class BookmarksActivity :
         }
         viewModel.bookmarksEntry.observe(this, observer)
     }
+
+    /** エントリ情報ドロワを閉じる */
+    fun closeDrawer() : Boolean =
+        if (drawer_layout.isDrawerOpen(GravityCompat.END)) {
+            drawer_layout.closeDrawer(GravityCompat.END)
+            true
+        }
+        else false
 
     // --- BookmarkMenuDialogの処理 --- //
 

@@ -791,7 +791,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
     private fun getEntryImplAsync(commentPageUrl: String) : Deferred<Entry> = async {
         return@async get(commentPageUrl).use { response ->
             if (!response.isSuccessful) {
-                throw RuntimeException("cannot get an entry: $commentPageUrl")
+                when (response.code) {
+                    404 -> throw NotFoundException()
+                    else -> throw RuntimeException("cannot get an entry: $commentPageUrl")
+                }
             }
 
             val bodyBytes = response.body!!.use { it.bytes() }
