@@ -274,6 +274,17 @@ class BookmarksActivity :
         // Toolbar
         toolbar.apply {
             title = entry.title
+            if (!firstLaunching) {
+                val bookmarksEntry = viewModel.bookmarksEntry.value
+                val entireBookmarksCount = bookmarksEntry?.bookmarks?.size ?: 0
+                val commentsCount = bookmarksEntry?.bookmarks?.count { it.comment.isNotBlank() } ?: 0
+
+                toolbar.subtitle = getString(
+                    R.string.toolbar_subtitle_bookmarks,
+                    entireBookmarksCount,
+                    commentsCount
+                )
+            }
         }
 
         // Drawerの開閉を監視する
