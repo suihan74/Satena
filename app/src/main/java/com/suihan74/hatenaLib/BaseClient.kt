@@ -45,11 +45,10 @@ open class BaseClient {
                 paramsBuilder.addEncoded(param.key, param.value)
             }
         }
-
         return post(url, paramsBuilder.build())
     }
 
-    protected fun post(url: String, formBody: FormBody) : Response {
+    private fun post(url: String, formBody: FormBody) : Response {
         val request = Request.Builder()
             .url(url)
             .post(formBody)
@@ -58,35 +57,35 @@ open class BaseClient {
         return call.execute()
     }
 
-    protected fun send(request: Request) : Response {
+    private fun send(request: Request) : Response {
         val call = client.newCall(request)
         return call.execute()
     }
 
-    protected fun <T> send(type: Type, request: Request, gsonBuilder: GsonBuilder) : T {
+    protected fun <T> send(type: Type, request: Request, gsonBuilder: GsonBuilder) : T =
         try {
             send(request).use { response ->
-                if (response.isSuccessful) {
-                    val gson = gsonBuilder
-                        .serializeNulls()
-                        .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                        .create()
+                when {
+                    response.isSuccessful -> {
+                        val gson = gsonBuilder
+                            .serializeNulls()
+                            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                            .create()
 
-                    val json = response.body!!.use { it.string() }
-                    return gson.fromJson<T>(json, type)
+                        val json = response.body!!.use { it.string() }
+                        gson.fromJson<T>(json, type)
+                    }
+
+                    response.code == 404 -> throw NotFoundException()
+
+                    else -> throw RuntimeException("connection failed")
                 }
-
-                throw RuntimeException("connection failed")
             }
         }
         catch (e: SocketTimeoutException) {
             client.connectionPool.evictAll()
-            throw RuntimeException("connection error", e)
+            throw TimeoutException(e)
         }
-    }
-
-    protected fun <T> send(type: Type, request: Request) : T =
-        send(type, request, GsonBuilder())
 
     protected inline fun <reified T> send(request: Request, gsonBuilder: GsonBuilder) : T =
         send(T::class.java, request, gsonBuilder)
@@ -107,7 +106,12 @@ open class BaseClient {
         }
         else {
             val code = response.code
-            throw RuntimeException("connection error: $code")
+            if (code == 404) {
+                throw NotFoundException()
+            }
+            else {
+                throw RuntimeException("connection error: $code")
+            }
         }
 
     private fun <T> responseTo(type: Type, response: Response, dateFormat: String? = null) : T =
@@ -118,6 +122,9 @@ open class BaseClient {
             get(url).use { response ->
                 return responseTo(type, response, gsonBuilder)
             }
+        }
+        catch (e: NotFoundException) {
+            throw NotFoundException("404 not found: $url")
         }
         catch (e: Throwable) {
             throw RuntimeException("${e.message ?: ""}: $url")
@@ -132,7 +139,10 @@ open class BaseClient {
         }
         catch (e: SocketTimeoutException) {
             client.connectionPool.evictAll()
-            throw RuntimeException("${e.message ?: ""}: $url", e)
+            throw TimeoutException("${e.message ?: ""}: $url", e)
+        }
+        catch (e: NotFoundException) {
+            throw NotFoundException("404 not found: $url", e)
         }
         catch (e: Throwable) {
             throw RuntimeException("${e.message ?: ""}: $url", e)

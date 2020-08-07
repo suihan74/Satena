@@ -47,6 +47,7 @@ class EntryInformationFragment : Fragment() {
             text = makeSpannedFromHtml("<u>${Uri.decode(entry.url)}</u>")
 
             setOnClickListener {
+                (activity as? BookmarksActivity)?.closeDrawer()
                 requireActivity().showCustomTabsIntent(entry)
             }
         }
@@ -59,6 +60,7 @@ class EntryInformationFragment : Fragment() {
 
         val tagsAdapter = object : TagsAdapter() {
             override fun onItemClicked(tag: String) {
+                (activity as? BookmarksActivity)?.closeDrawer()
                 val intent = Intent(activity, EntriesActivity::class.java).apply {
                     putExtra(EntriesActivity.EXTRA_SEARCH_TAG, tag)
                 }
@@ -115,6 +117,7 @@ class EntryInformationFragment : Fragment() {
     }
 
     private fun changeFloor(url: String) {
+        (activity as? BookmarksActivity)?.closeDrawer()
         val intent = Intent(context, BookmarksActivity::class.java).apply {
             putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
         }
