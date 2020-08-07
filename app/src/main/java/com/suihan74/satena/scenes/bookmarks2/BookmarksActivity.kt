@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.bookmarks2
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -222,6 +223,9 @@ class BookmarksActivity :
 
     /** entryロード完了後に画面を初期化 */
     private fun init(firstLaunching: Boolean, entry: Entry, targetUser: String?) {
+        // ロード中の画面回転による初期化処理重複を抑制する
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+
         val onError: CompletionHandler = { e ->
             when (e) {
                 is AccountLoader.HatenaSignInException ->
@@ -263,6 +267,9 @@ class BookmarksActivity :
             }
 
             progress_bar.visibility = View.INVISIBLE
+
+            // 画面回転を解放する
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
 
         viewModel.init(
