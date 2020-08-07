@@ -17,3 +17,15 @@ class FetchIgnoredUsersFailureException : RuntimeException {
     constructor(cause: Throwable?) : super(cause)
     constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
 }
+
+/** 404 Not Found */
+class NotFoundException : RuntimeException {
+    constructor(cause: Throwable?) : super(cause)
+    constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
+}
+
+/** timeout */
+class TimeoutException : RuntimeException {
+    constructor(cause: Throwable?) : super(cause)
+    constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
+}
