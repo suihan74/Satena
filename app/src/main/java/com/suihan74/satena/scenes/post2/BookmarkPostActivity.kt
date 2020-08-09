@@ -78,6 +78,7 @@ class BookmarkPostActivity :
                 Intent.ACTION_SEND ->
                     intent.getStringExtra(Intent.EXTRA_TEXT)
 
+                // TODO: VIEWでは送られてこない(はず)
                 Intent.ACTION_VIEW ->
                     intent.dataString
 
