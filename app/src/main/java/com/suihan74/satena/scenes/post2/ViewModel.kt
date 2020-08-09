@@ -98,12 +98,17 @@ class ViewModel(
     /** エントリタイトル部分を表示する */
     val displayEntryTitle by lazy { MutableLiveData(false) }
 
+    /** 初期化済みかのフラグ */
+    var initialized : Boolean = false
+
     /** 初期化 */
     fun init(url: String, editingComment: String?, onError: OnError? = null) = viewModelScope.launch(
         Dispatchers.Main + CoroutineExceptionHandler { _, e ->
             onError?.invoke(e)
         }
     ) {
+        if (initialized) return@launch
+
         comment.value = editingComment ?: ""
 
         try {
@@ -127,6 +132,8 @@ class ViewModel(
             val modifiedUrl = modifySpecificUrls(url) ?: url
             entry.value = client.getEntryAsync(modifiedUrl).await()
         }
+
+        initialized = true
     }
 
     /** 初期化 */
@@ -135,6 +142,8 @@ class ViewModel(
             onError?.invoke(e)
         }
     ) {
+        if (initialized) return@launch
+
         this@ViewModel.entry.value = entry
         comment.value = editingComment
                     ?: entry.bookmarkedData?.comment
@@ -154,6 +163,8 @@ class ViewModel(
         catch (e: LoadingTagsFailureException) {
             onError?.invoke(e)
         }
+
+        initialized = true
     }
 
     /** サインインが必要なら行う */
