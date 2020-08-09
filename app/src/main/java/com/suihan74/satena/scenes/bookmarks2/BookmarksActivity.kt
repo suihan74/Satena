@@ -348,9 +348,10 @@ class BookmarksActivity :
                     Activity.RESULT_OK -> {
                         val result = data?.getSerializableExtra(BookmarkPostActivity.RESULT_BOOKMARK) as? BookmarkResult
                             ?: return
-                        viewModel.resetEntry(
+                        /*viewModel.resetEntry(
                             viewModel.entry.copy(bookmarkedData = result)
-                        )
+                        )*/
+                        viewModel.updateUserBookmark(result)
                         viewModel.setEditingComment(null)
                     }
 
