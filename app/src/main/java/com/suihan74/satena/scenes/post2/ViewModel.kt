@@ -181,7 +181,7 @@ class ViewModel(
     }
 
     /** コメント中でタグと判断される箇所のregex */
-    private val tagRegex by lazy { Regex("""\[[^%/:\[\]]+]""") }
+    val tagRegex by lazy { Regex("""\[[^%/:\[\]]+]""") }
 
     /** コメント長を計算する */
     private fun getCommentLength(comment: String) =
