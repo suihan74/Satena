@@ -159,8 +159,8 @@ class BookmarkPostActivity :
         // タグリストを初期化
         val tagsListAdapter = object : TagsListAdapter() {
             override fun onItemClicked(tag: String) {
+                var watcher: TextWatcher? = null
                 try {
-                    var watcher: TextWatcher? = null
                     watcher = object : TextWatcher {
                         private var before: Int = 0
                         private var countDiff: Int = 0
@@ -197,6 +197,7 @@ class BookmarkPostActivity :
                 }
                 catch (e: ViewModel.TooManyTagsException) {
                     showToast(R.string.msg_post_too_many_tags)
+                    comment.removeTextChangedListener(watcher)
                 }
             }
         }
