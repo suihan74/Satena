@@ -18,12 +18,20 @@ data class Bookmark (
     val starCount : List<Star>? = null
 ) : Serializable {
     companion object {
-        fun createFrom(src: BookmarkWithStarCount) = Bookmark(
+        fun create(src: BookmarkWithStarCount) = Bookmark(
             user = src.user,
             comment = src.comment,
             tags = src.tags,
             timestamp = src.timestamp,
             starCount = src.starCount.map { it.toStar() })
+
+        fun create(src: BookmarkResult) = Bookmark(
+            user = src.user,
+            comment = src.comment,
+            tags = src.tags,
+            timestamp = src.timestamp,
+            starCount = src.starsCount
+        )
     }
 
     @Expose(serialize = false, deserialize = false)
@@ -59,6 +67,10 @@ data class Bookmark (
         val date = timestamp.format(dateFormat)
         return "${HatenaClient.B_BASE_URL}/$user/$date#bookmark-${entry.id}"
     }
+
+    /** タグを含んだコメントを取得する */
+    val commentRaw : String get() =
+        getTagsText { "[$it]" } + comment
 }
 
 /**

@@ -4,10 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.hatenaLib.BookmarksEntry
-import com.suihan74.hatenaLib.Entry
-import com.suihan74.hatenaLib.Report
+import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.models.userTag.Tag
@@ -72,8 +69,9 @@ class BookmarksViewModel(
     val editingComment : String
         get() =
             mEditingComment
-            ?: entry.bookmarkedData?.commentRaw
+            ?: userBookmark?.commentRaw
             ?: ""
+
     private var mEditingComment : String? = null
 
     fun setEditingComment(comment: String?) {
@@ -133,11 +131,13 @@ class BookmarksViewModel(
     )
 
     /**
-     * entryを更新する
-     * ブクマ投稿後に変更を反映するために使用
+     * ユーザーのブクマ情報を更新する
      */
-    fun resetEntry(newEntry: Entry) {
-        repository.setEntry(newEntry)
+    fun updateUserBookmark(bookmarkResult: BookmarkResult) = viewModelScope.launch(Dispatchers.Default) {
+        repository.updateUserBookmark(bookmarkResult)
+        bookmarksEntry.postValue(repository.bookmarksEntry)
+        bookmarksPopular.postValue(repository.bookmarksPopular)
+        bookmarksRecent.postValue(repository.bookmarksRecent)
     }
 
     /** 初期化 */
@@ -378,6 +378,9 @@ class BookmarksViewModel(
             onSuccess?.invoke()
         }
     }
+
+    /** ユーザーのブクマを取得 */
+    val userBookmark : Bookmark? get() = repository.userBookmark
 
     /** ViewModelProvidersを使用する際の依存性注入 */
     class Factory(
