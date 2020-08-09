@@ -25,8 +25,9 @@ import org.threeten.bp.format.DateTimeFormatter
 
 fun <T> List<T>?.contentsEquals(other: List<T>?) =
     if (this == null && other == null) true
-    else if (other == null) false
-    else this!!.size == other.size && this.mapIndexed { index, _ -> this[index] == other[index] }.all { it }
+    else if (this == null && other != null) false
+    else if (this != null && other == null) false
+    else this!!.size == other!!.size && this.mapIndexed { index, _ -> this[index] == other[index] }.all { it }
 
 
 open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>, RecyclerView.ViewHolder>(DiffCallback()) {
@@ -58,6 +59,7 @@ open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>
 
             return bookmark.user == other.bookmark.user &&
                     bookmark.comment == other.bookmark.comment &&
+                    bookmark.tags.contentsEquals(other.bookmark.tags) &&
                     bookmark.starCount.contentsEquals(other.bookmark.starCount) &&
                     isIgnored == other.isIgnored &&
                     mentions.contentsEquals(other.mentions) &&

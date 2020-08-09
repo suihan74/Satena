@@ -21,8 +21,9 @@ data class StarCount (
     )
 }
 
-class BookmarkWithStarCount (
-    user : User,
+data class BookmarkWithStarCount (
+    @SerializedName("user")
+    private val mUser : User,
     val comment : String,
 
     val isPrivate : Boolean,
@@ -43,10 +44,6 @@ class BookmarkWithStarCount (
 
     // for Gson
     private constructor() : this(User(), "", false, "", emptyList(), LocalDateTime.MIN, emptyList())
-
-    @SerializedName("user")
-    private val mUser : User = user
-
 
     @delegate:Transient
     val user: String by lazy { mUser.name }

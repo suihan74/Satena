@@ -78,6 +78,7 @@ class BookmarkPostActivity :
                 Intent.ACTION_SEND ->
                     intent.getStringExtra(Intent.EXTRA_TEXT)
 
+                // TODO: VIEWでは送られてこない(はず)
                 Intent.ACTION_VIEW ->
                     intent.dataString
 
@@ -159,7 +160,40 @@ class BookmarkPostActivity :
         val tagsListAdapter = object : TagsListAdapter() {
             override fun onItemClicked(tag: String) {
                 try {
+                    var watcher: TextWatcher? = null
+                    watcher = object : TextWatcher {
+                        private var before: Int = 0
+                        private var countDiff: Int = 0
+                        private var tagsEnd: Int = 0
+
+                        /** タグ部分の終了位置を取得する */
+                        private fun getTagsEnd(s: CharSequence?) : Int {
+                            val results = viewModel.tagRegex.findAll(s ?: "")
+                            val last = results.lastOrNull()
+                            return last?.range?.last?.plus(1) ?: 0
+                        }
+
+                        override fun afterTextChanged(s: Editable?) {
+                            val after = comment.selectionStart
+                            if (after == 0) {
+                                val selecting =
+                                    if (before < tagsEnd) getTagsEnd(s)
+                                    else before + countDiff
+                                comment.setSelection(selecting)
+                            }
+                            comment.removeTextChangedListener(watcher)
+                        }
+                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                            this.tagsEnd = getTagsEnd(s)
+                            this.before = comment.selectionStart
+                            this.countDiff = after - count
+                        }
+                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    }
+
+                    comment.addTextChangedListener(watcher)
                     viewModel.toggleTag(tag)
+
                 }
                 catch (e: ViewModel.TooManyTagsException) {
                     showToast(R.string.msg_post_too_many_tags)
