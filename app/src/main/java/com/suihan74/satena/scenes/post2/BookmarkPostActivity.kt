@@ -159,19 +159,12 @@ class BookmarkPostActivity :
         // タグリストを初期化
         val tagsListAdapter = object : TagsListAdapter() {
             override fun onItemClicked(tag: String) {
+                var watcher: TextWatcher? = null
                 try {
-                    var watcher: TextWatcher? = null
                     watcher = object : TextWatcher {
                         private var before: Int = 0
                         private var countDiff: Int = 0
                         private var tagsEnd: Int = 0
-
-                        /** タグ部分の終了位置を取得する */
-                        private fun getTagsEnd(s: CharSequence?) : Int {
-                            val results = viewModel.tagRegex.findAll(s ?: "")
-                            val last = results.lastOrNull()
-                            return last?.range?.last?.plus(1) ?: 0
-                        }
 
                         override fun afterTextChanged(s: Editable?) {
                             val after = comment.selectionStart
@@ -197,6 +190,7 @@ class BookmarkPostActivity :
                 }
                 catch (e: ViewModel.TooManyTagsException) {
                     showToast(R.string.msg_post_too_many_tags)
+                    comment.removeTextChangedListener(watcher)
                 }
             }
         }
@@ -360,5 +354,11 @@ class BookmarkPostActivity :
         val dialogBounds = Rect()
         window.decorView.getHitRect(dialogBounds)
         return !dialogBounds.contains(x, y)
+    }
+
+    /** タグ部分の終了位置を取得する */
+    private fun getTagsEnd(s: CharSequence?) : Int {
+        val results = viewModel.tagsRegex.find(s ?: "")
+        return results?.value?.length ?: 0
     }
 }
