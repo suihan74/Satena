@@ -193,6 +193,7 @@ class ViewModel(
 
     /** コメント中でタグと判断される箇所のregex */
     val tagRegex by lazy { Regex("""\[[^%/:\[\]]+]""") }
+    val tagsRegex by lazy { Regex("""^(\[[^%/:\[\]]*])+""") }
 
     /** コメント長を計算する */
     private fun getCommentLength(comment: String) =
@@ -311,25 +312,34 @@ class ViewModel(
     fun toggleTag(tag: String) {
         val tagText = "[$tag]"
         val commentText = comment.value ?: ""
-        if (commentText.contains(tagText)) {
-            comment.value = commentText.replace(tagText, "")
+
+        val tagsArea = tagsRegex.find(commentText)
+        val tagsText = tagsArea?.value ?: ""
+
+        if (tagsText.contains(tagText)) {
+            comment.value = buildString {
+                append(
+                    tagsText.replace(tagText, ""),
+                    commentText.substring(tagsText.length)
+                )
+            }
+        }
+        else if (tagsText.contains("[]")) {
+            comment.value = commentText.replaceFirst("[]", tagText)
         }
         else {
-            val matches = tagRegex.findAll(commentText)
+            val matches = tagRegex.findAll(tagsText)
 
             // タグは10個まで
             if (matches.count() == MAX_TAGS_COUNT) {
                 throw TooManyTagsException()
             }
 
-            val lastExisted = matches.lastOrNull()
-            val pos = lastExisted?.range?.endInclusive?.plus(1) ?: 0
-
             comment.value = buildString {
                 append(
-                    commentText.substring(0, pos),
+                    tagsText,
                     tagText,
-                    commentText.substring(pos)
+                    commentText.substring(tagsText.length)
                 )
             }
         }

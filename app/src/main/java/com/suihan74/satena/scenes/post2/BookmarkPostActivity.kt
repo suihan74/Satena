@@ -166,13 +166,6 @@ class BookmarkPostActivity :
                         private var countDiff: Int = 0
                         private var tagsEnd: Int = 0
 
-                        /** タグ部分の終了位置を取得する */
-                        private fun getTagsEnd(s: CharSequence?) : Int {
-                            val results = viewModel.tagRegex.findAll(s ?: "")
-                            val last = results.lastOrNull()
-                            return last?.range?.last?.plus(1) ?: 0
-                        }
-
                         override fun afterTextChanged(s: Editable?) {
                             val after = comment.selectionStart
                             if (after == 0) {
@@ -361,5 +354,11 @@ class BookmarkPostActivity :
         val dialogBounds = Rect()
         window.decorView.getHitRect(dialogBounds)
         return !dialogBounds.contains(x, y)
+    }
+
+    /** タグ部分の終了位置を取得する */
+    private fun getTagsEnd(s: CharSequence?) : Int {
+        val results = viewModel.tagsRegex.find(s ?: "")
+        return results?.value?.length ?: 0
     }
 }
