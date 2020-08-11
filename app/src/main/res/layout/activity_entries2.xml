@@ -76,6 +76,7 @@
                         android:id="@+id/entries_menu_background_guard_full"
                         android:clickable="true"
                         android:focusable="true"
+                        android:elevation="6dp"
                         android:focusableInTouchMode="true"
                         android:visibility="gone"
                         android:background="#a0000000"
@@ -107,6 +108,7 @@
                         android:paddingBottom="4dp"
                         android:paddingLeft="6dp"
                         android:paddingRight="6dp"
+                        android:elevation="7dp"
                         app:layout_anchor="@id/entries_menu_notices_button"
                         app:layout_anchorGravity="center_vertical|start"/>
 
@@ -135,6 +137,7 @@
                         android:paddingBottom="4dp"
                         android:paddingLeft="6dp"
                         android:paddingRight="6dp"
+                        android:elevation="7dp"
                         app:layout_anchor="@id/entries_menu_categories_button"
                         app:layout_anchorGravity="center_vertical|start"/>
 
@@ -163,6 +166,7 @@
                         android:paddingBottom="4dp"
                         android:paddingLeft="6dp"
                         android:paddingRight="6dp"
+                        android:elevation="7dp"
                         app:layout_anchor="@id/entries_menu_my_bookmarks_button"
                         app:layout_anchorGravity="center_vertical|start"/>
 
@@ -191,6 +195,7 @@
                         android:paddingBottom="4dp"
                         android:paddingLeft="6dp"
                         android:paddingRight="6dp"
+                        android:elevation="7dp"
                         app:layout_anchor="@id/entries_menu_preferences_button"
                         app:layout_anchorGravity="center_vertical|start"/>
 
