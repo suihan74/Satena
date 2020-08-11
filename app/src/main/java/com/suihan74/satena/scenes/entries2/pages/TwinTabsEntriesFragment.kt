@@ -5,12 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragment
@@ -66,17 +68,25 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
         adapter.updateBookmark(entry, bookmarkResult)
     }
 
-    override fun updateTabsLayout(tabLayout: TabLayout) : Boolean {
+    /** 与えられたタブのコンテンツを最上までスクロールする */
+    private fun scrollContentToTop(tabPosition: Int) {
+        val entriesTabPager = view?.entries_tab_pager ?: return
+        val adapter = entriesTabPager.adapter as EntriesTabAdapter
+        val fragment = adapter.instantiateItem(entriesTabPager, tabPosition) as? EntriesTabFragment
+        fragment?.scrollToTop()
+    }
+
+    /** EntriesActivityのタブと下部アプリバーをこのフラグメントの情報で更新する */
+    override fun updateActivityAppBar(activity: EntriesActivity, tabLayout: TabLayout, bottomAppBar: BottomAppBar?) : Boolean {
         val entriesTabPager = view?.entries_tab_pager ?: return false
 
+        // タブ項目のクリックイベント
         val listener = object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {}
             override fun onTabUnselected(p0: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                val adapter = entriesTabPager.adapter as EntriesTabAdapter
                 val position = tab!!.position
-                val fragment = adapter.instantiateItem(entriesTabPager, position) as? EntriesTabFragment
-                fragment?.scrollToTop()
+                scrollContentToTop(position)
             }
         }
 
@@ -110,6 +120,22 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
         tabLayout.setupWithViewPager(entriesTabPager)
         tabLayout.addOnTabSelectedListener(listener)
         tabLayout.setOnTabLongClickListener(longClickListener)
+
+        // 下部メニューの作成
+        bottomAppBar?.let { appBar ->
+            appBar.inflateMenu(R.menu.entries_bottom_items_general)
+
+            appBar.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.scroll_to_top -> {
+                        val currentPos = entriesTabPager.currentItem
+                        scrollContentToTop(currentPos)
+                        activity.showAppBar()
+                    }
+                }
+                return@setOnMenuItemClickListener true
+            }
+        }
 
         return true
     }

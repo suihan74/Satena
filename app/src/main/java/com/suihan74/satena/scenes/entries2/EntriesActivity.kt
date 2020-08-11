@@ -285,13 +285,18 @@ class EntriesActivity : AppCompatActivity() {
 
         // レイアウトモード反映
         if (viewModel.isBottomLayoutMode) {
+            // TODO: タブは画面上部で固定, 「最新までスクロール」や他のボタンを画面下部に集約
+/*
             tabLayout = bottom_tab_layout
             top_tab_layout.visibility = View.GONE
+            bottom_app_bar.visibility = View.VISIBLE
+ */
+            tabLayout = top_tab_layout
             bottom_app_bar.visibility = View.VISIBLE
         }
         else {
             tabLayout = top_tab_layout
-            bottom_tab_layout.visibility = View.GONE
+//            bottom_tab_layout.visibility = View.GONE
             bottom_app_bar.visibility = View.INVISIBLE
         }
         tabLayout?.visibility = View.VISIBLE

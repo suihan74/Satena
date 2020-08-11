@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.transition.Fade
 import androidx.transition.TransitionSet
+import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
@@ -129,15 +130,24 @@ abstract class EntriesFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
+        // EntriesActivityのTabLayoutとBottomAppBarをFragment側に公開する
         val activity = requireActivity() as EntriesActivity
-        activity.tabLayout?.let {
+        val tabLayout = activity.tabLayout?.also {
             it.setupWithViewPager(null)
             it.clearOnTabSelectedListeners()
             it.setOnLongClickListener(null)
+        }
 
-            it.visibility = updateTabsLayout(it).toVisibility(defaultInvisible = View.GONE)
+        val bottomAppBar = activity.bottom_app_bar?.also {
+            it.menu.clear()
+            it.setOnMenuItemClickListener(null)
+        }
+
+        if (tabLayout != null) {
+            tabLayout.visibility =
+                updateActivityAppBar(activity, tabLayout, bottomAppBar).toVisibility(defaultInvisible = View.GONE)
         }
     }
 
-    open fun updateTabsLayout(tabLayout: TabLayout) : Boolean = false
+    open fun updateActivityAppBar(activity: EntriesActivity, tabLayout: TabLayout, bottomAppBar: BottomAppBar?) : Boolean = false
 }
