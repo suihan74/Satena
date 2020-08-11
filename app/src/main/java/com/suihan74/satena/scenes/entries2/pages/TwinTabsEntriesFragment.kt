@@ -39,46 +39,6 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
 
         // タブ設定
         view.entries_tab_pager.adapter = EntriesTabAdapter(view.entries_tab_pager, this)
-        view.main_tab_layout.apply {
-            setupWithViewPager(view.entries_tab_pager)
-            addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-                override fun onTabSelected(tab: TabLayout.Tab?) {}
-                override fun onTabUnselected(p0: TabLayout.Tab?) {}
-                override fun onTabReselected(tab: TabLayout.Tab?) {
-                    val adapter = view.entries_tab_pager.adapter as EntriesTabAdapter
-                    val position = tab!!.position
-                    val fragment = adapter.instantiateItem(view.entries_tab_pager, position) as? EntriesTabFragment
-                    fragment?.scrollToTop()
-                }
-            })
-
-            // タブを長押しで最初に表示するタブを変更
-            setOnTabLongClickListener { idx ->
-                val category = viewModel.category.value!!
-                if (!category.displayInList) return@setOnTabLongClickListener false
-
-                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-                val isOn = prefs.getBoolean(PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB)
-                if (!isOn) return@setOnTabLongClickListener false
-
-                val homeCategoryInt = prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY)
-                val initialTab = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
-
-                if (category.ordinal != homeCategoryInt || initialTab != idx) {
-                    val tabText = viewModel.getTabTitle(requireContext(), idx)
-                    prefs.edit {
-                        put(PreferenceKey.ENTRIES_HOME_CATEGORY, category.ordinal)
-                        put(PreferenceKey.ENTRIES_INITIAL_TAB, idx)
-                    }
-                    activity?.showToast(
-                        R.string.msg_entries_initial_tab_changed,
-                        getString(category.textId),
-                        tabText
-                    )
-                }
-                return@setOnTabLongClickListener true
-            }
-        }
 
         // タブ初期選択
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
@@ -104,5 +64,53 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
     override fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
         val adapter = binding?.entriesTabPager?.adapter as? EntriesTabAdapter ?: return
         adapter.updateBookmark(entry, bookmarkResult)
+    }
+
+    override fun updateTabsLayout(tabLayout: TabLayout) : Boolean {
+        val entriesTabPager = view?.entries_tab_pager ?: return false
+
+        val listener = object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {}
+            override fun onTabUnselected(p0: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+                val adapter = entriesTabPager.adapter as EntriesTabAdapter
+                val position = tab!!.position
+                val fragment = adapter.instantiateItem(entriesTabPager, position) as? EntriesTabFragment
+                fragment?.scrollToTop()
+            }
+        }
+
+        // タブを長押しで最初に表示するタブを変更
+        val longClickListener : (Int)->Boolean = l@ { idx ->
+            val category = viewModel.category.value!!
+            if (!category.displayInList) return@l false
+
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val isOn = prefs.getBoolean(PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB)
+            if (!isOn) return@l false
+
+            val homeCategoryInt = prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY)
+            val initialTab = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
+
+            if (category.ordinal != homeCategoryInt || initialTab != idx) {
+                val tabText = viewModel.getTabTitle(requireContext(), idx)
+                prefs.edit {
+                    put(PreferenceKey.ENTRIES_HOME_CATEGORY, category.ordinal)
+                    put(PreferenceKey.ENTRIES_INITIAL_TAB, idx)
+                }
+                activity?.showToast(
+                    R.string.msg_entries_initial_tab_changed,
+                    getString(category.textId),
+                    tabText
+                )
+            }
+            return@l true
+        }
+
+        tabLayout.setupWithViewPager(entriesTabPager)
+        tabLayout.addOnTabSelectedListener(listener)
+        tabLayout.setOnTabLongClickListener(longClickListener)
+
+        return true
     }
 }

@@ -8,11 +8,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.transition.Fade
 import androidx.transition.TransitionSet
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.getEnum
+import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.activity_entries2.*
 import java.util.*
 
@@ -31,14 +33,14 @@ abstract class EntriesFragment : Fragment() {
         viewModelKey: String,
         repository: EntriesRepository,
         category: Category
-    ) : EntriesFragmentViewModel
+    ): EntriesFragmentViewModel
 
     /** タイトル */
-    open val title : String?
+    open val title: String?
         get() = getString(category.textId)
 
     /** サブタイトル */
-    open val subtitle : String? = null
+    open val subtitle: String? = null
 
     //////////////////////////////////////////////////
 
@@ -51,23 +53,23 @@ abstract class EntriesFragment : Fragment() {
     private lateinit var uuid: String
 
     /** EntriesActivityのViewModel */
-    private val activityViewModel : EntriesViewModel by lazy {
+    private val activityViewModel: EntriesViewModel by lazy {
         val activity = requireActivity() as EntriesActivity
         activity.viewModel
     }
 
-    protected lateinit var viewModel : EntriesFragmentViewModel
+    protected lateinit var viewModel: EntriesFragmentViewModel
 
     /** タブ側からこのフラグメントのVMにアクセスするためのキー */
     val viewModelKey: String
         get() = "EntriesFragment_${uuid}"
 
     /** この画面のCategory */
-    val category : Category
+    val category: Category
         get() = viewModel.category.value!!
 
     /** この画面のIssue */
-    val issue : Issue?
+    val issue: Issue?
         get() = viewModel.issue.value
 
     /** タブタイトルを取得する */
@@ -123,4 +125,19 @@ abstract class EntriesFragment : Fragment() {
 
         return null
     }
+
+    override fun onResume() {
+        super.onResume()
+
+        val activity = requireActivity() as EntriesActivity
+        activity.tabLayout?.let {
+            it.setupWithViewPager(null)
+            it.clearOnTabSelectedListeners()
+            it.setOnLongClickListener(null)
+
+            it.visibility = updateTabsLayout(it).toVisibility(defaultInvisible = View.GONE)
+        }
+    }
+
+    open fun updateTabsLayout(tabLayout: TabLayout) : Boolean = false
 }

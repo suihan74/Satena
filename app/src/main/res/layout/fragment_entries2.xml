@@ -14,18 +14,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <com.google.android.material.appbar.AppBarLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/main_tab_layout"
-                    style="@style/TabLayoutStyle"
-                    app:layout_scrollFlags="enterAlways"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/tabBackground"/>
-        </com.google.android.material.appbar.AppBarLayout>
-
         <androidx.viewpager.widget.ViewPager
                 android:id="@+id/entries_tab_pager"
                 android:background="?attr/panelBackground"

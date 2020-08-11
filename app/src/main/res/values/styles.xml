@@ -1,9 +1,15 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorPrimary</item>
+
+        <!-- FABのデフォルトスタイル -->
+        <item name="floatingActionButtonStyle">@style/FloatingActionButtonStyle</item>
+
+        <!-- ボタンのデフォルトスタイル -->
+        <item name="materialButtonStyle">@style/ButtonStyle</item>
 
         <!-- ダイアログのデフォルトスタイル -->
         <item name="android:alertDialogTheme">@style/AlertDialogStyle</item>
@@ -66,7 +72,7 @@
     </style>
 
     <!-- 設定画面のトグルボタン -->
-    <style name="PreferencesToggleButtonStyle" parent="Widget.AppCompat.Button">
+    <style name="PreferencesToggleButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:backgroundTint">@drawable/preferences_toggle_background_selector</item>
         <item name="android:textColor">@drawable/preferences_toggle_text_color_selector</item>
     </style>
@@ -191,6 +197,18 @@
 
     <style name="SpinnerStyle.Dark" parent="Widget.AppCompat.Spinner">
         <item name="android:popupBackground">@color/panelBackgroundDark</item>
+    </style>
+
+    <!-- Button -->
+    <style name="ButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="backgroundTint">?android:attr/colorButtonNormal</item>
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+
+    <!-- FAB -->
+    <style name="FloatingActionButtonStyle" parent="Widget.MaterialComponents.FloatingActionButton">
+        <item name="tint">@color/colorPrimaryText</item>
+        <item name="borderWidth">0dp</item>
     </style>
 
     <!-- SearchView -->

@@ -12,8 +12,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/drawer_layout"
-            android:background="?attr/panelBackground"
-            android:fitsSystemWindows="false">
+            android:background="?attr/panelBackground">
 
         <!-- The main content view -->
         <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -28,8 +27,7 @@
 
                 <com.google.android.material.appbar.AppBarLayout
                         android:id="@+id/appbar_layout"
-                        app:elevation="0dp"
-                        android:stateListAnimator="@null"
+                        android:elevation="8dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
@@ -40,9 +38,18 @@
                             app:titleTextColor="?android:attr/textColorSecondary"
                             android:background="?attr/colorPrimary"
                             android:contentInsetStart="8dp"
-                            app:layout_scrollFlags="scroll|enterAlways">
+                            app:elevation="0dp"
+                            app:layout_scrollFlags="scroll|enterAlways"/>
 
-                    </androidx.appcompat.widget.Toolbar>
+                    <com.google.android.material.tabs.TabLayout
+                            android:id="@+id/top_tab_layout"
+                            style="@style/TabLayoutStyle"
+                            app:layout_scrollFlags="enterAlways"
+                            app:elevation="0dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/tabBackground"/>
+
                 </com.google.android.material.appbar.AppBarLayout>
 
                 <FrameLayout
@@ -50,6 +57,27 @@
                         app:layout_behavior="@string/appbar_scrolling_view_behavior"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
+
+                <!-- 下部アプリバー -->
+                <com.google.android.material.bottomappbar.BottomAppBar
+                        android:id="@+id/bottom_app_bar"
+                        android:layout_gravity="bottom"
+                        app:backgroundTint="?attr/tabBackground"
+                        app:fabCradleRoundedCornerRadius="8dp"
+                        app:fabAlignmentMode="end"
+                        app:contentInsetStart="0dp"
+                        app:elevation="32dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp">
+
+                    <com.google.android.material.tabs.TabLayout
+                            android:id="@+id/bottom_tab_layout"
+                            style="@style/TabLayoutStyle"
+                            android:layout_marginEnd="96dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"/>
+
+                </com.google.android.material.bottomappbar.BottomAppBar>
 
                 <!-- メニュー表示中に他の領域をタップできなくする(設定がONになっているときに表示する) -->
                 <View
@@ -74,165 +102,117 @@
                         android:layout_height="300dp"/>
 
                 <!-- 以下メニューボタン -->
-                <LinearLayout
-                        android:id="@+id/entries_menu_notices_layout"
+                <TextView
+                        android:id="@+id/entries_menu_notices_desc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_gravity="bottom|end"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
+                        android:text="@string/notices_desc"
+                        android:textColor="#ddd"
+                        android:textStyle="bold"
+                        android:background="@drawable/rounded_corner_text_view"
+                        android:alpha="0"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:paddingLeft="6dp"
+                        android:paddingRight="6dp"
+                        app:layout_anchor="@id/entries_menu_notices_button"
+                        app:layout_anchorGravity="center_vertical|start"/>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/entries_menu_notices_button"
+                        style="@style/Widget.Design.FloatingActionButton"
                         android:visibility="invisible"
-                        android:layout_marginEnd="24dp"
-                        android:layout_marginBottom="24dp">
-
-                    <TextView
-                            android:id="@+id/entries_menu_notices_desc"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/notices_desc"
-                            android:textColor="#ddd"
-                            android:textStyle="bold"
-                            android:background="@drawable/rounded_corner_text_view"
-                            android:alpha="0"
-                            android:paddingTop="4dp"
-                            android:paddingBottom="4dp"
-                            android:paddingLeft="6dp"
-                            android:paddingRight="6dp"
-                            android:layout_gravity="center_vertical"
-                            android:layout_marginEnd="8dp"/>
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                            android:id="@+id/entries_menu_notices_button"
-                            style="@style/Widget.Design.FloatingActionButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_notifications"
-                            android:layout_margin="8dp"
-                            app:backgroundTint="?attr/colorPrimary"
-                            app:fabSize="mini"/>
-                </LinearLayout>
-
-                <LinearLayout
-                        android:id="@+id/entries_menu_categories_layout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_gravity="bottom|end"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
-                        android:visibility="invisible"
-                        android:layout_marginEnd="24dp"
-                        android:layout_marginBottom="24dp">
+                        android:src="@drawable/ic_notifications"
+                        app:layout_anchor="@id/entries_menu_button"
+                        app:layout_anchorGravity="center"
+                        app:backgroundTint="?attr/colorPrimary"
+                        app:fabSize="mini"/>
 
-                    <TextView
-                            android:id="@+id/entries_menu_categories_desc"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/categories_desc"
-                            android:textColor="#ddd"
-                            android:textStyle="bold"
-                            android:background="@drawable/rounded_corner_text_view"
-                            android:alpha="0"
-                            android:paddingTop="4dp"
-                            android:paddingBottom="4dp"
-                            android:paddingLeft="6dp"
-                            android:paddingRight="6dp"
-                            android:layout_gravity="center_vertical"
-                            android:layout_marginEnd="8dp"/>
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                            android:id="@+id/entries_menu_categories_button"
-                            style="@style/Widget.Design.FloatingActionButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_baseline_category"
-                            android:layout_margin="8dp"
-                            app:backgroundTint="?attr/colorPrimary"
-                            app:fabSize="mini"/>
-                </LinearLayout>
-
-                <LinearLayout
-                        android:id="@+id/entries_menu_my_bookmarks_layout"
+                <TextView
+                        android:id="@+id/entries_menu_categories_desc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
+                        android:text="@string/categories_desc"
+                        android:textColor="#ddd"
+                        android:textStyle="bold"
+                        android:background="@drawable/rounded_corner_text_view"
+                        android:alpha="0"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:paddingLeft="6dp"
+                        android:paddingRight="6dp"
+                        app:layout_anchor="@id/entries_menu_categories_button"
+                        app:layout_anchorGravity="center_vertical|start"/>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/entries_menu_categories_button"
+                        style="@style/Widget.Design.FloatingActionButton"
                         android:visibility="invisible"
-                        android:layout_gravity="bottom|end"
-                        android:layout_marginEnd="24dp"
-                        android:layout_marginBottom="24dp">
-
-                    <TextView
-                            android:id="@+id/entries_menu_my_bookmarks_desc"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@{vm.myBookmarkButtonTextId}"
-                            android:textColor="#ddd"
-                            android:textStyle="bold"
-                            android:background="@drawable/rounded_corner_text_view"
-                            android:alpha="0"
-                            android:paddingTop="4dp"
-                            android:paddingBottom="4dp"
-                            android:paddingLeft="6dp"
-                            android:paddingRight="6dp"
-                            android:layout_gravity="center_vertical"
-                            android:layout_marginEnd="8dp"/>
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                            android:id="@+id/entries_menu_my_bookmarks_button"
-                            style="@style/Widget.Design.FloatingActionButton"
-                            app:src="@{vm.myBookmarkButtonIconId}"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="8dp"
-                            app:backgroundTint="?attr/colorPrimary"
-                            app:fabSize="mini"/>
-                </LinearLayout>
-
-                <LinearLayout
-                        android:id="@+id/entries_menu_settings_layout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_gravity="bottom|end"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
+                        android:src="@drawable/ic_baseline_category"
+                        app:layout_anchor="@id/entries_menu_button"
+                        app:layout_anchorGravity="center"
+                        app:backgroundTint="?attr/colorPrimary"
+                        app:fabSize="mini"/>
+
+                <TextView
+                        android:id="@+id/entries_menu_my_bookmarks_desc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{vm.myBookmarkButtonTextId}"
+                        android:textColor="#ddd"
+                        android:textStyle="bold"
+                        android:background="@drawable/rounded_corner_text_view"
+                        android:alpha="0"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:paddingLeft="6dp"
+                        android:paddingRight="6dp"
+                        app:layout_anchor="@id/entries_menu_my_bookmarks_button"
+                        app:layout_anchorGravity="center_vertical|start"/>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/entries_menu_my_bookmarks_button"
+                        style="@style/Widget.Design.FloatingActionButton"
                         android:visibility="invisible"
-                        android:layout_marginEnd="24dp"
-                        android:layout_marginBottom="24dp">
+                        app:src="@{vm.myBookmarkButtonIconId}"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_anchor="@id/entries_menu_button"
+                        app:layout_anchorGravity="center"
+                        app:backgroundTint="?attr/colorPrimary"
+                        app:fabSize="mini"/>
 
-                    <TextView
-                            android:id="@+id/entries_menu_preferences_desc"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/preferences_desc"
-                            android:textColor="#ddd"
-                            android:textStyle="bold"
-                            android:background="@drawable/rounded_corner_text_view"
-                            android:alpha="0"
-                            android:paddingTop="4dp"
-                            android:paddingBottom="4dp"
-                            android:paddingLeft="6dp"
-                            android:paddingRight="6dp"
-                            android:layout_gravity="center_vertical"
-                            android:layout_marginEnd="8dp"/>
+                <TextView
+                        android:id="@+id/entries_menu_preferences_desc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/preferences_desc"
+                        android:textColor="#ddd"
+                        android:textStyle="bold"
+                        android:background="@drawable/rounded_corner_text_view"
+                        android:alpha="0"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:paddingLeft="6dp"
+                        android:paddingRight="6dp"
+                        app:layout_anchor="@id/entries_menu_preferences_button"
+                        app:layout_anchorGravity="center_vertical|start"/>
 
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                            android:id="@+id/entries_menu_preferences_button"
-                            style="@style/Widget.Design.FloatingActionButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_baseline_settings"
-                            android:layout_margin="8dp"
-                            app:backgroundTint="?attr/colorPrimary"
-                            app:fabSize="mini"/>
-                </LinearLayout>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/entries_menu_preferences_button"
+                        style="@style/Widget.Design.FloatingActionButton"
+                        android:visibility="invisible"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_baseline_settings"
+                        app:layout_anchor="@id/entries_menu_button"
+                        app:layout_anchorGravity="center"
+                        app:backgroundTint="?attr/colorPrimary"
+                        app:fabSize="mini"/>
 
                 <!-- メニュー表示中の記事誤タップ防止用ビュー -->
                 <View
@@ -247,15 +227,12 @@
                 <!-- メニュー表示切替用の大ボタン -->
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/entries_menu_button"
-                        style="@style/Widget.Design.FloatingActionButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        app:layout_anchor="@id/bottom_app_bar"
                         android:src="@drawable/ic_baseline_menu_white"
                         app:borderWidth="0dp"
                         app:backgroundTint="?attr/colorPrimary"
-                        android:layout_gravity="bottom|end"
-                        android:layout_marginEnd="24dp"
-                        android:layout_marginBottom="24dp"
                         app:fabSize="normal"/>
 
             </androidx.coordinatorlayout.widget.CoordinatorLayout>

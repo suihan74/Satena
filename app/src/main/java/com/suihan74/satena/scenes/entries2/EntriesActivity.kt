@@ -12,6 +12,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -72,6 +73,10 @@ class EntriesActivity : AppCompatActivity() {
 
     /** FABメニューの開閉状態 */
     private var isFABMenuOpened : Boolean = false
+
+    /** 上部/下部どちらか有効な方のタブレイアウト */
+    var tabLayout: TabLayout? = null
+        private set
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -278,6 +283,21 @@ class EntriesActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        // レイアウトモード反映
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val isBottomLayout = prefs.getBoolean(PreferenceKey.ENTRIES_BOTTOM_LAYOUT_MODE)
+        if (isBottomLayout) {
+            tabLayout = bottom_tab_layout
+            top_tab_layout.visibility = View.GONE
+            bottom_app_bar.visibility = View.VISIBLE
+        }
+        else {
+            tabLayout = top_tab_layout
+            bottom_tab_layout.visibility = View.GONE
+            bottom_app_bar.visibility = View.INVISIBLE
+        }
+        tabLayout?.visibility = View.VISIBLE
+
         // ツールバーを隠す設定を反映
         toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
             scrollFlags =
@@ -391,12 +411,15 @@ class EntriesActivity : AppCompatActivity() {
 
     /** FABメニュー各項目のオープン時移動アニメーション */
     private fun openFABMenuAnimation(layout: View, desc: View, dimenId: Int) {
+        val metrics = resources.displayMetrics
+
         layout.visibility = View.VISIBLE
         layout.animate()
             .withEndAction {
+                val descWidth = desc.width / 2f
                 desc.animate()
-                    .translationXBy(100f)
-                    .translationX(0f)
+                    .translationXBy(0f)
+                    .translationX(-descWidth - (8f * metrics.density))
                     .alphaBy(0.0f)
                     .alpha(1.0f)
                     .duration = 100
@@ -446,22 +469,22 @@ class EntriesActivity : AppCompatActivity() {
         entries_menu_background_guard.visibility = View.VISIBLE
 
         openFABMenuAnimation(
-            entries_menu_notices_layout,
+            entries_menu_notices_button,
             entries_menu_notices_desc,
             R.dimen.dp_238
         )
         openFABMenuAnimation(
-            entries_menu_categories_layout,
+            entries_menu_categories_button,
             entries_menu_categories_desc,
             R.dimen.dp_180
         )
         openFABMenuAnimation(
-            entries_menu_my_bookmarks_layout,
+            entries_menu_my_bookmarks_button,
             entries_menu_my_bookmarks_desc,
             R.dimen.dp_122
         )
         openFABMenuAnimation(
-            entries_menu_settings_layout,
+            entries_menu_preferences_button,//entries_menu_settings_layout,
             entries_menu_preferences_desc,
             R.dimen.dp_64
         )
@@ -480,19 +503,19 @@ class EntriesActivity : AppCompatActivity() {
         entries_menu_background_guard.visibility = View.GONE
 
         closeFABMenuAnimation(
-            entries_menu_notices_layout,
+            entries_menu_notices_button,
             entries_menu_notices_desc
         )
         closeFABMenuAnimation(
-            entries_menu_categories_layout,
+            entries_menu_categories_button,
             entries_menu_categories_desc
         )
         closeFABMenuAnimation(
-            entries_menu_my_bookmarks_layout,
+            entries_menu_my_bookmarks_button,
             entries_menu_my_bookmarks_desc
         )
         closeFABMenuAnimation(
-            entries_menu_settings_layout,
+            entries_menu_preferences_button,//entries_menu_settings_layout,
             entries_menu_preferences_desc
         )
 
