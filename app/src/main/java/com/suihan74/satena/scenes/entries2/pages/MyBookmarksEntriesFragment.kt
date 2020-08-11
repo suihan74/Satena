@@ -1,8 +1,8 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.res.ColorStateList
-import android.os.Bundle
-import android.view.*
+import android.view.Menu
+import android.view.MenuInflater
 import android.widget.ImageView
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
@@ -11,12 +11,11 @@ import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
+import com.google.android.material.bottomappbar.BottomAppBar
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
-import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
-import com.suihan74.satena.scenes.entries2.initialize
+import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_entries2.*
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
@@ -41,30 +40,49 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         return ViewModelProvider(owner, factory)[viewModelKey, MyBookmarksViewModel::class.java]
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val root = super.onCreateView(inflater, container, savedInstanceState)
-        setHasOptionsMenu(true)
-        return root
+    override fun onResume() {
+        super.onResume()
+
+        activity?.alsoAs<EntriesActivity> {
+            if (!it.viewModel.isBottomLayoutMode) {
+                setHasOptionsMenu(true)
+            }
+        }
+    }
+
+    override fun updateActivityAppBar(
+        activity: EntriesActivity,
+        tabLayout: TabLayout,
+        bottomAppBar: BottomAppBar?
+    ): Boolean {
+        val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
+
+        bottomAppBar?.let { appBar ->
+            appBar.inflateMenu(R.menu.my_bookmarks)
+            initializeMenu(appBar.menu, appBar)
+        }
+
+        return result
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.my_bookmarks, menu)
+        initializeMenu(menu)
+    }
+
+    /** メニュー初期化処理 */
+    private fun initializeMenu(menu: Menu, bottomAppBar: BottomAppBar? = null) {
         val activity = requireActivity()
         val viewModel = viewModel as MyBookmarksViewModel
 
-        inflater.inflate(R.menu.my_bookmarks, menu)
-
         // 検索窓
-        val searchView = (menu.findItem(R.id.search_view)?.actionView as? SearchView)?.also {
-            initializeSearchView(it, viewModel)
+        val searchView = menu.findItem(R.id.search_view)?.actionView.alsoAs<SearchView> {
+            initializeSearchView(it, viewModel, menu, bottomAppBar)
         }
 
         // タグ選択メニュー
-        val tagsSpinner = (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.also {
+        val tagsSpinner = menu.findItem(R.id.issues_spinner)?.actionView.alsoAs<Spinner> {
             initializeTagsSpinner(it, viewModel)
         }
 
@@ -91,7 +109,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         viewModel.isSearchViewExpanded || viewModel.tag.value != null
 
     /** SearchViewを設定 */
-    private fun initializeSearchView(searchView: SearchView, viewModel: MyBookmarksViewModel) = searchView.run {
+    private fun initializeSearchView(searchView: SearchView, viewModel: MyBookmarksViewModel, menu: Menu, bottomAppBar: BottomAppBar?) = searchView.run {
         val fragment = this@MyBookmarksEntriesFragment
 
         queryHint = getString(R.string.hint_search_my_bookmarks)
@@ -157,7 +175,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         }
 
         // 横幅を最大化
-        stretchWidth(requireActivity(), 1)
+        stretchWidth(requireActivity(), menu, bottomAppBar != null)
     }
 
     /** タグ選択メニューの設定 */

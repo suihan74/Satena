@@ -1,16 +1,20 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
-import android.view.*
+import android.view.Menu
+import android.view.MenuInflater
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
+import com.google.android.material.bottomappbar.BottomAppBar
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
@@ -58,20 +62,39 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val root = super.onCreateView(inflater, container, savedInstanceState)
-        setHasOptionsMenu(true)
-        return root
+    override fun onResume() {
+        super.onResume()
+
+        activity.alsoAs<EntriesActivity> {
+            if (!it.viewModel.isBottomLayoutMode) {
+                setHasOptionsMenu(true)
+            }
+        }
+    }
+
+    override fun updateActivityAppBar(
+        activity: EntriesActivity,
+        tabLayout: TabLayout,
+        bottomAppBar: BottomAppBar?
+    ): Boolean {
+        val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
+
+        bottomAppBar?.let { appBar ->
+            appBar.inflateMenu(R.menu.search_entries2)
+            initializeMenu(appBar.menu, appBar)
+        }
+
+        return result
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.search_entries2, menu)
+        initializeMenu(menu)
+    }
 
+    /** メニュー初期化処理 */
+    private fun initializeMenu(menu: Menu, bottomAppBar: BottomAppBar? = null) {
         val fragment = this
         val viewModel = viewModel as SearchEntriesViewModel
 
@@ -113,7 +136,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
             }
 
             // 横幅を最大化
-            stretchWidth(requireActivity(), 1)
+            stretchWidth(requireActivity(), menu, bottomAppBar != null)
         }
 
         // 検索タイプ選択メニューの設定
@@ -142,6 +165,8 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
             }
         }
     }
+
+    // ------ //
 
     override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
         val viewModel = viewModel as SearchEntriesViewModel

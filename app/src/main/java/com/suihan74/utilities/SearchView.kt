@@ -1,18 +1,21 @@
 package com.suihan74.utilities
 
 import android.app.Activity
+import android.view.Menu
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
 
 /** 横幅いっぱいに表示する */
-fun SearchView.stretchWidth(activity: Activity, numOtherButtons: Int = 0) {
+fun SearchView.stretchWidth(activity: Activity, menu: Menu, isBottomAppBar: Boolean = false) {
+    val numOtherButtons = menu.size() - 1
     val numBtn = if (numOtherButtons < 0) 0 else numOtherButtons
     val dMetrics = android.util.DisplayMetrics()
     activity.windowManager.defaultDisplay.getMetrics(dMetrics)
     val buttonSize = (64 * resources.displayMetrics.density).toInt()  // ボタンのサイズ分だけ小さくしないとボタンが画面外に出てしまう
-    maxWidth = dMetrics.widthPixels - numBtn * buttonSize
+    val rightMargin = if (isBottomAppBar) (64 * resources.displayMetrics.density).toInt() else 0
+    maxWidth = dMetrics.widthPixels - numBtn * buttonSize - rightMargin
 
     // 左端の余分なマージンを削るための設定
     arrayOf(

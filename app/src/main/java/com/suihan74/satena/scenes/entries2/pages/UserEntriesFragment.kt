@@ -72,9 +72,9 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         val viewModel = viewModel as UserEntriesViewModel
-        inflater.inflate(R.menu.spinner_issues, menu)
+        inflater.inflate(R.menu.spinner_tags, menu)
 
-        val spinner = (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.apply {
+        val spinner = (menu.findItem(R.id.issues_spinner)?.actionView as? Spinner)?.apply {
             visibility = View.GONE
         }
 
@@ -91,7 +91,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
                     activity,
                     spinnerItems,
                     R.drawable.spinner_allow_tags,
-                    getString(R.string.desc_issues_spinner)
+                    null
                 ) { position ->
                     val tag =
                         if (position == null) null

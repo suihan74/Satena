@@ -8,12 +8,15 @@ import androidx.activity.addCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
+import com.google.android.material.bottomappbar.BottomAppBar
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.initialize
+import com.suihan74.utilities.alsoAs
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.activity_entries2.*
@@ -55,33 +58,58 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
 
     override fun onResume() {
         super.onResume()
-        setHasOptionsMenu(category.hasIssues)
+
+        activity.alsoAs<EntriesActivity> {
+            if (!it.viewModel.isBottomLayoutMode) {
+                setHasOptionsMenu(category.hasIssues)
+            }
+        }
+    }
+
+    override fun updateActivityAppBar(
+        activity: EntriesActivity,
+        tabLayout: TabLayout,
+        bottomAppBar: BottomAppBar?
+    ): Boolean {
+        val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
+
+        bottomAppBar?.let { appBar ->
+            appBar.inflateMenu(R.menu.spinner_issues)
+            initializeMenu(appBar.menu)
+        }
+
+        return result
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        val viewModel = viewModel as HatenaEntriesViewModel
-
         inflater.inflate(R.menu.spinner_issues, menu)
+        initializeMenu(menu)
+    }
 
-        val spinner = (menu.findItem(R.id.spinner)?.actionView as? Spinner)?.apply {
-            visibility = View.GONE
-        }
+    /** サブカテゴリ選択ボックスを初期化する */
+    private fun initializeMenu(menu: Menu) {
+        val spinner = menu.findItem(R.id.issues_spinner)?.actionView as? Spinner ?: return
+
+        // ロード完了まで隠しておく
+        spinner.visibility = View.GONE
+
+        val viewModel = viewModel as HatenaEntriesViewModel
 
         viewModel.issues.observe(viewLifecycleOwner) { issues ->
             val activity = requireActivity() as EntriesActivity
             val spinnerItems = issues.map { it.name }
 
             if (issues.isNotEmpty()) {
-                spinner?.visibility = View.VISIBLE
+                spinner.visibility = View.VISIBLE
             }
 
-            spinner?.run {
+            spinner.run {
                 initialize(
                     activity,
                     spinnerItems,
                     R.drawable.spinner_allow_issues,
-                    getString(R.string.desc_issues_spinner)
+                    null
                 ) { position ->
                     viewModel.issue.value =
                         if (position == null) null
@@ -106,7 +134,7 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
             clearIssueCallback?.isEnabled = it != null
 
             if (it == null) {
-                spinner?.setSelection(0)
+                spinner.setSelection(0)
             }
         }
 

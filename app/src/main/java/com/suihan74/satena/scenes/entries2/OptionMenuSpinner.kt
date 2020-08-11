@@ -17,7 +17,7 @@ fun Spinner.initialize(
     context: Context,
     items: List<String>,
     iconId: Int,
-    hint: String = "",
+    hint: String? = "",
     onItemSelected: ((Int?)->Unit)? = null
 ) {
     val innerItems = listOf("*").plus(items)
@@ -61,9 +61,11 @@ fun Spinner.initialize(
         }
     }
 
-    setOnLongClickListener {
-        context.showToast(hint)
-        return@setOnLongClickListener true
+    if (!hint.isNullOrBlank()) {
+        setOnLongClickListener {
+            context.showToast(hint)
+            return@setOnLongClickListener true
+        }
     }
 
     onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
