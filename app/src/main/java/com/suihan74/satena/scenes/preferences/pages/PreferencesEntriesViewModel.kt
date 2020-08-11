@@ -11,6 +11,11 @@ class PreferencesEntriesViewModel(
     historyPrefs: SafeSharedPreferences<EntriesHistoryKey>
 ) : PreferencesViewModel(prefs) {
 
+    /** レイアウトモード */
+    val bottomLayoutMode = createLiveData<Boolean>(
+        PreferenceKey.ENTRIES_BOTTOM_LAYOUT_MODE
+    )
+
     /** エントリ項目シングルタップの挙動 */
     val singleTapAction = createLiveDataEnum<TapEntryAction>(
         PreferenceKey.ENTRY_SINGLE_TAP_ACTION

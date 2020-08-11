@@ -140,6 +140,7 @@
     <string name="pref_generals_notices_intervals_dialog_msg">1分～180分で指定できます</string>
     <string name="minutes">分</string>
     <!-- entries -->
+    <string name="pref_entries_layout_mode_desc">レイアウトモード</string>
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
     <string name="pref_home_category_desc">ホームカテゴリ</string>
@@ -154,6 +155,8 @@
     <string name="pref_entries_read_action_type_desc">「あとで読む」エントリを「読んだ」したときの挙動</string>
     <string name="pref_entries_read_action_boilerplate_desc">「読んだ」ときに投稿する定型文</string>
     <string name="pref_entries_read_action_boilerplate_hint">ブコメの入力ルールに従います</string>
+    <string name="pref_entries_bottom_layout_mode_on_text">ボトムメニュー</string>
+    <string name="pref_entries_bottom_layout_mode_off_text">デフォルト</string>
     <!-- bookmarks -->
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
     <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>
