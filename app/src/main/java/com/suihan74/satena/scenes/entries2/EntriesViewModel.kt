@@ -85,6 +85,10 @@ class EntriesViewModel(
     val entryLongClickedAction : TapEntryAction
         get() = repository.entryLongClickedAction
 
+    /** ボタン類を画面下部に集約する */
+    val isBottomLayoutMode : Boolean
+        get() = repository.isBottomLayoutMode
+
     class Factory(private val repository: EntriesRepository) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>) : T =

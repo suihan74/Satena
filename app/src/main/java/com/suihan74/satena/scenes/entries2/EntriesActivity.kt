@@ -284,9 +284,7 @@ class EntriesActivity : AppCompatActivity() {
         super.onResume()
 
         // レイアウトモード反映
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-        val isBottomLayout = prefs.getBoolean(PreferenceKey.ENTRIES_BOTTOM_LAYOUT_MODE)
-        if (isBottomLayout) {
+        if (viewModel.isBottomLayoutMode) {
             tabLayout = bottom_tab_layout
             top_tab_layout.visibility = View.GONE
             bottom_app_bar.visibility = View.VISIBLE
@@ -297,6 +295,8 @@ class EntriesActivity : AppCompatActivity() {
             bottom_app_bar.visibility = View.INVISIBLE
         }
         tabLayout?.visibility = View.VISIBLE
+        // 下部バー利用中の場合、設定によってはスクロールで隠す
+        bottom_app_bar.hideOnScroll = viewModel.isBottomLayoutMode && viewModel.hideToolbarByScroll
 
         // ツールバーを隠す設定を反映
         toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
@@ -309,7 +309,7 @@ class EntriesActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         // 画面遷移後や復元後にツールバーを強制的に再表示する
-        appbar_layout.setExpanded(true, false)
+        showAppBar()
     }
 
     override fun onRestart() {
@@ -387,6 +387,9 @@ class EntriesActivity : AppCompatActivity() {
     /** AppBarを強制的に表示する */
     fun showAppBar() {
         appbar_layout.setExpanded(true, true)
+        if (viewModel.isBottomLayoutMode) {
+            bottom_app_bar.performShow()
+        }
     }
 
     /** エントリリストを再構成する */
