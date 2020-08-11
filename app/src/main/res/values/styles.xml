@@ -72,7 +72,7 @@
     </style>
 
     <!-- 設定画面のトグルボタン -->
-    <style name="PreferencesToggleButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
+    <style name="PreferencesToggleButtonStyle" parent="Widget.AppCompat.Button">
         <item name="android:backgroundTint">@drawable/preferences_toggle_background_selector</item>
         <item name="android:textColor">@drawable/preferences_toggle_text_color_selector</item>
     </style>
@@ -200,7 +200,7 @@
     </style>
 
     <!-- Button -->
-    <style name="ButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
+    <style name="ButtonStyle" parent="Widget.AppCompat.Button">
         <item name="backgroundTint">?android:attr/colorButtonNormal</item>
         <item name="android:textColor">@android:color/black</item>
     </style>
