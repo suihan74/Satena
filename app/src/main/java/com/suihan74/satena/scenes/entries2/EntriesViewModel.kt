@@ -85,6 +85,10 @@ class EntriesViewModel(
     val entryLongClickedAction : TapEntryAction
         get() = repository.entryLongClickedAction
 
+    /** アプリ終了前に確認する */
+    val isTerminationDialogEnabled : Boolean
+        get() = repository.isTerminationDialogEnabled
+
     class Factory(private val repository: EntriesRepository) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>) : T =
