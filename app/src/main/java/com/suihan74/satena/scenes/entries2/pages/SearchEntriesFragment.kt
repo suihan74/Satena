@@ -66,9 +66,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
         super.onResume()
 
         activity.alsoAs<EntriesActivity> {
-            if (!it.viewModel.isBottomLayoutMode) {
-                setHasOptionsMenu(true)
-            }
+            setHasOptionsMenu(!it.viewModel.isBottomLayoutMode)
         }
     }
 

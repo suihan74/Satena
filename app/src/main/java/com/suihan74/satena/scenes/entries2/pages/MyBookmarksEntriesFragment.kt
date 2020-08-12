@@ -44,9 +44,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         super.onResume()
 
         activity?.alsoAs<EntriesActivity> {
-            if (!it.viewModel.isBottomLayoutMode) {
-                setHasOptionsMenu(true)
-            }
+            setHasOptionsMenu(!it.viewModel.isBottomLayoutMode)
         }
     }
 
