@@ -301,7 +301,8 @@ class EntriesActivity : AppCompatActivity() {
         }
         tabLayout?.visibility = View.VISIBLE
         // 下部バー利用中の場合、設定によってはスクロールで隠す
-        bottom_app_bar.hideOnScroll = viewModel.isBottomLayoutMode && viewModel.hideToolbarByScroll
+        bottom_app_bar.hideOnScroll =
+            viewModel.isBottomLayoutMode && viewModel.hideBottomAppBarByScroll
 
         // ツールバーを隠す設定を反映
         toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {

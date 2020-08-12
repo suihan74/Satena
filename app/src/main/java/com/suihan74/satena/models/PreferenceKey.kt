@@ -68,6 +68,9 @@ enum class PreferenceKey(
     /** レイアウトモード */
     ENTRIES_BOTTOM_LAYOUT_MODE(typeInfo<Boolean>(), false),
 
+    /** スクロールで下部アプリバーを隠す */
+    ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING(typeInfo<Boolean>(), false),
+
     /** エントリ項目シングルタップの挙動 */
     ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.ordinal),
 

@@ -112,6 +112,10 @@ class EntriesRepository(
     val isBottomLayoutMode : Boolean
         get() = prefs.getBoolean(PreferenceKey.ENTRIES_BOTTOM_LAYOUT_MODE)
 
+    /** スクロールにあわせて下部バーを隠す */
+    val hideBottomAppBarByScroll : Boolean
+        get() = prefs.getBoolean(PreferenceKey.ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING)
+
     /** サインインする */
     suspend fun signIn(forceUpdate: Boolean = false) {
         accountLoader.signInAccounts(forceUpdate)

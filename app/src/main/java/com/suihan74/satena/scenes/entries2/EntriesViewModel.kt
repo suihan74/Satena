@@ -89,6 +89,10 @@ class EntriesViewModel(
     val isBottomLayoutMode : Boolean
         get() = repository.isBottomLayoutMode
 
+    /** スクロールにあわせて下部バーを隠す */
+    val hideBottomAppBarByScroll : Boolean
+        get() = repository.hideBottomAppBarByScroll
+
     class Factory(private val repository: EntriesRepository) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>) : T =

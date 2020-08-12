@@ -16,6 +16,11 @@ class PreferencesEntriesViewModel(
         PreferenceKey.ENTRIES_BOTTOM_LAYOUT_MODE
     )
 
+    /** 下部レイアウトをスクロールで隠す */
+    val hideBottomLayoutByScroll = createLiveData<Boolean>(
+        PreferenceKey.ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING
+    )
+
     /** エントリ項目シングルタップの挙動 */
     val singleTapAction = createLiveDataEnum<TapEntryAction>(
         PreferenceKey.ENTRY_SINGLE_TAP_ACTION
