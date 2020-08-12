@@ -75,8 +75,8 @@ class EntriesActivity : AppCompatActivity() {
     private var isFABMenuOpened : Boolean = false
 
     /** 上部/下部どちらか有効な方のタブレイアウト */
-    var tabLayout: TabLayout? = null
-        private set
+    val tabLayout: TabLayout?
+        get() = top_tab_layout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -284,22 +284,7 @@ class EntriesActivity : AppCompatActivity() {
         super.onResume()
 
         // レイアウトモード反映
-        if (viewModel.isBottomLayoutMode) {
-            // TODO: タブは画面上部で固定, 「最新までスクロール」や他のボタンを画面下部に集約
-/*
-            tabLayout = bottom_tab_layout
-            top_tab_layout.visibility = View.GONE
-            bottom_app_bar.visibility = View.VISIBLE
- */
-            tabLayout = top_tab_layout
-            bottom_app_bar.visibility = View.VISIBLE
-        }
-        else {
-            tabLayout = top_tab_layout
-//            bottom_tab_layout.visibility = View.GONE
-            bottom_app_bar.visibility = View.INVISIBLE
-        }
-        tabLayout?.visibility = View.VISIBLE
+        bottom_app_bar.visibility = viewModel.isBottomLayoutMode.toVisibility()
         // 下部バー利用中の場合、設定によってはスクロールで隠す
         bottom_app_bar.hideOnScroll =
             viewModel.isBottomLayoutMode && viewModel.hideBottomAppBarByScroll
