@@ -14,6 +14,7 @@ import com.suihan74.satena.databinding.FragmentPreferencesEntriesBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialogFragment
 import com.suihan74.satena.models.*
+import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.android.synthetic.main.fragment_preferences_entries.view.*
@@ -32,6 +33,7 @@ class PreferencesEntriesFragment :
         private const val DIALOG_HOME_TAB = "DIALOG_HOME_TAB"
         private const val DIALOG_HISTORY_MAX_SIZE_PICKER = "DIALOG_HISTORY_MAX_SIZE_PICKER"
         private const val DIALOG_ENTRY_READ_ACTION_TYPE = "DIALOG_ENTRY_READ_ACTION_TYPE"
+        private const val DIALOG_CATEGORIES_MODE = "DIALOG_CATEGORIES_MODE"
     }
 
     private lateinit var viewModel : PreferencesEntriesViewModel
@@ -128,13 +130,22 @@ class PreferencesEntriesFragment :
                 .show(childFragmentManager, DIALOG_ENTRY_READ_ACTION_TYPE)
         }
 
+        // カテゴリリストの表示形式
+        view.preferences_entries_categories_mode.setOnClickListener {
+            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                .setTitle(R.string.pref_entries_categories_mode_desc)
+                .setNegativeButton(R.string.dialog_cancel)
+                .setSingleChoiceItems(
+                    CategoriesMode.values().map { getString(it.textId) }.toTypedArray(),
+                    viewModel.categoriesMode.value!!.ordinal)
+                .show(childFragmentManager, DIALOG_CATEGORIES_MODE)
+        }
+
         return view
     }
 
     /** ダイアログ項目の選択 */
     override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-
         when (dialog.tag) {
             DIALOG_SINGLE_TAP_ACTION ->
                 viewModel.singleTapAction.value = TapEntryAction.fromInt(which)
@@ -153,6 +164,9 @@ class PreferencesEntriesFragment :
 
             DIALOG_ENTRY_READ_ACTION_TYPE ->
                 viewModel.entryReadActionType.value = EntryReadActionType.fromInt(which)
+
+            DIALOG_CATEGORIES_MODE ->
+                viewModel.categoriesMode.value = CategoriesMode.fromInt(which)
         }
         dialog.dismiss()
     }

@@ -2,6 +2,7 @@ package com.suihan74.satena.models
 
 import android.content.Context
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
+import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -82,6 +83,9 @@ enum class PreferenceKey(
 
     /** 最初に表示するタブ(の位置) */
     ENTRIES_INITIAL_TAB(typeInfo<Int>(), 0),
+
+    /** カテゴリリストの表示形式 */
+    ENTRIES_CATEGORIES_MODE(typeInfo<Int>(), CategoriesMode.LIST.ordinal),
 
     /** メニュー展開時にタップ防止用の画面暗転をする */
     ENTRIES_MENU_TAP_GUARD(typeInfo<Boolean>(), true),

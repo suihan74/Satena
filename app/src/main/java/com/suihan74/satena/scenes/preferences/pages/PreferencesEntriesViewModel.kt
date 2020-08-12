@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.preferences.pages
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.models.*
+import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
 
@@ -39,6 +40,11 @@ class PreferencesEntriesViewModel(
     /** 最初に表示するタブ */
     val initialTab = createLiveData<Int>(
         PreferenceKey.ENTRIES_INITIAL_TAB
+    )
+
+    /** カテゴリリストの表示形式 */
+    val categoriesMode = createLiveDataEnum<CategoriesMode>(
+        PreferenceKey.ENTRIES_CATEGORIES_MODE
     )
 
     /** メニュー表示中の操作を許可 */

@@ -148,18 +148,26 @@
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
     <string name="pref_home_category_desc">ホームカテゴリ</string>
     <string name="pref_entries_initial_tab_desc">最初に表示するタブ</string>
+    <string name="pref_entries_categories_mode_desc">カテゴリ一覧の表示形式</string>
     <string name="pref_entries_menu_tap_guard_desc">メニュー表示中に他の操作をできないようにする</string>
     <string name="pref_entries_hiding_toolbar_by_scrolling_desc">スクロールでツールバーを隠す</string>
     <string name="pref_entries_history_max_size_desc">ブクマ閲覧履歴の最大保存数</string>
     <string name="pref_entries_change_home_by_long_tapping_desc">タブ長押しでホームカテゴリ・初期タブを変更する</string>
+
     <string name="pref_entries_history_max_size_dialog_title">ブクマ閲覧履歴の最大保存数を設定</string>
     <string name="pref_entries_history_max_size_dialog_msg">1～100件で指定できます</string>
     <string name="pref_entries_history_max_size_text">件</string>
+
     <string name="pref_entries_read_action_type_desc">「あとで読む」エントリを「読んだ」したときの挙動</string>
     <string name="pref_entries_read_action_boilerplate_desc">「読んだ」ときに投稿する定型文</string>
     <string name="pref_entries_read_action_boilerplate_hint">ブコメの入力ルールに従います</string>
+
     <string name="pref_entries_bottom_layout_mode_on_text">ボトムメニュー</string>
     <string name="pref_entries_bottom_layout_mode_off_text">デフォルト</string>
+
+    <string name="pref_categories_mode_list">リスト</string>
+    <string name="pref_categories_mode_grid">テーブル</string>
+
     <!-- bookmarks -->
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
     <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>
