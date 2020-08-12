@@ -12,9 +12,11 @@ import com.suihan74.satena.models.Category
 import com.suihan74.utilities.ItemClickedListener
 import kotlinx.android.synthetic.main.listview_item_categories.view.*
 
-
 class CategoriesAdapter : ListAdapter<Category, CategoriesAdapter.ViewHolder>(DiffCallback()) {
     override fun getItemCount() = currentList.size
+
+    /** 表示形式にあわせてアイテムの表示を変える */
+    private var itemLayoutId : Int = R.layout.listview_item_categories
 
     /** 項目クリック時の挙動 */
     private var onItemClicked : ItemClickedListener<Category>? = null
@@ -24,8 +26,16 @@ class CategoriesAdapter : ListAdapter<Category, CategoriesAdapter.ViewHolder>(Di
         onItemClicked = listener
     }
 
+    fun updateLayout(itemLayoutId: Int) {
+        this.itemLayoutId = itemLayoutId
+        val items = currentList.toList()
+        submitList(emptyList()) {
+            submitList(items)
+        }
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val inflate = LayoutInflater.from(parent.context).inflate(R.layout.listview_item_categories, parent, false)
+        val inflate = LayoutInflater.from(parent.context).inflate(itemLayoutId, parent, false)
         val holder = ViewHolder(inflate)
 
         holder.itemView.setOnClickListener {

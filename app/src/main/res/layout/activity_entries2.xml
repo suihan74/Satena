@@ -261,13 +261,19 @@
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         <!-- カテゴリリスト -->
-        <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/categories_list"
-                style="@style/RecyclerView.Linear"
-                app:src="@{vm.categories}"
-                android:layout_width="240dp"
-                android:layout_height="match_parent"
+        <FrameLayout
+                android:id="@+id/drawer_area"
+                android:background="?attr/panelBackground"
                 android:layout_gravity="end"
-                android:background="?attr/panelBackground"/>
+                android:layout_width="240dp"
+                android:layout_height="match_parent">
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/categories_list"
+                    app:src="@{vm.categories}"
+                    style="@style/RecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"/>
+        </FrameLayout>
     </androidx.drawerlayout.widget.DrawerLayout>
 </layout>

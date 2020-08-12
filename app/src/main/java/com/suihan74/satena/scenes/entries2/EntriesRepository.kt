@@ -116,6 +116,10 @@ class EntriesRepository(
     val hideBottomAppBarByScroll : Boolean
         get() = prefs.getBoolean(PreferenceKey.ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING)
 
+    /** カテゴリリストの表示形式 */
+    val categoriesMode : CategoriesMode
+        get() = CategoriesMode.fromInt(prefs.getInt(PreferenceKey.ENTRIES_CATEGORIES_MODE))
+
     /** サインインする */
     suspend fun signIn(forceUpdate: Boolean = false) {
         accountLoader.signInAccounts(forceUpdate)

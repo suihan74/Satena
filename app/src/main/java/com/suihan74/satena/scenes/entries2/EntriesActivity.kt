@@ -11,6 +11,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.BookmarkResult
@@ -69,7 +71,7 @@ class EntriesActivity : AppCompatActivity() {
 
     /** ドロワーの開閉状態 */
     private val isDrawerOpened : Boolean
-        get() = drawer_layout.isDrawerOpen(categories_list)
+        get() = drawer_layout.isDrawerOpen(drawer_area)
 
     /** FABメニューの開閉状態 */
     private var isFABMenuOpened : Boolean = false
@@ -149,7 +151,7 @@ class EntriesActivity : AppCompatActivity() {
         // カテゴリリスト表示ボタン
         entries_menu_categories_button.setOnClickListener {
             closeFABMenu()
-            drawer_layout.openDrawer(categories_list)
+            drawer_layout.openDrawer(drawer_area)
         }
 
         // サインイン/マイブックマークボタン
@@ -299,6 +301,20 @@ class EntriesActivity : AppCompatActivity() {
         // アクションバー設定
         setSupportActionBar(toolbar)
 
+        // カテゴリリストの表示形式を適用
+        val categoriesAdapter = categories_list.adapter as? CategoriesAdapter
+        when (viewModel.categoriesMode) {
+            CategoriesMode.LIST -> {
+                categories_list.layoutManager = LinearLayoutManager(this)
+                categoriesAdapter?.updateLayout(R.layout.listview_item_categories)
+            }
+
+            CategoriesMode.GRID -> {
+                categories_list.layoutManager = GridLayoutManager(this, 4)
+                categoriesAdapter?.updateLayout(R.layout.listview_item_categories_grid)
+            }
+        }
+
         // 画面遷移後や復元後にツールバーを強制的に再表示する
         showAppBar()
     }
@@ -318,7 +334,7 @@ class EntriesActivity : AppCompatActivity() {
     /** 戻るボタンの挙動 */
     override fun onBackPressed() {
         when {
-            isDrawerOpened -> drawer_layout.closeDrawer(categories_list)
+            isDrawerOpened -> drawer_layout.closeDrawer(drawer_area)
 
             isFABMenuOpened -> closeFABMenu()
 

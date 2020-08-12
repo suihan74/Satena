@@ -93,6 +93,10 @@ class EntriesViewModel(
     val hideBottomAppBarByScroll : Boolean
         get() = repository.hideBottomAppBarByScroll
 
+    /** カテゴリリストの表示形式 */
+    val categoriesMode : CategoriesMode
+        get() = repository.categoriesMode
+
     class Factory(private val repository: EntriesRepository) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>) : T =
