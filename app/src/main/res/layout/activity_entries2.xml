@@ -121,6 +121,7 @@
                         android:src="@drawable/ic_notifications"
                         app:layout_anchor="@id/entries_menu_button"
                         app:layout_anchorGravity="center"
+                        app:elevation="7dp"
                         app:backgroundTint="?attr/colorPrimary"
                         app:fabSize="mini"/>
 
@@ -150,6 +151,7 @@
                         android:src="@drawable/ic_baseline_category"
                         app:layout_anchor="@id/entries_menu_button"
                         app:layout_anchorGravity="center"
+                        app:elevation="7dp"
                         app:backgroundTint="?attr/colorPrimary"
                         app:fabSize="mini"/>
 
@@ -179,6 +181,7 @@
                         android:layout_height="wrap_content"
                         app:layout_anchor="@id/entries_menu_button"
                         app:layout_anchorGravity="center"
+                        app:elevation="7dp"
                         app:backgroundTint="?attr/colorPrimary"
                         app:fabSize="mini"/>
 
@@ -208,6 +211,7 @@
                         android:src="@drawable/ic_baseline_settings"
                         app:layout_anchor="@id/entries_menu_button"
                         app:layout_anchorGravity="center"
+                        app:elevation="7dp"
                         app:backgroundTint="?attr/colorPrimary"
                         app:fabSize="mini"/>
 
@@ -229,6 +233,7 @@
                         app:layout_anchor="@id/bottom_app_bar"
                         android:src="@drawable/ic_baseline_menu_white"
                         app:borderWidth="0dp"
+                        app:elevation="8dp"
                         app:backgroundTint="?attr/colorPrimary"
                         app:fabSize="normal"/>
 
