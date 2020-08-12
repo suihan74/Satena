@@ -85,6 +85,10 @@ class EntriesViewModel(
     val entryLongClickedAction : TapEntryAction
         get() = repository.entryLongClickedAction
 
+    /** アプリ終了前に確認する */
+    val isTerminationDialogEnabled : Boolean
+        get() = repository.isTerminationDialogEnabled
+
     /** ボタン類を画面下部に集約する */
     val isBottomLayoutMode : Boolean
         get() = repository.isBottomLayoutMode

@@ -23,6 +23,7 @@ import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityEntries2Binding
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
@@ -31,7 +32,7 @@ import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_entries2.*
 
-class EntriesActivity : AppCompatActivity() {
+class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
     companion object {
         /** String: アクティビティ生成時にCategory.Siteに遷移、表示するURL */
         const val EXTRA_SITE_URL = "EntriesActivity.EXTRA_SITE_URL"
@@ -47,6 +48,8 @@ class EntriesActivity : AppCompatActivity() {
 
         /** リリースノートダイアログ */
         private const val DIALOG_RELEASE_NOTES = "DIALOG_RELEASE_NOTES"
+        /** 終了確認ダイアログ */
+        private const val DIALOG_TERMINATION = "DIALOG_TERMINATION"
     }
 
     /** Entry画面全体で使用するViewModel */
@@ -338,12 +341,7 @@ class EntriesActivity : AppCompatActivity() {
 
             isFABMenuOpened -> closeFABMenu()
 
-            else -> {
-                super.onBackPressed()
-                if (supportFragmentManager.backStackEntryCount == 0) {
-                    finish()
-                }
-            }
+            else -> finish()
         }
     }
 
@@ -415,6 +413,33 @@ class EntriesActivity : AppCompatActivity() {
     fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
         val fragment = supportFragmentManager.get<EntriesFragment>()
         fragment?.updateBookmark(entry, bookmarkResult)
+    }
+
+    /** アクティビティ終了時確認 */
+    override fun finish() {
+        if (viewModel.isTerminationDialogEnabled && supportFragmentManager.backStackEntryCount <= 1) {
+            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                .setTitle(R.string.confirm_dialog_title_simple)
+                .setMessage(R.string.app_termination_dialog_msg)
+                .setNegativeButton(R.string.dialog_cancel)
+                .setPositiveButton(R.string.dialog_ok)
+                .show(supportFragmentManager, DIALOG_TERMINATION)
+        }
+        else {
+            finishImpl()
+        }
+    }
+
+    private fun finishImpl() {
+        try {
+            super.onBackPressed()
+            if (supportFragmentManager.backStackEntryCount == 0) {
+                super.finish()
+            }
+        }
+        catch (e: Throwable) {
+            Log.e("finish", Log.getStackTraceString(e))
+        }
     }
 
     // --- FAB表示アニメーション ---
@@ -530,6 +555,14 @@ class EntriesActivity : AppCompatActivity() {
         )
 
         entries_menu_button.setImageResource(R.drawable.ic_baseline_menu_white)
+    }
+
+    // --- Listener ---
+
+    override fun onClickPositiveButton(dialog: AlertDialogFragment) {
+        when (dialog.tag) {
+            DIALOG_TERMINATION -> finishImpl()
+        }
     }
 }
 

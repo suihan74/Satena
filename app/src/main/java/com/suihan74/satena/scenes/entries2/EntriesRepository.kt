@@ -108,6 +108,10 @@ class EntriesRepository(
     val entryLongClickedAction : TapEntryAction
         get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
 
+    /** アプリ終了前に確認する */
+    val isTerminationDialogEnabled : Boolean
+        get() = prefs.getBoolean(PreferenceKey.USING_TERMINATION_DIALOG)
+
     /** ボタン類を画面下部に集約する */
     val isBottomLayoutMode : Boolean
         get() = prefs.getBoolean(PreferenceKey.ENTRIES_BOTTOM_LAYOUT_MODE)
