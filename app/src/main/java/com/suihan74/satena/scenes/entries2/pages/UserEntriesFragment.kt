@@ -8,12 +8,12 @@ import androidx.activity.addCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
+import com.google.android.material.bottomappbar.BottomAppBar
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
-import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
-import com.suihan74.satena.scenes.entries2.initialize
+import com.suihan74.satena.scenes.entries2.*
+import com.suihan74.utilities.alsoAs
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.activity_entries2.*
@@ -64,18 +64,43 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
             activity?.toolbar?.title = title
         }
 
-        setHasOptionsMenu(category == Category.User)
-
         return root
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        activity.alsoAs<EntriesActivity> {
+            setHasOptionsMenu(!it.viewModel.isFABMenuBackgroundActive && category == Category.User)
+        }
+    }
+
+    override fun updateActivityAppBar(
+        activity: EntriesActivity,
+        tabLayout: TabLayout,
+        bottomAppBar: BottomAppBar?
+    ): Boolean {
+        val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
+
+        bottomAppBar?.let { appBar ->
+            appBar.inflateMenu(R.menu.spinner_tags)
+            initializeMenu(appBar.menu)
+        }
+
+        return result
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        val viewModel = viewModel as UserEntriesViewModel
         inflater.inflate(R.menu.spinner_tags, menu)
+        initializeMenu(menu)
+    }
 
-        val spinner = (menu.findItem(R.id.issues_spinner)?.actionView as? Spinner)?.apply {
-            visibility = View.GONE
+    private fun initializeMenu(menu: Menu) {
+        val viewModel = viewModel as UserEntriesViewModel
+
+        val spinner = menu.findItem(R.id.issues_spinner)?.actionView.alsoAs<Spinner> {
+            it.visibility = View.GONE
         }
 
         viewModel.tags.observe(viewLifecycleOwner) { tags ->
