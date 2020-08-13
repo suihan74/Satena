@@ -217,7 +217,7 @@
         <item name="queryBackground">@android:color/transparent</item>
         <item name="submitBackground">@android:color/transparent</item>
         <item name="closeIcon">@drawable/ic_baseline_close</item>
-        <item name="searchIcon">@null</item>
+        <item name="searchIcon">@drawable/ic_baseline_search</item>
         <item name="searchHintIcon">@drawable/ic_baseline_search</item>
         <item name="commitIcon">@null</item>
         <item name="goIcon">@null</item>
@@ -225,7 +225,6 @@
     </style>
 
     <style name="SearchViewStyle.Toolbar" parent="SearchViewStyle">
-        <item name="android:textColorPrimary">@color/colorPrimaryText</item>
         <item name="android:tint">@color/colorPrimaryText</item>
         <item name="textColor">@color/colorPrimaryText</item>
         <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.Toolbar</item>
