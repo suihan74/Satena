@@ -100,6 +100,13 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
 
         // 検索クエリ入力ボックスの設定
         (menu.findItem(R.id.search_view)?.actionView as? SearchView)?.run {
+            // 文字色をテーマに合わせて調整する
+            if (bottomAppBar != null) {
+                val color = context.getThemeColor(R.attr.textColor)
+                val editText = findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)
+                editText?.setTextColor(color)
+            }
+
             // クエリの設定
             val initialQuery = viewModel.searchQuery.value
             setQuery(initialQuery, false)
