@@ -5,16 +5,16 @@
     <item
             android:id="@+id/search_view"
             android:title="@string/desc_search_mybookmarks"
-            android:icon="@drawable/ic_baseline_search"
-            app:iconTint="@color/colorPrimaryText"
+            android:icon="@drawable/ic_baseline_search_theme_colored"
+            app:iconTint="?attr/textColor"
             app:showAsAction="always"
-            app:actionViewClass="androidx.appcompat.widget.SearchView"/>
+            app:actionLayout="@layout/searchview_bottom"/>
 
     <item
             android:id="@+id/issues_spinner"
             android:title="@string/desc_tags_spinner"
             android:icon="@drawable/ic_tag"
-            app:iconTint="@color/colorPrimaryText"
+            app:iconTint="?attr/textColor"
             app:showAsAction="always"
             app:actionViewClass="android.widget.Spinner"/>
 </menu>

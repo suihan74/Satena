@@ -1,8 +1,8 @@
 package com.suihan74.satena.scenes.entries2.pages
 
-import android.content.res.ColorStateList
 import android.view.Menu
 import android.view.MenuInflater
+import android.view.View
 import android.widget.ImageView
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
@@ -56,7 +56,8 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
 
         bottomAppBar?.let { appBar ->
-            appBar.inflateMenu(R.menu.my_bookmarks)
+//            activity.menuInflater.inflate(R.menu.my_bookmarks_bottom, activity.bottomMenu)
+            appBar.inflateMenu(R.menu.my_bookmarks_bottom)
             initializeMenu(appBar.menu, appBar)
         }
 
@@ -80,9 +81,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         }
 
         // タグ選択メニュー
-        val tagsSpinner = menu.findItem(R.id.issues_spinner)?.actionView.alsoAs<Spinner> {
-            initializeTagsSpinner(it, viewModel)
-        }
+        initializeTagsSpinner(menu, viewModel)
 
         // 戻るボタンに割り込む
         onBackPressedCallback?.remove()
@@ -109,6 +108,12 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
     /** SearchViewを設定 */
     private fun initializeSearchView(searchView: SearchView, viewModel: MyBookmarksViewModel, menu: Menu, bottomAppBar: BottomAppBar?) = searchView.run {
         val fragment = this@MyBookmarksEntriesFragment
+
+        if (bottomAppBar != null) {
+            val color = context.getThemeColor(R.attr.textColor)
+            val editText = findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)
+            editText?.setTextColor(color)
+        }
 
         queryHint = getString(R.string.hint_search_my_bookmarks)
         setQuery(viewModel.searchQuery.value, false)
@@ -177,23 +182,27 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
     }
 
     /** タグ選択メニューの設定 */
-    private fun initializeTagsSpinner(spinner: Spinner, viewModel: MyBookmarksViewModel) {
-        // TODO: ロード失敗時にアイコンが表示されないので、暫定的な処置
-        spinner.background = requireContext().getDrawable(R.drawable.spinner_allow_tags)
-        spinner.backgroundTintList = ColorStateList.valueOf(requireContext().getColor(R.color.colorPrimaryText))
+    private fun initializeTagsSpinner(menu: Menu, viewModel: MyBookmarksViewModel) {
+        val menuItem = menu.findItem(R.id.issues_spinner)
+        val spinner = menuItem?.actionView.alsoAs<Spinner> {
+            it.visibility = View.GONE
+        } ?: return
 
         // タグ一覧のロード完了後に候補リストを作成する
         viewModel.tags.observe(viewLifecycleOwner) { tags ->
             val activity = requireActivity()
+
+            if (tags.isNotEmpty()) {
+                spinner.visibility = View.VISIBLE
+            }
 
             // タグ選択
             spinner.run {
                 val spinnerItems = tags.map { "${it.text}(${it.count})" }
                 initialize(
                     activity,
-                    spinnerItems,
-                    R.drawable.spinner_allow_tags,
-                    getString(R.string.desc_tags_spinner)
+                    menuItem,
+                    spinnerItems
                 ) { position ->
                     val tag =
                         if (position == null) null

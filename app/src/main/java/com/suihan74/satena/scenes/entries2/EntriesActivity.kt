@@ -75,8 +75,11 @@ class EntriesActivity : AppCompatActivity() {
     private var isFABMenuOpened : Boolean = false
 
     /** 上部/下部どちらか有効な方のタブレイアウト */
-    val tabLayout: TabLayout?
+    val tabLayout : TabLayout?
         get() = top_tab_layout
+
+//    val bottomMenu : Menu
+//        get() = bottom_menu.menu
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -284,7 +287,7 @@ class EntriesActivity : AppCompatActivity() {
         super.onResume()
 
         // レイアウトモード反映
-        bottom_app_bar.visibility = viewModel.isBottomLayoutMode.toVisibility()
+        bottom_app_bar.visibility = viewModel.isBottomLayoutMode.toVisibility(View.INVISIBLE)
         // 下部バー利用中の場合、設定によってはスクロールで隠す
         bottom_app_bar.hideOnScroll =
             viewModel.isBottomLayoutMode && viewModel.hideBottomAppBarByScroll

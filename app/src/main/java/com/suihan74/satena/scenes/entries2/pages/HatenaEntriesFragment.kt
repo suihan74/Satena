@@ -72,7 +72,7 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
         val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
 
         bottomAppBar?.let { appBar ->
-            appBar.inflateMenu(R.menu.spinner_issues)
+            appBar.inflateMenu(R.menu.spinner_issues_bottom)
             initializeMenu(appBar.menu)
         }
 
@@ -87,7 +87,8 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
 
     /** サブカテゴリ選択ボックスを初期化する */
     private fun initializeMenu(menu: Menu) {
-        val spinner = menu.findItem(R.id.issues_spinner)?.actionView as? Spinner ?: return
+        val menuItem = menu.findItem(R.id.issues_spinner)
+        val spinner = menuItem?.actionView as? Spinner ?: return
 
         // ロード完了まで隠しておく
         spinner.visibility = View.GONE
@@ -105,9 +106,8 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
             spinner.run {
                 initialize(
                     activity,
-                    spinnerItems,
-                    R.drawable.spinner_allow_issues,
-                    null
+                    menuItem,
+                    spinnerItems
                 ) { position ->
                     viewModel.issue.value =
                         if (position == null) null

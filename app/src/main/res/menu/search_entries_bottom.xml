@@ -4,13 +4,15 @@
 
     <item
             android:id="@+id/search_view"
-            android:title="search"
+            android:title="@string/search_query_hint"
+            app:iconTint="?attr/textColor"
             app:showAsAction="always"
-            app:actionViewClass="androidx.appcompat.widget.SearchView"
-            />
+            app:actionLayout="@layout/searchview_bottom" />
 
     <item
             android:id="@+id/search_type"
-            android:title="テキスト"
+            android:title="@string/search_type_text"
+            android:icon="@drawable/ic_title"
+            app:iconTint="?attr/textColor"
             app:showAsAction="always"/>
 </menu>

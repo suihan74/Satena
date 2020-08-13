@@ -6,7 +6,7 @@
             android:id="@+id/issues_spinner"
             android:title="@string/desc_tags_spinner"
             android:icon="@drawable/ic_tag"
-            app:iconTint="@color/colorPrimaryText"
+            app:iconTint="?attr/textColor"
             app:actionViewClass="android.widget.Spinner"
             app:showAsAction="always"/>
 </menu>

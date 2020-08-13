@@ -3,6 +3,8 @@ package com.suihan74.satena.scenes.entries2.pages
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
+import android.view.View
+import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -78,7 +80,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
         val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
 
         bottomAppBar?.let { appBar ->
-            appBar.inflateMenu(R.menu.search_entries2)
+            appBar.inflateMenu(R.menu.search_entries_bottom)
             initializeMenu(appBar.menu, appBar)
         }
 
@@ -87,7 +89,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.search_entries2, menu)
+        inflater.inflate(R.menu.search_entries, menu)
         initializeMenu(menu)
     }
 
@@ -132,6 +134,10 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
                 requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
                 clearFocus()
             }
+
+            val magIcon = findViewById<View>(androidx.appcompat.R.id.search_mag_icon)
+            magIcon?.background = null
+            magIcon?.layoutParams = LinearLayout.LayoutParams(0, 0)
 
             // 横幅を最大化
             stretchWidth(requireActivity(), menu, bottomAppBar != null)

@@ -83,7 +83,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
 
         bottomAppBar?.let { appBar ->
-            appBar.inflateMenu(R.menu.spinner_tags)
+            appBar.inflateMenu(R.menu.spinner_tags_bottom)
             initializeMenu(appBar.menu)
         }
 
@@ -99,38 +99,36 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
     private fun initializeMenu(menu: Menu) {
         val viewModel = viewModel as UserEntriesViewModel
 
-        val spinner = menu.findItem(R.id.issues_spinner)?.actionView.alsoAs<Spinner> {
+        val menuItem = menu.findItem(R.id.issues_spinner)
+        val spinner = menuItem?.actionView.alsoAs<Spinner> {
             it.visibility = View.GONE
-        }
+        } ?: return
 
         viewModel.tags.observe(viewLifecycleOwner) { tags ->
             val activity = requireActivity()
 
-            spinner?.run {
-                if (tags.isNotEmpty()) {
-                    spinner.visibility = View.VISIBLE
-                }
+            if (tags.isNotEmpty()) {
+                spinner.visibility = View.VISIBLE
+            }
 
-                val spinnerItems = tags.map { "${it.text}(${it.count})" }
-                initialize(
-                    activity,
-                    spinnerItems,
-                    R.drawable.spinner_allow_tags,
-                    null
-                ) { position ->
-                    val tag =
-                        if (position == null) null
-                        else tags[position]
+            val spinnerItems = tags.map { "${it.text}(${it.count})" }
+            spinner.initialize(
+                activity,
+                menuItem,
+                spinnerItems
+            ) { position ->
+                val tag =
+                    if (position == null) null
+                    else tags[position]
 
-                    viewModel.tag.value = tag
-                }
+                viewModel.tag.value = tag
+            }
 
-                if (viewModel.tag.value != null) {
-                    val currentIssueName = viewModel.tag.value?.text
-                    val position = tags.indexOfFirst { it.text == currentIssueName }
-                    if (position >= 0) {
-                        setSelection(position + 1)
-                    }
+            if (viewModel.tag.value != null) {
+                val currentIssueName = viewModel.tag.value?.text
+                val position = tags.indexOfFirst { it.text == currentIssueName }
+                if (position >= 0) {
+                    spinner.setSelection(position + 1)
                 }
             }
         }
@@ -143,7 +141,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
             clearTagCallback?.isEnabled = it != null
 
             if (it == null) {
-                spinner?.setSelection(0)
+                spinner.setSelection(0)
             }
         }
 

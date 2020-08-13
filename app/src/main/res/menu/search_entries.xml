@@ -3,12 +3,16 @@
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-            android:id="@+id/search_type"
-            android:title="テキスト"
-            app:showAsAction="always"/>
+            android:id="@+id/search_view"
+            android:title="@string/search_query_hint"
+            app:iconTint="@color/colorPrimaryText"
+            app:showAsAction="always"
+            app:actionViewClass="androidx.appcompat.widget.SearchView"/>
 
     <item
-            android:id="@+id/search_order"
-            android:title="新着"
+            android:id="@+id/search_type"
+            android:title="@string/search_type_text"
+            android:icon="@drawable/ic_title"
+            app:iconTint="@color/colorPrimaryText"
             app:showAsAction="always"/>
 </menu>
