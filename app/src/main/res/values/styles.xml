@@ -29,8 +29,8 @@
         <item name="android:textColorPrimary">@color/colorPrimaryText</item>
 
         <!-- SearchView -->
-        <item name="searchViewStyle">@style/SearchViewStyle</item>
-        <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView</item>
+        <item name="searchViewStyle">@style/SearchViewStyle.Toolbar</item>
+        <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.Toolbar</item>
 
         <!-- TabLayout -->
         <item name="tabSelectedTextColor">@color/colorPrimary</item>
@@ -188,6 +188,7 @@
         <item name="android:textSize">18sp</item>
         <item name="android:textColor">@color/colorPrimaryText</item>
         <item name="android:dropDownSelector">@color/colorPrimaryText</item>
+        <item name="subMenuArrow">@null</item>
         <item name="backgroundTint">@color/colorPrimaryText</item>
     </style>
 
@@ -218,15 +219,37 @@
         <item name="closeIcon">@drawable/ic_baseline_close</item>
         <item name="searchIcon">@drawable/ic_baseline_search</item>
         <item name="searchHintIcon">@drawable/ic_baseline_search</item>
-        <item name="commitIcon">@drawable/ic_baseline_search</item>
-        <item name="goIcon">@drawable/ic_baseline_search</item>
+        <item name="commitIcon">@null</item>
+        <item name="goIcon">@null</item>
         <item name="textColor">@color/colorPrimaryText</item>
     </style>
 
+    <style name="SearchViewStyle.Toolbar" parent="SearchViewStyle">
+        <item name="android:tint">@color/colorPrimaryText</item>
+        <item name="textColor">@color/colorPrimaryText</item>
+        <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.Toolbar</item>
+    </style>
+
+    <style name="SearchViewStyle.ThemeColored" parent="SearchViewStyle">
+        <item name="closeIcon">@drawable/ic_baseline_close_theme_colored</item>
+        <item name="searchIcon">@drawable/ic_baseline_search_theme_colored</item>
+        <item name="searchHintIcon">@drawable/ic_baseline_search_theme_colored</item>
+        <item name="commitIcon">@drawable/ic_baseline_search_theme_colored</item>
+        <item name="goIcon">@drawable/ic_baseline_search_theme_colored</item>
+        <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.ThemeColored</item>
+    </style>
+
     <!-- SearchView上の文字入力部分 -->
-    <style name="AutoCompleteTextView" parent="Widget.AppCompat.AutoCompleteTextView">
+    <style name="AutoCompleteTextView.Toolbar" parent="Widget.AppCompat.AutoCompleteTextView">
         <!-- 入力位置のカーソル -->
-        <item name="android:textCursorDrawable">@drawable/searchview_cursor</item>
+<!--        <item name="android:textCursorDrawable">@drawable/searchview_cursor</item>-->
+        <item name="android:textCursorDrawable">@null</item>
+    </style>
+
+    <style name="AutoCompleteTextView.ThemeColored" parent="Widget.AppCompat.AutoCompleteTextView">
+        <!-- 入力位置のカーソル -->
+        <item name="android:textCursorDrawable">@null</item>
+<!--        <item name="android:textCursorDrawable">@drawable/searchview_cursor_theme_colored</item>-->
     </style>
 
     <!-- IgnoreTarget @ IgnoredEntryDialog -->

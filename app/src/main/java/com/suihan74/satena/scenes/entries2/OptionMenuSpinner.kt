@@ -1,30 +1,36 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.view.Gravity
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
+import androidx.core.view.MenuItemCompat
 import com.suihan74.satena.R
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.showToast
 
 fun Spinner.initialize(
     context: Context,
+    menuItem: MenuItem?,
     items: List<String>,
-    iconId: Int,
-    hint: String? = "",
+    hint: String? = null,
     onItemSelected: ((Int?)->Unit)? = null
 ) {
     val innerItems = listOf("*").plus(items)
 
-    gravity = Gravity.END
-    background = context.getDrawable(iconId)
-    backgroundTintList = ColorStateList.valueOf(context.getColor(R.color.colorPrimaryText))
+//    gravity = Gravity.END
+
+    if (menuItem != null) {
+//        background = null
+        foreground = menuItem.icon
+        foregroundTintList = MenuItemCompat.getIconTintList(menuItem)
+        foregroundGravity = Gravity.CENTER
+    }
 
     adapter = object : ArrayAdapter<String>(
         context,
@@ -61,7 +67,12 @@ fun Spinner.initialize(
         }
     }
 
-    if (!hint.isNullOrBlank()) {
+    if (hint.isNullOrBlank()) {
+        setOnLongClickListener {
+            false
+        }
+    }
+    else {
         setOnLongClickListener {
             context.showToast(hint)
             return@setOnLongClickListener true

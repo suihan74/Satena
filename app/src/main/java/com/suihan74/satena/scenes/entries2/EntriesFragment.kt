@@ -138,10 +138,19 @@ abstract class EntriesFragment : Fragment() {
             it.setOnLongClickListener(null)
         }
 
-        val bottomAppBar = activity.bottom_app_bar?.also {
-            it.menu.clear()
-            it.setOnMenuItemClickListener(null)
-        }
+        val bottomAppBar =
+            if (activity.viewModel.isBottomLayoutMode)
+                activity.bottom_app_bar?.also {
+//                    activity.bottomMenu.clear()
+                    it.menu.clear()
+/*                    it.bottom_menu?.apply {
+                        removeAllViews()
+                        overflowIcon = null
+                        popupTheme = 0
+                    }*/
+                    it.setOnMenuItemClickListener(null)
+                }
+            else null
 
         if (tabLayout != null) {
             tabLayout.visibility =

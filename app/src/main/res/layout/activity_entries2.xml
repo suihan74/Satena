@@ -67,9 +67,18 @@
                         app:fabAlignmentMode="end"
                         app:elevation="32dp"
                         app:contentInsetStart="0dp"
-                        app:titleMarginEnd="96dp"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="96dp"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"/>
+                        android:layout_height="48dp">
+
+                    <!--
+                    <androidx.appcompat.widget.ActionMenuView
+                            android:id="@+id/bottom_menu"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>-->
+
+                </com.google.android.material.bottomappbar.BottomAppBar>
 
                 <!-- メニュー表示中に他の領域をタップできなくする(設定がONになっているときに表示する) -->
                 <View
