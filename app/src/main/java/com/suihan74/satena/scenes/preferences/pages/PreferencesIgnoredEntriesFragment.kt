@@ -18,6 +18,7 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesAdapter
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryViewModel
 import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_preferences_ignored_entries.view.*
 
@@ -27,6 +28,12 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
     private lateinit var viewModel: IgnoredEntryViewModel
 
     private var mDialogMenuItems: Array<Pair<String, (entry: IgnoredEntry)->Unit>>? = null
+
+    /** メニューダイアログ用のタグ */
+    private val DIALOG_MENU by lazy { "DIALOG_MENU" }
+
+    /** 非表示エントリ追加ダイアログ用のタグ */
+    private val DIALOG_IGNORE_ENTRY by lazy { "DIALOG_IGNORE_ENTRY" }
 
     companion object {
         fun createInstance() = PreferencesIgnoredEntriesFragment()
@@ -75,7 +82,7 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
                     }
                     return@createInstance false
                 }
-                dialog.show(childFragmentManager, "dialog")
+                dialog.showAllowingStateLoss(childFragmentManager, DIALOG_IGNORE_ENTRY)
             }
 
             override fun onItemLongClicked(entry: IgnoredEntry): Boolean {
@@ -84,7 +91,7 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
                     .setNegativeButton(R.string.dialog_cancel)
                     .setItems(mDialogMenuItems!!.map { it.first })
                     .setAdditionalData("entry", entry)
-                    .show(childFragmentManager, "menu_dialog")
+                    .showAllowingStateLoss(childFragmentManager, DIALOG_MENU)
 
                 return true
             }
@@ -116,7 +123,7 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
                 }
                 return@createInstance false
             }
-            dialog.show(childFragmentManager, "dialog")
+            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_IGNORE_ENTRY)
         }
 
         viewModel.entries.observe(viewLifecycleOwner) {

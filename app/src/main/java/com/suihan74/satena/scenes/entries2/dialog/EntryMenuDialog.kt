@@ -31,6 +31,7 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.showToast
 import com.suihan74.utilities.withArguments
 import kotlinx.coroutines.*
@@ -99,7 +100,7 @@ class EntryMenuDialog : DialogFragment() {
             val instance = createInstance(entry)
             when (actionEnum) {
                 TapEntryAction.SHOW_MENU ->
-                    instance.show(fragmentManager, tag)
+                    instance.showAllowingStateLoss(fragmentManager, tag)
 
                 else ->
                     act(
@@ -118,7 +119,7 @@ class EntryMenuDialog : DialogFragment() {
             val instance = createInstance(url)
             when (actionEnum) {
                 TapEntryAction.SHOW_MENU ->
-                    instance.show(fragmentManager, tag)
+                    instance.showAllowingStateLoss(fragmentManager, tag)
 
                 else ->
                     act(
@@ -139,7 +140,7 @@ class EntryMenuDialog : DialogFragment() {
             }
             when (actionEnum) {
                 TapEntryAction.SHOW_MENU ->
-                    instance.show(fragmentManager, tag)
+                    instance.showAllowingStateLoss(fragmentManager, tag)
 
                 else ->
                     act(
@@ -171,8 +172,8 @@ class EntryMenuDialog : DialogFragment() {
 
                     fragmentManager.beginTransaction()
                         .remove(instance)
-                        .commit()
-                }.commit()
+                        .commitAllowingStateLoss()
+                }.commitAllowingStateLoss()
         }
 
         /** タップ/ロングタップ時の挙動を処理する(メニュー表示以外の挙動) */
@@ -191,8 +192,8 @@ class EntryMenuDialog : DialogFragment() {
 
                     fragmentManager.beginTransaction()
                         .remove(instance)
-                        .commit()
-                }.commit()
+                        .commitAllowingStateLoss()
+                }.commitAllowingStateLoss()
         }
 
         /** (はてなから取得できた完全な)エントリ */
@@ -380,7 +381,7 @@ class EntryMenuDialog : DialogFragment() {
                 false
             }
         )
-        dialog.show(parentFragmentManager, DIALOG_IGNORE_SITE)
+        dialog.showAllowingStateLoss(parentFragmentManager, DIALOG_IGNORE_SITE)
     }
 
     /** ブクマを削除する */

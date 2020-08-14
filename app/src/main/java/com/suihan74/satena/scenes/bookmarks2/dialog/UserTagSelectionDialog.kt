@@ -13,6 +13,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
+import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.launch
 
 class UserTagSelectionDialog : DialogFragment() {
@@ -36,6 +37,8 @@ class UserTagSelectionDialog : DialogFragment() {
     }
 
     private lateinit var viewModel: UserTagSelectionViewModel
+
+    private val DIALOG_NEW_TAG by lazy { "DIALOG_NEW_TAG" }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +70,7 @@ class UserTagSelectionDialog : DialogFragment() {
                 val dialog = UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTargetUser(user)
                     .create()
-                dialog.show(parentFragmentManager, "new_tag_dialog")
+                dialog.showAllowingStateLoss(parentFragmentManager, DIALOG_NEW_TAG)
             }
             .setPositiveButton(R.string.dialog_ok, null)
             .show()

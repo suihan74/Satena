@@ -312,7 +312,10 @@ class BookmarkPostActivity :
         val showDialog = prefs.getBoolean(PreferenceKey.USING_POST_BOOKMARK_DIALOG)
         if (showDialog) {
             ConfirmPostBookmarkDialog.createInstance(viewModel)
-                .show(supportFragmentManager, DIALOG_CONFIRM_POST_BOOKMARK)
+                .showAllowingStateLoss(supportFragmentManager, DIALOG_CONFIRM_POST_BOOKMARK) { e ->
+                    Log.e("ConfirmPostBookmark", Log.getStackTraceString(e))
+                    showToast(R.string.msg_post_bookmark_failed)
+                }
         }
         else {
             postBookmarkImpl()

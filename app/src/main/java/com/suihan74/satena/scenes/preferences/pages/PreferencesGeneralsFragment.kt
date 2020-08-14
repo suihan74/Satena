@@ -27,6 +27,8 @@ class PreferencesGeneralsFragment :
         fun createInstance() = PreferencesGeneralsFragment()
     }
 
+    private val DIALOG_CHECKING_NOTICES_INTERVAL by lazy { "DIALOG_CHECKING_NOTICES_INTERVAL" }
+
     private lateinit var viewModel: PreferencesGeneralsViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -78,7 +80,7 @@ class PreferencesGeneralsFragment :
                 .setMinValue(1)
                 .setMaxValue(180)
                 .setDefaultValue(viewModel.checkNoticesInterval.value!!.toInt())
-                .show(childFragmentManager, "notices_intervals_picker")
+                .showAllowingStateLoss(childFragmentManager, DIALOG_CHECKING_NOTICES_INTERVAL)
         }
 
         return view

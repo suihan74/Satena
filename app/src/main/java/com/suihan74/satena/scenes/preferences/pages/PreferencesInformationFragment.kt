@@ -37,6 +37,8 @@ class PreferencesInformationFragment :
     companion object {
         fun createInstance() =
             PreferencesInformationFragment()
+
+        private const val DIALOG_RELEASE_NOTES = "DIALOG_RELEASE_NOTES"
     }
 
     enum class FilePickerMode {
@@ -69,7 +71,7 @@ class PreferencesInformationFragment :
         // 更新履歴ダイアログ
         root.findViewById<Button>(R.id.show_release_notes_button).setOnClickListener {
             val dialog = ReleaseNotesDialogFragment.createInstance()
-            dialog.show(parentFragmentManager, "release_notes")
+            dialog.showAllowingStateLoss(parentFragmentManager, DIALOG_RELEASE_NOTES)
         }
 
         // ライセンス表示アクティビティ

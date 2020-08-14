@@ -65,7 +65,7 @@ class PreferencesBookmarksFragment :
                     },
                     viewModel.initialTabPosition.value!!
                 )
-                .show(childFragmentManager, DIALOG_INITIAL_TAB)
+                .showAllowingStateLoss(childFragmentManager, DIALOG_INITIAL_TAB)
         }
 
         // タップアクションの設定項目を初期化する処理
@@ -79,7 +79,7 @@ class PreferencesBookmarksFragment :
                             TapEntryAction.values().map { getString(it.titleId) },
                             selectedActionLiveData.value!!
                         )
-                        .show(childFragmentManager, tag)
+                        .showAllowingStateLoss(childFragmentManager, tag)
                 }
             }
         }
