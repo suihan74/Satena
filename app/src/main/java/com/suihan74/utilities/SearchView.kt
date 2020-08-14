@@ -13,7 +13,7 @@ fun SearchView.stretchWidth(activity: Activity, menu: Menu, isBottomAppBar: Bool
     activity.windowManager.defaultDisplay.getMetrics(dMetrics)
 
     // SearchView以外のボタンの大きさ (一定である、他は全てただのボタンである前提でベタ書きしているので注意が必要)
-    val othersWidth = (menu.size() - 1) * (66 * resources.displayMetrics.density).toInt()
+    val othersWidth = (menu.size() - 1) * (74 * resources.displayMetrics.density).toInt()
 
     // ボトムバーに表示するときはFAB部分を回避する
     val rightMargin = if (isBottomAppBar) (48 * resources.displayMetrics.density).toInt() else 0
