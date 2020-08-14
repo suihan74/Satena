@@ -23,6 +23,7 @@ import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.RestartActivity
 import com.suihan74.utilities.setHtml
+import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_preferences_information.view.*
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +37,6 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
             PreferencesInformationFragment()
 
         private const val DIALOG_RELEASE_NOTES = "DIALOG_RELEASE_NOTES"
-    }
 
         private const val WRITE_REQUEST_CODE = 42
         private const val READ_REQUEST_CODE = 43

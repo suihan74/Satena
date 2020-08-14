@@ -430,6 +430,7 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
                     Log.e("TerminationDialog", Log.getStackTraceString(e))
                     showToast(R.string.msg_termination_dialog_error)
                     finishImpl()
+                }
         }
         else {
             finishImpl()
