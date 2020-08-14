@@ -14,6 +14,7 @@ import com.suihan74.satena.scenes.entries2.NoticesAdapter
 import com.suihan74.satena.scenes.entries2.dialog.NoticeMenuDialog
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.putEnum
+import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.withArguments
 
 class NoticesTabFragment : EntriesTabFragmentBase() {
@@ -52,7 +53,7 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
                     }
                 }
 
-                dialog.show(childFragmentManager, DIALOG_NOTICE_MENU)
+                dialog.showAllowingStateLoss(childFragmentManager, DIALOG_NOTICE_MENU)
                 true
             }
         }

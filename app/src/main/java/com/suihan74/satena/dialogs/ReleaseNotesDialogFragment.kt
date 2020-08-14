@@ -9,7 +9,6 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -29,8 +28,6 @@ class ReleaseNotesDialogFragment : DialogFragment(), CoroutineScope {
         mJob.cancel()
     }
 
-    private var mRoot: View? = null
-
     companion object {
         fun createInstance() = ReleaseNotesDialogFragment()
     }
@@ -38,7 +35,6 @@ class ReleaseNotesDialogFragment : DialogFragment(), CoroutineScope {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
         val content = inflater.inflate(R.layout.fragment_dialog_release_notes, null)
-        mRoot = content
         setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
 
         val titleColor = ContextCompat.getColor(requireActivity(), R.color.colorPrimary)
@@ -64,14 +60,14 @@ class ReleaseNotesDialogFragment : DialogFragment(), CoroutineScope {
                 }
             }
             catch (e: Throwable) {
-                activity?.showToast("更新履歴の読み込み失敗")
+                activity?.showToast(R.string.msg_loading_release_notes_failed)
             }
         }
 
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setView(content)
-            .setTitle("更新履歴")
-            .setNegativeButton("閉じる", null)
+            .setTitle(R.string.pref_information_release_notes_desc)
+            .setNegativeButton(R.string.dialog_close, null)
             .create()
     }
 

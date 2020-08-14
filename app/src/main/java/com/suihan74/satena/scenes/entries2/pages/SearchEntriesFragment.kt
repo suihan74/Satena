@@ -123,7 +123,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
                     .setTitle(R.string.desc_search_type)
                     .setNegativeButton(R.string.dialog_cancel)
                     .setItems(SearchType.values().map { it.name }.toTypedArray())
-                    .show(childFragmentManager, DIALOG_SEARCH_TYPE)
+                    .showAllowingStateLoss(childFragmentManager, DIALOG_SEARCH_TYPE)
                 return@setOnMenuItemClickListener true
             }
 

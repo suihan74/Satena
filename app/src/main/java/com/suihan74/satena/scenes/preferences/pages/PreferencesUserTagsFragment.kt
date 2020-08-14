@@ -33,6 +33,9 @@ class PreferencesUserTagsFragment :
 {
     private lateinit var viewModel: UserTagViewModel
 
+    private val DIALOG_CREATE_TAG by lazy { "DIALOG_CREATE_TAG" }
+    private val DIALOG_TAG_USER by lazy { "DIALOG_TAG_USER" }
+
     companion object {
         fun createInstance() =
             PreferencesUserTagsFragment()
@@ -83,14 +86,14 @@ class PreferencesUserTagsFragment :
         childFragmentManager.beginTransaction()
             .replace(R.id.content_layout, fragment)
             .addToBackStack(null)
-            .commit()
+            .commitAllowingStateLoss()
     }
 
     private fun showUserTagsList() {
         val fragment = UserTagsListFragment.createInstance()
         childFragmentManager.beginTransaction()
             .replace(R.id.content_layout, fragment)
-            .commit()
+            .commitAllowingStateLoss()
     }
 
     private inline fun <reified T> getCurrentFragment() : T? {
@@ -101,12 +104,12 @@ class PreferencesUserTagsFragment :
 
     private fun showNewUserTagDialog() {
         UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
-            .show(childFragmentManager, "create_tag_dialog")
+            .showAllowingStateLoss(childFragmentManager, DIALOG_CREATE_TAG)
     }
 
     private fun showNewTaggedUserDialog() {
         TagUserDialogFragment.Builder(R.style.AlertDialogStyle)
-            .show(childFragmentManager, "tag_user_dialog")
+            .showAllowingStateLoss(childFragmentManager, DIALOG_TAG_USER)
     }
 
     override fun onBackPressed(): Boolean {

@@ -154,7 +154,7 @@ class ReportDialogFragment : DialogFragment(), AlertDialogFragment.Listener {
             .setAdditionalData("entry", mEntry)
             .setAdditionalData("bookmark", mBookmark)
             .setAdditionalData("withMuting", withMuting)
-            .show(childFragmentManager, "confirm_dialog")
+            .showAllowingStateLoss(childFragmentManager, "confirm_dialog")
     }
 
     override fun onClickPositiveButton(dialog: AlertDialogFragment) {

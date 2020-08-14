@@ -17,6 +17,7 @@ import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.users
 import com.suihan74.utilities.withArguments
 
@@ -58,7 +59,7 @@ class NoticeMenuDialog : AlertDialogFragment() {
         val items : List<Pair<String, ()->Unit>> = users
             .map { "id:$it" to {
                 val userMenuDialog = NoticeUserMenuDialog.createInstance(it)
-                userMenuDialog.show(parentFragmentManager, DIALOG_NOTICE_USER_MENU)
+                userMenuDialog.showAllowingStateLoss(parentFragmentManager, DIALOG_NOTICE_USER_MENU)
             } }
             .plus(
                 getString(R.string.menu_notice_remove) to { removeNotice(notice) }
@@ -138,7 +139,7 @@ class NoticeMenuDialog : AlertDialogFragment() {
         /** ユーザーを通報する */
         private fun showReportDialog(user: String) {
             val dialog = ReportDialogFragment.createInstance(user)
-            dialog.show(parentFragmentManager, DIALOG_REPORT)
+            dialog.showAllowingStateLoss(parentFragmentManager, DIALOG_REPORT)
         }
     }
 }

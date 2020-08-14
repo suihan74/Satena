@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.showAllowingStateLoss
 import java.io.File
 
 /*
@@ -84,7 +85,7 @@ class FilePickerDialog : AlertDialogFragment() {
 
         fun show(fragmentManager: FragmentManager, tag: String) {
             val dialog = create()
-            dialog.show(fragmentManager, tag)
+            dialog.showAllowingStateLoss(fragmentManager, tag)
         }
 
         fun setTitle(titleId: Int) = this.apply {

@@ -440,12 +440,12 @@ class BookmarksActivity :
 
     override fun onReportBookmark(bookmark: Bookmark) {
         val dialog = ReportDialog.createInstance(viewModel.entry, bookmark)
-        dialog.show(supportFragmentManager, DIALOG_REPORT)
+        dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_REPORT)
     }
 
     override fun onSetUserTag(user: String) {
         val dialog = UserTagSelectionDialog.createInstance(user)
-        dialog.show(supportFragmentManager, DIALOG_SELECT_USER_TAG)
+        dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_SELECT_USER_TAG)
     }
 
     // --- UserTagDialogの処理 --- //
@@ -539,7 +539,7 @@ class BookmarksActivity :
 
     fun onBookmarkLongClicked(bookmark: Bookmark): Boolean {
         val dialog = BookmarkMenuDialog.createInstance(bookmark)
-        dialog.show(supportFragmentManager, DIALOG_BOOKMARK_MENU)
+        dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_BOOKMARK_MENU)
         return true
     }
 
