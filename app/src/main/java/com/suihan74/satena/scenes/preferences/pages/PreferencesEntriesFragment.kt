@@ -67,7 +67,7 @@ class PreferencesEntriesFragment :
                 .setTitle(R.string.pref_entries_single_tap_action_desc)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(tapActions, viewModel.singleTapAction.value!!.ordinal)
-                .show(childFragmentManager, DIALOG_SINGLE_TAP_ACTION)
+                .showAllowingStateLoss(childFragmentManager, DIALOG_SINGLE_TAP_ACTION)
         }
 
         // ロングタップ時の動作
@@ -76,7 +76,7 @@ class PreferencesEntriesFragment :
                 .setTitle(R.string.pref_entries_long_tap_action_desc)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(tapActions, viewModel.longTapAction.value!!.ordinal)
-                .show(childFragmentManager, DIALOG_LONG_TAP_ACTION)
+                .showAllowingStateLoss(childFragmentManager, DIALOG_LONG_TAP_ACTION)
         }
 
         // ホームカテゴリ
@@ -92,7 +92,7 @@ class PreferencesEntriesFragment :
                 .setSingleChoiceItems(
                     categories.map { getString(it.textId) },
                     viewModel.homeCategory.value!!.ordinal)
-                .show(childFragmentManager, DIALOG_HOME_CATEGORY)
+                .showAllowingStateLoss(childFragmentManager, DIALOG_HOME_CATEGORY)
         }
 
         // 最初に表示するタブ
@@ -105,7 +105,7 @@ class PreferencesEntriesFragment :
                 .setSingleChoiceItems(
                     items.map { getString(it) },
                     viewModel.initialTab.value!!)
-                .show(childFragmentManager, DIALOG_HOME_TAB)
+                .showAllowingStateLoss(childFragmentManager, DIALOG_HOME_TAB)
         }
 
         // ブクマ閲覧履歴の最大保存数
@@ -116,7 +116,7 @@ class PreferencesEntriesFragment :
                 .setMinValue(1)
                 .setMaxValue(100)
                 .setDefaultValue(viewModel.historyMaxSize.value!!)
-                .show(childFragmentManager, DIALOG_HISTORY_MAX_SIZE_PICKER)
+                .showAllowingStateLoss(childFragmentManager, DIALOG_HISTORY_MAX_SIZE_PICKER)
         }
 
         // 「あとで読む」エントリを「読んだ」したときの挙動
@@ -127,7 +127,7 @@ class PreferencesEntriesFragment :
                 .setSingleChoiceItems(
                     EntryReadActionType.values().map { getString(it.textId) }.toTypedArray(),
                     viewModel.entryReadActionType.value!!.ordinal)
-                .show(childFragmentManager, DIALOG_ENTRY_READ_ACTION_TYPE)
+                .showAllowingStateLoss(childFragmentManager, DIALOG_ENTRY_READ_ACTION_TYPE)
         }
 
         // カテゴリリストの表示形式

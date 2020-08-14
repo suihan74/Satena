@@ -65,7 +65,7 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
                     .setItems(menuItems!!.map { it.first })
                     .setNegativeButton(R.string.dialog_cancel)
                     .setAdditionalData("user", user)
-                    .show(parentFragment.childFragmentManager, DIALOG_TAG_MENU)
+                    .showAllowingStateLoss(parentFragment.childFragmentManager, DIALOG_TAG_MENU)
             }
 
             override fun onItemLongClicked(user: User): Boolean {

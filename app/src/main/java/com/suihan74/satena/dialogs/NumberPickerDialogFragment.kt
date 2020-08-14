@@ -2,6 +2,7 @@ package com.suihan74.satena.dialogs
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
@@ -9,6 +10,7 @@ import android.widget.NumberPicker
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentManager
 import com.suihan74.satena.R
+import com.suihan74.utilities.showAllowingStateLoss
 
 class NumberPickerDialogFragment : AlertDialogFragment() {
     interface Listener {
@@ -110,6 +112,12 @@ class NumberPickerDialogFragment : AlertDialogFragment() {
 
         fun show(fragmentManager: FragmentManager, tag: String) =
             create().show(fragmentManager, tag)
+
+        fun showAllowingStateLoss(
+            fragmentManager: FragmentManager,
+            tag: String?,
+            onError: ((Throwable)->Unit)? = { Log.e("NumberPickerDialog", Log.getStackTraceString(it)) }) =
+            create().showAllowingStateLoss(fragmentManager, tag, onError)
 
         fun setTitle(titleId: Int) = this.apply {
             arguments.putInt(TITLE_ID, titleId)

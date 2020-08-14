@@ -30,6 +30,7 @@ class UserTagsListFragment : CoroutineScopeFragment() {
         fun createInstance() = UserTagsListFragment()
 
         const val DIALOG_TAG_MENU = "UserTagsListFragment.DIALOG_TAG_MENU"
+        const val DIALOG_MODIFY_TAG = "UserTagsListFragment.DIALOG_MODIFY_TAG"
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -54,7 +55,7 @@ class UserTagsListFragment : CoroutineScopeFragment() {
                     .setNegativeButton(R.string.dialog_cancel)
                     .setItems(menuItems!!.map { it.first })
                     .setAdditionalData("tag", tag)
-                    .show(parentFragment.childFragmentManager, DIALOG_TAG_MENU)
+                    .showAllowingStateLoss(parentFragment.childFragmentManager, DIALOG_TAG_MENU)
 
                 return true
             }
@@ -81,6 +82,6 @@ class UserTagsListFragment : CoroutineScopeFragment() {
     private fun modifyItem(tag: TagAndUsers) {
         UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
             .setUserTag(tag.userTag)
-            .show(requireParentFragment().childFragmentManager, "modify_tag_dialog")
+            .showAllowingStateLoss(requireParentFragment().childFragmentManager, DIALOG_MODIFY_TAG)
     }
 }

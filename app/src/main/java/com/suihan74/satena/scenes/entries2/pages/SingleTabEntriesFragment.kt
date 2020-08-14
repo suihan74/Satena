@@ -11,6 +11,7 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesFragment
+import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 
 abstract class SingleTabEntriesFragment : EntriesFragment() {
@@ -41,7 +42,7 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
             val fragment = generateContentFragment(viewModelKey)
             childFragmentManager.beginTransaction()
                 .replace(R.id.content_layout, fragment, TAG_CONTENT_FRAGMENT)
-                .commit()
+                .commitAllowingStateLoss()
         }
 
         return root

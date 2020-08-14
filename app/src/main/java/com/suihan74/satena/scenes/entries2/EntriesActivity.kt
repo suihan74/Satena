@@ -284,7 +284,7 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
         if (showReleaseNotes && lastVersionName != null && lastVersionName != currentVersionName) {
             val dialog = ReleaseNotesDialogFragment.createInstance(lastVersionName, currentVersionName)
-            dialog.show(supportFragmentManager, DIALOG_RELEASE_NOTES)
+            dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_RELEASE_NOTES)
         }
     }
 
@@ -426,7 +426,10 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
                 .setMessage(R.string.app_termination_dialog_msg)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setPositiveButton(R.string.dialog_ok)
-                .show(supportFragmentManager, DIALOG_TERMINATION)
+                .showAllowingStateLoss(supportFragmentManager, DIALOG_TERMINATION) { e ->
+                    Log.e("TerminationDialog", Log.getStackTraceString(e))
+                    showToast(R.string.msg_termination_dialog_error)
+                    finishImpl()
         }
         else {
             finishImpl()

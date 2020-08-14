@@ -18,6 +18,7 @@ import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.putObjectExtra
+import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.showSoftInputMethod
 import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
@@ -46,6 +47,8 @@ class FloatingActionButtonsFragment :
     /** 戻るボタンの監視用コールバック */
     private lateinit var onBackPressedCallbackForKeyword: OnBackPressedCallback
     private lateinit var onBackPressedCallbackForScroll: OnBackPressedCallback
+
+    private val DIALOG_CUSTOM_TAB_SETTINGS by lazy { "DIALOG_CUSTOM_TAB_SETTINGS" }
 
     companion object {
         fun createInstance() = FloatingActionButtonsFragment()
@@ -224,7 +227,7 @@ class FloatingActionButtonsFragment :
         // カスタムタブ設定ボタン
         view.custom_settings_button.setOnClickListener {
             val dialog = CustomTabSettingsDialog.createInstance()
-            dialog.show(childFragmentManager, "custom_tab_settings_dialog")
+            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_CUSTOM_TAB_SETTINGS)
         }
     }
 

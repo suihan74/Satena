@@ -2,9 +2,11 @@ package com.suihan74.satena.dialogs
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.getObject
 import com.suihan74.utilities.putObject
 
@@ -146,11 +148,21 @@ open class AlertDialogFragment : DialogFragment() {
                 this.arguments = this@Builder.arguments
             }
 
-        fun show(fragmentManager: FragmentManager?, tag: String) {
-            if (fragmentManager != null) {
-                val dialog = create()
-                dialog.show(fragmentManager, tag)
-            }
+        fun show(
+            fragmentManager: FragmentManager,
+            tag: String? = null
+        ) {
+            val dialog = create()
+            dialog.show(fragmentManager, tag)
+        }
+
+        fun showAllowingStateLoss(
+            fragmentManager: FragmentManager,
+            tag: String? = null,
+            onError: ((Throwable)->Unit)? = { Log.e("AlertDialogoBuilder", Log.getStackTraceString(it)) }
+        ) {
+            val dialog = create()
+            dialog.showAllowingStateLoss(fragmentManager, tag, onError)
         }
 
         fun setPositiveButton(textId: Int) = this.apply {

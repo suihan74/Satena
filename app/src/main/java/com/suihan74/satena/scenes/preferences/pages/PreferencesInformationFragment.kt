@@ -32,7 +32,11 @@ import org.threeten.bp.LocalDateTime
 class PreferencesInformationFragment : PreferencesFragmentBase()
 {
     companion object {
-        fun createInstance() = PreferencesInformationFragment()
+        fun createInstance() =
+            PreferencesInformationFragment()
+
+        private const val DIALOG_RELEASE_NOTES = "DIALOG_RELEASE_NOTES"
+    }
 
         private const val WRITE_REQUEST_CODE = 42
         private const val READ_REQUEST_CODE = 43
@@ -59,7 +63,7 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
         // 更新履歴ダイアログ
         root.show_release_notes_button.setOnClickListener {
             val dialog = ReleaseNotesDialogFragment.createInstance()
-            dialog.show(parentFragmentManager, "release_notes")
+            dialog.showAllowingStateLoss(parentFragmentManager, DIALOG_RELEASE_NOTES)
         }
 
         // ライセンス表示アクティビティ

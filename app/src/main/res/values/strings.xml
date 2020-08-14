@@ -6,7 +6,10 @@
     <string name="drawer_close">閉じる</string>
 
     <string name="confirm_dialog_title_simple">確認</string>
+
     <string name="app_termination_dialog_msg">アプリを終了しますか？</string>
+    <string name="msg_termination_dialog_error">終了確認ダイアログの生成に失敗したのでそのまま終了しました</string>
+
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_register">登録</string>
@@ -126,6 +129,7 @@
     <string name="msg_pref_information_save_failed">設定の保存に失敗しました</string>
     <string name="msg_pref_information_load_succeeded">設定を%sから読み込みました</string>
     <string name="msg_pref_information_load_failed">設定の読み込みに失敗しました</string>
+    <string name="msg_loading_release_notes_failed">更新履歴の読み込み失敗</string>
     <!-- accounts -->
     <string name="pref_accounts_service_name_hatena">Hatena</string>
     <string name="pref_accounts_service_name_mastodon">Mastodon</string>

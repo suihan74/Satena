@@ -354,7 +354,7 @@ class BookmarkDetailFragment :
         // メニューボタン
         view.menu_button.setOnClickListener {
             val dialog = BookmarkMenuDialog.createInstance(viewModel.bookmark)
-            dialog.show(childFragmentManager, DIALOG_BOOKMARK_MENU)
+            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_BOOKMARK_MENU)
         }
 
         // 非表示ユーザーマーク
@@ -418,7 +418,7 @@ class BookmarkDetailFragment :
                 .setPositiveButton(R.string.dialog_ok)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setAdditionalData(DIALOG_DATA_STAR_COLOR, color)
-                .show(childFragmentManager, DIALOG_CONFIRM_POST_STAR)
+                .showAllowingStateLoss(childFragmentManager, DIALOG_CONFIRM_POST_STAR)
         }
         else {
             viewModel.postStar(color)

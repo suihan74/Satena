@@ -30,6 +30,8 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
 
     private var mDialogMenuItems : List<Pair<String, (user: String)->Unit>>? = null
 
+    private val DIALOG_USER_MENU by lazy { "DIALOG_USER_MENU" }
+
     companion object {
         fun createInstance() =
             PreferencesIgnoredUsersFragment()
@@ -94,7 +96,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
                     .setNegativeButton(R.string.dialog_cancel)
                     .setItems(mDialogMenuItems!!.map { it.first })
                     .setAdditionalData("user", user)
-                    .show(childFragmentManager, "menu_dialog")
+                    .showAllowingStateLoss(childFragmentManager, DIALOG_USER_MENU)
             }
         }
 
@@ -155,8 +157,12 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
     }
 
     override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
-        val items = mDialogMenuItems ?: return
-        val user = dialog.getAdditionalData<String>("user") ?: return
-        items[which].second.invoke(user)
+        when (dialog.tag) {
+            DIALOG_USER_MENU -> {
+                val items = mDialogMenuItems ?: return
+                val user = dialog.getAdditionalData<String>("user") ?: return
+                items[which].second.invoke(user)
+            }
+        }
     }
 }
