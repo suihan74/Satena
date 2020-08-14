@@ -9,27 +9,32 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
+import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.MenuItemCompat
 import com.suihan74.satena.R
 import com.suihan74.utilities.getThemeColor
-import com.suihan74.utilities.showToast
 
 fun Spinner.initialize(
     context: Context,
     menuItem: MenuItem?,
     items: List<String>,
-    hint: String? = null,
+    tooltipTextId: Int? = null,
     onItemSelected: ((Int?)->Unit)? = null
 ) {
     val innerItems = listOf("*").plus(items)
 
-//    gravity = Gravity.END
-
     if (menuItem != null) {
-//        background = null
         foreground = menuItem.icon
         foregroundTintList = MenuItemCompat.getIconTintList(menuItem)
         foregroundGravity = Gravity.CENTER
+    }
+
+    if (tooltipTextId == null) {
+        TooltipCompat.setTooltipText(this, null)
+    }
+    else {
+        val tooltipText = context.getString(tooltipTextId)
+        TooltipCompat.setTooltipText(this, tooltipText)
     }
 
     adapter = object : ArrayAdapter<String>(
@@ -64,18 +69,6 @@ fun Spinner.initialize(
                 )
             }
             return view
-        }
-    }
-
-    if (hint.isNullOrBlank()) {
-        setOnLongClickListener {
-            false
-        }
-    }
-    else {
-        setOnLongClickListener {
-            context.showToast(hint)
-            return@setOnLongClickListener true
         }
     }
 

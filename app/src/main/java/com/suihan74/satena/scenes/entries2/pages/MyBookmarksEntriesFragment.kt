@@ -8,6 +8,7 @@ import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.TooltipCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
@@ -132,11 +133,8 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         viewModel.isSearchViewExpanded = !isIconified
 
         // ツールバーアイコン長押しで説明を表示する
-        findViewById<ImageView>(androidx.appcompat.R.id.search_button)?.run {
-            setOnLongClickListener {
-                activity?.showToast(R.string.desc_search_mybookmarks)
-                true
-            }
+        findViewById<ImageView>(androidx.appcompat.R.id.search_button)?.let {
+            TooltipCompat.setTooltipText(it, getString(R.string.desc_search_mybookmarks))
         }
 
         // クエリ文字列の変更を監視する
@@ -202,7 +200,8 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
                 initialize(
                     activity,
                     menuItem,
-                    spinnerItems
+                    spinnerItems,
+                    R.string.desc_tags_spinner
                 ) { position ->
                     val tag =
                         if (position == null) null

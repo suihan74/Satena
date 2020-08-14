@@ -107,7 +107,8 @@ class HatenaEntriesFragment : TwinTabsEntriesFragment() {
                 initialize(
                     activity,
                     menuItem,
-                    spinnerItems
+                    spinnerItems,
+                    R.string.desc_issues_spinner
                 ) { position ->
                     viewModel.issue.value =
                         if (position == null) null

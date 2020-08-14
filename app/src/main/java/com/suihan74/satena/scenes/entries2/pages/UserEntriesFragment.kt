@@ -115,7 +115,8 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
             spinner.initialize(
                 activity,
                 menuItem,
-                spinnerItems
+                spinnerItems,
+                R.string.desc_tags_spinner
             ) { position ->
                 val tag =
                     if (position == null) null
