@@ -90,7 +90,7 @@
 
         <com.suihan74.utilities.TextFloatingActionButton
                 android:id="@+id/bookmark_button"
-                style="@style/Widget.Design.FloatingActionButton"
+                style="@style/FloatingActionButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"

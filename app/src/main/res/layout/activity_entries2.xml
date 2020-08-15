@@ -123,7 +123,6 @@
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/entries_menu_notices_button"
-                        style="@style/Widget.Design.FloatingActionButton"
                         android:visibility="invisible"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -153,7 +152,6 @@
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/entries_menu_categories_button"
-                        style="@style/Widget.Design.FloatingActionButton"
                         android:visibility="invisible"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -183,7 +181,6 @@
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/entries_menu_my_bookmarks_button"
-                        style="@style/Widget.Design.FloatingActionButton"
                         android:visibility="invisible"
                         app:src="@{vm.myBookmarkButtonIconId}"
                         android:layout_width="wrap_content"
@@ -213,7 +210,6 @@
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/entries_menu_preferences_button"
-                        style="@style/Widget.Design.FloatingActionButton"
                         android:visibility="invisible"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
