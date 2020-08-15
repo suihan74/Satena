@@ -272,6 +272,9 @@ class BookmarkPostActivity :
     /** 投稿失敗時処理 */
     private val onPostError: OnError = { e ->
         when (e) {
+            is ViewModel.MultiplePostException ->
+                showToast(R.string.msg_multiple_post)
+
             is ViewModel.CommentTooLongException ->
                 showToast(R.string.msg_comment_too_long, ViewModel.MAX_COMMENT_LENGTH)
 
@@ -287,26 +290,20 @@ class BookmarkPostActivity :
     /** ブクマ投稿を実際に送信する */
     private fun postBookmarkImpl() {
         hideSoftInputMethod()
-        comment.isEnabled = false
-        post_button.isEnabled = false
-        tags_list.isEnabled = false
+        viewModel.nowPosting.value = true
 
         viewModel.postBookmark(
             onSuccess = onPostSuccess,
             onError = onPostError,
             onFinally = { e ->
-                if (e != null) {
-                    comment.isEnabled = true
-                    post_button.isEnabled = true
-                    tags_list.isEnabled = true
-                }
+                viewModel.nowPosting.value = false
             }
         )
     }
 
     /** ブックマークを投稿する（必要ならダイアログを表示する） */
     private fun postBookmark() {
-        if (!viewModel.checkCommentLength(onPostError)) return
+        if (!viewModel.checkPostable(onPostError)) return
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val showDialog = prefs.getBoolean(PreferenceKey.USING_POST_BOOKMARK_DIALOG)

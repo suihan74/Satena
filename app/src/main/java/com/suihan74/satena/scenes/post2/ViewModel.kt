@@ -38,6 +38,9 @@ class ViewModel(
     /** 使用タグ数が制限を超える例外 */
     class TooManyTagsException : Throwable("too many tags (more than 10)")
 
+    /** 多重投稿例外 */
+    class MultiplePostException : Throwable("multiple post")
+
     companion object {
         /** ブコメ最大文字数 */
         const val MAX_COMMENT_LENGTH = 100
@@ -100,6 +103,9 @@ class ViewModel(
 
     /** 初期化済みかのフラグ */
     var initialized : Boolean = false
+
+    /** 投稿処理中かを示すフラグ */
+    val nowPosting by lazy { MutableLiveData(false) }
 
     /** 初期化 */
     fun init(url: String, editingComment: String?, onError: OnError? = null) = viewModelScope.launch(
@@ -299,6 +305,14 @@ class ViewModel(
             onFinally?.invoke(error)
         }
     }
+
+    /** 投稿可能な状態かを調べる */
+    fun checkPostable(onError: OnError? = null) : Boolean =
+        if (nowPosting.value == true) {
+            onError?.invoke(MultiplePostException())
+            false
+        }
+        else checkCommentLength(onError)
 
     /** コメントの長さをチェックする */
     fun checkCommentLength(onError: OnError? = null) =
