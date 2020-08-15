@@ -17,7 +17,6 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
 import com.suihan74.utilities.lock
 import com.suihan74.utilities.showToast
-import kotlinx.coroutines.runBlocking
 import java.util.*
 
 class SatenaApplication : Application() {
@@ -51,11 +50,6 @@ class SatenaApplication : Application() {
         // DBを準備する
         initializeDataBase()
 
-        // DI
-//        appComponent = DaggerAppComponent.builder()
-//            .ignoredEntryModule(IgnoredEntryModule(this))
-//            .build()
-
         // テーマの設定
         val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
         setTheme(
@@ -72,9 +66,8 @@ class SatenaApplication : Application() {
             }
         }
         else {
-            runBlocking {
-                updatePreferencesVersion()
-            }
+            // 設定ファイルのバージョン移行が必要ならする
+            updatePreferencesVersion()
         }
 
         // 接続状態を監視
