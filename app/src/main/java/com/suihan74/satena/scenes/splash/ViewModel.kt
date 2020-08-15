@@ -1,5 +1,7 @@
 package com.suihan74.satena.scenes.splash
 
+import android.content.Context
+import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -7,20 +9,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class ViewModel(
+    private val context: Context,
     private val repository: Repository
 ) : ViewModel() {
     /** バージョン名 */
-    val appVersion = repository.appVersion
+    val appVersion : String by lazy { repository.getAppVersion(context) }
 
     fun start(onError: OnError? = null) = viewModelScope.launch(Dispatchers.Default) {
-        repository.start(onError)
+        val intent = repository.createIntent(context, onError)
+        context.startActivity(intent, ActivityOptionsCompat.makeCustomAnimation(
+            context,
+            android.R.anim.fade_in, android.R.anim.fade_out
+        ).toBundle())
     }
 
     class Factory(
+        private val context: Context,
         private val repository: Repository
     ) : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>) : T =
-            ViewModel(repository) as T
+            ViewModel(context, repository) as T
     }
 }

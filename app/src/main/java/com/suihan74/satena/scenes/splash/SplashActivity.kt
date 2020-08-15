@@ -14,11 +14,9 @@ import com.suihan74.utilities.showToast
 class SplashActivity : AppCompatActivity() {
     private val viewModel : ViewModel by lazy {
         val repository = Repository(
-            this,
-            HatenaClient,
             AccountLoader(this, HatenaClient, MastodonClientHolder)
         )
-        val factory = ViewModel.Factory(repository)
+        val factory = ViewModel.Factory(this, repository)
         ViewModelProvider(this, factory)[ViewModel::class.java]
     }
 
