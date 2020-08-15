@@ -71,6 +71,18 @@
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
     </style>
 
+    <!-- スプラッシュ画面のテーマ -->
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="textColor">@color/colorPrimaryText</item>
+        <item name="android:textColor">@color/colorPrimaryText</item>
+
+        <item name="android:windowEnterTransition">@android:transition/fade</item>
+        <item name="android:windowExitTransition">@android:transition/fade</item>
+    </style>
+
     <!-- 設定画面のトグルボタン -->
     <style name="PreferencesToggleButtonStyle" parent="Widget.AppCompat.Button">
         <item name="android:backgroundTint">@drawable/preferences_toggle_background_selector</item>

@@ -96,7 +96,7 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         )
 
         viewModel.initialize(
-            forceUpdate = true,
+            forceUpdate = false,
             onFinally = {
                 if (savedInstanceState == null) {
                     showContents()
@@ -256,16 +256,8 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
             }
         }
 
-        // 初回起動時にログイン画面に遷移する
-        if (SatenaApplication.instance.isFirstLaunch) {
-            SatenaApplication.instance.isFirstLaunch = false
-            val intent = Intent(this, HatenaAuthenticationActivity::class.java)
-            startActivity(intent)
-        }
-        else {
-            // アップデート後最初の起動時に更新履歴を表示
-            showReleaseNotes()
-        }
+        // アップデート後最初の起動時に更新履歴を表示
+        showReleaseNotes()
     }
 
     /** 必要ならリリースノートを表示する */
