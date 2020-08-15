@@ -214,8 +214,16 @@ class BookmarksActivity :
                     intent.getStringExtra(Intent.EXTRA_TEXT)!!
 
                 // ブコメページのURLが送られてくる場合
-                Intent.ACTION_VIEW ->
-                    HatenaClient.getEntryUrlFromCommentPageUrl(intent.dataString!!)
+                Intent.ACTION_VIEW -> {
+                    val dataString = intent.dataString!!
+                    try {
+                        HatenaClient.getEntryUrlFromCommentPageUrl(dataString)
+                    }
+                    catch (e: Throwable) {
+                        Log.e("entryUrl", "cannot parse entry-url: $dataString")
+                        dataString
+                    }
+                }
 
                 else -> throw InvalidUrlException()
             }
