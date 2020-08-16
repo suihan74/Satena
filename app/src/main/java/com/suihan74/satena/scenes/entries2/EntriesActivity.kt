@@ -14,7 +14,15 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.android.play.core.ktx.isImmediateUpdateAllowed
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -48,9 +56,13 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
         /** リリースノートダイアログ */
         private const val DIALOG_RELEASE_NOTES = "DIALOG_RELEASE_NOTES"
+
         /** 終了確認ダイアログ */
         private const val DIALOG_TERMINATION = "DIALOG_TERMINATION"
     }
+
+    private val REQUEST_CODE_UPDATE by lazy { hashCode() and 0x0000ffff }
+
 
     /** Entry画面全体で使用するViewModel */
     val viewModel : EntriesViewModel by lazy {
@@ -85,6 +97,9 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
 //    val bottomMenu : Menu
 //        get() = bottom_menu.menu
+
+    /** アップデートを確認する */
+    private var appUpdateManager : AppUpdateManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -226,6 +241,11 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
                 )
             }
         }
+
+        // アップデートをアプリ内から検出する
+        val appUpdateManager = AppUpdateManagerFactory.create(this).also {
+            this.appUpdateManager = it
+        }
     }
 
     /** 最初に表示するコンテンツの用意 */
@@ -283,6 +303,23 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
     override fun onResume() {
         super.onResume()
 
+        // アップデートを確認する
+        appUpdateManager?.let { appUpdateManager ->
+            appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
+                when (info.updateAvailability()) {
+                    // アップデートを行うかを確認する通知を表示する
+                    UpdateAvailability.UPDATE_AVAILABLE ->
+                        noticeAppUpdate(info)
+
+                    // アップデートが中断された場合は再開する
+                    UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS ->
+                        resumeAppUpdate(info)
+
+                    else -> {}
+                }
+            }
+        }
+
         // レイアウトモード反映
         bottom_app_bar.visibility = viewModel.isBottomLayoutMode.toVisibility(View.INVISIBLE)
         // 下部バー利用中の場合、設定によってはスクロールで隠す
@@ -338,6 +375,45 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
             else -> finish()
         }
+    }
+
+    /** Activity遷移で結果が返ってくるのを期待する場合 */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            REQUEST_CODE_UPDATE -> {
+                if (resultCode != RESULT_OK) {
+                    Log.e("AppUpdate", "update failed. code: $resultCode")
+                    showToast(R.string.msg_app_update_failed)
+                }
+            }
+        }
+    }
+
+    /** アプリのアップデートを通知する */
+    private fun noticeAppUpdate(info: AppUpdateInfo) {
+        if (info.isImmediateUpdateAllowed) {
+            Snackbar.make(
+                snack_bar_area,
+                R.string.app_update_notice,
+                Snackbar.LENGTH_INDEFINITE
+            ).apply {
+                setAction(R.string.app_update_ok) {
+                    resumeAppUpdate(info)
+                }
+                show()
+            }
+        }
+    }
+
+    /** アプリのアップデートを開始する */
+    private fun resumeAppUpdate(info: AppUpdateInfo) {
+        appUpdateManager?.startUpdateFlowForResult(
+            info,
+            AppUpdateType.IMMEDIATE,
+            this,
+            REQUEST_CODE_UPDATE
+        )
     }
 
     /** (カテゴリメニューから遷移できる)カテゴリを選択 */

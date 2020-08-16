@@ -92,6 +92,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
 
+                <androidx.coordinatorlayout.widget.CoordinatorLayout
+                        android:id="@+id/snack_bar_area"
+                        android:layout_gravity="bottom"
+                        android:layout_marginBottom="96dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+
                 <!-- メニュー表示中の記事誤タップ防止用ビュー -->
                 <View
                         android:id="@+id/entries_menu_background_guard"

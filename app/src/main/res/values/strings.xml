@@ -10,6 +10,11 @@
     <string name="app_termination_dialog_msg">アプリを終了しますか？</string>
     <string name="msg_termination_dialog_error">終了確認ダイアログの生成に失敗したのでそのまま終了しました</string>
 
+    <!-- AppUpdate -->
+    <string name="msg_app_update_failed">アプリ更新に失敗しました。Playストアから再試行してください</string>
+    <string name="app_update_notice">Satenaをアップデートできます。</string>
+    <string name="app_update_ok">実行</string>
+
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_register">登録</string>
