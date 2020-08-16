@@ -47,4 +47,11 @@ abstract class PreferencesViewModel(
 
     protected inline fun <reified T : Enum<T>> createLiveDataEnum(key: PreferenceKey) =
         createLiveDataEnum<PreferenceKey, T>(prefs, key)
+
+
+    protected inline fun <reified T : Enum<T>> createLiveDataEnum(
+        key: PreferenceKey,
+        noinline toIntConverter: ((T) -> Int)? = null,
+        noinline fromIntConverter: ((Int) -> T)? = null
+    ) = createLiveDataEnum(prefs, key, toIntConverter, fromIntConverter)
 }
