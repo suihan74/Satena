@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.preferences.pages
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.suihan74.satena.models.AppUpdateNoticeMode
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
@@ -13,6 +14,18 @@ class PreferencesGeneralsViewModel(
     /** テーマ(ダークテーマか否か) */
     val darkTheme = createLiveData<Boolean>(
         PreferenceKey.DARK_THEME
+    )
+
+    /** アプリ内アップデート通知を使用する */
+    val appUpdateNoticeMode = createLiveDataEnum(
+        PreferenceKey.APP_UPDATE_NOTICE_MODE,
+        { m -> m.int },
+        { i -> AppUpdateNoticeMode.fromInt(i) }
+    )
+
+    /** 一度無視したアップデートを再度通知する */
+    val noticeIgnoredAppUpdate = createLiveData<Boolean>(
+        PreferenceKey.NOTICE_IGNORED_APP_UPDATE
     )
 
     /** 終了確認ダイアログを表示する */

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
+        <import type="com.suihan74.satena.models.AppUpdateNoticeMode"/>
         <variable
                 name="vm"
                 type="com.suihan74.satena.scenes.preferences.pages.PreferencesGeneralsViewModel" />
@@ -35,6 +36,36 @@
                     android:checked="@={vm.darkTheme}"
                     android:textOn="Dark"
                     android:textOff="Light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:text="@string/pref_generals_app_update_notice_mode_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <Button
+                    android:id="@+id/button_app_update_notice_mode"
+                    style="@style/Widget.AppCompat.Button"
+                    android:text='@{vm.appUpdateNoticeMode.textId}'
+                    android:textColor="@color/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:visibility="@{vm.appUpdateNoticeMode != AppUpdateNoticeMode.NONE}"
+                    android:text="@string/pref_generals_notice_ignored_app_update_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <ToggleButton
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:visibility="@{vm.appUpdateNoticeMode != AppUpdateNoticeMode.NONE}"
+                    android:checked="@={vm.noticeIgnoredAppUpdate}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 

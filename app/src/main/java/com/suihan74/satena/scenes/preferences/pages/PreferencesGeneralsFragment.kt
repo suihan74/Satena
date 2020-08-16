@@ -11,7 +11,9 @@ import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesGeneralsBinding
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialogFragment
+import com.suihan74.satena.models.AppUpdateNoticeMode
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
@@ -21,6 +23,7 @@ import kotlinx.android.synthetic.main.fragment_preferences_generals.view.*
 
 class PreferencesGeneralsFragment :
     PreferencesFragmentBase(),
+    AlertDialogFragment.Listener,
     NumberPickerDialogFragment.Listener
 {
     companion object {
@@ -28,6 +31,7 @@ class PreferencesGeneralsFragment :
     }
 
     private val DIALOG_CHECKING_NOTICES_INTERVAL by lazy { "DIALOG_CHECKING_NOTICES_INTERVAL" }
+    private val DIALOG_APP_UPDATE_NOTICE_MODE by lazy { "DIALOG_APP_UPDATE_NOTICE_MODE" }
 
     private lateinit var viewModel: PreferencesGeneralsViewModel
 
@@ -83,10 +87,30 @@ class PreferencesGeneralsFragment :
                 .showAllowingStateLoss(childFragmentManager, DIALOG_CHECKING_NOTICES_INTERVAL)
         }
 
+        // アプリ内アップデート通知の対象を選択
+        view.button_app_update_notice_mode.setOnClickListener {
+            val currentValue = viewModel.appUpdateNoticeMode.value ?: AppUpdateNoticeMode.FIX
+            val currentIdx = AppUpdateNoticeMode.values().indexOf(currentValue)
+            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                .setTitle(R.string.pref_generals_app_update_notice_mode_desc)
+                .setSingleChoiceItems(AppUpdateNoticeMode.values().map { getString(it.textId) }.toTypedArray(), currentIdx)
+                .setNegativeButton(R.string.dialog_cancel)
+                .show(childFragmentManager, DIALOG_APP_UPDATE_NOTICE_MODE)
+        }
+
         return view
     }
 
     override fun onCompleteNumberPicker(value: Int, dialog: NumberPickerDialogFragment) {
         viewModel.checkNoticesInterval.value = value.toLong()
+    }
+
+    override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
+        when (dialog.tag) {
+            DIALOG_APP_UPDATE_NOTICE_MODE -> {
+                viewModel.appUpdateNoticeMode.value = AppUpdateNoticeMode.values()[which]
+            }
+        }
+        dialog.dismissAllowingStateLoss()
     }
 }

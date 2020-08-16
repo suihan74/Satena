@@ -38,6 +38,15 @@ enum class PreferenceKey(
     /** ダークテーマを使用 */
     DARK_THEME(typeInfo<Boolean>(), false),
 
+    /** アプリ内アップデート通知 */
+    APP_UPDATE_NOTICE_MODE(typeInfo<Int>(), AppUpdateNoticeMode.FIX.int),
+
+    /** 一度無視したアップデートを再度通知する */
+    NOTICE_IGNORED_APP_UPDATE(typeInfo<Boolean>(), false),
+
+    /** 最後に通知したアップデートバージョン */
+    LAST_NOTICED_APP_UPDATE_VERSION(typeInfo<Long>(), 0),
+
     /** 終了確認ダイアログを表示 */
     USING_TERMINATION_DIALOG(typeInfo<Boolean>(), false),
 

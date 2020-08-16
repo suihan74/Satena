@@ -15,6 +15,11 @@
     <string name="app_update_notice">Satenaをアップデートできます。</string>
     <string name="app_update_ok">実行</string>
 
+    <string name="app_update_mode_none">通知しない</string>
+    <string name="app_update_mode_add_features">機能追加のみ</string>
+    <string name="app_update_mode_fix">すべて</string>
+
+    <!-- Dialog -->
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_register">登録</string>
@@ -142,6 +147,8 @@
     <!-- generals -->
     <string name="pref_generals_theme_desc">テーマ</string>
     <string name="pref_generals_using_termination_dialog_desc">終了確認ダイアログを表示する</string>
+    <string name="pref_generals_app_update_notice_mode_desc">アプリ内アップデート通知を行う対象</string>
+    <string name="pref_generals_notice_ignored_app_update_desc">一度無視したアップデートを再度通知する</string>
     <string name="pref_generals_notices_last_seen_updatable_desc">通知の既読状態をアプリから更新する</string>
     <string name="pref_generals_background_checking_notices_desc">常駐して通知を確認する</string>
     <string name="pref_generals_checking_notices_intervals_desc">通知を確認する間隔</string>
