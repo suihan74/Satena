@@ -14,8 +14,9 @@ android {
     defaultConfig {
         applicationId "com.suihan74.satena"
         // バージョン情報
-        versionCode 180
-        versionName "1.3.0a_2008141520"
+        // major(1桁)-minor(2桁)-fix(3桁)-dev(3桁)
+        versionCode 103000000
+        versionName "1.3.0a_2008161845"
 
         minSdkVersion 23
         targetSdkVersion 29
@@ -62,6 +63,10 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation "androidx.fragment:fragment-ktx:1.2.5"
+
+    // AppUpdateManager
+    implementation 'com.google.android.play:core:1.8.0'
+    implementation 'com.google.android.play:core-ktx:1.8.1'
 
     // ViewModel and LiveData
     def lifecycle_version = "2.2.0"
