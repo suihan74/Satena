@@ -444,11 +444,11 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
     // --- FAB表示アニメーション ---
 
     /** FABメニュー各項目のオープン時移動アニメーション */
-    private fun openFABMenuAnimation(layout: View, desc: View, dimenId: Int) {
+    private fun openFABMenuAnimation(fab: FloatingActionButton, desc: View, dimenId: Int) {
         val metrics = resources.displayMetrics
 
-        layout.visibility = View.VISIBLE
-        layout.animate()
+        fab.visibility = View.VISIBLE
+        fab.animate()
             .withEndAction {
                 val descWidth = desc.width / 2f
                 desc.animate()
@@ -465,14 +465,14 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
     }
 
     /** FABメニュー各項目のクローズ時移動アニメーション */
-    private fun closeFABMenuAnimation(layout: View, desc: View) {
-        if (layout.visibility != View.VISIBLE) return
+    private fun closeFABMenuAnimation(fab: FloatingActionButton, desc: View) {
+        if (fab.visibility != View.VISIBLE) return
 
         desc.animate()
             .withEndAction {
-                layout.animate()
+                fab.animate()
                     .withEndAction {
-                        layout.visibility = View.INVISIBLE
+                        fab.visibility = View.INVISIBLE
                     }
                     .translationY(0f)
                     .alphaBy(1.0f)
@@ -502,11 +502,13 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
         entries_menu_background_guard.visibility = View.VISIBLE
 
-        openFABMenuAnimation(
-            entries_menu_notices_button,
-            entries_menu_notices_desc,
-            R.dimen.dp_238
-        )
+        if (viewModel.signedIn.value == true) {
+            openFABMenuAnimation(
+                entries_menu_notices_button,
+                entries_menu_notices_desc,
+                R.dimen.dp_238
+            )
+        }
         openFABMenuAnimation(
             entries_menu_categories_button,
             entries_menu_categories_desc,
