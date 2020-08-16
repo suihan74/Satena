@@ -5,6 +5,7 @@ import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.suihan74.satena.SatenaApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -13,7 +14,7 @@ class ViewModel(
     private val repository: Repository
 ) : ViewModel() {
     /** バージョン名 */
-    val appVersion : String by lazy { repository.getAppVersion(context) }
+    val appVersion : String by lazy { SatenaApplication.instance.versionName }
 
     fun start(onError: OnError? = null) = viewModelScope.launch(Dispatchers.Default) {
         val intent = repository.createIntent(context, onError)

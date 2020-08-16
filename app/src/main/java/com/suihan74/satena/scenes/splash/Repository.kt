@@ -14,13 +14,6 @@ typealias OnError = (Throwable)->Unit
 class Repository(
     private val accountLoader : AccountLoader
 ) {
-    /** アプリバージョン */
-    fun getAppVersion(context: Context) : String {
-        val pm = context.packageManager
-        val packageInfo = pm.getPackageInfo(context.packageName, 0)
-        return packageInfo.versionName
-    }
-
     /** サインイン */
     private suspend fun signIn(onError: OnError?) {
         try {

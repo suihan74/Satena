@@ -45,14 +45,12 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_preferences_information, container, false)
         val activity = requireActivity() as PreferencesActivity
-        val context = requireContext()
-
-        val pm = context.packageManager
-        val packageInfo = pm.getPackageInfo(context.packageName, 0)
-        val versionName = packageInfo.versionName
 
         // アプリバージョン
-        root.app_version.text = String.format("version: %s", versionName)
+        root.app_version.text = String.format(
+            "version: %s",
+            SatenaApplication.instance.versionName
+        )
 
         // コピーライト
         root.copyright.run {

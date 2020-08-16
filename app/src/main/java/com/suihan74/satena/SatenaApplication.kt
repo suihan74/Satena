@@ -7,6 +7,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import androidx.annotation.RequiresApi
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -36,6 +37,30 @@ class SatenaApplication : Application() {
 
     init {
         instance = this
+    }
+
+    /** アプリのバージョン番号 */
+    val versionCode: Long by lazy {
+        val packageInfo = packageManager.getPackageInfo(packageName, 0)
+        PackageInfoCompat.getLongVersionCode(packageInfo)
+    }
+
+    /** アプリのバージョン名 */
+    val versionName: String by lazy {
+        val packageInfo = packageManager.getPackageInfo(packageName, 0)
+        packageInfo.versionName
+    }
+
+    /** アプリのMinorバージョン番号 */
+    val minorVersionCode: Long by lazy {
+        getMinorVersion(versionCode)
+    }
+
+    /** バージョンコード値からマイナーバージョンを計算する */
+    fun getMinorVersion(versionCode: Long) : Long {
+        val upperMask = 100000000
+        val lowerMask = 1000000
+        return (versionCode % upperMask) / lowerMask
     }
 
     override fun onCreate() {
