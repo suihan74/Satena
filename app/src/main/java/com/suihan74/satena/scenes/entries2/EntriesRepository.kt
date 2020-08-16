@@ -1,10 +1,20 @@
 package com.suihan74.satena.scenes.entries2
 
+import android.app.Activity
+import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.android.play.core.tasks.OnSuccessListener
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
@@ -67,13 +77,29 @@ private data class BookmarkCommentUrl (
 )
 
 class EntriesRepository(
+    private val context: Context,
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
-    private val prefs: SafeSharedPreferences<PreferenceKey>,
-    private val historyPrefs: SafeSharedPreferences<EntriesHistoryKey>,
-    private val noticesPrefs: SafeSharedPreferences<NoticesKey>,
     private val ignoredEntryDao: IgnoredEntryDao
 ) {
+    /** アプリ内アップデート */
+    private var appUpdateManager: AppUpdateManager? = null
+
+    /** 設定 */
+    private val prefs by lazy {
+        SafeSharedPreferences.create<PreferenceKey>(context)
+    }
+
+    /** 閲覧履歴 */
+    private val historyPrefs by lazy {
+        SafeSharedPreferences.create<EntriesHistoryKey>(context)
+    }
+
+    /** 通知 */
+    private val noticesPrefs by lazy {
+        SafeSharedPreferences.create<NoticesKey>(context)
+    }
+
     /** サインイン状態 */
     val signedIn : Boolean
         get() = client.signedIn()
@@ -460,6 +486,73 @@ class EntriesRepository(
         return@withContext entries.filterNot { entry ->
             ignoredEntries.any { it.isMatched(entry) }
         }
+    }
+
+    /** アプリ内アップデートを使用する */
+    fun startAppUpdateManager(listener: (AppUpdateInfo)->Unit) {
+        when (AppUpdateNoticeMode.fromInt(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
+            AppUpdateNoticeMode.NONE -> {
+                this.appUpdateManager = null
+            }
+
+            else -> {
+                if (appUpdateManager == null) {
+                    appUpdateManager = AppUpdateManagerFactory.create(context)
+                }
+
+                // アップデートを確認する
+                appUpdateManager?.appUpdateInfo?.addOnSuccessListener { info ->
+                    when (info.updateAvailability()) {
+                        UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS ->
+                            listener(info)
+
+                        UpdateAvailability.UPDATE_AVAILABLE ->
+                            handleUpdateAvailable(info, listener)
+
+                        else -> {}
+                    }
+                }
+            }
+        }
+    }
+
+    /** アップデートできる場合に、まず通知するべきかどうかを判別する */
+    private fun handleUpdateAvailable(info: AppUpdateInfo, listener: (AppUpdateInfo)->Unit) {
+        val app = SatenaApplication.instance
+        val latestVersion = info.availableVersionCode().toLong()
+
+        if (!prefs.getBoolean(PreferenceKey.NOTICE_IGNORED_APP_UPDATE)) {
+            // 一度無視したアップデートを二度と通知しない設定が有効な場合
+            val lastNoticedVersion = prefs.getLong(PreferenceKey.LAST_NOTICED_APP_UPDATE_VERSION)
+            if (lastNoticedVersion == latestVersion) {
+                return
+            }
+        }
+
+        when (AppUpdateNoticeMode.fromInt(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
+            // 機能追加アップデートだけを通知する
+            AppUpdateNoticeMode.ADD_FEATURES -> {
+                val currentMinor = app.minorVersionCode
+                val latestMinor = app.getMinorVersion(latestVersion)
+
+                if (latestMinor > currentMinor) {
+                    listener(info)
+                }
+            }
+
+            // 全てのアップデートを通知する
+            else -> listener(info)
+        }
+    }
+
+    /** アプリのアップデートを開始する */
+    fun resumeAppUpdate(activity: Activity, info: AppUpdateInfo, requestCode: Int) {
+        appUpdateManager?.startUpdateFlowForResult(
+            info,
+            AppUpdateType.IMMEDIATE,
+            activity,
+            requestCode
+        )
     }
 
     /** サインイン状態の変更を通知する */

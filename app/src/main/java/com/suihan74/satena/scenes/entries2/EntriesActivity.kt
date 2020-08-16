@@ -66,18 +66,15 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
     /** Entry画面全体で使用するViewModel */
     val viewModel : EntriesViewModel by lazy {
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val factory = EntriesViewModel.Factory(
             EntriesRepository(
+                context = this,
                 client = HatenaClient,
                 accountLoader = AccountLoader(
                     this,
                     HatenaClient,
                     MastodonClientHolder
                 ),
-                prefs = prefs,
-                noticesPrefs = SafeSharedPreferences.create(this),
-                historyPrefs = SafeSharedPreferences.create(this),
                 ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
             )
         )
@@ -241,11 +238,6 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
                 )
             }
         }
-
-        // アップデートをアプリ内から検出する
-        val appUpdateManager = AppUpdateManagerFactory.create(this).also {
-            this.appUpdateManager = it
-        }
     }
 
     /** 最初に表示するコンテンツの用意 */
@@ -303,22 +295,8 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
     override fun onResume() {
         super.onResume()
 
-        // アップデートを確認する
-        appUpdateManager?.let { appUpdateManager ->
-            appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
-                when (info.updateAvailability()) {
-                    // アップデートを行うかを確認する通知を表示する
-                    UpdateAvailability.UPDATE_AVAILABLE ->
-                        noticeAppUpdate(info)
-
-                    // アップデートが中断された場合は再開する
-                    UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS ->
-                        resumeAppUpdate(info)
-
-                    else -> {}
-                }
-            }
-        }
+        // アプリ内アップデートを使用する
+        viewModel.startAppUpdate(this, snack_bar_area, REQUEST_CODE_UPDATE)
 
         // レイアウトモード反映
         bottom_app_bar.visibility = viewModel.isBottomLayoutMode.toVisibility(View.INVISIBLE)
@@ -388,32 +366,6 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
                 }
             }
         }
-    }
-
-    /** アプリのアップデートを通知する */
-    private fun noticeAppUpdate(info: AppUpdateInfo) {
-        if (info.isImmediateUpdateAllowed) {
-            Snackbar.make(
-                snack_bar_area,
-                R.string.app_update_notice,
-                Snackbar.LENGTH_INDEFINITE
-            ).apply {
-                setAction(R.string.app_update_ok) {
-                    resumeAppUpdate(info)
-                }
-                show()
-            }
-        }
-    }
-
-    /** アプリのアップデートを開始する */
-    private fun resumeAppUpdate(info: AppUpdateInfo) {
-        appUpdateManager?.startUpdateFlowForResult(
-            info,
-            AppUpdateType.IMMEDIATE,
-            this,
-            REQUEST_CODE_UPDATE
-        )
     }
 
     /** (カテゴリメニューから遷移できる)カテゴリを選択 */
