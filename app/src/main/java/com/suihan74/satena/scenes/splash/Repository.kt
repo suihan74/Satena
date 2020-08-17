@@ -32,7 +32,9 @@ class Repository(
         return if (app.isFirstLaunch) {
             // 初回起動時
             app.isFirstLaunch = false
-            Intent(context, HatenaAuthenticationActivity::class.java)
+            Intent(context, HatenaAuthenticationActivity::class.java).apply {
+                putExtra(HatenaAuthenticationActivity.EXTRA_FIRST_LAUNCH, true)
+            }
         }
         else {
             // サインインしてエントリ画面を開く

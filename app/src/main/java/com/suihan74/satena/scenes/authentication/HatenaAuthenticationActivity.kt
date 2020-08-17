@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.authentication
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.util.Log
@@ -8,6 +9,7 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.showToast
@@ -17,6 +19,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class HatenaAuthenticationActivity : ActivityBase() {
+    companion object {
+        /** 初回起動時の呼び出しかを判別する */
+        const val EXTRA_FIRST_LAUNCH = "EXTRA_FIRST_LAUNCH"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_hatena_authentication)
@@ -40,6 +47,22 @@ class HatenaAuthenticationActivity : ActivityBase() {
         sign_up_text_view.apply {
             movementMethod = LinkMovementMethod.getInstance()
             setLinkTextColor(ContextCompat.getColor(this@HatenaAuthenticationActivity, R.color.colorPrimary))
+        }
+    }
+
+    override fun onBackPressed() {
+        finish()
+    }
+
+    override fun finish() {
+        if (intent.getBooleanExtra(EXTRA_FIRST_LAUNCH, false)) {
+            val intent = Intent(this, EntriesActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+        }
+        else {
+            super.finish()
         }
     }
 
