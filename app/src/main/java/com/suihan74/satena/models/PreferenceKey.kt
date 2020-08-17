@@ -75,10 +75,10 @@ enum class PreferenceKey(
     // entries
     ////////////////////////////////////////
 
-    /** レイアウトモード */
-    ENTRIES_BOTTOM_LAYOUT_MODE(typeInfo<Boolean>(), false),
+    /** ボトムバーを使用する */
+    ENTRIES_BOTTOM_LAYOUT_MODE(typeInfo<Boolean>(), true),
 
-    /** スクロールで下部アプリバーを隠す */
+    /** スクロールでボトムバーを隠す */
     ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING(typeInfo<Boolean>(), false),
 
     /** エントリ項目シングルタップの挙動 */
