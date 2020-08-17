@@ -251,6 +251,11 @@ class BookmarkPostActivity :
                 finish()
             }
 
+            is ViewModel.NotSignedInException -> {
+                showToast(R.string.msg_hatena_not_signed_in)
+                finish()
+            }
+
             else -> {
                 showToast(R.string.msg_auth_failed)
                 finish()

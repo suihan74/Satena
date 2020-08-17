@@ -29,6 +29,8 @@ class ViewModel(
     private val accountLoader: AccountLoader
 ) : ViewModel() {
 
+    class NotSignedInException : Throwable("not signed in")
+
     /** タグリスト読み込み失敗 */
     class LoadingTagsFailureException(cause: Throwable? = null) : Throwable("loading tags is failed.", cause)
 
@@ -175,11 +177,11 @@ class ViewModel(
 
     /** サインインが必要なら行う */
     private suspend fun signIn() {
-        // Twitter
+        // Hatena
         accountLoader.signInHatenaAsync(reSignIn = false).await()?.let {
             signedInTwitter.value = it.isOAuthTwitter
             signedInFacebook.value = it.isOAuthFaceBook
-        }
+        } ?: throw NotSignedInException()
 
         // Mastodon
         accountLoader.signInMastodonAsync(reSignIn = false).await()?.let {
