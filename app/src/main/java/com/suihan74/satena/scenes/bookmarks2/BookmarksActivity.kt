@@ -247,9 +247,16 @@ class BookmarksActivity :
                     toolbar.subtitle = getString(R.string.toolbar_subtitle_bookmarks, 0, 0)
                 }
 
+                is FetchIgnoredUsersFailureException -> {
+                    if (viewModel.signedIn.value == true) {
+                        showToast(R.string.msg_fetch_ignored_users_failed)
+                    }
+                }
+
                 else ->
                     showToast(R.string.msg_update_bookmarks_failed)
             }
+            Log.e("BookmarksActivity", Log.getStackTraceString(e))
         }
 
         val onFinally: ()->Unit = {
@@ -546,7 +553,7 @@ class BookmarksActivity :
     }
 
     fun onBookmarkLongClicked(bookmark: Bookmark): Boolean {
-        val dialog = BookmarkMenuDialog.createInstance(bookmark)
+        val dialog = BookmarkMenuDialog.createInstance(bookmark, viewModel.signedIn.value)
         dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_BOOKMARK_MENU)
         return true
     }

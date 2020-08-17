@@ -13,15 +13,18 @@ class BookmarkMenuDialog : DialogFragment() {
     private lateinit var bookmark : Bookmark
 
     companion object {
-        fun createInstance(bookmark: Bookmark) = BookmarkMenuDialog().apply {
+        fun createInstance(bookmark: Bookmark, signedIn: Boolean?) = BookmarkMenuDialog().apply {
             arguments = Bundle().apply {
                 putSerializable(ARG_BOOKMARK, bookmark)
+                putBoolean(ARG_SIGNED_IN, signedIn == true)
             }
         }
 
         private const val ARG_BOOKMARK = "ARG_BOOKMARK"
+        private const val ARG_SIGNED_IN = "ARG_SIGNED_IN"
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val listener = parentFragment as? Listener ?: activity as? Listener
         bookmark = requireArguments().getSerializable(ARG_BOOKMARK) as Bookmark
@@ -30,17 +33,21 @@ class BookmarkMenuDialog : DialogFragment() {
             setCustomTitle(bookmark)
         }
 
-        val items = arrayListOf(
-            R.string.bookmark_show_user_entries to { listener?.onShowEntries(bookmark.user) },
-            if (listener?.isIgnored(bookmark.user) == true) {
-                R.string.bookmark_unignore to { listener.onIgnoreUser(bookmark.user, false) }
-            }
-            else {
-                R.string.bookmark_ignore to { listener?.onIgnoreUser(bookmark.user, true) }
-            }
-        ).apply {
-            if (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty()) {
-                add(R.string.bookmark_report to { listener?.onReportBookmark(bookmark) })
+        val signedIn = requireArguments().getBoolean(ARG_SIGNED_IN)
+
+        val items = buildList {
+            add(R.string.bookmark_show_user_entries to { listener?.onShowEntries(bookmark.user) })
+            if (signedIn) {
+                if (listener?.isIgnored(bookmark.user) == true) {
+                    add(R.string.bookmark_unignore to { listener.onIgnoreUser(bookmark.user, false) })
+                }
+                else {
+                    add(R.string.bookmark_ignore to { listener?.onIgnoreUser(bookmark.user, true) })
+                }
+
+                if (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty()) {
+                    add(R.string.bookmark_report to { listener?.onReportBookmark(bookmark) })
+                }
             }
             add(R.string.bookmark_user_tags to { listener?.onSetUserTag(bookmark.user) })
         }
