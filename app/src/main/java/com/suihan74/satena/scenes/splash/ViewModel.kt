@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.SatenaApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ViewModel(
     private val context: Context,
@@ -18,10 +19,15 @@ class ViewModel(
 
     fun start(onError: OnError? = null) = viewModelScope.launch(Dispatchers.Default) {
         val intent = repository.createIntent(context, onError)
-        context.startActivity(intent, ActivityOptionsCompat.makeCustomAnimation(
-            context,
-            android.R.anim.fade_in, android.R.anim.fade_out
-        ).toBundle())
+
+        withContext(Dispatchers.Main) {
+            context.startActivity(
+                intent, ActivityOptionsCompat.makeCustomAnimation(
+                    context,
+                    android.R.anim.fade_in, android.R.anim.fade_out
+                ).toBundle()
+            )
+        }
     }
 
     class Factory(
