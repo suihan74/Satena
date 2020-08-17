@@ -105,8 +105,14 @@ class BookmarksRepository(
     }
 
     /** 既にロード済みのエントリ情報をリポジトリにセットする */
-    fun setEntry(entry: Entry) {
-        this.entry = entry
+    suspend fun loadEntry(entry: Entry) {
+        if (entry.id == 0L) {
+            val eid = client.getEntryIdAsync(entry.url).await()
+            this.entry = entry.copy(id = eid ?: 0)
+        }
+        else {
+            this.entry = entry
+        }
     }
 
     /** ブックマークエントリを取得 */
@@ -240,7 +246,7 @@ class BookmarksRepository(
      */
     suspend fun updateUserBookmark(bookmarkResult: BookmarkResult) = withContext(Dispatchers.Default) {
         val bookmark = Bookmark.create(bookmarkResult)
-        setEntry(entry.copy(bookmarkedData =  bookmarkResult))
+        loadEntry(entry.copy(bookmarkedData =  bookmarkResult))
         if (bookmarksEntry != null) {
             val bEntry = bookmarksEntry!!
             bookmarksEntry = bEntry.copy(bookmarks = bEntry.bookmarks.map {

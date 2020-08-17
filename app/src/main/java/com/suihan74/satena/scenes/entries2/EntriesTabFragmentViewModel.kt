@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
-import com.suihan74.utilities.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -94,7 +93,7 @@ class EntriesTabFragmentViewModel(
 
     /** 指定したエントリを削除する */
     fun delete(entry: Entry) {
-        entries.value = entries.value?.filterNot { it.id == entry.id }
+        entries.value = entries.value?.filterNot { it.same(entry) }
     }
 
     /** 指定したエントリのブクマを削除する */
@@ -104,7 +103,7 @@ class EntriesTabFragmentViewModel(
         }
         else {
             entries.value = entries.value?.map {
-                if (it.id == entry.id) it.copy(bookmarkedData = null)
+                if (it.same(entry)) it.copy(bookmarkedData = null)
                 else it
             }
         }
@@ -113,7 +112,7 @@ class EntriesTabFragmentViewModel(
     /** エントリに付けたブクマを更新する */
     fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
         entries.value = entries.value?.map {
-            if (it.id == entry.id) it.copy(bookmarkedData = bookmarkResult)
+            if (it.same(entry)) it.copy(bookmarkedData = bookmarkResult)
             else it
         }
     }
@@ -218,7 +217,7 @@ class EntriesTabFragmentViewModel(
             val entries = fetchEntries(offset)
             val oldItems = this@EntriesTabFragmentViewModel.entries.value ?: emptyList()
             this@EntriesTabFragmentViewModel.entries.postValue(
-                oldItems.plus(entries).distinctBy { it.id }
+                oldItems.plus(entries).distinctBy { it.url }
             )
         }
         catch (e: Throwable) {

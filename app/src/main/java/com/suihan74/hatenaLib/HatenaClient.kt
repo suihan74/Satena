@@ -489,9 +489,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val classNamePrefix = "entrylist-contents"
 
         // エントリIDは個別のブクマページを取得しないと分からないので取得タスクをまとめて待機する
-        val entryIdsTasks = ArrayList<Deferred<Long?>>()
+//        val entryIdsTasks = ArrayList<Deferred<Long?>>()
 
-        val entries = get(apiUrl).use { response ->
+        return@async get(apiUrl).use { response ->
             val responseStr = response.body?.use { it.string() } ?: throw RuntimeException("failed to get entries: $url")
             val html = Jsoup.parse(responseStr)
             html.body().getElementsByClass("$classNamePrefix-main").mapNotNull m@ { entry ->
@@ -520,11 +520,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     description to imageUrl
                 } ?: ("" to "")
 
-                val tempId = entryIdsTasks.size.toLong()
-                entryIdsTasks.add(getEntryIdAsync(entryUrl))
-
                 Entry(
-                    id = tempId,
+                    id = 0,  // eidはコメントページを見ないと手に入らない
                     title = title,
                     description = description,
                     count = count,
@@ -534,12 +531,6 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     imageUrl = imageUrl
                 )
             }
-        }
-
-        entryIdsTasks.awaitAll()
-
-        return@async entries.mapNotNull {
-            it.copy(id = entryIdsTasks[it.id.toInt()].await() ?: return@mapNotNull null)
         }
     }
 

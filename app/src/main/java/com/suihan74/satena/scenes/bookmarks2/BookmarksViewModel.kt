@@ -130,6 +130,16 @@ class BookmarksViewModel(
         onError
     )
 
+    fun loadEntry(
+        entry: Entry,
+        onSuccess: ((entry: Entry) -> Unit)? = null,
+        onError: CompletionHandler? = null
+    ) = loadEntryImpl(
+        { repository.loadEntry(entry) },
+        onSuccess,
+        onError
+    )
+
     /**
      * ユーザーのブクマ情報を更新する
      */

@@ -103,6 +103,10 @@ class Entry (
         bookmarkedData = bookmarkedData,
         myHotEntryComments = myhotentryComments
     )
+
+    /** 同じエントリに対するインスタンスかを確認する */
+    fun same(other: Entry): Boolean =
+        id == other.id || url == other.url
 }
 
 internal data class EntriesWithIssue(

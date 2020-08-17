@@ -118,31 +118,31 @@ class BookmarksActivity :
             if (firstLaunching) intent.getObjectExtra<Entry>(EXTRA_ENTRY)
             else viewModel.repository.entry
 
+        progress_bar.visibility = View.VISIBLE
+
+        val onSuccess : (Entry)->Unit = { init(firstLaunching, it, targetUser) }
+
+        val onError : CompletionHandler = { e ->
+            when(e) {
+                is InvalidUrlException -> {
+                    showToast(R.string.invalid_url_error)
+                    finish()
+                }
+
+                is FetchIgnoredUsersFailureException -> {
+                    showToast(R.string.msg_fetch_ignored_users_failed)
+                }
+
+                is NotFoundException -> {}
+
+                else -> showToast(R.string.msg_update_bookmarks_failed)
+            }
+            Log.e("BookmarksActivity", Log.getStackTraceString(e))
+            progress_bar.visibility = View.INVISIBLE
+        }
+
         if (entry == null) {
             // Entryのロードが必要な場合
-            progress_bar.visibility = View.VISIBLE
-
-            val onSuccess : (Entry)->Unit = { init(firstLaunching, it, targetUser) }
-
-            val onError : CompletionHandler = { e ->
-                when(e) {
-                    is InvalidUrlException -> {
-                        showToast(R.string.invalid_url_error)
-                        finish()
-                    }
-
-                    is FetchIgnoredUsersFailureException -> {
-                        showToast(R.string.msg_fetch_ignored_users_failed)
-                    }
-
-                    is NotFoundException -> {}
-
-                    else -> showToast(R.string.msg_update_bookmarks_failed)
-                }
-                Log.e("BookmarksActivity", Log.getStackTraceString(e))
-                progress_bar.visibility = View.INVISIBLE
-            }
-
             val eid = intent.getLongExtra(EXTRA_ENTRY_ID, 0L)
             if (eid > 0L) {
                 toolbar.title = "eid=$eid"
@@ -156,8 +156,7 @@ class BookmarksActivity :
         }
         else {
             // Entryは既に取得済みの場合
-            viewModel.repository.setEntry(entry)
-            init(firstLaunching, entry, targetUser)
+            viewModel.loadEntry(entry, onSuccess, onError)
         }
 
         // スクロールでツールバーを隠す
