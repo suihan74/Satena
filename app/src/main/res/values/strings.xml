@@ -158,8 +158,8 @@
     <string name="pref_generals_notices_intervals_dialog_msg">1分～180分で指定できます</string>
     <string name="minutes">分</string>
     <!-- entries -->
-    <string name="pref_entries_layout_mode_desc">レイアウトモード</string>
-    <string name="pref_hide_bottom_appbar_by_scrolling_desc">スクロールで下部バーを隠す</string>
+    <string name="pref_entries_layout_mode_desc">ボトムバーを使用する</string>
+    <string name="pref_hide_bottom_appbar_by_scrolling_desc">スクロールでボトムバーを隠す</string>
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
     <string name="pref_home_category_desc">ホームカテゴリ</string>

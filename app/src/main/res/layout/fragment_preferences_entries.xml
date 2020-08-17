@@ -34,8 +34,6 @@
                     android:id="@+id/preferences_entries_layout_mode_button"
                     style="@style/PreferencesToggleButtonStyle"
                     android:checked="@={vm.bottomLayoutMode}"
-                    android:textOn="@string/pref_entries_bottom_layout_mode_on_text"
-                    android:textOff="@string/pref_entries_bottom_layout_mode_off_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
