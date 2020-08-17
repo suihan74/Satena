@@ -11,8 +11,6 @@ import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
-import com.suihan74.satena.models.FontSettings
-import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_entries2.view.*
 
@@ -29,8 +27,6 @@ class EntriesAdapter(private val fragment: Fragment) : ListAdapter<RecyclerState
 
     /** クリック処理済みフラグ（複数回タップされないようにする） */
     private var itemClicked = false
-
-    private val entryTitleFontLiveData = SingleUpdateMutableLiveData<FontSettings>()
 
     /** 項目クリック時の挙動をセットする */
     fun setOnItemClickedListener(listener: ItemClickedListener<Entry>?) {
@@ -50,9 +46,6 @@ class EntriesAdapter(private val fragment: Fragment) : ListAdapter<RecyclerState
     /** 復帰時に実行する */
     fun onResume() {
         itemClicked = false
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(fragment.context)
-        entryTitleFontLiveData.value = prefs.get<FontSettings>(PreferenceKey.FONT_ENTRY_TITLE)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
@@ -63,7 +56,6 @@ class EntriesAdapter(private val fragment: Fragment) : ListAdapter<RecyclerState
                     inflater,
                     R.layout.listview_item_entries2, parent, false
                 ).also {
-                    it.entryTitleFont = entryTitleFontLiveData
                     it.lifecycleOwner = fragment.viewLifecycleOwner
                 }
                 ViewHolder(binding)

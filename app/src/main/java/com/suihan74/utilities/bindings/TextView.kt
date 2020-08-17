@@ -14,7 +14,6 @@ import com.suihan74.hatenaLib.Notice
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
-import com.suihan74.satena.models.FontSettings
 import com.suihan74.utilities.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
@@ -23,11 +22,6 @@ import org.threeten.bp.format.DateTimeFormatter
 @BindingAdapter("textSizeSp")
 fun TextView.textSizeSp(size: Float) {
     setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
-}
-
-@BindingAdapter("fontFamily")
-fun TextView.userFontFamily(font: FontSettings?) {
-    this.typeface = font?.typeface ?: return
 }
 
 //////////////////////////////////////////////////
