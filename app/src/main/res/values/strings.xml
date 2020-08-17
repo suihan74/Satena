@@ -212,6 +212,7 @@
     <string name="hint_private_toggle">非公開でブクマします</string>
     <string name="msg_post_too_many_tags">使用できるタグは最大10個です</string>
     <string name="msg_fetch_tags_failed">タグリストを取得できませんでした</string>
+    <string name="msg_hatena_not_signed_in">はてなアカウントが登録されていません</string>
 
     <!-- hints -->
     <string name="search_query_hint">検索キーワード</string>
