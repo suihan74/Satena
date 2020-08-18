@@ -25,7 +25,10 @@ class ReleaseNotesDialogFragment : DialogFragment() {
     companion object {
         fun createInstance() = ReleaseNotesDialogFragment()
 
-        fun createInstance(lastVersionName: String, currentVersionName: String) = ReleaseNotesDialogFragment().withArguments {
+        fun createInstance(
+            lastVersionName: String,
+            currentVersionName: String
+        ) = ReleaseNotesDialogFragment().withArguments {
             putString(ARG_LAST_VERSION_NAME, lastVersionName)
             putString(ARG_CURRENT_VERSION_NAME, currentVersionName)
         }
@@ -38,8 +41,10 @@ class ReleaseNotesDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val view = requireActivity().layoutInflater.inflate(R.layout.fragment_dialog_release_notes, null)
-        val titleColor = ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+        val activity = requireActivity()
+        val view = activity.layoutInflater.inflate(R.layout.fragment_dialog_release_notes, null)
+        val titleColor = ContextCompat.getColor(activity, R.color.colorPrimary)
+
         val lastVersionName = arguments?.getString(ARG_LAST_VERSION_NAME)
         val currentVersionName = arguments?.getString(ARG_CURRENT_VERSION_NAME)
 
@@ -58,16 +63,12 @@ class ReleaseNotesDialogFragment : DialogFragment() {
                     // 最後の起動時のバージョンが渡されている場合、そこから最新までの差分だけを表示する
                     val text = when (lastVersionName) {
                         null -> reader.readText()
-                        else -> {
-                            buildString {
-                                reader.useLines { lines ->
-                                    lines.forEach { line ->
-                                        if (line.contains("[ version $lastVersionName ]")) return@useLines
-                                        append(line)
-                                        append("\n")
-                                    }
+                        else -> buildString {
+                            reader.useLines { it.forEach { line ->
+                                if (!line.contains("[ version $lastVersionName ]")) {
+                                    append(line, "\n")
                                 }
-                            }
+                            } }
                         }
                     }
 
@@ -88,7 +89,7 @@ class ReleaseNotesDialogFragment : DialogFragment() {
                 }
             }
             catch (e: Throwable) {
-                activity?.showToast(R.string.msg_read_release_notes_failed)
+                activity.showToast(R.string.msg_read_release_notes_failed)
             }
         }
 
