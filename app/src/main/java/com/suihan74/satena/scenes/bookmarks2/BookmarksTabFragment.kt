@@ -109,9 +109,7 @@ class BookmarksTabFragment :
             }
 
             override val nextLoadable: Boolean
-                get() {
-                    return false
-                }
+                get() = false
         }
 
         // recycler view
@@ -123,20 +121,8 @@ class BookmarksTabFragment :
             addOnScrollListener(
                 RecyclerViewScrollingUpdater {
                     bookmarksAdapter.startLoading()
-                    viewModel.loadNextBookmarks().invokeOnCompletion { e->
-                        when (e) {
-                            null -> {}
-
-                            is NotFoundException -> {
-                                context?.showToast(R.string.msg_no_bookmarks)
-                                Log.w("FailedToUpdateBookmarks", Log.getStackTraceString(e))
-                            }
-
-                            else -> {
-                                context?.showToast(R.string.msg_update_bookmarks_failed)
-                                Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
-                            }
-                        }
+                    viewModel.loadNextBookmarks().invokeOnCompletion { e ->
+                        warnLoading(e)
                         bookmarksAdapter.stopLoading()
                         loadCompleted()
                     }
@@ -150,19 +136,7 @@ class BookmarksTabFragment :
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
                 viewModel.updateBookmarks().invokeOnCompletion { e ->
-                    when (e) {
-                        null -> {}
-
-                        is NotFoundException -> {
-                            context?.showToast(R.string.msg_no_bookmarks)
-                            Log.w("FailedToUpdateBookmarks", Log.getStackTraceString(e))
-                        }
-
-                        else -> {
-                            context?.showToast(R.string.msg_update_bookmarks_failed)
-                            Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
-                        }
-                    }
+                    warnLoading(e)
                     this@swipeLayout.isRefreshing = false
                 }
             }
@@ -213,5 +187,22 @@ class BookmarksTabFragment :
     override fun onResume() {
         super.onResume()
         bookmarksFragmentViewModel.selectedTabViewModel.value = viewModel
+    }
+
+    /** ロード失敗時のエラーメッセージ表示 */
+    private fun warnLoading(e: Throwable?) {
+        when (e) {
+            null -> {}
+
+            is NotFoundException -> {
+                context?.showToast(R.string.msg_no_bookmarks)
+                Log.w("FailedToUpdateBookmarks", Log.getStackTraceString(e))
+            }
+
+            else -> {
+                context?.showToast(R.string.msg_update_bookmarks_failed)
+                Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
+            }
+        }
     }
 }
