@@ -15,8 +15,8 @@ android {
         applicationId "com.suihan74.satena"
         // バージョン情報
         // major(1桁)-minor(2桁)-fix(3桁)-dev(3桁)
-        versionCode 103000003
-        versionName "1.3.0a_2008180005"
+        versionCode 103000005
+        versionName "1.3.0a_2008190121"
 
         minSdkVersion 23
         targetSdkVersion 29
@@ -95,7 +95,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     // coroutines
-    def coroutines_version = '1.3.6'
+    def coroutines_version = '1.3.9'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
@@ -105,8 +105,9 @@ dependencies {
     implementation "com.github.sys1yagi.mastodon4j:mastodon4j-rx:$mastodon4j_version"
 
     // http client
-    implementation 'com.squareup.okhttp3:okhttp:4.8.0'
-    implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.8.0'
+    def okhttp_version = '4.8.1'
+    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+    implementation "com.squareup.okhttp3:okhttp-urlconnection:$okhttp_version"
 
     // html parser
     implementation 'org.jsoup:jsoup:1.13.1'
