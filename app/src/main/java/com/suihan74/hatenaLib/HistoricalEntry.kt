@@ -35,7 +35,6 @@ internal data class HistoricalEntry (
         url = canonicalUrl,
         rootUrl = rootUrl,
         faviconUrl = faviconUrl,
-        imageUrl = "",
         bookmarkedData = bookmarkedData
     )
 }

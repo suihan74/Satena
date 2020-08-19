@@ -86,6 +86,11 @@ class EntriesTabFragmentViewModel(
         MutableLiveData<List<MaintenanceEntry>>()
     }
 
+    /** ユーザーの歴史を取得する : Category.Memorial15th */
+    val isUserMemorial by lazy {
+        MutableLiveData(false)
+    }
+
     /** フィルタリングを任意で実行する */
     fun filter() {
         entries.value = entries.value
@@ -161,6 +166,10 @@ class EntriesTabFragmentViewModel(
             Category.Search -> {
                 if (searchQuery.isNullOrBlank()) return emptyList()
                 else params
+            }
+
+            Category.Memorial15th -> params.also {
+                it.put(LoadEntryParameter.IS_USER, isUserMemorial.value)
             }
 
             else -> params

@@ -57,6 +57,10 @@
     <!-- Category.Stars専用 -->
     <string name="entries_tab_my_stars">最近つけたスター</string>
     <string name="entries_tab_stars_report">スターレポート</string>
+    <!-- 15周年ページ用 -->
+    <string name="entries_tab_15th_entire">はてブの歴史</string>
+    <string name="entries_tab_15th_user">あなたの歴史</string>
+    <string name="entries_tab_15th">%d年</string>
 
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
@@ -81,6 +85,7 @@
     <!-- deprecated --><string name="category_stars_report">スターレポート</string>
     <string name="category_maintenance">障害・メンテナンス情報</string>
     <string name="category_history">ブクマ閲覧履歴</string>
+    <string name="category_memorial15">タイムカプセル</string>
 
     <!-- メニュー -->
     <string name="notices_desc">通知</string>

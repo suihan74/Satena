@@ -109,6 +109,12 @@ enum class Category(
         requireSignedIn = true,
         singleColumns = true),
 
+    Memorial15th(id = 21,
+        R.string.category_memorial15,
+        R.drawable.ic_category_history,
+        requireSignedIn = false
+    ),
+
     Maintenance(id = 16,
         R.string.category_maintenance,
         R.drawable.ic_category_maintenance,

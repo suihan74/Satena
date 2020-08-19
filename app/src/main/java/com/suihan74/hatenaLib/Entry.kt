@@ -22,7 +22,7 @@ class Entry (
     faviconUrl : String?,
 
     @SerializedName("image", alternate = ["image_url"])
-    val imageUrl : String,
+    val imageUrl : String = "https://b.st-hatena.com/images/v4/public/common/noimage.png",
 
     val ampUrl : String? = null,
 
@@ -35,7 +35,7 @@ class Entry (
 ) {
 
     // for Gson
-    internal constructor() : this(0, "", "", 0, "", null, null, "")
+    internal constructor() : this(0, "", "", 0, "", null, null)
 
     @SerializedName("title")
     private val mTitle : String = title

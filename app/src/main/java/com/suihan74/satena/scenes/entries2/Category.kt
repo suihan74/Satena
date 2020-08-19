@@ -21,6 +21,8 @@ internal fun Category.createFragment() : EntriesFragment =
 
         Category.Maintenance -> InformationFragment.createInstance()
 
+        Category.Memorial15th -> Memorial15Fragment.createInstance()
+
         else -> HatenaEntriesFragment.createInstance(this)
     }
 

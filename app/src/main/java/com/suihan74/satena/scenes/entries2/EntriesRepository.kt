@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.play.core.appupdate.AppUpdateInfo
@@ -12,7 +11,6 @@ import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
-import com.google.android.play.core.tasks.OnSuccessListener
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
@@ -44,6 +42,9 @@ class LoadEntryParameter {
 
         /** ユーザー名 : Category.User */
         const val USER = "LoadEntryParameter.USER"
+
+        /** ユーザーエントリを取得するか : Category.Memorial15th */
+        const val IS_USER = "LoadEntryParameter.IS_USER"
     }
 
     /** データ */
@@ -197,6 +198,8 @@ class EntriesRepository(
                 else loadStarsReport(offset)
 
             Category.User -> loadUserEntries(offset, params!!)
+
+            Category.Memorial15th -> loadHistoricalEntries(tabPosition, params)
 
             else -> throw NotImplementedError("refreshing \"${category.name}\" is not implemented")
         }
@@ -479,6 +482,13 @@ class EntriesRepository(
             page = page ?: 0
         ).await()
     }
+
+    /** はてなの歴史エントリを取得する */
+    private suspend fun loadHistoricalEntries(tabPosition: Int, params: LoadEntryParameter?) : List<Entry> =
+        if (params?.get<Boolean>(LoadEntryParameter.IS_USER) == true)
+            client.getUserHistoricalEntriesAsync(2005 + tabPosition, 30).await()
+        else
+            client.getHistoricalEntriesAsync(2005 + tabPosition).await()
 
     /** エントリをフィルタリングする */
     suspend fun filterEntries(entries: List<Entry>) : List<Entry> = withContext(Dispatchers.IO) {
