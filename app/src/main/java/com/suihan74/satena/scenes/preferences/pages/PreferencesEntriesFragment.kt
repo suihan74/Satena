@@ -91,7 +91,7 @@ class PreferencesEntriesFragment :
                 .setAdditionalData("categories", categories)
                 .setSingleChoiceItems(
                     categories.map { getString(it.textId) },
-                    viewModel.homeCategory.value!!.ordinal)
+                    viewModel.homeCategory.value!!.id)
                 .showAllowingStateLoss(childFragmentManager, DIALOG_HOME_CATEGORY)
         }
 

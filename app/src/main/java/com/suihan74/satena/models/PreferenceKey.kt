@@ -88,7 +88,7 @@ enum class PreferenceKey(
     ENTRY_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.ordinal),
 
     /** 最初に表示するカテゴリ */
-    ENTRIES_HOME_CATEGORY(typeInfo<Int>(), Category.All.ordinal),
+    ENTRIES_HOME_CATEGORY(typeInfo<Int>(), Category.All.id),
 
     /** 最初に表示するタブ(の位置) */
     ENTRIES_INITIAL_TAB(typeInfo<Int>(), 0),
@@ -213,13 +213,13 @@ object PreferenceKeyMigration {
             when (homeCategory) {
                 // 1.
                 Category.MyTags -> {
-                    putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.MyBookmarks.ordinal)
+                    putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.MyBookmarks.id)
                     putInt(PreferenceKey.ENTRIES_INITIAL_TAB, 0)
                 }
 
                 // 2.
                 Category.StarsReport -> {
-                    putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.Stars.ordinal)
+                    putInt(PreferenceKey.ENTRIES_HOME_CATEGORY, Category.Stars.id)
                 }
 
                 else -> { /* do nothing */ }
