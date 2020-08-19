@@ -61,6 +61,7 @@
     <string name="entries_tab_15th_entire">はてブの歴史</string>
     <string name="entries_tab_15th_user">あなたの歴史</string>
     <string name="entries_tab_15th">%d年</string>
+    <string name="desc_memorial_entries_mode">モード選択</string>
 
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>

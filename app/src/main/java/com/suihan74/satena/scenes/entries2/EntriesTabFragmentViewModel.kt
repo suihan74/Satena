@@ -87,9 +87,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** ユーザーの歴史を取得する : Category.Memorial15th */
-    val isUserMemorial by lazy {
-        MutableLiveData(false)
-    }
+    var isUserMemorial : Boolean = false
 
     /** フィルタリングを任意で実行する */
     fun filter() {
@@ -169,7 +167,7 @@ class EntriesTabFragmentViewModel(
             }
 
             Category.Memorial15th -> params.also {
-                it.put(LoadEntryParameter.IS_USER, isUserMemorial.value)
+                it.put(LoadEntryParameter.IS_USER, isUserMemorial)
             }
 
             else -> params
@@ -189,7 +187,6 @@ class EntriesTabFragmentViewModel(
             }
         }
     }
-
 
     /** 通知リストを初期化 */
     private suspend fun refreshNotices(onError: ((Throwable)->Unit)?) = withContext(Dispatchers.Default) {

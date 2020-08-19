@@ -3,6 +3,8 @@ package com.suihan74.satena
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import com.suihan74.hatenaLib.HatenaClient
 import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertNotSame
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -26,5 +28,13 @@ class HatenaClientTest {
 
         assertEquals("url0 != url1", url0, url1)
         assertEquals("url0 != url2", url0, url2)
+    }
+
+    @Test
+    fun fifteenth() {
+        runBlocking {
+            val entries = HatenaClient.getHistoricalEntriesAsync(2018).await()
+            assertNotSame(0, entries.size)
+        }
     }
 }

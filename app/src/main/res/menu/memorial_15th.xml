@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+            android:id="@+id/mode_spinner"
+            android:title="@string/desc_memorial_entries_mode"
+            android:icon="@drawable/ic_category_memorial"
+            app:iconTint="@color/colorPrimaryText"
+            app:showAsAction="always"
+            app:actionViewClass="android.widget.Spinner"/>
+</menu>
