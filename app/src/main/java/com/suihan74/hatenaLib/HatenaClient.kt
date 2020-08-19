@@ -1644,7 +1644,22 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val hatenaHistoricalEntry = getJson<HatenaHistoricalEntry>(HatenaHistoricalEntry::class.java, url)
         val entries = hatenaHistoricalEntry.entries
 
-        val countsMap = getBookmarkCountsAsync(entries.map { it.canonicalUrl }).await()
+        val countsMap = HashMap<String, Int>()
+        var remainEntries = entries
+        var count = 0
+
+        while (remainEntries.isNotEmpty() && count < 8) {
+            try {
+                val result = getBookmarkCountsAsync(remainEntries.map { it.canonicalUrl }).await()
+                countsMap.putAll(result)
+
+                remainEntries = remainEntries.filterNot { result.containsKey(it.canonicalUrl) }
+            }
+            catch (e: Throwable) {
+                e.printStackTrace()
+            }
+            count++
+        }
 
         return@async entries.map {
             it.toEntry(count = countsMap[it.canonicalUrl])
