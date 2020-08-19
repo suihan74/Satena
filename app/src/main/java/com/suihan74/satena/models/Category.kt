@@ -11,7 +11,8 @@ enum class Category(
     val requireSignedIn: Boolean = false,
     val singleColumns : Boolean = false,
     val hasIssues: Boolean = false,
-    val displayInList: Boolean = true
+    val displayInList: Boolean = true,
+    val willBeHome : Boolean = true,
 ) {
     All(id = 0,
         R.string.category_all,
@@ -88,7 +89,9 @@ enum class Category(
         R.drawable.ic_category_mytags,
         displayInList = false,
         requireSignedIn = true,
-        singleColumns = true),
+        singleColumns = true,
+        willBeHome = false
+    ),
 
     Search(id = 13,
         R.string.category_search,
@@ -107,40 +110,51 @@ enum class Category(
         R.drawable.ic_star,
         displayInList = false,
         requireSignedIn = true,
-        singleColumns = true),
+        singleColumns = true,
+        willBeHome = false
+    ),
 
     Memorial15th(id = 21,
         R.string.category_memorial15,
-        R.drawable.ic_category_history,
-        requireSignedIn = false
+        R.drawable.ic_category_memorial,
+        requireSignedIn = false,
+        willBeHome = false
     ),
 
     Maintenance(id = 16,
         R.string.category_maintenance,
         R.drawable.ic_category_maintenance,
         requireSignedIn = false,
-        singleColumns = true),
+        singleColumns = true
+    ),
 
     History(id = 17,
         R.string.category_history,
         R.drawable.ic_category_history,
         requireSignedIn = false,
-        singleColumns = true),
+        singleColumns = true
+    ),
 
     Site(id = 18,
         0, 0,
-        displayInList = false),
+        displayInList = false,
+        willBeHome = false
+    ),
 
     User(id = 19,
         0, 0,
-        displayInList = false),
+        displayInList = false,
+        willBeHome = false
+    ),
 
     Notices(id = 20,
         R.string.notices_desc,
         R.drawable.ic_notifications,
-        displayInList = false,
         requireSignedIn = true,
-        singleColumns = true)
+        singleColumns = true,
+        displayInList = false,
+        willBeHome = false
+    )
 
     ;
 

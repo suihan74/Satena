@@ -93,7 +93,7 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
         // タブを長押しで最初に表示するタブを変更
         val longClickListener : (Int)->Boolean = l@ { idx ->
             val category = viewModel.category.value!!
-            if (!category.displayInList) return@l false
+            if (!category.displayInList || !category.willBeHome) return@l false
 
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
             val isOn = prefs.getBoolean(PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB)
@@ -108,7 +108,7 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
                     put(PreferenceKey.ENTRIES_HOME_CATEGORY, category.id)
                     put(PreferenceKey.ENTRIES_INITIAL_TAB, idx)
                 }
-                activity?.showToast(
+                activity.showToast(
                     R.string.msg_entries_initial_tab_changed,
                     getString(category.textId),
                     tabText

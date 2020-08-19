@@ -81,9 +81,10 @@ class PreferencesEntriesFragment :
 
         // ホームカテゴリ
         view.preferences_home_category.setOnClickListener {
-            val categories =
+            val categories = (
                 if (HatenaClient.signedIn()) Category.valuesWithSignedIn()
                 else Category.valuesWithoutSignedIn()
+            ).filter { it.willBeHome }
 
             AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                 .setTitle(R.string.pref_home_category_desc)
@@ -91,7 +92,8 @@ class PreferencesEntriesFragment :
                 .setAdditionalData("categories", categories)
                 .setSingleChoiceItems(
                     categories.map { getString(it.textId) },
-                    viewModel.homeCategory.value!!.id)
+                    categories.indexOfFirst { it.id == viewModel.homeCategory.value!!.id }
+                )
                 .showAllowingStateLoss(childFragmentManager, DIALOG_HOME_CATEGORY)
         }
 
