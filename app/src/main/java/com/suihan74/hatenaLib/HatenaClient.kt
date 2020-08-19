@@ -1590,4 +1590,84 @@ object HatenaClient : BaseClient(), CoroutineScope {
             return@async Profile.Bookmark()
         }
     }
+
+    fun getBookmarkCountsAsync(urls: List<String>) : Deferred<Map<String, Int>> = async(Dispatchers.IO) {
+        val tasks = ArrayList<Deferred<Map<String, Int>?>>()
+        var initPos = 0
+        val endPos = urls.size - 1
+        val baseUrl = "https://bookmark.hatenaapis.com/count/entries?${cacheAvoidance()}"
+        val gson = GsonBuilder().create()
+        val mapType = object : TypeToken<Map<String, Int>>(){}.type
+
+        while (initPos < endPos) {
+            val url = buildString {
+                append(baseUrl)
+                (initPos until urls.size).forEach { idx ->
+                    initPos = idx
+                    val cur = "&url=${Uri.encode(urls[idx])}"
+                    if (length + cur.length < 2000) {
+                        append(cur)
+                    }
+                    else {
+                        return@forEach
+                    }
+                }
+            }
+
+            async(Dispatchers.IO) task@ {
+                get(url).use { response ->
+                    val result = response.body?.use { it.string() } ?: return@use null
+                    val dataStart = result.indexOf("{")
+                    val dataEnd = result.lastIndexOf("}") + 1
+                    val data = result.substring(dataStart, dataEnd)
+                    return@task gson.fromJson<Map<String, Int>>(data, mapType)
+                }
+            }.let { tasks.add(it) }
+        }
+
+        tasks.awaitAll()
+        val result = HashMap<String, Int>()
+        tasks.mapNotNull { it.getCompleted() }
+            .forEach { result.putAll(it) }
+
+        return@async result
+    }
+
+    /** 15周年ページのはてな全体のエントリリストを取得する */
+    fun getHistoricalEntriesAsync(year: Int) : Deferred<List<Entry>> = async {
+        val url = buildString {
+            append(
+                B_BASE_URL, "/15th/entries/", year, ".json"
+            )
+        }
+
+        val hatenaHistoricalEntry = getJson<HatenaHistoricalEntry>(HatenaHistoricalEntry::class.java, url)
+        val entries = hatenaHistoricalEntry.entries
+
+        val countsMap = getBookmarkCountsAsync(entries.map { it.canonicalUrl }).await()
+
+        return@async entries.map {
+            it.toEntry(count = countsMap[it.canonicalUrl])
+        }
+    }
+
+    /** 15周年ページのランダムなユーザーエントリリストを取得する */
+    fun getUserHistoricalEntriesAsync(year: Int, limit: Int = 10) : Deferred<List<Entry>> = async {
+        require(signedIn()) { "need to sign-in for getting historical entries" }
+
+        val url = buildString {
+            append(
+                B_BASE_URL, "/api/my/15th/yearly_random_bookmarks?",
+                cacheAvoidance(),
+                "&year=", year,
+                "&limit=", limit
+            )
+        }
+
+        val listType = object : TypeToken<List<UserHistoricalEntry>>(){}.type
+        val entries = getJson<List<UserHistoricalEntry>>(listType, url)
+        val userName = account!!.name
+
+        return@async entries.map { it.toEntry(userName) }
+    }
 }
