@@ -44,9 +44,11 @@ class Memorial15Fragment : TwinTabsEntriesFragment() {
     override fun onResume() {
         super.onResume()
 
-        activity.alsoAs<EntriesActivity> {
-            it.tabLayout?.tabMode = TabLayout.MODE_SCROLLABLE
-            setHasOptionsMenu(!it.viewModel.isBottomLayoutMode)
+        activity.alsoAs<EntriesActivity> { activity ->
+            if (activity.viewModel.signedIn.value == true) {
+                activity.tabLayout?.tabMode = TabLayout.MODE_SCROLLABLE
+                setHasOptionsMenu(!activity.viewModel.isBottomLayoutMode)
+            }
         }
     }
 
@@ -58,8 +60,10 @@ class Memorial15Fragment : TwinTabsEntriesFragment() {
         val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
 
         bottomAppBar?.let { appBar ->
-            appBar.inflateMenu(R.menu.memorial_15th_bottom)
-            initializeMenu(appBar.menu, appBar)
+            if (activity.viewModel.signedIn.value == true) {
+                appBar.inflateMenu(R.menu.memorial_15th_bottom)
+                initializeMenu(appBar.menu, appBar)
+            }
         }
 
         return result
