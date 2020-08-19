@@ -65,8 +65,18 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
-                viewModel.refresh(onErrorRefreshEntries).invokeOnCompletion {
-                    this.isRefreshing = false
+                entriesAdapter.setOnItemsSubmittedListener { list ->
+                    if (list != null) {
+                        this.isRefreshing = false
+                        entriesList.scrollToPosition(0)
+                        entriesAdapter.setOnItemsSubmittedListener(null)
+                    }
+                }
+                viewModel.refresh(onErrorRefreshEntries).invokeOnCompletion { e ->
+                    if (e != null) {
+                        this.isRefreshing = false
+                        entriesAdapter.setOnItemsSubmittedListener(null)
+                    }
                 }
             }
         }
@@ -86,11 +96,19 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         // エントリリストの設定
         entriesList.run {
             adapter = entriesAdapter
-            addOnScrollListener(scrollingUpdater)
             layoutManager = LinearLayoutManager(context)
         }
 
-        parentViewModel?.connectToTab(viewLifecycleOwner, entriesAdapter, viewModel, onErrorRefreshEntries)
+        // 初回ロード完了後の処理
+        entriesAdapter.setOnItemsSubmittedListener { list ->
+            if (list != null) {
+                entriesList.scrollToPosition(0)
+                entriesList.addOnScrollListener(scrollingUpdater)
+                entriesAdapter.setOnItemsSubmittedListener(null)
+            }
+        }
+
+        parentViewModel?.connectToTab(requireActivity(), entriesAdapter, viewModel, onErrorRefreshEntries)
     }
 }
 

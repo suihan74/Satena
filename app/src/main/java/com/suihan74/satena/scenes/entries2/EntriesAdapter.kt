@@ -25,6 +25,9 @@ class EntriesAdapter(private val fragment: Fragment) : ListAdapter<RecyclerState
     /** コメント部分クリック時の挙動 */
     private var onCommentClicked : ((Entry, BookmarkResult)->Unit)? = null
 
+    /** アイテム追加完了時の挙動 */
+    private var onItemsSubmitted : ((List<Entry>?)->Unit)? = null
+
     /** クリック処理済みフラグ（複数回タップされないようにする） */
     private var itemClicked = false
 
@@ -41,6 +44,11 @@ class EntriesAdapter(private val fragment: Fragment) : ListAdapter<RecyclerState
     /** エントリに含まれるコメントをクリックしたときの挙動をセットする */
     fun setOnCommentClickedListener(listener: ((Entry, BookmarkResult)->Unit)?) {
         onCommentClicked = listener
+    }
+
+    /** アイテム追加完了時の挙動をセットする */
+    fun setOnItemsSubmittedListener(listener: ((List<Entry>?)->Unit)?) {
+        onItemsSubmitted = listener
     }
 
     /** 復帰時に実行する */
@@ -97,6 +105,14 @@ class EntriesAdapter(private val fragment: Fragment) : ListAdapter<RecyclerState
     override fun getItemViewType(position: Int) =
         currentList[position].type.int
 
+    /** リストをクリアする */
+    fun clearEntries(commitCallback: (() -> Any?)? = null) {
+        submitList(null) {
+            commitCallback?.invoke()
+            onItemsSubmitted?.invoke(null)
+        }
+    }
+
     /** エントリはこのメソッドを使ってセットする */
     fun submitEntries(items: List<Entry>?, commitCallback: (()->Any?)? = null) {
         val newList : List<RecyclerState<Entry>> =
@@ -106,6 +122,7 @@ class EntriesAdapter(private val fragment: Fragment) : ListAdapter<RecyclerState
         submitList(newList) {
             hideProgressBar()
             commitCallback?.invoke()
+            onItemsSubmitted?.invoke(items ?: emptyList())
         }
     }
 

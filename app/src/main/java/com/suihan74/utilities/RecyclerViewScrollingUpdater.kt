@@ -65,7 +65,7 @@ class RecyclerViewScrollingUpdater(
         val firstVisibleItem = manager.findFirstVisibleItemPosition()
         val lastInScreen = firstVisibleItem + visibleItemCount
 
-        if (checkInvoking(invokingPosition, lastInScreen)) {
+        if (dy != 0 && checkInvoking(invokingPosition, lastInScreen)) {
             invokeLoading()
         }
     }

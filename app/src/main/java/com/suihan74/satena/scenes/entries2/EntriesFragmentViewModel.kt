@@ -50,8 +50,12 @@ abstract class EntriesFragmentViewModel : ViewModel() {
     // タブ設定に関する設定ここまで
 
     /** タブ用ViewModelへの値変更の伝播 */
-    open fun connectToTab(lifecycleOwner: LifecycleOwner, entriesAdapter: EntriesAdapter, viewModel: EntriesTabFragmentViewModel, onError: ((Throwable)->Unit)?) {
-
+    open fun connectToTab(
+        lifecycleOwner: LifecycleOwner,
+        entriesAdapter: EntriesAdapter,
+        viewModel: EntriesTabFragmentViewModel,
+        onError: ((Throwable)->Unit)?
+    ) {
         // Issueの変更を監視する
         // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる
         var isIssueInitialized = false
@@ -63,7 +67,7 @@ abstract class EntriesFragmentViewModel : ViewModel() {
 
             viewModel.issue = it
             // 一度クリアしておかないとスクロール位置が滅茶苦茶になる
-            entriesAdapter.submitEntries(null) {
+            entriesAdapter.clearEntries {
                 viewModel.refresh(onError)
             }
         }
@@ -77,7 +81,7 @@ abstract class EntriesFragmentViewModel : ViewModel() {
             }
 
             viewModel.tag = it
-            entriesAdapter.submitEntries(null) {
+            entriesAdapter.clearEntries {
                 viewModel.refresh(onError)
             }
         }
