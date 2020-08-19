@@ -105,7 +105,7 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
             if (category.ordinal != homeCategoryInt || initialTab != idx) {
                 val tabText = viewModel.getTabTitle(requireContext(), idx)
                 prefs.edit {
-                    put(PreferenceKey.ENTRIES_HOME_CATEGORY, category.ordinal)
+                    put(PreferenceKey.ENTRIES_HOME_CATEGORY, category.id)
                     put(PreferenceKey.ENTRIES_INITIAL_TAB, idx)
                 }
                 activity?.showToast(

@@ -34,7 +34,9 @@ class PreferencesEntriesViewModel(
 
     /** 最初に表示するカテゴリ */
     val homeCategory = createLiveDataEnum<Category>(
-        PreferenceKey.ENTRIES_HOME_CATEGORY
+        PreferenceKey.ENTRIES_HOME_CATEGORY,
+        { it.id },
+        { Category.fromInt(it) }
     )
 
     /** 最初に表示するタブ */
