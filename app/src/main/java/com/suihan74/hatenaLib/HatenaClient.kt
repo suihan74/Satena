@@ -2,6 +2,7 @@ package com.suihan74.hatenaLib
 
 import android.net.Uri
 import com.google.gson.FieldNamingPolicy
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
@@ -15,6 +16,7 @@ import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.io.IOException
+import java.lang.reflect.Type
 import java.net.HttpCookie
 import java.net.SocketTimeoutException
 import java.net.URI
@@ -1591,39 +1593,19 @@ object HatenaClient : BaseClient(), CoroutineScope {
         }
     }
 
-    fun getBookmarkCountsAsync(urls: List<String>) : Deferred<Map<String, Int>> = async(Dispatchers.IO) {
+    /** 指定URLのブクマ件数を取得する */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getBookmarkCountsAsync(urls: List<String>) : Deferred<Map<String, Int>> = async {
         val tasks = ArrayList<Deferred<Map<String, Int>?>>()
-        var initPos = 0
-        val endPos = urls.size - 1
-        val baseUrl = "https://bookmark.hatenaapis.com/count/entries?${cacheAvoidance()}"
         val gson = GsonBuilder().create()
         val mapType = object : TypeToken<Map<String, Int>>(){}.type
 
-        while (initPos < endPos) {
-            val url = buildString {
-                append(baseUrl)
-                (initPos until urls.size).forEach { idx ->
-                    initPos = idx
-                    val cur = "&url=${Uri.encode(urls[idx])}"
-                    if (length + cur.length < 2000) {
-                        append(cur)
-                    }
-                    else {
-                        return@forEach
-                    }
-                }
+        // 一度の取得で50個までURLを指定できるので、それを超える場合は分けて実行する
+        val windowSize = 50
+        urls.windowed(size = windowSize, step = windowSize, partialWindows = true)
+            .forEach {
+                tasks.add(getBookmarkCountsImplAsync(it, gson, mapType))
             }
-
-            async(Dispatchers.IO) task@ {
-                get(url).use { response ->
-                    val result = response.body?.use { it.string() } ?: return@use null
-                    val dataStart = result.indexOf("{")
-                    val dataEnd = result.lastIndexOf("}") + 1
-                    val data = result.substring(dataStart, dataEnd)
-                    return@task gson.fromJson<Map<String, Int>>(data, mapType)
-                }
-            }.let { tasks.add(it) }
-        }
 
         tasks.awaitAll()
         val result = HashMap<String, Int>()
@@ -1631,6 +1613,31 @@ object HatenaClient : BaseClient(), CoroutineScope {
             .forEach { result.putAll(it) }
 
         return@async result
+    }
+
+    /** 指定URLのブクマ件数を取得する(単数バージョン) */
+    fun getBookmarkCountsAsync(url: String) : Deferred<Int> = async {
+        val result = getBookmarkCountsAsync(listOf(url)).await()
+        return@async result[url] ?: 0
+    }
+
+    /** 前処理を行ったURLリストの各ブクマ件数を取得するタスク本体 */
+    private fun getBookmarkCountsImplAsync(
+        urls: List<String>,
+        gson: Gson,
+        mapType: Type
+    ) : Deferred<Map<String, Int>> {
+        val url = urls.joinToString(
+            separator = "&url=",
+            prefix = "https://bookmark.hatenaapis.com/count/entries?${cacheAvoidance()}&url="
+        ) { Uri.encode(it) }
+
+        return async(Dispatchers.IO) task@ {
+            get(url).use { response ->
+                val data = response.body?.use { it.string() } ?: return@use emptyMap<String, Int>()
+                return@task gson.fromJson<Map<String, Int>>(data, mapType)
+            }
+        }
     }
 
     /** 15周年ページのはてな全体のエントリリストを取得する */
@@ -1644,22 +1651,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val hatenaHistoricalEntry = getJson<HatenaHistoricalEntry>(HatenaHistoricalEntry::class.java, url)
         val entries = hatenaHistoricalEntry.entries
 
-        val countsMap = HashMap<String, Int>()
-        var remainEntries = entries
-        var count = 0
-
-        while (remainEntries.isNotEmpty() && count < 8) {
-            try {
-                val result = getBookmarkCountsAsync(remainEntries.map { it.canonicalUrl }).await()
-                countsMap.putAll(result)
-
-                remainEntries = remainEntries.filterNot { result.containsKey(it.canonicalUrl) }
-            }
-            catch (e: Throwable) {
-                e.printStackTrace()
-            }
-            count++
-        }
+        // ブクマ数は別途取得する必要がある
+        val countsMap = getBookmarkCountsAsync(entries.map { it.canonicalUrl }).await()
 
         return@async entries.map {
             it.toEntry(count = countsMap[it.canonicalUrl])
