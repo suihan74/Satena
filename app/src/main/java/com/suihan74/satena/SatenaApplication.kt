@@ -51,10 +51,21 @@ class SatenaApplication : Application() {
         packageInfo.versionName
     }
 
-    /** アプリのMinorバージョン番号 */
-    val minorVersionCode: Long by lazy {
-        getMinorVersion(versionCode)
-    }
+    /** アプリのメジャーバージョン */
+    val majorVersionCode: Long by lazy { getMajorVersion(versionCode) }
+
+    /** アプリのマイナーバージョン */
+    val minorVersionCode: Long by lazy { getMinorVersion(versionCode) }
+
+    /** アプリの修正バージョン */
+    val fixVersionCode: Long by lazy { getFixVersion(versionCode) }
+
+    /** アプリの開発バージョン */
+    val developVersionCode: Long by lazy { getDevelopVersion(versionCode) }
+
+    /** バージョンコード値からメジャーバージョンを計算する */
+    fun getMajorVersion(versionCode: Long) : Long =
+        versionCode / 100000000
 
     /** バージョンコード値からマイナーバージョンを計算する */
     fun getMinorVersion(versionCode: Long) : Long {
@@ -62,6 +73,17 @@ class SatenaApplication : Application() {
         val lowerMask = 1000000
         return (versionCode % upperMask) / lowerMask
     }
+
+    /** バージョンコード値から修正バージョンを計算する */
+    fun getFixVersion(versionCode: Long) : Long {
+        val upperMask = 1000000
+        val lowerMask = 1000
+        return (versionCode % upperMask) / lowerMask
+    }
+
+    /** バージョンコード値から修正バージョンを計算する */
+    fun getDevelopVersion(versionCode: Long) : Long =
+        versionCode / 1000
 
     override fun onCreate() {
         super.onCreate()

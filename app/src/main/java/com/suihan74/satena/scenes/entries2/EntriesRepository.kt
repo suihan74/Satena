@@ -542,10 +542,13 @@ class EntriesRepository(
         when (AppUpdateNoticeMode.fromInt(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
             // 機能追加アップデートだけを通知する
             AppUpdateNoticeMode.ADD_FEATURES -> {
+                val currentMajor = app.majorVersionCode
                 val currentMinor = app.minorVersionCode
+
+                val latestMajor = app.getMajorVersion(latestVersion)
                 val latestMinor = app.getMinorVersion(latestVersion)
 
-                if (latestMinor > currentMinor) {
+                if (latestMajor > currentMajor || latestMinor > currentMinor) {
                     listener(info)
                 }
             }
