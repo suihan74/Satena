@@ -1642,11 +1642,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
     /** 15周年ページのはてな全体のエントリリストを取得する */
     fun getHistoricalEntriesAsync(year: Int) : Deferred<List<Entry>> = async {
-        val url = buildString {
-            append(
-                B_BASE_URL, "/15th/entries/", year, ".json"
-            )
-        }
+        val url = "$B_BASE_URL/15th/entries/$year.json"
 
         val hatenaHistoricalEntry = getJson<HatenaHistoricalEntry>(HatenaHistoricalEntry::class.java, url)
         val entries = hatenaHistoricalEntry.entries
