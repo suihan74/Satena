@@ -23,6 +23,8 @@ class EntriesTabFragmentViewModel(
         private const val TAB_POSITION_READ_LATER = 1
     }
 
+    var entriesAdapter: EntriesAdapter? = null
+
     /** 選択中のIssue */
     var issue : Issue? = null
 

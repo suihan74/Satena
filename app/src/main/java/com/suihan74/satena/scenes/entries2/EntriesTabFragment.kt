@@ -26,8 +26,11 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
     override fun initializeRecyclerView(entriesList: RecyclerView, swipeLayout: SwipeRefreshLayout) {
         val context = requireContext()
 
+        // 画面復帰などではない場合true
+        val initializing = viewModel.filteredEntries.value.isNullOrEmpty()
+
         // エントリリスト用のアダプタ
-        val entriesAdapter = EntriesAdapter(this).apply {
+        val entriesAdapter = viewModel.entriesAdapter ?: EntriesAdapter(this).apply {
             // メニューアクション実行後に画面表示を更新する
             val listeners = EntryMenuDialogListeners().apply {
                 onIgnoredEntry = { _ ->
@@ -59,6 +62,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                 startActivity(intent)
             }
         }
+        viewModel.entriesAdapter = entriesAdapter
 
         // 引っ張って更新
         swipeLayout.apply swipeLayout@ {
@@ -99,16 +103,26 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             layoutManager = LinearLayoutManager(context)
         }
 
-        // 初回ロード完了後の処理
-        entriesAdapter.setOnItemsSubmittedListener { list ->
-            if (list != null) {
-                entriesList.scrollToPosition(0)
-                entriesList.addOnScrollListener(scrollingUpdater)
-                entriesAdapter.setOnItemsSubmittedListener(null)
+        if (initializing) {
+            // 初回ロード完了後の処理
+            entriesAdapter.setOnItemsSubmittedListener { list ->
+                if (list != null) {
+                    entriesList.scrollToPosition(0)
+                    entriesList.addOnScrollListener(scrollingUpdater)
+                    entriesAdapter.setOnItemsSubmittedListener(null)
+                }
             }
-        }
 
-        parentViewModel?.connectToTab(requireActivity(), entriesAdapter, viewModel, onErrorRefreshEntries)
+            parentViewModel?.connectToTab(
+                requireActivity(),
+                entriesAdapter,
+                viewModel,
+                onErrorRefreshEntries
+            )
+        }
+        else {
+            entriesList.addOnScrollListener(scrollingUpdater)
+        }
     }
 }
 

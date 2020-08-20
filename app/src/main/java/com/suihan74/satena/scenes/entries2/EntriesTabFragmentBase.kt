@@ -88,11 +88,6 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         }
         this.binding = binding
 
-        // エントリリストの初期ロード
-        if (savedInstanceState == null) {
-            viewModel.refresh(onErrorRefreshEntries)
-        }
-
         // 通信状態の変更を監視
         // リスト未ロード状態なら再試行する
         var isNetworkReceiverInitialized = false
@@ -114,6 +109,11 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     override fun onResume() {
         super.onResume()
+
+        // エントリリストの初期ロード
+        if (viewModel.filteredEntries.value.isNullOrEmpty()) {
+            viewModel.refresh(onErrorRefreshEntries)
+        }
 
         view?.entries_list?.adapter.alsoAs<EntriesAdapter> {
             it.onResume()
