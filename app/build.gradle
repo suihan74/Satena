@@ -15,8 +15,8 @@ android {
         applicationId "com.suihan74.satena"
         // バージョン情報
         // major(1桁)-minor(2桁)-fix(3桁)-dev(3桁)
-        versionCode 103000008
-        versionName "1.3.0"
+        versionCode 103001000
+        versionName "1.3.1"
 
         minSdkVersion 23
         targetSdkVersion 29
