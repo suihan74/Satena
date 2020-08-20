@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -1673,5 +1674,46 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val userName = account!!.name
 
         return@async entries.map { it.toEntry(userName) }
+    }
+
+    /** ユーザーのツイートとそのクリック数を取得する(ユーザー固定、URL複数) */
+    fun getTweetsAndClicksAsync(
+        user: String,
+        urls: List<String>
+    ) : Deferred<List<TweetsAndClicks>> =
+        getTweetsAndClicksImplAsync(
+            urls.map {
+                TweetsAndClicksRequestBody(url = it, user = user)
+            }
+        )
+
+    /** ユーザーのツイートとそのクリック数を取得する(ユーザー複数、URL固定) */
+    fun getTweetsAndClicksAsync(
+        users: List<String>,
+        url: String
+    ) : Deferred<List<TweetsAndClicks>> =
+        getTweetsAndClicksImplAsync(
+            users.map {
+                TweetsAndClicksRequestBody(url = url, user = it)
+            }
+        )
+
+    /** ユーザーのツイートとそのクリック数を取得する(ユーザー複数、URL固定) */
+    private fun getTweetsAndClicksImplAsync(
+        params: List<TweetsAndClicksRequestBody>
+    ) : Deferred<List<TweetsAndClicks>> = async {
+        val apiUrl = "$B_BASE_URL/api/internal/bookmarks/tweets_and_clicks"
+        val gson = GsonBuilder().create()
+        val listType = object : TypeToken<List<TweetsAndClicks>>(){}.type
+
+        val requestBody = gson.toJson(mapOf("bookmarks" to params)).toRequestBody()
+
+        val request = Request.Builder()
+            .post(requestBody)
+            .url(apiUrl)
+            .header("Content-Type", "application/json")
+            .build()
+
+        send(listType, request, GsonBuilder())
     }
 }

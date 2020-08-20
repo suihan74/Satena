@@ -78,7 +78,7 @@ open class BaseClient {
 
                     response.code == 404 -> throw NotFoundException()
 
-                    else -> throw RuntimeException("connection failed")
+                    else -> throw RuntimeException("connection failed: error code: ${response.code}")
                 }
             }
         }
