@@ -144,13 +144,7 @@ abstract class EntriesFragment : Fragment() {
         val bottomAppBar =
             if (activity.viewModel.isBottomLayoutMode)
                 activity.bottom_app_bar?.also {
-//                    activity.bottomMenu.clear()
                     it.menu.clear()
-/*                    it.bottom_menu?.apply {
-                        removeAllViews()
-                        overflowIcon = null
-                        popupTheme = 0
-                    }*/
                     it.setOnMenuItemClickListener(null)
                 }
             else null
