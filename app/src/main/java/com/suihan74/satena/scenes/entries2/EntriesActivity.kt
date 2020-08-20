@@ -15,14 +15,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
-import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
-import com.google.android.play.core.appupdate.AppUpdateManagerFactory
-import com.google.android.play.core.install.model.AppUpdateType
-import com.google.android.play.core.install.model.UpdateAvailability
-import com.google.android.play.core.ktx.isImmediateUpdateAllowed
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -275,8 +269,7 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
     /** 必要ならリリースノートを表示する */
     private fun showReleaseNotes() {
         // アプリのバージョン名を取得
-        val packageInfo = packageManager.getPackageInfo(packageName, 0)
-        val currentVersionName = packageInfo.versionName
+        val currentVersionName = SatenaApplication.instance.versionName
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val lastVersionName = prefs.getString(PreferenceKey.APP_VERSION_LAST_LAUNCH)

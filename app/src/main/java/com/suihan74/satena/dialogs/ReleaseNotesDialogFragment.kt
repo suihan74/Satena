@@ -65,7 +65,10 @@ class ReleaseNotesDialogFragment : DialogFragment() {
                         null -> reader.readText()
                         else -> buildString {
                             reader.useLines { it.forEach { line ->
-                                if (!line.contains("[ version $lastVersionName ]")) {
+                                if (line.contains("[ version $lastVersionName ]")) {
+                                    return@useLines
+                                }
+                                else {
                                     append(line, "\n")
                                 }
                             } }
