@@ -19,6 +19,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.alsoAs
 import com.suihan74.utilities.getEnum
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_entries_tab2.view.*
@@ -114,12 +115,18 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     override fun onResume() {
         super.onResume()
 
-        (view?.entries_list?.adapter as? EntriesAdapter)?.onResume()
+        view?.entries_list?.adapter.alsoAs<EntriesAdapter> {
+            it.onResume()
+        }
     }
 
     /** エントリリストを再取得する */
     fun reload() {
-        viewModel.refresh(onErrorRefreshEntries)
+        view?.entries_list?.adapter.alsoAs<EntriesAdapter> {
+            it.clearEntries {
+                viewModel.refresh(onErrorRefreshEntries)
+            }
+        }
     }
 
     /** リストを再構成する(取得はしない) */
