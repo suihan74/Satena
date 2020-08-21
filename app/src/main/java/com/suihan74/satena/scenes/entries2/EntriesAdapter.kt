@@ -3,7 +3,7 @@ package com.suihan74.satena.scenes.entries2
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -14,7 +14,9 @@ import com.suihan74.satena.databinding.ListviewItemEntries2Binding
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_entries2.view.*
 
-class EntriesAdapter(private val fragment: Fragment) : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
+class EntriesAdapter(
+    private var lifecycleOwner: LifecycleOwner
+) : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
     /** ロード中表示のできるフッタ */
     private var footer: LoadableFooterViewHolder? = null
 
@@ -64,7 +66,7 @@ class EntriesAdapter(private val fragment: Fragment) : ListAdapter<RecyclerState
                     inflater,
                     R.layout.listview_item_entries2, parent, false
                 ).also {
-                    it.lifecycleOwner = fragment.viewLifecycleOwner
+                    it.lifecycleOwner = lifecycleOwner
                 }
                 ViewHolder(binding)
             }

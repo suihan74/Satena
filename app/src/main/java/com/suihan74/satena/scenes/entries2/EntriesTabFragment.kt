@@ -30,7 +30,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         val initializing = viewModel.filteredEntries.value.isNullOrEmpty()
 
         // エントリリスト用のアダプタ
-        val entriesAdapter = viewModel.entriesAdapter ?: EntriesAdapter(this).apply {
+        val entriesAdapter = viewModel.entriesAdapter ?: EntriesAdapter(viewLifecycleOwner).apply {
             // メニューアクション実行後に画面表示を更新する
             val listeners = EntryMenuDialogListeners().apply {
                 onIgnoredEntry = { _ ->
