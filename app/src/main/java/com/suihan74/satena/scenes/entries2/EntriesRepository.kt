@@ -530,7 +530,7 @@ class EntriesRepository(
     private fun handleUpdateAvailable(info: AppUpdateInfo, listener: (AppUpdateInfo)->Unit) {
         val app = SatenaApplication.instance
         val latestVersion = info.availableVersionCode().toLong()
-
+        
         if (!prefs.getBoolean(PreferenceKey.NOTICE_IGNORED_APP_UPDATE)) {
             // 一度無視したアップデートを二度と通知しない設定が有効な場合
             val lastNoticedVersion = prefs.getLong(PreferenceKey.LAST_NOTICED_APP_UPDATE_VERSION)
