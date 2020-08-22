@@ -77,6 +77,17 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
      */
     abstract fun initializeRecyclerView(entriesList: RecyclerView, swipeLayout: SwipeRefreshLayout)
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        /*
+        // エントリリストの初期ロード
+        if (viewModel.filteredEntries.value.isNullOrEmpty()) {
+            viewModel.refresh(onErrorRefreshEntries)
+        }
+        */
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

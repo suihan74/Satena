@@ -6,13 +6,10 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
-import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel
 import org.threeten.bp.LocalDate
 
-class Memorial15ViewModel(
-    private val repository: EntriesRepository
-) : EntriesFragmentViewModel() {
+class Memorial15ViewModel : EntriesFragmentViewModel() {
 
     /**
      * 表示する年数(2005年開始～)
@@ -38,6 +35,9 @@ class Memorial15ViewModel(
     ) {
         super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
 
+        // "タブの"初期ロード時に設定を反映させるために現在値を代入している
+        // タブ数が3以上になると、TabViewModelの初期化時には既にFragmentViewModelの中身が更新されている可能性がある
+        viewModel.isUserMemorial = isUserMode.value ?: false
         isUserMode.observe(lifecycleOwner) {
             if (category.value != Category.Memorial15th || it == null || it == viewModel.isUserMemorial) return@observe
             viewModel.isUserMemorial = it
@@ -47,11 +47,9 @@ class Memorial15ViewModel(
         }
     }
 
-    class Factory(
-        private val repository : EntriesRepository
-    ) : ViewModelProvider.NewInstanceFactory() {
+    class Factory : ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-            Memorial15ViewModel(repository) as T
+            Memorial15ViewModel() as T
     }
 }

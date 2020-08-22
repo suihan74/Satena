@@ -58,13 +58,9 @@ abstract class EntriesFragmentViewModel : ViewModel() {
     ) {
         // Issueの変更を監視する
         // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる
-        var isIssueInitialized = false
+        viewModel.issue = issue.value
         issue.observe(lifecycleOwner) {
-            if (!isIssueInitialized) {
-                isIssueInitialized = true
-                return@observe
-            }
-
+            if (viewModel.issue == it) return@observe
             viewModel.issue = it
             // 一度クリアしておかないとスクロール位置が滅茶苦茶になる
             entriesAdapter.clearEntries {
@@ -73,13 +69,9 @@ abstract class EntriesFragmentViewModel : ViewModel() {
         }
 
         // Tagの変更を監視する
-        var isTagInitialized = false
+        viewModel.tag = tag.value
         tag.observe(lifecycleOwner) {
-            if (!isTagInitialized) {
-                isTagInitialized = true
-                return@observe
-            }
-
+            if (viewModel.tag == it) return@observe
             viewModel.tag = it
             entriesAdapter.clearEntries {
                 viewModel.refresh(onError)
@@ -87,6 +79,7 @@ abstract class EntriesFragmentViewModel : ViewModel() {
         }
 
         // サイトURL指定
+        viewModel.siteUrl = siteUrl.value
         siteUrl.observe(lifecycleOwner) {
             if (category.value != Category.Site && (it == null || viewModel.siteUrl == it)) return@observe
             viewModel.siteUrl = it

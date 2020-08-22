@@ -37,7 +37,7 @@ class Memorial15Fragment : TwinTabsEntriesFragment() {
         repository: EntriesRepository,
         category: Category
     ): EntriesFragmentViewModel {
-        val factory = Memorial15ViewModel.Factory(repository)
+        val factory = Memorial15ViewModel.Factory()
         return ViewModelProvider(owner, factory)[viewModelKey, Memorial15ViewModel::class.java]
     }
 
