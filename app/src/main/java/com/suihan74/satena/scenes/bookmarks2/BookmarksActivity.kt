@@ -330,6 +330,7 @@ class BookmarksActivity :
 
         // Observers
         viewModel.bookmarksEntry.observe(this) {
+            if (it == null) return@observe
             toolbar.subtitle = getString(
                 R.string.toolbar_subtitle_bookmarks,
                 it.bookmarks.size,

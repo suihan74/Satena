@@ -45,7 +45,7 @@ enum class PreferenceKey(
     NOTICE_IGNORED_APP_UPDATE(typeInfo<Boolean>(), false),
 
     /** 最後に通知したアップデートバージョン */
-    LAST_NOTICED_APP_UPDATE_VERSION(typeInfo<Long>(), 0),
+    LAST_NOTICED_APP_UPDATE_VERSION(typeInfo<Long>(), 0L),
 
     /** 終了確認ダイアログを表示 */
     USING_TERMINATION_DIALOG(typeInfo<Boolean>(), false),
