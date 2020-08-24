@@ -280,4 +280,21 @@
     <style name="RecyclerView.Linear" parent="RecyclerView">
         <item name="layoutManager">androidx.recyclerview.widget.LinearLayoutManager</item>
     </style>
+
+    <!-- スタースパン色 -->
+    <style name="StarSpan.Yellow" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/starYellow</item>
+    </style>
+    <style name="StarSpan.Red" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/starRed</item>
+    </style>
+    <style name="StarSpan.Green" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/starGreen</item>
+    </style>
+    <style name="StarSpan.Blue" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/starBlue</item>
+    </style>
+    <style name="StarSpan.Purple" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/starPurple</item>
+    </style>
 </resources>
