@@ -70,7 +70,7 @@ class EntriesTabFragmentViewModel(
         MutableLiveData<List<Entry>>().also { filtered ->
             entries.observeForever {
                 viewModelScope.launch {
-                    filtered.postValue(repository.filterEntries(it))
+                    filtered.postValue(repository.filterEntries(it ?: emptyList()))
                 }
             }
         }

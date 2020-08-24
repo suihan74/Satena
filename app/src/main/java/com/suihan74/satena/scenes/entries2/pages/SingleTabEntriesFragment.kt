@@ -11,7 +11,6 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesFragment
-import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 
 abstract class SingleTabEntriesFragment : EntriesFragment() {
@@ -50,6 +49,10 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
 
     override fun refreshLists() {
         contentFragment?.refreshList()
+    }
+
+    override fun reloadLists() {
+        contentFragment?.reload()
     }
 
     override fun removeBookmark(entry: Entry) {

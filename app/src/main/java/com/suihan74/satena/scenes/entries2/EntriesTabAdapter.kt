@@ -21,9 +21,16 @@ class EntriesTabAdapter(
     override fun getCount() = fragment.tabCount
 
     /** すべてのタブのリストを再構成する */
-    fun refreshLists() {
+    fun reloadLists() {
         map<EntriesTabFragment>(container) {
             it.reload()
+        }
+    }
+
+    /** すべてのタブのリストを再構成する(取得を行わない単なる再配置) */
+    fun refreshLists() {
+        map<EntriesTabFragment>(container) {
+            it.refreshList()
         }
     }
 

@@ -78,6 +78,9 @@ abstract class EntriesFragment : Fragment() {
     val tabCount get() = viewModel.tabCount
 
     /** リストを再構成する */
+    abstract fun reloadLists()
+
+    /** リストを再構成する(取得を行わない単なる再配置) */
     abstract fun refreshLists()
 
     /** エントリに付けたブクマを削除 */

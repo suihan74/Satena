@@ -123,7 +123,7 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
                     val root = fragment.view
 
                     (root?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
-                        refreshLists()
+                        reloadLists()
                     }
 
                     return (!query.isNullOrBlank()).also {
