@@ -262,11 +262,12 @@ open class BookmarksAdapter(
                     visibility = View.VISIBLE
                     val tagsText = bookmark.tags.joinToString(", ")
                     text = SpannableString("_$tagsText").apply {
-                        val icon = resources.getDrawable(R.drawable.ic_tag, null).apply {
+                        ResourcesCompat.getDrawable(resources, R.drawable.ic_tag, null)?.apply {
                             setBounds(0, 0, lineHeight, lineHeight)
                             setTint(resources.getColor(R.color.tagColor, null))
+                        }?.let { icon ->
+                            setSpan(ImageSpan(icon), 0, 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
-                        setSpan(ImageSpan(icon), 0, 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
                 }
             }
