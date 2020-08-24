@@ -41,17 +41,6 @@ class Memorial15Fragment : TwinTabsEntriesFragment() {
         return ViewModelProvider(owner, factory)[viewModelKey, Memorial15ViewModel::class.java]
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        activity.alsoAs<EntriesActivity> { activity ->
-            if (activity.viewModel.signedIn.value == true) {
-                activity.tabLayout?.tabMode = TabLayout.MODE_SCROLLABLE
-                setHasOptionsMenu(!activity.viewModel.isBottomLayoutMode)
-            }
-        }
-    }
-
     override fun updateActivityAppBar(
         activity: EntriesActivity,
         tabLayout: TabLayout,
@@ -59,10 +48,17 @@ class Memorial15Fragment : TwinTabsEntriesFragment() {
     ): Boolean {
         val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
 
-        bottomAppBar?.let { appBar ->
-            if (activity.viewModel.signedIn.value == true) {
-                appBar.inflateMenu(R.menu.memorial_15th_bottom)
-                initializeMenu(appBar.menu, appBar)
+        // 項目数が多いので、タブ部分をスクロールできるようにする
+        tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
+
+        if (activity.viewModel.signedIn.value == true) {
+            // メニューバーの設定
+            if (bottomAppBar == null) {
+                setHasOptionsMenu(true)
+            }
+            else {
+                bottomAppBar.inflateMenu(R.menu.memorial_15th_bottom)
+                initializeMenu(bottomAppBar.menu, bottomAppBar)
             }
         }
 

@@ -14,6 +14,7 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -81,13 +82,6 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
     /** FABメニューの開閉状態 */
     private var isFABMenuOpened : Boolean = false
-
-    /** 上部/下部どちらか有効な方のタブレイアウト */
-    val tabLayout : TabLayout?
-        get() = top_tab_layout
-
-//    val bottomMenu : Menu
-//        get() = bottom_menu.menu
 
     /** アップデートを確認する */
     private var appUpdateManager : AppUpdateManager? = null
@@ -461,6 +455,34 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
             Log.e("finish", Log.getStackTraceString(e))
         }
     }
+
+    /** タブの状態を初期化する */
+    private fun clearTabLayoutState(tabLayout: TabLayout) {
+        tabLayout.let {
+            // デフォルトではタブをスクロール不可にしておく
+            it.tabMode = TabLayout.MODE_FIXED
+
+            it.setupWithViewPager(null)
+            it.clearOnTabSelectedListeners()
+            it.setOnLongClickListener(null)
+        }
+    }
+
+    /** タブを初期化して渡す */
+    fun initializeTabLayout() : TabLayout? = top_tab_layout?.also {
+        clearTabLayoutState(it)
+    }
+
+    /** ボトムバーの状態を初期化する */
+    private fun clearBottomAppBarState(bottomAppBar: BottomAppBar) {
+        bottomAppBar.menu.clear()
+        bottomAppBar.setOnMenuItemClickListener(null)
+    }
+
+    /** ボトムバーを使用する設定なら取得する(使用しない設定ならnullが返る) */
+    fun initializeBottomAppBar() : BottomAppBar? =
+        if (viewModel.isBottomLayoutMode) bottom_app_bar?.also { clearBottomAppBarState(it) }
+        else null
 
     // --- FAB表示アニメーション ---
 

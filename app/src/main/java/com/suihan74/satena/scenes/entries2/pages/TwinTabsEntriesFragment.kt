@@ -51,6 +51,12 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
     }
 
     /** 全てのタブのリストを再構成する */
+    override fun reloadLists() {
+        val adapter = binding?.entriesTabPager?.adapter as? EntriesTabAdapter ?: return
+        adapter.reloadLists()
+    }
+
+    /** リストを再構成する(取得を行わない単なる再配置) */
     override fun refreshLists() {
         val adapter = binding?.entriesTabPager?.adapter as? EntriesTabAdapter ?: return
         adapter.refreshLists()

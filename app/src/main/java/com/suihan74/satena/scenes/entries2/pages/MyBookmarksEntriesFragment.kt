@@ -148,7 +148,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
                 val root = fragment.view
 
                 (root?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
-                    refreshLists()
+                    reloadLists()
                 }
 
                 return (!query.isNullOrBlank()).also {
@@ -170,7 +170,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
             onBackPressedCallback?.isEnabled = detectBackPressedCallbackStatus(viewModel)
 
             (fragment.view?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
-                refreshLists()
+                reloadLists()
             }
             return@setOnCloseListener false
         }

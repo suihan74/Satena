@@ -78,6 +78,9 @@ abstract class EntriesFragment : Fragment() {
     val tabCount get() = viewModel.tabCount
 
     /** リストを再構成する */
+    abstract fun reloadLists()
+
+    /** リストを再構成する(取得を行わない単なる再配置) */
     abstract fun refreshLists()
 
     /** エントリに付けたブクマを削除 */
@@ -132,22 +135,9 @@ abstract class EntriesFragment : Fragment() {
 
         // EntriesActivityのTabLayoutとBottomAppBarをFragment側に公開する
         val activity = requireActivity() as EntriesActivity
-        val tabLayout = activity.tabLayout?.also {
-            // デフォルトではタブをスクロール不可にしておく
-            it.tabMode = TabLayout.MODE_FIXED
+        val tabLayout = activity.initializeTabLayout()
 
-            it.setupWithViewPager(null)
-            it.clearOnTabSelectedListeners()
-            it.setOnLongClickListener(null)
-        }
-
-        val bottomAppBar =
-            if (activity.viewModel.isBottomLayoutMode)
-                activity.bottom_app_bar?.also {
-                    it.menu.clear()
-                    it.setOnMenuItemClickListener(null)
-                }
-            else null
+        val bottomAppBar = activity.initializeBottomAppBar()
 
         if (tabLayout != null) {
             tabLayout.visibility =
