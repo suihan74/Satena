@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -343,7 +344,7 @@ open class BookmarksAdapter(
             }
             else {
                 view.user_tags.apply {
-                    val icon = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
+                    val icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_user_tag, null)?.apply {
                         val size = textSize.toInt()
                         setBounds(0, 0, size, size)
                         setTint(resources.getColor(R.color.tagColor, null))
