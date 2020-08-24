@@ -81,7 +81,7 @@ class BookmarksTabFragment :
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
 
         // adapter
-        val bookmarksAdapter = object : BookmarksAdapter() {
+        val bookmarksAdapter = object : BookmarksAdapter(viewLifecycleOwner, activityViewModel) {
             override fun onItemClicked(bookmark: Bookmark) =
                 bookmarksActivity.onBookmarkClicked(bookmark)
 

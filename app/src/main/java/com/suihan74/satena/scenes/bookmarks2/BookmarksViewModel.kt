@@ -212,6 +212,9 @@ class BookmarksViewModel(
             reloadLists()
         }
 
+        // 所持しているスター情報を取得する
+        repository.userStarsLiveData.load()
+
         withContext(Dispatchers.Main) {
             onFinally?.invoke()
         }
@@ -366,6 +369,16 @@ class BookmarksViewModel(
     suspend fun loadUserTags() {
         taggedUsers.value = (userTagRepository.loadUsers())
         userTags.value = (userTagRepository.loadTags())
+    }
+
+    /** ブコメにスターをつける */
+    fun postStar(
+        bookmark: Bookmark,
+        color: StarColor,
+        quote: String = ""
+    ) = viewModelScope.launch {
+        repository.postStar(bookmark, color, quote)
+        repository.userStarsLiveData.load()
     }
 
     /** ブクマを通報 */

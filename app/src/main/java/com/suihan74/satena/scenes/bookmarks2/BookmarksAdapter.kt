@@ -1,13 +1,16 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.content.Intent
+import android.net.Uri
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupWindow
 import android.widget.TextView
+import androidx.appcompat.widget.TooltipCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -32,7 +35,10 @@ fun <T> List<T>?.contentsEquals(other: List<T>?) =
     else this!!.size == other!!.size && this.mapIndexed { index, _ -> this[index] == other[index] }.all { it }
 
 
-open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>, RecyclerView.ViewHolder>(DiffCallback()) {
+open class BookmarksAdapter(
+    private val lifecycleOwner: LifecycleOwner,
+    private val activityViewModel: BookmarksViewModel
+) : ListAdapter<RecyclerState<BookmarksAdapter.Entity>, RecyclerView.ViewHolder>(DiffCallback()) {
     private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entity>>() {
         override fun areItemsTheSame(
             oldItem: RecyclerState<Entity>,
@@ -210,7 +216,7 @@ open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>
 
             view.bookmark_comment.apply {
                 text = entity.analyzedComment.comment
-                visibility = (text.isNotEmpty()).toVisibility(View.GONE)
+                //visibility = (text.isNotEmpty()).toVisibility(View.GONE)
 
                 val linkMovementMethod = object : MutableLinkMovementMethod() {
                     override fun onSinglePressed(link: String) {
@@ -288,11 +294,42 @@ open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>
             view.bookmark_timestamp.text = builder
 
             // スターを付けるボタン
-            view.add_star_button.setOnClickListener {
-                view.context?.showToast("[test] add star")
-                val popup = PopupWindow(200, 40)
-                //popup.inflate(R.menu.my_bookmarks_bottom)
-                popup.showAsDropDown(view.add_star_button)
+            if (bookmark.comment.isNotBlank() && bookmarksAdapter.activityViewModel.signedIn.value == true) {
+                val context = view.context!!
+                view.add_star_button.visibility = View.VISIBLE
+                TooltipCompat.setTooltipText(view.add_star_button, context.getString(R.string.add_star_popup_desc))
+                view.add_star_button.setOnClickListener {
+                    val popup = AddStarPopupMenu(context).apply {
+                        observeUserStars(
+                            bookmarksAdapter.lifecycleOwner,
+                            bookmarksAdapter.activityViewModel.repository.userStarsLiveData
+                        )
+
+                        setOnClickAddStarListener { color ->
+                            bookmarksAdapter.activityViewModel.postStar(
+                                bookmark,
+                                color
+                            ).invokeOnCompletion { e ->
+                                if (e == null) {
+                                    context.showToast(R.string.msg_post_star_succeeded, bookmark.user)
+                                }
+                                else {
+                                    context.showToast(R.string.msg_post_star_failed, bookmark.user)
+                                }
+                            }
+                        }
+
+                        setOnClickPurchaseStarsListener {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.hatena.ne.jp/shop/star"))
+                            context.startActivity(intent)
+                            dismiss()
+                        }
+                    }
+                    popup.showAsDropDown(view.add_star_button)
+                }
+            }
+            else {
+                view.add_star_button.visibility = View.GONE
             }
 
             // ユーザータグ
