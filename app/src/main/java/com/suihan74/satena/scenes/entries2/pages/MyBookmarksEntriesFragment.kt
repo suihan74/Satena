@@ -18,6 +18,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.*
+import com.suihan74.utilities.bindings.setVisibility
 import kotlinx.android.synthetic.main.activity_entries2.*
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
@@ -41,14 +42,6 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         return ViewModelProvider(owner, factory)[viewModelKey, MyBookmarksViewModel::class.java]
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        activity?.alsoAs<EntriesActivity> {
-            setHasOptionsMenu(!it.viewModel.isBottomLayoutMode)
-        }
-    }
-
     override fun updateActivityAppBar(
         activity: EntriesActivity,
         tabLayout: TabLayout,
@@ -56,10 +49,12 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
     ): Boolean {
         val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
 
-        bottomAppBar?.let { appBar ->
-//            activity.menuInflater.inflate(R.menu.my_bookmarks_bottom, activity.bottomMenu)
-            appBar.inflateMenu(R.menu.my_bookmarks_bottom)
-            initializeMenu(appBar.menu, appBar)
+        if (bottomAppBar == null) {
+            setHasOptionsMenu(true)
+        }
+        else {
+            bottomAppBar.inflateMenu(R.menu.my_bookmarks_bottom)
+            initializeMenu(bottomAppBar.menu, bottomAppBar)
         }
 
         return result
@@ -73,11 +68,20 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
 
     /** メニュー初期化処理 */
     private fun initializeMenu(menu: Menu, bottomAppBar: BottomAppBar? = null) {
-        val activity = requireActivity()
+        val activity = requireActivity() as EntriesActivity
         val viewModel = viewModel as MyBookmarksViewModel
 
         // 検索窓
-        val searchView = menu.findItem(R.id.search_view)?.actionView.alsoAs<SearchView> {
+        val searchView =
+            if (bottomAppBar == null) menu.findItem(R.id.search_view)?.actionView as? SearchView
+            else activity.bottomSearchView?.also { searchView ->
+                bottomAppBar.menu.findItem(R.id.search_view).setOnMenuItemClickListener {
+                    searchView.setVisibility(searchView.visibility != View.VISIBLE)
+                    true
+                }
+            }
+
+        searchView?.let {
             initializeSearchView(it, viewModel, menu, bottomAppBar)
         }
 
@@ -94,8 +98,18 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
                 viewModel.tag.value = null
             }
 
-            if (searchView != null && !searchView.isIconified) {
-                searchView.isIconified = true
+            if (searchView != null) {
+                if (activity.viewModel.isBottomLayoutMode) {
+                    if (searchView.visibility == View.VISIBLE) {
+                        searchView.visibility = View.GONE
+                        onBackPressedCallback?.isEnabled = detectBackPressedCallbackStatus(viewModel)
+                    }
+                }
+                else {
+                    if (!searchView.isIconified) {
+                        searchView.isIconified = true
+                    }
+                }
             }
 
             isEnabled = detectBackPressedCallbackStatus(viewModel)
@@ -110,26 +124,35 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
     private fun initializeSearchView(searchView: SearchView, viewModel: MyBookmarksViewModel, menu: Menu, bottomAppBar: BottomAppBar?) = searchView.run {
         val fragment = this@MyBookmarksEntriesFragment
 
-        if (bottomAppBar != null) {
-            val color = context.getThemeColor(R.attr.textColor)
-            val editText = findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)
-            editText?.setTextColor(color)
-        }
-
         queryHint = getString(R.string.hint_search_my_bookmarks)
         setQuery(viewModel.searchQuery.value, false)
 
-        // デフォルトでアイコン化する
-        setIconifiedByDefault(true)
-        if (query.isNullOrBlank()) {
-            isIconified = true
+        if (bottomAppBar == null) {
+            // デフォルトでアイコン化する
+            setIconifiedByDefault(true)
+            if (query.isNullOrBlank()) {
+                isIconified = true
+            }
+            else {
+                isIconified = false
+                // 画面遷移や回転ごとにキーボードを表示しないようにする
+                requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+                clearFocus()
+            }
         }
         else {
-            isIconified = false
-            // 画面遷移や回転ごとにキーボードを表示しないようにする
-            requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
-            clearFocus()
+            val color = context.getThemeColor(R.attr.textColor)
+            val editText =
+                findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)
+            editText?.setTextColor(color)
+
+            if (!query.isNullOrBlank()) {
+                // 画面遷移や回転ごとにキーボードを表示しないようにする
+                requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+                clearFocus()
+            }
         }
+
         viewModel.isSearchViewExpanded = !isIconified
 
         // ツールバーアイコン長押しで説明を表示する
@@ -176,7 +199,9 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
         }
 
         // 横幅を最大化
-        stretchWidth(requireActivity(), menu, bottomAppBar != null)
+        if (bottomAppBar == null) {
+            stretchWidth(requireActivity(), menu)
+        }
     }
 
     /** タグ選択メニューの設定 */

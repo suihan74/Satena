@@ -21,6 +21,7 @@ import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.utilities.*
+import com.suihan74.utilities.bindings.setVisibility
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Listener {
@@ -64,14 +65,6 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        activity.alsoAs<EntriesActivity> {
-            setHasOptionsMenu(!it.viewModel.isBottomLayoutMode)
-        }
-    }
-
     override fun updateActivityAppBar(
         activity: EntriesActivity,
         tabLayout: TabLayout,
@@ -79,9 +72,12 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
     ): Boolean {
         val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
 
-        bottomAppBar?.let { appBar ->
-            appBar.inflateMenu(R.menu.search_entries_bottom)
-            initializeMenu(appBar.menu, appBar)
+        if (bottomAppBar == null) {
+            setHasOptionsMenu(true)
+        }
+        else {
+            bottomAppBar.inflateMenu(R.menu.search_entries_bottom)
+            initializeMenu(bottomAppBar.menu, bottomAppBar)
         }
 
         return result
@@ -95,59 +91,21 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
 
     /** メニュー初期化処理 */
     private fun initializeMenu(menu: Menu, bottomAppBar: BottomAppBar? = null) {
-        val fragment = this
         val viewModel = viewModel as SearchEntriesViewModel
+        val activity = activity as EntriesActivity
 
         // 検索クエリ入力ボックスの設定
-        (menu.findItem(R.id.search_view)?.actionView as? SearchView)?.run {
-            // 文字色をテーマに合わせて調整する
-            if (bottomAppBar != null) {
-                val color = context.getThemeColor(R.attr.textColor)
-                val editText = findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)
-                editText?.setTextColor(color)
+        val searchView =
+            if (bottomAppBar == null) menu.findItem(R.id.search_view)?.actionView as? SearchView
+            else activity.bottomSearchView?.also { searchView ->
+                bottomAppBar.menu.findItem(R.id.search_view).setOnMenuItemClickListener {
+                    searchView.setVisibility(searchView.visibility != View.VISIBLE)
+                    true
+                }
             }
 
-            // クエリの設定
-            val initialQuery = viewModel.searchQuery.value
-            setQuery(initialQuery, false)
-            queryHint = getString(R.string.search_query_hint)
-
-            // クエリ文字列の変更を監視する
-            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    viewModel.searchQuery.value = newText
-                    return true
-                }
-                // 検索ボタン押下時にロードを行う
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    val root = fragment.view
-
-                    (root?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
-                        reloadLists()
-                    }
-
-                    return (!query.isNullOrBlank()).also {
-                        if (it) requireActivity().hideSoftInputMethod(root?.contentLayout)
-                    }
-                }
-            })
-
-            // 常に開いた状態にしておく
-            setIconifiedByDefault(false)
-            isIconified = false
-
-            // 初回遷移時などの未入力状態以外の場合は自動的にキーボードを表示しないようにする
-            if (!viewModel.searchQuery.value.isNullOrBlank()) {
-                requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
-                clearFocus()
-            }
-
-            val magIcon = findViewById<View>(androidx.appcompat.R.id.search_mag_icon)
-            magIcon?.background = null
-            magIcon?.layoutParams = LinearLayout.LayoutParams(0, 0)
-
-            // 横幅を最大化
-            stretchWidth(requireActivity(), menu, bottomAppBar != null)
+        if (searchView != null) {
+            initializeSearchView(searchView, viewModel, menu, bottomAppBar)
         }
 
         // 検索タイプ選択メニューの設定
@@ -174,6 +132,69 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
                     setTint(context.getColor(R.color.colorPrimaryText))
                 }
             }
+        }
+    }
+
+    private fun initializeSearchView(
+        searchView: SearchView,
+        viewModel: SearchEntriesViewModel,
+        menu: Menu,
+        bottomAppBar: BottomAppBar?
+    ) = searchView.run {
+        val fragment = this@SearchEntriesFragment
+
+        // 文字色をテーマに合わせて調整する
+        if (bottomAppBar != null) {
+            val color = context.getThemeColor(R.attr.textColor)
+            val editText = findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)
+            editText?.setTextColor(color)
+        }
+
+        // クエリの設定
+        val initialQuery = viewModel.searchQuery.value
+        setQuery(initialQuery, false)
+        queryHint = getString(R.string.search_query_hint)
+
+        // クエリ文字列の変更を監視する
+        setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.searchQuery.value = newText
+                return true
+            }
+            // 検索ボタン押下時にロードを行う
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                val root = fragment.view
+
+                (root?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
+                    reloadLists()
+                }
+
+                return (!query.isNullOrBlank()).also {
+                    if (it) requireActivity().hideSoftInputMethod(root?.contentLayout)
+                }
+            }
+        })
+
+        // 常に開いた状態にしておく
+        setIconifiedByDefault(false)
+        isIconified = false
+
+        if (viewModel.searchQuery.value.isNullOrBlank()) {
+            searchView.visibility = View.VISIBLE
+        }
+        else {
+            // 初回遷移時などの未入力状態以外の場合は自動的にキーボードを表示しないようにする
+            requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+            clearFocus()
+        }
+
+        val magIcon = findViewById<View>(androidx.appcompat.R.id.search_mag_icon)
+        magIcon?.background = null
+        magIcon?.layoutParams = LinearLayout.LayoutParams(0, 0)
+
+        // 横幅を最大化
+        if (bottomAppBar == null) {
+            stretchWidth(requireActivity(), menu)
         }
     }
 

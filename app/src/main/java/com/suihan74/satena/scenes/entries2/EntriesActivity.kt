@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
@@ -85,6 +86,16 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
     /** アップデートを確認する */
     private var appUpdateManager : AppUpdateManager? = null
+
+    /**
+     * ボトムバーのSearchView
+     *
+     * ボトムバー使用モードではない場合nullが返る
+     */
+    val bottomSearchView : SearchView?
+        get() =
+            if (viewModel.isBottomLayoutMode) bottom_search_view
+            else null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -477,6 +488,7 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
     private fun clearBottomAppBarState(bottomAppBar: BottomAppBar) {
         bottomAppBar.menu.clear()
         bottomAppBar.setOnMenuItemClickListener(null)
+        bottom_search_view.visibility = View.GONE
     }
 
     /** ボトムバーを使用する設定なら取得する(使用しない設定ならnullが返る) */

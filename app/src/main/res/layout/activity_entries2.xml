@@ -62,6 +62,7 @@
                 <com.google.android.material.bottomappbar.BottomAppBar
                         android:id="@+id/bottom_app_bar"
                         android:layout_gravity="bottom"
+                        app:layout_dodgeInsetEdges="bottom"
                         app:backgroundTint="?attr/tabBackground"
                         app:fabCradleRoundedCornerRadius="8dp"
                         app:fabAlignmentMode="end"
@@ -70,6 +71,19 @@
                         app:contentInsetLeft="0dp"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"/>
+
+                <androidx.appcompat.widget.SearchView
+                        android:id="@+id/bottom_search_view"
+                        android:visibility="gone"
+                        android:layout_gravity="bottom"
+                        app:layout_insetEdge="bottom"
+                        app:iconifiedByDefault="false"
+                        app:queryHint="@string/hint_search_my_bookmarks"
+                        app:searchIcon="@null"
+                        app:searchHintIcon="@null"
+                        android:background="?attr/tabBackground"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
 
                 <!-- メニュー表示中に他の領域をタップできなくする(設定がONになっているときに表示する) -->
                 <View
@@ -221,6 +235,7 @@
                 <!-- メニュー表示中の記事誤タップ防止用ビュー -->
                 <View
                         android:id="@+id/entries_menu_button_guard"
+                        android:visibility="gone"
                         android:layout_gravity="bottom|end"
                         android:background="#00000000"
                         android:clickable="true"

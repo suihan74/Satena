@@ -7,8 +7,7 @@
             android:title="@string/desc_search_mybookmarks"
             android:icon="@drawable/ic_baseline_search_theme_colored"
             app:iconTint="?attr/textColor"
-            app:showAsAction="always"
-            app:actionLayout="@layout/searchview_bottom"/>
+            app:showAsAction="always"/>
 
     <item
             android:id="@+id/issues_spinner"
