@@ -1,10 +1,12 @@
 package com.suihan74.satena.scenes.bookmarks2
 
 import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -261,7 +263,7 @@ open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>
             }
 
             // タイムスタンプ & スター
-            val builder = StringBuilder()
+            val builder = SpannableStringBuilder()
             val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
             builder.append(bookmark.timestamp.format(formatter))
             builder.append("　")
@@ -274,14 +276,24 @@ open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>
                     val blueStarCount = stars.firstOrNull { it.color == StarColor.Blue }?.count ?: 0
                     val purpleStarCount = stars.firstOrNull { it.color == StarColor.Purple }?.count ?: 0
 
-                    appendStarText(builder, purpleStarCount, view.context, R.color.starPurple)
-                    appendStarText(builder, blueStarCount, view.context, R.color.starBlue)
-                    appendStarText(builder, redStarCount, view.context, R.color.starRed)
-                    appendStarText(builder, greenStarCount, view.context, R.color.starGreen)
-                    appendStarText(builder, yellowStarCount, view.context, R.color.starYellow)
+                    appendStarSpan(builder, purpleStarCount, view.context, R.style.StarSpan_Purple)
+                    appendStarSpan(builder, blueStarCount, view.context, R.style.StarSpan_Blue)
+                    appendStarSpan(builder, redStarCount, view.context, R.style.StarSpan_Red)
+                    appendStarSpan(builder, greenStarCount, view.context, R.style.StarSpan_Green)
+                    appendStarSpan(builder, yellowStarCount, view.context, R.style.StarSpan_Yellow)
                 }
             }
-            view.bookmark_timestamp.setHtml(builder.toString())
+
+            // タイムスタンプ部分テキストを設定
+            view.bookmark_timestamp.text = builder
+
+            // スターを付けるボタン
+            view.add_star_button.setOnClickListener {
+                view.context?.showToast("[test] add star")
+                val popup = PopupWindow(200, 40)
+                //popup.inflate(R.menu.my_bookmarks_bottom)
+                popup.showAsDropDown(view.add_star_button)
+            }
 
             // ユーザータグ
             if (userTags.isNullOrEmpty()) {

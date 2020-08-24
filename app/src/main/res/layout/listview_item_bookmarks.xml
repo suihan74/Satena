@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:paddingBottom="6dp"
         android:background="?android:attr/selectableItemBackground">
 
@@ -82,8 +83,20 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/bookmark_tags"
             android:layout_toEndOf="@id/bookmark_user_icon"
+            android:layout_toStartOf="@id/add_star_button"
             android:layout_marginTop="2dp"/>
 
+    <ImageButton
+            android:id="@+id/add_star_button"
+            app:srcCompat="@drawable/ic_add_star"
+            android:tint="@color/tagColor"
+            android:background="?attr/actionBarItemBackground"
+            android:layout_alignBottom="@id/bookmark_timestamp"
+            android:layout_alignEnd="@id/bookmark_comment"
+            android:contentDescription="@null"
+            android:layout_marginEnd="4dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"/>
 
     <!-- IDコール先 -->
     <androidx.recyclerview.widget.RecyclerView
