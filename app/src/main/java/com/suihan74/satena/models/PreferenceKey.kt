@@ -136,6 +136,9 @@ enum class PreferenceKey(
     /** リストスクロールにあわせてツールバーを隠す */
     BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING(typeInfo<Boolean>(), false),
 
+    /** ブクマ一覧画面のリスト項目から直接スターを付けられるようにする */
+    BOOKMARKS_USE_ADD_STAR_POPUP_MENU(typeInfo<Boolean>(), true),
+
     /** スターを付ける前に確認ダイアログを表示する */
     USING_POST_STAR_DIALOG(typeInfo<Boolean>(), true),
 

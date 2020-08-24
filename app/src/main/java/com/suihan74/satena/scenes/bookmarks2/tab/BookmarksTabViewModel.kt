@@ -27,6 +27,11 @@ abstract class BookmarksTabViewModel : ViewModel() {
         MutableLiveData<Bookmark?>()
     }
 
+    /** この画面内からスターを追加するポップアップを使用する */
+    val useAddStarPopupMenu by lazy {
+        preferences.getBoolean(PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU)
+    }
+
     /** 初期化 */
     open fun init() {
         bookmarks.observeForever {

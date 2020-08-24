@@ -22,6 +22,7 @@ import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
+import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.footer_recycler_view_loadable.view.*
@@ -37,6 +38,7 @@ fun <T> List<T>?.contentsEquals(other: List<T>?) =
 
 open class BookmarksAdapter(
     private val lifecycleOwner: LifecycleOwner,
+    private val viewModel: BookmarksTabViewModel,
     private val activityViewModel: BookmarksViewModel
 ) : ListAdapter<RecyclerState<BookmarksAdapter.Entity>, RecyclerView.ViewHolder>(DiffCallback()) {
     private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entity>>() {
@@ -294,7 +296,10 @@ open class BookmarksAdapter(
             view.bookmark_timestamp.text = builder
 
             // スターを付けるボタン
-            if (bookmark.comment.isNotBlank() && bookmarksAdapter.activityViewModel.signedIn.value == true) {
+            if (bookmarksAdapter.viewModel.useAddStarPopupMenu &&
+                bookmark.comment.isNotBlank() &&
+                bookmarksAdapter.activityViewModel.signedIn.value == true
+            ) {
                 val context = view.context!!
                 view.add_star_button.visibility = View.VISIBLE
                 TooltipCompat.setTooltipText(view.add_star_button, context.getString(R.string.add_star_popup_desc))
