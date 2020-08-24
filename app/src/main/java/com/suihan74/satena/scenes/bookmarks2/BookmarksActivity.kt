@@ -247,9 +247,7 @@ class BookmarksActivity :
                 }
 
                 is FetchIgnoredUsersFailureException -> {
-                    if (viewModel.signedIn.value == true) {
-                        showToast(R.string.msg_fetch_ignored_users_failed)
-                    }
+                    showToast(R.string.msg_fetch_ignored_users_failed)
                 }
 
                 else ->

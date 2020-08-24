@@ -230,6 +230,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 非表示ユーザーリストを取得
      */
     fun getIgnoredUsersAsync(forciblyUpdate: Boolean = false) : Deferred<List<String>> = async {
+        if (!signedIn()) return@async emptyList()
+
         if (forciblyUpdate
             || Duration.between(mIgnoredUsersLastUpdated, LocalDateTime.now()) > mIgnoredUsersUpdateIntervals
         ) {
