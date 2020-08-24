@@ -10,7 +10,7 @@
 
     <ImageButton
             android:id="@+id/add_blue_star"
-            app:srcCompat="@drawable/ic_add_star"
+            app:srcCompat="@drawable/ic_add_star_filled"
             android:tint="@color/starBlue"
             android:background="?attr/actionBarItemBackground"
             android:contentDescription="@null"
@@ -31,7 +31,7 @@
 
     <ImageButton
             android:id="@+id/add_red_star"
-            app:srcCompat="@drawable/ic_add_star"
+            app:srcCompat="@drawable/ic_add_star_filled"
             android:tint="@color/starRed"
             android:background="?attr/actionBarItemBackground"
             android:contentDescription="@null"
@@ -53,7 +53,7 @@
 
     <ImageButton
             android:id="@+id/add_green_star"
-            app:srcCompat="@drawable/ic_add_star"
+            app:srcCompat="@drawable/ic_add_star_filled"
             android:tint="@color/starGreen"
             android:background="?attr/actionBarItemBackground"
             android:contentDescription="@null"
@@ -75,7 +75,7 @@
 
     <ImageButton
             android:id="@+id/add_yellow_star"
-            app:srcCompat="@drawable/ic_add_star"
+            app:srcCompat="@drawable/ic_add_star_filled"
             android:tint="@color/starYellow"
             android:background="?attr/actionBarItemBackground"
             android:contentDescription="@null"

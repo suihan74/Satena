@@ -85,7 +85,7 @@ class AddStarPopupMenu(context: Context) : PopupWindow() {
     /** ボタンと所持スター数の表示を設定する */
     private fun initializeView(button: ImageButton, textView: TextView, count: Int) {
         if (count > 0) {
-            button.setImageResource(R.drawable.ic_add_star)
+            button.setImageResource(R.drawable.ic_add_star_filled)
             TooltipCompat.setTooltipText(button, "")
             textView.text = count.toString()
             textView.visibility = View.VISIBLE
