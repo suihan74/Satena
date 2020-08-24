@@ -3,6 +3,7 @@ package com.suihan74.satena.models
 import android.content.Context
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.entries2.CategoriesMode
+import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -80,6 +81,9 @@ enum class PreferenceKey(
 
     /** スクロールでボトムバーを隠す */
     ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING(typeInfo<Boolean>(), false),
+
+    /** ボトムバーに表示する項目 */
+    ENTRIES_BOTTOM_ITEMS(typeInfo<List<UserBottomItem>>(), listOf(UserBottomItem.SCROLL_TO_TOP)),
 
     /** エントリ項目シングルタップの挙動 */
     ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.ordinal),
