@@ -48,10 +48,10 @@ class Memorial15Fragment : TwinTabsEntriesFragment() {
     ): Boolean {
         val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
 
-        if (activity.viewModel.signedIn.value == true) {
-            // 項目数が多いので、タブ部分をスクロールできるようにする
-            tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
+        // 項目数が多いので、タブ部分をスクロールできるようにする
+        tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
 
+        if (activity.viewModel.signedIn.value == true) {
             // メニューバーの設定
             if (bottomAppBar == null) {
                 setHasOptionsMenu(true)
