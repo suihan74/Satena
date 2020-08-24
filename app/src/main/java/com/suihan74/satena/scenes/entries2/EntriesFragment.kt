@@ -135,22 +135,9 @@ abstract class EntriesFragment : Fragment() {
 
         // EntriesActivityのTabLayoutとBottomAppBarをFragment側に公開する
         val activity = requireActivity() as EntriesActivity
-        val tabLayout = activity.tabLayout?.also {
-            // デフォルトではタブをスクロール不可にしておく
-            it.tabMode = TabLayout.MODE_FIXED
+        val tabLayout = activity.initializeTabLayout()
 
-            it.setupWithViewPager(null)
-            it.clearOnTabSelectedListeners()
-            it.setOnLongClickListener(null)
-        }
-
-        val bottomAppBar =
-            if (activity.viewModel.isBottomLayoutMode)
-                activity.bottom_app_bar?.also {
-                    it.menu.clear()
-                    it.setOnMenuItemClickListener(null)
-                }
-            else null
+        val bottomAppBar = activity.initializeBottomAppBar()
 
         if (tabLayout != null) {
             tabLayout.visibility =
