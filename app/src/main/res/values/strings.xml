@@ -344,8 +344,11 @@
     <string name="bookmark_detail_tab_mentions_to">mention -> %s</string>
     <string name="bookmark_detail_quote_comment">"%s"</string>
     <string name="msg_post_star_dialog">%sスターをつけます。よろしいですか？</string>
-    <string name="msg_post_star_succeeded">%sのブコメに★をつけました</string>
-    <string name="msg_post_star_failed">%sのブコメに★をつけられませんでした</string>
+    <string name="msg_delete_star_dialog">このブコメにつけたスターを削除します。よろしいですか？</string>
+    <string name="msg_post_star_succeeded">%sのブコメにスターをつけました</string>
+    <string name="msg_post_star_failed">%sのブコメにスターをつけられませんでした</string>
+    <string name="msg_delete_star_succeeded">スターを削除しました</string>
+    <string name="msg_delete_star_failed">スター削除に失敗しました</string>
     <string name="msg_no_color_stars">%sスターを所持していません</string>
     <string name="msg_remove_star_succeeded">%sへの★を削除しました</string>
     <string name="msg_remove_star_failed">%sへの★の削除に失敗しました</string>

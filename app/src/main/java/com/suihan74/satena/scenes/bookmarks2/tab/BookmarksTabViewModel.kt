@@ -106,7 +106,22 @@ abstract class BookmarksTabViewModel : ViewModel() {
             activityViewModel.signedIn.value == true
         ) {
             addStarButton.visibility = View.VISIBLE
+
+            val userSignedIn = activityViewModel.repository.userSignedIn
+            val userStar = bookmark.starCount?.firstOrNull { it.user == userSignedIn }
+            if (userSignedIn != null && userStar != null) {
+                addStarButton.setImageResource(R.drawable.ic_add_star_filled)
+                addStarButton.setOnLongClickListener {
+                    activityViewModel.deleteStarDialog(bookmark, userStar)
+                    true
+                }
+            }
+            else {
+                addStarButton.setImageResource(R.drawable.ic_add_star)
+                addStarButton.setOnLongClickListener(null)
+            }
             TooltipCompat.setTooltipText(addStarButton, context.getString(R.string.add_star_popup_desc))
+
             addStarButton.setOnClickListener {
                 val popup = AddStarPopupMenu(context).apply {
                     observeUserStars(

@@ -424,6 +424,26 @@ class BookmarksViewModel(
         }
     }
 
+    /** ブコメのスターを削除する */
+    fun deleteStar(
+        bookmark: Bookmark,
+        star: Star
+    ) = viewModelScope.launch {
+        repository.deleteStar(bookmark, star)
+        repository.allStarsLiveData.update(bookmark)
+        repository.userStarsLiveData.load()
+    }
+
+    /** ブコメのスターを削除するダイアログを表示する */
+    fun deleteStarDialog(
+        bookmark: Bookmark,
+        star: Star
+    ) {
+        val fragmentManager = fragmentManager ?: return
+        val dialog = PostStarDialog.createInstanceDeleteMode(bookmark, star)
+        dialog.show(fragmentManager, DIALOG_POST_STAR)
+    }
+
     /** ブクマを通報 */
     fun reportBookmark(
         report: Report,
@@ -565,6 +585,22 @@ class BookmarksViewModel(
             }
             else {
                 activity.showToast(R.string.msg_post_star_failed, bookmark.user)
+            }
+        }
+    }
+
+    override fun onDeleteStar(dialog: PostStarDialog, bookmark: Bookmark, star: Star) {
+        val activity = dialog.requireActivity()
+
+        deleteStar(
+            bookmark,
+            star,
+        ).invokeOnCompletion { e ->
+            if (e == null) {
+                activity.showToast(R.string.msg_delete_star_succeeded)
+            }
+            else {
+                activity.showToast(R.string.msg_delete_star_failed)
             }
         }
     }

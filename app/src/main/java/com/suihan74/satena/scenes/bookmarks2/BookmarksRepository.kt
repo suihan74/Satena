@@ -228,6 +228,12 @@ class BookmarksRepository(
         userStarsLiveData.load()
     }
 
+    /** スターを削除する */
+    suspend fun deleteStar(bookmark: Bookmark, star: Star) {
+        client.deleteStarAsync(bookmark.getBookmarkUrl(entry), star).await()
+        userStarsLiveData.load()
+    }
+
     /** ブクマに付けられたスター取得を監視するライブデータを生成する */
     fun createStarsEntryLiveData(bookmark: Bookmark) =
         StarsEntryLiveData(

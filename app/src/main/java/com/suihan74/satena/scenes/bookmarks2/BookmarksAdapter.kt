@@ -14,7 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.suihan74.hatenaLib.*
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.BookmarksEntry
+import com.suihan74.hatenaLib.StarColor
+import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
@@ -193,10 +196,7 @@ open class BookmarksAdapter(
                     val b = entity.bookmark.copy(
                         starCount = starEntries.firstOrNull { s ->
                             s.url.contains("/${entity.bookmark.user}/")
-                        }
-                            ?.allStars
-                            ?.groupBy { s -> s.color }
-                            ?.map { Star(user = "", quote = "", color = it.key, count = it.value.sumBy { s -> s.count }) }
+                        }?.allStars
                     )
                     if (!entity.bookmark.same(b)) {
                         updated = true
@@ -297,11 +297,11 @@ open class BookmarksAdapter(
 
             if (!bookmark.starCount.isNullOrEmpty()) {
                 bookmark.starCount.let { stars ->
-                    val yellowStarCount = stars.firstOrNull { it.color == StarColor.Yellow }?.count ?: 0
-                    val redStarCount = stars.firstOrNull { it.color == StarColor.Red }?.count ?: 0
-                    val greenStarCount = stars.firstOrNull { it.color == StarColor.Green }?.count ?: 0
-                    val blueStarCount = stars.firstOrNull { it.color == StarColor.Blue }?.count ?: 0
-                    val purpleStarCount = stars.firstOrNull { it.color == StarColor.Purple }?.count ?: 0
+                    val yellowStarCount = stars.filter { it.color == StarColor.Yellow }.sumBy { it.count }
+                    val redStarCount = stars.filter { it.color == StarColor.Red }.sumBy { it.count }
+                    val greenStarCount = stars.filter { it.color == StarColor.Green }.sumBy { it.count }
+                    val blueStarCount = stars.filter { it.color == StarColor.Blue }.sumBy { it.count }
+                    val purpleStarCount = stars.filter { it.color == StarColor.Purple }.sumBy { it.count }
 
                     appendStarSpan(builder, purpleStarCount, view.context, R.style.StarSpan_Purple)
                     appendStarSpan(builder, blueStarCount, view.context, R.style.StarSpan_Blue)
