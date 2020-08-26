@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.bookmarks2
 
 import android.content.Intent
 import android.util.Log
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -14,6 +15,7 @@ import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
+import com.suihan74.satena.scenes.bookmarks2.dialog.PostStarDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
@@ -31,11 +33,17 @@ class BookmarksViewModel(
 ) : ViewModel(),
         BookmarkMenuDialog.Listener,
         ReportDialog.Listener,
-        UserTagSelectionDialog.Listener
+        UserTagSelectionDialog.Listener,
+        PostStarDialog.Listener
 {
     private val DIALOG_REPORT by lazy { "DIALOG_REPORT" }
 
     private val DIALOG_SELECT_USER_TAG by lazy { "DIALOG_SELECT_USER_TAG" }
+
+    private val DIALOG_POST_STAR by lazy { "DIALOG_POST_STAR" }
+
+    var fragmentManager : FragmentManager? = null
+        private set
 
     val entry
         get() = repository.entry
@@ -110,7 +118,7 @@ class BookmarksViewModel(
     ) = viewModelScope.launch {
         try {
             loadAction.invoke()
-            init(true, onError)
+            init(fragmentManager, true, onError)
         }
         catch (e: Throwable) {
             withContext(Dispatchers.Main) {
@@ -167,7 +175,9 @@ class BookmarksViewModel(
     }
 
     /** 初期化 */
-    fun init(loading: Boolean, onError: CompletionHandler? = null, onFinally: (()->Unit)? = null) = viewModelScope.launch {
+    fun init(fragmentManager: FragmentManager?, loading: Boolean, onError: CompletionHandler? = null, onFinally: (()->Unit)? = null) = viewModelScope.launch {
+        this@BookmarksViewModel.fragmentManager = fragmentManager
+
         try {
             ignoredEntryRepository.load(forceUpdate = true)
             muteWords = ignoredEntryRepository.ignoredEntries
@@ -397,6 +407,22 @@ class BookmarksViewModel(
         repository.userStarsLiveData.load()
     }
 
+    /** ブコメにスターをつける(必要なら送信前にダイアログを表示する) */
+    fun postStarDialog(
+        bookmark: Bookmark,
+        color: StarColor,
+        quote: String = ""
+    ) {
+        if (repository.usePostStarDialog) {
+            val fragmentManager = fragmentManager ?: return
+            val dialog = PostStarDialog.createInstance(bookmark, color, quote)
+            dialog.show(fragmentManager, DIALOG_POST_STAR)
+        }
+        else {
+            postStar(bookmark, color, quote)
+        }
+    }
+
     /** ブクマを通報 */
     fun reportBookmark(
         report: Report,
@@ -521,6 +547,25 @@ class BookmarksViewModel(
 
     override suspend fun reloadUserTags() {
         loadUserTags()
+    }
+
+    // --- PostStarDialogの処理 --- //
+
+    override fun onPostStar(dialog: PostStarDialog, bookmark: Bookmark, starColor: StarColor, quote: String) {
+        val activity = dialog.requireActivity()
+
+        postStar(
+            bookmark,
+            starColor,
+            quote
+        ).invokeOnCompletion { e ->
+            if (e == null) {
+                activity.showToast(R.string.msg_post_star_succeeded, bookmark.user)
+            }
+            else {
+                activity.showToast(R.string.msg_post_star_failed, bookmark.user)
+            }
+        }
     }
 
     // ------- //

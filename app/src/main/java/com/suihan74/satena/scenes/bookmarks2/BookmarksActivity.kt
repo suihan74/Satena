@@ -84,7 +84,8 @@ class BookmarksActivity :
                 applicationContext,
                 HatenaClient,
                 MastodonClientHolder
-            )
+            ),
+            prefs = SafeSharedPreferences.create(this)
         )
 
         val factory = BookmarksViewModel.Factory(
@@ -193,7 +194,7 @@ class BookmarksActivity :
             }
 
             if (state == NetworkReceiver.State.CONNECTED) {
-                viewModel.init(true)
+                viewModel.init(supportFragmentManager, true)
             }
         }
     }
@@ -291,6 +292,7 @@ class BookmarksActivity :
         }
 
         viewModel.init(
+            fragmentManager = supportFragmentManager,
             loading = firstLaunching,
             onError = onError,
             onFinally = onFinally

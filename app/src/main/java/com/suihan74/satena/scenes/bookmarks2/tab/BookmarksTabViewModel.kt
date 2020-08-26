@@ -1,10 +1,19 @@
 package com.suihan74.satena.scenes.bookmarks2.tab
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.view.View
+import android.widget.ImageButton
+import androidx.appcompat.widget.TooltipCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
@@ -83,6 +92,48 @@ abstract class BookmarksTabViewModel : ViewModel() {
     /** リストを指定ブクマまでスクロールする */
     fun scrollTo(bookmark: Bookmark) =
         onScrollToBookmarkListener?.invoke(bookmark)
+
+
+    /** スターをつけるボタンを設定 */
+    fun initializeAddStarButton(
+        context: Context,
+        lifecycleOwner: LifecycleOwner,
+        addStarButton: ImageButton,
+        bookmark: Bookmark
+    ) {
+        if (useAddStarPopupMenu &&
+            bookmark.comment.isNotBlank() &&
+            activityViewModel.signedIn.value == true
+        ) {
+            addStarButton.visibility = View.VISIBLE
+            TooltipCompat.setTooltipText(addStarButton, context.getString(R.string.add_star_popup_desc))
+            addStarButton.setOnClickListener {
+                val popup = AddStarPopupMenu(context).apply {
+                    observeUserStars(
+                        lifecycleOwner,
+                        activityViewModel.repository.userStarsLiveData
+                    )
+
+                    setOnClickAddStarListener { color ->
+                        activityViewModel.postStarDialog(bookmark, color, "")
+                    }
+
+                    setOnClickPurchaseStarsListener {
+                        // カラースター購入ページを開く
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.hatena.ne.jp/shop/star"))
+                        context.startActivity(intent)
+                        dismiss()
+                    }
+                }
+                popup.showAsDropDown(addStarButton)
+            }
+        }
+        else {
+            addStarButton.visibility = View.GONE
+        }
+    }
+
+    // ------ //
 
     class Factory (
         private val bookmarksTabType: BookmarksTabType,

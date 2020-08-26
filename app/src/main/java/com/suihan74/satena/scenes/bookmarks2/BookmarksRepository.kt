@@ -2,8 +2,10 @@ package com.suihan74.satena.scenes.bookmarks2
 
 import androidx.lifecycle.LiveData
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.lock
 import kotlinx.coroutines.*
@@ -11,7 +13,8 @@ import kotlinx.coroutines.*
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookmarksRepository(
     private val client: HatenaClient,
-    private val accountLoader: AccountLoader
+    private val accountLoader: AccountLoader,
+    private val prefs: SafeSharedPreferences<PreferenceKey>
 ) {
     /** エントリ情報が正しく設定されているか */
     val isInitialized : Boolean get() =
@@ -69,6 +72,11 @@ class BookmarksRepository(
             entry,
             this
         )
+    }
+
+    /** スター送信前に確認する */
+    val usePostStarDialog by lazy {
+        prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
     }
 
     /** リポジトリ初期化 */
