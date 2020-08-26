@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Star
+import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
@@ -13,32 +15,42 @@ import com.suihan74.utilities.getObject
 import com.suihan74.utilities.putObject
 
 class BookmarkMenuDialog : DialogFragment() {
-    private lateinit var bookmark : Bookmark
-
     companion object {
-        fun createInstance(bookmark: Bookmark, signedIn: Boolean?) = BookmarkMenuDialog().apply {
+        fun createInstance(
+            bookmark: Bookmark,
+            starsEntry: StarsEntry?,
+            userSignedIn: String?
+        ) = BookmarkMenuDialog().apply {
             arguments = Bundle().apply {
                 putObject(ARG_BOOKMARK, bookmark)
-                putBoolean(ARG_SIGNED_IN, signedIn == true)
+                putObject(ARG_STARS_ENTRY, starsEntry)
+                putString(ARG_USER_SIGNED_IN, userSignedIn)
             }
         }
 
         private const val ARG_BOOKMARK = "ARG_BOOKMARK"
-        private const val ARG_SIGNED_IN = "ARG_SIGNED_IN"
+        private const val ARG_STARS_ENTRY = "ARG_STARS_ENTRY"
+        private const val ARG_USER_SIGNED_IN = "ARG_USER_SIGNED_IN"
     }
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-//        val listener = parentFragment as? Listener ?: activity as? Listener
         val activity = requireActivity() as BookmarksActivity
         val listener = activity.viewModel as Listener
-        bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
+
+        val args = requireArguments()
+
+        val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
+
+        val userSignedIn = args.getString(ARG_USER_SIGNED_IN)
+        val signedIn = !userSignedIn.isNullOrBlank()
+
+        val starsEntry = args.getObject<StarsEntry>(ARG_STARS_ENTRY)
+        val userStar = starsEntry?.allStars?.firstOrNull { it.user == userSignedIn }
 
         val titleView = LayoutInflater.from(context).inflate(R.layout.dialog_title_bookmark, null).apply {
             setCustomTitle(bookmark)
         }
-
-        val signedIn = requireArguments().getBoolean(ARG_SIGNED_IN)
 
         val items = buildList {
             val dialog = this@BookmarkMenuDialog
@@ -56,6 +68,10 @@ class BookmarkMenuDialog : DialogFragment() {
                 }
             }
             add(R.string.bookmark_user_tags to { listener.onSetUserTag(dialog, bookmark.user) })
+
+            if (userStar != null) {
+                add(R.string.bookmark_delete_star to { listener.onDeleteStar(dialog, bookmark, userStar) })
+            }
         }
 
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
@@ -79,5 +95,7 @@ class BookmarkMenuDialog : DialogFragment() {
         fun onReportBookmark(dialog: BookmarkMenuDialog, bookmark: Bookmark)
         /** ユーザータグをつける */
         fun onSetUserTag(dialog: BookmarkMenuDialog, user: String)
+        /** スターを取り消す */
+        fun onDeleteStar(dialog: BookmarkMenuDialog, bookmark: Bookmark, star: Star)
     }
 }

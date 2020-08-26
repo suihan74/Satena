@@ -515,6 +515,10 @@ class BookmarksViewModel(
             .showAllowingStateLoss(activity.supportFragmentManager, DIALOG_SELECT_USER_TAG)
     }
 
+    override fun onDeleteStar(dialog: BookmarkMenuDialog, bookmark: Bookmark, star: Star) {
+        deleteStarDialog(bookmark, star)
+    }
+
     // --- ReportDialogの処理 --- //
 
     override fun onReportBookmark(dialog: ReportDialog, model: ReportDialog.Model) {

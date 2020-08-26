@@ -462,7 +462,8 @@ class BookmarksActivity :
     }
 
     fun onBookmarkLongClicked(bookmark: Bookmark): Boolean {
-        val dialog = BookmarkMenuDialog.createInstance(bookmark, viewModel.signedIn.value)
+        val starsEntry = viewModel.repository.getStarsEntryTo(bookmark.user)
+        val dialog = BookmarkMenuDialog.createInstance(bookmark, starsEntry, viewModel.repository.userSignedIn)
         dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_BOOKMARK_MENU)
         return true
     }

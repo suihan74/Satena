@@ -115,6 +115,7 @@
     <string name="bookmark_unignore">ユーザー非表示を解除</string>
     <string name="bookmark_report">通報する</string>
     <string name="bookmark_user_tags">ユーザータグ</string>
+    <string name="bookmark_delete_star">スターを取り消す</string>
 
     <!-- 「あとで読む」エントリを「読んだ」したときの挙動 -->
     <string name="entry_read_action_silent">無言ブクマ</string>

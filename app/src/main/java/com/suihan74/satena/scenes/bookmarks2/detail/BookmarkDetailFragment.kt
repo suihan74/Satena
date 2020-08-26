@@ -353,7 +353,7 @@ class BookmarkDetailFragment :
 
         // メニューボタン
         view.menu_button.setOnClickListener {
-            val dialog = BookmarkMenuDialog.createInstance(viewModel.bookmark, activityViewModel.signedIn.value)
+            val dialog = BookmarkMenuDialog.createInstance(viewModel.bookmark, viewModel.starsToUser.value, activityViewModel.repository.userSignedIn)
             dialog.showAllowingStateLoss(childFragmentManager, DIALOG_BOOKMARK_MENU)
         }
 
