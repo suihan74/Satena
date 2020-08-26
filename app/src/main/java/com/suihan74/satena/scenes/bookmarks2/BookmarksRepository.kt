@@ -371,6 +371,22 @@ class BookmarksRepository(
             task = null
         }
 
+        /** 特定のブコメに対するスター情報を再読み込み */
+        suspend fun update(bookmark: Bookmark, onError: ((Throwable)->Unit)? = null) {
+            try {
+                val result = client.getStarsEntryAsync(bookmark.getBookmarkUrl(entry)).await()
+                repository.setStarsEntryTo(bookmark.user, result)
+
+                val old = value ?: emptyList()
+                val new = old.filterNot { it.url == result.url }.plus(result)
+
+                postValue(new)
+            }
+            catch (e: Throwable) {
+                onError?.invoke(e)
+            }
+        }
+
         /** スター情報を再読み込み */
         fun updateAsync(forceUpdate: Boolean = false) : Deferred<List<StarsEntry>> {
             task?.cancel()

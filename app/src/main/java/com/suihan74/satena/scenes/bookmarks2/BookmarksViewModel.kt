@@ -404,6 +404,7 @@ class BookmarksViewModel(
         quote: String = ""
     ) = viewModelScope.launch {
         repository.postStar(bookmark, color, quote)
+        repository.allStarsLiveData.update(bookmark)
         repository.userStarsLiveData.load()
     }
 

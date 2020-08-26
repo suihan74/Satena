@@ -14,9 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.hatenaLib.BookmarksEntry
-import com.suihan74.hatenaLib.StarColor
+import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
@@ -64,10 +62,7 @@ open class BookmarksAdapter(
         override fun equals(other: Any?): Boolean {
             if (other !is Entity) return false
 
-            return bookmark.user == other.bookmark.user &&
-                    bookmark.comment == other.bookmark.comment &&
-                    bookmark.tags.contentsEquals(other.bookmark.tags) &&
-                    bookmark.starCount.contentsEquals(other.bookmark.starCount) &&
+            return bookmark.same(other.bookmark) &&
                     isIgnored == other.isIgnored &&
                     mentions.contentsEquals(other.mentions) &&
                     userTags.contentsEquals(other.userTags)
@@ -187,6 +182,32 @@ open class BookmarksAdapter(
         })
 
         submitList(newStates)
+    }
+
+    /** スター情報を更新 */
+    fun updateStar(starEntries: List<StarsEntry>) {
+        var updated = false
+        val newStates = RecyclerState.makeStatesWithFooter(
+            currentList.mapNotNull { if (it.type == RecyclerType.BODY) it.body else null }
+                .map { entity ->
+                    val b = entity.bookmark.copy(
+                        starCount = starEntries.firstOrNull { s ->
+                            s.url.contains("/${entity.bookmark.user}/")
+                        }
+                            ?.allStars
+                            ?.groupBy { s -> s.color }
+                            ?.map { Star(user = "", quote = "", color = it.key, count = it.value.sumBy { s -> s.count }) }
+                    )
+                    if (!entity.bookmark.same(b)) {
+                        updated = true
+                    }
+                    entity.copy(bookmark = b)
+                }
+        )
+
+        if (updated) {
+            submitList(newStates)
+        }
     }
 
     /** ブクマリストアイテム */

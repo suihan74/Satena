@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.NotFoundException
@@ -16,6 +17,7 @@ import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
+import kotlinx.coroutines.launch
 
 class BookmarksTabFragment :
     Fragment()
@@ -156,6 +158,13 @@ class BookmarksTabFragment :
                 val ignoredUsers = activityViewModel.ignoredUsers.value
                 val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
                 bookmarksAdapter.setBookmarks(bookmarks, bookmarksEntry, it, ignoredUsers, displayMutedMention)
+            }
+        }
+
+        // スター数の変化を監視する
+        activityViewModel.repository.allStarsLiveData.observe(viewLifecycleOwner) {
+            lifecycleScope.launch {
+                bookmarksAdapter.updateStar(it)
             }
         }
 
