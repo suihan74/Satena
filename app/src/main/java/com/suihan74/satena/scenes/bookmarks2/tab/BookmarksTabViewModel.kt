@@ -5,13 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.Job
 
 /** タブごとに表示内容を変更するためBookmarksTabViewModelを継承して必要なメソッドを埋める */
 abstract class BookmarksTabViewModel : ViewModel() {
-    protected lateinit var bookmarksViewModel: BookmarksViewModel
+    lateinit var activityViewModel: BookmarksViewModel
         private set
 
     protected lateinit var preferences: SafeSharedPreferences<PreferenceKey>
@@ -36,7 +38,7 @@ abstract class BookmarksTabViewModel : ViewModel() {
     open fun init() {
         bookmarks.observeForever {
             // サインインしているユーザーのブクマを取得する
-            bookmarksViewModel.repository.let { repo ->
+            activityViewModel.repository.let { repo ->
                 val user = repo.userSignedIn
                 if (user != null) {
                     signedUserBookmark.postValue(updateSignedUserBookmark(user))
@@ -82,15 +84,24 @@ abstract class BookmarksTabViewModel : ViewModel() {
     fun scrollTo(bookmark: Bookmark) =
         onScrollToBookmarkListener?.invoke(bookmark)
 
-
     class Factory (
+        private val bookmarksTabType: BookmarksTabType,
         private val bookmarksViewModel: BookmarksViewModel,
         private val preferences: SafeSharedPreferences<PreferenceKey>
     ) : ViewModelProvider.NewInstanceFactory() {
+        val key : String by lazy {
+            BookmarksActivity.getTabViewModelKey(bookmarksTabType)
+        }
+
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) =
-            (modelClass.newInstance() as BookmarksTabViewModel).apply {
-                bookmarksViewModel = this@Factory.bookmarksViewModel
+            when (bookmarksTabType) {
+                BookmarksTabType.POPULAR -> PopularTabViewModel()
+                BookmarksTabType.RECENT -> RecentTabViewModel()
+                BookmarksTabType.ALL -> AllBookmarksTabViewModel()
+                BookmarksTabType.CUSTOM -> CustomTabViewModel()
+            }.apply {
+                activityViewModel = this@Factory.bookmarksViewModel
                 preferences = this@Factory.preferences
             } as T
     }

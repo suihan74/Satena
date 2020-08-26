@@ -21,7 +21,7 @@ class CustomTabViewModel : BookmarksTabViewModel() {
         super.init()
         reloadSettings()
 
-        bookmarksViewModel.bookmarksRecent.observeForever {
+        activityViewModel.bookmarksRecent.observeForever {
             reloadBookmarks()
         }
 
@@ -29,14 +29,14 @@ class CustomTabViewModel : BookmarksTabViewModel() {
             reloadBookmarks()
         }
 
-        bookmarksViewModel.userTags.observeForever {
+        activityViewModel.userTags.observeForever {
             reloadSettings()
         }
     }
 
     /** 設定を再ロードする */
     private fun reloadSettings() {
-        val tags = bookmarksViewModel.userTags.value ?: emptyList()
+        val tags = activityViewModel.userTags.value ?: emptyList()
         val activeTagIds = preferences.get<List<Int>>(PreferenceKey.CUSTOM_BOOKMARKS_ACTIVE_TAG_IDS)
         val activeTags = activeTagIds.mapNotNull { id ->
             tags.firstOrNull { t -> t.userTag.id == id }
@@ -56,7 +56,7 @@ class CustomTabViewModel : BookmarksTabViewModel() {
     }
 
     private fun fixActiveTagsError(activeTagIds: List<Int>) = viewModelScope.launch {
-        val tags = bookmarksViewModel.userTags.value ?: return@launch
+        val tags = activityViewModel.userTags.value ?: return@launch
         val fixedIds = activeTagIds.filter { id -> tags.any { t -> id == t.userTag.id } }
         if (fixedIds.size != activeTagIds.size) {
             preferences.edit {
@@ -93,29 +93,29 @@ class CustomTabViewModel : BookmarksTabViewModel() {
     /** リストを再生成する */
     private fun reloadBookmarks() {
         val set = settingsLiveData.value ?: return
-        val list = bookmarksViewModel.keywordFilter(
-            bookmarksViewModel.bookmarksRecent.value
+        val list = activityViewModel.keywordFilter(
+            activityViewModel.bookmarksRecent.value
             ?: return
         )
 
-        val users = bookmarksViewModel.taggedUsers.value ?: emptyList()
+        val users = activityViewModel.taggedUsers.value ?: emptyList()
 
-        val muteWords = bookmarksViewModel.muteWords
-        val muteUsers = bookmarksViewModel.ignoredUsers.value
+        val muteWords = activityViewModel.muteWords
+        val muteUsers = activityViewModel.ignoredUsers.value
 
         val filtered = list.filter {
             set.shown(it, users, muteWords, muteUsers)
         }
 
         bookmarks.postValue(
-            bookmarksViewModel.keywordFilter(filtered)
+            activityViewModel.keywordFilter(filtered)
         )
     }
 
-    override fun updateBookmarks() = bookmarksViewModel.updateRecent()
-    override fun loadNextBookmarks() = bookmarksViewModel.loadNextRecent()
+    override fun updateBookmarks() = activityViewModel.updateRecent()
+    override fun loadNextBookmarks() = activityViewModel.loadNextRecent()
     override fun updateSignedUserBookmark(user: String) =
-        bookmarksViewModel.bookmarksEntry.value?.bookmarks?.firstOrNull { it.user == user }
+        activityViewModel.bookmarksEntry.value?.bookmarks?.firstOrNull { it.user == user }
 
 
     /** カスタムタブの表示設定 */

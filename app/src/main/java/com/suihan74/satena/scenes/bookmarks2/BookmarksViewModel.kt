@@ -1,25 +1,41 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.R
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.UserAndTags
+import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
+import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
+import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.lock
+import com.suihan74.utilities.showAllowingStateLoss
+import com.suihan74.utilities.showToast
 import kotlinx.coroutines.*
 
 class BookmarksViewModel(
     val repository: BookmarksRepository,
     private val userTagRepository: UserTagRepository,
     private val ignoredEntryRepository: IgnoredEntryRepository
-) : ViewModel() {
+) : ViewModel(),
+        BookmarkMenuDialog.Listener,
+        ReportDialog.Listener,
+        UserTagSelectionDialog.Listener
+{
+    private val DIALOG_REPORT by lazy { "DIALOG_REPORT" }
+
+    private val DIALOG_SELECT_USER_TAG by lazy { "DIALOG_SELECT_USER_TAG" }
 
     val entry
         get() = repository.entry
@@ -405,7 +421,110 @@ class BookmarksViewModel(
     /** ユーザーのブクマを取得 */
     val userBookmark : Bookmark? get() = repository.userBookmark
 
-    /** ViewModelProvidersを使用する際の依存性注入 */
+    // --- BookmarkMenuDialogの処理 --- //
+
+    override fun isIgnored(dialog: BookmarkMenuDialog, user: String) =
+        ignoredUsers.value.contains(user)
+
+    override fun onShowEntries(dialog: BookmarkMenuDialog, user: String) {
+        val activity = dialog.requireActivity()
+        val intent = Intent(activity, EntriesActivity::class.java).apply {
+            putExtra(EntriesActivity.EXTRA_USER, user)
+        }
+        activity.startActivity(intent)
+    }
+
+    override fun onIgnoreUser(dialog: BookmarkMenuDialog, user: String, ignore: Boolean) {
+        val activity = dialog.requireActivity()
+        setUserIgnoreState(
+            user,
+            ignore,
+            onSuccess = {
+                val msgId =
+                    if (ignore) R.string.msg_ignore_user_succeeded
+                    else R.string.msg_unignore_user_succeeded
+                activity.showToast(msgId, user)
+            },
+            onError = { e ->
+                val msgId =
+                    if (ignore) R.string.msg_ignore_user_failed
+                    else R.string.msg_unignore_user_failed
+                activity.showToast(msgId, user)
+                Log.e("ignoreUser", "failed: user = $user")
+                e.printStackTrace()
+            }
+        )
+    }
+
+    override fun onReportBookmark(dialog: BookmarkMenuDialog, bookmark: Bookmark) {
+        val activity = dialog.requireActivity()
+        ReportDialog.createInstance(entry, bookmark)
+            .showAllowingStateLoss(activity.supportFragmentManager, DIALOG_REPORT)
+    }
+
+    override fun onSetUserTag(dialog: BookmarkMenuDialog, user: String) {
+        val activity = dialog.requireActivity()
+        UserTagSelectionDialog.createInstance(user)
+            .showAllowingStateLoss(activity.supportFragmentManager, DIALOG_SELECT_USER_TAG)
+    }
+
+    // --- ReportDialogの処理 --- //
+
+    override fun onReportBookmark(dialog: ReportDialog, model: ReportDialog.Model) {
+        val activity = dialog.requireActivity()
+        val user = model.report.bookmark.user
+        reportBookmark(
+            model.report,
+            onSuccess = {
+                if (model.ignoreAfterReporting && !ignoredUsers.value.contains(user)) {
+                    setUserIgnoreState(
+                        user,
+                        true,
+                        onSuccess = {
+                            activity.showToast(R.string.msg_report_and_ignore_succeeded, user)
+                        },
+                        onError = { e ->
+                            activity.showToast(R.string.msg_ignore_user_failed, user)
+                            Log.e("ignoreUser", "failed: user = $user")
+                            e.printStackTrace()
+                        }
+                    )
+                }
+                else {
+                    activity.showToast(R.string.msg_report_succeeded, user)
+                }
+            },
+            onError = { e ->
+                activity.showToast(R.string.msg_report_failed)
+                Log.e("onReportBookmark", "error user: $user")
+                e.printStackTrace()
+            }
+        )
+    }
+
+    // --- UserTagSelectionDialogの処理 --- //
+
+    override fun getUserTags() =
+        userTags.value ?: emptyList()
+
+    override suspend fun activateTags(user: String, activeTags: List<Tag>) {
+        activeTags.forEach { tag ->
+            tagUser(user, tag)
+        }
+    }
+
+    override suspend fun inactivateTags(user: String, inactiveTags: List<Tag>) {
+        inactiveTags.forEach { tag ->
+            unTagUser(user, tag)
+        }
+    }
+
+    override suspend fun reloadUserTags() {
+        loadUserTags()
+    }
+
+    // ------- //
+
     class Factory(
         private val repository: BookmarksRepository,
         private val userTagRepository: UserTagRepository,

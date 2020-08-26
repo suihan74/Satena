@@ -10,17 +10,12 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
-import com.suihan74.utilities.hideSoftInputMethod
-import com.suihan74.utilities.putObjectExtra
-import com.suihan74.utilities.showAllowingStateLoss
-import com.suihan74.utilities.showSoftInputMethod
-import com.suihan74.utilities.toVisibility
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
 
 class FloatingActionButtonsFragment :
@@ -28,14 +23,12 @@ class FloatingActionButtonsFragment :
     CustomTabSettingsDialog.Listener
 {
     /** BookmarksActivityのViewModel */
-    private val activityViewModel: BookmarksViewModel by lazy {
-        (requireActivity() as BookmarksActivity).viewModel
-    }
+    private val activityViewModel: BookmarksViewModel
+        get() = (requireActivity() as BookmarksActivity).viewModel
 
     /** BookmarksFragmentの状態管理用ViewModel */
-    private val fragmentViewModel: BookmarksFragmentViewModel by lazy {
-        ViewModelProvider((activity as BookmarksActivity).bookmarksFragment)[BookmarksFragmentViewModel::class.java]
-    }
+    private val fragmentViewModel: BookmarksFragmentViewModel
+        get() = (requireActivity() as BookmarksActivity).bookmarksFragment.viewModel
 
     /** 現在表示中のタブのViewModel */
     private val tabViewModel

@@ -5,13 +5,13 @@ import kotlinx.coroutines.Job
 class PopularTabViewModel : BookmarksTabViewModel() {
     override fun init() {
         super.init()
-        bookmarksViewModel.bookmarksPopular.observeForever {
+        activityViewModel.bookmarksPopular.observeForever {
             bookmarks.postValue(
-                bookmarksViewModel.filter(it)
+                activityViewModel.filter(it)
             )
         }
     }
 
-    override fun updateBookmarks() = bookmarksViewModel.updateDigest()
+    override fun updateBookmarks() = activityViewModel.updateDigest()
     override fun loadNextBookmarks() = Job()
 }
