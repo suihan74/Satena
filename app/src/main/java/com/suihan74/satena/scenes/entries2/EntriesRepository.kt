@@ -539,6 +539,11 @@ class EntriesRepository(
             }
         }
 
+        // 通知済みの最新バージョンを更新する
+        prefs.edit {
+            putLong(PreferenceKey.LAST_NOTICED_APP_UPDATE_VERSION, latestVersion)
+        }
+
         when (AppUpdateNoticeMode.fromInt(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
             // 機能追加アップデートだけを通知する
             AppUpdateNoticeMode.ADD_FEATURES -> {
