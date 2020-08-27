@@ -504,8 +504,9 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         bottom_search_view.visibility = View.GONE
 
         val tint = ColorStateList.valueOf(getThemeColor(R.attr.textColor))
-        val menuItems = viewModel.bottomBarItems.map { item ->
-            item.toMenuItem(bottomAppBar.menu, tint)
+        val menuItems = viewModel.bottomBarItems.mapNotNull { item ->
+            if (item.requireSignedIn && viewModel.signedIn.value != true) null
+            else item.toMenuItem(bottomAppBar.menu, tint)
         }
         bottomAppBar.setOnMenuItemClickListener { clicked ->
             val idx = menuItems.indexOf(clicked)
@@ -515,12 +516,38 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
             }
             true
         }
+
+        setOnBottomMenuItemClickListener(::onBasicBottomMenuItemClicked)
     }
 
     /** ボトムバーを使用する設定なら取得する(使用しない設定ならnullが返る) */
     fun initializeBottomAppBar() : BottomAppBar? =
         if (viewModel.isBottomLayoutMode) bottom_app_bar?.also { clearBottomAppBarState(it) }
         else null
+
+    /** (基本の)ボトムバーアイテムを選択した際の処理 */
+    private fun onBasicBottomMenuItemClicked(item: UserBottomItem) = when (item) {
+        UserBottomItem.SCROLL_TO_TOP -> {
+            val fragment = supportFragmentManager.get<EntriesFragment>()
+            fragment?.scrollToTop()
+            showAppBar()
+        }
+
+        UserBottomItem.MYBOOKMARKS -> {
+            showCategory(Category.MyBookmarks)
+        }
+
+        UserBottomItem.NOTICE -> {
+            showCategory(Category.Notices)
+        }
+
+        UserBottomItem.PREFERENCES -> {
+            val intent = Intent(this, PreferencesActivity::class.java)
+            startActivity(intent)
+        }
+
+        else -> {}
+    }
 
     // --- FAB表示アニメーション ---
 

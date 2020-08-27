@@ -10,7 +10,8 @@ import com.suihan74.satena.R
 enum class UserBottomItem(
     val id: Int,
     val iconId: Int,
-    val textId: Int
+    val textId: Int,
+    val requireSignedIn: Boolean = false
 ) {
     SCROLL_TO_TOP(0,
         R.drawable.ic_vertical_align_top,
@@ -19,12 +20,14 @@ enum class UserBottomItem(
 
     NOTICE(1,
         R.drawable.ic_notifications,
-        R.string.notices_desc
+        R.string.notices_desc,
+        requireSignedIn = true
     ),
 
     MYBOOKMARKS(2,
         R.drawable.ic_mybookmarks,
-        R.string.my_bookmarks_desc
+        R.string.my_bookmarks_desc,
+        requireSignedIn = true
     ),
 
     PREFERENCES(3,

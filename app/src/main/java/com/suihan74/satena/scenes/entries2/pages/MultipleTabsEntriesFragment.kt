@@ -12,7 +12,10 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.entries2.*
+import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesFragment
+import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
+import com.suihan74.satena.scenes.entries2.EntriesTabFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.setOnTabLongClickListener
 import com.suihan74.utilities.showToast
@@ -124,19 +127,12 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
         tabLayout.addOnTabSelectedListener(listener)
         tabLayout.setOnTabLongClickListener(longClickListener)
 
-        // 下部メニューの作成
-        activity.setOnBottomMenuItemClickListener { item ->
-            when (item) {
-                UserBottomItem.SCROLL_TO_TOP -> {
-                    val currentPos = entriesTabPager.currentItem
-                    scrollContentToTop(currentPos)
-                    activity.showAppBar()
-                }
-
-                else -> {}
-            }
-        }
-
         return true
+    }
+
+    override fun scrollToTop() {
+        val entriesTabPager = view?.entries_tab_pager ?: return
+        val currentPos = entriesTabPager.currentItem
+        scrollContentToTop(currentPos)
     }
 }

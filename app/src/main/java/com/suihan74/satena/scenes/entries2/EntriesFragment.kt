@@ -146,7 +146,12 @@ abstract class EntriesFragment : Fragment() {
     }
 
     /**
+     * BottomAppBarやTabLayoutをフラグメントに合わせた内容に更新する
+     *
      * タブレイアウトの表示状態を返す
      */
     open fun updateActivityAppBar(activity: EntriesActivity, tabLayout: TabLayout, bottomAppBar: BottomAppBar?) : Boolean = false
+
+    /** 一番上までスクロール */
+    abstract fun scrollToTop()
 }
