@@ -21,7 +21,7 @@ import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.activity_entries2.*
 
-class HatenaEntriesFragment : TwinTabsEntriesFragment() {
+class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
     companion object {
         fun createInstance(category: Category) = HatenaEntriesFragment().withArguments {
             putEnum(ARG_CATEGORY, category)

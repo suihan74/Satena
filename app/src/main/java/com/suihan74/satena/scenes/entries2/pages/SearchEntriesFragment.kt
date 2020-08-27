@@ -24,7 +24,7 @@ import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
-class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Listener {
+class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment.Listener {
     companion object {
         fun createInstance() = SearchEntriesFragment().withArguments {
             putEnum(ARG_CATEGORY, Category.Search)

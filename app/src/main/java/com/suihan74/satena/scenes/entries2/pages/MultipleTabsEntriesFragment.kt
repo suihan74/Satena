@@ -18,7 +18,7 @@ import com.suihan74.utilities.setOnTabLongClickListener
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
-abstract class TwinTabsEntriesFragment : EntriesFragment() {
+abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     private var binding : FragmentEntries2Binding? = null
 
     override fun onCreateView(
@@ -29,7 +29,7 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
         super.onCreateView(inflater, container, savedInstanceState)
 
         val binding = DataBindingUtil.inflate<FragmentEntries2Binding>(inflater, R.layout.fragment_entries2, container, false).apply {
-            lifecycleOwner = this@TwinTabsEntriesFragment
+            lifecycleOwner = this@MultipleTabsEntriesFragment
             vm = viewModel
         }
         this.binding = binding

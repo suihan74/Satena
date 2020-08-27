@@ -24,7 +24,7 @@ import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 
-class Memorial15Fragment : TwinTabsEntriesFragment() {
+class Memorial15Fragment : MultipleTabsEntriesFragment() {
     companion object {
         fun createInstance() = Memorial15Fragment().withArguments {
             putEnum(ARG_CATEGORY, Category.Memorial15th)

@@ -23,7 +23,7 @@ import kotlinx.android.synthetic.main.activity_entries2.*
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 
-class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
+class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
     companion object {
         fun createInstance() = MyBookmarksEntriesFragment().withArguments {
             putEnum(ARG_CATEGORY, Category.MyBookmarks)

@@ -8,7 +8,7 @@ import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 
-class StarsFragment : TwinTabsEntriesFragment() {
+class StarsFragment : MultipleTabsEntriesFragment() {
     companion object {
         fun createInstance() = StarsFragment().withArguments {
             putEnum(ARG_CATEGORY, Category.Stars)

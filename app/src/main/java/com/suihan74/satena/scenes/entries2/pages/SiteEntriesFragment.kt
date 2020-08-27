@@ -14,7 +14,7 @@ import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.activity_entries2.*
 
-class SiteEntriesFragment : TwinTabsEntriesFragment() {
+class SiteEntriesFragment : MultipleTabsEntriesFragment() {
     companion object {
         fun createInstance(siteUrl: String) = SiteEntriesFragment().withArguments {
             putEnum(ARG_CATEGORY, Category.Site)
