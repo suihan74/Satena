@@ -102,6 +102,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
                 if (activity.viewModel.isBottomLayoutMode) {
                     if (searchView.visibility == View.VISIBLE) {
                         searchView.visibility = View.GONE
+                        viewModel.isSearchViewExpanded = false
                         onBackPressedCallback?.isEnabled = detectBackPressedCallbackStatus(viewModel)
                     }
                 }
@@ -139,6 +140,7 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
                 requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
                 clearFocus()
             }
+            viewModel.isSearchViewExpanded = !isIconified
         }
         else {
             val color = context.getThemeColor(R.attr.textColor)
@@ -151,9 +153,9 @@ class MyBookmarksEntriesFragment : TwinTabsEntriesFragment() {
                 requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
                 clearFocus()
             }
+            viewModel.isSearchViewExpanded = false
         }
 
-        viewModel.isSearchViewExpanded = !isIconified
 
         // ツールバーアイコン長押しで説明を表示する
         findViewById<ImageView>(androidx.appcompat.R.id.search_button)?.let {
