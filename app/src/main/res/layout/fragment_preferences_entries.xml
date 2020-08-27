@@ -6,6 +6,9 @@
         <variable
                 name="vm"
                 type="com.suihan74.satena.scenes.preferences.pages.PreferencesEntriesViewModel" />
+        <variable
+                name="fragmentManager"
+                type="androidx.fragment.app.FragmentManager" />
     </data>
 
     <ScrollView
@@ -61,10 +64,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
-            <com.suihan74.satena.scenes.preferences.UserBottomItemsSetter
+            <com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
                     android:visibility="@{vm.bottomLayoutMode}"
                     items="@{vm.bottomBarButtons}"
-                    android:layout_marginHorizontal="16dp"
+                    fragmentManager="@{fragmentManager}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
 

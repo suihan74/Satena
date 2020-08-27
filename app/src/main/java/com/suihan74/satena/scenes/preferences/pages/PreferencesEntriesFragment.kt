@@ -36,15 +36,11 @@ class PreferencesEntriesFragment :
         private const val DIALOG_CATEGORIES_MODE = "DIALOG_CATEGORIES_MODE"
     }
 
-    private lateinit var viewModel : PreferencesEntriesViewModel
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
+    val viewModel : PreferencesEntriesViewModel by lazy {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
         val factory = PreferencesEntriesViewModel.Factory(prefs, historyPrefs)
-        viewModel = ViewModelProvider(this, factory)[PreferencesEntriesViewModel::class.java]
+        ViewModelProvider(this, factory)[PreferencesEntriesViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -55,6 +51,7 @@ class PreferencesEntriesFragment :
             false
         ).apply {
             vm = viewModel
+            fragmentManager = childFragmentManager
             lifecycleOwner = viewLifecycleOwner
         }
         val view = binding.root

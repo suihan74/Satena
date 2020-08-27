@@ -6,12 +6,13 @@ import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
+import com.suihan74.satena.scenes.preferences.bottomBar.BottomBarItemSelectionDialog
 import com.suihan74.utilities.SafeSharedPreferences
 
 class PreferencesEntriesViewModel(
     prefs: SafeSharedPreferences<PreferenceKey>,
     historyPrefs: SafeSharedPreferences<EntriesHistoryKey>
-) : PreferencesViewModel(prefs) {
+) : PreferencesViewModel(prefs), BottomBarItemSelectionDialog.Listener {
 
     /** レイアウトモード */
     val bottomLayoutMode = createLiveData<Boolean>(
@@ -85,6 +86,23 @@ class PreferencesEntriesViewModel(
     val entryReadActionBoilerPlate = createLiveData<String>(
         PreferenceKey.ENTRY_READ_ACTION_BOILERPLATE
     )
+
+    /** ボトムバーの項目を追加・編集 */
+    override fun onSelectItem(position: Int, old: UserBottomItem?, new: UserBottomItem?) {
+        if (old == null && new == null) return
+        else if (new == null) {
+            bottomBarButtons.value = bottomBarButtons.value?.minus(old!!)
+        }
+        else if (old == null) {
+            bottomBarButtons.value = (bottomBarButtons.value ?: emptyList()).plus(new)
+        }
+        else {
+            bottomBarButtons.value = bottomBarButtons.value?.mapIndexed { idx, item ->
+                if (idx == position) new
+                else item
+            }
+        }
+    }
 
     class Factory(
         private val prefs: SafeSharedPreferences<PreferenceKey>,

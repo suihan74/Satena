@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.preferences
+package com.suihan74.satena.scenes.preferences.bottomBar
 
 import android.content.Context
 import android.content.res.ColorStateList
@@ -8,6 +8,7 @@ import android.view.MenuItem
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.MenuItemCompat
 import androidx.databinding.BindingAdapter
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.UserBottomItem
@@ -17,11 +18,18 @@ import kotlinx.android.synthetic.main.view_user_bottom_items_setter.view.*
 class UserBottomItemsSetter : CoordinatorLayout {
     companion object {
         @JvmStatic
-        @BindingAdapter("items")
-        fun setItems(instance: UserBottomItemsSetter, liveData: MutableLiveData<List<UserBottomItem>>?) {
+        @BindingAdapter("items", "fragmentManager")
+        fun setItems(
+            instance: UserBottomItemsSetter,
+            liveData: MutableLiveData<List<UserBottomItem>>?,
+            fragmentManager: FragmentManager?
+        ) {
             instance.itemsLiveData = liveData
+            instance.fragmentManager = fragmentManager
             instance.inflateButtons()
         }
+
+        const val DIALOG_USER_BOTTOM_ITEMS_SETTER = "DIALOG_USER_BOTTOM_ITEMS_SETTER"
     }
 
     constructor(context: Context) : this(context, null, 0)
@@ -54,6 +62,9 @@ class UserBottomItemsSetter : CoordinatorLayout {
         (screenWidthPx - rightMargin) / buttonWidthPx - numReserved
     }
 
+    /** ダイアログを表示するのに使用するfragmentManager */
+    private var fragmentManager : FragmentManager? = null
+
     /** 設定用のBottomAppBarにボタンを表示する */
     private fun inflateButtons() {
         val items = items.take(maxButtonsNum)
@@ -66,7 +77,10 @@ class UserBottomItemsSetter : CoordinatorLayout {
         items.forEachIndexed { i, item ->
             item.toMenuItem(bottomAppBar.menu, tint).apply {
                 setOnMenuItemClickListener {
-                    addItem(i, UserBottomItem.SCROLL_TO_TOP)
+                    fragmentManager?.let { fm ->
+                        val dialog = BottomBarItemSelectionDialog.createInstance(items, item)
+                        dialog.show(fm, DIALOG_USER_BOTTOM_ITEMS_SETTER)
+                    }
                     true
                 }
             }
@@ -79,7 +93,10 @@ class UserBottomItemsSetter : CoordinatorLayout {
                 MenuItemCompat.setIconTintList(this, tint)
                 setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
                 setOnMenuItemClickListener {
-                    addItem(items.size, UserBottomItem.PREFERENCES)
+                    fragmentManager?.let { fm ->
+                        val dialog = BottomBarItemSelectionDialog.createInstance(items)
+                        dialog.show(fm, DIALOG_USER_BOTTOM_ITEMS_SETTER)
+                    }
                     true
                 }
             }

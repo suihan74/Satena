@@ -130,7 +130,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             if (savedInstanceState == null) {
                 editingUrl.value = arguments?.getString(ARG_EDITING_URL) ?: ""
                 editingText.value = arguments?.getString(ARG_EDITING_TEXT) ?: ""
-                ignoreTarget.value = arguments?.selectEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.int } ?: IgnoreTarget.ENTRY
+                ignoreTarget.value = arguments?.getEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.int } ?: IgnoreTarget.ENTRY
                 positiveAction = positiveAction ?: this@IgnoredEntryDialogFragment.positiveAction
             }
         }
