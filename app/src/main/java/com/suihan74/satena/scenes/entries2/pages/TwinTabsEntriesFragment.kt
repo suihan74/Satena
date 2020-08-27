@@ -12,10 +12,7 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.entries2.EntriesFragment
-import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
-import com.suihan74.satena.scenes.entries2.EntriesTabFragment
+import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.setOnTabLongClickListener
 import com.suihan74.utilities.showToast
@@ -128,18 +125,15 @@ abstract class TwinTabsEntriesFragment : EntriesFragment() {
         tabLayout.setOnTabLongClickListener(longClickListener)
 
         // 下部メニューの作成
-        bottomAppBar?.let { appBar ->
-            appBar.inflateMenu(R.menu.entries_bottom_items_general)
-
-            appBar.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.scroll_to_top -> {
-                        val currentPos = entriesTabPager.currentItem
-                        scrollContentToTop(currentPos)
-                        activity.showAppBar()
-                    }
+        activity.setOnBottomMenuItemClickListener { item ->
+            when (item) {
+                UserBottomItem.SCROLL_TO_TOP -> {
+                    val currentPos = entriesTabPager.currentItem
+                    scrollContentToTop(currentPos)
+                    activity.showAppBar()
                 }
-                return@setOnMenuItemClickListener true
+
+                else -> {}
             }
         }
 

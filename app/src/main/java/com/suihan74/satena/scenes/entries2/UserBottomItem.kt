@@ -1,5 +1,9 @@
 package com.suihan74.satena.scenes.entries2
 
+import android.content.res.ColorStateList
+import android.view.Menu
+import android.view.MenuItem
+import androidx.core.view.MenuItemCompat
 import com.suihan74.satena.R
 
 /** ボトムバーに表示する項目 */
@@ -32,5 +36,13 @@ enum class UserBottomItem(
     CATEGORY(4,
         R.drawable.ic_baseline_category,
         R.string.categories_desc
-    ),
+    );
+
+    /** Menuに追加する */
+    fun toMenuItem(menu: Menu, tint: ColorStateList) : MenuItem =
+        menu.add(textId).apply {
+            setIcon(iconId)
+            MenuItemCompat.setIconTintList(this, tint)
+            setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+        }
 }

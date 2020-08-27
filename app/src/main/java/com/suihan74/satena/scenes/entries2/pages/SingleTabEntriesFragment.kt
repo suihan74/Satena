@@ -12,6 +12,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
+import com.suihan74.satena.scenes.entries2.UserBottomItem
 
 abstract class SingleTabEntriesFragment : EntriesFragment() {
     companion object {
@@ -67,17 +68,14 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
     /** EntriesActivityのタブと下部アプリバーをこのフラグメントの情報で更新する */
     override fun updateActivityAppBar(activity: EntriesActivity, tabLayout: TabLayout, bottomAppBar: BottomAppBar?) : Boolean {
         // 下部メニューの作成
-        bottomAppBar?.let { appBar ->
-            appBar.inflateMenu(R.menu.entries_bottom_items_general)
-
-            appBar.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.scroll_to_top -> {
-                        contentFragment?.scrollToTop()
-                        activity.showAppBar()
-                    }
+        activity.setOnBottomMenuItemClickListener { item ->
+            when (item) {
+                UserBottomItem.SCROLL_TO_TOP -> {
+                    contentFragment?.scrollToTop()
+                    activity.showAppBar()
                 }
-                return@setOnMenuItemClickListener true
+
+                else -> {}
             }
         }
         return false

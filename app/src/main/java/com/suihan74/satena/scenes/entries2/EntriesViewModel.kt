@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.entries2
 
-import android.content.Context
 import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,13 +7,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateInfo
-import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.isImmediateUpdateAllowed
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.TapEntryAction
-import kotlinx.android.synthetic.main.activity_entries2.*
 import kotlinx.coroutines.launch
 
 class EntriesViewModel(
@@ -87,6 +84,10 @@ class EntriesViewModel(
     /** カテゴリリストの表示形式 */
     val categoriesMode : CategoriesMode
         get() = repository.categoriesMode
+
+    /** ボトムバーの項目 */
+    val bottomBarItems : List<UserBottomItem>
+        get() = repository.bottomBarItems
 
     /** 初期化処理 */
     fun initialize(

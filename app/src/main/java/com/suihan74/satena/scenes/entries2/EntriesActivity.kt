@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
@@ -96,6 +97,18 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         get() =
             if (viewModel.isBottomLayoutMode) bottom_search_view
             else null
+
+    /**
+     * ボトムバーの項目がクリックされたときのリスナ
+     */
+    private var onBottomMenuItemClickListener : ((UserBottomItem)->Unit)? = null
+
+    /**
+     * ボトムバーの項目がクリックされたときのリスナを設定する
+     */
+    fun setOnBottomMenuItemClickListener(listener: ((UserBottomItem)->Unit)?) {
+        onBottomMenuItemClickListener = listener
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -489,6 +502,19 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         bottomAppBar.menu.clear()
         bottomAppBar.setOnMenuItemClickListener(null)
         bottom_search_view.visibility = View.GONE
+
+        val tint = ColorStateList.valueOf(getThemeColor(R.attr.textColor))
+        val menuItems = viewModel.bottomBarItems.map { item ->
+            item.toMenuItem(bottomAppBar.menu, tint)
+        }
+        bottomAppBar.setOnMenuItemClickListener { clicked ->
+            val idx = menuItems.indexOf(clicked)
+            if (idx != -1) {
+                val item = viewModel.bottomBarItems[idx]
+                onBottomMenuItemClickListener?.invoke(item)
+            }
+            true
+        }
     }
 
     /** ボトムバーを使用する設定なら取得する(使用しない設定ならnullが返る) */

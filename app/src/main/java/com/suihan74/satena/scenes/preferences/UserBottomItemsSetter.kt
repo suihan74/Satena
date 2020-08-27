@@ -8,6 +8,7 @@ import android.view.MenuItem
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.MenuItemCompat
 import androidx.databinding.BindingAdapter
+import androidx.lifecycle.MutableLiveData
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.utilities.getThemeColor
@@ -17,8 +18,8 @@ class UserBottomItemsSetter : CoordinatorLayout {
     companion object {
         @JvmStatic
         @BindingAdapter("items")
-        fun setItems(instance: UserBottomItemsSetter, items: List<UserBottomItem>?) {
-            instance.items = items ?: emptyList()
+        fun setItems(instance: UserBottomItemsSetter, liveData: MutableLiveData<List<UserBottomItem>>?) {
+            instance.itemsLiveData = liveData
             instance.inflateButtons()
         }
     }
@@ -35,20 +36,69 @@ class UserBottomItemsSetter : CoordinatorLayout {
     }
 
     /** 表示する項目 */
-    private var items: List<UserBottomItem> = emptyList()
+    private var itemsLiveData : MutableLiveData<List<UserBottomItem>>? = null
+    private val items: List<UserBottomItem>
+        get() = itemsLiveData?.value ?: emptyList()
 
+    /** 表示できるボタンの最大数 */
+    private val maxButtonsNum : Int by lazy {
+        val displayMetrics = context.resources.displayMetrics
+        val density = displayMetrics.density
+
+        val screenWidthPx = displayMetrics.widthPixels
+        val rightMargin = (96 * density).toInt()
+        val buttonWidthPx = (48 * density).toInt()
+
+        val numReserved = 2
+
+        (screenWidthPx - rightMargin) / buttonWidthPx - numReserved
+    }
+
+    /** 設定用のBottomAppBarにボタンを表示する */
     private fun inflateButtons() {
+        val items = items.take(maxButtonsNum)
+
         val bottomAppBar = this.bottom_app_bar
-        val tint = context.getThemeColor(R.attr.textColor)
-        items.forEach {
-            bottomAppBar.menu.add(it.textId).apply {
-                setIcon(it.iconId)
-                MenuItemCompat.setIconTintList(
-                    this,
-                    ColorStateList.valueOf(tint)
-                )
-                setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+        val tint = ColorStateList.valueOf(context.getThemeColor(R.attr.textColor))
+        bottomAppBar.menu.clear()
+
+        // 項目を編集する
+        items.forEachIndexed { i, item ->
+            item.toMenuItem(bottomAppBar.menu, tint).apply {
+                setOnMenuItemClickListener {
+                    addItem(i, UserBottomItem.SCROLL_TO_TOP)
+                    true
+                }
             }
         }
+
+        // 項目を追加する
+        if (maxButtonsNum - items.size > 0) {
+            bottomAppBar.menu.add("追加").apply {
+                setIcon(R.drawable.ic_baseline_add)
+                MenuItemCompat.setIconTintList(this, tint)
+                setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+                setOnMenuItemClickListener {
+                    addItem(items.size, UserBottomItem.PREFERENCES)
+                    true
+                }
+            }
+        }
+    }
+
+    /** アイテムを追加 */
+    private fun addItem(position: Int, item: UserBottomItem) {
+        // TODO: skeleton
+        val newItems =
+            if (position >= items.size) items.plus(item)
+            else items.mapIndexed { i, existed ->
+                if (i == position) item
+                else existed
+            }
+
+        itemsLiveData?.value = newItems
+
+        // ビューを更新
+        inflateButtons()
     }
 }

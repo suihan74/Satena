@@ -151,6 +151,10 @@ class EntriesRepository(
     val categoriesMode : CategoriesMode
         get() = CategoriesMode.fromInt(prefs.getInt(PreferenceKey.ENTRIES_CATEGORIES_MODE))
 
+    /** ボトムバーの項目 */
+    val bottomBarItems : List<UserBottomItem>
+        get() = prefs.get(PreferenceKey.ENTRIES_BOTTOM_ITEMS)
+
     /** サインインする */
     suspend fun signIn(forceUpdate: Boolean = false) {
         accountLoader.signInAccounts(forceUpdate)

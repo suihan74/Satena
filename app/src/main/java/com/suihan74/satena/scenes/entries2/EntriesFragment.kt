@@ -145,5 +145,8 @@ abstract class EntriesFragment : Fragment() {
         }
     }
 
+    /**
+     * タブレイアウトの表示状態を返す
+     */
     open fun updateActivityAppBar(activity: EntriesActivity, tabLayout: TabLayout, bottomAppBar: BottomAppBar?) : Boolean = false
 }
