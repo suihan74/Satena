@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.CategoriesMode
+import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
 
@@ -20,6 +21,11 @@ class PreferencesEntriesViewModel(
     /** 下部レイアウトをスクロールで隠す */
     val hideBottomLayoutByScroll = createLiveData<Boolean>(
         PreferenceKey.ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING
+    )
+
+    /** 下部バーに表示するボタン */
+    val bottomBarButtons = createLiveData<List<UserBottomItem>>(
+        PreferenceKey.ENTRIES_BOTTOM_ITEMS
     )
 
     /** エントリ項目シングルタップの挙動 */

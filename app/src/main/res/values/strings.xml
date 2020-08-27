@@ -166,6 +166,7 @@
     <!-- entries -->
     <string name="pref_entries_layout_mode_desc">ボトムバーを使用する</string>
     <string name="pref_hide_bottom_appbar_by_scrolling_desc">スクロールでボトムバーを隠す</string>
+    <string name="pref_bottom_bar_items_desc">ボトムバーの項目をカスタマイズ</string>
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
     <string name="pref_home_category_desc">ホームカテゴリ</string>

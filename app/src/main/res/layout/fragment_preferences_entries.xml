@@ -54,6 +54,21 @@
                     android:layout_height="wrap_content"/>
 
             <TextView
+                    android:text="@string/pref_bottom_bar_items_desc"
+                    android:textColor="?attr/textColor"
+                    android:visibility="@{vm.bottomLayoutMode}"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <com.suihan74.satena.scenes.preferences.UserBottomItemsSetter
+                    android:visibility="@{vm.bottomLayoutMode}"
+                    items="@{vm.bottomBarButtons}"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
                     android:text="@string/pref_entries_single_tap_action_desc"
                     android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
