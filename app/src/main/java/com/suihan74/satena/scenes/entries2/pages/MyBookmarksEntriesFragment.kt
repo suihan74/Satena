@@ -76,7 +76,9 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             if (bottomAppBar == null) menu.findItem(R.id.search_view)?.actionView as? SearchView
             else activity.bottomSearchView?.also { searchView ->
                 bottomAppBar.menu.findItem(R.id.search_view).setOnMenuItemClickListener {
-                    searchView.setVisibility(searchView.visibility != View.VISIBLE)
+                    viewModel.isSearchViewExpanded = !viewModel.isSearchViewExpanded
+                    searchView.setVisibility(viewModel.isSearchViewExpanded)
+                    onBackPressedCallback?.isEnabled = detectBackPressedCallbackStatus(viewModel)
                     true
                 }
             }
@@ -103,7 +105,8 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
                     if (searchView.visibility == View.VISIBLE) {
                         searchView.visibility = View.GONE
                         viewModel.isSearchViewExpanded = false
-                        onBackPressedCallback?.isEnabled = detectBackPressedCallbackStatus(viewModel)
+                        viewModel.searchQuery.value = null
+                        // TODO: クリアをすぐにリストに反映する
                     }
                 }
                 else {
