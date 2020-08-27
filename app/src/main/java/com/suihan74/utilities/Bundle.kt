@@ -17,8 +17,13 @@ inline fun <reified T : Enum<T>> KClass<T>.getEnumConstants() =
 // --------- //
 
 /** BundleにEnumをセットする */
-inline fun <reified T : Enum<T>> Bundle.putEnum(key: String, value: T) {
-    putInt(key, value.ordinal)
+inline fun <reified T : Enum<T>> Bundle.putEnum(key: String, value: T?) {
+    if (value != null) {
+        putInt(key, value.ordinal)
+    }
+    else if (containsKey(key)) {
+        remove(key)
+    }
 }
 
 /** BundleからEnumを取得する(失敗時null) */
@@ -29,6 +34,7 @@ inline fun <reified T : Enum<T>> Bundle.getEnum(key: String) : T? =
         }
     }
     catch (e: Throwable) {
+        e.printStackTrace()
         null
     }
 
@@ -39,24 +45,30 @@ inline fun <reified T : Enum<T>> Bundle.getEnum(key: String, defaultValue: T) : 
 // --------- //
 
 /** BundleにEnumをセットする(ordinal以外を使用) */
-inline fun <reified T : Enum<T>> Bundle.putEnum(key: String, value: T, selector: (T)->Int) {
-    putInt(key, selector(value))
+inline fun <reified T : Enum<T>> Bundle.putEnum(key: String, value: T?, selector: (T)->Int) {
+    if (value != null) {
+        putInt(key, selector(value))
+    }
+    else if (containsKey(key)) {
+        remove(key)
+    }
 }
 
 /** BundleからEnumを取得する(ordinal以外を使用, 失敗時null) */
-inline fun <reified T : Enum<T>> Bundle.selectEnum(key: String, selector: (T)->Int) : T? =
+inline fun <reified T : Enum<T>> Bundle.getEnum(key: String, selector: (T)->Int) : T? =
     try {
         (get(key) as? Int)?.let { intValue ->
             T::class.getEnumConstants().firstOrNull { selector(it) == intValue }
         }
     }
     catch (e: Throwable) {
+        e.printStackTrace()
         null
     }
 
 /** BundleからEnumを取得する(ordinal以外を使用, 失敗時デフォルト値) */
-inline fun <reified T : Enum<T>> Bundle.selectEnum(key: String, defaultValue: T, selector: (T)->Int) : T =
-    selectEnum(key, selector) ?: defaultValue
+inline fun <reified T : Enum<T>> Bundle.getEnum(key: String, defaultValue: T, selector: (T)->Int) : T =
+    getEnum(key, selector) ?: defaultValue
 
 // --------- //
 
@@ -91,6 +103,7 @@ inline fun <reified T> Bundle.getObject(key: String) : T? {
         this.gson.fromJson<T>(json, object : TypeToken<T>() {}.type)
     }
     catch (e: Throwable) {
+        e.printStackTrace()
         null
     }
 }
