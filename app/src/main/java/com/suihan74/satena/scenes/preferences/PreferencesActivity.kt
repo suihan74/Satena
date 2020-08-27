@@ -9,6 +9,8 @@ import android.view.View
 import android.widget.ImageButton
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
@@ -21,6 +23,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class PreferencesActivity : ActivityBase() {
+    class ViewModel : androidx.lifecycle.ViewModel() {
+        val currentTab : MutableLiveData<PreferencesTabMode> by lazy {
+            MutableLiveData(PreferencesTabMode.INFORMATION)
+        }
+    }
+
+    private val viewModel by lazy {
+        ViewModelProvider(this)[ViewModel::class.java]
+    }
+
     override val progressBarId: Int? = R.id.detail_progress_bar
     override val progressBackgroundId: Int? = R.id.click_guard
     override val toolbar : Toolbar
@@ -35,17 +47,6 @@ class PreferencesActivity : ActivityBase() {
         const val EXTRA_THEME_CHANGED = "theme_changed"
         const val EXTRA_CURRENT_TAB = "current_tab"
         const val EXTRA_RELOAD_ALL_PREFERENCES = "reload_all_preferences"
-
-        private const val BUNDLE_CURRENT_TAB = "currentTab"
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        if (this::mViewPager.isInitialized) {
-            outState.run {
-                putObject(BUNDLE_CURRENT_TAB, mViewPager.currentItem)
-            }
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,21 +65,26 @@ class PreferencesActivity : ActivityBase() {
 
         themeChanged = intent.getBooleanExtra(EXTRA_THEME_CHANGED, false)
 
+        // 初期タブが指定されている場合
+        intent.getObjectExtra<PreferencesTabMode>(EXTRA_CURRENT_TAB)?.let {
+            viewModel.currentTab.value = it
+        }
+
         val invokeReload = intent.getBooleanExtra(EXTRA_RELOAD_ALL_PREFERENCES, false)
         if (invokeReload) {
             showProgressBar()
             launch(Dispatchers.Main) {
                 reloadAllPreferences()
-                initializeContents(savedInstanceState)
+                initializeContents()
                 hideProgressBar()
             }
         }
         else {
-            initializeContents(savedInstanceState)
+            initializeContents()
         }
     }
 
-    private fun initializeContents(savedInstanceState: Bundle?) {
+    private fun initializeContents() {
         mTabAdapter = PreferencesTabAdapter(supportFragmentManager)
         mViewPager = findViewById<ViewPager>(R.id.preferences_view_pager).also { pager ->
             // 環状スクロールできるように細工
@@ -103,23 +109,24 @@ class PreferencesActivity : ActivityBase() {
                         btn?.setBackgroundColor(Color.TRANSPARENT)
                     }
 
-                    when (position) {
-                        PreferencesTabMode.DUMMY_HEAD.int -> { jumpPosition = mTabAdapter.getActualCount() }
-                        PreferencesTabMode.DUMMY_TAIL.int -> { jumpPosition = 1 }
+                    jumpPosition = when (position) {
+                        PreferencesTabMode.DUMMY_HEAD.int -> mTabAdapter.getActualCount()
+                        PreferencesTabMode.DUMMY_TAIL.int -> 1
+                        else -> position
                     }
 
-                    val fixedPosition = (if (jumpPosition > 0) jumpPosition else position) - 1
-                    val btn = findViewById<ImageButton>(mTabAdapter.getIconId(fixedPosition))
+                    val tab = PreferencesTabMode.fromInt(jumpPosition)
+                    viewModel.currentTab.value = tab
+
+                    val btn = findViewById<ImageButton>(mTabAdapter.getIconId(tab.int - 1))
                     btn?.setBackgroundColor(ContextCompat.getColor(this@PreferencesActivity, R.color.colorPrimary))
-                    title = "設定 > ${getString(mTabAdapter.getPageTitleId(fixedPosition))}"
+                    title = "設定 > ${getString(tab.titleId)}"
                     invalidateOptionsMenu()
                 }
             })
         }
 
-        val tab = savedInstanceState?.run { PreferencesTabMode.fromInt(getInt(BUNDLE_CURRENT_TAB)) }
-            ?: intent.getObjectExtra<PreferencesTabMode>(EXTRA_CURRENT_TAB)
-            ?: PreferencesTabMode.INFORMATION
+        val tab = viewModel.currentTab.value!!
 
         val position = tab.int
         mViewPager.setCurrentItem(position, false)
