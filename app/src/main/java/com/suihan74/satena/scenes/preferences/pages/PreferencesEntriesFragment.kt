@@ -1,12 +1,14 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.InverseMethod
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -189,4 +191,16 @@ private fun getTabTitleIds(homeCategory: Category) : List<Int> =
 fun Button.setInitialTabText(position: Int, homeCategory: Category) {
     val initialTabs = getTabTitleIds(homeCategory)
     setText(initialTabs[position])
+}
+
+
+object BottomMenuItemsGravityConverter {
+    @InverseMethod("inverseSet")
+    @JvmStatic
+    fun set(new: Int?) : Boolean =
+        new == Gravity.END
+
+    @JvmStatic
+    fun inverseSet(new: Boolean?) : Int =
+        if (new == true) Gravity.END else Gravity.START
 }

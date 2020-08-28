@@ -69,7 +69,6 @@
                         app:elevation="32dp"
                         app:contentInsetStart="0dp"
                         app:contentInsetLeft="0dp"
-                        app:menuGravity="end"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"/>
 

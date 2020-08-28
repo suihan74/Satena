@@ -503,6 +503,9 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         menu.clear()
         bottomAppBar.setOnMenuItemClickListener(null)
         bottom_search_view.visibility = View.GONE
+        bottomAppBar.alsoAs<CustomBottomAppBar> {
+            CustomBottomAppBar.setMenuItemsGravity(it, viewModel.bottomBarItemsGravity)
+        }
 
         val tint = ColorStateList.valueOf(getThemeColor(R.attr.textColor))
         val menuItems = viewModel.bottomBarItems.mapNotNull { item ->

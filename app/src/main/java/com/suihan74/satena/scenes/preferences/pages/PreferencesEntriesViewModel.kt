@@ -29,6 +29,11 @@ class PreferencesEntriesViewModel(
         PreferenceKey.ENTRIES_BOTTOM_ITEMS
     )
 
+    /** 下部バーの項目を右詰めで表示するか左詰めで表示するか */
+    val bottomBarButtonsGravity = createLiveData<Int>(
+        PreferenceKey.ENTRIES_BOTTOM_ITEMS_GRAVITY
+    )
+
     /** エントリ項目シングルタップの挙動 */
     val singleTapAction = createLiveDataEnum<TapEntryAction>(
         PreferenceKey.ENTRY_SINGLE_TAP_ACTION

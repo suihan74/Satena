@@ -1,6 +1,7 @@
 package com.suihan74.satena.models
 
 import android.content.Context
+import android.view.Gravity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.UserBottomItem
@@ -84,6 +85,9 @@ enum class PreferenceKey(
 
     /** ボトムバーに表示する項目 */
     ENTRIES_BOTTOM_ITEMS(typeInfo<List<UserBottomItem>>(), listOf(UserBottomItem.SCROLL_TO_TOP)),
+
+    /** ボトムバーの項目を左詰めにするか右詰めにするか */
+    ENTRIES_BOTTOM_ITEMS_GRAVITY(typeInfo<Int>(), Gravity.END),
 
     /** エントリ項目シングルタップの挙動 */
     ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.ordinal),

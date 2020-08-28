@@ -89,6 +89,10 @@ class EntriesViewModel(
     val bottomBarItems : List<UserBottomItem>
         get() = repository.bottomBarItems
 
+    /** ボトムバーの項目の配置方法 */
+    val bottomBarItemsGravity : Int
+        get() = repository.bottomBarItemsGravity
+
     /** 初期化処理 */
     fun initialize(
         forceUpdate: Boolean,
