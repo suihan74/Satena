@@ -95,6 +95,7 @@
     <string name="my_bookmarks_desc">マイブックマーク</string>
     <string name="preferences_desc">設定</string>
     <string name="home_category_desc">ホームカテゴリ</string>
+    <string name="open_official_top_desc">はてブ公式トップページを開く</string>
 
     <!-- エントリタップアクション項目 -->
     <string name="entry_action_show_comments">ブックマークを見る</string>

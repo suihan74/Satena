@@ -30,21 +30,40 @@ enum class UserBottomItem(
         requireSignedIn = true
     ),
 
-    PREFERENCES(3,
+    SEARCH(3,
+        R.drawable.ic_baseline_search,
+        R.string.category_search
+    ),
+
+    PREFERENCES(4,
         R.drawable.ic_baseline_settings,
         R.string.preferences_desc
     ),
 
-    HOME(4,
+    OPEN_OFFICIAL_TOP(5,
+        R.drawable.ic_category_social,
+        R.string.open_official_top_desc
+    ),
+
+    /*
+    OPEN_OFFICIAL_MYBOOKMARKS(x,
+        0,
+        0
+    ),*/
+
+    HOME(6,
         R.drawable.ic_category_all,
         R.string.home_category_desc
     ),
 
     // TODO: カテゴリ項目で置き換える
-    CATEGORY(5,
+/*
+    CATEGORY(x,
         R.drawable.ic_baseline_category,
         R.string.categories_desc
     );
+*/
+    ;
 
     /** Menuに追加する */
     fun toMenuItem(menu: Menu, tint: ColorStateList) : MenuItem =

@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.entries2
 
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
@@ -541,10 +542,17 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
         UserBottomItem.NOTICE -> showCategory(Category.Notices)
 
+        UserBottomItem.SEARCH -> showCategory(Category.Search)
+
         UserBottomItem.HOME -> showCategory(viewModel.homeCategory)
 
         UserBottomItem.PREFERENCES -> {
             val intent = Intent(this, PreferencesActivity::class.java)
+            startActivity(intent)
+        }
+
+        UserBottomItem.OPEN_OFFICIAL_TOP -> {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://b.hatena.ne.jp/"))
             startActivity(intent)
         }
 
