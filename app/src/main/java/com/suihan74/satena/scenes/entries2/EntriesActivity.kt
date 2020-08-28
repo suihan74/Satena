@@ -499,14 +499,15 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
     /** ボトムバーの状態を初期化する */
     private fun clearBottomAppBarState(bottomAppBar: BottomAppBar) {
-        bottomAppBar.menu.clear()
+        val menu = bottomAppBar.menu
+        menu.clear()
         bottomAppBar.setOnMenuItemClickListener(null)
         bottom_search_view.visibility = View.GONE
 
         val tint = ColorStateList.valueOf(getThemeColor(R.attr.textColor))
         val menuItems = viewModel.bottomBarItems.mapNotNull { item ->
             if (item.requireSignedIn && viewModel.signedIn.value != true) null
-            else item.toMenuItem(bottomAppBar.menu, tint)
+            else item.toMenuItem(menu, tint)
         }
         bottomAppBar.setOnMenuItemClickListener { clicked ->
             val idx = menuItems.indexOf(clicked)
