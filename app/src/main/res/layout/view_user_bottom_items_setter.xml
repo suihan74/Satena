@@ -10,7 +10,6 @@
             app:backgroundTint="?attr/tabBackground"
             app:fabCradleRoundedCornerRadius="8dp"
             app:fabAlignmentMode="end"
-            app:elevation="32dp"
             app:contentInsetStart="0dp"
             app:contentInsetLeft="0dp"
             android:layout_width="match_parent"

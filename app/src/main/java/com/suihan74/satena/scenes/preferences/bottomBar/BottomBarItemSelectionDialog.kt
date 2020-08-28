@@ -34,9 +34,7 @@ class BottomBarItemSelectionDialog : DialogFragment() {
             else existedItems.indexOf(targetItem)
 
         // 選択可能なアイテムリスト
-        val items = UserBottomItem.values().filterNot {
-            existedItems.contains(it) && it != targetItem
-        }
+        val items = UserBottomItem.values()
         val itemLabels = items.map { getString(it.textId) }.toTypedArray()
 
         // 現在設定されているアイテム位置
@@ -48,11 +46,20 @@ class BottomBarItemSelectionDialog : DialogFragment() {
             .setSingleChoiceItems(itemLabels, checkedPosition) { dialog, which ->
                 val listener = (parentFragment as? PreferencesEntriesFragment)?.viewModel as? Listener
                 val new = items[which]
-                listener?.onSelectItem(targetPosition, targetItem, new)
+
+                val existedPosition = existedItems.indexOf(new)
+                if (existedPosition == -1) {
+                    listener?.onSelectItem(targetPosition, targetItem, new)
+                }
+                else if (existedPosition != targetPosition) {
+                    listener?.onReorderItem(targetPosition, existedPosition, targetItem, new)
+                }
+
                 dismissAllowingStateLoss()
             }
 
         if (targetItem != null) {
+            // 項目を削除する
             dialogBuilder.setPositiveButton(R.string.dialog_delete) { dialog, which ->
                 val listener = (parentFragment as? PreferencesEntriesFragment)?.viewModel as? Listener
                 listener?.onSelectItem(targetPosition, targetItem, null)
@@ -63,6 +70,9 @@ class BottomBarItemSelectionDialog : DialogFragment() {
     }
 
     interface Listener {
+        /** 指定位置のメニュー項目を選択 */
         fun onSelectItem(position: Int, old: UserBottomItem?, new: UserBottomItem?)
+        /** 既に設定されている2つの項目を入れ替える */
+        fun onReorderItem(positionA: Int, positionB: Int, itemA: UserBottomItem?, itemB: UserBottomItem)
     }
 }

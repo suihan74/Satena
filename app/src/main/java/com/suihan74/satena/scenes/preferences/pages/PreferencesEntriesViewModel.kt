@@ -104,6 +104,30 @@ class PreferencesEntriesViewModel(
         }
     }
 
+    /** ボトムバーの項目を入れ替え */
+    override fun onReorderItem(
+        positionA: Int,
+        positionB: Int,
+        itemA: UserBottomItem?,
+        itemB: UserBottomItem
+    ) {
+        val items = bottomBarButtons.value ?: emptyList()
+        if (itemA == null) {
+            // 末尾に移動
+            bottomBarButtons.value = items.minus(itemB).plus(itemB)
+        }
+        else {
+            // 項目同士の入れ替え
+            bottomBarButtons.value = items.mapIndexed { idx, item ->
+                when (idx) {
+                    positionA -> itemB
+                    positionB -> itemA
+                    else -> item
+                }
+            }
+        }
+    }
+
     class Factory(
         private val prefs: SafeSharedPreferences<PreferenceKey>,
         private val historyPrefs: SafeSharedPreferences<EntriesHistoryKey>
