@@ -533,13 +533,11 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
             showAppBar()
         }
 
-        UserBottomItem.MYBOOKMARKS -> {
-            showCategory(Category.MyBookmarks)
-        }
+        UserBottomItem.MYBOOKMARKS -> showCategory(Category.MyBookmarks)
 
-        UserBottomItem.NOTICE -> {
-            showCategory(Category.Notices)
-        }
+        UserBottomItem.NOTICE -> showCategory(Category.Notices)
+
+        UserBottomItem.HOME -> showCategory(viewModel.homeCategory)
 
         UserBottomItem.PREFERENCES -> {
             val intent = Intent(this, PreferencesActivity::class.java)

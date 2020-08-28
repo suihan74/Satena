@@ -35,8 +35,13 @@ enum class UserBottomItem(
         R.string.preferences_desc
     ),
 
+    HOME(4,
+        R.drawable.ic_category_all,
+        R.string.home_category_desc
+    ),
+
     // TODO: カテゴリ項目で置き換える
-    CATEGORY(4,
+    CATEGORY(5,
         R.drawable.ic_baseline_category,
         R.string.categories_desc
     );
