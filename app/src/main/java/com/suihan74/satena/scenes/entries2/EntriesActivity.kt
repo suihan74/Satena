@@ -5,8 +5,10 @@ import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
@@ -500,18 +502,22 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
     /** ボトムバーの状態を初期化する */
     private fun clearBottomAppBarState(bottomAppBar: BottomAppBar) {
-        val menu = bottomAppBar.menu
-        menu.clear()
+        bottomAppBar.menu.clear()
         bottomAppBar.setOnMenuItemClickListener(null)
         bottom_search_view.visibility = View.GONE
         bottomAppBar.alsoAs<CustomBottomAppBar> {
             CustomBottomAppBar.setMenuItemsGravity(it, viewModel.bottomBarItemsGravity)
         }
 
+        inflateBasicBottomItems(bottomAppBar)
+    }
+
+    /** 基本のボトムバーアイテムを追加する */
+    private fun inflateBasicBottomItems(bottomAppBar: BottomAppBar) {
         val tint = ColorStateList.valueOf(getThemeColor(R.attr.textColor))
         val menuItems = viewModel.bottomBarItems.mapNotNull { item ->
             if (item.requireSignedIn && viewModel.signedIn.value != true) null
-            else item.toMenuItem(menu, tint)
+            else item.toMenuItem(bottomAppBar.menu, tint)
         }
         bottomAppBar.setOnMenuItemClickListener { clicked ->
             val idx = menuItems.indexOf(clicked)
@@ -555,8 +561,36 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://b.hatena.ne.jp/"))
             startActivity(intent)
         }
+    }
 
-        else -> {}
+    /** ボトムバーにメニューアイテムを追加する */
+    fun inflateAdditionalBottomMenu(@MenuRes menuId: Int) {
+        if (!viewModel.isBottomLayoutMode) return
+
+        val prefValue = viewModel.additionalBottomItemsAlignment
+
+        val alignment =
+            if (prefValue == AdditionalBottomItemsAlignment.DEFAULT) {
+                when (viewModel.bottomBarItemsGravity) {
+                    Gravity.END -> AdditionalBottomItemsAlignment.LEFT
+                    Gravity.START -> AdditionalBottomItemsAlignment.RIGHT
+                    else -> throw NotImplementedError()
+                }
+            }
+            else prefValue
+
+        when (alignment) {
+            AdditionalBottomItemsAlignment.RIGHT ->
+                bottom_app_bar.inflateMenu(menuId)
+
+            AdditionalBottomItemsAlignment.LEFT -> {
+                bottom_app_bar.menu.clear()
+                bottom_app_bar.inflateMenu(menuId)
+                inflateBasicBottomItems(bottom_app_bar)
+            }
+
+            else -> throw NotImplementedError()
+        }
     }
 
     // --- FAB表示アニメーション ---

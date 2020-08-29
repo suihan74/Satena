@@ -16,6 +16,7 @@ import com.suihan74.satena.databinding.FragmentPreferencesEntriesBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialogFragment
 import com.suihan74.satena.models.*
+import com.suihan74.satena.scenes.entries2.AdditionalBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
@@ -36,6 +37,7 @@ class PreferencesEntriesFragment :
         private const val DIALOG_HISTORY_MAX_SIZE_PICKER = "DIALOG_HISTORY_MAX_SIZE_PICKER"
         private const val DIALOG_ENTRY_READ_ACTION_TYPE = "DIALOG_ENTRY_READ_ACTION_TYPE"
         private const val DIALOG_CATEGORIES_MODE = "DIALOG_CATEGORIES_MODE"
+        private const val DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT = "DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT"
     }
 
     val viewModel : PreferencesEntriesViewModel by lazy {
@@ -142,6 +144,18 @@ class PreferencesEntriesFragment :
                 .show(childFragmentManager, DIALOG_CATEGORIES_MODE)
         }
 
+        // ボトムバーの追加項目の配置方法
+        view.additional_bottom_items_alignment_button.setOnClickListener {
+            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                .setTitle(R.string.pref_additional_bottom_items_alignment_desc)
+                .setNegativeButton(R.string.dialog_cancel)
+                .setSingleChoiceItems(
+                    AdditionalBottomItemsAlignment.values().map { getString(it.textId) }.toTypedArray(),
+                    viewModel.additionalBottomItemsAlignment.value!!.ordinal
+                )
+                .show(childFragmentManager, DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT)
+        }
+
         return view
     }
 
@@ -168,6 +182,9 @@ class PreferencesEntriesFragment :
 
             DIALOG_CATEGORIES_MODE ->
                 viewModel.categoriesMode.value = CategoriesMode.fromInt(which)
+
+            DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT ->
+                viewModel.additionalBottomItemsAlignment.value = AdditionalBottomItemsAlignment.values()[which]
         }
         dialog.dismiss()
     }

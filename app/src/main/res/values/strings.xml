@@ -172,6 +172,7 @@
     <string name="pref_hide_bottom_appbar_by_scrolling_desc">スクロールでボトムバーを隠す</string>
     <string name="pref_bottom_bar_items_desc">ボトムバーの項目をカスタマイズ</string>
     <string name="pref_bottom_menu_items_gravity_desc">ボトムバーアイテムの配置方法</string>
+    <string name="pref_additional_bottom_items_alignment_desc">ボトムバーの追加項目の配置方法</string>
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
     <string name="pref_home_category_desc">ホームカテゴリ</string>
@@ -190,11 +191,19 @@
     <string name="pref_entries_read_action_boilerplate_desc">「読んだ」ときに投稿する定型文</string>
     <string name="pref_entries_read_action_boilerplate_hint">ブコメの入力ルールに従います</string>
 
+    <!-- ボトムバーを使用するか -->
     <string name="pref_entries_bottom_layout_mode_on_text">ボトムメニュー</string>
     <string name="pref_entries_bottom_layout_mode_off_text">デフォルト</string>
 
+    <!-- 追加のボトムバーアイテムの表示位置 -->
+    <string name="pref_additional_bottom_items_alignment_default">デフォルト(表示位置にあわせる)</string>
+    <string name="pref_additional_bottom_items_alignment_left">左側</string>
+    <string name="pref_additional_bottom_items_alignment_right">右側</string>
+
+    <!-- 表示するボトムバーアイテムを選択するダイアログ -->
     <string name="dialog_title_bottom_bar_item_selection">ボトムバーアイテム選択</string>
 
+    <!-- カテゴリリストの表示形式 -->
     <string name="pref_categories_mode_list">リスト</string>
     <string name="pref_categories_mode_grid">テーブル</string>
 
