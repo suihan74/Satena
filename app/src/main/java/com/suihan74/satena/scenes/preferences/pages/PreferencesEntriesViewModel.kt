@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.preferences.pages
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.models.*
+import com.suihan74.satena.scenes.entries2.AdditionalBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
@@ -32,6 +33,13 @@ class PreferencesEntriesViewModel(
     /** 下部バーの項目を右詰めで表示するか左詰めで表示するか */
     val bottomBarButtonsGravity = createLiveData<Int>(
         PreferenceKey.ENTRIES_BOTTOM_ITEMS_GRAVITY
+    )
+
+    /** 下部バーの追加項目の配置方法 */
+    val additionalBottomItemsAlignment = createLiveDataEnum(
+        PreferenceKey.ENTRIES_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT,
+        { it.id },
+        { AdditionalBottomItemsAlignment.fromInt(it) }
     )
 
     /** エントリ項目シングルタップの挙動 */

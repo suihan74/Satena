@@ -159,6 +159,10 @@ class EntriesRepository(
     val bottomBarItemsGravity : Int
         get() = prefs.get(PreferenceKey.ENTRIES_BOTTOM_ITEMS_GRAVITY)
 
+    /** ボトムバーの追加項目の配置方法 */
+    val additionalBottomItemsAlignment : AdditionalBottomItemsAlignment
+        get() = AdditionalBottomItemsAlignment.fromInt(prefs.getInt(PreferenceKey.ENTRIES_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT))
+
     /** サインインする */
     suspend fun signIn(forceUpdate: Boolean = false) {
         accountLoader.signInAccounts(forceUpdate)
