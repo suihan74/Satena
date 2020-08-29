@@ -332,6 +332,9 @@
     <string name="msg_remove_bookmark_failed">ブクマ削除に失敗しました</string>
     <string name="msg_bookmarks_initial_tab_changed">「%s」タブを最初に表示するように設定しました</string>
     <!-- ブクマ画面でのエントリ情報 -->
+    <string name="entry_information_tags_header">タグ</string>
+    <string name="entry_information_lower_floor">-1階</string>
+    <string name="entry_information_upper_floor">+1階</string>
     <string name="msg_get_entry_information_failed">エントリ情報の取得に失敗しました</string>
 
     <!-- ブコメ詳細画面 -->

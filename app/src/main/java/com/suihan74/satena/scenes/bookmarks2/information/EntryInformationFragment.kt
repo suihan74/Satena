@@ -8,12 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.observe
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
-import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentEntryInformationBinding
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.entries2.EntriesActivity
@@ -37,11 +38,17 @@ class EntryInformationFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_entry_information, container, false)
-
         val entry = activityViewModel.entry
 
-        view.title.text = entry.title
+        val binding = DataBindingUtil.inflate<FragmentEntryInformationBinding>(
+            inflater,
+            R.layout.fragment_entry_information,
+            container,
+            false
+        ).apply {
+            this.entry = entry
+        }
+        val view = binding.root
 
         view.page_url.apply {
             text = makeSpannedFromHtml("<u>${Uri.decode(entry.url)}</u>")
@@ -51,12 +58,6 @@ class EntryInformationFragment : Fragment() {
                 requireActivity().showCustomTabsIntent(entry)
             }
         }
-
-        view.description.text = entry.description
-
-        Glide.with(view)
-            .load(entry.imageUrl)
-            .into(view.icon)
 
         val tagsAdapter = object : TagsAdapter() {
             override fun onItemClicked(tag: String) {
