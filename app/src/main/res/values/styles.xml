@@ -121,6 +121,7 @@
         <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
         <item name="entryCommentBackground">@color/entryCommentBackground</item>
+        <item name="tagTextColor">@color/tagColor</item>
     </style>
 
     <!-- Dark Theme -->
@@ -133,6 +134,7 @@
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
+        <item name="tagTextColor">@color/tagColorDark</item>
     </style>
 
     <!-- ログイン画面のEditText -->
