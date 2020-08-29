@@ -52,6 +52,7 @@
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
         <item name="entryCommentBackground">@color/entryCommentBackground</item>
         <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackground</item>
+        <item name="tagTextColor">@color/tagColor</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Light</item>
     </style>
@@ -67,6 +68,7 @@
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
         <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackgroundDark</item>
+        <item name="tagTextColor">@color/tagColorDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
     </style>

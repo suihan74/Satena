@@ -51,7 +51,6 @@
         <TextView
                 android:id="@+id/bookmark_users"
                 android:text="@{entry.count + ` users`}"
-                android:background="@color/bookmarkUsersCountBackground"
                 android:textColor="@color/bookmarkUsersCountText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -63,7 +62,7 @@
                 android:id="@+id/domain"
                 rootUrl="@{entry.rootUrl}"
                 url="@{entry.url}"
-                android:textColor="#888"
+                android:textColor="?attr/tagTextColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAlignment="viewEnd"

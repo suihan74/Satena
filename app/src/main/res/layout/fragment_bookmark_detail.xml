@@ -88,14 +88,15 @@
                         <ImageView
                                 android:id="@+id/tag_icon"
                                 app:srcCompat="@drawable/ic_tag"
+                                app:tint="?attr/tagTextColor"
                                 android:layout_marginTop="3dp"
                                 android:layout_width="14sp"
                                 android:layout_height="14sp"/>
                         <TextView
                                 android:id="@+id/tags"
                                 android:textSize="14sp"
-                                android:textColor="@color/tagColor"
-                                android:textColorLink="@color/tagColor"
+                                android:textColor="?attr/tagTextColor"
+                                android:textColorLink="?attr/tagTextColor"
                                 android:layout_marginStart="2dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"/>

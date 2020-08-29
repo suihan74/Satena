@@ -271,17 +271,18 @@ open class BookmarksAdapter(
             view.ignored_user_mark.visibility = entity.isIgnored.toVisibility(View.GONE)
 
             // タグ
-            view.bookmark_tags.apply {
+            view.bookmark_tags?.also { tagsTextView ->
                 if (bookmark.tags.isEmpty()) {
-                    visibility = View.GONE
+                    tagsTextView.visibility = View.GONE
                 }
                 else {
-                    visibility = View.VISIBLE
+                    tagsTextView.visibility = View.VISIBLE
                     val tagsText = bookmark.tags.joinToString(", ")
-                    text = SpannableString("_$tagsText").apply {
+                    tagsTextView.text = SpannableString("_$tagsText").apply {
+                        val resources = tagsTextView.resources
                         ResourcesCompat.getDrawable(resources, R.drawable.ic_tag, null)?.apply {
-                            setBounds(0, 0, lineHeight, lineHeight)
-                            setTint(resources.getColor(R.color.tagColor, null))
+                            setBounds(0, 0, tagsTextView.lineHeight, tagsTextView.lineHeight)
+                            setTint(tagsTextView.currentTextColor)
                         }?.let { icon ->
                             setSpan(ImageSpan(icon), 0, 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
@@ -327,16 +328,16 @@ open class BookmarksAdapter(
                 view.user_tags.visibility = View.GONE
             }
             else {
-                view.user_tags.apply {
-                    val icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_user_tag, null)?.apply {
-                        val size = textSize.toInt()
+                view.user_tags.let { textView ->
+                    val icon = ResourcesCompat.getDrawable(textView.resources, R.drawable.ic_user_tag, null)?.apply {
+                        val size = textView.textSize.toInt()
                         setBounds(0, 0, size, size)
-                        setTint(resources.getColor(R.color.tagColor, null))
+                        setTint(textView.currentTextColor)
                     }
-                    setCompoundDrawablesRelative(icon, null, null, null)
+                    textView.setCompoundDrawablesRelative(icon, null, null, null)
 
-                    text = userTags.joinToString(", ") { it.name }
-                    visibility = View.VISIBLE
+                    textView.text = userTags.joinToString(", ") { it.name }
+                    textView.visibility = View.VISIBLE
                 }
             }
 
