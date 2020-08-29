@@ -15,6 +15,7 @@ import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
 import androidx.activity.addCallback
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
@@ -353,7 +354,7 @@ class BookmarkDetailFragment :
 
         // メニューボタン
         view.menu_button.setOnClickListener {
-            val dialog = BookmarkMenuDialog.createInstance(viewModel.bookmark, activityViewModel.signedIn.value)
+            val dialog = BookmarkMenuDialog.createInstance(viewModel.bookmark, viewModel.starsToUser.value, activityViewModel.repository.userSignedIn)
             dialog.showAllowingStateLoss(childFragmentManager, DIALOG_BOOKMARK_MENU)
         }
 
@@ -380,15 +381,14 @@ class BookmarkDetailFragment :
                 }
                 else {
                     val tagsText = tags.joinToString(",") { it.name }
-                    val tagColor = resources.getColor(R.color.tagColor, null)
                     val st = "$user _$tagsText"
-                    val density = resources.displayMetrics.scaledDensity
-                    val size = (13 * density).toInt()
+                    val size = context.sp2px(12)
 
                     SpannableString(st).apply {
-                        val drawable = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
+                        val tagTextColor = context.getThemeColor(R.attr.tagTextColor)
+                        val drawable = ResourcesCompat.getDrawable(resources, R.drawable.ic_user_tag, null)!!.apply {
                             setBounds(0, 0, lineHeight, lineHeight)
-                            setTint(tagColor)
+                            setTint(tagTextColor)
                         }
                         val pos = user.length + 1
                         setSpan(
@@ -396,7 +396,7 @@ class BookmarkDetailFragment :
                             pos, pos + 1,
                             SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
                         setSpan(
-                            TextAppearanceSpan(null, Typeface.DEFAULT.style, size, ColorStateList.valueOf(tagColor), null),
+                            TextAppearanceSpan(null, Typeface.NORMAL, size, ColorStateList.valueOf(tagTextColor), null),
                             user.length + 1, st.length,
                             SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
                     }

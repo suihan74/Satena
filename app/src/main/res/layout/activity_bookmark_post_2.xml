@@ -46,7 +46,7 @@
                     android:id="@+id/entry_url"
                     android:visibility="@{vm.displayEntryTitle}"
                     android:text="@{vm.entry.url}"
-                    android:textColor="@color/tagColor"
+                    android:textColor="?attr/tagTextColor"
                     android:textSize="13sp"
 
                     android:singleLine="true"

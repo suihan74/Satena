@@ -30,16 +30,15 @@
     <color name="colorPrimaryText">#FFF</color>
 
     <!-- タブ -->
-    <color name="selectedTabIndicator">#3F51B5</color>
     <color name="tabBackground">#F0F0F0</color>
-    <color name="tabBackgroundDark">#535354</color>
+    <color name="tabBackgroundDark">#565653</color>
 
     <!-- BookmarkDetailFragment#portraitの上部分 -->
     <color name="BookmarkDetailTopBackground">#F0F0F0</color>
     <color name="BookmarkDetailTopBackgroundDark">#333333</color>
 
     <!-- ユーザーカウンタ -->
-    <color name="bookmarkUsersCountText">#FF0707</color>
+    <color name="bookmarkUsersCountText">#f94e5b</color>
     <color name="bookmarkUsersCountBackground">#FBDFE0</color>
 
     <!-- ブックマーク投稿ダイアログ -->
@@ -50,7 +49,8 @@
     <color name="timestampColor">#888</color>
 
     <!-- タグ テキスト -->
-    <color name="tagColor">#888</color>
+    <color name="tagColor">#767676</color>
+    <color name="tagColorDark">#9b9b9b</color>
     <color name="tagBackground">#00b4be</color>
     <color name="tagBackgroundPressed">#009CA5</color>
 
@@ -60,11 +60,12 @@
 
     <!-- スター -->
     <color name="starMenu">#666</color>
+
     <color name="starYellow">#FFBB00</color>
-    <color name="starRed">#FD384B</color>
-    <color name="starGreen">#1DE74C</color>
-    <color name="starBlue">#47B5FF</color>
-    <color name="starPurple">#A709A7</color>
+    <color name="starRed">#FF0451</color>
+    <color name="starGreen">#00D200</color>
+    <color name="starBlue">#00D0EF</color>
+    <color name="starPurple">#77F</color>
 
     <!-- Mastodon -->
     <color name="mastodonTextColor">#FDFDFE</color>

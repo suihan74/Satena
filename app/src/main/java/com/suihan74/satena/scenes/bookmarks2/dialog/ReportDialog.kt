@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.getObject
 import com.suihan74.utilities.hideSoftInputMethod
 import com.suihan74.utilities.putObject
@@ -72,7 +73,13 @@ class ReportDialog : DialogFragment() {
         }
     }
 
-    private lateinit var viewModel: ViewModel
+    private val viewModel: ViewModel by lazy {
+        val entry = requireArguments().getObject<Entry>(ARG_ENTRY)!!
+        val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
+
+        val factory = ViewModel.Factory(entry, bookmark)
+        ViewModelProvider(this, factory)[ViewModel::class.java]
+    }
 
     companion object {
         fun createInstance(entry: Entry, bookmark: Bookmark) = ReportDialog().apply {
@@ -84,16 +91,6 @@ class ReportDialog : DialogFragment() {
 
         private const val ARG_ENTRY = "ARG_ENTRY"
         private const val ARG_BOOKMARK = "ARG_BOOKMARK"
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val entry = requireArguments().getObject<Entry>(ARG_ENTRY)!!
-        val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
-
-        val factory = ViewModel.Factory(entry, bookmark)
-        viewModel = ViewModelProvider(this, factory)[ViewModel::class.java]
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -108,8 +105,9 @@ class ReportDialog : DialogFragment() {
             .setTitle(R.string.report_bookmark_dialog_title)
             .setView(content)
             .setPositiveButton(R.string.report_dialog_ok) { _, _ ->
-                val listener = parentFragment as? Listener ?: activity as? Listener
-                listener?.onReportBookmark(viewModel.model)
+                val activity = requireActivity() as BookmarksActivity
+                val listener = activity.viewModel as Listener
+                listener.onReportBookmark(this, viewModel.model)
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .create()
@@ -185,6 +183,6 @@ class ReportDialog : DialogFragment() {
     }
 
     interface Listener {
-        fun onReportBookmark(model: Model)
+        fun onReportBookmark(dialog: ReportDialog, model: Model)
     }
 }

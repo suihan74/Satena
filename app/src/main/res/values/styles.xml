@@ -52,6 +52,7 @@
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
         <item name="entryCommentBackground">@color/entryCommentBackground</item>
         <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackground</item>
+        <item name="tagTextColor">@color/tagColor</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Light</item>
     </style>
@@ -67,6 +68,7 @@
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
         <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackgroundDark</item>
+        <item name="tagTextColor">@color/tagColorDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
     </style>
@@ -119,6 +121,7 @@
         <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
         <item name="entryCommentBackground">@color/entryCommentBackground</item>
+        <item name="tagTextColor">@color/tagColor</item>
     </style>
 
     <!-- Dark Theme -->
@@ -131,6 +134,7 @@
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
+        <item name="tagTextColor">@color/tagColorDark</item>
     </style>
 
     <!-- ログイン画面のEditText -->
@@ -279,5 +283,22 @@
 
     <style name="RecyclerView.Linear" parent="RecyclerView">
         <item name="layoutManager">androidx.recyclerview.widget.LinearLayoutManager</item>
+    </style>
+
+    <!-- スタースパン色 -->
+    <style name="StarSpan.Yellow" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/starYellow</item>
+    </style>
+    <style name="StarSpan.Red" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/starRed</item>
+    </style>
+    <style name="StarSpan.Green" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/starGreen</item>
+    </style>
+    <style name="StarSpan.Blue" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/starBlue</item>
+    </style>
+    <style name="StarSpan.Purple" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/starPurple</item>
     </style>
 </resources>

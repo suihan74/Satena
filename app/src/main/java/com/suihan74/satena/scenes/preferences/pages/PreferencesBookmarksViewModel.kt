@@ -25,6 +25,11 @@ class PreferencesBookmarksViewModel(
         PreferenceKey.USING_POST_STAR_DIALOG
     )
 
+    /** ブクマ一覧画面の項目に対してスターを付けられるようにする */
+    val useAddStarPopupMenu = createLiveData<Boolean>(
+        PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU
+    )
+
     /** スクロールでツールバーの表示状態を変化させる */
     val toggleToolbarByScrolling = createLiveData<Boolean>(
         PreferenceKey.BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING

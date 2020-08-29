@@ -25,13 +25,9 @@ import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.saveHistory
-import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
-import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
-import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
-import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
@@ -43,40 +39,8 @@ import kotlinx.coroutines.CompletionHandler
 
 class BookmarksActivity :
     AppCompatActivity(),
-    BookmarkMenuDialog.Listener,
-    UserTagSelectionDialog.Listener,
-    ReportDialog.Listener,
     UserTagDialogFragment.Listener
 {
-    /** ViewModel */
-    val viewModel: BookmarksViewModel by lazy {
-        val repository = BookmarksRepository(
-            client = HatenaClient,
-            accountLoader = AccountLoader(
-                applicationContext,
-                HatenaClient,
-                MastodonClientHolder
-            )
-        )
-
-        val factory = BookmarksViewModel.Factory(
-            repository,
-            UserTagRepository(
-                SatenaApplication.instance.userTagDao
-            ),
-            IgnoredEntryRepository(
-                SatenaApplication.instance.ignoredEntryDao
-            )
-        )
-
-        ViewModelProvider(this, factory)[BookmarksViewModel::class.java]
-    }
-
-    val bookmarksFragment
-        get() = findFragmentByTag<BookmarksFragment>(FRAGMENT_BOOKMARKS)!!
-
-    lateinit var onBackPressedCallback: OnBackPressedCallback
-
     companion object {
         // Intent EXTRA keys
         /** Entryを直接渡す場合 */
@@ -95,9 +59,52 @@ class BookmarksActivity :
 
         // Dialog tags
         private const val DIALOG_BOOKMARK_MENU = "DIALOG_BOOKMARK_MENU"
-        private const val DIALOG_REPORT = "DIALOG_REPORT"
-        private const val DIALOG_SELECT_USER_TAG = "DIALOG_SELECT_USER_TAG"
+
+        // Fragment ViewModel tags
+        const val VIEW_MODEL_ACTIVITY = "VIEW_MODEL_ACTIVITY"
+        const val VIEW_MODEL_CONTENT_FRAGMENT = "VIEW_MODEL_CONTENT_FRAGMENT"
+        const val VIEW_MODEL_POPULAR_TAB = "VIEW_MODEL_POPULAR_TAB"
+        const val VIEW_MODEL_RECENT_TAB = "VIEW_MODEL_RECENT_TAB"
+        const val VIEW_MODEL_ALL_TAB = "VIEW_MODEL_ALL_TAB"
+        const val VIEW_MODEL_CUSTOM_TAB = "VIEW_MODEL_CUSTOM_TAB"
+
+        fun getTabViewModelKey(tabType: BookmarksTabType) : String = when (tabType) {
+            BookmarksTabType.POPULAR -> VIEW_MODEL_POPULAR_TAB
+            BookmarksTabType.RECENT -> VIEW_MODEL_RECENT_TAB
+            BookmarksTabType.ALL -> VIEW_MODEL_ALL_TAB
+            BookmarksTabType.CUSTOM -> VIEW_MODEL_CUSTOM_TAB
+        }
     }
+
+    /** ViewModel */
+    val viewModel: BookmarksViewModel by lazy {
+        val repository = BookmarksRepository(
+            client = HatenaClient,
+            accountLoader = AccountLoader(
+                applicationContext,
+                HatenaClient,
+                MastodonClientHolder
+            ),
+            prefs = SafeSharedPreferences.create(this)
+        )
+
+        val factory = BookmarksViewModel.Factory(
+            repository,
+            UserTagRepository(
+                SatenaApplication.instance.userTagDao
+            ),
+            IgnoredEntryRepository(
+                SatenaApplication.instance.ignoredEntryDao
+            )
+        )
+
+        ViewModelProvider(this, factory)[VIEW_MODEL_ACTIVITY, BookmarksViewModel::class.java]
+    }
+
+    val bookmarksFragment
+        get() = findFragmentByTag<BookmarksFragment>(FRAGMENT_BOOKMARKS)!!
+
+    lateinit var onBackPressedCallback: OnBackPressedCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -187,7 +194,7 @@ class BookmarksActivity :
             }
 
             if (state == NetworkReceiver.State.CONNECTED) {
-                viewModel.init(true)
+                viewModel.init(supportFragmentManager, true)
             }
         }
     }
@@ -285,6 +292,7 @@ class BookmarksActivity :
         }
 
         viewModel.init(
+            fragmentManager = supportFragmentManager,
             loading = firstLaunching,
             onError = onError,
             onFinally = onFinally
@@ -418,49 +426,6 @@ class BookmarksActivity :
         }
         else false
 
-    // --- BookmarkMenuDialogの処理 --- //
-
-    override fun isIgnored(user: String) =
-        viewModel.ignoredUsers.value.contains(user)
-
-    override fun onShowEntries(user: String) {
-        val intent = Intent(this, EntriesActivity::class.java).apply {
-            putExtra(EntriesActivity.EXTRA_USER, user)
-        }
-        startActivity(intent)
-    }
-
-    override fun onIgnoreUser(user: String, ignore: Boolean) {
-        viewModel.setUserIgnoreState(
-            user,
-            ignore,
-            onSuccess = {
-                val msgId =
-                    if (ignore) R.string.msg_ignore_user_succeeded
-                    else R.string.msg_unignore_user_succeeded
-                showToast(msgId, user)
-            },
-            onError = { e ->
-                val msgId =
-                    if (ignore) R.string.msg_ignore_user_failed
-                    else R.string.msg_unignore_user_failed
-                showToast(msgId, user)
-                Log.e("ignoreUser", "failed: user = $user")
-                e.printStackTrace()
-            }
-        )
-    }
-
-    override fun onReportBookmark(bookmark: Bookmark) {
-        val dialog = ReportDialog.createInstance(viewModel.entry, bookmark)
-        dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_REPORT)
-    }
-
-    override fun onSetUserTag(user: String) {
-        val dialog = UserTagSelectionDialog.createInstance(user)
-        dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_SELECT_USER_TAG)
-    }
-
     // --- UserTagDialogの処理 --- //
 
     override suspend fun onCompletedEditTagName(
@@ -490,60 +455,6 @@ class BookmarksActivity :
         showToast(R.string.msg_user_tag_created_and_added_user, tagName, user)
     }
 
-    // --- UserTagSelectionDialogの処理 --- //
-
-    override fun getUserTags() =
-        viewModel.userTags.value ?: emptyList()
-
-    override suspend fun activateTags(user: String, activeTags: List<Tag>) {
-        activeTags.forEach { tag ->
-            viewModel.tagUser(user, tag)
-        }
-    }
-
-    override suspend fun inactivateTags(user: String, inactiveTags: List<Tag>) {
-        inactiveTags.forEach { tag ->
-            viewModel.unTagUser(user, tag)
-        }
-    }
-
-    override suspend fun reloadUserTags() {
-        viewModel.loadUserTags()
-    }
-
-    // --- ReportDialogの処理 --- //
-
-    override fun onReportBookmark(model: ReportDialog.Model) {
-        val user = model.report.bookmark.user
-        viewModel.reportBookmark(
-            model.report,
-            onSuccess = {
-                if (model.ignoreAfterReporting && !viewModel.ignoredUsers.value.contains(user)) {
-                    viewModel.setUserIgnoreState(
-                        user,
-                        true,
-                        onSuccess = {
-                            showToast(R.string.msg_report_and_ignore_succeeded, user)
-                        },
-                        onError = { e ->
-                            showToast(R.string.msg_ignore_user_failed, user)
-                            Log.e("ignoreUser", "failed: user = $user")
-                            e.printStackTrace()
-                        }
-                    )
-                }
-                else {
-                    showToast(R.string.msg_report_succeeded, user)
-                }
-            },
-            onError = { e ->
-                showToast(R.string.msg_report_failed)
-                Log.e("onReportBookmark", "error user: $user")
-                e.printStackTrace()
-            }
-        )
-    }
-
     // --- ブックマーク中のリンクの処理 --- //
 
     fun onBookmarkClicked(bookmark: Bookmark) {
@@ -551,7 +462,8 @@ class BookmarksActivity :
     }
 
     fun onBookmarkLongClicked(bookmark: Bookmark): Boolean {
-        val dialog = BookmarkMenuDialog.createInstance(bookmark, viewModel.signedIn.value)
+        val starsEntry = viewModel.repository.getStarsEntryTo(bookmark.user)
+        val dialog = BookmarkMenuDialog.createInstance(bookmark, starsEntry, viewModel.repository.userSignedIn)
         dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_BOOKMARK_MENU)
         return true
     }

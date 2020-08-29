@@ -1,138 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<layout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:background="?attr/panelBackground"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable name="entry" type="com.suihan74.hatenaLib.Entry"/>
+    </data>
 
-    <ImageView
-            android:id="@+id/icon"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_width="56dp"
-            android:layout_height="56dp"/>
-
-    <TextView
-            android:id="@+id/title"
-            android:layout_toStartOf="@id/icon"
-            android:layout_alignParentTop="true"
-            android:minHeight="64dp"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="?attr/textColor"
-            android:textIsSelectable="true"
-            android:maxLines="10"
-            android:ellipsize="end"
-            android:scrollbars="vertical"
-            android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
-            android:scrollbarSize="4dp"
-            android:layout_marginBottom="3dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginStart="8dp"
+    <RelativeLayout
+            android:background="?attr/panelBackground"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-
-    <TextView
-            android:id="@+id/page_url"
-            android:background="@android:color/transparent"
-            android:layout_below="@id/title"
-            android:layout_marginBottom="6dp"
-            android:textColor="?attr/colorPrimary"
-            android:textIsSelectable="true"
-            android:maxLines="5"
-            android:ellipsize="end"
-            android:layout_alignStart="@id/title"
-            android:layout_alignEnd="@id/icon"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-
-    <TextView
-            android:id="@+id/description"
-            android:layout_below="@id/page_url"
-            android:maxLines="6"
-            android:ellipsize="end"
-            android:scrollbars="vertical"
-            android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
-            android:scrollbarSize="4dp"
-            android:textSize="12sp"
-            android:textIsSelectable="true"
-            android:textColor="?attr/textColor"
-            android:layout_marginBottom="12dp"
-            android:layout_alignStart="@id/title"
-            android:layout_alignEnd="@id/icon"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-
-    <LinearLayout
-            android:id="@+id/tags_header"
-            android:layout_below="@id/description"
-            android:layout_alignStart="@id/title"
-            android:layout_alignEnd="@id/icon"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
         <ImageView
-                android:src="@drawable/ic_tag"
-                android:layout_gravity="center_vertical"
-                android:layout_width="16sp"
-                android:layout_height="16sp"/>
+                android:id="@+id/icon"
+                app:src="@{entry.imageUrl}"
+                android:contentDescription="@null"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"/>
 
         <TextView
-                android:text="タグ"
+                android:id="@+id/title"
+                android:layout_toStartOf="@id/icon"
+                android:layout_alignParentTop="true"
+                android:minHeight="64dp"
+                android:text="@{entry.title}"
                 android:textStyle="bold"
-                android:textColor="@color/tagColor"
+                android:textSize="14sp"
+                android:textColor="?attr/textColor"
+                android:textIsSelectable="true"
+                android:maxLines="10"
+                android:ellipsize="end"
+                android:scrollbars="vertical"
+                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+                android:scrollbarSize="4dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="8dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
-    </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/tags_list"
-            android:layout_marginTop="2dp"
-            android:scrollbars="vertical"
-            android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
-            android:scrollbarSize="4dp"
-            android:layout_below="@id/tags_header"
-            android:layout_above="@id/to_lower_floor_button"
-            android:layout_alignStart="@id/title"
-            android:layout_alignEnd="@id/icon"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+        <TextView
+                android:id="@+id/page_url"
+                android:background="@android:color/transparent"
+                android:layout_below="@id/title"
+                android:layout_marginBottom="6dp"
+                android:textColor="?attr/colorPrimary"
+                android:textIsSelectable="true"
+                android:maxLines="5"
+                android:ellipsize="end"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/icon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
-    <Button
-            android:id="@+id/to_lower_floor_button"
-            android:text="-1階"
-            style="@style/Widget.AppCompat.Button"
-            android:textColor="@color/textColor"
-            android:layout_above="@id/bottom_contents_layout"
-            android:layout_marginBottom="12dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:layout_alignStart="@id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <TextView
+                android:id="@+id/description"
+                android:layout_below="@id/page_url"
+                android:maxLines="6"
+                android:ellipsize="end"
+                android:scrollbars="vertical"
+                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+                android:scrollbarSize="4dp"
+                android:text="@{entry.description}"
+                android:textSize="12sp"
+                android:textIsSelectable="true"
+                android:textColor="?attr/textColor"
+                android:layout_marginBottom="12dp"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/icon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
-    <Button
-            android:id="@+id/to_upper_floor_button"
-            android:text="+1階"
-            style="@style/Widget.AppCompat.Button"
-            android:textColor="@color/textColor"
-            android:layout_alignParentEnd="true"
-            android:layout_above="@id/bottom_contents_layout"
-            android:layout_marginBottom="12dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:layout_alignEnd="@id/icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <com.suihan74.utilities.bindings.TextViewWithDrawable
+                android:id="@+id/tags_header"
+                app:drawableStart="@{@drawable/ic_tag}"
+                android:text="@string/entry_information_tags_header"
+                android:textStyle="bold"
+                android:textColor="?attr/tagTextColor"
+                android:layout_below="@id/description"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/icon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
-    <FrameLayout
-            android:id="@+id/bottom_contents_layout"
-            android:layout_alignParentBottom="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/tags_list"
+                android:layout_marginTop="2dp"
+                android:scrollbars="vertical"
+                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+                android:scrollbarSize="4dp"
+                android:layout_below="@id/tags_header"
+                android:layout_above="@id/to_lower_floor_button"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
 
-</RelativeLayout>
+        <Button
+                android:id="@+id/to_lower_floor_button"
+                android:text="@string/entry_information_lower_floor"
+                style="@style/Widget.AppCompat.Button"
+                android:textColor="@color/textColor"
+                android:layout_above="@id/bottom_contents_layout"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_alignStart="@id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/to_upper_floor_button"
+                android:text="@string/entry_information_upper_floor"
+                style="@style/Widget.AppCompat.Button"
+                android:textColor="@color/textColor"
+                android:layout_alignParentEnd="true"
+                android:layout_above="@id/bottom_contents_layout"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_alignEnd="@id/icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <FrameLayout
+                android:id="@+id/bottom_contents_layout"
+                android:layout_alignParentBottom="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+</layout>

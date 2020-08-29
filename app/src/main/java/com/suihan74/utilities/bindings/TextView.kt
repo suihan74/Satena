@@ -1,9 +1,12 @@
 package com.suihan74.utilities.bindings
 
+import android.content.Context
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.util.AttributeSet
 import android.util.TypedValue
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
@@ -22,6 +25,44 @@ import org.threeten.bp.format.DateTimeFormatter
 @BindingAdapter("textSizeSp")
 fun TextView.textSizeSp(size: Float) {
     setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
+}
+
+//////////////////////////////////////////////////
+
+class TextViewWithDrawable @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleInt: Int = 0
+) : AppCompatTextView(context, attrs, defStyleInt) {
+    companion object {
+        /** drawableをテキストと同じサイズにして追加する */
+        @JvmStatic
+        @BindingAdapter(
+            value = ["drawableStart", "drawableTop", "drawableEnd", "drawableBottom"],
+            requireAll = false
+        )
+        fun TextViewWithDrawable.setBoundedDrawable(
+            drawableStart: Drawable? = null,
+            drawableTop: Drawable? = null,
+            drawableEnd: Drawable? = null,
+            drawableBottom: Drawable? = null,
+        ) {
+            val color = currentTextColor
+
+            val start = drawableStart?.setTextSizeBounds(this, color)
+            val end = drawableEnd?.setTextSizeBounds(this, color)
+            val top = drawableTop?.setTextSizeBounds(this, color)
+            val bottom = drawableBottom?.setTextSizeBounds(this, color)
+
+            setCompoundDrawables(start, top, end, bottom)
+        }
+
+        private fun Drawable.setTextSizeBounds(textView: TextView, color: Int) : Drawable = apply {
+            val size = textView.textSize.toInt()
+            setBounds(0, 0, size, size)
+            setTint(color)
+        }
+    }
 }
 
 //////////////////////////////////////////////////

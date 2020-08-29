@@ -31,8 +31,8 @@ class BookmarksFragmentViewModel : ViewModel() {
 
 class BookmarksFragment : Fragment() {
     /** BookmarksFragmentの状態管理用ViewModel */
-    private val viewModel: BookmarksFragmentViewModel by lazy {
-        ViewModelProvider(this)[BookmarksFragmentViewModel::class.java]
+    val viewModel: BookmarksFragmentViewModel by lazy {
+        ViewModelProvider(requireActivity())[BookmarksActivity.VIEW_MODEL_CONTENT_FRAGMENT, BookmarksFragmentViewModel::class.java]
     }
 
     companion object {

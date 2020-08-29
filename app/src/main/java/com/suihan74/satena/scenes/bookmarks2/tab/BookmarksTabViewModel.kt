@@ -1,17 +1,28 @@
 package com.suihan74.satena.scenes.bookmarks2.tab
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.view.View
+import android.widget.ImageButton
+import androidx.appcompat.widget.TooltipCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.Job
 
 /** タブごとに表示内容を変更するためBookmarksTabViewModelを継承して必要なメソッドを埋める */
 abstract class BookmarksTabViewModel : ViewModel() {
-    protected lateinit var bookmarksViewModel: BookmarksViewModel
+    lateinit var activityViewModel: BookmarksViewModel
         private set
 
     protected lateinit var preferences: SafeSharedPreferences<PreferenceKey>
@@ -27,11 +38,16 @@ abstract class BookmarksTabViewModel : ViewModel() {
         MutableLiveData<Bookmark?>()
     }
 
+    /** この画面内からスターを追加するポップアップを使用する */
+    val useAddStarPopupMenu by lazy {
+        preferences.getBoolean(PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU)
+    }
+
     /** 初期化 */
     open fun init() {
         bookmarks.observeForever {
             // サインインしているユーザーのブクマを取得する
-            bookmarksViewModel.repository.let { repo ->
+            activityViewModel.repository.let { repo ->
                 val user = repo.userSignedIn
                 if (user != null) {
                     signedUserBookmark.postValue(updateSignedUserBookmark(user))
@@ -78,14 +94,80 @@ abstract class BookmarksTabViewModel : ViewModel() {
         onScrollToBookmarkListener?.invoke(bookmark)
 
 
+    /** スターをつけるボタンを設定 */
+    fun initializeAddStarButton(
+        context: Context,
+        lifecycleOwner: LifecycleOwner,
+        addStarButton: ImageButton,
+        bookmark: Bookmark
+    ) {
+        if (useAddStarPopupMenu &&
+            bookmark.comment.isNotBlank() &&
+            activityViewModel.signedIn.value == true
+        ) {
+            addStarButton.visibility = View.VISIBLE
+
+            val userSignedIn = activityViewModel.repository.userSignedIn
+            val userStar = bookmark.starCount?.firstOrNull { it.user == userSignedIn }
+            if (userSignedIn != null && userStar != null) {
+                addStarButton.setImageResource(R.drawable.ic_add_star_filled)
+                addStarButton.setOnLongClickListener {
+                    activityViewModel.deleteStarDialog(bookmark, userStar)
+                    true
+                }
+            }
+            else {
+                addStarButton.setImageResource(R.drawable.ic_add_star)
+                addStarButton.setOnLongClickListener(null)
+            }
+            TooltipCompat.setTooltipText(addStarButton, context.getString(R.string.add_star_popup_desc))
+
+            addStarButton.setOnClickListener {
+                val popup = AddStarPopupMenu(context).apply {
+                    observeUserStars(
+                        lifecycleOwner,
+                        activityViewModel.repository.userStarsLiveData
+                    )
+
+                    setOnClickAddStarListener { color ->
+                        activityViewModel.postStarDialog(bookmark, color, "")
+                    }
+
+                    setOnClickPurchaseStarsListener {
+                        // カラースター購入ページを開く
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.hatena.ne.jp/shop/star"))
+                        context.startActivity(intent)
+                        dismiss()
+                    }
+                }
+                popup.showAsDropDown(addStarButton)
+            }
+        }
+        else {
+            addStarButton.visibility = View.GONE
+        }
+    }
+
+    // ------ //
+
     class Factory (
+        private val bookmarksTabType: BookmarksTabType,
         private val bookmarksViewModel: BookmarksViewModel,
         private val preferences: SafeSharedPreferences<PreferenceKey>
     ) : ViewModelProvider.NewInstanceFactory() {
+        val key : String by lazy {
+            BookmarksActivity.getTabViewModelKey(bookmarksTabType)
+        }
+
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) =
-            (modelClass.newInstance() as BookmarksTabViewModel).apply {
-                bookmarksViewModel = this@Factory.bookmarksViewModel
+            when (bookmarksTabType) {
+                BookmarksTabType.POPULAR -> PopularTabViewModel()
+                BookmarksTabType.RECENT -> RecentTabViewModel()
+                BookmarksTabType.ALL -> AllBookmarksTabViewModel()
+                BookmarksTabType.CUSTOM -> CustomTabViewModel()
+            }.apply {
+                activityViewModel = this@Factory.bookmarksViewModel
                 preferences = this@Factory.preferences
             } as T
     }

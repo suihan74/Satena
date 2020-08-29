@@ -13,6 +13,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.launch
 
@@ -36,19 +37,18 @@ class UserTagSelectionDialog : DialogFragment() {
         private const val ARG_USER = "ARG_USER"
     }
 
-    private lateinit var viewModel: UserTagSelectionViewModel
+    private val viewModel: UserTagSelectionViewModel by lazy {
+        ViewModelProvider(this)[UserTagSelectionViewModel::class.java]
+    }
 
     private val DIALOG_NEW_TAG by lazy { "DIALOG_NEW_TAG" }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this)[UserTagSelectionViewModel::class.java]
-    }
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val listener = parentFragment as? Listener ?: activity as? Listener
+        val activity = requireActivity() as BookmarksActivity
+        val listener = activity.viewModel
+
         val user = requireArguments().getString(ARG_USER)!!
-        val tags = listener?.getUserTags() ?: emptyList()
+        val tags = listener.getUserTags() ?: emptyList()
 
         val tagNames = tags.map { it.userTag.name }.toTypedArray()
         val initialChecks = tags.map { it.users.any { u -> u.name == user } }.toBooleanArray()

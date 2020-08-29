@@ -77,6 +77,19 @@
                     android:layout_height="wrap_content"/>
 
             <TextView
+                    android:text="@string/pref_bookmarks_using_add_star_popup_menu_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <ToggleButton
+                    android:checked="@={vm.useAddStarPopupMenu}"
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
                     android:text="@string/pref_bookmarks_hiding_toolbar_by_scrolling"
                     android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"

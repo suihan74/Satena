@@ -73,6 +73,21 @@ data class Bookmark (
     /** タグを含んだコメントを取得する */
     val commentRaw : String get() =
         getTagsText { "[$it]" } + comment
+
+    /** ブコメの中身が更新されていないかを確認する */
+    fun same(other: Bookmark?) : Boolean {
+        if (other == null) return false
+        val starCount = starCount ?: emptyList()
+        val otherStarCount = other.starCount ?: emptyList()
+
+        return user == other.user &&
+                commentRaw == other.commentRaw &&
+                timestamp == other.timestamp &&
+                otherStarCount.all { i ->
+                    starCount.firstOrNull { o -> o.user == i.user && o.color == i.color }?.count == i.count
+                }
+        // TODO: スターの比較処理を直す（増える場合は反映されるが、減る場合に反映されない）
+    }
 }
 
 /**

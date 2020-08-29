@@ -7,15 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.NotFoundException
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks2.tab.*
+import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
+import kotlinx.coroutines.launch
 
 class BookmarksTabFragment :
     Fragment()
@@ -25,12 +27,17 @@ class BookmarksTabFragment :
         bookmarksActivity.viewModel
     }
 
-    lateinit var viewModel: BookmarksTabViewModel
-        private set
-
-    private val bookmarksFragmentViewModel: BookmarksFragmentViewModel by lazy {
-        ViewModelProvider(bookmarksFragment)[BookmarksFragmentViewModel::class.java]
+    val viewModel: BookmarksTabViewModel by lazy {
+        val tabType = requireArguments().getEnum(ARG_TAB_TYPE, BookmarksTabType.POPULAR)
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
+        val factory = BookmarksTabViewModel.Factory(tabType, activityViewModel, prefs)
+        ViewModelProvider(this, factory)[factory.key, BookmarksTabViewModel::class.java].apply {
+            init()
+        }
     }
+
+    private val bookmarksFragmentViewModel: BookmarksFragmentViewModel
+        get() = bookmarksFragment.viewModel
 
     /** このフラグメントが配置されているBookmarksActivity */
     private val bookmarksActivity
@@ -46,31 +53,6 @@ class BookmarksTabFragment :
         private const val ARG_TAB_TYPE = "ARG_TAB_TYPE"
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
-        val factory = BookmarksTabViewModel.Factory(activityViewModel, prefs)
-        viewModel =
-            when (requireArguments().getEnum(ARG_TAB_TYPE, BookmarksTabType.POPULAR)) {
-                BookmarksTabType.POPULAR ->
-                    ViewModelProvider(this, factory)[PopularTabViewModel::class.java]
-
-                BookmarksTabType.RECENT ->
-                    ViewModelProvider(this, factory)[RecentTabViewModel::class.java]
-
-                BookmarksTabType.ALL ->
-                    ViewModelProvider(this, factory)[AllBookmarksTabViewModel::class.java]
-
-                BookmarksTabType.CUSTOM ->
-                    ViewModelProvider(this, factory)[CustomTabViewModel::class.java]
-            }
-
-        if (savedInstanceState == null) {
-            viewModel.init()
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -81,7 +63,7 @@ class BookmarksTabFragment :
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
 
         // adapter
-        val bookmarksAdapter = object : BookmarksAdapter() {
+        val bookmarksAdapter = object : BookmarksAdapter(viewLifecycleOwner, viewModel) {
             override fun onItemClicked(bookmark: Bookmark) =
                 bookmarksActivity.onBookmarkClicked(bookmark)
 
@@ -176,6 +158,13 @@ class BookmarksTabFragment :
                 val ignoredUsers = activityViewModel.ignoredUsers.value
                 val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
                 bookmarksAdapter.setBookmarks(bookmarks, bookmarksEntry, it, ignoredUsers, displayMutedMention)
+            }
+        }
+
+        // スター数の変化を監視する
+        activityViewModel.repository.allStarsLiveData.observe(viewLifecycleOwner) {
+            lifecycleScope.launch {
+                bookmarksAdapter.updateStar(it)
             }
         }
 

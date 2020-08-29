@@ -1,11 +1,14 @@
 package com.suihan74.satena.scenes.bookmarks2
 
 import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -14,9 +17,11 @@ import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.hatenaLib.StarColor
+import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
+import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.footer_recycler_view_loadable.view.*
@@ -30,7 +35,10 @@ fun <T> List<T>?.contentsEquals(other: List<T>?) =
     else this!!.size == other!!.size && this.mapIndexed { index, _ -> this[index] == other[index] }.all { it }
 
 
-open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>, RecyclerView.ViewHolder>(DiffCallback()) {
+open class BookmarksAdapter(
+    private val lifecycleOwner: LifecycleOwner,
+    private val viewModel: BookmarksTabViewModel
+) : ListAdapter<RecyclerState<BookmarksAdapter.Entity>, RecyclerView.ViewHolder>(DiffCallback()) {
     private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entity>>() {
         override fun areItemsTheSame(
             oldItem: RecyclerState<Entity>,
@@ -57,10 +65,7 @@ open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>
         override fun equals(other: Any?): Boolean {
             if (other !is Entity) return false
 
-            return bookmark.user == other.bookmark.user &&
-                    bookmark.comment == other.bookmark.comment &&
-                    bookmark.tags.contentsEquals(other.bookmark.tags) &&
-                    bookmark.starCount.contentsEquals(other.bookmark.starCount) &&
+            return bookmark.same(other.bookmark) &&
                     isIgnored == other.isIgnored &&
                     mentions.contentsEquals(other.mentions) &&
                     userTags.contentsEquals(other.userTags)
@@ -182,6 +187,29 @@ open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>
         submitList(newStates)
     }
 
+    /** スター情報を更新 */
+    fun updateStar(starEntries: List<StarsEntry>) {
+        var updated = false
+        val newStates = RecyclerState.makeStatesWithFooter(
+            currentList.mapNotNull { if (it.type == RecyclerType.BODY) it.body else null }
+                .map { entity ->
+                    val b = entity.bookmark.copy(
+                        starCount = starEntries.firstOrNull { s ->
+                            s.url.contains("/${entity.bookmark.user}/")
+                        }?.allStars
+                    )
+                    if (!entity.bookmark.same(b)) {
+                        updated = true
+                    }
+                    entity.copy(bookmark = b)
+                }
+        )
+
+        if (updated) {
+            submitList(newStates)
+        }
+    }
+
     /** ブクマリストアイテム */
     class ViewHolder(
         private val view: View,
@@ -208,7 +236,7 @@ open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>
 
             view.bookmark_comment.apply {
                 text = entity.analyzedComment.comment
-                visibility = (text.isNotEmpty()).toVisibility(View.GONE)
+                //visibility = (text.isNotEmpty()).toVisibility(View.GONE)
 
                 val linkMovementMethod = object : MutableLinkMovementMethod() {
                     override fun onSinglePressed(link: String) {
@@ -243,61 +271,73 @@ open class BookmarksAdapter : ListAdapter<RecyclerState<BookmarksAdapter.Entity>
             view.ignored_user_mark.visibility = entity.isIgnored.toVisibility(View.GONE)
 
             // タグ
-            view.bookmark_tags.apply {
+            view.bookmark_tags?.also { tagsTextView ->
                 if (bookmark.tags.isEmpty()) {
-                    visibility = View.GONE
+                    tagsTextView.visibility = View.GONE
                 }
                 else {
-                    visibility = View.VISIBLE
+                    tagsTextView.visibility = View.VISIBLE
                     val tagsText = bookmark.tags.joinToString(", ")
-                    text = SpannableString("_$tagsText").apply {
-                        val icon = resources.getDrawable(R.drawable.ic_tag, null).apply {
-                            setBounds(0, 0, lineHeight, lineHeight)
-                            setTint(resources.getColor(R.color.tagColor, null))
+                    tagsTextView.text = SpannableString("_$tagsText").apply {
+                        val resources = tagsTextView.resources
+                        ResourcesCompat.getDrawable(resources, R.drawable.ic_tag, null)?.apply {
+                            setBounds(0, 0, tagsTextView.lineHeight, tagsTextView.lineHeight)
+                            setTint(tagsTextView.currentTextColor)
+                        }?.let { icon ->
+                            setSpan(ImageSpan(icon), 0, 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
-                        setSpan(ImageSpan(icon), 0, 1, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
                 }
             }
 
             // タイムスタンプ & スター
-            val builder = StringBuilder()
+            val builder = SpannableStringBuilder()
             val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
             builder.append(bookmark.timestamp.format(formatter))
             builder.append("　")
 
             if (!bookmark.starCount.isNullOrEmpty()) {
                 bookmark.starCount.let { stars ->
-                    val yellowStarCount = stars.firstOrNull { it.color == StarColor.Yellow }?.count ?: 0
-                    val redStarCount = stars.firstOrNull { it.color == StarColor.Red }?.count ?: 0
-                    val greenStarCount = stars.firstOrNull { it.color == StarColor.Green }?.count ?: 0
-                    val blueStarCount = stars.firstOrNull { it.color == StarColor.Blue }?.count ?: 0
-                    val purpleStarCount = stars.firstOrNull { it.color == StarColor.Purple }?.count ?: 0
+                    val yellowStarCount = stars.filter { it.color == StarColor.Yellow }.sumBy { it.count }
+                    val redStarCount = stars.filter { it.color == StarColor.Red }.sumBy { it.count }
+                    val greenStarCount = stars.filter { it.color == StarColor.Green }.sumBy { it.count }
+                    val blueStarCount = stars.filter { it.color == StarColor.Blue }.sumBy { it.count }
+                    val purpleStarCount = stars.filter { it.color == StarColor.Purple }.sumBy { it.count }
 
-                    appendStarText(builder, purpleStarCount, view.context, R.color.starPurple)
-                    appendStarText(builder, blueStarCount, view.context, R.color.starBlue)
-                    appendStarText(builder, redStarCount, view.context, R.color.starRed)
-                    appendStarText(builder, greenStarCount, view.context, R.color.starGreen)
-                    appendStarText(builder, yellowStarCount, view.context, R.color.starYellow)
+                    appendStarSpan(builder, purpleStarCount, view.context, R.style.StarSpan_Purple)
+                    appendStarSpan(builder, blueStarCount, view.context, R.style.StarSpan_Blue)
+                    appendStarSpan(builder, redStarCount, view.context, R.style.StarSpan_Red)
+                    appendStarSpan(builder, greenStarCount, view.context, R.style.StarSpan_Green)
+                    appendStarSpan(builder, yellowStarCount, view.context, R.style.StarSpan_Yellow)
                 }
             }
-            view.bookmark_timestamp.setHtml(builder.toString())
+
+            // タイムスタンプ部分テキストを設定
+            view.bookmark_timestamp.text = builder
+
+            // スターを付けるボタンを設定
+            bookmarksAdapter.viewModel.initializeAddStarButton(
+                view.context!!,
+                bookmarksAdapter.lifecycleOwner,
+                view.add_star_button,
+                bookmark
+            )
 
             // ユーザータグ
             if (userTags.isNullOrEmpty()) {
                 view.user_tags.visibility = View.GONE
             }
             else {
-                view.user_tags.apply {
-                    val icon = resources.getDrawable(R.drawable.ic_user_tag, null).apply {
-                        val size = textSize.toInt()
+                view.user_tags.let { textView ->
+                    val icon = ResourcesCompat.getDrawable(textView.resources, R.drawable.ic_user_tag, null)?.apply {
+                        val size = textView.textSize.toInt()
                         setBounds(0, 0, size, size)
-                        setTint(resources.getColor(R.color.tagColor, null))
+                        setTint(textView.currentTextColor)
                     }
-                    setCompoundDrawablesRelative(icon, null, null, null)
+                    textView.setCompoundDrawablesRelative(icon, null, null, null)
 
-                    text = userTags.joinToString(", ") { it.name }
-                    visibility = View.VISIBLE
+                    textView.text = userTags.joinToString(", ") { it.name }
+                    textView.visibility = View.VISIBLE
                 }
             }
 
