@@ -26,6 +26,8 @@ class CustomBottomAppBar : BottomAppBar {
         fabAttached: Boolean
     ): Int {
         return if (menuGravity == Gravity.END && fabAttached && fabAlignmentMode == FAB_ALIGNMENT_MODE_END) {
+            // FABがアタッチされている場合通常は左寄せされる
+            // それを強制的に右寄せする
             val translationX = super.getActionMenuViewTranslationX(
                 actionMenuView,
                 fabAlignmentMode,
@@ -37,6 +39,15 @@ class CustomBottomAppBar : BottomAppBar {
             val density = context.resources.displayMetrics.density
             val fabMargin = (fabCradleMargin + fabCradleRoundedCornerRadius * 2 + (fabSize + additionalMargin) * density).toInt()
             translationX - fabMargin
+        }
+        else if (menuGravity == Gravity.START && !fabAttached) {
+            // FABがアタッチされていない場合通常右寄せされる
+            // それを強制的に左寄せにする
+            super.getActionMenuViewTranslationX(
+                actionMenuView,
+                FAB_ALIGNMENT_MODE_END,
+                true
+            )
         }
         else super.getActionMenuViewTranslationX(
             actionMenuView,

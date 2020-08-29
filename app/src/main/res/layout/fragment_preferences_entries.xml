@@ -69,6 +69,7 @@
                     android:visibility="@{vm.bottomLayoutMode}"
                     items="@{vm.bottomBarButtons}"
                     fragmentManager="@{fragmentManager}"
+                    app:menuGravity="@{vm.bottomBarButtonsGravity}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
 

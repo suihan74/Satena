@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+<layout>
+    <data>
+        <variable
+                name="menuGravity"
+                type="Integer" />
+    </data>
 
-    <com.google.android.material.bottomappbar.BottomAppBar
-            android:id="@+id/bottom_app_bar"
-            app:backgroundTint="?attr/tabBackground"
-            app:fabCradleRoundedCornerRadius="8dp"
-            app:fabAlignmentMode="end"
-            app:contentInsetStart="0dp"
-            app:contentInsetLeft="0dp"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
-            android:layout_height="48dp"/>
+            android:layout_height="wrap_content">
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <com.suihan74.utilities.CustomBottomAppBar
+                android:id="@+id/bottom_app_bar"
+                app:backgroundTint="?attr/tabBackground"
+                app:fabCradleRoundedCornerRadius="8dp"
+                app:fabAlignmentMode="end"
+                app:contentInsetStart="0dp"
+                app:contentInsetLeft="0dp"
+                app:menuGravity="@{menuGravity}"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

@@ -8,10 +8,13 @@ import android.view.MenuItem
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.MenuItemCompat
 import androidx.databinding.BindingAdapter
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.ViewUserBottomItemsSetterBinding
 import com.suihan74.satena.scenes.entries2.UserBottomItem
+import com.suihan74.utilities.bindMenuItemsGravity
 import com.suihan74.utilities.getThemeColor
 import kotlinx.android.synthetic.main.view_user_bottom_items_setter.view.*
 
@@ -19,13 +22,20 @@ class UserBottomItemsSetter : CoordinatorLayout {
     companion object {
         @JvmStatic
         @BindingAdapter("items", "fragmentManager")
-        fun setItems(
+        fun bindItems(
             instance: UserBottomItemsSetter,
             liveData: MutableLiveData<List<UserBottomItem>>?,
             fragmentManager: FragmentManager?
         ) {
             instance.itemsLiveData = liveData
             instance.fragmentManager = fragmentManager
+            instance.inflateButtons()
+        }
+
+        @JvmStatic
+        @BindingAdapter("menuGravity")
+        fun bindMenuGravity(instance: UserBottomItemsSetter, gravity: Int) {
+            instance.binding.bottomAppBar.bindMenuItemsGravity(gravity)
             instance.inflateButtons()
         }
 
@@ -39,9 +49,16 @@ class UserBottomItemsSetter : CoordinatorLayout {
         attrs: AttributeSet?,
         defStyleInt: Int
     ) : super(context, attrs, defStyleInt) {
-        val inflater = LayoutInflater.from(context)
-        inflater.inflate(R.layout.view_user_bottom_items_setter, this, true)
+        binding = DataBindingUtil.inflate<ViewUserBottomItemsSetterBinding>(
+            LayoutInflater.from(context),
+            R.layout.view_user_bottom_items_setter,
+            this,
+            true
+        )
     }
+
+    /** バインド */
+    private val binding: ViewUserBottomItemsSetterBinding
 
     /** 表示する項目 */
     private var itemsLiveData : MutableLiveData<List<UserBottomItem>>? = null
