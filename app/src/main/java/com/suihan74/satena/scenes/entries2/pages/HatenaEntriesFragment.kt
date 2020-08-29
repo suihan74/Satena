@@ -72,7 +72,6 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
         val result = super.updateActivityAppBar(activity, tabLayout, bottomAppBar)
 
         bottomAppBar?.let { appBar ->
-//            appBar.inflateMenu(R.menu.spinner_issues_bottom)
             activity.inflateAdditionalBottomMenu(R.menu.spinner_issues_bottom)
             initializeMenu(appBar.menu)
         }
