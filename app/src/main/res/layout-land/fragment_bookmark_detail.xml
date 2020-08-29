@@ -93,7 +93,8 @@
 
             <ImageView
                     android:id="@+id/ignored_user_mark"
-                    android:src="@drawable/ic_ignored_user_mark"
+                    app:srcCompat="@drawable/ic_ignored_user_mark"
+                    app:tint="?attr/tagTextColor"
                     android:layout_below="@id/tags_layout"
                     android:layout_alignStart="@id/tags_layout"
                     android:layout_marginTop="4dp"

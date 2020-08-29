@@ -16,7 +16,8 @@
 
     <ImageView
             android:id="@+id/ignored_user_mark"
-            android:src="@drawable/ic_ignored_user_mark"
+            app:srcCompat="@drawable/ic_ignored_user_mark"
+            app:tint="?attr/tagTextColor"
             android:visibility="invisible"
             android:layout_below="@id/bookmark_user_icon"
             android:layout_alignStart="@id/bookmark_user_icon"
