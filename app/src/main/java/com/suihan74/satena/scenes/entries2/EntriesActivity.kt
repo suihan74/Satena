@@ -38,6 +38,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.*
+import com.suihan74.utilities.bindMenuItemsGravity
 import kotlinx.android.synthetic.main.activity_entries2.*
 
 class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
@@ -506,7 +507,7 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         bottomAppBar.setOnMenuItemClickListener(null)
         bottom_search_view.visibility = View.GONE
         bottomAppBar.alsoAs<CustomBottomAppBar> {
-            CustomBottomAppBar.setMenuItemsGravity(it, viewModel.bottomBarItemsGravity)
+            it.bindMenuItemsGravity(viewModel.bottomBarItemsGravity)
         }
 
         inflateBasicBottomItems(bottomAppBar)

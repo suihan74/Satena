@@ -105,7 +105,6 @@ class UserBottomItemsSetter : CoordinatorLayout {
 
     /** アイテムを追加 */
     private fun addItem(position: Int, item: UserBottomItem) {
-        // TODO: skeleton
         val newItems =
             if (position >= items.size) items.plus(item)
             else items.mapIndexed { i, existed ->

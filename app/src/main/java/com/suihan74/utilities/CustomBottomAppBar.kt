@@ -9,18 +9,8 @@ import com.google.android.material.bottomappbar.BottomAppBar
 
 /** 「右FAB」and「右詰めメニュー」を表示するBottomAppBar */
 class CustomBottomAppBar : BottomAppBar {
-    private var menuGravity: Int = Gravity.START
-
-    companion object {
-        @BindingAdapter("menuItemsGravity")
-        @JvmStatic
-        fun setMenuItemsGravity(instance: CustomBottomAppBar, gravity: Int?) {
-            if (gravity != null) {
-                instance.menuGravity = gravity
-                instance.refreshDrawableState()
-            }
-        }
-    }
+    var menuGravity: Int = Gravity.START
+        internal set
 
     constructor(context: Context) : this(context, null, 0)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -53,5 +43,13 @@ class CustomBottomAppBar : BottomAppBar {
             fabAlignmentMode,
             fabAttached
         )
+    }
+}
+
+@BindingAdapter("menuGravity")
+fun CustomBottomAppBar.bindMenuItemsGravity(gravity: Int?) {
+    if (gravity != null) {
+        menuGravity = gravity
+        refreshDrawableState()
     }
 }
