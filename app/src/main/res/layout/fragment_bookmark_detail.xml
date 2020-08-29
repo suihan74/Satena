@@ -32,6 +32,7 @@
 
                     <ImageView
                             android:id="@+id/user_icon"
+                            android:contentDescription="@null"
                             android:layout_marginStart="16dp"
                             android:layout_marginTop="16dp"
                             android:layout_marginBottom="16dp"
@@ -40,6 +41,7 @@
 
                     <ImageView
                             android:id="@+id/ignored_user_mark"
+                            android:contentDescription="@null"
                             app:srcCompat="@drawable/ic_ignored_user_mark"
                             app:tint="?attr/tagTextColor"
                             android:layout_below="@id/user_icon"
@@ -88,6 +90,7 @@
 
                         <ImageView
                                 android:id="@+id/tag_icon"
+                                android:contentDescription="@null"
                                 app:srcCompat="@drawable/ic_tag"
                                 app:tint="?attr/tagTextColor"
                                 android:layout_marginTop="3dp"
@@ -105,8 +108,9 @@
 
                     <ImageButton
                             android:id="@+id/menu_button"
-                            android:src="@drawable/ic_more_horiz"
-                            android:tint="?attr/textColor"
+                            android:contentDescription="@null"
+                            app:srcCompat="@drawable/ic_more_horiz"
+                            app:tint="?attr/textColor"
                             android:background="@drawable/control_background_40dp_material"
                             android:layout_alignEnd="@id/comment"
                             android:layout_below="@id/comment"
