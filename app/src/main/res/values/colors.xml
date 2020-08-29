@@ -60,11 +60,12 @@
 
     <!-- スター -->
     <color name="starMenu">#666</color>
+
     <color name="starYellow">#FFBB00</color>
-    <color name="starRed">#FD384B</color>
-    <color name="starGreen">#1DE74C</color>
-    <color name="starBlue">#47B5FF</color>
-    <color name="starPurple">#A709A7</color>
+    <color name="starRed">#FF0451</color>
+    <color name="starGreen">#00D200</color>
+    <color name="starBlue">#00D0EF</color>
+    <color name="starPurple">#77F</color>
 
     <!-- Mastodon -->
     <color name="mastodonTextColor">#FDFDFE</color>
