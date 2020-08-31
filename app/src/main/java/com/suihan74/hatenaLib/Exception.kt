@@ -7,25 +7,19 @@ class SignInFailureException : RuntimeException {
 }
 
 /** はてなスターへのサインイン失敗 */
-class SignInStarFailureException : RuntimeException {
-    constructor(cause: Throwable?) : super(cause)
-    constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
-}
+class SignInStarFailureException(message: String? = null, cause: Throwable? = null) : Throwable(message, cause)
 
 /** 非表示ユーザーリスト更新失敗 */
-class FetchIgnoredUsersFailureException : RuntimeException {
-    constructor(cause: Throwable?) : super(cause)
-    constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
-}
+class FetchIgnoredUsersFailureException(message: String? = null, cause: Throwable? = null) : Throwable(message, cause)
 
 /** 404 Not Found */
-class NotFoundException : RuntimeException {
-    constructor(cause: Throwable?) : super(cause)
-    constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
-}
+class NotFoundException(message: String? = null, cause: Throwable? = null) : Throwable(message, cause)
 
 /** timeout */
 class TimeoutException : RuntimeException {
     constructor(cause: Throwable?) : super(cause)
     constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
 }
+
+/** ユーザーが所持するスター数の取得に失敗 */
+class FetchUserStarsException(message: String? = null, cause: Throwable? = null) : Throwable(message, cause)

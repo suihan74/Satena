@@ -1091,7 +1091,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             return@async response.result["counts"] ?: UserColorStarsCount(0, 0, 0, 0)
         }
 
-        throw RuntimeException("connection error")
+        throw FetchUserStarsException()
     }
 
     /**
