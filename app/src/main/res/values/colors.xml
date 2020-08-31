@@ -39,6 +39,7 @@
 
     <!-- ユーザーカウンタ -->
     <color name="bookmarkUsersCountText">#f94e5b</color>
+    <color name="bookmarkUsersCountTextDark">#F9757F</color>
     <color name="bookmarkUsersCountBackground">#FBDFE0</color>
 
     <!-- ブックマーク投稿ダイアログ -->

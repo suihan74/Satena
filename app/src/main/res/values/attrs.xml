@@ -8,6 +8,7 @@
         <attr name="textColorHint" format="color"/>
         <attr name="bookmarkDetailTopBackground" format="color"/>
         <attr name="tagTextColor" format="color"/>
+        <attr name="bookmarkCountColor" format="color"/>
     </declare-styleable>
 
     <declare-styleable name="TextFloatingActionButton">
