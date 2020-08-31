@@ -239,7 +239,14 @@ class BookmarksViewModel(
         }
 
         // 所持しているスター情報を取得する
-        repository.userStarsLiveData.load()
+        try {
+            repository.userStarsLiveData.load()
+        }
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
+        }
 
         withContext(Dispatchers.Main) {
             onFinally?.invoke()
