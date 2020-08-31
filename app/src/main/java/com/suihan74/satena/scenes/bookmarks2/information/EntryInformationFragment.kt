@@ -23,9 +23,8 @@ import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.fragment_entry_information.view.*
 
 class EntryInformationFragment : Fragment() {
-    private val activityViewModel: BookmarksViewModel by lazy {
-        (requireActivity() as BookmarksActivity).viewModel
-    }
+    private val activityViewModel: BookmarksViewModel
+        get() = bookmarksActivity!!.viewModel
 
     private val bookmarksActivity
         get() = activity as? BookmarksActivity
@@ -100,7 +99,7 @@ class EntryInformationFragment : Fragment() {
         // タグ情報を監視
         activityViewModel.bookmarksEntry.observe(viewLifecycleOwner) {
             tagsAdapter.setTags(
-                it.tags.map { t -> t.first }.take(10)
+                it?.tags?.map { t -> t.first }?.take(10) ?: emptyList()
             )
         }
 
