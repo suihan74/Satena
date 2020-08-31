@@ -51,7 +51,7 @@
         <TextView
                 android:id="@+id/bookmark_users"
                 android:text="@{entry.count + ` users`}"
-                android:textColor="@color/bookmarkUsersCountText"
+                android:textColor="?attr/bookmarkCountColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/title"
