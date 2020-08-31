@@ -1005,16 +1005,16 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /** はてなスターへのサインインが済んでいるかを確認。必要かつ可能ならばここで再度ログインを試みる */
     private suspend fun checkSignedInStar(message: String? = null) {
         if (!signedInStar()) {
-            try {
-                if (signedIn()) {
+            if (signedIn()) {  // TODO: b.hatenaへの再サインインを試行する
+                try {
                     signInStarAsync().await()
                 }
-                else {
-                    throw RuntimeException()
+                catch (e: Throwable) {
+                    throw SignInStarFailureException(message, e)
                 }
             }
-            catch (e: Throwable) {
-                throw SignInStarFailureException(message, e)
+            else {
+                throw SignInStarFailureException("need to sign-in to sign-in s.hatena")
             }
         }
     }
