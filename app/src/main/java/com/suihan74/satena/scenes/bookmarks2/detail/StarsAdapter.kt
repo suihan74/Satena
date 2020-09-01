@@ -12,7 +12,6 @@ import com.suihan74.satena.R
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_stars.view.*
 
-
 open class StarsAdapter : ListAdapter<RecyclerState<StarWithBookmark>, RecyclerView.ViewHolder>(DiffCallback()) {
     private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<StarWithBookmark>>() {
         override fun areItemsTheSame(

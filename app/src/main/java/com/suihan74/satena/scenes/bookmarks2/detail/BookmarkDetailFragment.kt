@@ -45,7 +45,36 @@ class BookmarkDetailFragment :
     private val activityViewModel: BookmarksViewModel by lazy {
         (requireActivity() as BookmarksActivity).viewModel
     }
-    lateinit var viewModel: BookmarkDetailViewModel
+
+    val viewModel: BookmarkDetailViewModel by lazy {
+        val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val factory = BookmarkDetailViewModel.Factory(activityViewModel.repository, prefs, bookmark)
+        ViewModelProvider(this, factory)[BookmarkDetailViewModel::class.java].apply {
+            // スターロード失敗時の挙動
+            setOnLoadedStarsFailureListener { e ->
+                activity?.showToast(R.string.msg_update_stars_failed)
+                Log.e("UserStars", Log.getStackTraceString(e))
+            }
+            // スター付与完了時の挙動を設定
+            setOnCompletedPostStarListener {
+                activity?.showToast(R.string.msg_post_star_succeeded, viewModel.bookmark.user)
+            }
+            setOnPostStarFailureListener { color, throwable ->
+                when (throwable) {
+                    is BookmarkDetailViewModel.StarExhaustedException -> {
+                        activity?.showToast(R.string.msg_no_color_stars, color)
+                    }
+                    else -> {
+                        activity?.showToast(R.string.msg_post_star_failed, viewModel.bookmark.user)
+                    }
+                }
+                Log.e("PostStar", Log.getStackTraceString(throwable))
+            }
+
+            init()
+        }
+    }
 
     private val bookmarksActivity
         get() = activity as? BookmarksActivity
@@ -70,34 +99,6 @@ class BookmarkDetailFragment :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val factory = BookmarkDetailViewModel.Factory(activityViewModel.repository, prefs, bookmark)
-        viewModel = ViewModelProvider(this, factory)[BookmarkDetailViewModel::class.java].apply {
-            // スターロード失敗時の挙動
-            setOnLoadedStarsFailureListener { e ->
-                activity?.showToast(R.string.msg_update_stars_failed)
-                Log.e("UserStars", Log.getStackTraceString(e))
-            }
-            // スター付与完了時の挙動を設定
-            setOnCompletedPostStarListener {
-                activity?.showToast(R.string.msg_post_star_succeeded, viewModel.bookmark.user)
-            }
-            setOnPostStarFailureListener { color, throwable ->
-                when (throwable) {
-                    is BookmarkDetailViewModel.StarExhaustedException -> {
-                        activity?.showToast(R.string.msg_no_color_stars, color)
-                    }
-                    else -> {
-                        activity?.showToast(R.string.msg_post_star_failed, viewModel.bookmark.user)
-                    }
-                }
-                Log.e("PostStar", Log.getStackTraceString(throwable))
-            }
-        }
-
-        viewModel.init()
 
         // 画面遷移アニメーション
         enterTransition = TransitionSet()

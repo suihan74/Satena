@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
@@ -15,9 +14,11 @@ import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_stars_tab.view.*
 
 class MentionToUserFragment : Fragment(), ScrollableToTop {
-    private val detailViewModel: BookmarkDetailViewModel by lazy {
-        ViewModelProvider(parentFragment as BookmarkDetailFragment)[BookmarkDetailViewModel::class.java]
-    }
+    private val bookmarksActivity: BookmarksActivity?
+        get() = activity as? BookmarksActivity
+
+    private val detailViewModel: BookmarkDetailViewModel
+        get() = (parentFragment as BookmarkDetailFragment).viewModel
 
     companion object {
         fun createInstance() = MentionToUserFragment()
@@ -34,11 +35,11 @@ class MentionToUserFragment : Fragment(), ScrollableToTop {
             override fun onItemClicked(item: StarWithBookmark) {
                 // 戻るボタンを無効化するためスターメニューを閉じる
                 detailViewModel.starsMenuOpened.postValue(false)
-                (activity as? BookmarksActivity)?.onBookmarkClicked(item.bookmark)
+                bookmarksActivity?.onBookmarkClicked(item.bookmark)
             }
 
             override fun onItemLongClicked(item: StarWithBookmark) =
-                (activity as? BookmarksActivity)?.onBookmarkLongClicked(item.bookmark) ?: true
+                bookmarksActivity?.onBookmarkLongClicked(item.bookmark) ?: true
         }
 
         view.stars_list.apply {
