@@ -290,17 +290,22 @@
     <!-- スタースパン色 -->
     <style name="StarSpan.Yellow" parent="@android:style/TextAppearance">
         <item name="android:textColor">@color/starYellow</item>
+        <item name="android:textSize">14sp</item>
     </style>
     <style name="StarSpan.Red" parent="@android:style/TextAppearance">
         <item name="android:textColor">@color/starRed</item>
+        <item name="android:textSize">14sp</item>
     </style>
     <style name="StarSpan.Green" parent="@android:style/TextAppearance">
         <item name="android:textColor">@color/starGreen</item>
+        <item name="android:textSize">14sp</item>
     </style>
     <style name="StarSpan.Blue" parent="@android:style/TextAppearance">
         <item name="android:textColor">@color/starBlue</item>
+        <item name="android:textSize">14sp</item>
     </style>
     <style name="StarSpan.Purple" parent="@android:style/TextAppearance">
         <item name="android:textColor">@color/starPurple</item>
+        <item name="android:textSize">14sp</item>
     </style>
 </resources>
