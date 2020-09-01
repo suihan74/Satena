@@ -19,8 +19,8 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.showCustomTabsIntent
+import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.makeSpannedFromHtml
-import com.suihan74.utilities.toVisibility
 import kotlinx.android.synthetic.main.fragment_entry_information.view.*
 
 class EntryInformationFragment : Fragment() {
@@ -53,18 +53,22 @@ class EntryInformationFragment : Fragment() {
             text = makeSpannedFromHtml("<u>${Uri.decode(entry.url)}</u>")
 
             setOnClickListener {
-                (activity as? BookmarksActivity)?.closeDrawer()
-                requireActivity().showCustomTabsIntent(entry)
+                bookmarksActivity?.let {
+                    it.closeDrawer()
+                    it.showCustomTabsIntent(entry)
+                }
             }
         }
 
         val tagsAdapter = object : TagsAdapter() {
             override fun onItemClicked(tag: String) {
-                (activity as? BookmarksActivity)?.closeDrawer()
-                val intent = Intent(activity, EntriesActivity::class.java).apply {
-                    putExtra(EntriesActivity.EXTRA_SEARCH_TAG, tag)
+                bookmarksActivity?.let { activity ->
+                    activity.closeDrawer()
+                    val intent = Intent(activity, EntriesActivity::class.java).apply {
+                        putExtra(EntriesActivity.EXTRA_SEARCH_TAG, tag)
+                    }
+                    startActivity(intent)
                 }
-                startActivity(intent)
             }
         }
 
@@ -79,7 +83,7 @@ class EntryInformationFragment : Fragment() {
 
         // -1階
         view.to_lower_floor_button.apply {
-            visibility = HatenaClient.isUrlCommentPages(entry.url).toVisibility(defaultInvisible = View.INVISIBLE)
+            setVisibility(HatenaClient.isUrlCommentPages(entry.url), View.INVISIBLE)
 
             setOnClickListener {
                 val url = HatenaClient.getEntryUrlFromCommentPageUrl(entry.url)
@@ -89,7 +93,7 @@ class EntryInformationFragment : Fragment() {
 
         // +1階 (今見ているページのコメントページに移動)
         view.to_upper_floor_button.apply {
-            visibility = (entry.count > 0).toVisibility(defaultInvisible = View.INVISIBLE)
+            setVisibility(entry.count > 0, View.INVISIBLE)
 
             setOnClickListener {
                 val url = HatenaClient.getCommentPageUrlFromEntryUrl(entry.url)
@@ -117,10 +121,12 @@ class EntryInformationFragment : Fragment() {
     }
 
     private fun changeFloor(url: String) {
-        (activity as? BookmarksActivity)?.closeDrawer()
-        val intent = Intent(context, BookmarksActivity::class.java).apply {
-            putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
+        bookmarksActivity?.let { activity ->
+            activity.closeDrawer()
+            val intent = Intent(activity, BookmarksActivity::class.java).apply {
+                putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
+            }
+            startActivity(intent)
         }
-        context?.startActivity(intent)
     }
 }
