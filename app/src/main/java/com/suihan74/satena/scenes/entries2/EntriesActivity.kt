@@ -38,7 +38,6 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.*
-import com.suihan74.utilities.bindMenuItemsGravity
 import kotlinx.android.synthetic.main.activity_entries2.*
 
 class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
@@ -561,6 +560,10 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         UserBottomItem.OPEN_OFFICIAL_TOP -> {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://b.hatena.ne.jp/"))
             startActivity(intent)
+        }
+
+        UserBottomItem.CATEGORIES -> {
+            drawer_layout.openDrawer(drawer_area)
         }
     }
 

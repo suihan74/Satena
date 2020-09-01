@@ -3,14 +3,16 @@ package com.suihan74.satena.scenes.entries2
 import android.content.res.ColorStateList
 import android.view.Menu
 import android.view.MenuItem
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.core.view.MenuItemCompat
 import com.suihan74.satena.R
 
 /** ボトムバーに表示する項目 */
 enum class UserBottomItem(
     val id: Int,
-    val iconId: Int,
-    val textId: Int,
+    @DrawableRes val iconId: Int,
+    @StringRes val textId: Int,
     val requireSignedIn: Boolean = false
 ) {
     SCROLL_TO_TOP(0,
@@ -56,13 +58,11 @@ enum class UserBottomItem(
         R.string.home_category_desc
     ),
 
-    // TODO: カテゴリ項目で置き換える
-/*
-    CATEGORY(x,
+    CATEGORIES(7,
         R.drawable.ic_baseline_category,
         R.string.categories_desc
-    );
-*/
+    ),
+
     ;
 
     /** Menuに追加する */
