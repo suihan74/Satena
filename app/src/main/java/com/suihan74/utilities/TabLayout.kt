@@ -9,7 +9,7 @@ fun TabLayout.setOnTabLongClickListener(listener: ((Int)->Boolean)?) {
     val tabs = getChildAt(0) as ViewGroup
     val onLongClickListener = if (listener == null) null else View.OnLongClickListener { v -> listener(tabs.indexOfChild(v)) }
 
-    (0 until tabs.childCount).forEach { idx ->
-        tabs.getChildAt(idx)?.setOnLongClickListener(onLongClickListener)
+    repeat (tabs.childCount) { i ->
+        tabs.getChildAt(i)?.setOnLongClickListener(onLongClickListener)
     }
 }

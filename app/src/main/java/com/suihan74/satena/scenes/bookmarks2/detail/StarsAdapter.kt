@@ -118,7 +118,7 @@ open class StarsAdapter : ListAdapter<RecyclerState<StarWithBookmark>, RecyclerV
                             view.context.getString(R.string.star_with_count, star.count)
                         else
                             buildString {
-                                for (i in 1..star.count) append(view.context.getString(R.string.star))
+                                repeat (star.count) { append(view.context.getString(R.string.star)) }
                             }
 
                     view.star_stars_count.setHtml("<font color=\"$starColor\">$starText</font>")

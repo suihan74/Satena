@@ -6,9 +6,12 @@ import androidx.fragment.app.FragmentPagerAdapter
 
 /** 全てのタブに対して処理を行う */
 @Suppress("UNCHECKED_CAST")
-fun <T : Fragment> FragmentPagerAdapter.map(container: ViewGroup, action: (T)->Unit) {
-    (0 until count).forEach { idx ->
-        (instantiateItem(container, idx) as? T)?.let { instance ->
+inline fun <reified T : Fragment> FragmentPagerAdapter.map(
+    container: ViewGroup,
+    crossinline action: (T)->Unit
+) {
+    repeat (count) { i ->
+        instantiateItem(container, i).alsoAs<T> { instance ->
             action(instance)
         }
     }

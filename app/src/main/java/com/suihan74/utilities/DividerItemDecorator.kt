@@ -12,7 +12,7 @@ class DividerItemDecorator(private val divider : Drawable) : RecyclerView.ItemDe
         val divRight = parent.width - parent.paddingRight
 
         val bodiesCount = parent.childCount - 2
-        for (i in 0..bodiesCount) {
+        repeat (bodiesCount + 1) { i ->
             val child = parent.getChildAt(i)
             val params = child.layoutParams as RecyclerView.LayoutParams
 

@@ -15,6 +15,7 @@ import android.transition.TransitionSet
 import android.util.Log
 import android.view.*
 import androidx.activity.addCallback
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -118,15 +119,16 @@ class BookmarkDetailFragment :
         val tabAdapter = DetailTabAdapter(this).apply {
             setOnDataSetChangedListener {
                 // アイコンを設定
-                (0 until count).forEach { i ->
-                    val context = requireContext()
-                    val tab = view.tab_layout.getTabAt(i) ?: return@forEach
-                    tab.icon = context.getDrawable(getPageTitleIcon(i))?.also {
-                        val color = context.getThemeColor(
-                            if (i == view.tab_layout.selectedTabPosition) R.attr.tabSelectedTextColor
-                            else R.attr.tabTextColor
-                        )
-                        DrawableCompat.setColorFilter(it, color)
+                val context = requireContext()
+                repeat(count) { i ->
+                    view.tab_layout.getTabAt(i)?.let { tab ->
+                        tab.icon = ContextCompat.getDrawable(context, getPageTitleIcon(i))?.also {
+                            val color = context.getThemeColor(
+                                if (i == view.tab_layout.selectedTabPosition) R.attr.tabSelectedTextColor
+                                else R.attr.tabTextColor
+                            )
+                            DrawableCompat.setColorFilter(it, color)
+                        }
                     }
                 }
             }
