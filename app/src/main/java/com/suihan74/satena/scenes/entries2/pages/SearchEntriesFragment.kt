@@ -22,9 +22,13 @@ import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
+import kotlinx.android.synthetic.main.activity_entries2.*
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment.Listener {
+    private val searchViewModel : SearchEntriesViewModel
+        get() = viewModel as SearchEntriesViewModel
+
     companion object {
         fun createInstance() = SearchEntriesFragment().withArguments {
             putEnum(ARG_CATEGORY, Category.Search)
@@ -59,9 +63,8 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
             val arguments = requireArguments()
-            val viewModel = viewModel as SearchEntriesViewModel
-            viewModel.searchQuery.value = arguments.getString(ARG_SEARCH_QUERY)
-            viewModel.searchType.value = arguments.getEnum(ARG_SEARCH_TYPE, SearchType.Text)
+            searchViewModel.searchQuery.value = arguments.getString(ARG_SEARCH_QUERY)
+            searchViewModel.searchType.value = arguments.getEnum(ARG_SEARCH_TYPE, SearchType.Text)
         }
     }
 
@@ -80,6 +83,11 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
             initializeMenu(bottomAppBar.menu, bottomAppBar)
         }
 
+        if (!searchViewModel.searchQuery.value.isNullOrBlank()) {
+            val toolbar = requireActivity().toolbar
+            toolbar.subtitle = searchViewModel.searchQuery.value
+        }
+
         return result
     }
 
@@ -91,7 +99,7 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
 
     /** メニュー初期化処理 */
     private fun initializeMenu(menu: Menu, bottomAppBar: BottomAppBar? = null) {
-        val viewModel = viewModel as SearchEntriesViewModel
+        val viewModel = searchViewModel
         val activity = activity as EntriesActivity
 
         // 検索クエリ入力ボックスの設定
@@ -166,6 +174,9 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
                 val root = fragment.view
 
                 (root?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
+                    val toolbar = requireActivity().toolbar
+                    toolbar.subtitle = viewModel.searchQuery.value
+
                     reloadLists()
                 }
 
