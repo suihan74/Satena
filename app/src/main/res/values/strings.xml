@@ -331,7 +331,7 @@
 
     <!-- ブクマ画面 -->
     <string name="toolbar_subtitle_bookmarks">"%d users (%d comments)"</string>
-    <string name="add_star_popup_desc">ブコメにつけるスターを選択します</string>
+    <string name="add_star_popup_desc">スターをつける</string>
     <string name="custom_bookmarks_tab_pref_dialog_title">カスタムブクマリストの設定</string>
     <string name="custom_bookmarks_no_comment_active">無言ブクマを表示</string>
     <string name="custom_bookmarks_ignored_user_active">非表示ユーザーを表示</string>
