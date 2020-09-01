@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks2.tab
 
-import kotlinx.coroutines.Job
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 class PopularTabViewModel : BookmarksTabViewModel() {
     override fun init() {
@@ -13,5 +14,5 @@ class PopularTabViewModel : BookmarksTabViewModel() {
     }
 
     override fun updateBookmarks() = activityViewModel.updateDigest()
-    override fun loadNextBookmarks() = Job()
+    override fun loadNextBookmarks() = viewModelScope.launch {}
 }
