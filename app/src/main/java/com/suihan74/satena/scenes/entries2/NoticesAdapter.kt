@@ -27,6 +27,13 @@ class NoticesAdapter : ListAdapter<RecyclerState<Notice>, RecyclerView.ViewHolde
         onItemLongClicked = listener
     }
 
+    /** 複数回クリックリスナが呼ばれるのを防ぐ */
+    private var itemClicked = false
+
+    fun onResume() {
+        itemClicked = false
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
@@ -55,7 +62,8 @@ class NoticesAdapter : ListAdapter<RecyclerState<Notice>, RecyclerView.ViewHolde
                 holder.notice = notice
                 holder.itemView.apply {
                     setOnClickListener {
-                        if (notice != null) {
+                        if (notice != null && !itemClicked) {
+                            itemClicked = true
                             onItemClicked?.invoke(notice)
                         }
                     }
