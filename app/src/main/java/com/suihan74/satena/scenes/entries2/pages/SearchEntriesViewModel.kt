@@ -49,9 +49,6 @@ class SearchEntriesViewModel(
         }
         searchType.observe(lifecycleOwner) {
             viewModel.searchType = it
-            entriesAdapter.clearEntries {
-                viewModel.refresh(onError)
-            }
         }
     }
 
