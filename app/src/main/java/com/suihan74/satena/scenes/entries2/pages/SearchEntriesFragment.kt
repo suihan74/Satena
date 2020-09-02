@@ -122,13 +122,12 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
                 AlertDialogFragment.Builder(R.style.AlertDialogStyle)
                     .setTitle(R.string.desc_search_type)
                     .setNegativeButton(R.string.dialog_cancel)
-                    .setItems(SearchType.values().map { it.name }.toTypedArray())
+                    .setItems(SearchType.values().map { getString(it.textId) }.toTypedArray())
                     .showAllowingStateLoss(childFragmentManager, DIALOG_SEARCH_TYPE)
                 return@setOnMenuItemClickListener true
             }
 
             viewModel.searchType.observe(viewLifecycleOwner) {
-                item.title = it.name
                 val context = requireContext()
                 val iconId =
                     when (it) {
@@ -139,6 +138,9 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
                 item.icon = ContextCompat.getDrawable(context, iconId)!!.apply {
                     setTint(context.getColor(R.color.colorPrimaryText))
                 }
+                val text = getString(it.textId)
+                item.title = text
+                requireActivity().toolbar.title = text + getString(R.string.category_search)
             }
         }
     }
