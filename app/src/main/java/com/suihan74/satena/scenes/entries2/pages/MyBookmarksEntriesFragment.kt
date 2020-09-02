@@ -16,7 +16,10 @@ import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.*
+import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
+import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.initialize
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
 import kotlinx.android.synthetic.main.activity_entries2.*
@@ -108,8 +111,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
                     if (searchView.visibility == View.VISIBLE) {
                         searchView.visibility = View.GONE
                         viewModel.isSearchViewExpanded = false
-                        viewModel.searchQuery.value = null
-                        // TODO: クリアをすぐにリストに反映する
+                        searchView.setQuery("", true)
                     }
                 }
                 else {
@@ -198,11 +200,9 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
         setOnCloseListener {
             viewModel.isSearchViewExpanded = false
             viewModel.searchQuery.value = null
+            setQuery("", true)
             onBackPressedCallback?.isEnabled = detectBackPressedCallbackStatus(viewModel)
 
-            (fragment.view?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
-                reloadLists()
-            }
             return@setOnCloseListener false
         }
 
