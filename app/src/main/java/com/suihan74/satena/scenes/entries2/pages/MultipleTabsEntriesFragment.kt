@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.viewpager.widget.ViewPager
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.BookmarkResult
@@ -17,6 +18,7 @@ import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragment
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.alsoAs
 import com.suihan74.utilities.setOnTabLongClickListener
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
@@ -31,7 +33,12 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        val binding = DataBindingUtil.inflate<FragmentEntries2Binding>(inflater, R.layout.fragment_entries2, container, false).apply {
+        val binding = DataBindingUtil.inflate<FragmentEntries2Binding>(
+            inflater,
+            R.layout.fragment_entries2,
+            container,
+            false
+        ).apply {
             lifecycleOwner = this@MultipleTabsEntriesFragment
             vm = viewModel
         }
@@ -50,41 +57,47 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
         return view
     }
 
+    private val entriesTabPager : ViewPager?
+        get() = binding?.entriesTabPager
+
+    private val entriesTabAdapter : EntriesTabAdapter?
+        get() = entriesTabPager?.adapter as? EntriesTabAdapter
+
     /** 全てのタブのリストを再構成する */
     override fun reloadLists() {
-        val adapter = binding?.entriesTabPager?.adapter as? EntriesTabAdapter ?: return
-        adapter.reloadLists()
+        entriesTabAdapter?.reloadLists()
     }
 
     /** リストを再構成する(取得を行わない単なる再配置) */
     override fun refreshLists() {
-        val adapter = binding?.entriesTabPager?.adapter as? EntriesTabAdapter ?: return
-        adapter.refreshLists()
+        entriesTabAdapter?.refreshLists()
     }
 
     /** エントリに付けたブクマを削除 */
     override fun removeBookmark(entry: Entry) {
-        val adapter = binding?.entriesTabPager?.adapter as? EntriesTabAdapter ?: return
-        adapter.removeBookmark(entry)
+        entriesTabAdapter?.removeBookmark(entry)
     }
 
     /** エントリに付けたブクマを更新する */
     override fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
-        val adapter = binding?.entriesTabPager?.adapter as? EntriesTabAdapter ?: return
-        adapter.updateBookmark(entry, bookmarkResult)
+        entriesTabAdapter?.updateBookmark(entry, bookmarkResult)
     }
 
     /** 与えられたタブのコンテンツを最上までスクロールする */
     private fun scrollContentToTop(tabPosition: Int) {
-        val entriesTabPager = view?.entries_tab_pager ?: return
-        val adapter = entriesTabPager.adapter as EntriesTabAdapter
-        val fragment = adapter.instantiateItem(entriesTabPager, tabPosition) as? EntriesTabFragment
-        fragment?.scrollToTop()
+        val entriesTabPager = entriesTabPager ?: return
+        entriesTabAdapter?.instantiateItem(entriesTabPager, tabPosition).alsoAs<EntriesTabFragment> {
+            it.scrollToTop()
+        }
     }
 
     /** EntriesActivityのタブと下部アプリバーをこのフラグメントの情報で更新する */
-    override fun updateActivityAppBar(activity: EntriesActivity, tabLayout: TabLayout, bottomAppBar: BottomAppBar?) : Boolean {
-        val entriesTabPager = view?.entries_tab_pager ?: return false
+    override fun updateActivityAppBar(
+        activity: EntriesActivity,
+        tabLayout: TabLayout,
+        bottomAppBar: BottomAppBar?
+    ) : Boolean {
+        val entriesTabPager = entriesTabPager ?: return false
 
         // タブ項目のクリックイベント
         val listener = object : TabLayout.OnTabSelectedListener {
@@ -131,8 +144,8 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     }
 
     override fun scrollToTop() {
-        val entriesTabPager = view?.entries_tab_pager ?: return
-        val currentPos = entriesTabPager.currentItem
-        scrollContentToTop(currentPos)
+        entriesTabPager?.currentItem.alsoAs<Int> {
+            scrollContentToTop(it)
+        }
     }
 }
