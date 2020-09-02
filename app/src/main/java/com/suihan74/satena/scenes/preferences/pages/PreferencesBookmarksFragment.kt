@@ -129,8 +129,8 @@ fun Button.setBookmarksTabTypeText(ordinal: Int?) {
 
 /** 「リンク文字列をタップしたときの動作」のボタンテキスト */
 @BindingAdapter("linkTapAction")
-fun Button.setLinkTapActionText(ordinal: Int?) {
-    if (ordinal == null) return
-    val act = TapEntryAction.fromInt(ordinal)
+fun Button.setLinkTapActionText(id: Int?) {
+    if (id == null) return
+    val act = TapEntryAction.fromInt(id)
     setText(act.titleId)
 }

@@ -166,7 +166,7 @@ class PreferencesEntriesFragment :
                 viewModel.singleTapAction.value = TapEntryAction.fromInt(which)
 
             DIALOG_LONG_TAP_ACTION ->
-                viewModel.longTapAction.value = TapEntryAction.fromInt(which)
+                viewModel.longTapAction.value = TapEntryAction.fromOrdinal(which)
 
             DIALOG_HOME_CATEGORY -> {
                 val categories = dialog.getAdditionalData<Array<Category>>("categories")!!

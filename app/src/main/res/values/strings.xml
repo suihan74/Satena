@@ -98,6 +98,7 @@
     <string name="open_official_top_desc">はてブ公式トップページを開く</string>
 
     <!-- エントリタップアクション項目 -->
+    <string name="entry_action_nothing">何もしない</string>
     <string name="entry_action_show_comments">ブックマークを見る</string>
     <string name="entry_action_show_page">ページを開く</string>
     <string name="entry_action_show_page_in_browser">ページを外部ブラウザで開く</string>

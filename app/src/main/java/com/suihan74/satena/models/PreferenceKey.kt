@@ -97,7 +97,7 @@ enum class PreferenceKey(
     ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.ordinal),
 
     /** エントリ項目ロングタップの挙動 */
-    ENTRY_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.ordinal),
+    ENTRY_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.id),
 
     /** 最初に表示するカテゴリ */
     ENTRIES_HOME_CATEGORY(typeInfo<Int>(), Category.All.id),
@@ -155,10 +155,10 @@ enum class PreferenceKey(
     USING_POST_STAR_DIALOG(typeInfo<Boolean>(), true),
 
     /** ブコメ中のリンクをシングルタップしたときの挙動 */
-    BOOKMARK_LINK_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_PAGE.ordinal),
+    BOOKMARK_LINK_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_PAGE.id),
 
     /** ブコメ中のリンクをロングタップしたときの挙動 */
-    BOOKMARK_LINK_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.ordinal),
+    BOOKMARK_LINK_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.id),
 
     /** タブ部分をロングタップして最初に表示するタブを変更できるようにする */
     BOOKMARKS_CHANGE_HOME_BY_LONG_TAPPING_TAB(typeInfo<Boolean>(), true),
