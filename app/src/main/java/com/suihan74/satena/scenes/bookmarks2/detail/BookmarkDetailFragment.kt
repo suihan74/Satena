@@ -42,9 +42,8 @@ class BookmarkDetailFragment :
     Fragment(),
     AlertDialogFragment.Listener
 {
-    private val activityViewModel: BookmarksViewModel by lazy {
-        (requireActivity() as BookmarksActivity).viewModel
-    }
+    private val activityViewModel: BookmarksViewModel
+        get() = (requireActivity() as BookmarksActivity).viewModel
 
     val viewModel: BookmarkDetailViewModel by lazy {
         val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
