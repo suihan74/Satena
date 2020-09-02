@@ -12,7 +12,7 @@ import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
 
-@SharedPreferencesKey(fileName = "default", version = 3, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 4, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -191,8 +191,20 @@ enum class PreferenceKey(
 object PreferenceKeyMigration {
     fun check(context: Context) {
         when (SafeSharedPreferences.version<PreferenceKey>(context)) {
-            1 -> migrateFromVersion1(context)
-            2 -> migrateFromVersion2(context)
+            1 -> {
+                migrateFromVersion1(context)
+                migrateFromVersion2(context)
+                migrateFromVersion3(context)
+            }
+
+            2 -> {
+                migrateFromVersion2(context)
+                migrateFromVersion3(context)
+            }
+
+            3 -> {
+                migrateFromVersion3(context)
+            }
         }
     }
 
@@ -211,8 +223,6 @@ object PreferenceKeyMigration {
                 putInt(PreferenceKey.ENTRIES_INITIAL_TAB, 0)
             }
         }
-        // 以下、次のバージョン移行処理
-        migrateFromVersion2(context)
     }
 
     /**
@@ -245,6 +255,19 @@ object PreferenceKeyMigration {
 
             // 3.
             putInt(PreferenceKey.ENTRIES_INITIAL_TAB, initialTab % 2)
+        }
+    }
+
+    /**
+     * v3 -> v4
+     *
+     * バージョン引継ぎをした場合、「複数回タップ」の初期設定を「何もしない」にする
+     */
+    private fun migrateFromVersion3(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+
+        prefs.edit {
+            putInt(PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION, TapEntryAction.NOTHING.id)
         }
     }
 }
