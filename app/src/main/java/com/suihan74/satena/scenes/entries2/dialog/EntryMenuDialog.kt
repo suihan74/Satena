@@ -73,9 +73,9 @@ class EntryMenuDialog : DialogFragment() {
     /** メニュー項目 */
     @OptIn(ExperimentalStdlibApi::class)
     private val menuItems = buildList<MenuItem> {
-        add(R.string.entry_action_show_comments, { args -> showBookmarks(args.context, args.entry, args.url) })
-        add(R.string.entry_action_show_page, { args -> showPage(args.context, args.entry, args.url) })
-        add(R.string.entry_action_show_page_in_browser, { args -> showPageInBrowser(args.context, args.entry, args.url) })
+        add(TapEntryAction.SHOW_COMMENTS.titleId, { args -> showBookmarks(args.context, args.entry, args.url) })
+        add(TapEntryAction.SHOW_PAGE.titleId, { args -> showPage(args.context, args.entry, args.url) })
+        add(TapEntryAction.SHOW_PAGE_IN_BROWSER.titleId, { args -> showPageInBrowser(args.context, args.entry, args.url) })
         add(R.string.entry_action_show_entries, { args -> showEntries(args.context, args.entry, args.url) })
         add(R.string.entry_action_ignore, { args -> ignoreSite(args.context, args.entry, args.url, args.listeners?.onIgnoredEntry) })
         add(R.string.entry_action_read_later, { args -> readLater(args) }, { entry -> HatenaClient.signedIn() && entry.bookmarkedData == null })
@@ -153,18 +153,19 @@ class EntryMenuDialog : DialogFragment() {
 
         /** タップ/ロングタップ時の挙動を処理する(メニュー表示以外の挙動) */
         private fun act(instance: EntryMenuDialog, context: Context, entry: Entry, actionEnum: TapEntryAction, fragmentManager: FragmentManager, tag: String? = null) {
+            val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId } ?: return
+            val listeners = instance.listeners
+
             fragmentManager.beginTransaction()
                 .add(instance, tag)
                 .runOnCommit {
-                    val action = instance.menuItems.firstOrNull { it.first == actionEnum.titleId }
-                    val listeners = instance.listeners
                     GlobalScope.launch(Dispatchers.Main) {
                         val args = MenuItemArguments(
                             context = context,
                             entry = entry,
                             listeners = listeners
                         )
-                        action?.second?.invoke(args)
+                        action.second.invoke(args)
                     }
 
                     fragmentManager.beginTransaction()
