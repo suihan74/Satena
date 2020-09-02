@@ -12,10 +12,8 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.satena.scenes.entries2.NoticesAdapter
 import com.suihan74.satena.scenes.entries2.dialog.NoticeMenuDialog
-import com.suihan74.utilities.getThemeColor
-import com.suihan74.utilities.putEnum
-import com.suihan74.utilities.showAllowingStateLoss
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
+import kotlinx.android.synthetic.main.fragment_entries_tab2.*
 
 class NoticesTabFragment : EntriesTabFragmentBase() {
     companion object {
@@ -70,6 +68,14 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
                     this.isRefreshing = false
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        entries_list.adapter.alsoAs<NoticesAdapter> { adapter ->
+            adapter.onResume()
         }
     }
 
