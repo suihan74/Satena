@@ -560,7 +560,7 @@ class BookmarkDetailFragment :
         hideStarButton(R.id.green_star_layout, R.id.green_stars_count)
         hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
 
-        requireView().show_stars_button.setImageResource(R.drawable.ic_star)
+        requireView().show_stars_button.setImageResource(R.drawable.ic_add_star_filled)
     }
 
 
