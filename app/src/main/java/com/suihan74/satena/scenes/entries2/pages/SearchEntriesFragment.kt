@@ -19,7 +19,6 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
 import kotlinx.android.synthetic.main.activity_entries2.*
@@ -173,18 +172,13 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
             }
             // 検索ボタン押下時にロードを行う
             override fun onQueryTextSubmit(query: String?): Boolean {
-                val root = fragment.view
+                val toolbar = requireActivity().toolbar
+                toolbar.subtitle = viewModel.searchQuery.value
 
-                (root?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
-                    val toolbar = requireActivity().toolbar
-                    toolbar.subtitle = viewModel.searchQuery.value
+                reloadLists()
 
-                    reloadLists()
-                }
-
-                return (!query.isNullOrBlank()).also {
-                    if (it) requireActivity().hideSoftInputMethod(root?.contentLayout)
-                }
+                requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+                return true
             }
         })
 
