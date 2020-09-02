@@ -131,6 +131,10 @@ class EntriesRepository(
     val entryClickedAction : TapEntryAction
         get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
 
+    /** エントリ項目複数回クリック時の挙動 */
+    val entryMultipleClickedAction : TapEntryAction
+        get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION))
+
     /** エントリ項目長押し時の挙動 */
     val entryLongClickedAction : TapEntryAction
         get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))

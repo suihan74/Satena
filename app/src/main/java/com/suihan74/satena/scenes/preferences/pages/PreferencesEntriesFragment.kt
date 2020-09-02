@@ -31,6 +31,7 @@ class PreferencesEntriesFragment :
         fun createInstance() = PreferencesEntriesFragment()
 
         private const val DIALOG_SINGLE_TAP_ACTION = "DIALOG_SINGLE_TAP_ACTION"
+        private const val DIALOG_MULTIPLE_TAP_ACTION = "DIALOG_MULTIPLE_TAP_ACTION"
         private const val DIALOG_LONG_TAP_ACTION = "DIALOG_LONG_TAP_ACTION"
         private const val DIALOG_HOME_CATEGORY = "DIALOG_HOME_CATEGORY"
         private const val DIALOG_HOME_TAB = "DIALOG_HOME_TAB"
@@ -69,6 +70,15 @@ class PreferencesEntriesFragment :
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(tapActions, viewModel.singleTapAction.value!!.ordinal)
                 .showAllowingStateLoss(childFragmentManager, DIALOG_SINGLE_TAP_ACTION)
+        }
+
+        // 複数回タップ時の動作
+        view.preferences_entries_multiple_tap_action.setOnClickListener {
+            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                .setTitle(R.string.pref_entries_multiple_tap_action_desc)
+                .setNegativeButton(R.string.dialog_cancel)
+                .setSingleChoiceItems(tapActions, viewModel.multipleTapAction.value!!.ordinal)
+                .showAllowingStateLoss(childFragmentManager, DIALOG_MULTIPLE_TAP_ACTION)
         }
 
         // ロングタップ時の動作
@@ -163,7 +173,10 @@ class PreferencesEntriesFragment :
     override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
         when (dialog.tag) {
             DIALOG_SINGLE_TAP_ACTION ->
-                viewModel.singleTapAction.value = TapEntryAction.fromInt(which)
+                viewModel.singleTapAction.value = TapEntryAction.fromOrdinal(which)
+
+            DIALOG_MULTIPLE_TAP_ACTION ->
+                viewModel.multipleTapAction.value = TapEntryAction.fromOrdinal(which)
 
             DIALOG_LONG_TAP_ACTION ->
                 viewModel.longTapAction.value = TapEntryAction.fromOrdinal(which)

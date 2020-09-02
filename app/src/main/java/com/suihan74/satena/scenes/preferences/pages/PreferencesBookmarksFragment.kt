@@ -32,14 +32,10 @@ class PreferencesBookmarksFragment :
         private const val DIALOG_LINK_LONG_TAP_ACTION = "DIALOG_LINK_LONG_TAP_ACTION"
     }
 
-    private lateinit var viewModel: PreferencesBookmarksViewModel
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
+    private val viewModel: PreferencesBookmarksViewModel by lazy {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val factory = PreferencesBookmarksViewModel.Factory(prefs)
-        viewModel = ViewModelProvider(this, factory)[PreferencesBookmarksViewModel::class.java]
+        ViewModelProvider(this, factory)[PreferencesBookmarksViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -69,7 +65,7 @@ class PreferencesBookmarksFragment :
         }
 
         // タップアクションの設定項目を初期化する処理
-        val initializeTapActionSelector = { viewId: Int, selectedActionLiveData: LiveData<Int>, descId: Int, tag: String ->
+        val initializeTapActionSelector = { viewId: Int, selectedActionLiveData: LiveData<TapEntryAction>, descId: Int, tag: String ->
             view.findViewById<Button>(viewId).apply {
                 setOnClickListener {
                     AlertDialogFragment.Builder(R.style.AlertDialogStyle)
@@ -77,7 +73,7 @@ class PreferencesBookmarksFragment :
                         .setNegativeButton(R.string.dialog_cancel)
                         .setSingleChoiceItems(
                             TapEntryAction.values().map { getString(it.titleId) },
-                            selectedActionLiveData.value!!
+                            selectedActionLiveData.value!!.ordinal
                         )
                         .showAllowingStateLoss(childFragmentManager, tag)
                 }
@@ -108,11 +104,11 @@ class PreferencesBookmarksFragment :
             }
 
             DIALOG_LINK_SINGLE_TAP_ACTION -> {
-                viewModel.linkSingleTapAction.value = which
+                viewModel.linkSingleTapAction.value = TapEntryAction.fromOrdinal(which)
             }
 
             DIALOG_LINK_LONG_TAP_ACTION -> {
-                viewModel.linkLongTapAction.value = which
+                viewModel.linkLongTapAction.value = TapEntryAction.fromOrdinal(which)
             }
         }
         dialog.dismiss()
@@ -125,12 +121,4 @@ fun Button.setBookmarksTabTypeText(ordinal: Int?) {
     if (ordinal == null) return
     val tab = BookmarksTabType.fromInt(ordinal)
     setText(tab.textId)
-}
-
-/** 「リンク文字列をタップしたときの動作」のボタンテキスト */
-@BindingAdapter("linkTapAction")
-fun Button.setLinkTapActionText(id: Int?) {
-    if (id == null) return
-    val act = TapEntryAction.fromInt(id)
-    setText(act.titleId)
 }

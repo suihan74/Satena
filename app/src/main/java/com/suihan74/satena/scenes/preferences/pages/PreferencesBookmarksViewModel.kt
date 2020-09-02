@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.preferences.pages
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
 
@@ -56,13 +57,17 @@ class PreferencesBookmarksViewModel(
     )
 
     /** リンク部分をタップしたときの動作 */
-    val linkSingleTapAction = createLiveData<Int>(
-        PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION
+    val linkSingleTapAction = createLiveDataEnum(
+        PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromInt(it) }
     )
 
     /** リンク部分をロングタップしたときの動作 */
-    val linkLongTapAction = createLiveData<Int>(
-        PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION
+    val linkLongTapAction = createLiveDataEnum(
+        PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromInt(it) }
     )
 
     /** タブ長押しで初期タブを変更する */

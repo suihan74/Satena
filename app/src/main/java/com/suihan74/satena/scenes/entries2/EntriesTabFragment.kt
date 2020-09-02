@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialogListeners
@@ -42,11 +43,41 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             }
 
             setOnItemClickedListener { entry ->
-                EntryMenuDialog.act(context, entry, activityViewModel.entryClickedAction, listeners, childFragmentManager, DIALOG_ENTRY_MENU)
+                EntryMenuDialog.act(
+                    context,
+                    entry,
+                    activityViewModel.entryClickedAction,
+                    listeners,
+                    childFragmentManager,
+                    DIALOG_ENTRY_MENU
+                )
+            }
+
+            if (activityViewModel.entryMultipleClickedAction == TapEntryAction.NOTHING) {
+                setOnItemMultipleClickedListener(null)
+            }
+            else {
+                setOnItemMultipleClickedListener { entry, _ ->
+                    EntryMenuDialog.act(
+                        context,
+                        entry,
+                        activityViewModel.entryMultipleClickedAction,
+                        listeners,
+                        childFragmentManager,
+                        DIALOG_ENTRY_MENU
+                    )
+                }
             }
 
             setOnItemLongClickedListener { entry ->
-                EntryMenuDialog.act(context, entry, activityViewModel.entryLongClickedAction, listeners, childFragmentManager, DIALOG_ENTRY_MENU)
+                EntryMenuDialog.act(
+                    context,
+                    entry,
+                    activityViewModel.entryLongClickedAction,
+                    listeners,
+                    childFragmentManager,
+                    DIALOG_ENTRY_MENU
+                )
                 true
             }
 

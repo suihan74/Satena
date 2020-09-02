@@ -94,7 +94,10 @@ enum class PreferenceKey(
     ENTRIES_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT(typeInfo<Int>(), AdditionalBottomItemsAlignment.DEFAULT.id),
 
     /** エントリ項目シングルタップの挙動 */
-    ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.ordinal),
+    ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.id),
+
+    /** エントリ項目複数回タップの挙動 */
+    ENTRY_MULTIPLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_PAGE.id),
 
     /** エントリ項目ロングタップの挙動 */
     ENTRY_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.id),

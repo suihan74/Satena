@@ -65,6 +65,10 @@ class EntriesViewModel(
     val entryClickedAction : TapEntryAction
         get() = repository.entryClickedAction
 
+    /** エントリ項目複数回クリック時の挙動 */
+    val entryMultipleClickedAction : TapEntryAction
+        get() = repository.entryMultipleClickedAction
+
     /** エントリ項目長押し時の挙動 */
     val entryLongClickedAction : TapEntryAction
         get() = repository.entryLongClickedAction

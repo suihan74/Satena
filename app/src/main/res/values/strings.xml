@@ -175,6 +175,7 @@
     <string name="pref_bottom_menu_items_gravity_desc">ボトムバーアイテムの配置方法</string>
     <string name="pref_additional_bottom_items_alignment_desc">ボトムバーの追加項目の配置方法</string>
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
+    <string name="pref_entries_multiple_tap_action_desc">複数回タップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
     <string name="pref_home_category_desc">ホームカテゴリ</string>
     <string name="pref_entries_initial_tab_desc">最初に表示するタブ</string>

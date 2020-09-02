@@ -13,6 +13,9 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_entries2.view.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class EntriesAdapter(
     private var lifecycleOwner: LifecycleOwner
@@ -22,6 +25,8 @@ class EntriesAdapter(
 
     /** エントリクリック時の挙動 */
     private var onItemClicked : ItemClickedListener<Entry>? = null
+    /** エントリ複数回クリック時の挙動 */
+    private var onItemMultipleClicked : ItemMultipleClickedListener<Entry>? = null
     /** エントリ長押し時の挙動 */
     private var onItemLongClicked : ItemLongClickedListener<Entry>? = null
     /** コメント部分クリック時の挙動 */
@@ -37,6 +42,12 @@ class EntriesAdapter(
     fun setOnItemClickedListener(listener: ItemClickedListener<Entry>?) {
         onItemClicked = listener
     }
+
+    /** 項目連続複数回クリック時の挙動をセットする */
+    fun setOnItemMultipleClickedListener(listener: ItemMultipleClickedListener<Entry>?) {
+        onItemMultipleClicked = listener
+    }
+
 
     /** 項目長押し時の挙動をセットする */
     fun setOnItemLongClickedListener(listener: ItemLongClickedListener<Entry>?) {
@@ -89,12 +100,40 @@ class EntriesAdapter(
 
                 holder.entry = entry
                 holder.itemView.apply {
-                    setOnClickListener {
-                        if (entry != null && !itemClicked) {
-                            itemClicked = true
-                            onItemClicked?.invoke(entry)
+
+                    // 複数回クリックを雑に検出する
+                    var clickCount = 0
+                    fun considerMultipleClick(entry: Entry?) {
+                        if (clickCount++ == 0) {
+                            GlobalScope.launch {
+                                delay(250L)
+                                val count = clickCount
+                                clickCount = 0
+                                if (entry != null && !itemClicked) {
+                                    itemClicked = true
+                                    if (count > 1) {
+                                        onItemMultipleClicked?.invoke(entry, count)
+                                    }
+                                    else {
+                                        onItemClicked?.invoke(entry)
+                                    }
+                                }
+                            }
                         }
                     }
+
+                    setOnClickListener {
+                        if (onItemMultipleClicked == null) {
+                            if (entry != null && !itemClicked) {
+                                itemClicked = true
+                                onItemClicked?.invoke(entry)
+                            }
+                        }
+                        else {
+                            considerMultipleClick(entry)
+                        }
+                    }
+
                     setOnLongClickListener {
                         if (entry != null) onItemLongClicked?.invoke(entry) ?: false
                         else true
