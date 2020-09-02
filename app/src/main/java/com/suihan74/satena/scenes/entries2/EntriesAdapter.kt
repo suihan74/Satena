@@ -164,8 +164,11 @@ class EntriesAdapter(
         init {
             binding.root.comments_list.adapter = CommentsAdapter().apply {
                 setOnItemClickedListener listener@ { comment ->
-                    val entry = entry ?: return@listener
-                    onCommentClicked?.invoke(entry, comment)
+                    if (!itemClicked) {
+                        itemClicked = true
+                        val entry = entry ?: return@listener
+                        onCommentClicked?.invoke(entry, comment)
+                    }
                 }
             }
         }
