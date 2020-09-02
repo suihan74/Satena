@@ -352,7 +352,7 @@ class BookmarksRepository(
         private val client: HatenaClient,
         private val entry: Entry,
         private val repository: BookmarksRepository
-    ) : LiveData<List<StarsEntry>>() {
+    ) : LiveData<List<StarsEntry>>(emptyList()) {
         private var task: Deferred<List<StarsEntry>>? = null
             get() = lock(this) { field }
             private set(value) {

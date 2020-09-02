@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.WorkerThread
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
@@ -188,7 +189,9 @@ open class BookmarksAdapter(
     }
 
     /** スター情報を更新 */
-    fun updateStar(starEntries: List<StarsEntry>) {
+    @WorkerThread
+    fun updateStar(starEntries: List<StarsEntry>?) {
+        if (starEntries == null) return
         var updated = false
         val newStates = RecyclerState.makeStatesWithFooter(
             currentList.mapNotNull { if (it.type == RecyclerType.BODY) it.body else null }
