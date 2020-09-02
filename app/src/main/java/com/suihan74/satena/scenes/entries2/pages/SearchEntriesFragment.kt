@@ -181,11 +181,16 @@ class SearchEntriesFragment : TwinTabsEntriesFragment(), AlertDialogFragment.Lis
 
     override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
         val viewModel = viewModel as SearchEntriesViewModel
+        val prevValue = viewModel.searchType.value
 
         when (dialog.tag) {
             DIALOG_SEARCH_TYPE -> {
                 viewModel.searchType.value = SearchType.values()[which]
             }
+        }
+
+        if (prevValue != viewModel.searchType.value) {
+            reloadLists()
         }
     }
 }
