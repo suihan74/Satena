@@ -30,6 +30,9 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
         }
     }
 
+    private val fragmentViewModel: MyBookmarksViewModel
+        get() = viewModel as MyBookmarksViewModel
+
     private var onBackPressedCallback : OnBackPressedCallback? = null
 
     override fun generateViewModel(
@@ -69,7 +72,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
     /** メニュー初期化処理 */
     private fun initializeMenu(menu: Menu, bottomAppBar: BottomAppBar? = null) {
         val activity = requireActivity() as EntriesActivity
-        val viewModel = viewModel as MyBookmarksViewModel
+        val viewModel = fragmentViewModel
 
         // 検索窓
         val searchView =
@@ -125,7 +128,12 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
         viewModel.isSearchViewExpanded || viewModel.tag.value != null
 
     /** SearchViewを設定 */
-    private fun initializeSearchView(searchView: SearchView, viewModel: MyBookmarksViewModel, menu: Menu, bottomAppBar: BottomAppBar?) = searchView.run {
+    private fun initializeSearchView(
+        searchView: SearchView,
+        viewModel: MyBookmarksViewModel,
+        menu: Menu,
+        bottomAppBar: BottomAppBar?
+    ) = searchView.run {
         val fragment = this@MyBookmarksEntriesFragment
 
         queryHint = getString(R.string.hint_search_my_bookmarks)
@@ -173,15 +181,10 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             }
             // 検索ボタン押下時にロードを行う
             override fun onQueryTextSubmit(query: String?): Boolean {
-                val root = fragment.view
-
-                (root?.entries_tab_pager?.adapter as? EntriesTabAdapter)?.run {
-                    reloadLists()
-                }
-
-                return (!query.isNullOrBlank()).also {
-                    if (it) requireActivity().hideSoftInputMethod(root?.contentLayout)
-                }
+                setSubTitle(viewModel)
+                reloadLists()
+                requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+                return true
             }
         })
 
@@ -251,9 +254,8 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
         }
 
         // タグ選択時にサブタイトルを表示する
-        val toolbar = requireActivity().toolbar
         viewModel.tag.observe(viewLifecycleOwner) {
-            toolbar.subtitle = it?.let { tag -> "${tag.text}(${tag.count})" }
+            setSubTitle(fragmentViewModel)
 
             if (it == null) {
                 // リセット時
@@ -265,5 +267,19 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
                 onBackPressedCallback?.isEnabled = true
             }
         }
+    }
+
+    /** 検索情報をサブタイトルに表示する */
+    private fun setSubTitle(viewModel: MyBookmarksViewModel) {
+        val toolbar = requireActivity().toolbar
+        val tag = viewModel.tag.value
+        val query = viewModel.searchQuery.value
+        val isQueryBlank = query.isNullOrBlank()
+
+        toolbar.subtitle =
+            if (tag == null && isQueryBlank) null
+            else if (tag == null) query
+            else if (isQueryBlank) "${tag.text}(${tag.count})"
+            else "${tag.text}(${tag.count}),$query"
     }
 }
