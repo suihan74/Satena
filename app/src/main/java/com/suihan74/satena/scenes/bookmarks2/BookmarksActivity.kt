@@ -120,14 +120,21 @@ class BookmarksActivity :
 
         val targetUser = intent.getStringExtra(EXTRA_TARGET_USER)
 
-        val firstLaunching = !viewModel.repository.isInitialized //savedInstanceState == null
+        val firstLaunching = !viewModel.repository.isInitialized
         val entry =
             if (firstLaunching) intent.getObjectExtra<Entry>(EXTRA_ENTRY)
             else viewModel.repository.entry
 
         progress_bar.visibility = View.VISIBLE
 
-        val onSuccess : (Entry)->Unit = { init(firstLaunching, it, targetUser) }
+        val onSuccess : (Entry)->Unit = {
+            init(firstLaunching, it, targetUser)
+
+            val entryInformationFragment = EntryInformationFragment.createInstance()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.entry_information_layout, entryInformationFragment, FRAGMENT_INFORMATION)
+                .commitAllowingStateLoss()
+        }
 
         val onError : CompletionHandler = { e ->
             when(e) {
@@ -270,13 +277,11 @@ class BookmarksActivity :
                 entry.saveHistory(this@BookmarksActivity)
 
                 val bookmarksFragment = BookmarksFragment.createInstance()
-                val entryInformationFragment = EntryInformationFragment.createInstance()
                 val buttonsFragment = FloatingActionButtonsFragment.createInstance()
 
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.content_layout, bookmarksFragment, FRAGMENT_BOOKMARKS)
                     .replace(R.id.buttons_layout, buttonsFragment, FRAGMENT_BUTTONS)
-                    .replace(R.id.entry_information_layout, entryInformationFragment, FRAGMENT_INFORMATION)
                     .commitAllowingStateLoss()
 
                 // ユーザーが指定されている場合そのユーザーのブクマ詳細画面に直接遷移する
