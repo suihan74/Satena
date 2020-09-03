@@ -16,10 +16,11 @@ import com.suihan74.utilities.toVisibility
 @BindingAdapter("divider")
 fun RecyclerView.setDivider(divider: Drawable?) {
     // 既存の区切り線を削除する
-    (0 until itemDecorationCount).mapNotNull { idx ->
-        getItemDecorationAt(idx) as? DividerItemDecorator
-    }.forEach { decor ->
-        removeItemDecoration(decor)
+    repeat(itemDecorationCount) { idx ->
+        val decor = getItemDecorationAt(idx)
+        if (decor is DividerItemDecorator) {
+            removeItemDecoration(decor)
+        }
     }
 
     if (divider != null) {
