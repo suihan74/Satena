@@ -301,15 +301,13 @@ class BookmarksViewModel(
     }
 
     /** 新着ブクマリストの次のページを追加ロードする */
-    fun loadNextRecent(onError: CompletionHandler? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e ->
-            onError?.invoke(e)
-        }
-    ) {
+    suspend fun loadNextRecent(onError: CompletionHandler? = null) : List<BookmarkWithStarCount> {
         loadBasics(onError)
-        repository.loadNextBookmarksRecentAsync().await()
+        val recent = repository.loadNextBookmarksRecentAsync().await()
         bookmarksRecent.postValue(repository.bookmarksRecent)
         bookmarksEntry.postValue(repository.bookmarksEntry)
+
+        return recent
     }
 
     /** 指定ユーザーのブクマが得られるまで新着順ブクマリストを追加ロードする */

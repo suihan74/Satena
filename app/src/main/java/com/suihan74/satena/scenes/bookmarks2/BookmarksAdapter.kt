@@ -25,7 +25,7 @@ import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
-import kotlinx.android.synthetic.main.footer_recycler_view_loadable.view.*
+import com.suihan74.utilities.bindings.setVisibility
 import kotlinx.android.synthetic.main.listview_item_bookmarks.view.*
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -90,7 +90,13 @@ open class BookmarksAdapter(
 
     /** フッターの追加ロードをタップしたときの処理 */
     open fun onAdditionalLoading() {}
-    open val nextLoadable : Boolean = false
+
+    /** 追加ロードボタンを表示するか */
+    var additionalLoadable: Boolean = false
+        set (value) {
+            field = value
+            loadableFooter?.additionalLoadingTextView?.setVisibility(value)
+        }
 
     override fun getItemCount() = currentList.size
 
@@ -128,10 +134,13 @@ open class BookmarksAdapter(
                     LoadableFooterViewHolder(
                         inflater.inflate(R.layout.footer_recycler_view_loadable, parent, false)
                     ).also {
-                        loadableFooter = it.apply {
+                        loadableFooter = it.also { footer ->
                             stopLoading()
-                            itemView.footer_text.setOnClickListener {
-                                onAdditionalLoading()
+                            footer.additionalLoadingTextView?.let { textView ->
+                                textView.setOnClickListener {
+                                    onAdditionalLoading()
+                                }
+                                textView.setVisibility(additionalLoadable)
                             }
                         }
                     }
@@ -159,7 +168,7 @@ open class BookmarksAdapter(
 
     /** フッタのローディングアニメを隠す */
     fun stopLoading() {
-        loadableFooter?.hideProgressBar(nextLoadable)
+        loadableFooter?.hideProgressBar(additionalLoadable)
     }
 
     fun setBookmarks(

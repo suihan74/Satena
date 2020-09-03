@@ -1,9 +1,8 @@
 package com.suihan74.utilities
 
 import android.view.View
-import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.suihan74.satena.R
 import kotlinx.android.synthetic.main.footer_recycler_view_loadable.view.*
 
 // RecyclerViewでヘッダ・フッタ・セクションを使用するために必要なものたち
@@ -43,14 +42,21 @@ open class HeaderViewHolder(view : View) : RecyclerView.ViewHolder(view)
 open class FooterViewHolder(view : View) : RecyclerView.ViewHolder(view)
 open class SectionViewHolder(view : View) : RecyclerView.ViewHolder(view)
 
-open class LoadableFooterViewHolder(private val view : View) : RecyclerView.ViewHolder(view) {
+open class LoadableFooterViewHolder(
+    private val view : View
+) : RecyclerView.ViewHolder(view) {
+
+    /** 「追加更新する」ボタン */
+    val additionalLoadingTextView : TextView?
+        get() = view.footer_text
+
     fun showProgressBar() {
-        view.footer_text.visibility = View.INVISIBLE
+        additionalLoadingTextView?.visibility = View.INVISIBLE
         view.footer_progress_bar.visibility = View.VISIBLE
     }
 
     fun hideProgressBar(nextLoadable: Boolean) {
-        view.footer_text.visibility = nextLoadable.toVisibility()
+//        additionalLoadingTextView?.visibility = nextLoadable.toVisibility()
         view.footer_progress_bar.visibility = View.INVISIBLE
     }
 }

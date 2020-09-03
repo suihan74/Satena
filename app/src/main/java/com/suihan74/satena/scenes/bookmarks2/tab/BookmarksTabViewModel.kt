@@ -6,10 +6,7 @@ import android.net.Uri
 import android.view.View
 import android.widget.ImageButton
 import androidx.appcompat.widget.TooltipCompat
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
@@ -17,8 +14,14 @@ import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
+import com.suihan74.utilities.OnError
+import com.suihan74.utilities.OnFinally
+import com.suihan74.utilities.OnSuccess
 import com.suihan74.utilities.SafeSharedPreferences
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** タブごとに表示内容を変更するためBookmarksTabViewModelを継承して必要なメソッドを埋める */
 abstract class BookmarksTabViewModel : ViewModel() {
@@ -43,6 +46,10 @@ abstract class BookmarksTabViewModel : ViewModel() {
         preferences.getBoolean(PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU)
     }
 
+    /** 続きをロードできるか */
+    var additionalLoadable: Boolean = true
+        private set
+
     /** 初期化 */
     open fun init() {
         bookmarks.observeForever {
@@ -57,8 +64,35 @@ abstract class BookmarksTabViewModel : ViewModel() {
     }
     /** ブクマリストを更新（リスト初期化or引っ張って更新時） */
     abstract fun updateBookmarks() : Job
+
     /** ブクマリストの次のアイテムを取得（スクロールで追加分を取得時） */
-    abstract fun loadNextBookmarks() : Job
+    fun loadNextBookmarks(
+        onSuccess: OnSuccess<List<Bookmark>>?,
+        onError: OnError? = null,
+        onFinally: OnFinally<List<Bookmark>>?
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        var result: List<Bookmark>? = null
+        var error: Throwable? = null
+
+        try {
+            val next = withContext(Dispatchers.Default) {
+                updateBookmarks().join()
+                loadNextBookmarks()
+            }
+            result = next
+            additionalLoadable = next.isNotEmpty()
+            onSuccess?.invoke(next)
+        }
+        catch (e: Throwable) {
+            error = e
+            onError?.invoke(e)
+        }
+        finally {
+            onFinally?.invoke(result, error)
+        }
+    }
+    protected abstract suspend fun loadNextBookmarks() : List<Bookmark>
+
     /** サインインしているユーザーのブクマをタブ中のブクマリストから探す */
     open fun updateSignedUserBookmark(user: String) : Bookmark? =
         bookmarks.value?.firstOrNull { it.user == user }

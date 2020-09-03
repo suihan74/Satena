@@ -14,6 +14,7 @@ import com.suihan74.hatenaLib.NotFoundException
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
+import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
@@ -81,17 +82,17 @@ class BookmarksTabFragment :
 
             override fun onAdditionalLoading() {
                 startLoading()
-                viewModel.loadNextBookmarks().invokeOnCompletion { e->
-                    if (e != null) {
-                        context?.showToast(R.string.msg_update_bookmarks_failed)
-                        Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
-                    }
-                    stopLoading()
-                }
+                viewModel.loadNextBookmarks(
+                    onSuccess = { next ->
+                        this.additionalLoadable = next.isNotEmpty()
+                    },
+                    onError = { e -> warnLoading(e) },
+                    onFinally = { _, _ -> stopLoading() }
+                )
             }
-
-            override val nextLoadable: Boolean
-                get() = false
+        }
+        if (viewModel is CustomTabViewModel) {
+            bookmarksAdapter.additionalLoadable = viewModel.additionalLoadable
         }
 
         // recycler view
@@ -103,11 +104,16 @@ class BookmarksTabFragment :
             addOnScrollListener(
                 RecyclerViewScrollingUpdater {
                     bookmarksAdapter.startLoading()
-                    viewModel.loadNextBookmarks().invokeOnCompletion { e ->
-                        warnLoading(e)
-                        bookmarksAdapter.stopLoading()
-                        loadCompleted()
-                    }
+                    viewModel.loadNextBookmarks(
+                        onSuccess = {
+                            bookmarksAdapter.additionalLoadable = it.isNotEmpty()
+                        },
+                        onError = { warnLoading(it) },
+                        onFinally = { _, _ ->
+                            bookmarksAdapter.stopLoading()
+                            loadCompleted()
+                        }
+                    )
                 }
             )
         }

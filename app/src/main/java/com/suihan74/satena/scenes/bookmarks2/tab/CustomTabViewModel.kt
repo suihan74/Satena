@@ -113,7 +113,15 @@ class CustomTabViewModel : BookmarksTabViewModel() {
     }
 
     override fun updateBookmarks() = activityViewModel.updateRecent()
-    override fun loadNextBookmarks() = activityViewModel.loadNextRecent()
+
+    override suspend fun loadNextBookmarks() =
+        try {
+            activityViewModel.loadNextRecent().map { Bookmark.create(it) }
+        }
+        catch (e: Throwable) {
+            emptyList()
+        }
+
     override fun updateSignedUserBookmark(user: String) =
         activityViewModel.bookmarksEntry.value?.bookmarks?.firstOrNull { it.user == user }
 

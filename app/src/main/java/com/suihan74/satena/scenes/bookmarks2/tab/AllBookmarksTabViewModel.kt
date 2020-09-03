@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks2.tab
 
+import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.models.PreferenceKey
 
 class AllBookmarksTabViewModel : BookmarksTabViewModel() {
@@ -20,7 +21,15 @@ class AllBookmarksTabViewModel : BookmarksTabViewModel() {
     }
 
     override fun updateBookmarks() = activityViewModel.updateRecent()
-    override fun loadNextBookmarks() = activityViewModel.loadNextRecent()
+
+    override suspend fun loadNextBookmarks() =
+        try {
+            activityViewModel.loadNextRecent().map { Bookmark.create(it) }
+        }
+        catch (e: Throwable) {
+            emptyList()
+        }
+
     override fun updateSignedUserBookmark(user: String) =
         activityViewModel.bookmarksEntry.value?.bookmarks?.firstOrNull { it.user == user }
 }
