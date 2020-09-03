@@ -187,7 +187,7 @@ class BookmarksRepository(
     ) : Deferred<List<String>> = client.async(Dispatchers.Default) {
         try {
             val old = ignoredUsers
-            val new = client.getIgnoredUsersAsync().await()
+            val new = client.getIgnoredUsersAsync(forceUpdate).await()
             ignoredUsers = new
 
             if (forceUpdate || new.size != old.size || !new.containsAll(old) || !old.containsAll(new)) {
