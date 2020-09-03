@@ -190,15 +190,24 @@ class BookmarksRepository(
         loadBookmarksRecentAsync(bookmarksRecent.size.toLong())
 
     /** 非表示ユーザーのリストをロードする */
-    fun loadIgnoredUsersAsync() =
-        client.getIgnoredUsersAsync().apply {
-            invokeOnCompletion { e ->
-                if (e == null) {
-                    ignoredUsers = getCompleted()
-                    ignoredUsersLiveData.notifyPost()
-                }
+    fun loadIgnoredUsersAsync(
+        forceUpdate: Boolean = false
+    ) : Deferred<List<String>> = client.async(Dispatchers.Default) {
+        try {
+            val old = ignoredUsers
+            val new = client.getIgnoredUsersAsync().await()
+            ignoredUsers = new
+
+            if (forceUpdate || new.size != old.size || !new.containsAll(old) || !old.containsAll(new)) {
+                ignoredUsersLiveData.notifyPost()
             }
         }
+        catch (e: Throwable) {
+            throw e
+        }
+
+        return@async ignoredUsers
+    }
 
     /** ユーザーを非表示にする */
     fun ignoreUserAsync(user: String) =
