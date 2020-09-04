@@ -6,17 +6,11 @@
     <dimen name="dp_180">180dp</dimen>
     <dimen name="dp_238">238dp</dimen>
 
-    <!-- ブクマ登録ダイアログの表示位置調整用 -->
-    <dimen name="dp_80">80dp</dimen>
-
     <!-- ブクマ投稿ダイアログの画面幅占有比率 -->
     <item type="dimen" name="post_bookmark_dialog_width_ratio">98%</item>
 
     <!-- トースト通知の表示位置調整用 -->
     <dimen name="toast_offset_y">8dp</dimen>
-
-    <!-- エントリー項目のサイズ -->
-    <dimen name="dp_18">18dp</dimen>
 
     <!-- 右下スターボタンの位置指定用 -->
     <dimen name="yellow_star_position">72dp</dimen>

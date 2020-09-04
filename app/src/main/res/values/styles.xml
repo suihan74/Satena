@@ -249,26 +249,11 @@
         <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.Toolbar</item>
     </style>
 
-    <style name="SearchViewStyle.ThemeColored" parent="SearchViewStyle">
-        <item name="closeIcon">@drawable/ic_baseline_close_theme_colored</item>
-        <item name="searchIcon">@drawable/ic_baseline_search_theme_colored</item>
-        <item name="searchHintIcon">@drawable/ic_baseline_search_theme_colored</item>
-        <item name="commitIcon">@drawable/ic_baseline_search_theme_colored</item>
-        <item name="goIcon">@drawable/ic_baseline_search_theme_colored</item>
-        <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.ThemeColored</item>
-    </style>
-
     <!-- SearchView上の文字入力部分 -->
     <style name="AutoCompleteTextView.Toolbar" parent="Widget.AppCompat.AutoCompleteTextView">
         <!-- 入力位置のカーソル -->
 <!--        <item name="android:textCursorDrawable">@drawable/searchview_cursor</item>-->
         <item name="android:textCursorDrawable">@null</item>
-    </style>
-
-    <style name="AutoCompleteTextView.ThemeColored" parent="Widget.AppCompat.AutoCompleteTextView">
-        <!-- 入力位置のカーソル -->
-        <item name="android:textCursorDrawable">@null</item>
-<!--        <item name="android:textCursorDrawable">@drawable/searchview_cursor_theme_colored</item>-->
     </style>
 
     <!-- IgnoreTarget @ IgnoredEntryDialog -->
