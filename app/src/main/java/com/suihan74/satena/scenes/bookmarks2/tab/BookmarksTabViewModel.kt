@@ -47,8 +47,8 @@ abstract class BookmarksTabViewModel : ViewModel() {
     }
 
     /** 続きをロードできるか */
-    var additionalLoadable: Boolean = true
-        private set
+    val additionalLoadable: Boolean
+        get() = activityViewModel.repository.additionalLoadable
 
     /** 初期化 */
     open fun init() {
@@ -80,7 +80,6 @@ abstract class BookmarksTabViewModel : ViewModel() {
                 loadNextBookmarks()
             }
             result = next
-            additionalLoadable = next.isNotEmpty()
             onSuccess?.invoke(next)
         }
         catch (e: Throwable) {

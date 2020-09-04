@@ -14,7 +14,6 @@ import com.suihan74.hatenaLib.NotFoundException
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
-import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
@@ -83,17 +82,13 @@ class BookmarksTabFragment :
             override fun onAdditionalLoading() {
                 startLoading()
                 viewModel.loadNextBookmarks(
-                    onSuccess = { next ->
-                        this.additionalLoadable = next.isNotEmpty()
-                    },
+                    onSuccess = {},
                     onError = { e -> warnLoading(e) },
-                    onFinally = { _, _ -> stopLoading() }
+                    onFinally = { _, _ -> stopLoading(viewModel.additionalLoadable) }
                 )
             }
         }
-        if (viewModel is CustomTabViewModel) {
-            bookmarksAdapter.additionalLoadable = viewModel.additionalLoadable
-        }
+        bookmarksAdapter.additionalLoadable = viewModel.additionalLoadable
 
         // recycler view
         view.bookmarks_list.apply {
@@ -105,12 +100,10 @@ class BookmarksTabFragment :
                 RecyclerViewScrollingUpdater {
                     bookmarksAdapter.startLoading()
                     viewModel.loadNextBookmarks(
-                        onSuccess = {
-                            bookmarksAdapter.additionalLoadable = it.isNotEmpty()
-                        },
+                        onSuccess = {},
                         onError = { warnLoading(it) },
                         onFinally = { _, _ ->
-                            bookmarksAdapter.stopLoading()
+                            bookmarksAdapter.stopLoading(viewModel.additionalLoadable)
                             loadCompleted()
                         }
                     )

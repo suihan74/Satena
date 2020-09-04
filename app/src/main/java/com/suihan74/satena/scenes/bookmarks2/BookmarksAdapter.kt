@@ -163,11 +163,13 @@ open class BookmarksAdapter(
 
     /** フッタのローディングアニメを表示する */
     fun startLoading() {
+        additionalLoadable = false
         loadableFooter?.showProgressBar()
     }
 
     /** フッタのローディングアニメを隠す */
-    fun stopLoading() {
+    fun stopLoading(additionalLoadable: Boolean = this.additionalLoadable) {
+        this.additionalLoadable = additionalLoadable
         loadableFooter?.hideProgressBar(additionalLoadable)
     }
 
