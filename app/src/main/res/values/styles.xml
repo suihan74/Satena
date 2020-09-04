@@ -161,7 +161,7 @@
 
     <!-- AlertDialog -->
     <style name="AlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="android:background">@color/panelBackground</item>
+        <item name="android:panelBackground">@color/panelBackground</item>
         <item name="android:textColor">@color/textColor</item>
 
         <item name="colorAccent">@color/colorPrimary</item>
