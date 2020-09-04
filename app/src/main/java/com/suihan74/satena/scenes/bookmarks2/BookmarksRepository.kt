@@ -141,45 +141,97 @@ class BookmarksRepository(
             }
         }
 
+    /** 追加ロード用のカーソル */
+    private var recentBookmarksCursor: String? = null
+
+    /** 新着ブクマを取得済みの部分に達するまで取得する */
+    private fun loadMostRecentBookmarksAsync(url: String) : Deferred<BookmarksWithCursor> {
+        val latestBookmark = bookmarksRecent.firstOrNull()
+
+        return if (latestBookmark == null) {
+            client.getRecentBookmarksAsync(url = url)
+        }
+        else {
+            client.async {
+                var cursor: String? = null
+                val bookmarks = ArrayList<BookmarkWithStarCount>()
+                while (true) {
+                    val response = try {
+                        client.getRecentBookmarksAsync(url = url, cursor = cursor).await()
+                    }
+                    catch (e: Throwable) {
+                        break
+                    }
+
+                    cursor = response.cursor
+                    bookmarks.addAll(response.bookmarks)
+
+                    if (response.bookmarks.any { it.timestamp <= latestBookmark.timestamp }) {
+                        break
+                    }
+                }
+
+                return@async BookmarksWithCursor(cursor = cursor, bookmarks = bookmarks)
+            }
+        }
+    }
+
     /** 新着ブクマを取得 */
-    fun loadBookmarksRecentAsync(offset: Long? = null) =
-        client.getRecentBookmarksAsync(entry.url, of = offset).apply {
-            invokeOnCompletion { e ->
-                if (e != null) return@invokeOnCompletion
+    fun loadBookmarksRecentAsync(
+        additionalLoading: Boolean = false
+    ) : Deferred<List<Bookmark>> = client.async {
+        val response = try {
+            if (additionalLoading) {
+                client.getRecentBookmarksAsync(
+                    url = entry.url,
+                    cursor = recentBookmarksCursor
+                ).await()
+            }
+            else {
+                loadMostRecentBookmarksAsync(entry.url).await()
+            }
+        }
+        catch (e: Throwable) {
+            throw e
+        }
 
-                val page = getCompleted().map { Bookmark.create(it) }
-                bookmarksRecent = page
-                    .plus(
-                        bookmarksRecent.filterNot { page.any { updated -> it.user == updated.user } }
-                    )
-                    .sortedByDescending { it.timestamp }
-
-                // エントリ情報のブクマリストにも追加する
-                val bEntry = bookmarksEntry
-                if (bEntry != null) {
-                    val newBookmarks = page.filterNot {
-                        bEntry.bookmarks.any { updated -> it.user == updated.user }
-                    }
-
-                    if (newBookmarks.isNotEmpty()) {
-                        bookmarksEntry = bEntry.copy(
-                            bookmarks = bEntry.bookmarks
-                                .plus(newBookmarks)
-                                .sortedByDescending { it.timestamp }
-                        )
-                    }
+        val page = response.bookmarks.map { Bookmark.create(it) }
+        bookmarksRecent = page
+            .plus(
+                bookmarksRecent.filterNot {
+                    page.any { updated -> it.user == updated.user }
                 }
+            )
+            .sortedByDescending { it.timestamp }
 
-                // 追加分のスターを読み込む
-                if (!allStarsLiveData.loading) {
-                    allStarsLiveData.updateAsync().start()
-                }
+        // エントリ情報のブクマリストにも追加する
+        bookmarksEntry?.let { bEntry ->
+            val newBookmarks = page.filterNot {
+                bEntry.bookmarks.any { updated -> it.user == updated.user }
+            }
+
+            if (newBookmarks.isNotEmpty()) {
+                bookmarksEntry = bEntry.copy(
+                    bookmarks = bEntry.bookmarks
+                        .plus(newBookmarks)
+                        .sortedByDescending { it.timestamp }
+                )
             }
         }
 
-    /** 新着ブクマリストの次のページをロードする */
-    fun loadNextBookmarksRecentAsync() =
-        loadBookmarksRecentAsync(bookmarksRecent.size.toLong())
+        // 追加ロード用のカーソルを更新する
+        recentBookmarksCursor = response.cursor
+
+        // 追加分のスターを読み込む
+        if (!allStarsLiveData.loading) {
+            allStarsLiveData.updateAsync().start()
+        }
+
+        return@async page
+    }
+
+    /** 新着ブクマリストを追加ロードする */
+    fun loadNextBookmarksRecentAsync() = loadBookmarksRecentAsync(true)
 
     /** 非表示ユーザーのリストをロードする */
     fun loadIgnoredUsersAsync(
