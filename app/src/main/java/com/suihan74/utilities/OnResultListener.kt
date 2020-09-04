@@ -2,8 +2,14 @@
 
 package com.suihan74.utilities
 
+/** 成功時 */
 typealias OnSuccess<ResultT> = (ResultT)->Unit
 
+/** 失敗時 */
 typealias OnError = (Throwable)->Unit
 
+/** 終了時(成功/失敗に関わらず呼ぶ) */
 typealias OnFinally = ()->Unit
+
+/** リスナ用 */
+typealias Listener<T> = (T)->Unit
