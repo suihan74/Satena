@@ -147,7 +147,15 @@ class BookmarksRepository(
         }
 
     /** 追加ロード用のカーソル */
+    private val recentBookmarksCursorLock by lazy { Any() }
     private var recentBookmarksCursor: String? = null
+        get() = synchronized(recentBookmarksCursorLock) { field }
+        set(value) {
+            synchronized(recentBookmarksCursorLock) { field = value }
+        }
+
+    val additionalLoadable: Boolean
+        get() = recentBookmarksCursor != null
 
     /** 新着ブクマを取得済みの部分に達するまで取得する */
     private fun loadMostRecentBookmarksAsync(url: String) : Deferred<BookmarksWithCursor> {
