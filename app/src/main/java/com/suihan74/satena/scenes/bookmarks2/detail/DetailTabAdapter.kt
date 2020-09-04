@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentPagerAdapter
 import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
 import com.suihan74.satena.R
+import com.suihan74.utilities.Listener
 
 class DetailTabAdapter(
     private val detailFragment: BookmarkDetailFragment
@@ -89,15 +90,15 @@ class DetailTabAdapter(
         else null
 
     /** タブリストが変更されたときに呼ばれるリスナ */
-    private var onDataSetChangedListener : (()->Unit)? = null
+    private var onDataSetChangedListener : Listener<Unit>? = null
 
     /** タブリストが変更されたときに呼ばれるリスナを設定 */
-    fun setOnDataSetChangedListener(listener: (()->Unit)?) {
+    fun setOnDataSetChangedListener(listener: Listener<Unit>?) {
         onDataSetChangedListener = listener
     }
 
     override fun notifyDataSetChanged() {
         super.notifyDataSetChanged()
-        onDataSetChangedListener?.invoke()
+        onDataSetChangedListener?.invoke(Unit)
     }
 }

@@ -104,12 +104,12 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
     /**
      * ボトムバーの項目がクリックされたときのリスナ
      */
-    private var onBottomMenuItemClickListener : ((UserBottomItem)->Unit)? = null
+    private var onBottomMenuItemClickListener : Listener<UserBottomItem>? = null
 
     /**
      * ボトムバーの項目がクリックされたときのリスナを設定する
      */
-    fun setOnBottomMenuItemClickListener(listener: ((UserBottomItem)->Unit)?) {
+    fun setOnBottomMenuItemClickListener(listener: Listener<UserBottomItem>?) {
         onBottomMenuItemClickListener = listener
     }
 

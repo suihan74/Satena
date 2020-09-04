@@ -14,10 +14,7 @@ import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
-import com.suihan74.utilities.OnError
-import com.suihan74.utilities.OnFinally
-import com.suihan74.utilities.OnSuccess
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -93,29 +90,29 @@ abstract class BookmarksTabViewModel : ViewModel() {
 
     // Listeners
     /** リストトップまでスクロール */
-    private var onScrollToTopListener: (()->Unit)? = null
+    private var onScrollToTopListener: Listener<Unit>? = null
     /** 表示分のボトムまでスクロール */
-    private var onScrollToBottomListener: (()->Unit)? = null
+    private var onScrollToBottomListener: Listener<Unit>? = null
     /** 指定したブクマまでスクロール */
-    private var onScrollToBookmarkListener: ((Bookmark)->Unit)? = null
+    private var onScrollToBookmarkListener: Listener<Bookmark>? = null
 
-    fun setOnScrollToTopListener(action: (()->Unit)?) {
+    fun setOnScrollToTopListener(action: Listener<Unit>?) {
         onScrollToTopListener = action
     }
-    fun setOnScrollToBottomListener(action: (()->Unit)?) {
+    fun setOnScrollToBottomListener(action: Listener<Unit>?) {
         onScrollToBottomListener = action
     }
-    fun setOnScrollToBookmarkListener(action: ((Bookmark)->Unit)?) {
+    fun setOnScrollToBookmarkListener(action: Listener<Bookmark>?) {
         onScrollToBookmarkListener = action
     }
 
     /** リストをトップまでスクロールする */
     fun scrollToTop() =
-        onScrollToTopListener?.invoke()
+        onScrollToTopListener?.invoke(Unit)
 
     /** リストをボトムまでスクロールする */
     fun scrollToBottom() =
-        onScrollToBottomListener?.invoke()
+        onScrollToBottomListener?.invoke(Unit)
 
     /** リストを指定ブクマまでスクロールする */
     fun scrollTo(bookmark: Bookmark) =

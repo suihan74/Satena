@@ -11,6 +11,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.hatenaLib.UserColorStarsCount
 import com.suihan74.satena.R
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.dp2px
 import com.suihan74.utilities.sp2px
 import kotlinx.android.synthetic.main.popup_add_star.view.*
@@ -47,18 +48,18 @@ class AddStarPopupMenu(context: Context) : PopupWindow() {
     private var colorStars: UserColorStarsCount = UserColorStarsCount(0, 0, 0, 0)
 
     /** スターをつけるボタンをクリックしたときの挙動 */
-    private var onClickAddStarListener : ((StarColor)->Unit)? = null
+    private var onClickAddStarListener : Listener<StarColor>? = null
 
     /** スターを購入するボタンをクリックしたときの挙動 */
-    private var onClickPurchaseStarsListener : (()->Unit)? = null
+    private var onClickPurchaseStarsListener : Listener<Unit>? = null
 
     /** スターをつけるボタンをクリックしたときの挙動を設定する */
-    fun setOnClickAddStarListener(listener: ((StarColor)->Unit)?) {
+    fun setOnClickAddStarListener(listener: Listener<StarColor>?) {
         onClickAddStarListener = listener
     }
 
     /** スターを購入するボタンをクリックしたときの挙動 */
-    fun setOnClickPurchaseStarsListener(listener: (() -> Unit)?) {
+    fun setOnClickPurchaseStarsListener(listener: Listener<Unit>?) {
         onClickPurchaseStarsListener = listener
     }
 
@@ -78,7 +79,7 @@ class AddStarPopupMenu(context: Context) : PopupWindow() {
             onClickAddStarListener?.invoke(color)
         }
         else {
-            onClickPurchaseStarsListener?.invoke()
+            onClickPurchaseStarsListener?.invoke(Unit)
         }
     }
 

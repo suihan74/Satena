@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.MenuItemCompat
 import com.suihan74.satena.R
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.getThemeColor
 
 fun Spinner.initialize(
@@ -19,7 +20,7 @@ fun Spinner.initialize(
     menuItem: MenuItem?,
     items: List<String>,
     tooltipTextId: Int? = null,
-    onItemSelected: ((Int?)->Unit)? = null
+    onItemSelected: Listener<Int?>? = null
 ) {
     val innerItems = listOf("*").plus(items)
 

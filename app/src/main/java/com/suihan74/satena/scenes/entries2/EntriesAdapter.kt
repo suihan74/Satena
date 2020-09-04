@@ -33,7 +33,7 @@ class EntriesAdapter(
     private var onCommentClicked : ((Entry, BookmarkResult)->Unit)? = null
 
     /** アイテム追加完了時の挙動 */
-    private var onItemsSubmitted : ((List<Entry>?)->Unit)? = null
+    private var onItemsSubmitted : Listener<List<Entry>?>? = null
 
     /** クリック処理済みフラグ（複数回タップされないようにする） */
     private var itemClicked = false
@@ -60,7 +60,7 @@ class EntriesAdapter(
     }
 
     /** アイテム追加完了時の挙動をセットする */
-    fun setOnItemsSubmittedListener(listener: ((List<Entry>?)->Unit)?) {
+    fun setOnItemsSubmittedListener(listener: Listener<List<Entry>?>?) {
         onItemsSubmitted = listener
     }
 

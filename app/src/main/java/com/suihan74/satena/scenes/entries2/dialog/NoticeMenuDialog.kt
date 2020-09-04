@@ -32,10 +32,10 @@ class NoticeMenuDialog : AlertDialogFragment() {
     }
 
     /** 通知削除時のイベントリスナ */
-    private var onNoticeRemovedListener: ((Notice)->Unit)? = null
+    private var onNoticeRemovedListener: com.suihan74.utilities.Listener<Notice>? = null
 
     /** 通知削除時のイベントリスナを設定 */
-    fun setOnNoticeRemovedListener(listener: ((Notice)->Unit)?) {
+    fun setOnNoticeRemovedListener(listener: com.suihan74.utilities.Listener<Notice>?) {
         onNoticeRemovedListener = listener
     }
 
