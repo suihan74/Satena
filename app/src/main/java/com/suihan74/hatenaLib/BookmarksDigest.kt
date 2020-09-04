@@ -21,6 +21,7 @@ data class StarCount (
     )
 }
 
+/** ipad.entry_bookmarks.jsonのレスポンス */
 data class BookmarkWithStarCount (
     @SerializedName("user")
     private val mUser : User,
@@ -60,6 +61,13 @@ data class BookmarkWithStarCount (
     }
 }
 
+/** 追加ロードのためのカーソルを含んだブコメリスト取得用のレスポンス */
+data class BookmarksWithCursor (
+    val cursor: String?,
+    val bookmarks: List<BookmarkWithStarCount>
+)
+
+/** 人気コメントを取得するためのレスポンス */
 data class BookmarksDigest (
     val referredBlogEntries : List<Entry>?,
     val scoredBookmarks : List<BookmarkWithStarCount>,
