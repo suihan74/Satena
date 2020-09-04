@@ -21,7 +21,11 @@ fun SpannableStringBuilder.append(
     end: Int? = null,
     flags: Int = Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
 ) {
-    val startPos = this.length
-    append(text)
-    setSpan(span, start ?: startPos, end ?: this.length, flags)
+    val startPos = start ?: this.length
+    val endPos = end ?: (startPos + text.length)
+
+    if (startPos < endPos) {
+        append(text)
+        setSpan(span, startPos, endPos, flags)
+    }
 }
