@@ -14,7 +14,10 @@ import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
-import com.suihan74.utilities.*
+import com.suihan74.utilities.OnError
+import com.suihan74.utilities.OnFinally
+import com.suihan74.utilities.OnSuccess
+import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -66,25 +69,20 @@ abstract class BookmarksTabViewModel : ViewModel() {
     fun loadNextBookmarks(
         onSuccess: OnSuccess<List<Bookmark>>?,
         onError: OnError? = null,
-        onFinally: OnFinally<List<Bookmark>>?
+        onFinally: OnFinally?
     ) = viewModelScope.launch(Dispatchers.Main) {
-        var result: List<Bookmark>? = null
-        var error: Throwable? = null
-
         try {
             val next = withContext(Dispatchers.Default) {
                 updateBookmarks().join()
                 loadNextBookmarks()
             }
-            result = next
             onSuccess?.invoke(next)
         }
         catch (e: Throwable) {
-            error = e
             onError?.invoke(e)
         }
         finally {
-            onFinally?.invoke(OnFinallyArgument(result, error))
+            onFinally?.invoke()
         }
     }
     protected abstract suspend fun loadNextBookmarks() : List<Bookmark>
