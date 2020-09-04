@@ -14,12 +14,17 @@ class BookmarksRepository(
     private val accountLoader: AccountLoader
 ) {
     /** エントリ情報が正しく設定されているか */
-    val isInitialized : Boolean get() =
-        this::entry.isInitialized
+    val isInitialized : Boolean
+        get() = _entry != null
 
     /** エントリ情報 */
-    lateinit var entry: Entry
-        private set
+    var entry: Entry
+        get() = _entry!!
+        private set(value) {
+            _entry = value
+        }
+
+    private var _entry: Entry? = null
 
     /** ブクマエントリ */
     var bookmarksEntry: BookmarksEntry? = null
