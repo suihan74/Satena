@@ -568,26 +568,26 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
     }
 
     /** ボトムバーにメニューアイテムを追加する */
-    fun inflateAdditionalBottomMenu(@MenuRes menuId: Int) {
+    fun inflateExtraBottomMenu(@MenuRes menuId: Int) {
         if (!viewModel.isBottomLayoutMode) return
 
-        val prefValue = viewModel.additionalBottomItemsAlignment
+        val prefValue = viewModel.extraBottomItemsAlignment
 
         val alignment =
-            if (prefValue == AdditionalBottomItemsAlignment.DEFAULT) {
+            if (prefValue == ExtraBottomItemsAlignment.DEFAULT) {
                 when (viewModel.bottomBarItemsGravity) {
-                    Gravity.END -> AdditionalBottomItemsAlignment.LEFT
-                    Gravity.START -> AdditionalBottomItemsAlignment.RIGHT
+                    Gravity.END -> ExtraBottomItemsAlignment.LEFT
+                    Gravity.START -> ExtraBottomItemsAlignment.RIGHT
                     else -> throw NotImplementedError()
                 }
             }
             else prefValue
 
         when (alignment) {
-            AdditionalBottomItemsAlignment.RIGHT ->
+            ExtraBottomItemsAlignment.RIGHT ->
                 bottom_app_bar.inflateMenu(menuId)
 
-            AdditionalBottomItemsAlignment.LEFT -> {
+            ExtraBottomItemsAlignment.LEFT -> {
                 bottom_app_bar.menu.clear()
                 bottom_app_bar.inflateMenu(menuId)
                 inflateBasicBottomItems(bottom_app_bar)

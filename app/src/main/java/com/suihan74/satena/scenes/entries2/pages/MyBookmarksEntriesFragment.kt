@@ -59,7 +59,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             setHasOptionsMenu(true)
         }
         else {
-            activity.inflateAdditionalBottomMenu(R.menu.my_bookmarks_bottom)
+            activity.inflateExtraBottomMenu(R.menu.my_bookmarks_bottom)
             initializeMenu(bottomAppBar.menu, bottomAppBar)
         }
 

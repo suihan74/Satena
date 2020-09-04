@@ -3,8 +3,8 @@ package com.suihan74.satena.models
 import android.content.Context
 import android.view.Gravity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
-import com.suihan74.satena.scenes.entries2.AdditionalBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.CategoriesMode
+import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
@@ -91,7 +91,7 @@ enum class PreferenceKey(
     ENTRIES_BOTTOM_ITEMS_GRAVITY(typeInfo<Int>(), Gravity.END),
 
     /** ボトムバーの追加項目の表示位置 */
-    ENTRIES_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT(typeInfo<Int>(), AdditionalBottomItemsAlignment.DEFAULT.id),
+    ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT(typeInfo<Int>(), ExtraBottomItemsAlignment.DEFAULT.id),
 
     /** エントリ項目シングルタップの挙動 */
     ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.id),

@@ -101,8 +101,8 @@ class EntriesViewModel(
         get() = repository.bottomBarItemsGravity
 
     /** ボトムバーの追加項目の配置方法 */
-    val additionalBottomItemsAlignment : AdditionalBottomItemsAlignment
-        get() = repository.additionalBottomItemsAlignment
+    val extraBottomItemsAlignment : ExtraBottomItemsAlignment
+        get() = repository.extraBottomItemsAlignment
 
     /** 初期化処理 */
     fun initialize(

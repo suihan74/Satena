@@ -16,8 +16,8 @@ import com.suihan74.satena.databinding.FragmentPreferencesEntriesBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialogFragment
 import com.suihan74.satena.models.*
-import com.suihan74.satena.scenes.entries2.AdditionalBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.CategoriesMode
+import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.android.synthetic.main.fragment_preferences_entries.view.*
@@ -155,13 +155,13 @@ class PreferencesEntriesFragment :
         }
 
         // ボトムバーの追加項目の配置方法
-        view.additional_bottom_items_alignment_button.setOnClickListener {
+        view.extra_bottom_items_alignment_button.setOnClickListener {
             AlertDialogFragment.Builder(R.style.AlertDialogStyle)
-                .setTitle(R.string.pref_additional_bottom_items_alignment_desc)
+                .setTitle(R.string.pref_extra_bottom_items_alignment_desc)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(
-                    AdditionalBottomItemsAlignment.values().map { getString(it.textId) }.toTypedArray(),
-                    viewModel.additionalBottomItemsAlignment.value!!.ordinal
+                    ExtraBottomItemsAlignment.values().map { getString(it.textId) }.toTypedArray(),
+                    viewModel.extraBottomItemsAlignment.value!!.ordinal
                 )
                 .show(childFragmentManager, DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT)
         }
@@ -197,7 +197,7 @@ class PreferencesEntriesFragment :
                 viewModel.categoriesMode.value = CategoriesMode.fromInt(which)
 
             DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT ->
-                viewModel.additionalBottomItemsAlignment.value = AdditionalBottomItemsAlignment.values()[which]
+                viewModel.extraBottomItemsAlignment.value = ExtraBottomItemsAlignment.values()[which]
         }
         dialog.dismiss()
     }

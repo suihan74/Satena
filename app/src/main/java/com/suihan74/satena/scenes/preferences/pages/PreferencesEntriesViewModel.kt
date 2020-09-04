@@ -3,8 +3,8 @@ package com.suihan74.satena.scenes.preferences.pages
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.models.*
-import com.suihan74.satena.scenes.entries2.AdditionalBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.CategoriesMode
+import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.satena.scenes.preferences.bottomBar.BottomBarItemSelectionDialog
@@ -36,10 +36,10 @@ class PreferencesEntriesViewModel(
     )
 
     /** 下部バーの追加項目の配置方法 */
-    val additionalBottomItemsAlignment = createLiveDataEnum(
-        PreferenceKey.ENTRIES_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT,
+    val extraBottomItemsAlignment = createLiveDataEnum(
+        PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT,
         { it.id },
-        { AdditionalBottomItemsAlignment.fromInt(it) }
+        { ExtraBottomItemsAlignment.fromInt(it) }
     )
 
     /** エントリ項目シングルタップの挙動 */

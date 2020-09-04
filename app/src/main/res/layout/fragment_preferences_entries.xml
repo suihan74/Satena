@@ -92,17 +92,17 @@
 
             <TextView
                     android:visibility="@{vm.bottomLayoutMode}"
-                    android:text="@string/pref_additional_bottom_items_alignment_desc"
+                    android:text="@string/pref_extra_bottom_items_alignment_desc"
                     android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
-                    android:id="@+id/additional_bottom_items_alignment_button"
+                    android:id="@+id/extra_bottom_items_alignment_button"
                     android:visibility="@{vm.bottomLayoutMode}"
                     android:textColor="@color/textColor"
-                    android:text="@{vm.additionalBottomItemsAlignment.textId}"
+                    android:text="@{vm.extraBottomItemsAlignment.textId}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 

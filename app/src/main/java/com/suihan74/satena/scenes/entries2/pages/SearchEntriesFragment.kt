@@ -78,7 +78,7 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
             setHasOptionsMenu(true)
         }
         else {
-            activity.inflateAdditionalBottomMenu(R.menu.search_entries_bottom)
+            activity.inflateExtraBottomMenu(R.menu.search_entries_bottom)
             initializeMenu(bottomAppBar.menu, bottomAppBar)
         }
 
