@@ -21,9 +21,7 @@ import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
-import com.suihan74.utilities.lock
-import com.suihan74.utilities.showAllowingStateLoss
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.coroutines.*
 
 class BookmarksViewModel(
@@ -113,8 +111,8 @@ class BookmarksViewModel(
 
     private fun loadEntryImpl(
         loadAction: suspend ()->Unit,
-        onSuccess: ((Entry) -> Unit)? = null,
-        onError: CompletionHandler? = null
+        onSuccess: OnSuccess<Entry>? = null,
+        onError: OnError? = null
     ) = viewModelScope.launch {
         try {
             loadAction.invoke()
@@ -135,8 +133,8 @@ class BookmarksViewModel(
     /** URLを使ってEntryをロードする */
     fun loadEntry(
         url: String,
-        onSuccess: ((entry: Entry) -> Unit)? = null,
-        onError: CompletionHandler? = null
+        onSuccess: OnSuccess<Entry>? = null,
+        onError: OnError? = null
     ) = loadEntryImpl(
         { repository.loadEntry(url) },
         onSuccess,
@@ -146,8 +144,8 @@ class BookmarksViewModel(
     /** EntryIdを使ってEntryをロードする */
     fun loadEntry(
         eid: Long,
-        onSuccess: ((entry: Entry) -> Unit)? = null,
-        onError: CompletionHandler? = null
+        onSuccess: OnSuccess<Entry>? = null,
+        onError: OnError? = null
     ) = loadEntryImpl(
         { repository.loadEntry(eid) },
         onSuccess,
@@ -156,8 +154,8 @@ class BookmarksViewModel(
 
     fun loadEntry(
         entry: Entry,
-        onSuccess: ((entry: Entry) -> Unit)? = null,
-        onError: CompletionHandler? = null
+        onSuccess: OnSuccess<Entry>? = null,
+        onError: OnError? = null
     ) = loadEntryImpl(
         { repository.loadEntry(entry) },
         onSuccess,
@@ -175,7 +173,12 @@ class BookmarksViewModel(
     }
 
     /** 初期化 */
-    fun init(fragmentManager: FragmentManager?, loading: Boolean, onError: CompletionHandler? = null, onFinally: (()->Unit)? = null) = viewModelScope.launch {
+    fun init(
+        fragmentManager: FragmentManager?,
+        loading: Boolean,
+        onError: OnError? = null,
+        onFinally: OnFinally? = null
+    ) = viewModelScope.launch {
         this@BookmarksViewModel.fragmentManager = fragmentManager
 
         try {
