@@ -17,6 +17,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
