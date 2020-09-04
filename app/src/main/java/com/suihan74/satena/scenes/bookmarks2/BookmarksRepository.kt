@@ -5,6 +5,7 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.lock
@@ -455,7 +456,7 @@ class BookmarksRepository(
         }
 
         /** 特定のブコメに対するスター情報を再読み込み */
-        suspend fun update(bookmark: Bookmark, onError: ((Throwable)->Unit)? = null) {
+        suspend fun update(bookmark: Bookmark, onError: OnError? = null) {
             try {
                 val result = client.getStarsEntryAsync(bookmark.getBookmarkUrl(entry)).await()
                 repository.setStarsEntryTo(bookmark.user, result)

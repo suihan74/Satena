@@ -266,7 +266,7 @@ class BookmarksViewModel(
      * エントリ情報・非表示ユーザー情報・ログインを完了した状態にする
      * 通信OFF状態でinit()し，通信ONに変更した後でブクマロードをする場合のため
      */
-    private suspend fun loadBasics(onError: CompletionHandler? = null) {
+    private suspend fun loadBasics(onError: OnError? = null) {
         try {
             repository.init()
             repository.loadIgnoredUsersAsync().await()
@@ -304,7 +304,7 @@ class BookmarksViewModel(
     }
 
     /** 新着ブクマリストの次のページを追加ロードする */
-    suspend fun loadNextRecent(onError: CompletionHandler? = null) : List<Bookmark> {
+    suspend fun loadNextRecent(onError: OnError? = null) : List<Bookmark> {
         loadBasics(onError)
         val recent = repository.loadNextBookmarksRecentAsync().await()
         bookmarksRecent.postValue(repository.bookmarksRecent)
@@ -314,7 +314,7 @@ class BookmarksViewModel(
     }
 
     /** 指定ユーザーのブクマが得られるまで新着順ブクマリストを追加ロードする */
-    fun loadNextRecentToUser(user: String, onError: CompletionHandler? = null) = viewModelScope.launch(
+    fun loadNextRecentToUser(user: String, onError: OnError? = null) = viewModelScope.launch(
         CoroutineExceptionHandler { _, e ->
             onError?.invoke(e)
         }
@@ -333,7 +333,7 @@ class BookmarksViewModel(
     }
 
     /** 人気ブクマリストを再読み込み */
-    fun updateDigest(onError: CompletionHandler? = null) = viewModelScope.launch(
+    fun updateDigest(onError: OnError? = null) = viewModelScope.launch(
         CoroutineExceptionHandler { _, e ->
             onError?.invoke(e)
         }
@@ -344,7 +344,7 @@ class BookmarksViewModel(
     }
 
     /** 新着ブクマリストを再読み込み */
-    fun updateRecent(onError: CompletionHandler? = null) = viewModelScope.launch(
+    fun updateRecent(onError: OnError? = null) = viewModelScope.launch(
         CoroutineExceptionHandler { _, e ->
             onError?.invoke(e)
         }
@@ -359,8 +359,8 @@ class BookmarksViewModel(
     fun setUserIgnoreState(
         user: String,
         ignore: Boolean,
-        onSuccess: (()->Unit)? = null,
-        onError: ((Throwable)->Unit)? = null
+        onSuccess: OnSuccess<Unit>? = null,
+        onError: OnError? = null
     ) = viewModelScope.launch {
         try {
             if (ignore) {
@@ -378,7 +378,7 @@ class BookmarksViewModel(
         }
 
         withContext(Dispatchers.Main) {
-            onSuccess?.invoke()
+            onSuccess?.invoke(Unit)
         }
     }
 
@@ -455,8 +455,8 @@ class BookmarksViewModel(
     /** ブクマを通報 */
     fun reportBookmark(
         report: Report,
-        onSuccess: (()->Unit)? = null,
-        onError: ((Throwable)->Unit)? = null
+        onSuccess: OnSuccess<Unit>? = null,
+        onError: OnError? = null
     ) = viewModelScope.launch {
         try {
             repository.reportBookmark(report)
@@ -469,7 +469,7 @@ class BookmarksViewModel(
         }
 
         withContext(Dispatchers.Main) {
-            onSuccess?.invoke()
+            onSuccess?.invoke(Unit)
         }
     }
 

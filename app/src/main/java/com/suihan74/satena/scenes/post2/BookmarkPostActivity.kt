@@ -265,7 +265,7 @@ class BookmarkPostActivity :
     }
 
     /** 投稿成功時処理 */
-    private val onPostSuccess = { result: BookmarkResult ->
+    private val onPostSuccess: OnSuccess<BookmarkResult> = { result ->
         showToast(R.string.msg_post_bookmark_succeeded)
         val intent = Intent().apply {
             putObjectExtra(RESULT_BOOKMARK, result)
@@ -300,9 +300,7 @@ class BookmarkPostActivity :
         viewModel.postBookmark(
             onSuccess = onPostSuccess,
             onError = onPostError,
-            onFinally = { e ->
-                viewModel.nowPosting.value = false
-            }
+            onFinally = { viewModel.nowPosting.value = false }
         )
     }
 

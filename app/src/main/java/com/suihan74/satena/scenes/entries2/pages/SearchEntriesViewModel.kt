@@ -11,6 +11,7 @@ import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel
+import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 
 class SearchEntriesViewModel(
@@ -39,7 +40,7 @@ class SearchEntriesViewModel(
         lifecycleOwner: LifecycleOwner,
         entriesAdapter: EntriesAdapter,
         viewModel: EntriesTabFragmentViewModel,
-        onError: ((Throwable)->Unit)?
+        onError: OnError?
     ) {
         super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
 

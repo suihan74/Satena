@@ -12,6 +12,9 @@ import com.google.android.play.core.ktx.isImmediateUpdateAllowed
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.utilities.OnError
+import com.suihan74.utilities.OnFinally
+import com.suihan74.utilities.OnSuccess
 import kotlinx.coroutines.launch
 
 class EntriesViewModel(
@@ -104,21 +107,19 @@ class EntriesViewModel(
     /** 初期化処理 */
     fun initialize(
         forceUpdate: Boolean,
-        onSuccess: (()->Unit)? = null,
-        onError: ((Throwable)->Unit)? = null,
-        onFinally: ((Throwable?)->Unit)? = null
+        onSuccess: OnSuccess<Unit>? = null,
+        onError: OnError? = null,
+        onFinally: OnFinally? = null
     ) = viewModelScope.launch {
-        var error: Throwable? = null
         try {
             repository.signIn(forceUpdate)
-            onSuccess?.invoke()
+            onSuccess?.invoke(Unit)
         }
         catch (e: Throwable) {
-            error = e
             onError?.invoke(e)
         }
         finally {
-            onFinally?.invoke(error)
+            onFinally?.invoke()
         }
     }
 

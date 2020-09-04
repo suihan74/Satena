@@ -6,9 +6,10 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import com.suihan74.utilities.showAllowingStateLoss
+import com.suihan74.utilities.OnError
 import com.suihan74.utilities.getObject
 import com.suihan74.utilities.putObject
+import com.suihan74.utilities.showAllowingStateLoss
 
 /**
  * 画面復元で落ちないようにしたAlertDialog
@@ -159,7 +160,7 @@ open class AlertDialogFragment : DialogFragment() {
         fun showAllowingStateLoss(
             fragmentManager: FragmentManager,
             tag: String? = null,
-            onError: ((Throwable)->Unit)? = { Log.e("AlertDialogoBuilder", Log.getStackTraceString(it)) }
+            onError: OnError? = { Log.e("AlertDialogoBuilder", Log.getStackTraceString(it)) }
         ) {
             val dialog = create()
             dialog.showAllowingStateLoss(fragmentManager, tag, onError)

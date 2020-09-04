@@ -8,6 +8,7 @@ import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.hatenaLib.Tag
 import com.suihan74.satena.models.Category
+import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 
 abstract class EntriesFragmentViewModel : ViewModel() {
@@ -54,7 +55,7 @@ abstract class EntriesFragmentViewModel : ViewModel() {
         lifecycleOwner: LifecycleOwner,
         entriesAdapter: EntriesAdapter,
         viewModel: EntriesTabFragmentViewModel,
-        onError: ((Throwable)->Unit)?
+        onError: OnError?
     ) {
         // Issueの変更を監視する
         // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる

@@ -18,10 +18,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
-import com.suihan74.utilities.ScrollableToTop
-import com.suihan74.utilities.alsoAs
-import com.suihan74.utilities.getEnum
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_entries_tab2.view.*
 
 abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
@@ -67,7 +64,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             }
 
     /** リスト更新失敗時に呼ばれる */
-    protected val onErrorRefreshEntries: (Throwable)->Unit = { e ->
+    protected val onErrorRefreshEntries: OnError = { e ->
         Log.e("error", Log.getStackTraceString(e))
         activity?.showToast(R.string.msg_update_entries_failed)
     }

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
+import com.suihan74.utilities.OnError
+import com.suihan74.utilities.OnSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -22,7 +24,11 @@ class IgnoredEntryViewModel(
         entries.postValue(repository.load(forceUpdate = true))
     }
 
-    fun add(entry: IgnoredEntry, onSuccess: (()->Unit)? = null, onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
+    fun add(
+        entry: IgnoredEntry,
+        onSuccess: OnSuccess<Unit>? = null,
+        onError: OnError? = null
+    ) = viewModelScope.launch {
         try {
             repository.add(entry) ?: let {
                 throw IllegalAccessError("failed to add an ignored entry")
@@ -30,7 +36,7 @@ class IgnoredEntryViewModel(
             entries.postValue(repository.ignoredEntries)
 
             withContext(Dispatchers.Main) {
-                onSuccess?.invoke()
+                onSuccess?.invoke(Unit)
             }
         }
         catch (e: Throwable) {
@@ -45,13 +51,17 @@ class IgnoredEntryViewModel(
         entries.postValue(repository.ignoredEntries)
     }
 
-    fun update(entry: IgnoredEntry, onSuccess: (()->Unit)? = null, onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
+    fun update(
+        entry: IgnoredEntry,
+        onSuccess: OnSuccess<Unit>? = null,
+        onError: OnError? = null
+    ) = viewModelScope.launch {
         try {
             repository.update(entry)
             entries.postValue(repository.ignoredEntries)
 
             withContext(Dispatchers.Main) {
-                onSuccess?.invoke()
+                onSuccess?.invoke(Unit)
             }
         }
         catch (e: Throwable) {

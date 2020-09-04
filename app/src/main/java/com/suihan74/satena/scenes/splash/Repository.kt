@@ -6,10 +6,9 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.OnError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
-typealias OnError = (Throwable)->Unit
 
 class Repository(
     private val accountLoader : AccountLoader

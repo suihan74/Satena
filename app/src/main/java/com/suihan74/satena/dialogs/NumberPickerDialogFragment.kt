@@ -10,6 +10,7 @@ import android.widget.NumberPicker
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentManager
 import com.suihan74.satena.R
+import com.suihan74.utilities.OnError
 import com.suihan74.utilities.showAllowingStateLoss
 
 class NumberPickerDialogFragment : AlertDialogFragment() {
@@ -116,7 +117,7 @@ class NumberPickerDialogFragment : AlertDialogFragment() {
         fun showAllowingStateLoss(
             fragmentManager: FragmentManager,
             tag: String?,
-            onError: ((Throwable)->Unit)? = { Log.e("NumberPickerDialog", Log.getStackTraceString(it)) }) =
+            onError: OnError? = { Log.e("NumberPickerDialog", Log.getStackTraceString(it)) }) =
             create().showAllowingStateLoss(fragmentManager, tag, onError)
 
         fun setTitle(titleId: Int) = this.apply {

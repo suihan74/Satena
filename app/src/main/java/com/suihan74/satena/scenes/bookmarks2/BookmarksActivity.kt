@@ -35,7 +35,6 @@ import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
-import kotlinx.coroutines.CompletionHandler
 
 class BookmarksActivity :
     AppCompatActivity(),
@@ -127,7 +126,7 @@ class BookmarksActivity :
 
         progress_bar.visibility = View.VISIBLE
 
-        val onSuccess : (Entry)->Unit = {
+        val onSuccess: OnSuccess<Entry> = {
             init(firstLaunching, it, targetUser)
 
             val entryInformationFragment = EntryInformationFragment.createInstance()
@@ -136,7 +135,7 @@ class BookmarksActivity :
                 .commitAllowingStateLoss()
         }
 
-        val onError : CompletionHandler = { e ->
+        val onError: OnError = { e ->
             when(e) {
                 is InvalidUrlException -> {
                     showToast(R.string.invalid_url_error)
@@ -247,7 +246,7 @@ class BookmarksActivity :
         // ロード中の画面回転による初期化処理重複を抑制する
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
 
-        val onError: CompletionHandler = { e ->
+        val onError: OnError = { e ->
             when (e) {
                 is AccountLoader.HatenaSignInException ->
                     showToast(R.string.msg_auth_failed)

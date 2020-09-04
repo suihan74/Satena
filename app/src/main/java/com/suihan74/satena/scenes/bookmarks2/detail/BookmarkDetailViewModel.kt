@@ -9,6 +9,8 @@ import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksRepository
 import com.suihan74.utilities.BookmarkCommentDecorator
+import com.suihan74.utilities.OnError
+import com.suihan74.utilities.OnSuccess
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,19 +64,19 @@ class BookmarkDetailViewModel(
     // --- Listeners --- //
 
     /** ブクマに付けられたスター情報のロード失敗時に呼ばれるリスナ */
-    private var onLoadedStarsFailureListener : ((Throwable)->Unit)? = null
+    private var onLoadedStarsFailureListener : OnError? = null
 
     /** スター付与に成功した際に呼ばれるリスナ */
-    private var onCompletedPostStarListener : ((StarColor)->Unit)? = null
+    private var onCompletedPostStarListener : OnSuccess<StarColor>? = null
 
     /** スター付与に失敗した際に呼ばれるリスナ */
     private var onPostStarFailureListener : ((StarColor, Throwable)->Unit)? = null
 
-    fun setOnLoadedStarsFailureListener(listener: ((Throwable)->Unit)? = null) {
+    fun setOnLoadedStarsFailureListener(listener: OnError? = null) {
         onLoadedStarsFailureListener = listener
     }
 
-    fun setOnCompletedPostStarListener(listener: ((StarColor)->Unit)? = null) {
+    fun setOnCompletedPostStarListener(listener: OnSuccess<StarColor>? = null) {
         onCompletedPostStarListener = listener
     }
 

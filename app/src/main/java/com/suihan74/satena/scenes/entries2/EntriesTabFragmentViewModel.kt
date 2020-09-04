@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
+import com.suihan74.utilities.OnError
+import com.suihan74.utilities.OnFinally
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -121,7 +123,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** 表示項目リストを初期化 */
-    fun refresh(onError: ((Throwable)->Unit)? = null) = viewModelScope.launch {
+    fun refresh(onError: OnError? = null) = viewModelScope.launch {
         when (category) {
             Category.Notices -> refreshNotices(onError)
             Category.Maintenance -> refreshInformation(onError)
@@ -177,7 +179,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** エントリリストを初期化 */
-    private suspend fun refreshEntries(onError: ((Throwable)->Unit)?) = withContext(Dispatchers.Default) {
+    private suspend fun refreshEntries(onError: OnError?) = withContext(Dispatchers.Default) {
         try {
             entries.postValue(fetchEntries())
         }
@@ -189,7 +191,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** 通知リストを初期化 */
-    private suspend fun refreshNotices(onError: ((Throwable)->Unit)?) = withContext(Dispatchers.Default) {
+    private suspend fun refreshNotices(onError: OnError?) = withContext(Dispatchers.Default) {
         try {
             notices.postValue(repository.loadNotices())
         }
@@ -201,7 +203,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** 障害情報を取得 */
-    private suspend fun refreshInformation(onError: ((Throwable)->Unit)?) = withContext(Dispatchers.Default) {
+    private suspend fun refreshInformation(onError: OnError?) = withContext(Dispatchers.Default) {
         try {
             information.postValue(repository.loadInformation())
         }
@@ -214,10 +216,9 @@ class EntriesTabFragmentViewModel(
 
     /** エントリリストの追加ロード */
     fun loadAdditional(
-        onFinally: ((Throwable?)->Unit)? = null,
-        onError: ((Throwable)->Unit)? = null
+        onFinally: OnFinally? = null,
+        onError: OnError? = null
     ) = viewModelScope.launch(Dispatchers.Default) {
-        var error : Throwable? = null
         try {
             val offset = entries.value?.size ?: 0
             val entries = fetchEntries(offset)
@@ -227,14 +228,13 @@ class EntriesTabFragmentViewModel(
             )
         }
         catch (e: Throwable) {
-            error = e
             withContext(Dispatchers.Main) {
                 onError?.invoke(e)
             }
         }
         finally {
             withContext(Dispatchers.Main) {
-                onFinally?.invoke(error)
+                onFinally?.invoke()
             }
         }
     }

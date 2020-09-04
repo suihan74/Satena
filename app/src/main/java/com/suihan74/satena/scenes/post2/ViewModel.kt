@@ -9,8 +9,7 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Tag
 import com.suihan74.satena.modifySpecificUrls
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
+import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.sys1yagi.mastodon4j.api.entity.Status
 import com.sys1yagi.mastodon4j.api.method.Statuses
@@ -19,10 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.ceil
-
-typealias OnSuccess = (result: BookmarkResult)->Unit
-typealias OnError = (e: Throwable)->Unit
-typealias OnFinally = (e: Throwable?)->Unit
 
 class ViewModel(
     private val client: HatenaClient,
@@ -216,7 +211,7 @@ class ViewModel(
 
     /** ブクマを投稿 */
     fun postBookmark(
-        onSuccess: OnSuccess? = null,
+        onSuccess: OnSuccess<BookmarkResult>? = null,
         onError: OnError? = null,
         onFinally: OnFinally? = null
     ) = viewModelScope.launch(Dispatchers.Default) {
@@ -304,7 +299,7 @@ class ViewModel(
             if (error == null) {
                 onSuccess?.invoke(result!!)
             }
-            onFinally?.invoke(error)
+            onFinally?.invoke()
         }
     }
 
