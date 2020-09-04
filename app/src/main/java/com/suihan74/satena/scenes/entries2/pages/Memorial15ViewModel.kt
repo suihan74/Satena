@@ -7,6 +7,7 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel
+import com.suihan74.utilities.OnError
 import org.threeten.bp.LocalDate
 
 class Memorial15ViewModel : EntriesFragmentViewModel() {
@@ -31,7 +32,7 @@ class Memorial15ViewModel : EntriesFragmentViewModel() {
         lifecycleOwner: LifecycleOwner,
         entriesAdapter: EntriesAdapter,
         viewModel: EntriesTabFragmentViewModel,
-        onError: ((Throwable) -> Unit)?
+        onError: OnError?
     ) {
         super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
 

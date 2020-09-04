@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentManager
 fun DialogFragment.showAllowingStateLoss(
     fragmentManager: FragmentManager,
     tag: String? = null,
-    onError: ((Throwable)->Unit)? = { Log.e("DialogFragment", Log.getStackTraceString(it)) }
+    onError: OnError? = { Log.e("DialogFragment", Log.getStackTraceString(it)) }
 ) {
     try {
         show(fragmentManager, tag)

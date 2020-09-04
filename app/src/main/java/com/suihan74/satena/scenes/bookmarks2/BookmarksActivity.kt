@@ -269,7 +269,7 @@ class BookmarksActivity :
             Log.e("BookmarksActivity", Log.getStackTraceString(e))
         }
 
-        val onFinally: ()->Unit = {
+        val onFinally: OnFinally = {
             // コンテンツの初期化
             if (firstLaunching) {
                 // 表示履歴に追加

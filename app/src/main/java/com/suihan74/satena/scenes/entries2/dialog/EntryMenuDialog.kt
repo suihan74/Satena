@@ -55,10 +55,10 @@ private fun MutableList<MenuItem>.add(
 
 class EntryMenuDialogListeners {
     /** ミュート完了時の処理 */
-    var onIgnoredEntry : ((IgnoredEntry)->Unit)? = null
+    var onIgnoredEntry : OnSuccess<IgnoredEntry>? = null
 
     /** ブクマ削除完了時の処理 */
-    var onDeletedBookmark : ((Entry)->Unit)? = null
+    var onDeletedBookmark : OnSuccess<Entry>? = null
 
     /** ブクマ登録完了時の処理 */
     var onPostedBookmark : ((Entry, BookmarkResult)->Unit)? = null
@@ -354,7 +354,7 @@ class EntryMenuDialog : DialogFragment() {
     }
 
     /** サイトを非表示に設定する */
-    private fun ignoreSite(context: Context, entry: Entry?, url: String?, onCompleted: ((IgnoredEntry)->Unit)?) {
+    private fun ignoreSite(context: Context, entry: Entry?, url: String?, onCompleted: OnSuccess<IgnoredEntry>?) {
         val siteUrl = entry?.url ?: url ?: return
         val dialog = IgnoredEntryDialogFragment.createInstance(
             url = siteUrl,
@@ -383,7 +383,7 @@ class EntryMenuDialog : DialogFragment() {
     }
 
     /** ブクマを削除する */
-    private suspend fun removeBookmark(context: Context, entry: Entry?, url: String?, onCompleted: ((Entry)->Unit)?) {
+    private suspend fun removeBookmark(context: Context, entry: Entry?, url: String?, onCompleted: OnSuccess<Entry>?) {
         try {
             val target = entry?.url ?: url ?: throw RuntimeException("failed to remove a bookmark")
             // TODO: 「あとで読む」が削除できないっぽい

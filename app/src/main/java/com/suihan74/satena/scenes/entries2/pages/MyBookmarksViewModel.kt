@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.*
+import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 
 class MyBookmarksViewModel(
@@ -39,7 +40,7 @@ class MyBookmarksViewModel(
         lifecycleOwner: LifecycleOwner,
         entriesAdapter: EntriesAdapter,
         viewModel: EntriesTabFragmentViewModel,
-        onError: ((Throwable) -> Unit)?
+        onError: OnError?
     ) {
         super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
         searchQuery.observe(lifecycleOwner) {
