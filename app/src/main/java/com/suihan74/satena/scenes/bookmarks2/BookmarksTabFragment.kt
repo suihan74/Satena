@@ -84,7 +84,7 @@ class BookmarksTabFragment :
                 viewModel.loadNextBookmarks(
                     onSuccess = {},
                     onError = { e -> warnLoading(e) },
-                    onFinally = { _, _ -> stopLoading(viewModel.additionalLoadable) }
+                    onFinally = { stopLoading(viewModel.additionalLoadable) }
                 )
             }
         }
@@ -102,7 +102,7 @@ class BookmarksTabFragment :
                     viewModel.loadNextBookmarks(
                         onSuccess = {},
                         onError = { warnLoading(it) },
-                        onFinally = { _, _ ->
+                        onFinally = {
                             bookmarksAdapter.stopLoading(viewModel.additionalLoadable)
                             loadCompleted()
                         }

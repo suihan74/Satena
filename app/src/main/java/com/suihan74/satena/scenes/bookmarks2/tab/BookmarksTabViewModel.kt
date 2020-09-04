@@ -14,10 +14,7 @@ import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
-import com.suihan74.utilities.OnError
-import com.suihan74.utilities.OnFinally
-import com.suihan74.utilities.OnSuccess
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -87,7 +84,7 @@ abstract class BookmarksTabViewModel : ViewModel() {
             onError?.invoke(e)
         }
         finally {
-            onFinally?.invoke(result, error)
+            onFinally?.invoke(OnFinallyArgument(result, error))
         }
     }
     protected abstract suspend fun loadNextBookmarks() : List<Bookmark>
