@@ -834,15 +834,14 @@ object HatenaClient : BaseClient(), CoroutineScope {
     fun getRecentBookmarksAsync(
         url: String,
         limit: Long? = null,
-        of: Long? = null
-    ) : Deferred<List<BookmarkWithStarCount>> = async {
+        cursor: String? = null
+    ) : Deferred<BookmarksWithCursor> = async {
         val apiUrl = buildString {
-            append("$B_BASE_URL/api/ipad.entry_bookmarks?${cacheAvoidance()}&url=${Uri.encode(url)}")
+            append("$B_BASE_URL/api/ipad.entry_bookmarks_with_cursor?${cacheAvoidance()}&url=${Uri.encode(url)}")
             if (limit != null) append("&limit=$limit")
-            if (of != null) append("&of=$of")
+            if (cursor != null) append("&cursor=$cursor")
         }
-        val listType = object : TypeToken<List<BookmarkWithStarCount>>() {}.type
-        return@async getJson<List<BookmarkWithStarCount>>(listType, apiUrl, withCookie = false)
+        return@async getJson<BookmarksWithCursor>(BookmarksWithCursor::class.java, apiUrl, withCookie = false)
     }
 
     /**
