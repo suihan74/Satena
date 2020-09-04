@@ -8,17 +8,14 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
 
 /** 横幅いっぱいに表示する */
-fun SearchView.stretchWidth(activity: Activity, menu: Menu, isBottomAppBar: Boolean = false) {
+fun SearchView.stretchWidth(activity: Activity, menu: Menu) {
     val dMetrics = android.util.DisplayMetrics()
     activity.windowManager.defaultDisplay.getMetrics(dMetrics)
 
     // SearchView以外のボタンの大きさ (一定である、他は全てただのボタンである前提でベタ書きしているので注意が必要)
     val othersWidth = (menu.size() - 1) * (74 * resources.displayMetrics.density).toInt()
 
-    // ボトムバーに表示するときはFAB部分を回避する
-    val rightMargin = if (isBottomAppBar) (48 * resources.displayMetrics.density).toInt() else 0
-
-    maxWidth = dMetrics.widthPixels - othersWidth - rightMargin
+    maxWidth = dMetrics.widthPixels - othersWidth
 
     // 左端の余分なマージンを削るための設定
     arrayOf(
