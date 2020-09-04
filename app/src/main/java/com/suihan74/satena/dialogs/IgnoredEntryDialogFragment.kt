@@ -139,7 +139,6 @@ class IgnoredEntryDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
         val content = inflater.inflate(R.layout.fragment_dialog_ignored_entry, null)
-        setStyle(STYLE_NORMAL, R.style.AlertDialogStyle)
 
         // 最初に表示するタブを選択
         val modifyingEntry = requireArguments().getObject<IgnoredEntry>(ARG_MODIFYING_ENTRY)?.also {
