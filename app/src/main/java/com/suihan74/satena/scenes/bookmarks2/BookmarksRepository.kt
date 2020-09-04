@@ -184,7 +184,7 @@ class BookmarksRepository(
                     cursor = response.cursor
                     bookmarks.addAll(response.bookmarks)
 
-                    if (response.bookmarks.any { it.timestamp <= latestBookmark.timestamp }) {
+                    if (cursor == null || response.bookmarks.any { it.timestamp <= latestBookmark.timestamp }) {
                         break
                     }
                 }
