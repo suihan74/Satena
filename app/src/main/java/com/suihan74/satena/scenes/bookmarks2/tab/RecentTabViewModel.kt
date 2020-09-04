@@ -1,7 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks2.tab
 
-import com.suihan74.hatenaLib.Bookmark
-
 class RecentTabViewModel : BookmarksTabViewModel() {
     override fun init() {
         super.init()
@@ -18,7 +16,7 @@ class RecentTabViewModel : BookmarksTabViewModel() {
 
     override suspend fun loadNextBookmarks() =
         try {
-            activityViewModel.loadNextRecent().map { Bookmark.create(it) }
+            activityViewModel.loadNextRecent()
         }
         catch (e: Throwable) {
             emptyList()

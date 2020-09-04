@@ -301,7 +301,7 @@ class BookmarksViewModel(
     }
 
     /** 新着ブクマリストの次のページを追加ロードする */
-    suspend fun loadNextRecent(onError: CompletionHandler? = null) : List<BookmarkWithStarCount> {
+    suspend fun loadNextRecent(onError: CompletionHandler? = null) : List<Bookmark> {
         loadBasics(onError)
         val recent = repository.loadNextBookmarksRecentAsync().await()
         bookmarksRecent.postValue(repository.bookmarksRecent)

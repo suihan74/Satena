@@ -116,7 +116,7 @@ class CustomTabViewModel : BookmarksTabViewModel() {
 
     override suspend fun loadNextBookmarks() =
         try {
-            activityViewModel.loadNextRecent().map { Bookmark.create(it) }
+            activityViewModel.loadNextRecent()
         }
         catch (e: Throwable) {
             emptyList()
