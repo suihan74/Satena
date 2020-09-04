@@ -11,5 +11,5 @@ typealias OnError = (Throwable)->Unit
 /** 終了時(成功/失敗に関わらず呼ぶ) */
 typealias OnFinally = ()->Unit
 
-/** リスナ用 */
+/** 汎用リスナ */
 typealias Listener<T> = (T)->Unit
