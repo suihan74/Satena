@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.suihan74.utilities
 
 import android.content.Intent

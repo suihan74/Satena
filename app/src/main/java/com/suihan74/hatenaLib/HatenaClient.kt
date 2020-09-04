@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package com.suihan74.hatenaLib
 
 import android.net.Uri
@@ -27,7 +29,6 @@ import kotlin.coroutines.CoroutineContext
 
 /////////////////////////////////////////////////////////////////
 
-@Suppress("unused")
 object HatenaClient : BaseClient(), CoroutineScope {
     internal const val W_BASE_URL = "https://www.hatena.ne.jp"
     internal const val B_BASE_URL = "https://b.hatena.ne.jp"
