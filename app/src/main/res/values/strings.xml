@@ -173,7 +173,7 @@
     <string name="pref_hide_bottom_appbar_by_scrolling_desc">スクロールでボトムバーを隠す</string>
     <string name="pref_bottom_bar_items_desc">ボトムバーの項目をカスタマイズ</string>
     <string name="pref_bottom_menu_items_gravity_desc">ボトムバーアイテムの配置方法</string>
-    <string name="pref_additional_bottom_items_alignment_desc">ボトムバーの追加項目の配置方法</string>
+    <string name="pref_extra_bottom_items_alignment_desc">ボトムバーの追加項目の配置方法</string>
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_multiple_tap_action_desc">複数回タップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
@@ -197,10 +197,14 @@
     <string name="pref_entries_bottom_layout_mode_on_text">ボトムメニュー</string>
     <string name="pref_entries_bottom_layout_mode_off_text">デフォルト</string>
 
-    <!-- 追加のボトムバーアイテムの表示位置 -->
-    <string name="pref_additional_bottom_items_alignment_default">デフォルト(表示位置にあわせる)</string>
-    <string name="pref_additional_bottom_items_alignment_left">左側</string>
-    <string name="pref_additional_bottom_items_alignment_right">右側</string>
+    <!-- ボトムバーアイテムの表示位置 -->
+    <string name="pref_bottom_items_alignment_left">左寄せ</string>
+    <string name="pref_bottom_items_alignment_right">右寄せ</string>
+
+    <!-- ページによって追加されるボトムバーアイテムの追加位置 -->
+    <string name="pref_extra_bottom_items_alignment_default">デフォルト(表示位置にあわせる)</string>
+    <string name="pref_extra_bottom_items_alignment_left">左側</string>
+    <string name="pref_extra_bottom_items_alignment_right">右側</string>
 
     <!-- 表示するボトムバーアイテムを選択するダイアログ -->
     <string name="dialog_title_bottom_bar_item_selection">ボトムバーアイテム選択</string>

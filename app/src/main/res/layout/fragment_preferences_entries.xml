@@ -85,8 +85,8 @@
                     style="@style/PreferencesToggleButtonStyle"
                     android:visibility="@{vm.bottomLayoutMode}"
                     android:checked="@={BottomMenuItemsGravityConverter.set(vm.bottomBarButtonsGravity)}"
-                    android:textOn="右詰め"
-                    android:textOff="左詰め"
+                    android:textOn="@string/pref_bottom_items_alignment_right"
+                    android:textOff="@string/pref_bottom_items_alignment_left"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
