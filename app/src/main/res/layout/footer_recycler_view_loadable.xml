@@ -7,8 +7,8 @@
     <TextView
             android:id="@+id/footer_text"
             android:background="?android:attr/selectableItemBackground"
-            android:visibility="invisible"
-            android:text="追加読み込み"
+            android:visibility="gone"
+            android:text="@string/additional_loading_desc"
             android:textColor="?attr/textColor"
             android:gravity="center"
             android:layout_width="match_parent"

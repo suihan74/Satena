@@ -338,6 +338,8 @@
     <string name="custom_bookmarks_no_comment_active">無言ブクマを表示</string>
     <string name="custom_bookmarks_ignored_user_active">非表示ユーザーを表示</string>
     <string name="custom_bookmarks_no_user_tags_active">タグ無しユーザーを表示</string>
+    <string name="additional_loading_desc">続きを読み込む</string>
+
     <string name="msg_get_entry_failed">エントリ取得失敗</string>
     <string name="msg_fetch_ignored_users_failed">非表示ユーザーリスト取得失敗</string>
     <string name="msg_update_bookmarks_failed">ブクマリスト更新失敗</string>
