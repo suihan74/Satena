@@ -51,7 +51,7 @@ open class LoadableFooterViewHolder(
         get() = view.footer_text
 
     fun showProgressBar() {
-        additionalLoadingTextView?.visibility = View.INVISIBLE
+        additionalLoadingTextView?.visibility = View.GONE
         view.footer_progress_bar.visibility = View.VISIBLE
     }
 
