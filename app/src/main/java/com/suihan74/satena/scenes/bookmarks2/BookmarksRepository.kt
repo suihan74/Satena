@@ -40,7 +40,12 @@ class BookmarksRepository(
 
     /** 新着ブクマリストのキャッシュ */
     var bookmarksRecent: List<Bookmark> = emptyList()
-        private set
+        get() = synchronized(field) { field }
+        private set(value) {
+            synchronized(field) {
+                field = value
+            }
+        }
 
     /** 非表示ユーザーIDリストのキャッシュ */
     var ignoredUsers: List<String> = emptyList()
@@ -165,7 +170,7 @@ class BookmarksRepository(
             client.getRecentBookmarksAsync(url = url)
         }
         else {
-            client.async {
+            client.async(Dispatchers.Default) {
                 var cursor: String? = null
                 val bookmarks = ArrayList<BookmarkWithStarCount>()
                 while (true) {
@@ -192,23 +197,24 @@ class BookmarksRepository(
     /** 新着ブクマを取得 */
     fun loadBookmarksRecentAsync(
         additionalLoading: Boolean = false
-    ) : Deferred<List<Bookmark>> = client.async {
-        val response = try {
-            if (additionalLoading) {
-                client.getRecentBookmarksAsync(
+    ) : Deferred<List<Bookmark>> = client.async(Dispatchers.Default) {
+        val response =
+            if (!additionalLoading) loadMostRecentBookmarksAsync(url = entry.url).await()
+            else client.getRecentBookmarksAsync(
                     url = entry.url,
                     cursor = recentBookmarksCursor
                 ).await()
-            }
-            else {
-                loadMostRecentBookmarksAsync(entry.url).await()
-            }
-        }
-        catch (e: Throwable) {
-            throw e
-        }
 
         val page = response.bookmarks.map { Bookmark.create(it) }
+
+        // 追加ロード用のカーソルを更新する
+        if (page.isEmpty()) {
+            recentBookmarksCursor = null
+        }
+        else if (bookmarksRecent.isEmpty() || page.last().timestamp <= bookmarksRecent.last().timestamp) {
+            recentBookmarksCursor = response.cursor
+        }
+
         bookmarksRecent = page
             .plus(
                 bookmarksRecent.filterNot {
@@ -231,9 +237,6 @@ class BookmarksRepository(
                 )
             }
         }
-
-        // 追加ロード用のカーソルを更新する
-        recentBookmarksCursor = response.cursor
 
         // 追加分のスターを読み込む
         if (!allStarsLiveData.loading) {
