@@ -419,7 +419,7 @@ class BookmarkDetailFragment :
                 .setMessage(getString(R.string.msg_post_star_dialog, color.name))
                 .setPositiveButton(R.string.dialog_ok)
                 .setNegativeButton(R.string.dialog_cancel)
-                .setAdditionalData(DIALOG_DATA_STAR_COLOR, color)
+                .setAdditionalData(DIALOG_DATA_STAR_COLOR, color.ordinal)
                 .showAllowingStateLoss(childFragmentManager, DIALOG_CONFIRM_POST_STAR)
         }
         else {
@@ -568,7 +568,8 @@ class BookmarkDetailFragment :
     override fun onClickPositiveButton(dialog: AlertDialogFragment) {
         when (dialog.tag) {
             DIALOG_CONFIRM_POST_STAR -> {
-                val color = dialog.getAdditionalData<StarColor>(DIALOG_DATA_STAR_COLOR)!!
+                val colorOrdinal = dialog.getAdditionalData<Int>(DIALOG_DATA_STAR_COLOR)!!
+                val color = StarColor.values()[colorOrdinal]
                 viewModel.postStar(color)
             }
         }
