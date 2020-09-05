@@ -159,6 +159,7 @@ abstract class BookmarksTabViewModel : ViewModel() {
 
                     setOnClickAddStarListener { color ->
                         activityViewModel.postStarDialog(bookmark, color, "")
+                        dismiss()
                     }
 
                     setOnClickPurchaseStarsListener {
