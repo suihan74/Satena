@@ -208,6 +208,9 @@ class BookmarksRepository(
     fun loadBookmarksRecentAsync(
         additionalLoading: Boolean = false
     ) : Deferred<List<Bookmark>> = client.async(Dispatchers.Default) {
+        var cursor: String? = null
+        val page = ArrayList<Bookmark>()
+
         val response =
             if (!additionalLoading) loadMostRecentBookmarksAsync(url = entry.url).await()
             else client.getRecentBookmarksAsync(
@@ -215,14 +218,26 @@ class BookmarksRepository(
                     cursor = recentBookmarksCursor
                 ).await()
 
-        val page = response.bookmarks.map { Bookmark.create(it) }
+        cursor = response.cursor
+        page.addAll(response.bookmarks.map { Bookmark.create(it) })
+
+        // 有言ブクマを一定数確保するために繰り返し続きをロードする
+        while (cursor != null && page.count { it.comment.isNotBlank() } < 10) {
+            val r = client.getRecentBookmarksAsync(
+                url = entry.url,
+                cursor = cursor
+            ).await()
+
+            cursor = r.cursor
+            page.addAll(r.bookmarks.map { Bookmark.create(it) })
+        }
 
         // 追加ロード用のカーソルを更新する
         if (page.isEmpty()) {
             recentBookmarksCursor = null
         }
         else if (bookmarksRecent.isEmpty() || page.last().timestamp <= bookmarksRecent.last().timestamp) {
-            recentBookmarksCursor = response.cursor
+            recentBookmarksCursor = cursor
         }
 
         bookmarksRecent = page
