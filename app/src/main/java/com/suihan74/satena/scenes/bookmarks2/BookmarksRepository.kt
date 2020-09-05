@@ -302,9 +302,10 @@ class BookmarksRepository(
         }
 
     /** ブクマにスターをつける */
-    suspend fun postStar(bookmark: Bookmark, color: StarColor, quote: String = "") {
-        client.postStarAsync(bookmark.getBookmarkUrl(entry), color, quote).await()
+    suspend fun postStar(bookmark: Bookmark, color: StarColor, quote: String = "") : Star {
+        val star = client.postStarAsync(bookmark.getBookmarkUrl(entry), color, quote).await()
         userStarsLiveData.load()
+        return star
     }
 
     /** スターを削除する */

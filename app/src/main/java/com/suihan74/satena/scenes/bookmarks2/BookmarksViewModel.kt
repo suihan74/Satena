@@ -409,11 +409,26 @@ class BookmarksViewModel(
     fun postStar(
         bookmark: Bookmark,
         color: StarColor,
-        quote: String = ""
-    ) = viewModelScope.launch {
-        repository.postStar(bookmark, color, quote)
-        repository.allStarsLiveData.update(bookmark)
-        repository.userStarsLiveData.load()
+        quote: String = "",
+        onSuccess: OnSuccess<Star>? = null,
+        onError: OnError? = null,
+        onFinally: OnFinally? = null
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        try {
+            val star = withContext(Dispatchers.Default) {
+                val star = repository.postStar(bookmark, color, quote)
+                repository.allStarsLiveData.update(bookmark)
+                repository.userStarsLiveData.load()
+                star
+            }
+            onSuccess?.invoke(star)
+        }
+        catch (e: Throwable) {
+            onError?.invoke(e)
+        }
+        finally {
+            onFinally?.invoke()
+        }
     }
 
     /** ブコメにスターをつける(必要なら送信前にダイアログを表示する) */
