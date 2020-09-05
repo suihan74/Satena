@@ -1,14 +1,12 @@
 package com.suihan74.satena.scenes.entries2.pages
 
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.MenuItemCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -23,6 +21,7 @@ import com.suihan74.utilities.alsoAs
 import com.suihan74.utilities.getThemeColor
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
+
 
 class Memorial15Fragment : MultipleTabsEntriesFragment() {
     companion object {
@@ -75,12 +74,31 @@ class Memorial15Fragment : MultipleTabsEntriesFragment() {
         val viewModel = viewModel as Memorial15ViewModel
         val menuItem = menu.findItem(R.id.mode_spinner) ?: return
         val spinner = menuItem.actionView as? Spinner ?: return
-        val items: Array<Int> = arrayOf(R.string.entries_tab_15th_entire, R.string.entries_tab_15th_user)
+        val items: Array<Int> = arrayOf(
+            R.string.entries_tab_15th_entire,
+            R.string.entries_tab_15th_user
+        )
 
         val foregroundTint = MenuItemCompat.getIconTintList(menuItem)
 
-        // 「▼」の色をmenuリソースで指定する
-        spinner.backgroundTintList = foregroundTint
+        if (bottomAppBar == null) {
+            // 「▼」の色をmenuリソースで指定する
+            spinner.backgroundTintList = foregroundTint
+        }
+        else {
+            // ボトムバーの場合、「▼」の代わりにアイコンを表示する
+            val context = requireContext()
+            val a = context.theme.obtainStyledAttributes(
+                R.style.Theme_AppCompat,
+                intArrayOf(R.attr.actionBarItemBackground)
+            )
+            val attributeResourceId: Int = a.getResourceId(0, 0)
+            spinner.setBackgroundResource(attributeResourceId)
+
+            spinner.foreground = spinnerForeground(viewModel.isUserMode.value)
+            spinner.foregroundTintList = foregroundTint
+            spinner.foregroundGravity = Gravity.CENTER
+        }
 
         // Tooltipテキストをmenuリソースで指定する
         TooltipCompat.setTooltipText(spinner, menuItem.title)
@@ -92,7 +110,14 @@ class Memorial15Fragment : MultipleTabsEntriesFragment() {
         ) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View =
                 super.getView(position, convertView, parent).alsoAs<TextView> {
-                    it.setText(items[position])
+                    if (bottomAppBar == null) {
+                        it.setText(items[position])
+                    }
+                    else {
+                        // ボトムバーの場合、選択中の項目を示すテキストは表示しない
+                        it.text = ""
+                        it.setPadding(0, 0, 0, 0)
+                    }
                     it.setTextColor(foregroundTint)
                 }!!
 
@@ -126,9 +151,20 @@ class Memorial15Fragment : MultipleTabsEntriesFragment() {
                 id: Long
             ) {
                 viewModel.isUserMode.value = items[position] == R.string.entries_tab_15th_user
+                if (bottomAppBar != null) {
+                    spinner.foreground = spinnerForeground(viewModel.isUserMode.value)
+                }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
+
+    /** モード選択用のアイコン */
+    private fun spinnerForeground(isUserMode: Boolean?) = ResourcesCompat.getDrawable(
+        resources,
+        if (isUserMode == true) R.drawable.ic_user_tag
+        else R.drawable.ic_world,
+        null
+    )
 }
