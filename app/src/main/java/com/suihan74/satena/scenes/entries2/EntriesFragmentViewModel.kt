@@ -65,7 +65,7 @@ abstract class EntriesFragmentViewModel : ViewModel() {
             viewModel.issue = it
             // 一度クリアしておかないとスクロール位置が滅茶苦茶になる
             entriesAdapter.clearEntries {
-                viewModel.refresh(onError)
+                viewModel.refresh(onError = onError)
             }
         }
 
@@ -75,7 +75,7 @@ abstract class EntriesFragmentViewModel : ViewModel() {
             if (viewModel.tag == it) return@observe
             viewModel.tag = it
             entriesAdapter.clearEntries {
-                viewModel.refresh(onError)
+                viewModel.refresh(onError = onError)
             }
         }
 
@@ -84,7 +84,7 @@ abstract class EntriesFragmentViewModel : ViewModel() {
         siteUrl.observe(lifecycleOwner) {
             if (category.value != Category.Site && (it == null || viewModel.siteUrl == it)) return@observe
             viewModel.siteUrl = it
-            viewModel.refresh(onError)
+            viewModel.refresh(onError = onError)
         }
     }
 }

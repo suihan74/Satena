@@ -42,12 +42,15 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                         entriesAdapter.setOnItemsSubmittedListener(null)
                     }
                 }
-                viewModel.refresh(onErrorRefreshEntries).invokeOnCompletion { e ->
-                    if (e != null) {
-                        this.isRefreshing = false
+                viewModel.refresh(
+                    onError = { e ->
+                        onErrorRefreshEntries.invoke(e)
                         entriesAdapter.setOnItemsSubmittedListener(null)
+                    },
+                    onFinally = {
+                        this.isRefreshing = false
                     }
-                }
+                )
             }
         }
 

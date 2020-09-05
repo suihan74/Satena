@@ -77,9 +77,10 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
-                viewModel.refresh(onErrorRefreshEntries).invokeOnCompletion {
-                    this.isRefreshing = false
-                }
+                viewModel.refresh(
+                    onError = onErrorRefreshEntries,
+                    onFinally = { this.isRefreshing = false }
+                )
             }
         }
 
@@ -113,7 +114,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
 
             viewModel.tag = it
             entriesAdapter.submitEntries(null) {
-                viewModel.refresh(onErrorRefreshEntries)
+                viewModel.refresh(onError = onErrorRefreshEntries)
             }
         }
     }

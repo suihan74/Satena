@@ -35,9 +35,10 @@ class InformationTabFragment : EntriesTabFragmentBase() {
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
-                viewModel.refresh(onErrorRefreshEntries).invokeOnCompletion {
-                    this.isRefreshing = false
-                }
+                viewModel.refresh(
+                    onError = onErrorRefreshEntries,
+                    onFinally = { this.isRefreshing = false }
+                )
             }
         }
     }

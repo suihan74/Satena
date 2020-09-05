@@ -8,6 +8,7 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.OnFinally
+import com.suihan74.utilities.OnSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -123,11 +124,29 @@ class EntriesTabFragmentViewModel(
     }
 
     /** 表示項目リストを初期化 */
-    fun refresh(onError: OnError? = null) = viewModelScope.launch {
-        when (category) {
-            Category.Notices -> refreshNotices(onError)
-            Category.Maintenance -> refreshInformation(onError)
-            else -> refreshEntries(onError)
+    fun refresh(
+        onSuccess: OnSuccess<Unit>? = null,
+        onError: OnError? = null,
+        onFinally: OnFinally? = null
+    ) = viewModelScope.launch {
+        try {
+            when (category) {
+                Category.Notices -> refreshNotices()
+                Category.Maintenance -> refreshInformation()
+                else -> refreshEntries()
+            }
+
+            onSuccess?.invoke(Unit)
+        }
+        catch (e: Throwable) {
+            withContext(Dispatchers.Main) {
+                onError?.invoke(e)
+            }
+        }
+        finally {
+            withContext(Dispatchers.Main) {
+                onFinally?.invoke()
+            }
         }
     }
 
@@ -179,38 +198,32 @@ class EntriesTabFragmentViewModel(
     }
 
     /** エントリリストを初期化 */
-    private suspend fun refreshEntries(onError: OnError?) = withContext(Dispatchers.Default) {
+    private suspend fun refreshEntries() = withContext(Dispatchers.Default) {
         try {
             entries.postValue(fetchEntries())
         }
         catch (e: Throwable) {
-            withContext(Dispatchers.Main) {
-                onError?.invoke(e)
-            }
+            throw e
         }
     }
 
     /** 通知リストを初期化 */
-    private suspend fun refreshNotices(onError: OnError?) = withContext(Dispatchers.Default) {
+    private suspend fun refreshNotices() = withContext(Dispatchers.Default) {
         try {
             notices.postValue(repository.loadNotices())
         }
         catch (e: Throwable) {
-            withContext(Dispatchers.Main) {
-                onError?.invoke(e)
-            }
+            throw e
         }
     }
 
     /** 障害情報を取得 */
-    private suspend fun refreshInformation(onError: OnError?) = withContext(Dispatchers.Default) {
+    private suspend fun refreshInformation() = withContext(Dispatchers.Default) {
         try {
             information.postValue(repository.loadInformation())
         }
         catch (e: Throwable) {
-            withContext(Dispatchers.Main) {
-                onError?.invoke(e)
-            }
+            throw e
         }
     }
 

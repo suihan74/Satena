@@ -95,7 +95,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             }
 
             if (state == NetworkReceiver.State.CONNECTED && viewModel.filteredEntries.value.isNullOrEmpty()) {
-                viewModel.refresh(onErrorRefreshEntries)
+                viewModel.refresh(onError = onErrorRefreshEntries)
             }
         }
 
@@ -109,7 +109,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
         // エントリリストの初期ロード
         if (viewModel.filteredEntries.value.isNullOrEmpty()) {
-            viewModel.refresh(onErrorRefreshEntries)
+            viewModel.refresh(onError = onErrorRefreshEntries)
         }
 
         view?.entries_list?.adapter.alsoAs<EntriesAdapter> {
@@ -121,7 +121,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     fun reload() {
         view?.entries_list?.adapter.alsoAs<EntriesAdapter> {
             it.clearEntries {
-                viewModel.refresh(onErrorRefreshEntries)
+                viewModel.refresh(onError = onErrorRefreshEntries)
             }
         }
     }
