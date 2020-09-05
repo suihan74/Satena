@@ -130,10 +130,13 @@ abstract class BookmarksTabViewModel : ViewModel() {
             bookmark.comment.isNotBlank() &&
             activityViewModel.signedIn.value == true
         ) {
+            val repository = activityViewModel.repository
+
             addStarButton.visibility = View.VISIBLE
 
-            val userSignedIn = activityViewModel.repository.userSignedIn
-            val userStar = bookmark.starCount?.firstOrNull { it.user == userSignedIn }
+            val userSignedIn = repository.userSignedIn
+            val userStar = repository.getStarsEntryTo(bookmark.user)?.allStars?.firstOrNull { it.user == userSignedIn }
+
             if (userSignedIn != null && userStar != null) {
                 addStarButton.setImageResource(R.drawable.ic_add_star_filled)
                 addStarButton.setOnLongClickListener {
@@ -151,7 +154,7 @@ abstract class BookmarksTabViewModel : ViewModel() {
                 val popup = AddStarPopupMenu(context).apply {
                     observeUserStars(
                         lifecycleOwner,
-                        activityViewModel.repository.userStarsLiveData
+                        repository.userStarsLiveData
                     )
 
                     setOnClickAddStarListener { color ->
