@@ -111,8 +111,10 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
                     if (searchView.visibility == View.VISIBLE) {
                         searchView.visibility = View.GONE
                         viewModel.isSearchViewExpanded = false
-                        searchView.setQuery("", true)
-                        // TODO: submitされないので表示更新されない
+                        searchView.setQuery("", false)
+                        viewModel.searchQuery.value = ""
+                        setSubTitle(viewModel)
+                        reloadLists()
                     }
                 }
                 else {
