@@ -17,6 +17,7 @@ import org.jsoup.nodes.Element
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZoneOffset
 import org.threeten.bp.format.DateTimeFormatter
 import java.io.IOException
 import java.lang.reflect.Type
@@ -1039,16 +1040,53 @@ object HatenaClient : BaseClient(), CoroutineScope {
         return@async response.entries
     }
 
+    private fun changeStarColorPalette(url: String, color: StarColor) : Boolean {
+        return try {
+            val apiUrl = "$S_BASE_URL/colorpalette.json"
+            val palette = getJson<StarPalette>(
+                apiUrl +
+                        "?uri=${Uri.encode(url)}" +
+                        "&date=${LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)}"
+            )
+
+            if (color == StarColor.Yellow) {
+                return true
+            }
+            else if (!palette.colorStarCounts.has(color)) {
+                return false
+            }
+
+            val data = mapOf(
+                "uri" to url,
+                "color" to color.name.toLowerCase(Locale.ROOT),
+                "token" to palette.token
+            )
+
+            val response = post(apiUrl, data)
+
+            response.isSuccessful
+        }
+        catch (e: Throwable) {
+            false
+        }
+    }
+
     /**
      * 対象URLにスターをつける
      */
     fun postStarAsync(url: String, color: StarColor = StarColor.Yellow, quote: String = "") : Deferred<Star> = async {
         checkSignedInStar("need to sign-in to post star")
+
+        val paletteChanged = changeStarColorPalette(url, color)
+        if (!paletteChanged) {
+            throw RuntimeException("failed to change the star palette")
+        }
+
         val apiUrl = "$S_BASE_URL/star.add.json?${cacheAvoidance()}" +
                 "&uri=${Uri.encode(url)}" +
                 "&rks=$mRksForStar" +
-                "&color=${color.name.toLowerCase(Locale.ROOT)}" +
                 "&quote=${Uri.encode(quote)}"
+
         return@async getJson<Star>(apiUrl)
     }
 

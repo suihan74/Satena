@@ -8,6 +8,15 @@ data class UserColorStarsCount (
 ) {
     // for Gson
     private constructor() : this(0, 0, 0, 0)
+
+    fun has(color: StarColor) : Boolean =
+        0 < when (color) {
+            StarColor.Yellow -> 1
+            StarColor.Red -> red
+            StarColor.Green -> green
+            StarColor.Blue -> blue
+            StarColor.Purple -> purple
+        }
 }
 
 data class UserColorStarsResponse (
