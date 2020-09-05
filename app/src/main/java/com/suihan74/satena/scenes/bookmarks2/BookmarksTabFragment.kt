@@ -14,6 +14,7 @@ import com.suihan74.hatenaLib.NotFoundException
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
+import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
@@ -85,11 +86,15 @@ class BookmarksTabFragment :
                 viewModel.loadNextBookmarks(
                     onSuccess = {},
                     onError = { e -> warnLoading(e) },
-                    onFinally = { stopLoading(viewModel.additionalLoadable) }
+                    onFinally = {
+                        stopLoading((viewModel is CustomTabViewModel) && viewModel.additionalLoadable)
+                    }
                 )
             }
         }
-        bookmarksAdapter.additionalLoadable = viewModel.additionalLoadable
+        if (viewModel is CustomTabViewModel) {
+            bookmarksAdapter.additionalLoadable = viewModel.additionalLoadable
+        }
 
         // recycler view
         view.bookmarks_list.apply {
@@ -104,7 +109,9 @@ class BookmarksTabFragment :
                         onSuccess = {},
                         onError = { warnLoading(it) },
                         onFinally = {
-                            bookmarksAdapter.stopLoading(viewModel.additionalLoadable)
+                            bookmarksAdapter.stopLoading(
+                                (viewModel is CustomTabViewModel) && viewModel.additionalLoadable
+                            )
                             loadCompleted()
                         }
                     )
