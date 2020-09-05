@@ -17,6 +17,7 @@ import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class BookmarksTabFragment :
@@ -63,7 +64,7 @@ class BookmarksTabFragment :
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
 
         // adapter
-        val bookmarksAdapter = object : BookmarksAdapter(viewLifecycleOwner, viewModel) {
+        val bookmarksAdapter = object : BookmarksAdapter(viewLifecycleOwner, viewModel, activityViewModel.repository) {
             override fun onItemClicked(bookmark: Bookmark) =
                 bookmarksActivity.onBookmarkClicked(bookmark)
 
@@ -146,7 +147,15 @@ class BookmarksTabFragment :
             val userTags = activityViewModel.taggedUsers.value ?: emptyList()
             val ignoredUsers = activityViewModel.ignoredUsers.value
             val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
-            bookmarksAdapter.setBookmarks(it, bookmarksEntry, userTags, ignoredUsers, displayMutedMention)
+            lifecycleScope.launch(Dispatchers.Default) {
+                bookmarksAdapter.setBookmarks(
+                    it,
+                    bookmarksEntry,
+                    userTags,
+                    ignoredUsers,
+                    displayMutedMention
+                )
+            }
         }
 
         // ユーザータグの更新を監視
@@ -156,14 +165,27 @@ class BookmarksTabFragment :
                 val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
                 val ignoredUsers = activityViewModel.ignoredUsers.value
                 val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
-                bookmarksAdapter.setBookmarks(bookmarks, bookmarksEntry, it, ignoredUsers, displayMutedMention)
+                lifecycleScope.launch(Dispatchers.Default) {
+                    bookmarksAdapter.setBookmarks(
+                        bookmarks,
+                        bookmarksEntry,
+                        it,
+                        ignoredUsers,
+                        displayMutedMention
+                    )
+                }
             }
         }
 
         // スター数の変化を監視する
+        var initializedStars = false
         activityViewModel.repository.allStarsLiveData.observe(viewLifecycleOwner) {
-            lifecycleScope.launch {
-                bookmarksAdapter.updateStar(it)
+            if (!initializedStars) {
+                initializedStars = it.isNotEmpty()
+                return@observe
+            }
+            lifecycleScope.launch(Dispatchers.Default) {
+                bookmarksAdapter.updateStars(activityViewModel.entry, it)
             }
         }
 

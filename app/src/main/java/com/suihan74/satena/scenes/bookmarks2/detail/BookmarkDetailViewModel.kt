@@ -200,6 +200,7 @@ class BookmarkDetailViewModel(
 
     fun updateStarsToUser(forceUpdate: Boolean = false) = viewModelScope.launch {
         try {
+            starsAll.update(bookmark)
             starsToUser.updateAsync(forceUpdate).await()
         }
         catch (e: Throwable) {

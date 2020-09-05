@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.annotation.WorkerThread
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
@@ -15,10 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.hatenaLib.BookmarksEntry
-import com.suihan74.hatenaLib.StarColor
-import com.suihan74.hatenaLib.StarsEntry
+import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
@@ -27,6 +23,8 @@ import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.bindings.setVisibility
 import kotlinx.android.synthetic.main.listview_item_bookmarks.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.threeten.bp.format.DateTimeFormatter
 
 fun <T> List<T>?.contentsEquals(other: List<T>?) =
@@ -38,7 +36,8 @@ fun <T> List<T>?.contentsEquals(other: List<T>?) =
 
 open class BookmarksAdapter(
     private val lifecycleOwner: LifecycleOwner,
-    private val viewModel: BookmarksTabViewModel
+    private val viewModel: BookmarksTabViewModel,
+    private val bookmarksRepository: BookmarksRepository
 ) : ListAdapter<RecyclerState<BookmarksAdapter.Entity>, RecyclerView.ViewHolder>(DiffCallback()) {
     private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entity>>() {
         override fun areItemsTheSame(
@@ -173,7 +172,7 @@ open class BookmarksAdapter(
         loadableFooter?.hideProgressBar(additionalLoadable)
     }
 
-    fun setBookmarks(
+    suspend fun setBookmarks(
         bookmarks: List<Bookmark>,
         bookmarksEntry: BookmarksEntry,
         taggedUsers: List<UserAndTags>,
@@ -182,8 +181,10 @@ open class BookmarksAdapter(
     ) {
         val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
             val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
+            val stars = bookmarksRepository.getStarsEntryTo(it.user)
+            val bookmark = it.copy(starCount = stars?.allStars ?: it.starCount)
             Entity(
-                bookmark = it,
+                bookmark = bookmark,
                 analyzedComment = analyzedComment,
                 isIgnored = ignoredUsers.contains(it.user),
                 mentions = analyzedComment.ids.mapNotNull { called ->
@@ -196,30 +197,26 @@ open class BookmarksAdapter(
             )
         })
 
-        submitList(newStates)
+        withContext(Dispatchers.Main) {
+            submitList(newStates)
+        }
     }
 
     /** スター情報を更新 */
-    @WorkerThread
-    fun updateStar(starEntries: List<StarsEntry>?) {
-        if (starEntries == null) return
-        var updated = false
+    suspend fun updateStars(entry: Entry, stars: List<StarsEntry>) {
+        val entities = currentList.filter { it.type == RecyclerType.BODY }.mapNotNull { it.body }
         val newStates = RecyclerState.makeStatesWithFooter(
-            currentList.mapNotNull { if (it.type == RecyclerType.BODY) it.body else null }
-                .map { entity ->
-                    val b = entity.bookmark.copy(
-                        starCount = starEntries.firstOrNull { s ->
-                            s.url.contains("/${entity.bookmark.user}/")
-                        }?.allStars
-                    )
-                    if (!entity.bookmark.same(b)) {
-                        updated = true
-                    }
-                    entity.copy(bookmark = b)
-                }
+            entities.map { entity ->
+                val bookmark = entity.bookmark
+                val bookmarkUrl = bookmark.getBookmarkUrl(entry)
+                val star = stars.firstOrNull { it.url == bookmarkUrl }
+
+                if (star == null) entity
+                else entity.copy(bookmark = bookmark.copy(starCount = star.allStars))
+            }
         )
 
-        if (updated) {
+        withContext(Dispatchers.Main) {
             submitList(newStates)
         }
     }

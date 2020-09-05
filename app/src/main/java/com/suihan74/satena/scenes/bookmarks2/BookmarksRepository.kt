@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks2
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.modifySpecificUrls
@@ -318,7 +319,25 @@ class BookmarksRepository(
             client,
             entry,
             bookmark,
-            this)
+            this
+        ).also { liveData ->
+            var observer: Observer<List<StarsEntry>>? = null
+            var initialized = false
+            observer = Observer<List<StarsEntry>> { all ->
+                if (initialized && !liveData.hasActiveObservers()) {
+                    allStarsLiveData.removeObserver(observer!!)
+                    return@Observer
+                }
+                initialized = true
+
+                val url = bookmark.getBookmarkUrl(entry)
+                if (all.any { it.url == url }) {
+                    liveData.notifyReload()
+                }
+            }
+
+            allStarsLiveData.observeForever(observer)
+        }
 
     /** ブクマを通報 */
     suspend fun reportBookmark(report: Report) {

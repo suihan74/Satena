@@ -83,11 +83,14 @@ data class Bookmark (
         return user == other.user &&
                 commentRaw == other.commentRaw &&
                 timestamp == other.timestamp &&
-                otherStarCount.all { i ->
-                    starCount.firstOrNull { o -> o.user == i.user && o.color == i.color }?.count == i.count
-                }
-        // TODO: スターの比較処理を直す（増える場合は反映されるが、減る場合に反映されない）
+                compareStarCount(starCount, otherStarCount) &&
+                compareStarCount(otherStarCount, starCount)
     }
+
+    private fun compareStarCount(starCount: List<Star>, other: List<Star>) : Boolean =
+        starCount.all { i ->
+            other.firstOrNull { o -> o.user == i.user && o.color == i.color }?.count == i.count
+        }
 }
 
 /**
