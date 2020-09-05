@@ -1,6 +1,8 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
@@ -25,6 +27,9 @@ fun Spinner.initialize(
     val innerItems = listOf("*").plus(items)
 
     if (menuItem != null) {
+        // 「▼」を消す
+        backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+
         foreground = menuItem.icon
         foregroundTintList = MenuItemCompat.getIconTintList(menuItem)
         foregroundGravity = Gravity.CENTER

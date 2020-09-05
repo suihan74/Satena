@@ -1,12 +1,14 @@
 package com.suihan74.satena.scenes.entries2.pages
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
-import androidx.core.content.res.ResourcesCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuItemCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -87,13 +89,7 @@ class Memorial15Fragment : MultipleTabsEntriesFragment() {
         }
         else {
             // ボトムバーの場合、「▼」の代わりにアイコンを表示する
-            val context = requireContext()
-            val a = context.theme.obtainStyledAttributes(
-                R.style.Theme_AppCompat,
-                intArrayOf(R.attr.actionBarItemBackground)
-            )
-            val attributeResourceId: Int = a.getResourceId(0, 0)
-            spinner.setBackgroundResource(attributeResourceId)
+            spinner.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
 
             spinner.foreground = spinnerForeground(viewModel.isUserMode.value)
             spinner.foregroundTintList = foregroundTint
@@ -161,10 +157,9 @@ class Memorial15Fragment : MultipleTabsEntriesFragment() {
     }
 
     /** モード選択用のアイコン */
-    private fun spinnerForeground(isUserMode: Boolean?) = ResourcesCompat.getDrawable(
-        resources,
+    private fun spinnerForeground(isUserMode: Boolean?) = ContextCompat.getDrawable(
+        requireContext(),
         if (isUserMode == true) R.drawable.ic_user_tag
-        else R.drawable.ic_world,
-        null
+        else R.drawable.ic_world
     )
 }
