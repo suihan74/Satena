@@ -22,11 +22,11 @@ class CustomTabViewModel : BookmarksTabViewModel() {
         reloadSettings()
 
         activityViewModel.bookmarksRecent.observeForever {
-            reloadBookmarks()
+            refreshBookmarks()
         }
 
         settingsLiveData.observeForever {
-            reloadBookmarks()
+            refreshBookmarks()
         }
 
         activityViewModel.userTags.observeForever {
@@ -91,7 +91,7 @@ class CustomTabViewModel : BookmarksTabViewModel() {
     }
 
     /** リストを再生成する */
-    private fun reloadBookmarks() {
+    private fun refreshBookmarks() {
         val set = settingsLiveData.value ?: return
         val list = activityViewModel.keywordFilter(
             activityViewModel.bookmarksRecent.value
@@ -114,13 +114,34 @@ class CustomTabViewModel : BookmarksTabViewModel() {
 
     override fun updateBookmarks() = activityViewModel.updateRecent()
 
-    override suspend fun loadNextBookmarks() =
-        try {
-            activityViewModel.loadNextRecent()
+    override suspend fun loadNextBookmarks() : List<Bookmark> {
+        val set = settingsLiveData.value!!
+        val users = activityViewModel.taggedUsers.value ?: emptyList()
+
+        val muteWords = activityViewModel.muteWords
+        val muteUsers = activityViewModel.ignoredUsers.value
+
+        val result = ArrayList<Bookmark>()
+
+        while (true) {
+            val fetched =
+                try {
+                    activityViewModel.loadNextRecent()
+                }
+                catch (e: Throwable) {
+                    emptyList()
+                }
+
+            result.addAll(fetched)
+
+            // 表示対象が1件以上見つかるまで繰り返す
+            if (fetched.isEmpty() || fetched.any { set.shown(it, users, muteWords, muteUsers) }) {
+                break
+            }
         }
-        catch (e: Throwable) {
-            emptyList()
-        }
+
+        return result
+    }
 
     override fun updateSignedUserBookmark(user: String) =
         activityViewModel.bookmarksEntry.value?.bookmarks?.firstOrNull { it.user == user }

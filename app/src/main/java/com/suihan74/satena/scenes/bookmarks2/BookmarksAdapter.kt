@@ -129,12 +129,11 @@ open class BookmarksAdapter(
                         }
                     }
 
-                RecyclerType.FOOTER ->
+                RecyclerType.FOOTER -> loadableFooter ?:
                     LoadableFooterViewHolder(
                         inflater.inflate(R.layout.footer_recycler_view_loadable, parent, false)
                     ).also {
                         loadableFooter = it.also { footer ->
-                            stopLoading()
                             footer.additionalLoadingTextView?.let { textView ->
                                 textView.setOnClickListener {
                                     onAdditionalLoading()

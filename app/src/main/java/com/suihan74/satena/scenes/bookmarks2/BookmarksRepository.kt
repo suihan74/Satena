@@ -208,6 +208,8 @@ class BookmarksRepository(
     fun loadBookmarksRecentAsync(
         additionalLoading: Boolean = false
     ) : Deferred<List<Bookmark>> = client.async(Dispatchers.Default) {
+        if (additionalLoading && recentBookmarksCursor == null) return@async emptyList()
+
         var cursor: String? = null
         val page = ArrayList<Bookmark>()
 
