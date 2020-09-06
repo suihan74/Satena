@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksRepository
+import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.utilities.BookmarkCommentDecorator
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.OnSuccess
@@ -270,6 +272,17 @@ class BookmarkDetailViewModel(
             return false
         }
     }
+
+    /** リスト項目の長押しメニュー */
+    fun openBookmarkMenuDialog(
+        activity: BookmarksActivity,
+        listItem: Bookmark,  // 選択したリスト項目(をブクマとして扱っているもの)
+        activityViewModel: BookmarksViewModel
+    ) = activityViewModel.openBookmarkMenuDialog(
+        activity = activity,
+        bookmark = listItem,
+        starTarget = bookmark
+    )
 
     class NotSignedInException : RuntimeException(
         "failed to an action required sign-in."

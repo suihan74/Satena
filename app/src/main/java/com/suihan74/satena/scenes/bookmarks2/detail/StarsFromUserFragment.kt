@@ -9,17 +9,21 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.getThemeColor
 import kotlinx.android.synthetic.main.fragment_stars_tab.view.*
 
 class StarsFromUserFragment : Fragment(), ScrollableToTop {
-    private val bookmarksActivity: BookmarksActivity?
-        get() = activity as? BookmarksActivity
+    private val bookmarksActivity: BookmarksActivity
+        get() = requireActivity() as BookmarksActivity
+
+    private val activityViewModel: BookmarksViewModel
+        get() = bookmarksActivity.viewModel
 
     private val detailViewModel: BookmarkDetailViewModel
-        get() = (parentFragment as BookmarkDetailFragment).viewModel
+        get() = (requireParentFragment() as BookmarkDetailFragment).viewModel
 
     companion object {
         fun createInstance() = StarsFromUserFragment()
@@ -36,11 +40,13 @@ class StarsFromUserFragment : Fragment(), ScrollableToTop {
             override fun onItemClicked(item: StarWithBookmark) {
                 // 戻るボタンを無効化するためスターメニューを閉じる
                 detailViewModel.starsMenuOpened.postValue(false)
-                bookmarksActivity?.onBookmarkClicked(item.bookmark)
+                bookmarksActivity.onBookmarkClicked(item.bookmark)
             }
 
-            override fun onItemLongClicked(item: StarWithBookmark) =
-                bookmarksActivity?.onBookmarkLongClicked(item.bookmark) ?: true
+            override fun onItemLongClicked(item: StarWithBookmark) : Boolean {
+                activityViewModel.openBookmarkMenuDialog(bookmarksActivity, item.bookmark)
+                return true
+            }
         }
 
         view.stars_list.apply {

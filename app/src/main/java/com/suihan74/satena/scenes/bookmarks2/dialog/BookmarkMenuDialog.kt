@@ -5,72 +5,79 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.whenStarted
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.setCustomTitle
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.getObject
 import com.suihan74.utilities.putObject
+import com.suihan74.utilities.withArguments
 
 class BookmarkMenuDialog : DialogFragment() {
     companion object {
         fun createInstance(
             bookmark: Bookmark,
             starsEntry: StarsEntry?,
+            ignored: Boolean,
             userSignedIn: String?
-        ) = BookmarkMenuDialog().apply {
-            arguments = Bundle().apply {
-                putObject(ARG_BOOKMARK, bookmark)
-                putObject(ARG_STARS_ENTRY, starsEntry)
-                putString(ARG_USER_SIGNED_IN, userSignedIn)
-            }
+        ) = BookmarkMenuDialog().withArguments {
+            putObject(ARG_BOOKMARK, bookmark)
+            putObject(ARG_STARS_ENTRY, starsEntry)
+            putBoolean(ARG_IGNORED, ignored)
+            putString(ARG_USER_SIGNED_IN, userSignedIn)
         }
 
         private const val ARG_BOOKMARK = "ARG_BOOKMARK"
         private const val ARG_STARS_ENTRY = "ARG_STARS_ENTRY"
+        private const val ARG_IGNORED = "ARG_IGNORED"
         private const val ARG_USER_SIGNED_IN = "ARG_USER_SIGNED_IN"
+    }
+
+    private val viewModel: DialogViewModel by lazy {
+        ViewModelProvider(this)[DialogViewModel::class.java]
     }
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val activity = requireActivity() as BookmarksActivity
-        val listener = activity.viewModel as Listener
-
         val args = requireArguments()
 
         val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
+
+        val ignored = args.getBoolean(ARG_IGNORED, false)
 
         val userSignedIn = args.getString(ARG_USER_SIGNED_IN)
         val signedIn = !userSignedIn.isNullOrBlank()
 
         val starsEntry = args.getObject<StarsEntry>(ARG_STARS_ENTRY)
-        val userStar = starsEntry?.allStars?.firstOrNull { it.user == userSignedIn }
+        val userStars = starsEntry?.allStars?.filter { it.user == userSignedIn } ?: emptyList()
 
         val titleView = LayoutInflater.from(context).inflate(R.layout.dialog_title_bookmark, null).apply {
             setCustomTitle(bookmark)
         }
 
         val items = buildList {
-            val dialog = this@BookmarkMenuDialog
-            add(R.string.bookmark_show_user_entries to { listener.onShowEntries(dialog, bookmark.user) })
+            add(R.string.bookmark_show_user_entries to { viewModel.onShowEntries?.invoke(bookmark.user) })
             if (signedIn) {
-                if (listener.isIgnored(dialog, bookmark.user)) {
-                    add(R.string.bookmark_unignore to { listener.onIgnoreUser(dialog, bookmark.user, false) })
+                if (ignored) {
+                    add(R.string.bookmark_unignore to { viewModel.onUnignoreUser?.invoke(bookmark.user) })
                 }
                 else {
-                    add(R.string.bookmark_ignore to { listener.onIgnoreUser(dialog, bookmark.user, true) })
+                    add(R.string.bookmark_ignore to { viewModel.onIgnoreUser?.invoke(bookmark.user) })
                 }
 
                 if (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty()) {
-                    add(R.string.bookmark_report to { listener.onReportBookmark(dialog, bookmark) })
+                    add(R.string.bookmark_report to { viewModel.onReportBookmark?.invoke(bookmark) })
                 }
             }
-            add(R.string.bookmark_user_tags to { listener.onSetUserTag(dialog, bookmark.user) })
+            add(R.string.bookmark_user_tags to { viewModel.onSetUserTag?.invoke(bookmark.user) })
 
-            if (userStar != null) {
-                add(R.string.bookmark_delete_star to { listener.onDeleteStar(dialog, bookmark, userStar) })
+            if (userStars.isNotEmpty()) {
+                add(R.string.bookmark_delete_star to { viewModel.onDeleteStar?.invoke(bookmark to userStars) })
             }
         }
 
@@ -83,19 +90,47 @@ class BookmarkMenuDialog : DialogFragment() {
             .create()
     }
 
-    /** ダイアログ操作を処理するリスナ */
-    interface Listener {
-        /** ユーザーが既に非表示かを確認する */
-        fun isIgnored(dialog: BookmarkMenuDialog, user: String) : Boolean
+    suspend fun setOnShowEntries(listener: Listener<String>?) = whenStarted {
+        viewModel.onShowEntries = listener
+    }
+
+    suspend fun setOnIgnoreUser(listener: Listener<String>?) = whenStarted {
+        viewModel.onIgnoreUser = listener
+    }
+
+    suspend fun setOnUnignoreUser(listener: Listener<String>?) = whenStarted {
+        viewModel.onUnignoreUser = listener
+    }
+
+    suspend fun setOnReportBookmark(listener: Listener<Bookmark>?) = whenStarted {
+        viewModel.onReportBookmark = listener
+    }
+
+    suspend fun setOnSetUserTag(listener: Listener<String>?) = whenStarted {
+        viewModel.onSetUserTag = listener
+    }
+
+    suspend fun setOnDeleteStar(listener: Listener<Pair<Bookmark, List<Star>>>?) = whenStarted {
+        viewModel.onDeleteStar = listener
+    }
+
+    class DialogViewModel : ViewModel() {
         /** ユーザーが最近ブクマしたエントリ一覧を表示する */
-        fun onShowEntries(dialog: BookmarkMenuDialog, user: String)
-        /** ユーザーの非表示状態を設定する */
-        fun onIgnoreUser(dialog: BookmarkMenuDialog, user: String, ignore: Boolean)
+        var onShowEntries: Listener<String>? = null
+
+        /** ユーザーを非表示にする */
+        var onIgnoreUser: Listener<String>? = null
+
+        /** ユーザーの非表示を解除する */
+        var onUnignoreUser: Listener<String>? = null
+
         /** ブクマを通報する */
-        fun onReportBookmark(dialog: BookmarkMenuDialog, bookmark: Bookmark)
+        var onReportBookmark: Listener<Bookmark>? = null
+
         /** ユーザータグをつける */
-        fun onSetUserTag(dialog: BookmarkMenuDialog, user: String)
+        var onSetUserTag: Listener<String>? = null
+
         /** スターを取り消す */
-        fun onDeleteStar(dialog: BookmarkMenuDialog, bookmark: Bookmark, star: Star)
+        var onDeleteStar: Listener<Pair<Bookmark, List<Star>>>? = null
     }
 }

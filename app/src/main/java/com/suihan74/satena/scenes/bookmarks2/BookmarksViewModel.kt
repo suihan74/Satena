@@ -27,10 +27,11 @@ class BookmarksViewModel(
     private val userTagRepository: UserTagRepository,
     private val ignoredEntryRepository: IgnoredEntryRepository
 ) : ViewModel(),
-        BookmarkMenuDialog.Listener,
         ReportDialog.Listener,
         UserTagSelectionDialog.Listener
 {
+    val DIALOG_BOOKMARK_MENU by lazy { "DIALOG_BOOKMARK_MENU" }
+
     private val DIALOG_REPORT by lazy { "DIALOG_REPORT" }
 
     private val DIALOG_SELECT_USER_TAG by lazy { "DIALOG_SELECT_USER_TAG" }
@@ -550,52 +551,81 @@ class BookmarksViewModel(
 
     // --- BookmarkMenuDialogの処理 --- //
 
-    override fun isIgnored(dialog: BookmarkMenuDialog, user: String) =
-        ignoredUsers.value.contains(user)
+    /**
+     * ブクマに対する操作メニューを表示する
+     *
+     * @param activity startActivityを使用するので、アクティブなactivityを渡す必要がある
+     * @param bookmark 操作対象のブクマ
+     * @param starTarget bookmark以外のブクマに対してスター削除操作を行う場合に渡す
+     * (ブクマ詳細画面のスターリスト項目に対するメニューでは、スター削除対象だけがリスト項目ではなく詳細画面を表示しているブクマである)
+     */
+    fun openBookmarkMenuDialog(
+        activity: BookmarksActivity,
+        bookmark: Bookmark,
+        starTarget: Bookmark = bookmark
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        this@BookmarksViewModel.fragmentManager = activity.supportFragmentManager
+        val fragmentManager = activity.supportFragmentManager
 
-    override fun onShowEntries(dialog: BookmarkMenuDialog, user: String) {
-        val activity = dialog.requireActivity()
+        val starsEntry = repository.getStarsEntryTo(starTarget.user)
+        val ignored = repository.ignoredUsers.contains(bookmark.user)
+        val userSignedIn = repository.userSignedIn
+
+        BookmarkMenuDialog.createInstance(bookmark, starsEntry, ignored, userSignedIn).run {
+            showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
+
+            setOnShowEntries { onShowEntries(activity, it) }
+            setOnIgnoreUser { onIgnoreUser(it, true) }
+            setOnUnignoreUser { onIgnoreUser(it, false) }
+            setOnReportBookmark { onReportBookmark(it) }
+            setOnSetUserTag { onSetUserTag(it) }
+            setOnDeleteStar { onDeleteStar(starTarget) }
+        }
+    }
+
+    private fun onShowEntries(activity: BookmarksActivity, user: String) {
         val intent = Intent(activity, EntriesActivity::class.java).apply {
             putExtra(EntriesActivity.EXTRA_USER, user)
         }
         activity.startActivity(intent)
     }
 
-    override fun onIgnoreUser(dialog: BookmarkMenuDialog, user: String, ignore: Boolean) {
-        val activity = dialog.requireActivity()
+    private fun onIgnoreUser(user: String, ignore: Boolean) {
         setUserIgnoreState(
             user,
             ignore,
             onSuccess = {
+                val context = SatenaApplication.instance
                 val msgId =
                     if (ignore) R.string.msg_ignore_user_succeeded
                     else R.string.msg_unignore_user_succeeded
-                activity.showToast(msgId, user)
+                context.showToast(msgId, user)
             },
             onError = { e ->
+                val context = SatenaApplication.instance
                 val msgId =
                     if (ignore) R.string.msg_ignore_user_failed
                     else R.string.msg_unignore_user_failed
-                activity.showToast(msgId, user)
+                context.showToast(msgId, user)
                 Log.e("ignoreUser", "failed: user = $user")
                 e.printStackTrace()
             }
         )
     }
 
-    override fun onReportBookmark(dialog: BookmarkMenuDialog, bookmark: Bookmark) {
-        val activity = dialog.requireActivity()
+    private fun onReportBookmark(bookmark: Bookmark) {
+        val fragmentManager = fragmentManager ?: return
         ReportDialog.createInstance(entry, bookmark)
-            .showAllowingStateLoss(activity.supportFragmentManager, DIALOG_REPORT)
+            .showAllowingStateLoss(fragmentManager, DIALOG_REPORT)
     }
 
-    override fun onSetUserTag(dialog: BookmarkMenuDialog, user: String) {
-        val activity = dialog.requireActivity()
+    private fun onSetUserTag(user: String) {
+        val fragmentManager = fragmentManager ?: return
         UserTagSelectionDialog.createInstance(user)
-            .showAllowingStateLoss(activity.supportFragmentManager, DIALOG_SELECT_USER_TAG)
+            .showAllowingStateLoss(fragmentManager, DIALOG_SELECT_USER_TAG)
     }
 
-    override fun onDeleteStar(dialog: BookmarkMenuDialog, bookmark: Bookmark, star: Star) {
+    private fun onDeleteStar(bookmark: Bookmark) {
         val userSignedIn = repository.userSignedIn ?: return
         val stars = repository.getStarsEntryTo(bookmark.user)?.allStars?.filter { it.user == userSignedIn } ?: return
         deleteStarDialog(

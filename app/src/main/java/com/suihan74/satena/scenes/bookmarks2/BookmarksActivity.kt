@@ -27,7 +27,6 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
-import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
@@ -467,9 +466,7 @@ class BookmarksActivity :
     }
 
     fun onBookmarkLongClicked(bookmark: Bookmark): Boolean {
-        val starsEntry = viewModel.repository.getStarsEntryTo(bookmark.user)
-        val dialog = BookmarkMenuDialog.createInstance(bookmark, starsEntry, viewModel.repository.userSignedIn)
-        dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_BOOKMARK_MENU)
+        viewModel.openBookmarkMenuDialog(this, bookmark)
         return true
     }
 

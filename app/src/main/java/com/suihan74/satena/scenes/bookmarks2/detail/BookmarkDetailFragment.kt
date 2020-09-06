@@ -32,7 +32,6 @@ import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
-import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.PostStarDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
@@ -78,7 +77,7 @@ class BookmarkDetailFragment :
     }
 
     private val bookmarksActivity
-        get() = activity as? BookmarksActivity
+        get() = requireActivity() as BookmarksActivity
 
     /** この画面で表示しているブックマーク */
     val bookmark
@@ -93,7 +92,6 @@ class BookmarkDetailFragment :
         private const val ARG_BOOKMARK = "ARG_BOOKMARK"
 
         // dialog tags
-        private const val DIALOG_BOOKMARK_MENU = "DIALOG_BOOKMARK_MENU"
         private const val DIALOG_CONFIRM_POST_STAR = "DIALOG_CONFIRM_POST_STAR"
     }
 
@@ -357,8 +355,7 @@ class BookmarkDetailFragment :
 
         // メニューボタン
         view.menu_button.setOnClickListener {
-            val dialog = BookmarkMenuDialog.createInstance(viewModel.bookmark, viewModel.starsToUser.value, activityViewModel.repository.userSignedIn)
-            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_BOOKMARK_MENU)
+            activityViewModel.openBookmarkMenuDialog(bookmarksActivity, viewModel.bookmark)
         }
 
         // 非表示ユーザーマーク
