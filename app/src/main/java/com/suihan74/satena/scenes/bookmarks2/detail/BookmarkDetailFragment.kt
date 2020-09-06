@@ -33,9 +33,11 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
+import com.suihan74.satena.scenes.bookmarks2.dialog.PostStarDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class BookmarkDetailFragment :
@@ -93,7 +95,6 @@ class BookmarkDetailFragment :
         // dialog tags
         private const val DIALOG_BOOKMARK_MENU = "DIALOG_BOOKMARK_MENU"
         private const val DIALOG_CONFIRM_POST_STAR = "DIALOG_CONFIRM_POST_STAR"
-        private const val DIALOG_DATA_STAR_COLOR = "DIALOG_CONFIRM_POST_STAR.STAR_COLOR"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -413,14 +414,13 @@ class BookmarkDetailFragment :
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val showDialog = prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
         if (showDialog) {
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
-                .setTitle(R.string.confirm_dialog_title_simple)
-                .setIcon(R.drawable.ic_baseline_help)
-                .setMessage(getString(R.string.msg_post_star_dialog, color.name))
-                .setPositiveButton(R.string.dialog_ok)
-                .setNegativeButton(R.string.dialog_cancel)
-                .setAdditionalData(DIALOG_DATA_STAR_COLOR, color.ordinal)
-                .showAllowingStateLoss(childFragmentManager, DIALOG_CONFIRM_POST_STAR)
+            viewModel.viewModelScope.launch(Dispatchers.Main) {
+                val dialog = PostStarDialog.createInstance(bookmark, color, viewModel.quote.value ?: "")
+                dialog.showAllowingStateLoss(childFragmentManager, DIALOG_CONFIRM_POST_STAR)
+                dialog.setOnPostStar { (_, starColor, _) ->
+                    viewModel.postStar(starColor)
+                }
+            }
         }
         else {
             viewModel.postStar(color)
@@ -560,18 +560,5 @@ class BookmarkDetailFragment :
         hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
 
         requireView().show_stars_button.setImageResource(R.drawable.ic_add_star_filled)
-    }
-
-
-    // --- post star dialog --- //
-
-    override fun onClickPositiveButton(dialog: AlertDialogFragment) {
-        when (dialog.tag) {
-            DIALOG_CONFIRM_POST_STAR -> {
-                val colorOrdinal = dialog.getAdditionalData<Int>(DIALOG_DATA_STAR_COLOR)!!
-                val color = StarColor.values()[colorOrdinal]
-                viewModel.postStar(color)
-            }
-        }
     }
 }
