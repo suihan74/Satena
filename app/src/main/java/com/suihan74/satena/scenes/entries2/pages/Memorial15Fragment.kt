@@ -58,6 +58,7 @@ class Memorial15Fragment : MultipleTabsEntriesFragment() {
                 setHasOptionsMenu(true)
             }
             else {
+                setHasOptionsMenu(false)
                 activity.inflateExtraBottomMenu(R.menu.memorial_15th_bottom)
                 initializeMenu(bottomAppBar.menu, bottomAppBar)
             }
