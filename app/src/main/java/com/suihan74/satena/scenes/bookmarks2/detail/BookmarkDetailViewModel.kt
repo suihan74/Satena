@@ -227,6 +227,7 @@ class BookmarkDetailViewModel(
 
         try {
             bookmarksRepository.postStar(bookmark, color, quote.value ?: "")
+            bookmarksRepository.userStarsLiveData.load()
         }
         catch (e: Throwable) {
             withContext(Dispatchers.Main) {

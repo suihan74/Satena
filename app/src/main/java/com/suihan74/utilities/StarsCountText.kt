@@ -20,7 +20,10 @@ fun appendStarText(builder: StringBuilder, count: Int, context: Context, colorId
     builder.append("</font>")
 }
 
-fun appendStarSpan(builder: SpannableStringBuilder, count: Int, context: Context, spanStyleId: Int) {
+/**
+ * @return 追加した文字列の長さ
+ */
+fun appendStarSpan(builder: SpannableStringBuilder, count: Int, context: Context, spanStyleId: Int): Int {
     val text =
         if (count > 10) context.getString(R.string.star_with_count, count)
         else buildString {
@@ -31,4 +34,6 @@ fun appendStarSpan(builder: SpannableStringBuilder, count: Int, context: Context
     val colorSpan = TextAppearanceSpan(context, spanStyleId)
 
     builder.append(text, colorSpan)
+
+    return text.length
 }

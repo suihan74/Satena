@@ -9,15 +9,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.UserAndTags
-import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
-import com.suihan74.satena.scenes.bookmarks2.dialog.PostStarDialog
-import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
-import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
+import com.suihan74.satena.scenes.bookmarks2.dialog.*
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
@@ -31,8 +29,7 @@ class BookmarksViewModel(
 ) : ViewModel(),
         BookmarkMenuDialog.Listener,
         ReportDialog.Listener,
-        UserTagSelectionDialog.Listener,
-        PostStarDialog.Listener
+        UserTagSelectionDialog.Listener
 {
     private val DIALOG_REPORT by lazy { "DIALOG_REPORT" }
 
@@ -436,35 +433,79 @@ class BookmarksViewModel(
         bookmark: Bookmark,
         color: StarColor,
         quote: String = ""
-    ) {
+    ) = viewModelScope.launch(Dispatchers.Main) {
         if (repository.usePostStarDialog) {
-            val fragmentManager = fragmentManager ?: return
+            val fragmentManager = fragmentManager ?: return@launch
+
             val dialog = PostStarDialog.createInstance(bookmark, color, quote)
             dialog.show(fragmentManager, DIALOG_POST_STAR)
+
+            dialog.setOnPostStar {
+                postStar(
+                    bookmark,
+                    color,
+                    quote,
+                    onSuccess = {
+                        SatenaApplication.instance.showToast(
+                            R.string.msg_post_star_succeeded,
+                            bookmark.user
+                        )
+                    },
+                    onError = {
+                        SatenaApplication.instance.showToast(
+                            R.string.msg_post_star_failed,
+                            bookmark.user
+                        )
+                    }
+                )
+            }
         }
         else {
             postStar(bookmark, color, quote)
         }
     }
 
-    /** ブコメのスターを削除する */
-    fun deleteStar(
-        bookmark: Bookmark,
-        star: Star
-    ) = viewModelScope.launch {
-        repository.deleteStar(bookmark, star)
-        repository.allStarsLiveData.update(bookmark)
-        repository.userStarsLiveData.load()
-    }
-
     /** ブコメのスターを削除するダイアログを表示する */
     fun deleteStarDialog(
         bookmark: Bookmark,
-        star: Star
-    ) {
-        val fragmentManager = fragmentManager ?: return
-        val dialog = PostStarDialog.createInstanceDeleteMode(bookmark, star)
+        stars: List<Star>,
+        onSuccess: OnSuccess<Unit>? = null,
+        onError: OnError? = null,
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        val fragmentManager = fragmentManager ?: return@launch
+
+        val dialog = StarDeletionDialog.createInstance(stars)
         dialog.show(fragmentManager, DIALOG_POST_STAR)
+
+        dialog.setOnDeleteStars { selectedStars ->
+            viewModelScope.launch {
+                selectedStars.forEach { star ->
+                    try {
+                        // 選択したカラーのスター個数分すべて削除する
+                        repeat(star.count) {
+                            repository.deleteStar(bookmark, star)
+                        }
+                    }
+                    catch (e: Throwable) {
+                        onError?.invoke(e)
+                    }
+                }
+
+                try {
+                    repository.allStarsLiveData.update(bookmark)
+                    repository.userStarsLiveData.load()
+
+                    withContext(Dispatchers.Main) {
+                        onSuccess?.invoke(Unit)
+                    }
+                }
+                catch (e: Throwable) {
+                    withContext(Dispatchers.Main) {
+                        onError?.invoke(e)
+                    }
+                }
+            }
+        }
     }
 
     /** ブクマを通報 */
@@ -539,7 +580,17 @@ class BookmarksViewModel(
     }
 
     override fun onDeleteStar(dialog: BookmarkMenuDialog, bookmark: Bookmark, star: Star) {
-        deleteStarDialog(bookmark, star)
+        val userSignedIn = repository.userSignedIn ?: return
+        val stars = repository.getStarsEntryTo(bookmark.user)?.allStars?.filter { it.user == userSignedIn } ?: return
+        deleteStarDialog(
+            bookmark,
+            stars,
+            onSuccess = { SatenaApplication.instance.showToast(R.string.msg_delete_star_succeeded) },
+            onError = { e ->
+                SatenaApplication.instance.showToast(R.string.msg_delete_star_failed)
+                Log.e("DeleteStar", Log.getStackTraceString(e))
+            }
+        )
     }
 
     // --- ReportDialogの処理 --- //
@@ -595,41 +646,6 @@ class BookmarksViewModel(
 
     override suspend fun reloadUserTags() {
         loadUserTags()
-    }
-
-    // --- PostStarDialogの処理 --- //
-
-    override fun onPostStar(dialog: PostStarDialog, bookmark: Bookmark, starColor: StarColor, quote: String) {
-        val activity = dialog.requireActivity()
-
-        postStar(
-            bookmark,
-            starColor,
-            quote
-        ).invokeOnCompletion { e ->
-            if (e == null) {
-                activity.showToast(R.string.msg_post_star_succeeded, bookmark.user)
-            }
-            else {
-                activity.showToast(R.string.msg_post_star_failed, bookmark.user)
-            }
-        }
-    }
-
-    override fun onDeleteStar(dialog: PostStarDialog, bookmark: Bookmark, star: Star) {
-        val activity = dialog.requireActivity()
-
-        deleteStar(
-            bookmark,
-            star,
-        ).invokeOnCompletion { e ->
-            if (e == null) {
-                activity.showToast(R.string.msg_delete_star_succeeded)
-            }
-            else {
-                activity.showToast(R.string.msg_delete_star_failed)
-            }
-        }
     }
 
     // ------- //

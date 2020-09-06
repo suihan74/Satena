@@ -318,15 +318,12 @@ class BookmarksRepository(
 
     /** ブクマにスターをつける */
     suspend fun postStar(bookmark: Bookmark, color: StarColor, quote: String = "") : Star {
-        val star = client.postStarAsync(bookmark.getBookmarkUrl(entry), color, quote).await()
-        userStarsLiveData.load()
-        return star
+        return client.postStarAsync(bookmark.getBookmarkUrl(entry), color, quote).await()
     }
 
     /** スターを削除する */
     suspend fun deleteStar(bookmark: Bookmark, star: Star) {
         client.deleteStarAsync(bookmark.getBookmarkUrl(entry), star).await()
-        userStarsLiveData.load()
     }
 
     /** ブクマに付けられたスター取得を監視するライブデータを生成する */

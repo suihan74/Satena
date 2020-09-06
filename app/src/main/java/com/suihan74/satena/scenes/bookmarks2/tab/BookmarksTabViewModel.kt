@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.bookmarks2.tab
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import androidx.appcompat.widget.TooltipCompat
@@ -135,12 +136,20 @@ abstract class BookmarksTabViewModel : ViewModel() {
             addStarButton.visibility = View.VISIBLE
 
             val userSignedIn = repository.userSignedIn
-            val userStar = repository.getStarsEntryTo(bookmark.user)?.allStars?.firstOrNull { it.user == userSignedIn }
+            val userStars = repository.getStarsEntryTo(bookmark.user)?.allStars?.filter { it.user == userSignedIn }
 
-            if (userSignedIn != null && userStar != null) {
+            if (userSignedIn != null && !userStars.isNullOrEmpty()) {
                 addStarButton.setImageResource(R.drawable.ic_add_star_filled)
                 addStarButton.setOnLongClickListener {
-                    activityViewModel.deleteStarDialog(bookmark, userStar)
+                    activityViewModel.deleteStarDialog(
+                        bookmark,
+                        userStars,
+                        onSuccess = { context.showToast(R.string.msg_delete_star_succeeded) },
+                        onError = { e ->
+                            context.showToast(R.string.msg_delete_star_failed)
+                            Log.e("DeleteStar", Log.getStackTraceString(e))
+                        }
+                    )
                     true
                 }
             }
