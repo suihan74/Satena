@@ -72,10 +72,10 @@ class FloatingActionButtonsFragment :
             vm.signedUserBookmark.observe(viewLifecycleOwner) { bookmark ->
                 if (view.bookmarks_scroll_top_button.isShown) {
                     if (bookmark == null) {
-                        view.bookmarks_scroll_my_bookmark_button.hide()
+                        view.bookmarks_open_my_bookmark_button.hide()
                     }
                     else {
-                        view.bookmarks_scroll_my_bookmark_button.show()
+                        view.bookmarks_open_my_bookmark_button.show()
                     }
                 }
             }
@@ -110,7 +110,7 @@ class FloatingActionButtonsFragment :
             requireView().let { view ->
                 view.bookmarks_scroll_top_button.hide()
                 view.bookmarks_scroll_bottom_button.hide()
-                view.bookmarks_scroll_my_bookmark_button.hide()
+                view.bookmarks_open_my_bookmark_button.hide()
             }
             isEnabled = false
         }
@@ -119,27 +119,27 @@ class FloatingActionButtonsFragment :
     /** 画面下部メニューを初期化 */
     private fun initFABs(view: View) {
         val scrollFABs = arrayOf(
-            view.bookmarks_scroll_top_button.apply {
-                setOnClickListener {
-                    tabViewModel?.scrollToTop()
-                }
-            },
-
-            view.bookmarks_scroll_my_bookmark_button.apply {
-                setOnClickListener {
-                    // 自分のブコメの詳細画面に遷移
-                    tabViewModel?.signedUserBookmark?.value?.let { target ->
-                        (activity as? BookmarksActivity)?.showBookmarkDetail(target)
-                    }
-                }
-            },
-
-            view.bookmarks_scroll_bottom_button.apply {
-                setOnClickListener {
-                    tabViewModel?.scrollToBottom()
-                }
-            }
+            view.bookmarks_scroll_top_button,
+            view.bookmarks_open_my_bookmark_button,
+            view.bookmarks_scroll_bottom_button
         )
+
+        view.bookmarks_scroll_top_button.setOnClickListener {
+            tabViewModel?.scrollToTop()
+        }
+
+        view.bookmarks_open_my_bookmark_button.setOnClickListener {
+            // 自分のブコメの詳細画面に遷移
+            tabViewModel?.signedUserBookmark?.value?.let { target ->
+                (activity as? BookmarksActivity)?.showBookmarkDetail(target)
+            }
+            scrollFABs.forEach { fab -> fab.hide() }
+            onBackPressedCallbackForScroll.isEnabled = false
+        }
+
+        view.bookmarks_scroll_bottom_button.setOnClickListener {
+            tabViewModel?.scrollToBottom()
+        }
 
         // 初期状態を設定
         scrollFABs.forEach { it.hide() }
@@ -172,7 +172,7 @@ class FloatingActionButtonsFragment :
                     view.bookmarks_scroll_top_button.show()
                     view.bookmarks_scroll_bottom_button.show()
                     if (tabViewModel?.signedUserBookmark?.value != null) {
-                        view.bookmarks_scroll_my_bookmark_button.show()
+                        view.bookmarks_open_my_bookmark_button.show()
                     }
                 }
                 onBackPressedCallbackForScroll.isEnabled = !it

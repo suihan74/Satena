@@ -54,7 +54,7 @@
                     android:layout_height="wrap_content"/>
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/bookmarks_scroll_my_bookmark_button"
+                    android:id="@+id/bookmarks_open_my_bookmark_button"
                     android:src="@drawable/ic_baseline_bookmark"
                     app:fabSize="mini"
                     app:backgroundTint="@color/colorPrimary"
