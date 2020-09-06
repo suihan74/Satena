@@ -461,7 +461,23 @@ class BookmarksViewModel(
             }
         }
         else {
-            postStar(bookmark, color, quote)
+            postStar(
+                bookmark,
+                color,
+                quote,
+                onSuccess = {
+                    SatenaApplication.instance.showToast(
+                        R.string.msg_post_star_succeeded,
+                        bookmark.user
+                    )
+                },
+                onError = {
+                    SatenaApplication.instance.showToast(
+                        R.string.msg_post_star_failed,
+                        bookmark.user
+                    )
+                }
+            )
         }
     }
 
