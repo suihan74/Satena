@@ -1,6 +1,7 @@
 package com.suihan74.utilities
 
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.footer_recycler_view_loadable.view.*
@@ -49,6 +50,10 @@ open class LoadableFooterViewHolder(
     /** 「追加更新する」ボタン */
     val additionalLoadingTextView : TextView?
         get() = view.footer_text
+
+    /** 更新中表示 */
+    val progressBar: ProgressBar?
+        get() = view.footer_progress_bar
 
     fun showProgressBar() {
         additionalLoadingTextView?.visibility = View.GONE

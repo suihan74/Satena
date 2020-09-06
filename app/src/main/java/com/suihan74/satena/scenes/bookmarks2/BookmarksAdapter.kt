@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -159,10 +160,16 @@ open class BookmarksAdapter(
             else -> Unit
         }
 
-    /** フッタのローディングアニメを表示する */
-    fun startLoading() {
+    /**
+     * フッタのローディングアニメを表示する
+     *
+     * @return ロード処理中ではない場合true
+     */
+    fun startLoading() : Boolean {
+        val result = loadableFooter?.progressBar?.isVisible != true
         additionalLoadable = false
         loadableFooter?.showProgressBar()
+        return result
     }
 
     /** フッタのローディングアニメを隠す */

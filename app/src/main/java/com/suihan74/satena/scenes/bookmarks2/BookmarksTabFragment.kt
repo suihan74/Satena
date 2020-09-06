@@ -82,7 +82,11 @@ class BookmarksTabFragment :
                 bookmarksActivity.onEntryIdClicked(eid)
 
             override fun onAdditionalLoading() {
-                startLoading()
+                // 完了していないロードがある場合は実行しない
+                if (view.bookmarks_swipe_layout.isRefreshing || !startLoading()) {
+                    return
+                }
+
                 viewModel.loadNextBookmarks(
                     onSuccess = {},
                     onError = { e -> warnLoading(e) },
@@ -96,27 +100,32 @@ class BookmarksTabFragment :
             bookmarksAdapter.additionalLoadable = viewModel.additionalLoadable
         }
 
+        // スクロールで追加分をロード
+        val scrollingUpdater = RecyclerViewScrollingUpdater {
+            // "引っ張って更新"中には実行しない
+            if (view.bookmarks_swipe_layout.isRefreshing) {
+                loadCompleted()
+                return@RecyclerViewScrollingUpdater
+            }
+
+            bookmarksAdapter.startLoading()
+            viewModel.loadNextBookmarks(
+                onSuccess = {},
+                onError = { warnLoading(it) },
+                onFinally = {
+                    bookmarksAdapter.stopLoading(
+                        (viewModel is CustomTabViewModel) && viewModel.additionalLoadable
+                    )
+                    loadCompleted()
+                }
+            )
+        }
+
         // recycler view
         view.bookmarks_list.apply {
             setDivider(R.drawable.recycler_view_item_divider)
             adapter = bookmarksAdapter
-
-            // スクロールで追加分を取得
-            addOnScrollListener(
-                RecyclerViewScrollingUpdater {
-                    bookmarksAdapter.startLoading()
-                    viewModel.loadNextBookmarks(
-                        onSuccess = {},
-                        onError = { warnLoading(it) },
-                        onFinally = {
-                            bookmarksAdapter.stopLoading(
-                                (viewModel is CustomTabViewModel) && viewModel.additionalLoadable
-                            )
-                            loadCompleted()
-                        }
-                    )
-                }
-            )
+            addOnScrollListener(scrollingUpdater)
         }
 
         // 引っ張って更新
@@ -124,6 +133,12 @@ class BookmarksTabFragment :
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
+                // 追加ロード中には実行しない
+                if (scrollingUpdater.isLoading) {
+                    isRefreshing = false
+                    return@setOnRefreshListener
+                }
+
                 viewModel.updateBookmarks().invokeOnCompletion { e ->
                     warnLoading(e)
                     this@swipeLayout.isRefreshing = false
