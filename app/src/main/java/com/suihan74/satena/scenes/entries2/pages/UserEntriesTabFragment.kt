@@ -1,19 +1,16 @@
 package com.suihan74.satena.scenes.entries2.pages
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.observe
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesAdapter
-import com.suihan74.satena.scenes.entries2.EntriesTabFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
-import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.utilities.*
 
 class UserEntriesTabFragment : EntriesTabFragmentBase() {
@@ -40,37 +37,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         val context = requireContext()
 
         // エントリリスト用のアダプタ
-        val entriesAdapter = EntriesAdapter(viewLifecycleOwner).apply {
-            setOnItemClickedListener { entry ->
-                EntryMenuDialog.act(
-                    context,
-                    entry,
-                    activityViewModel.entryClickedAction,
-                    childFragmentManager,
-                    EntriesTabFragment.DIALOG_ENTRY_MENU
-                )
-            }
-
-            setOnItemLongClickedListener { entry ->
-                EntryMenuDialog.act(
-                    context,
-                    entry,
-                    activityViewModel.entryLongClickedAction,
-                    childFragmentManager,
-                    EntriesTabFragment.DIALOG_ENTRY_MENU
-                )
-                true
-            }
-
-            // コメント部分クリック時の挙動
-            setOnCommentClickedListener { entry, bookmark ->
-                val intent = Intent(context, BookmarksActivity::class.java).apply {
-                    putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry)
-                    putExtra(BookmarksActivity.EXTRA_TARGET_USER, bookmark.user)
-                }
-                startActivity(intent)
-            }
-        }
+        val entriesAdapter = EntriesAdapter(viewLifecycleOwner, viewModel.viewModelScope)
 
         // 引っ張って更新
         swipeLayout.apply swipeLayout@ {

@@ -1,17 +1,13 @@
 package com.suihan74.satena.scenes.entries2
 
-import android.content.Intent
 import android.util.Log
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
-import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialogListeners
 import com.suihan74.utilities.*
-import kotlinx.android.synthetic.main.fragment_entries_tab2.*
 
 class EntriesTabFragment : EntriesTabFragmentBase() {
     companion object {
@@ -28,7 +24,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         val context = requireContext()
 
         // エントリリスト用のアダプタ
-        val entriesAdapter = EntriesAdapter(viewLifecycleOwner)
+        val entriesAdapter = EntriesAdapter(viewLifecycleOwner, viewModel.viewModelScope)
 
         // 引っ張って更新
         swipeLayout.apply swipeLayout@ {
@@ -86,74 +82,6 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             viewModel,
             onErrorRefreshEntries
         )
-    }
-
-    override fun onResume() {
-        super.onResume()
-        setEntriesAdapterListeners()
-    }
-
-    /** エントリ項目用のリスナを設定する */
-    private fun setEntriesAdapterListeners() {
-        val context = requireContext()
-
-        // メニューアクション実行後に画面表示を更新する
-        val listeners = EntryMenuDialogListeners().apply {
-            onIgnoredEntry = { _ ->
-                (activity as? EntriesActivity)?.refreshLists()
-            }
-            onDeletedBookmark = { entry ->
-                (activity as? EntriesActivity)?.removeBookmark(entry)
-            }
-            onPostedBookmark = { entry, bookmarkResult ->
-                (activity as? EntriesActivity)?.updateBookmark(entry, bookmarkResult)
-            }
-        }
-
-        entries_list.adapter.alsoAs<EntriesAdapter> { adapter ->
-            adapter.setOnItemClickedListener { entry ->
-                EntryMenuDialog.act(
-                    context,
-                    entry,
-                    activityViewModel.entryClickedAction,
-                    listeners,
-                    childFragmentManager,
-                    DIALOG_ENTRY_MENU
-                )
-            }
-
-            adapter.setOnItemMultipleClickedListener { entry, _ ->
-                EntryMenuDialog.act(
-                    context,
-                    entry,
-                    activityViewModel.entryMultipleClickedAction,
-                    listeners,
-                    childFragmentManager,
-                    DIALOG_ENTRY_MENU
-                )
-            }
-
-            adapter.setOnItemLongClickedListener { entry ->
-                EntryMenuDialog.act(
-                    context,
-                    entry,
-                    activityViewModel.entryLongClickedAction,
-                    listeners,
-                    childFragmentManager,
-                    DIALOG_ENTRY_MENU
-                )
-                true
-            }
-
-            // コメント部分クリック時の挙動
-            adapter.setOnCommentClickedListener { entry, bookmark ->
-                val intent = Intent(context, BookmarksActivity::class.java).apply {
-                    putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry)
-                    putExtra(BookmarksActivity.EXTRA_TARGET_USER, bookmark.user)
-                }
-                startActivity(intent)
-            }
-        }
     }
 }
 
