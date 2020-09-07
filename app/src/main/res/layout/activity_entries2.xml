@@ -80,6 +80,7 @@
                         app:iconifiedByDefault="false"
                         app:queryHint="@string/hint_search_my_bookmarks"
                         app:searchIcon="@null"
+                        app:closeIcon="@drawable/ic_baseline_close_theme_colored"
                         app:searchHintIcon="@null"
                         android:background="?attr/tabBackground"
                         android:layout_width="match_parent"
