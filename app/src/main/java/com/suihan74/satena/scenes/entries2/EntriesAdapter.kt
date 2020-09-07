@@ -13,12 +13,11 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.listview_item_entries2.view.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class EntriesAdapter(
-    private var lifecycleOwner: LifecycleOwner
+    private var lifecycleOwner: LifecycleOwner,
+    private val coroutineScope: CoroutineScope = GlobalScope
 ) : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
     /** ロード中表示のできるフッタ */
     private var footer: LoadableFooterViewHolder? = null
@@ -36,7 +35,17 @@ class EntriesAdapter(
     private var onItemsSubmitted : Listener<List<Entry>?>? = null
 
     /** クリック処理済みフラグ（複数回タップされないようにする） */
-    private var itemClicked = false
+    private val itemClickedLock by lazy { Any() }
+    private var itemClicked : Boolean = false
+        get() = lock(itemClickedLock) { field }
+        private set(value) {
+            lock(itemClickedLock) {
+                field = value
+            }
+        }
+
+    /** クリック回数判定時間 */
+    var multipleClickDuration: Long = 0L
 
     /** 項目クリック時の挙動をセットする */
     fun setOnItemClickedListener(listener: ItemClickedListener<Entry>?) {
@@ -105,17 +114,20 @@ class EntriesAdapter(
                     var clickCount = 0
                     fun considerMultipleClick(entry: Entry?) {
                         if (clickCount++ == 0) {
-                            GlobalScope.launch {
-                                delay(250L)
+                            val duration = multipleClickDuration
+                            coroutineScope.launch {
+                                delay(duration)
                                 val count = clickCount
                                 clickCount = 0
                                 if (entry != null && !itemClicked) {
                                     itemClicked = true
-                                    if (count > 1) {
-                                        onItemMultipleClicked?.invoke(entry, count)
-                                    }
-                                    else {
-                                        onItemClicked?.invoke(entry)
+                                    withContext(Dispatchers.Main) {
+                                        if (count > 1) {
+                                            onItemMultipleClicked?.invoke(entry, count)
+                                        }
+                                        else {
+                                            onItemClicked?.invoke(entry)
+                                        }
                                     }
                                 }
                             }
@@ -123,7 +135,7 @@ class EntriesAdapter(
                     }
 
                     setOnClickListener {
-                        if (onItemMultipleClicked == null) {
+                        if (multipleClickDuration == 0L) {
                             if (entry != null && !itemClicked) {
                                 itemClicked = true
                                 onItemClicked?.invoke(entry)

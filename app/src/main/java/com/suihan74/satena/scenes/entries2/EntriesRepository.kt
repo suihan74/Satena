@@ -139,6 +139,10 @@ class EntriesRepository(
     val entryLongClickedAction : TapEntryAction
         get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
 
+    /** エントリ項目クリック回数判定時間 */
+    val entryMultipleClickDuration: Long
+        get() = prefs.getLong(PreferenceKey.ENTRY_MULTIPLE_TAP_DURATION)
+
     /** アプリ終了前に確認する */
     val isTerminationDialogEnabled : Boolean
         get() = prefs.getBoolean(PreferenceKey.USING_TERMINATION_DIALOG)

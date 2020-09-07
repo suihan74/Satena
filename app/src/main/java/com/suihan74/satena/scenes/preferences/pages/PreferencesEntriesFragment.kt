@@ -33,6 +33,7 @@ class PreferencesEntriesFragment :
         private const val DIALOG_SINGLE_TAP_ACTION = "DIALOG_SINGLE_TAP_ACTION"
         private const val DIALOG_MULTIPLE_TAP_ACTION = "DIALOG_MULTIPLE_TAP_ACTION"
         private const val DIALOG_LONG_TAP_ACTION = "DIALOG_LONG_TAP_ACTION"
+        private const val DIALOG_MULTIPLE_TAP_DURATION = "DIALOG_MULTIPLE_TAP_DURATION"
         private const val DIALOG_HOME_CATEGORY = "DIALOG_HOME_CATEGORY"
         private const val DIALOG_HOME_TAB = "DIALOG_HOME_TAB"
         private const val DIALOG_HISTORY_MAX_SIZE_PICKER = "DIALOG_HISTORY_MAX_SIZE_PICKER"
@@ -88,6 +89,16 @@ class PreferencesEntriesFragment :
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(tapActions, viewModel.longTapAction.value!!.ordinal)
                 .showAllowingStateLoss(childFragmentManager, DIALOG_LONG_TAP_ACTION)
+        }
+
+        view.preferences_entries_multiple_tap_duration.setOnClickListener {
+            NumberPickerDialogFragment.Builder(R.style.AlertDialogStyle)
+                .setTitle(R.string.pref_entries_multiple_tap_duration_desc)
+                .setMessage(R.string.pref_entries_multiple_tap_duration_dialog_message)
+                .setMinValue(0)
+                .setMaxValue(500)
+                .setDefaultValue(viewModel.multipleTapDuration.value!!.toInt())
+                .showAllowingStateLoss(childFragmentManager, DIALOG_MULTIPLE_TAP_DURATION)
         }
 
         // ホームカテゴリ
@@ -204,7 +215,15 @@ class PreferencesEntriesFragment :
 
     /** NumberPickerの処理完了 */
     override fun onCompleteNumberPicker(value: Int, dialog: NumberPickerDialogFragment) {
-        viewModel.historyMaxSize.value = value
+        when (dialog.tag) {
+            DIALOG_MULTIPLE_TAP_DURATION -> {
+                viewModel.multipleTapDuration.value = value.toLong()
+            }
+
+            DIALOG_HISTORY_MAX_SIZE_PICKER -> {
+                viewModel.historyMaxSize.value = value
+            }
+        }
     }
 }
 

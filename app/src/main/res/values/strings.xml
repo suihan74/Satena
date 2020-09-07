@@ -177,6 +177,8 @@
     <string name="pref_entries_single_tap_action_desc">シングルタップ時の動作</string>
     <string name="pref_entries_multiple_tap_action_desc">複数回タップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
+    <string name="pref_entries_multiple_tap_duration_desc">タップ回数の判定時間</string>
+    <string name="pref_entries_multiple_tap_duration_dialog_message">エントリ項目タップ回数を検知する時間を設定します。0にすると判定自体を行わないようになります</string>
     <string name="pref_home_category_desc">ホームカテゴリ</string>
     <string name="pref_entries_initial_tab_desc">最初に表示するタブ</string>
     <string name="pref_entries_categories_mode_desc">カテゴリ一覧の表示形式</string>

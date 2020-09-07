@@ -141,6 +141,8 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             }
         }
 
+        adapter.multipleClickDuration = activityViewModel.entryMultipleClickDuration
+
         adapter.setOnItemClickedListener { entry ->
             val context = requireContext()
             EntryMenuDialog.act(

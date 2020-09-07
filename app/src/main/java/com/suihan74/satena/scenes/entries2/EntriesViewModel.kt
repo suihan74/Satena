@@ -76,6 +76,10 @@ class EntriesViewModel(
     val entryLongClickedAction : TapEntryAction
         get() = repository.entryLongClickedAction
 
+    /** エントリ項目のクリック回数判定時間 */
+    val entryMultipleClickDuration: Long
+        get() = repository.entryMultipleClickDuration
+
     /** アプリ終了前に確認する */
     val isTerminationDialogEnabled : Boolean
         get() = repository.isTerminationDialogEnabled

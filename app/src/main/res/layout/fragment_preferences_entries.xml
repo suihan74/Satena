@@ -149,6 +149,20 @@
                     android:layout_height="wrap_content"/>
 
             <TextView
+                    android:text="@string/pref_entries_multiple_tap_duration_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <Button
+                    android:id="@+id/preferences_entries_multiple_tap_duration"
+                    android:textColor="@color/textColor"
+                    android:text="@{vm.multipleTapDuration.toString() + `ミリ秒`}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
                     android:text="@string/pref_home_category_desc"
                     android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"

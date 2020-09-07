@@ -63,6 +63,11 @@ class PreferencesEntriesViewModel(
         { TapEntryAction.fromInt(it) }
     )
 
+    /** エントリ項目タップ回数判定時間 */
+    val multipleTapDuration = createLiveData<Long>(
+        PreferenceKey.ENTRY_MULTIPLE_TAP_DURATION
+    )
+
     /** 最初に表示するカテゴリ */
     val homeCategory = createLiveDataEnum<Category>(
         PreferenceKey.ENTRIES_HOME_CATEGORY,

@@ -102,6 +102,9 @@ enum class PreferenceKey(
     /** エントリ項目ロングタップの挙動 */
     ENTRY_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.id),
 
+    /** タップ回数判定時間 0L~500L */
+    ENTRY_MULTIPLE_TAP_DURATION(typeInfo<Long>(), 250L),
+
     /** 最初に表示するカテゴリ */
     ENTRIES_HOME_CATEGORY(typeInfo<Int>(), Category.All.id),
 
