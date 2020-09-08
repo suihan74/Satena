@@ -1,8 +1,13 @@
 package com.suihan74.satena.scenes.preferences.bottomBar
 
 import android.app.Dialog
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
+import android.text.style.ImageSpan
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
+import androidx.core.text.buildSpannedString
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -42,7 +47,7 @@ class BottomBarItemSelectionDialog : DialogFragment() {
 
         // 選択可能なアイテムリスト
         val items = UserBottomItem.values()
-        val itemLabels = items.map { getString(it.textId) }.toTypedArray()
+        val itemLabels = items.map { createLabel(context, it) }.toTypedArray()
 
         // 現在設定されているアイテム位置
         val checkedPosition = items.indexOf(targetItem)
@@ -79,6 +84,22 @@ class BottomBarItemSelectionDialog : DialogFragment() {
 
         return dialogBuilder.create()
     }
+
+    private fun createLabel(context: Context, item: UserBottomItem) =
+        buildSpannedString {
+            ContextCompat.getDrawable(context, item.iconId)?.let { icon ->
+                val lineHeight = context.sp2px(18)
+                val vAlign =
+                    if (Build.VERSION.SDK_INT >= 29) ImageSpan.ALIGN_CENTER
+                    else ImageSpan.ALIGN_BASELINE
+
+                icon.setTint(ContextCompat.getColor(context, R.color.textColor))
+                icon.setBounds(0, 0, lineHeight, lineHeight)
+                append("_", ImageSpan(icon, vAlign))
+                append("\u2002") // for margin
+            }
+            append(getString(item.textId))
+        }
 
     // ------ //
 
