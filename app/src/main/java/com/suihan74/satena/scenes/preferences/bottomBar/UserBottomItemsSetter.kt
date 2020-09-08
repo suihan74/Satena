@@ -36,6 +36,21 @@ class UserBottomItemsSetter : CoordinatorLayout {
             instance.binding.bottomAppBar.bindMenuItemsGravity(gravity)
             instance.inflateButtons()
         }
+
+        /** 表示できるボタン数の最大値を取得する */
+        fun getButtonsLimit(context: Context) : Int {
+            val displayMetrics = context.resources.displayMetrics
+            val density = displayMetrics.density
+
+            val screenWidthPx = displayMetrics.widthPixels
+            val rightMargin = (96 * density).toInt()
+            val buttonWidthPx = (48 * density).toInt()
+
+            // カテゴリによって追加されるボタンの最大値(暫定)
+            val numReserved = 2
+
+            return (screenWidthPx - rightMargin) / buttonWidthPx - numReserved
+        }
     }
 
     constructor(context: Context) : this(context, null, 0)
@@ -63,16 +78,7 @@ class UserBottomItemsSetter : CoordinatorLayout {
 
     /** 表示できるボタンの最大数 */
     private val maxButtonsNum : Int by lazy {
-        val displayMetrics = context.resources.displayMetrics
-        val density = displayMetrics.density
-
-        val screenWidthPx = displayMetrics.widthPixels
-        val rightMargin = (96 * density).toInt()
-        val buttonWidthPx = (48 * density).toInt()
-
-        val numReserved = 2
-
-        (screenWidthPx - rightMargin) / buttonWidthPx - numReserved
+        getButtonsLimit(context)
     }
 
     data class OnMenuItemClickArguments (
