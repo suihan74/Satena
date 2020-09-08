@@ -96,6 +96,8 @@
     <string name="preferences_desc">設定</string>
     <string name="home_category_desc">ホームカテゴリ</string>
     <string name="open_official_top_desc">はてブ公式トップページを開く</string>
+    <string name="open_official_hatena_desc">はてな公式トップページを開く</string>
+    <string name="open_anonymous_diary_desc">匿名ダイアリを開く</string>
 
     <!-- エントリタップアクション項目 -->
     <string name="entry_action_nothing">何もしない</string>

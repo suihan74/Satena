@@ -562,6 +562,16 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
             startActivity(intent)
         }
 
+        UserBottomItem.OPEN_OFFICIAL_HATENA -> {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.hatena.ne.jp/"))
+            startActivity(intent)
+        }
+
+        UserBottomItem.OPEN_ANONYMOUS_DIARY -> {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://anond.hatelabo.jp/"))
+            startActivity(intent)
+        }
+
         UserBottomItem.CATEGORIES -> {
             drawer_layout.openDrawer(drawer_area)
         }
