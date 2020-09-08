@@ -35,7 +35,7 @@ fun <T> List<T>?.contentsEquals(other: List<T>?) =
     else this!!.size == other!!.size && this.mapIndexed { index, _ -> this[index] == other[index] }.all { it }
 
 
-open class BookmarksAdapter(
+class BookmarksAdapter(
     private val lifecycleOwner: LifecycleOwner,
     private val viewModel: BookmarksTabViewModel,
     private val bookmarksRepository: BookmarksRepository
@@ -78,18 +78,51 @@ open class BookmarksAdapter(
     /** 表示項目リスト */
     private var loadableFooter: LoadableFooterViewHolder? = null
 
-    open fun onItemClicked(bookmark: Bookmark) {}
-    open fun onItemLongClicked(bookmark: Bookmark) = false
+    /** ブクマ項目クリック時処理 */
+    private var onItemClicked: Listener<Bookmark>? = null
+
+    /** ブクマ項目ロングクリック時処理 */
+    private var onItemLongClicked: Listener<Bookmark>? = null
 
     /** コメント中のリンクをタップしたときの処理 */
-    open fun onLinkClicked(url: String) {}
+    private var onLinkClicked: Listener<String>? = null
+
     /** コメント中のリンクをロングタップしたときの処理 */
-    open fun onLinkLongClicked(url: String) {}
+    private var onLinkLongClicked: Listener<String>? = null
+
     /** コメント中のEntryIdをタップしたときの処理 */
-    open fun onEntryIdClicked(eid: Long) {}
+    private var onEntryIdClicked: Listener<Long>? = null
 
     /** フッターの追加ロードをタップしたときの処理 */
-    open fun onAdditionalLoading() {}
+    private var onAdditionalLoading: Listener<Unit>? = null
+
+    fun setOnItemClickedListener(listener: Listener<Bookmark>?) {
+        onItemClicked = listener
+    }
+
+    fun setOnItemLongClickedListener(listener: Listener<Bookmark>?) {
+        onItemLongClicked = listener
+    }
+
+    /** コメント中のリンクをタップしたときの処理 */
+    fun setOnLinkClickedListener(listener: Listener<String>?) {
+        onLinkClicked = listener
+    }
+
+    /** コメント中のリンクをロングタップしたときの処理 */
+    fun setOnLinkLongClickedListener(listener: Listener<String>?) {
+        onLinkLongClicked = listener
+    }
+
+    /** コメント中のEntryIdをタップしたときの処理 */
+    fun setOnEntryIdClickedListener(listener: Listener<Long>?) {
+        onEntryIdClicked = listener
+    }
+
+    /** フッターの追加ロードをタップしたときの処理 */
+    fun setOnAdditionalLoadingListener(listener: Listener<Unit>?) {
+        onAdditionalLoading = listener
+    }
 
     /** 追加ロードボタンを表示するか */
     var additionalLoadable: Boolean = false
@@ -112,6 +145,15 @@ open class BookmarksAdapter(
     fun getPosition(bookmark: Bookmark) =
         currentList.indexOfFirst { it.body?.bookmark?.user == bookmark.user }
 
+    init {
+        // キャッシュが存在する場合、その内容を引き継ぐ
+        // 画面回転のたびにリストが再生成されるのを防ぐために行っている
+        val cache = viewModel.displayStates
+        if (!cache.isNullOrEmpty()) {
+            submitList(cache)
+        }
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         LayoutInflater.from(parent.context).let { inflater ->
             when (RecyclerType.fromInt(viewType)) {
@@ -122,11 +164,12 @@ open class BookmarksAdapter(
                     ).apply {
                         itemView.setOnClickListener {
                             val bookmark = currentList[adapterPosition].body!!.bookmark
-                            onItemClicked(bookmark)
+                            onItemClicked?.invoke(bookmark)
                         }
                         itemView.setOnLongClickListener {
                             val bookmark = currentList[adapterPosition].body!!.bookmark
-                            onItemLongClicked(bookmark)
+                            onItemLongClicked?.invoke(bookmark)
+                            onItemLongClicked != null
                         }
                     }
 
@@ -137,7 +180,7 @@ open class BookmarksAdapter(
                         loadableFooter = it.also { footer ->
                             footer.additionalLoadingTextView?.let { textView ->
                                 textView.setOnClickListener {
-                                    onAdditionalLoading()
+                                    onAdditionalLoading?.invoke(Unit)
                                 }
                                 textView.setVisibility(additionalLoadable)
                             }
@@ -203,6 +246,8 @@ open class BookmarksAdapter(
             )
         })
 
+        viewModel.displayStates = newStates
+
         withContext(Dispatchers.Main) {
             submitList(newStates)
         }
@@ -258,20 +303,20 @@ open class BookmarksAdapter(
                 val linkMovementMethod = object : MutableLinkMovementMethod() {
                     override fun onSinglePressed(link: String) {
                         if (link.startsWith("http")) {
-                            bookmarksAdapter.onLinkClicked(link)
+                            bookmarksAdapter.onLinkClicked?.invoke(link)
                         }
                         else {
                             entity.analyzedComment.entryIds
                                 .firstOrNull { link.contains(it.toString()) }
                                 ?.let { eid ->
-                                    bookmarksAdapter.onEntryIdClicked(eid)
+                                    bookmarksAdapter.onEntryIdClicked?.invoke(eid)
                                 }
                         }
                     }
 
                     override fun onLongPressed(link: String) {
                         if (link.startsWith("http")) {
-                            bookmarksAdapter.onLinkLongClicked(link)
+                            bookmarksAdapter.onLinkLongClicked?.invoke(link)
                         }
                     }
                 }
@@ -369,11 +414,14 @@ open class BookmarksAdapter(
                     visibility = View.VISIBLE
                     layoutManager = LinearLayoutManager(context)
                     adapter = object : MentionsAdapter(mentions) {
-                        override fun onItemClicked(item: Bookmark) =
-                            bookmarksAdapter.onItemClicked(item)
+                        override fun onItemClicked(item: Bookmark) {
+                            bookmarksAdapter.onItemClicked?.invoke(item)
+                        }
 
-                        override fun onItemLongClicked(item: Bookmark) =
-                            bookmarksAdapter.onItemLongClicked(item)
+                        override fun onItemLongClicked(item: Bookmark) : Boolean {
+                            bookmarksAdapter.onItemLongClicked?.invoke(item)
+                            return bookmarksAdapter.onItemLongClicked != null
+                        }
                     }
 
                     repeat(itemDecorationCount) {

@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
-import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.NotFoundException
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
@@ -64,27 +63,35 @@ class BookmarksTabFragment :
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
 
-        // adapter
-        val bookmarksAdapter = object : BookmarksAdapter(viewLifecycleOwner, viewModel, activityViewModel.repository) {
-            override fun onItemClicked(bookmark: Bookmark) =
+        val bookmarksAdapter = BookmarksAdapter(
+            viewLifecycleOwner,
+            viewModel,
+            activityViewModel.repository
+        ).apply {
+            setOnItemClickedListener { bookmark ->
                 bookmarksActivity.onBookmarkClicked(bookmark)
+            }
 
-            override fun onItemLongClicked(bookmark: Bookmark) =
+            setOnItemLongClickedListener { bookmark ->
                 bookmarksActivity.onBookmarkLongClicked(bookmark)
+            }
 
-            override fun onLinkClicked(url: String) =
+            setOnLinkClickedListener { url ->
                 bookmarksActivity.onLinkClicked(url)
+            }
 
-            override fun onLinkLongClicked(url: String) =
+            setOnLinkLongClickedListener { url ->
                 bookmarksActivity.onLinkLongClicked(url)
+            }
 
-            override fun onEntryIdClicked(eid: Long) =
+            setOnEntryIdClickedListener { eid ->
                 bookmarksActivity.onEntryIdClicked(eid)
+            }
 
-            override fun onAdditionalLoading() {
+            setOnAdditionalLoadingListener {
                 // 完了していないロードがある場合は実行しない
                 if (view.bookmarks_swipe_layout.isRefreshing || !startLoading()) {
-                    return
+                    return@setOnAdditionalLoadingListener
                 }
 
                 viewModel.loadNextBookmarks(
@@ -96,6 +103,7 @@ class BookmarksTabFragment :
                 )
             }
         }
+
         if (viewModel is CustomTabViewModel) {
             bookmarksAdapter.additionalLoadable = viewModel.additionalLoadable
         }

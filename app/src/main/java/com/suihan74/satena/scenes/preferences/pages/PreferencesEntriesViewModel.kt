@@ -1,19 +1,25 @@
 package com.suihan74.satena.scenes.preferences.pages
 
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.satena.scenes.preferences.bottomBar.BottomBarItemSelectionDialog
+import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.showAllowingStateLoss
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class PreferencesEntriesViewModel(
     prefs: SafeSharedPreferences<PreferenceKey>,
     historyPrefs: SafeSharedPreferences<EntriesHistoryKey>
-) : PreferencesViewModel(prefs), BottomBarItemSelectionDialog.Listener {
+) : PreferencesViewModel(prefs) {
 
     /** レイアウトモード */
     val bottomLayoutMode = createLiveData<Boolean>(
@@ -116,8 +122,27 @@ class PreferencesEntriesViewModel(
         PreferenceKey.ENTRY_READ_ACTION_BOILERPLATE
     )
 
+    /** ボトムバーの項目をセットするダイアログを表示する */
+    fun showBottomBarItemSetterDialog(
+        args: UserBottomItemsSetter.OnMenuItemClickArguments,
+        fragmentManager: FragmentManager,
+        tag: String? = null
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        BottomBarItemSelectionDialog.createInstance(args.items, args.target).run {
+            showAllowingStateLoss(fragmentManager, tag)
+
+            setOnSelectItemListener { (position, old, new) ->
+                onSelectItem(position, old, new)
+            }
+
+            setOnReorderItemListener { (posA, posB, itemA, itemB) ->
+                onReorderItem(posA, posB, itemA, itemB!!)
+            }
+        }
+    }
+
     /** ボトムバーの項目を追加・編集 */
-    override fun onSelectItem(position: Int, old: UserBottomItem?, new: UserBottomItem?) {
+    private fun onSelectItem(position: Int, old: UserBottomItem?, new: UserBottomItem?) {
         if (old == null && new == null) return
         else if (new == null) {
             bottomBarButtons.value = bottomBarButtons.value?.minus(old!!)
@@ -134,7 +159,7 @@ class PreferencesEntriesViewModel(
     }
 
     /** ボトムバーの項目を入れ替え */
-    override fun onReorderItem(
+    private fun onReorderItem(
         positionA: Int,
         positionB: Int,
         itemA: UserBottomItem?,

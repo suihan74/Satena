@@ -47,18 +47,22 @@ enum class UserBottomItem(
         R.string.open_official_top_desc
     ),
 
-    /*
-    OPEN_OFFICIAL_MYBOOKMARKS(x,
-        0,
-        0
-    ),*/
+    OPEN_OFFICIAL_HATENA(6,
+        R.drawable.ic_category_social,
+        R.string.open_official_hatena_desc
+    ),
 
-    HOME(6,
+    OPEN_ANONYMOUS_DIARY(7,
+        R.drawable.ic_category_social,
+        R.string.open_anonymous_diary_desc
+    ),
+
+    HOME(7,
         R.drawable.ic_category_all,
         R.string.home_category_desc
     ),
 
-    CATEGORIES(7,
+    CATEGORIES(8,
         R.drawable.ic_baseline_category,
         R.string.categories_desc
     ),

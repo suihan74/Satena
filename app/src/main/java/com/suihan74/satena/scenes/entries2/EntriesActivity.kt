@@ -37,6 +37,7 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
+import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_entries2.*
 
@@ -514,11 +515,17 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
     /** 基本のボトムバーアイテムを追加する */
     private fun inflateBasicBottomItems(bottomAppBar: BottomAppBar) {
+        // 今現在の画面に表示できる最大数を計算し、設定されたアイテムをこの数に絞る
+        val maxButtonsNum = UserBottomItemsSetter.getButtonsLimit(this)
+
         val tint = ColorStateList.valueOf(getThemeColor(R.attr.textColor))
-        val menuItems = viewModel.bottomBarItems.mapNotNull { item ->
-            if (item.requireSignedIn && viewModel.signedIn.value != true) null
-            else item.toMenuItem(bottomAppBar.menu, tint)
-        }
+        val menuItems = viewModel.bottomBarItems
+            .take(maxButtonsNum)
+            .mapNotNull { item ->
+                if (item.requireSignedIn && viewModel.signedIn.value != true) null
+                else item.toMenuItem(bottomAppBar.menu, tint)
+            }
+
         bottomAppBar.setOnMenuItemClickListener { clicked ->
             val idx = menuItems.indexOf(clicked)
             if (idx != -1) {
@@ -559,6 +566,16 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
         UserBottomItem.OPEN_OFFICIAL_TOP -> {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://b.hatena.ne.jp/"))
+            startActivity(intent)
+        }
+
+        UserBottomItem.OPEN_OFFICIAL_HATENA -> {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.hatena.ne.jp/"))
+            startActivity(intent)
+        }
+
+        UserBottomItem.OPEN_ANONYMOUS_DIARY -> {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://anond.hatelabo.jp/"))
             startActivity(intent)
         }
 
