@@ -227,16 +227,16 @@ class BookmarksViewModel(
                     onError?.invoke(e)
                 }
             }
-        }
 
-        // キーワードが更新されたら各リストを再生成する
-        filteringWord.observeForever {
-            reloadLists()
-        }
+            // キーワードが更新されたら各リストを再生成する
+            filteringWord.observeForever {
+                reloadLists()
+            }
 
-        // 非表示ユーザーリストの更新を監視
-        ignoredUsers.observeForever {
-            reloadLists()
+            // 非表示ユーザーリストの更新を監視
+            ignoredUsers.observeForever {
+                reloadLists()
+            }
         }
 
         // 所持しているスター情報を取得する

@@ -11,10 +11,7 @@ import androidx.lifecycle.*
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
-import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
+import com.suihan74.satena.scenes.bookmarks2.*
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,6 +25,9 @@ abstract class BookmarksTabViewModel : ViewModel() {
 
     protected lateinit var preferences: SafeSharedPreferences<PreferenceKey>
         private set
+
+    /** BookmarksAdapterで表示されている内容のキャッシュ */
+    var displayStates: List<RecyclerState<BookmarksAdapter.Entity>>? = null
 
     /** タブごとに表示するブクマリスト */
     val bookmarks by lazy {
@@ -47,6 +47,8 @@ abstract class BookmarksTabViewModel : ViewModel() {
     /** 続きをロードできるか */
     val additionalLoadable: Boolean
         get() = activityViewModel.repository.additionalLoadable
+
+    var bookmarksAdapter: BookmarksAdapter? = null
 
     /** 初期化 */
     open fun init() {
