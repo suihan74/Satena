@@ -30,6 +30,7 @@ class PreferencesEntriesFragment :
     companion object {
         fun createInstance() = PreferencesEntriesFragment()
 
+        private const val DIALOG_BOTTOM_BAR_ITEM_SETTER = "DIALOG_BOTTOM_BAR_ITEM_SETTER"
         private const val DIALOG_SINGLE_TAP_ACTION = "DIALOG_SINGLE_TAP_ACTION"
         private const val DIALOG_MULTIPLE_TAP_ACTION = "DIALOG_MULTIPLE_TAP_ACTION"
         private const val DIALOG_LONG_TAP_ACTION = "DIALOG_LONG_TAP_ACTION"
@@ -57,12 +58,20 @@ class PreferencesEntriesFragment :
             false
         ).apply {
             vm = viewModel
-            fragmentManager = childFragmentManager
             lifecycleOwner = viewLifecycleOwner
         }
         val view = binding.root
 
         val tapActions = TapEntryAction.values().map { getString(it.titleId) }.toTypedArray()
+
+        // ボトムバーメニュー項目を編集するダイアログを表示する
+        view.bottom_bar_item_setter.setOnMenuItemClickListener { args ->
+            viewModel.showBottomBarItemSetterDialog(
+                args,
+                childFragmentManager,
+                DIALOG_BOTTOM_BAR_ITEM_SETTER
+            )
+        }
 
         // シングルタップ時の動作
         view.preferences_entries_single_tap_action.setOnClickListener {

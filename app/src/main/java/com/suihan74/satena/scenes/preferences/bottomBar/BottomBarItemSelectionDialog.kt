@@ -4,9 +4,11 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.UserBottomItem
-import com.suihan74.satena.scenes.preferences.pages.PreferencesEntriesFragment
 import com.suihan74.utilities.*
 
 class BottomBarItemSelectionDialog : DialogFragment() {
@@ -23,7 +25,12 @@ class BottomBarItemSelectionDialog : DialogFragment() {
         private const val ARG_TARGET_ITEMS = "ARG_TARGET_ITEM"
     }
 
+    private val viewModel: DialogViewModel by lazy {
+        ViewModelProvider(this)[DialogViewModel::class.java]
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val context = requireContext()
         val args = requireArguments()
         val existedItems = args.getObject<List<UserBottomItem>>(ARG_EXISTED_ITEMS)!!
         val targetItem = args.getEnum<UserBottomItem>(ARG_TARGET_ITEMS)
@@ -43,16 +50,19 @@ class BottomBarItemSelectionDialog : DialogFragment() {
         val dialogBuilder = AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setTitle(R.string.dialog_title_bottom_bar_item_selection)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setSingleChoiceItems(itemLabels, checkedPosition) { dialog, which ->
-                val listener = (parentFragment as? PreferencesEntriesFragment)?.viewModel as? Listener
+            .setSingleChoiceItems(itemLabels, checkedPosition) { _, which ->
                 val new = items[which]
 
                 val existedPosition = existedItems.indexOf(new)
                 if (existedPosition == -1) {
-                    listener?.onSelectItem(targetPosition, targetItem, new)
+                    viewModel.onSelectItem?.invoke(
+                        OnSelectItemArguments(targetPosition, targetItem, new)
+                    )
                 }
                 else if (existedPosition != targetPosition) {
-                    listener?.onReorderItem(targetPosition, existedPosition, targetItem, new)
+                    viewModel.onReorderItem?.invoke(
+                        OnReorderItemArguments(targetPosition, existedPosition, targetItem, new)
+                    )
                 }
 
                 dismissAllowingStateLoss()
@@ -60,19 +70,48 @@ class BottomBarItemSelectionDialog : DialogFragment() {
 
         if (targetItem != null) {
             // 項目を削除する
-            dialogBuilder.setPositiveButton(R.string.dialog_delete) { dialog, which ->
-                val listener = (parentFragment as? PreferencesEntriesFragment)?.viewModel as? Listener
-                listener?.onSelectItem(targetPosition, targetItem, null)
+            dialogBuilder.setPositiveButton(R.string.dialog_delete) { _, _ ->
+                viewModel.onSelectItem?.invoke(
+                    OnSelectItemArguments(targetPosition, targetItem, null)
+                )
             }
         }
 
         return dialogBuilder.create()
     }
 
-    interface Listener {
-        /** 指定位置のメニュー項目を選択 */
-        fun onSelectItem(position: Int, old: UserBottomItem?, new: UserBottomItem?)
-        /** 既に設定されている2つの項目を入れ替える */
-        fun onReorderItem(positionA: Int, positionB: Int, itemA: UserBottomItem?, itemB: UserBottomItem)
+    // ------ //
+
+    data class OnSelectItemArguments(
+        val position: Int,
+        val old: UserBottomItem?,
+        val new: UserBottomItem?
+    )
+
+    data class OnReorderItemArguments(
+        val posA: Int,
+        val posB: Int,
+        val itemA: UserBottomItem?,
+        val itemB: UserBottomItem?
+    )
+
+    suspend fun setOnSelectItemListener(
+        listener: Listener<OnSelectItemArguments>? = null
+    ) = whenStarted {
+        viewModel.onSelectItem = listener
+    }
+
+    suspend fun setOnReorderItemListener(
+        listener: Listener<OnReorderItemArguments>? = null
+    ) = whenStarted {
+        viewModel.onReorderItem = listener
+    }
+
+    class DialogViewModel : ViewModel() {
+        /** アイテムを設定(または変更) */
+        var onSelectItem: Listener<OnSelectItemArguments>? = null
+
+        /** ふたつのアイテムを入れ替える */
+        var onReorderItem: Listener<OnReorderItemArguments>? = null
     }
 }

@@ -9,11 +9,11 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.MenuItemCompat
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ViewUserBottomItemsSetterBinding
 import com.suihan74.satena.scenes.entries2.UserBottomItem
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.bindMenuItemsGravity
 import com.suihan74.utilities.getThemeColor
 import kotlinx.android.synthetic.main.view_user_bottom_items_setter.view.*
@@ -21,14 +21,12 @@ import kotlinx.android.synthetic.main.view_user_bottom_items_setter.view.*
 class UserBottomItemsSetter : CoordinatorLayout {
     companion object {
         @JvmStatic
-        @BindingAdapter("items", "fragmentManager")
+        @BindingAdapter("items")
         fun bindItems(
             instance: UserBottomItemsSetter,
-            liveData: MutableLiveData<List<UserBottomItem>>?,
-            fragmentManager: FragmentManager?
+            liveData: MutableLiveData<List<UserBottomItem>>?
         ) {
             instance.itemsLiveData = liveData
-            instance.fragmentManager = fragmentManager
             instance.inflateButtons()
         }
 
@@ -38,8 +36,6 @@ class UserBottomItemsSetter : CoordinatorLayout {
             instance.binding.bottomAppBar.bindMenuItemsGravity(gravity)
             instance.inflateButtons()
         }
-
-        const val DIALOG_USER_BOTTOM_ITEMS_SETTER = "DIALOG_USER_BOTTOM_ITEMS_SETTER"
     }
 
     constructor(context: Context) : this(context, null, 0)
@@ -49,7 +45,7 @@ class UserBottomItemsSetter : CoordinatorLayout {
         attrs: AttributeSet?,
         defStyleInt: Int
     ) : super(context, attrs, defStyleInt) {
-        binding = DataBindingUtil.inflate<ViewUserBottomItemsSetterBinding>(
+        binding = DataBindingUtil.inflate(
             LayoutInflater.from(context),
             R.layout.view_user_bottom_items_setter,
             this,
@@ -79,8 +75,18 @@ class UserBottomItemsSetter : CoordinatorLayout {
         (screenWidthPx - rightMargin) / buttonWidthPx - numReserved
     }
 
-    /** ダイアログを表示するのに使用するfragmentManager */
-    private var fragmentManager : FragmentManager? = null
+    data class OnMenuItemClickArguments (
+        val items: List<UserBottomItem>,
+        val target: UserBottomItem?
+    )
+
+    /** ボタンを押したときのイベントリスナ */
+    private var onMenuItemClickListener: Listener<OnMenuItemClickArguments>? = null
+
+    /** ボタンを押したときのイベントリスナをセットする */
+    fun setOnMenuItemClickListener(listener: Listener<OnMenuItemClickArguments>) {
+        onMenuItemClickListener = listener
+    }
 
     /** 設定用のBottomAppBarにボタンを表示する */
     private fun inflateButtons() {
@@ -94,11 +100,8 @@ class UserBottomItemsSetter : CoordinatorLayout {
         items.forEachIndexed { i, item ->
             item.toMenuItem(bottomAppBar.menu, tint).apply {
                 setOnMenuItemClickListener {
-                    fragmentManager?.let { fm ->
-                        val dialog = BottomBarItemSelectionDialog.createInstance(items, item)
-                        dialog.show(fm, DIALOG_USER_BOTTOM_ITEMS_SETTER)
-                    }
-                    true
+                    onMenuItemClickListener?.invoke(OnMenuItemClickArguments(items, item))
+                    onMenuItemClickListener != null
                 }
             }
         }
@@ -110,11 +113,8 @@ class UserBottomItemsSetter : CoordinatorLayout {
                 MenuItemCompat.setIconTintList(this, tint)
                 setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
                 setOnMenuItemClickListener {
-                    fragmentManager?.let { fm ->
-                        val dialog = BottomBarItemSelectionDialog.createInstance(items)
-                        dialog.show(fm, DIALOG_USER_BOTTOM_ITEMS_SETTER)
-                    }
-                    true
+                    onMenuItemClickListener?.invoke(OnMenuItemClickArguments(items, null))
+                    onMenuItemClickListener != null
                 }
             }
         }
