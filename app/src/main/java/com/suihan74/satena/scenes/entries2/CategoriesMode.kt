@@ -8,7 +8,7 @@ enum class CategoriesMode(
 ) {
     /** リスト形式 */
     LIST(R.string.pref_categories_mode_list),
-    /** テーブル形式 */
+    /** グリッド形式 */
     GRID(R.string.pref_categories_mode_grid);
 
     companion object {
