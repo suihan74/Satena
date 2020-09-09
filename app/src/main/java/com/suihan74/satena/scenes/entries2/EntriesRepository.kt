@@ -221,6 +221,11 @@ class EntriesRepository(
 
             Category.Memorial15th -> loadHistoricalEntries(tabPosition, params)
 
+            Category.FavoriteSites -> {
+                val page = params?.get<Int>(LoadEntryParameter.PAGE) ?: 0
+                loadFavoriteSitesEntries(tabPosition, page)
+            }
+
             else -> throw NotImplementedError("refreshing \"${category.name}\" is not implemented")
         }
 
@@ -509,6 +514,38 @@ class EntriesRepository(
             client.getUserHistoricalEntriesAsync(2005 + tabPosition, 30).await()
         else
             client.getHistoricalEntriesAsync(2005 + tabPosition).await()
+
+    /** お気に入りサイトのエントリリストを読み込む */
+    private suspend fun loadFavoriteSitesEntries(tabPosition: Int, page: Int? = null) : List<Entry> {
+        val entriesType = EntriesType.fromInt(tabPosition)
+        val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
+        val sites = prefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
+        val tasks = sites.map { site ->
+            client.async {
+                try {
+                    client.getEntriesAsync(
+                        url = site.url,
+                        entriesType = entriesType,
+                        allMode = true,
+                        page = page ?: 0
+                    ).await()
+                }
+                catch (e: Throwable) {
+                    emptyList()
+                }
+            }
+        }
+
+        val entries = tasks.awaitAll().flatten()
+
+        return when (tabPosition) {
+            0 -> entries.sortedByDescending { it.count }
+            1 -> entries.sortedByDescending { it.date }
+            else -> throw IndexOutOfBoundsException("tabPosition is out of bounds: pos = $tabPosition")
+        }
+    }
+
+    // ------ //
 
     /** エントリをフィルタリングする */
     suspend fun filterEntries(entries: List<Entry>) : List<Entry> = withContext(Dispatchers.IO) {

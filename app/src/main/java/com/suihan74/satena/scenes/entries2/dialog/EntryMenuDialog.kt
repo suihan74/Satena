@@ -581,10 +581,49 @@ class EntryMenuDialog : DialogFragment() {
 
         /** お気に入りに追加 */
         private fun favorite(args: MenuItemArguments) {
+            val entry = args.entry ?: return
+            val context = args.context
+
+            val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
+            val sites = prefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
+
+            if (sites.any { it.url == entry.rootUrl }) {
+                context.showToast("既に設定が存在します")
+                return
+            }
+
+            prefs.edit { put(
+                FavoriteSitesKey.SITES,
+                sites.plus(FavoriteSite(
+                    url = entry.rootUrl,
+                    title = entry.title,  // TODO: サイトのタイトルにする
+                    faviconUrl = entry.faviconUrl,
+                    isEnabled = true
+                ))
+            ) }
+
+            context.showToast("お気に入りに追加しました")
         }
 
         /** おkに煎りから削除する */
         private fun unfavorite(args: MenuItemArguments) {
+            val entry = args.entry ?: return
+            val context = args.context
+
+            val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
+            val sites = prefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
+
+            if (!sites.any { it.url == entry.rootUrl }) {
+                context.showToast("設定が存在しません")
+                return
+            }
+
+            prefs.edit { put(
+                FavoriteSitesKey.SITES,
+                sites.filter { it.url != entry.rootUrl }
+            ) }
+
+            context.showToast("お気に入りから除外しました")
         }
     }
 }

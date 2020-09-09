@@ -23,6 +23,8 @@ internal fun Category.createFragment() : EntriesFragment =
 
         Category.Memorial15th -> Memorial15Fragment.createInstance()
 
+        Category.FavoriteSites -> FavoriteSitesFragment.createInstance()
+
         else -> HatenaEntriesFragment.createInstance(this)
     }
 

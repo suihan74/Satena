@@ -81,6 +81,7 @@
     <string name="category_fun">おもしろ</string>
     <string name="category_myhotentries">マイホットエントリ</string>
     <string name="category_mybookmarks">マイブックマーク</string>
+    <string name="category_favorite_sites">お気に入りサイト</string>
     <!-- deprecated --><string name="category_mytags">タグ</string>
     <string name="category_search">検索</string>
     <string name="category_mystars">スター</string>
@@ -105,6 +106,8 @@
     <string name="entry_action_show_page">ページを開く</string>
     <string name="entry_action_show_page_in_browser">ページを外部ブラウザで開く</string>
     <string name="entry_action_show_menu">メニューダイアログを開く</string>
+    <string name="entry_action_favorite">お気に入りに追加</string>
+    <string name="entry_action_unfavorite">お気に入りから除外</string>
     <string name="entry_action_show_entries">このサイトのエントリ</string>
     <string name="entry_action_read_later">あとで読む</string>
     <string name="entry_action_read">読んだ</string>

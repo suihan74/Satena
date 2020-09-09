@@ -1,12 +1,15 @@
 package com.suihan74.satena.models
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.IntRange
+import androidx.annotation.StringRes
 import com.suihan74.satena.R
 
 @Suppress("unused")
 enum class Category(
-    val id: Int,
-    val textId: Int,
-    val iconId: Int,
+    @IntRange(from = 1, to = 22) val id: Int,
+    @StringRes val textId: Int,
+    @DrawableRes val iconId: Int,
     val categoryInApi: com.suihan74.hatenaLib.Category? = null,
     val requireSignedIn: Boolean = false,
     val singleColumns : Boolean = false,
@@ -82,6 +85,11 @@ enum class Category(
         R.string.category_mybookmarks,
         R.drawable.ic_category_mybookmarks,
         requireSignedIn = true),
+
+    FavoriteSites(id = 22,
+        R.string.category_favorite_sites,
+        R.drawable.ic_user_tag
+    ),
 
     @Deprecated("`MyTags` is integrated into `MyBookmarks`")
     MyTags(id = 12,

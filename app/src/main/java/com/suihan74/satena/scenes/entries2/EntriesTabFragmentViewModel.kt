@@ -154,8 +154,9 @@ class EntriesTabFragmentViewModel(
     private suspend fun fetchEntries(offset: Int? = null) : List<Entry> {
         // 追加パラメータを設定
         val params = when (category) {
-            Category.Site -> {
-                if (siteUrl == null) return emptyList()
+            Category.Site,
+            Category.FavoriteSites -> {
+                if (category == Category.Site && siteUrl == null) return emptyList()
                 params.also {
                     if (offset != null && offset > 0) {
                         val prev = it.get(LoadEntryParameter.PAGE, 1)
