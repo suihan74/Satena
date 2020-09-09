@@ -1,7 +1,9 @@
 package com.suihan74.hatenaLib
 
 import android.net.Uri
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
+import org.threeten.bp.LocalDateTime
 
 class Entry (
     @SerializedName("eid", alternate = ["entry_id"])
@@ -31,7 +33,10 @@ class Entry (
 
     // ホットエントリにのみ含まれる情報
     @SerializedName("myhotentry_comments")
-    val myHotEntryComments : List<BookmarkResult>? = null
+    val myHotEntryComments : List<BookmarkResult>? = null,
+
+    @JsonAdapter(TimestampDeserializer::class)
+    val date: LocalDateTime? = null
 ) {
 
     // for Gson
@@ -89,7 +94,8 @@ class Entry (
         imageUrl: String = this.imageUrl,
         ampUrl: String? = this.ampUrl,
         bookmarkedData: BookmarkResult? = this.bookmarkedData,
-        myhotentryComments: List<BookmarkResult>? = this.myHotEntryComments
+        myhotentryComments: List<BookmarkResult>? = this.myHotEntryComments,
+        date: LocalDateTime? = this.date
     ) = Entry(
         id = id,
         title = title,
@@ -101,7 +107,8 @@ class Entry (
         imageUrl = imageUrl,
         ampUrl = ampUrl,
         bookmarkedData = bookmarkedData,
-        myHotEntryComments = myhotentryComments
+        myHotEntryComments = myhotentryComments,
+        date = date
     )
 
     /** 同じエントリに対するインスタンスかを確認する */

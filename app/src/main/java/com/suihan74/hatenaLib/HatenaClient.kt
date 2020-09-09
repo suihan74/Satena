@@ -488,19 +488,22 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 "&sort=$sort")
         }
 
-        val anondRootUrl = "https://anond.hatelabo.jp/"
-        val anondImageUrl = "https://cdn-ak-scissors.b.st-hatena.com/image/square/abf4f339344e96f39ffb9c18856eca5d454e63f8/height=280;version=1;width=400/https%3A%2F%2Fanond.hatelabo.jp%2Fimages%2Fog-image-1500.gif"
-
-        val countRegex = Regex("""(\d+)\s*users""")
-        val thumbnailRegex = Regex("""background-image:url\('(.+)'\);""")
-        val classNamePrefix = "entrylist-contents"
-
         // エントリIDは個別のブクマページを取得しないと分からないので取得タスクをまとめて待機する
 //        val entryIdsTasks = ArrayList<Deferred<Long?>>()
 
         return@async get(apiUrl).use { response ->
             val responseStr = response.body?.use { it.string() } ?: throw RuntimeException("failed to get entries: $url")
             val html = Jsoup.parse(responseStr)
+
+            val anondRootUrl = "https://anond.hatelabo.jp/"
+            val anondImageUrl = "https://cdn-ak-scissors.b.st-hatena.com/image/square/abf4f339344e96f39ffb9c18856eca5d454e63f8/height=280;version=1;width=400/https%3A%2F%2Fanond.hatelabo.jp%2Fimages%2Fog-image-1500.gif"
+
+            val countRegex = Regex("""(\d+)\s*users""")
+            val thumbnailRegex = Regex("""background-image:url\('(.+)'\);""")
+            val classNamePrefix = "entrylist-contents"
+
+            val dateTimeFormat = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
+
             html.body().getElementsByClass("$classNamePrefix-main").mapNotNull m@ { entry ->
                 val (title, entryUrl) = entry.getElementsByClass("$classNamePrefix-title").firstOrNull()?.let {
                     it.getElementsByTag("a").firstOrNull()?.let { link ->
@@ -527,6 +530,16 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     description to imageUrl
                 } ?: ("" to "")
 
+                val date = entry.getElementsByClass("$classNamePrefix-date").firstOrNull()?.let {
+                    val text = it.wholeText() ?: return@let null
+                    try {
+                        LocalDateTime.from(dateTimeFormat.parse(text))
+                    }
+                    catch (e: Throwable) {
+                        null
+                    }
+                }
+
                 Entry(
                     id = 0,  // eidはコメントページを見ないと手に入らない
                     title = title,
@@ -535,7 +548,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     url = entryUrl,
                     rootUrl = rootUrl,
                     faviconUrl = faviconUrl,
-                    imageUrl = imageUrl
+                    imageUrl = imageUrl,
+                    date = date
                 )
             }
         }

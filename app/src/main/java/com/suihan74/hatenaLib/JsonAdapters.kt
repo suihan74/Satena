@@ -4,6 +4,7 @@ import com.google.gson.*
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
+import org.threeten.bp.ZoneOffset
 import org.threeten.bp.format.DateTimeFormatter
 import java.lang.reflect.Type
 
@@ -65,13 +66,25 @@ internal class StarColorDeserializer : JsonDeserializer<StarColor> {
     }
 }
 
-internal class TimestampDeserializer(private val format : String? = null) : JsonDeserializer<LocalDateTime> {
+internal class TimestampDeserializer(
+    private val format : String? = null
+) : JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern(
+        format ?: "uuuu-MM-dd'T'HH:mm:ssXXX"
+    )
+
+    override fun serialize(
+        src: LocalDateTime?,
+        typeOfSrc: Type?,
+        context: JsonSerializationContext?
+    ): JsonElement {
+        if (src == null) return JsonNull.INSTANCE
+        val offset = src.atOffset(ZoneOffset.ofHours(9))
+        return JsonPrimitive(offset.format(dateTimeFormatter))
+    }
+
     override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): LocalDateTime =
-        if (format == null) {
-            LocalDateTime.parse(json!!.asString, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"))
-        } else {
-            LocalDateTime.parse(json!!.asString, DateTimeFormatter.ofPattern(format))
-        }
+        LocalDateTime.parse(json!!.asString, dateTimeFormatter)
 }
 
 internal class EpochTimeDeserializer(

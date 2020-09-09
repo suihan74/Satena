@@ -29,23 +29,31 @@ enum class EntriesHistoryKey (
 /** エントリを表示履歴に追加/更新する */
 fun Entry.saveHistory(context: Context) {
     val prefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
-    val entries = prefs.get<List<Entry>>(EntriesHistoryKey.ENTRIES)
-    val maxSize = prefs.getInt(EntriesHistoryKey.MAX_SIZE)
+    try {
+        val entries = prefs.get<List<Entry>>(EntriesHistoryKey.ENTRIES)
+        val maxSize = prefs.getInt(EntriesHistoryKey.MAX_SIZE)
 
-    val existedPosition = entries.indexOfFirst { it.url == this.url }
-    val modifiedEntries =
-        when {
-            existedPosition < 0 -> entries.plus(this)
-            else -> {
-                entries.filterNot { it.url == this.url }
-                    .plus(this)
+        val existedPosition = entries.indexOfFirst { it.url == this.url }
+        val modifiedEntries =
+            when {
+                existedPosition < 0 -> entries.plus(this)
+                else -> {
+                    entries.filterNot { it.url == this.url }
+                        .plus(this)
+                }
+            }
+                .takeLast(maxSize)
+
+        if (modifiedEntries != entries) {
+            prefs.edit {
+                put(EntriesHistoryKey.ENTRIES, modifiedEntries)
             }
         }
-        .takeLast(maxSize)
-
-    if (modifiedEntries != entries) {
+    }
+    catch (e: Throwable) {
+        // TODO: Entry.dateの追加によって例外が発生 。単に開発中に色々弄ったのが原因かわからないので、あとでバージョン移行テストをすること
         prefs.edit {
-            put(EntriesHistoryKey.ENTRIES, modifiedEntries)
+            put(EntriesHistoryKey.ENTRIES, emptyList<Entry>())
         }
     }
 }
