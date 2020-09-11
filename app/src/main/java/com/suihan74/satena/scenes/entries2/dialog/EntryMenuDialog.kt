@@ -36,6 +36,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+// TODO: リスナの扱い方を刷新する
+
 class EntryMenuDialogListeners {
     /** ミュート完了時の処理 */
     var onIgnoredEntry : OnSuccess<IgnoredEntry>? = null
@@ -45,6 +47,9 @@ class EntryMenuDialogListeners {
 
     /** ブクマ登録完了時の処理 */
     var onPostedBookmark : ((Entry, BookmarkResult)->Unit)? = null
+
+    /** お気に入りサイトリスト更新時の処理 */
+    var onUpdatedFavoriteSites: Listener<List<FavoriteSite>>? = null
 }
 
 /** エントリメニューダイアログ */
@@ -592,17 +597,20 @@ class EntryMenuDialog : DialogFragment() {
                 return
             }
 
-            prefs.edit { put(
-                FavoriteSitesKey.SITES,
-                sites.plus(FavoriteSite(
-                    url = entry.rootUrl,
-                    title = entry.title,  // TODO: サイトのタイトルにする
-                    faviconUrl = entry.faviconUrl,
-                    isEnabled = true
-                ))
-            ) }
+            val newList = sites.plus(FavoriteSite(
+                url = entry.rootUrl,
+                title = entry.title,  // TODO: サイトのタイトルにする
+                faviconUrl = entry.faviconUrl,
+                isEnabled = true
+            ))
+
+            prefs.edit {
+                put(FavoriteSitesKey.SITES, newList)
+            }
 
             context.showToast("お気に入りに追加しました")
+
+            listeners?.onUpdatedFavoriteSites?.invoke(newList)
         }
 
         /** おkに煎りから削除する */
@@ -618,12 +626,15 @@ class EntryMenuDialog : DialogFragment() {
                 return
             }
 
-            prefs.edit { put(
-                FavoriteSitesKey.SITES,
-                sites.filter { it.url != entry.rootUrl }
-            ) }
+            val newList = sites.filter { it.url != entry.rootUrl }
+
+            prefs.edit {
+                put(FavoriteSitesKey.SITES, newList)
+            }
 
             context.showToast("お気に入りから除外しました")
+
+            listeners?.onUpdatedFavoriteSites?.invoke(newList)
         }
     }
 }

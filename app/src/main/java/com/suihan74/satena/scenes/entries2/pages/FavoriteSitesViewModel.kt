@@ -2,18 +2,21 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.suihan74.satena.R
-import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.satena.models.FavoriteSitesKey
+import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
+import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel
 import com.suihan74.satena.scenes.entries2.dialog.FavoriteSitesSelectionDialog
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.OnError
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class FavoriteSitesViewModel : EntriesFragmentViewModel() {
+class FavoriteSitesViewModel(
+    private val repository: EntriesRepository
+) : EntriesFragmentViewModel() {
     private val tabTitles = arrayOf(
         R.string.entries_tab_hot,
         R.string.entries_tab_recent
@@ -30,17 +33,36 @@ class FavoriteSitesViewModel : EntriesFragmentViewModel() {
         tag: String? = null
     ) = viewModelScope.launch(Dispatchers.Main) {
         // TODO: リポジトリでやる
-        val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
-        val sites = prefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
+        val sites = repository.favoriteSites.value ?: emptyList()
 
         FavoriteSitesSelectionDialog.createInstance(sites).run {
             showAllowingStateLoss(fragmentManager, tag)
 
             setOnCompleteListener { newList ->
-                prefs.edit {
-                    put(FavoriteSitesKey.SITES, newList)
-                }
+                repository.favoriteSites.value = newList
             }
         }
+    }
+
+    override fun connectToTab(
+        lifecycleOwner: LifecycleOwner,
+        entriesAdapter: EntriesAdapter,
+        viewModel: EntriesTabFragmentViewModel,
+        onError: OnError?
+    ) {
+        super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
+        repository.favoriteSites.observe(lifecycleOwner, Observer {
+            viewModel.refresh()
+        })
+    }
+
+    // ------ //
+
+    class Factory(
+        private val repository: EntriesRepository
+    ) : ViewModelProvider.NewInstanceFactory() {
+        @Suppress("unchecked_cast")
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
+            FavoriteSitesViewModel(repository) as T
     }
 }

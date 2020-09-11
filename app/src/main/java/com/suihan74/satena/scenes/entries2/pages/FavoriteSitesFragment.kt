@@ -33,7 +33,8 @@ class FavoriteSitesFragment : MultipleTabsEntriesFragment() {
         repository: EntriesRepository,
         category: Category
     ): EntriesFragmentViewModel {
-        return ViewModelProvider(owner)[viewModelKey, FavoriteSitesViewModel::class.java]
+        val factory = FavoriteSitesViewModel.Factory(repository)
+        return ViewModelProvider(owner, factory)[viewModelKey, FavoriteSitesViewModel::class.java]
     }
 
     override fun updateActivityAppBar(

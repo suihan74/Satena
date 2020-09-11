@@ -139,6 +139,10 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             onPostedBookmark = { entry, bookmarkResult ->
                 (activity as? EntriesActivity)?.updateBookmark(entry, bookmarkResult)
             }
+
+            onUpdatedFavoriteSites = { sites ->
+                activityViewModel.repository.favoriteSites.value = sites
+            }
         }
 
         adapter.multipleClickDuration = activityViewModel.entryMultipleClickDuration

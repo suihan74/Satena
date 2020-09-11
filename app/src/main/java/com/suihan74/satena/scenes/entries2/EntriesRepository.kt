@@ -101,6 +101,11 @@ class EntriesRepository(
         SafeSharedPreferences.create<NoticesKey>(context)
     }
 
+    /** お気に入りサイト */
+    private val favoriteSitePrefs by lazy {
+        SafeSharedPreferences.create<FavoriteSitesKey>(context)
+    }
+
     /** サインイン状態 */
     val signedIn : Boolean
         get() = client.signedIn()
@@ -170,6 +175,20 @@ class EntriesRepository(
     /** ボトムバーの追加項目の配置方法 */
     val extraBottomItemsAlignment : ExtraBottomItemsAlignment
         get() = ExtraBottomItemsAlignment.fromInt(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT))
+
+    /** お気に入りサイトリスト */
+    val favoriteSites : MutableLiveData<List<FavoriteSite>> by lazy {
+        val sites = favoriteSitePrefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
+        MutableLiveData(sites).apply {
+            observeForever {
+                if (it != null) {
+                    favoriteSitePrefs.edit {
+                        put(FavoriteSitesKey.SITES, it)
+                    }
+                }
+            }
+        }
+    }
 
     /** サインインする */
     suspend fun signIn(forceUpdate: Boolean = false) {
@@ -518,8 +537,8 @@ class EntriesRepository(
     /** お気に入りサイトのエントリリストを読み込む */
     private suspend fun loadFavoriteSitesEntries(tabPosition: Int, page: Int? = null) : List<Entry> {
         val entriesType = EntriesType.fromInt(tabPosition)
-        val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
-        val sites = prefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
+        val sites = favoriteSites.value ?: emptyList()
+
         val tasks = sites
             .filter { it.isEnabled }
             .map { site -> client.async {
@@ -587,7 +606,7 @@ class EntriesRepository(
     private fun handleUpdateAvailable(info: AppUpdateInfo, listener: (AppUpdateInfo)->Unit) {
         val app = SatenaApplication.instance
         val latestVersion = info.availableVersionCode().toLong()
-        
+
         if (!prefs.getBoolean(PreferenceKey.NOTICE_IGNORED_APP_UPDATE)) {
             // 一度無視したアップデートを二度と通知しない設定が有効な場合
             val lastNoticedVersion = prefs.getLong(PreferenceKey.LAST_NOTICED_APP_UPDATE_VERSION)
