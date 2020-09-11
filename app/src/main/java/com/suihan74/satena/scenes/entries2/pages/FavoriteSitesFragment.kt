@@ -25,7 +25,7 @@ class FavoriteSitesFragment : MultipleTabsEntriesFragment() {
         }
     }
 
-    private val DIALOG_FAVORITE_SITES_SELECTION by lazy { "DIALOG_FAVORITE_SITES_SELECTIONs" }
+    private val DIALOG_FAVORITE_SITES_SELECTION by lazy { "DIALOG_FAVORITE_SITES_SELECTION" }
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,
