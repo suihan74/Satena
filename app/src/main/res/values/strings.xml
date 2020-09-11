@@ -331,6 +331,8 @@
     <string name="desc_site_entries_order">表示順</string>
     <string name="desc_search_type">検索対象</string>
     <string name="desc_search_order">検索順</string>
+    <string name="desc_favorite_sites_settings">表示サイトを選択</string>
+
     <string name="msg_get_categories_failed">カテゴリ・特集情報の取得に失敗しました</string>
     <string name="msg_update_entries_failed">エントリーリスト取得失敗</string>
     <string name="msg_get_stars_report_failed">スターの取得失敗</string>

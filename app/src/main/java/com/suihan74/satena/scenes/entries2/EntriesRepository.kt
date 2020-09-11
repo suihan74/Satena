@@ -520,8 +520,9 @@ class EntriesRepository(
         val entriesType = EntriesType.fromInt(tabPosition)
         val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
         val sites = prefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
-        val tasks = sites.map { site ->
-            client.async {
+        val tasks = sites
+            .filter { it.isEnabled }
+            .map { site -> client.async {
                 try {
                     client.getEntriesAsync(
                         url = site.url,
@@ -533,8 +534,7 @@ class EntriesRepository(
                 catch (e: Throwable) {
                     emptyList()
                 }
-            }
-        }
+            } }
 
         val entries = tasks.awaitAll().flatten()
 
