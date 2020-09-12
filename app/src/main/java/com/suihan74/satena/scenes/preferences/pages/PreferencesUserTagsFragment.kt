@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.TagUserDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.User
@@ -28,8 +27,7 @@ import kotlinx.coroutines.launch
 class PreferencesUserTagsFragment :
         PreferencesFragmentBase(),
         BackPressable,
-        UserTagDialogFragment.Listener,
-        TagUserDialogFragment.Listener
+        UserTagDialogFragment.Listener
 {
     private lateinit var viewModel: UserTagViewModel
 
@@ -72,7 +70,7 @@ class PreferencesUserTagsFragment :
                 else {
                     val taggedUsersList = getCurrentFragment<TaggedUsersListFragment>()
                     if (taggedUsersList != null) {
-                        showNewTaggedUserDialog()
+                        viewModel.openTagUserDialog(childFragmentManager, DIALOG_TAG_USER)
                     }
                 }
             }
@@ -105,11 +103,6 @@ class PreferencesUserTagsFragment :
     private fun showNewUserTagDialog() {
         UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
             .showAllowingStateLoss(childFragmentManager, DIALOG_CREATE_TAG)
-    }
-
-    private fun showNewTaggedUserDialog() {
-        TagUserDialogFragment.Builder(R.style.AlertDialogStyle)
-            .showAllowingStateLoss(childFragmentManager, DIALOG_TAG_USER)
     }
 
     override fun onBackPressed(): Boolean {
@@ -176,23 +169,6 @@ class PreferencesUserTagsFragment :
                 context?.showToast(R.string.msg_user_tag_created, tagName)
                 true
             }
-        }
-    }
-
-    /**
-     * 現在選択中のタグにユーザーを追加する
-     */
-    override suspend fun onCompleteTaggedUser(userName: String, dialog: TagUserDialogFragment): Boolean {
-        val tag = viewModel.currentTag.value ?: return true
-
-        return if (tag.users.none { it.name == userName }) {
-            viewModel.addRelation(tag.userTag, userName)
-            context?.showToast(R.string.msg_user_tagged_single, userName)
-            true
-        }
-        else {
-            context?.showToast(R.string.msg_user_has_already_tagged, tag.userTag.name, userName)
-            false
         }
     }
 }

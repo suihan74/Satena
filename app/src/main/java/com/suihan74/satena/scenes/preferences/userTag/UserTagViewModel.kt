@@ -1,12 +1,21 @@
 package com.suihan74.satena.scenes.preferences.userTag
 
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.suihan74.satena.models.userTag.*
+import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.TagUserDialogFragment
+import com.suihan74.satena.models.userTag.Tag
+import com.suihan74.satena.models.userTag.TagAndUsers
+import com.suihan74.satena.models.userTag.User
+import com.suihan74.utilities.showAllowingStateLoss
+import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class UserTagViewModel(
     private val repository: UserTagRepository
@@ -84,6 +93,39 @@ class UserTagViewModel(
         loadTags()
     }
 
+    /**
+     * 現在選択中のタグにユーザーを追加するダイアログを開く
+     */
+    fun openTagUserDialog(
+        fragmentManager: FragmentManager,
+        dialogTag: String?
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        TagUserDialogFragment.createInstance().run {
+            showAllowingStateLoss(fragmentManager, dialogTag)
+
+            setOnCompleteListener listener@ { userName ->
+                val tag = currentTag.value ?: return@listener true
+
+                return@listener if (tag.users.none { it.name == userName }) {
+                    addRelation(tag.userTag, userName)
+                    withContext(Dispatchers.Main) {
+                        SatenaApplication.instance.showToast(R.string.msg_user_tagged_single, userName)
+                    }
+                    true
+                }
+                else {
+                    withContext(Dispatchers.Main) {
+                        SatenaApplication.instance.showToast(
+                            R.string.msg_user_has_already_tagged,
+                            tag.userTag.name,
+                            userName
+                        )
+                    }
+                    false
+                }
+            }
+        }
+    }
 
     // ViewModelProvidersを利用する一般的な使用法において、
     // ファクトリを介してインスタンスを作成することでコンストラクタに引数を与える
