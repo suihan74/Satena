@@ -124,16 +124,16 @@ class EntriesTabFragmentViewModel(
     }
 
     /** 表示項目リストを初期化 */
-    fun refresh(
+    fun reloadLists(
         onSuccess: OnSuccess<Unit>? = null,
         onError: OnError? = null,
         onFinally: OnFinally? = null
     ) = viewModelScope.launch {
         try {
             when (category) {
-                Category.Notices -> refreshNotices()
-                Category.Maintenance -> refreshInformation()
-                else -> refreshEntries()
+                Category.Notices -> loadNotices()
+                Category.Maintenance -> loadInformation()
+                else -> loadEntries()
             }
 
             onSuccess?.invoke(Unit)
@@ -199,7 +199,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** エントリリストを初期化 */
-    private suspend fun refreshEntries() = withContext(Dispatchers.Default) {
+    private suspend fun loadEntries() = withContext(Dispatchers.Default) {
         try {
             entries.postValue(fetchEntries())
         }
@@ -209,7 +209,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** 通知リストを初期化 */
-    private suspend fun refreshNotices() = withContext(Dispatchers.Default) {
+    private suspend fun loadNotices() = withContext(Dispatchers.Default) {
         try {
             notices.postValue(repository.loadNotices())
         }
@@ -219,7 +219,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** 障害情報を取得 */
-    private suspend fun refreshInformation() = withContext(Dispatchers.Default) {
+    private suspend fun loadInformation() = withContext(Dispatchers.Default) {
         try {
             information.postValue(repository.loadInformation())
         }

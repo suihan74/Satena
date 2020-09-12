@@ -52,7 +52,7 @@ class FavoriteSitesViewModel(
     ) {
         super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
         repository.favoriteSites.observe(lifecycleOwner, Observer {
-            viewModel.refresh()
+            viewModel.reloadLists()
         })
     }
 

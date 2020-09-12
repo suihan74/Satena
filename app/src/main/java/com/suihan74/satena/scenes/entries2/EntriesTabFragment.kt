@@ -38,7 +38,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                         entriesAdapter.setOnItemsSubmittedListener(null)
                     }
                 }
-                viewModel.refresh(
+                viewModel.reloadLists(
                     onError = { e ->
                         onErrorRefreshEntries.invoke(e)
                         entriesAdapter.setOnItemsSubmittedListener(null)

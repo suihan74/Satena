@@ -43,7 +43,7 @@ class Memorial15ViewModel : EntriesFragmentViewModel() {
             if (category.value != Category.Memorial15th || it == null || it == viewModel.isUserMemorial) return@observe
             viewModel.isUserMemorial = it
             entriesAdapter.clearEntries {
-                viewModel.refresh(onError = onError)
+                viewModel.reloadLists(onError = onError)
             }
         }
     }
