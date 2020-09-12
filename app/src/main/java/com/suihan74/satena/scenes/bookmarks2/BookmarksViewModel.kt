@@ -99,7 +99,7 @@ class BookmarksViewModel(
     }
 
     /** 各リストを再構成する */
-    private fun reloadLists() {
+    private fun refreshLists() {
         if (repository.bookmarksEntry != null) {
             bookmarksEntry.postValue(repository.bookmarksEntry)
         }
@@ -219,7 +219,7 @@ class BookmarksViewModel(
                     repository.loadBookmarksRecentAsync()
                 ).run {
                     awaitAll()
-                    reloadLists()
+                    refreshLists()
                 }
             }
             catch (e: Throwable) {
@@ -230,12 +230,12 @@ class BookmarksViewModel(
 
             // キーワードが更新されたら各リストを再生成する
             filteringWord.observeForever {
-                reloadLists()
+                refreshLists()
             }
 
             // 非表示ユーザーリストの更新を監視
             ignoredUsers.observeForever {
-                reloadLists()
+                refreshLists()
             }
         }
 
