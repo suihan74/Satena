@@ -131,7 +131,9 @@ class FloatingActionButtonsFragment :
         view.bookmarks_open_my_bookmark_button.setOnClickListener {
             // 自分のブコメの詳細画面に遷移
             tabViewModel?.signedUserBookmark?.value?.let { target ->
-                (activity as? BookmarksActivity)?.showBookmarkDetail(target)
+                activity.alsoAs<BookmarksActivity> { activity ->
+                    activityViewModel.showBookmarkDetail(activity, target)
+                }
             }
             scrollFABs.forEach { fab -> fab.hide() }
             onBackPressedCallbackForScroll.isEnabled = false

@@ -3,10 +3,7 @@ package com.suihan74.satena.scenes.bookmarks2
 import android.content.Intent
 import android.util.Log
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -15,11 +12,14 @@ import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.UserAndTags
+import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.*
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
+import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.coroutines.*
 
 class BookmarksViewModel(
@@ -31,11 +31,8 @@ class BookmarksViewModel(
         UserTagSelectionDialog.Listener
 {
     val DIALOG_BOOKMARK_MENU by lazy { "DIALOG_BOOKMARK_MENU" }
-
     private val DIALOG_REPORT by lazy { "DIALOG_REPORT" }
-
     private val DIALOG_SELECT_USER_TAG by lazy { "DIALOG_SELECT_USER_TAG" }
-
     private val DIALOG_POST_STAR by lazy { "DIALOG_POST_STAR" }
 
     var fragmentManager : FragmentManager? = null
@@ -43,6 +40,15 @@ class BookmarksViewModel(
 
     val entry
         get() = repository.entry
+
+    val themeId: Int
+        get() = repository.themeId
+
+    val hideToolbarByScrolling: Boolean
+        get() = repository.hideToolbarByScrolling
+
+    val hideButtonsByScrolling: Boolean
+        get() = repository.hideButtonsByScrolling
 
     val bookmarksEntry by lazy {
         MutableLiveData<BookmarksEntry>()
@@ -80,6 +86,10 @@ class BookmarksViewModel(
     /** 非表示ユーザーリストの変更を監視 */
     val ignoredUsers = repository.ignoredUsersLiveData
 
+    val toolbarTitle by lazy {
+        MutableLiveData("")
+    }
+
     /** サインイン完了を監視する */
     val signedIn by lazy {
         MutableLiveData<Boolean>()
@@ -96,6 +106,59 @@ class BookmarksViewModel(
 
     fun setEditingComment(comment: String?) {
         mEditingComment = comment
+    }
+
+    fun onCreate(
+        intent: Intent,
+        onSuccess: OnSuccess<Entry>? = null,
+        onError: OnError? = null
+    ) {
+        val firstLaunching = !repository.isInitialized
+        val entry =
+            if (firstLaunching) intent.getObjectExtra<Entry>(BookmarksActivity.EXTRA_ENTRY)
+            else repository.entry
+
+        if (entry == null) {
+            // Entryのロードが必要な場合
+            val eid = intent.getLongExtra(BookmarksActivity.EXTRA_ENTRY_ID, 0L)
+            if (eid > 0L) {
+                toolbarTitle.value = "eid=$eid"
+                loadEntry(eid, onSuccess, onError)
+            }
+            else {
+                val url = getUrlFromIntent(intent)
+                toolbarTitle.value = url
+                loadEntry(url, onSuccess, onError)
+            }
+        }
+        else {
+            // Entryは既に取得済みの場合
+            loadEntry(entry, onSuccess, onError)
+        }
+    }
+
+    /** Intentから適切なエントリーURLを受け取る */
+    private fun getUrlFromIntent(intent: Intent) : String {
+        return intent.getStringExtra(BookmarksActivity.EXTRA_ENTRY_URL)
+            ?: when (intent.action) {
+                // 閲覧中のURLが送られてくる場合
+                Intent.ACTION_SEND ->
+                    intent.getStringExtra(Intent.EXTRA_TEXT)!!
+
+                // ブコメページのURLが送られてくる場合
+                Intent.ACTION_VIEW -> {
+                    val dataString = intent.dataString!!
+                    try {
+                        HatenaClient.getEntryUrlFromCommentPageUrl(dataString)
+                    }
+                    catch (e: Throwable) {
+                        Log.e("entryUrl", "cannot parse entry-url: $dataString")
+                        dataString
+                    }
+                }
+
+                else -> throw InvalidUrlException()
+            }
     }
 
     /** 各リストを再構成する */
@@ -115,16 +178,16 @@ class BookmarksViewModel(
         try {
             loadAction.invoke()
             init(fragmentManager, true, onError)
+
+            withContext(Dispatchers.Main) {
+                toolbarTitle.value = entry.title
+                onSuccess?.invoke(repository.entry)
+            }
         }
         catch (e: Throwable) {
             withContext(Dispatchers.Main) {
                 onError?.invoke(e)
             }
-            return@launch
-        }
-
-        withContext(Dispatchers.Main) {
-            onSuccess?.invoke(repository.entry)
         }
     }
 
@@ -639,6 +702,75 @@ class BookmarksViewModel(
         )
     }
 
+    // ------ //
+
+    /** ブクマ詳細画面を開く */
+    fun showBookmarkDetail(activity: BookmarksActivity, bookmark: Bookmark) {
+        val fragmentManager = activity.supportFragmentManager
+
+        val backStackName = "detail: ${bookmark.user}"
+        if (backStackName == fragmentManager.topBackStackEntry?.name)
+            return
+
+        val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
+        fragmentManager.beginTransaction()
+            .add(R.id.detail_content_layout, bookmarkDetailFragment)
+            .addToBackStack(backStackName)
+            .commitAllowingStateLoss()
+    }
+
+    /** ブクマ詳細画面を開く */
+    fun showBookmarkDetail(activity: BookmarksActivity, user: String) {
+        val fragmentManager = activity.supportFragmentManager
+
+        val backStackName = "detail: $user"
+        if (backStackName == fragmentManager.topBackStackEntry?.name)
+            return
+
+        var observer: Observer<BookmarksEntry>? = null
+        observer = Observer { bEntry: BookmarksEntry ->
+            val bookmark = bEntry.bookmarks.firstOrNull { it.user == user } ?: return@Observer
+            val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
+            fragmentManager.beginTransaction()
+                .add(R.id.detail_content_layout, bookmarkDetailFragment)
+                .addToBackStack(backStackName)
+                .commitAllowingStateLoss()
+
+            bookmarksEntry.removeObserver(observer!!)
+        }
+        bookmarksEntry.observe(activity, observer)
+    }
+
+    // --- ブックマーク中のリンクの処理 --- //
+
+    fun onBookmarkClicked(activity: BookmarksActivity, bookmark: Bookmark) {
+        showBookmarkDetail(activity, bookmark)
+    }
+
+    fun onBookmarkLongClicked(activity: BookmarksActivity, bookmark: Bookmark): Boolean {
+        openBookmarkMenuDialog(activity, bookmark)
+        return true
+    }
+
+    fun onLinkClicked(activity: BookmarksActivity, url: String) {
+        val fragmentManager = activity.supportFragmentManager
+        val act = repository.linkSingleTapAction
+        EntryMenuDialog.act(activity, url, act, fragmentManager)
+    }
+
+    fun onLinkLongClicked(activity: BookmarksActivity, url: String) {
+        val fragmentManager = activity.supportFragmentManager
+        val act = repository.linkLongTapAction
+        EntryMenuDialog.act(activity, url, act, fragmentManager)
+    }
+
+    fun onEntryIdClicked(activity: BookmarksActivity, eid: Long) {
+        val intent = Intent(activity, BookmarksActivity::class.java).apply {
+            putExtra(BookmarksActivity.EXTRA_ENTRY_ID, eid)
+        }
+        activity.startActivity(intent)
+    }
+
     // --- ReportDialogの処理 --- //
 
     override fun onReportBookmark(dialog: ReportDialog, model: ReportDialog.Model) {
@@ -693,6 +825,29 @@ class BookmarksViewModel(
     override suspend fun reloadUserTags() {
         loadUserTags()
     }
+
+    // --- UserTagDialogの処理 --- //
+
+    /*
+    suspend fun onCompletedEditTagName(tagName: String): Boolean =
+        try {
+            createTag(tagName)
+            loadUserTags()
+            true
+        }
+        catch (e: Throwable) {
+            Log.e("BookmarksActivity", Log.getStackTraceString(e))
+            false
+        }
+
+    suspend fun onAddUserToCreatedTag(context: Context, tagName: String, user: String) {
+        val tag = userTags.value?.firstOrNull { it.userTag.name == tagName } ?: throw RuntimeException("")
+        tagUser(user, tag.userTag)
+        loadUserTags()
+
+        context.showToast(R.string.msg_user_tag_created_and_added_user, tagName, user)
+    }
+    */
 
     // ------- //
 

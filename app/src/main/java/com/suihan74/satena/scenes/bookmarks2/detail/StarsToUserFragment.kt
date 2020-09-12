@@ -40,7 +40,7 @@ class StarsToUserFragment : Fragment(), ScrollableToTop {
             override fun onItemClicked(item: StarWithBookmark) {
                 // 戻るボタンを無効化するためスターメニューを閉じる
                 detailViewModel.starsMenuOpened.postValue(false)
-                bookmarksActivity.onBookmarkClicked(item.bookmark)
+                activityViewModel.onBookmarkClicked(bookmarksActivity, item.bookmark)
             }
 
             override fun onItemLongClicked(item: StarWithBookmark) : Boolean {
