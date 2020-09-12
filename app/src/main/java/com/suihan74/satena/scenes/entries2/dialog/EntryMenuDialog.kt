@@ -4,7 +4,6 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -28,6 +27,7 @@ import com.suihan74.satena.models.*
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
@@ -47,9 +47,6 @@ class EntryMenuDialogListeners {
 
     /** ブクマ登録完了時の処理 */
     var onPostedBookmark : ((Entry, BookmarkResult)->Unit)? = null
-
-    /** お気に入りサイトリスト更新時の処理 */
-    var onUpdatedFavoriteSites: Listener<List<FavoriteSite>>? = null
 }
 
 /** エントリメニューダイアログ */
@@ -223,6 +220,19 @@ class EntryMenuDialog : DialogFragment() {
         viewModel.activity = activity
         viewModel.fragmentManager = parentFragmentManager
 
+        viewModel.repository =
+            if (activity is EntriesActivity) activity.viewModel.repository
+            else EntriesRepository(
+                context = context,
+                client = HatenaClient,
+                accountLoader = AccountLoader(
+                    context,
+                    HatenaClient,
+                    MastodonClientHolder
+                ),
+                ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
+            )
+
         val url = arguments.getString(ARG_ENTRY_URL)
         val entry = arguments.getObject<Entry>(ARG_ENTRY) ?: Entry(
             id = 0,
@@ -351,6 +361,8 @@ class EntryMenuDialog : DialogFragment() {
         var fragmentManager: FragmentManager? = null
 
         var listeners : EntryMenuDialogListeners? = null
+
+        var repository: EntriesRepository? = null
 
         /** メニュー項目ごとの処理 */
         suspend fun action(item: MenuItem, args: MenuItemArguments) = when (item) {
@@ -485,6 +497,7 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** ブクマを削除する */
+        // TODO: BookmarksRepositoryで行うようにする
         private suspend fun removeBookmark(context: Context, entry: Entry?, url: String?, onCompleted: OnSuccess<Entry>?) {
             try {
                 val target = entry?.url ?: url ?: throw RuntimeException("failed to remove a bookmark")
@@ -502,6 +515,7 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** あとで読む */
+        // TODO: BookmarksRepositoryで行うようにする
         private suspend fun readLater(args: MenuItemArguments) {
             val context = args.context
             val entry = args.entry
@@ -520,6 +534,7 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** 「あとで読む」を解除してブクマする */
+        // TODO: BookmarksRepositoryで行うようにする
         private suspend fun readEntry(args: MenuItemArguments) {
             val context = args.context
             try {
@@ -568,28 +583,13 @@ class EntryMenuDialog : DialogFragment() {
             val entry = args.entry ?: return
             val context = args.context
 
-            val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
-            val sites = prefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
-
-            if (sites.any { it.url == entry.rootUrl }) {
+            try {
+                repository?.favoriteSite(entry)
+                context.showToast("お気に入りに追加しました")
+            }
+            catch (e: Throwable) {
                 context.showToast("既に設定が存在します")
-                return
             }
-
-            val newList = sites.plus(FavoriteSite(
-                url = entry.rootUrl,
-                title = entry.title,  // TODO: サイトのタイトルにする
-                faviconUrl = entry.faviconUrl,
-                isEnabled = true
-            ))
-
-            prefs.edit {
-                put(FavoriteSitesKey.SITES, newList)
-            }
-
-            context.showToast("お気に入りに追加しました")
-
-            listeners?.onUpdatedFavoriteSites?.invoke(newList)
         }
 
         /** お気に入りから削除する */
@@ -597,23 +597,13 @@ class EntryMenuDialog : DialogFragment() {
             val entry = args.entry ?: return
             val context = args.context
 
-            val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
-            val sites = prefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
-
-            if (!sites.any { it.url == entry.rootUrl }) {
+            try {
+                repository?.unfavoriteSite(entry)
+                context.showToast("お気に入りから除外しました")
+            }
+            catch (e: Throwable) {
                 context.showToast("設定が存在しません")
-                return
             }
-
-            val newList = sites.filter { it.url != entry.rootUrl }
-
-            prefs.edit {
-                put(FavoriteSitesKey.SITES, newList)
-            }
-
-            context.showToast("お気に入りから除外しました")
-
-            listeners?.onUpdatedFavoriteSites?.invoke(newList)
         }
     }
 }

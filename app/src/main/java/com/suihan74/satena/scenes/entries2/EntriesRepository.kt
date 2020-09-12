@@ -564,6 +564,46 @@ class EntriesRepository(
         }
     }
 
+    /** お気に入りに追加 */
+    fun favoriteSite(entry: Entry) {
+        val sites = favoriteSites.value ?: emptyList()
+
+        if (sites.any { it.url == entry.rootUrl }) {
+            // TODO: 例外つくる
+            throw RuntimeException("already exists")
+        }
+
+        val newList = sites.plus(FavoriteSite(
+            url = entry.rootUrl,
+            title = entry.title,  // TODO: サイトのタイトルにする
+            faviconUrl = entry.faviconUrl,
+            isEnabled = true
+        ))
+
+        favoriteSitePrefs.edit {
+            put(FavoriteSitesKey.SITES, newList)
+        }
+
+        favoriteSites.value = newList
+    }
+
+    /** おkに煎りから削除する */
+    fun unfavoriteSite(entry: Entry) {
+        val sites = favoriteSites.value ?: emptyList()
+
+        if (!sites.any { it.url == entry.rootUrl }) {
+            throw RuntimeException("target not found")
+        }
+
+        val newList = sites.filter { it.url != entry.rootUrl }
+
+        favoriteSitePrefs.edit {
+            put(FavoriteSitesKey.SITES, newList)
+        }
+
+        favoriteSites.value = newList
+    }
+
     // ------ //
 
     /** エントリをフィルタリングする */
