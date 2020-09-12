@@ -587,7 +587,7 @@ class EntriesRepository(
         favoriteSites.value = newList
     }
 
-    /** おkに煎りから削除する */
+    /** お気に入りから削除する */
     fun unfavoriteSite(entry: Entry) {
         val sites = favoriteSites.value ?: emptyList()
 
