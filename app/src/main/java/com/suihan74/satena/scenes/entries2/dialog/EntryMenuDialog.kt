@@ -613,7 +613,7 @@ class EntryMenuDialog : DialogFragment() {
             listeners?.onUpdatedFavoriteSites?.invoke(newList)
         }
 
-        /** おkに煎りから削除する */
+        /** お気に入りから削除する */
         private fun unfavorite(args: MenuItemArguments) {
             val entry = args.entry ?: return
             val context = args.context
