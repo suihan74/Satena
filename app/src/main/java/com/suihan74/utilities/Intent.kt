@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 
 /** URLを開くために"共有先リストからこのアプリを除いた"Intentを作成する */
-fun Intent.openUrlExcludeApplication(context: Context) : Intent {
+fun Intent.createIntentWithoutThisApplication(context: Context) : Intent {
     val packageManager = context.packageManager
     val dummyIntent = Intent(this.action, Uri.parse("https://dummy"))
     val intentActivities = packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)

@@ -8,8 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.modifySpecificUrls
+import com.suihan74.utilities.createIntentWithoutThisApplication
 import com.suihan74.utilities.exceptions.InvalidUrlException
-import com.suihan74.utilities.openUrlExcludeApplication
 import com.suihan74.utilities.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -38,7 +38,7 @@ class OpenBookmarksPageActivity : AppCompatActivity() {
                 Intent.ACTION_VIEW,
                 Uri.parse(HatenaClient.getCommentPageUrlFromEntryUrl(commentPageUrl))
             )
-            startActivity(intent.openUrlExcludeApplication(baseContext))
+            startActivity(intent.createIntentWithoutThisApplication(baseContext))
         }
         catch (e: InvalidUrlException) {
             showToast(R.string.invalid_url_error)
