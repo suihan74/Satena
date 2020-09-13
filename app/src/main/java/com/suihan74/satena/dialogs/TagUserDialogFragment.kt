@@ -14,14 +14,10 @@ import androidx.lifecycle.*
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
-import com.suihan74.utilities.OnError
-import com.suihan74.utilities.lock
-import com.suihan74.utilities.showSoftInputMethod
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_dialog_tagged_user.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.TimeUnit
@@ -92,7 +88,7 @@ class TagUserDialogFragment : DialogFragment() {
             }
     }
 
-    suspend fun setOnCompleteListener(listener: (suspend (String)->Boolean)?) = whenStarted {
+    suspend fun setOnCompleteListener(listener: SuspendSwitcher<String>?) = whenStarted {
         viewModel.onComplete = listener
     }
 
@@ -124,7 +120,7 @@ class TagUserDialogFragment : DialogFragment() {
         }
 
         /**  */
-        var onComplete: (suspend (String)->Boolean)? = null
+        var onComplete: SuspendSwitcher<String>? = null
 
         fun invokeOnComplete(
             dialog: DialogFragment,
@@ -141,7 +137,7 @@ class TagUserDialogFragment : DialogFragment() {
                 return@launch
             }
 
-            if (false != withContext(Dispatchers.Default) { onComplete?.invoke(userName) }) {
+            if (false != onComplete?.invoke(userName)) {
                 dialog.dismiss()
             }
         }

@@ -9,105 +9,145 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
-import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.utilities.showAllowingStateLoss
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.SuspendListener
+import com.suihan74.utilities.withArguments
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class UserTagSelectionDialog : DialogFragment() {
-    class UserTagSelectionViewModel : ViewModel() {
-        /** ダイアログでのタグ選択状態を保持する */
-        lateinit var checks: BooleanArray
-            private set
-
-        fun init(initialChecks: BooleanArray) {
-            checks = initialChecks.copyOf()
-        }
-    }
-
     companion object {
-        fun createInstance(user: String) = UserTagSelectionDialog().apply {
-            arguments = Bundle().apply {
-                putString(ARG_USER, user)
-            }
+        fun createInstance(user: String) = UserTagSelectionDialog().withArguments {
+            putString(ARG_USER, user)
         }
+
         private const val ARG_USER = "ARG_USER"
     }
 
-    private val viewModel: UserTagSelectionViewModel by lazy {
-        ViewModelProvider(this)[UserTagSelectionViewModel::class.java]
+    private val viewModel: DialogViewModel by lazy {
+        val args = requireArguments()
+        // TODO: タグ取得方法の変更
+        val tags = (requireActivity() as BookmarksActivity).viewModel.getUserTags()
+        val factory = DialogViewModel.Factory(
+            args.getString(ARG_USER)!!,
+            tags
+        )
+        ViewModelProvider(this, factory)[DialogViewModel::class.java].apply {
+            initialChecks
+        }
     }
 
-    private val DIALOG_NEW_TAG by lazy { "DIALOG_NEW_TAG" }
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val activity = requireActivity() as BookmarksActivity
-        val listener = activity.viewModel
-
-        val user = requireArguments().getString(ARG_USER)!!
-        val tags = listener.getUserTags() ?: emptyList()
-
-        val tagNames = tags.map { it.userTag.name }.toTypedArray()
-        val initialChecks = tags.map { it.users.any { u -> u.name == user } }.toBooleanArray()
-
-        if (savedInstanceState == null) {
-            viewModel.init(initialChecks)
-        }
-
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setTitle(R.string.user_tags_dialog_title)
-            .setMultiChoiceItems(
-                tagNames,
-                viewModel.checks
-            ) { _, which, isChecked ->
+            .setMultiChoiceItems(viewModel.tagNames, viewModel.checks) { _, which, isChecked ->
                 viewModel.checks[which] = isChecked
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .setNeutralButton(R.string.user_tags_dialog_new_tag) { _, _ ->
-                val dialog = UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
-                    .setTargetUser(user)
-                    .create()
-                dialog.showAllowingStateLoss(parentFragmentManager, DIALOG_NEW_TAG)
+                viewModel.onAddNewTag?.invoke(Unit)
             }
             .setPositiveButton(R.string.dialog_ok, null)
             .show()
             .apply {
                 getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                    val inactiveTags = tags
-                        .filterIndexed { idx, _ -> !viewModel.checks[idx] && initialChecks[idx] }
-                        .map { it.userTag }
-
-                    val activeTags = tags
-                        .filterIndexed { idx, _ -> viewModel.checks[idx] && !initialChecks[idx] }
-                        .map { it.userTag }
-
-                    viewModel.viewModelScope.launch {
-                        try {
-                            listener?.inactivateTags(user, inactiveTags)
-                            listener?.activateTags(user, activeTags)
-                            listener?.reloadUserTags()
-                        }
-                        catch (e: Throwable) {
-                            Log.e("userTagDialog", e.message ?: "")
-                        }
-
-                        dismiss()
-                    }
+                    viewModel.invokeOnComplete(this@UserTagSelectionDialog)
                 }
             }
     }
 
-    interface Listener {
-        /** ユーザータグのリストをダイアログに渡す */
-        fun getUserTags() : List<TagAndUsers>
-        /** 有効化するタグを渡す */
-        suspend fun activateTags(user: String, activeTags: List<Tag>)
-        /** 無効化するタグを渡す */
-        suspend fun inactivateTags(user: String, inactiveTags: List<Tag>)
-        /** activate/inactivate完了後にユーザータグ情報をリロードさせる */
-        suspend fun reloadUserTags()
+    suspend fun setOnAddNewTagListener(listener: Listener<Unit>?) = whenStarted {
+        viewModel.onAddNewTag = listener
     }
+
+    suspend fun setOnActivateTagsListener(listener: SuspendListener<ActivateUserTagsArguments>?) = whenStarted {
+        viewModel.onActivateTags = listener
+    }
+
+    suspend fun setOnInactivateTagsListener(listener: SuspendListener<ActivateUserTagsArguments>?) = whenStarted {
+        viewModel.onInactivateTags = listener
+    }
+
+    suspend fun setOnCompleteListener(listener: SuspendListener<Unit>?) = whenStarted {
+        viewModel.onComplete = listener
+    }
+
+    // ------ //
+
+    class DialogViewModel(
+        val user: String,
+        val tags: List<TagAndUsers>
+    ) : ViewModel() {
+        val tagNames: Array<String> by lazy {
+            tags.map { it.userTag.name }.toTypedArray()
+        }
+
+        /** ダイアログでのタグ選択状態を保持する */
+        val checks: BooleanArray by lazy {
+            initialChecks.clone()
+        }
+
+        /** ダイアログが開かれた時点での選択状態 */
+        val initialChecks: BooleanArray =
+            tags.map { it.users.any { u -> u.name == user } }.toBooleanArray()
+
+        /** 選択状態から非選択状態に変更されたアイテム */
+        val inactivatedTags: List<Tag>
+            get() = tags
+                .filterIndexed { idx, _ -> !checks[idx] && initialChecks[idx] }
+                .map { it.userTag }
+
+        /** 非選択状態から選択状態に変更されたアイテム */
+        val activatedTags: List<Tag>
+            get() = tags
+                .filterIndexed { idx, _ -> checks[idx] && !initialChecks[idx] }
+                .map { it.userTag }
+
+        // --- //
+
+        /** 新規タグ作成 */
+        var onAddNewTag: Listener<Unit>? = null
+
+        /** タグを有効化する */
+        var onActivateTags: SuspendListener<ActivateUserTagsArguments>? = null
+
+        /** タグを無効化する */
+        var onInactivateTags: SuspendListener<ActivateUserTagsArguments>? = null
+
+        /** 有効化・無効化が完了 */
+        var onComplete: SuspendListener<Unit>? = null
+
+        fun invokeOnComplete(dialog: UserTagSelectionDialog) = viewModelScope.launch(Dispatchers.Main) {
+            try {
+                onActivateTags?.invoke(ActivateUserTagsArguments(user, activatedTags))
+                onInactivateTags?.invoke(ActivateUserTagsArguments(user, inactivatedTags))
+                onComplete?.invoke(Unit)
+            }
+            catch (e: Throwable) {
+                Log.e("userTagSelection", Log.getStackTraceString(e))
+            }
+            finally {
+                dialog.dismiss()
+            }
+        }
+
+        class Factory(
+            private val user: String,
+            private val tags: List<TagAndUsers>
+        ) : ViewModelProvider.NewInstanceFactory() {
+            @Suppress("unchecked_cast")
+            override fun <T : ViewModel?> create(modelClass: Class<T>): T =
+                DialogViewModel(user, tags) as T
+        }
+    }
+
+    data class ActivateUserTagsArguments(
+        val user: String,
+        val tags: List<Tag>
+    )
 }

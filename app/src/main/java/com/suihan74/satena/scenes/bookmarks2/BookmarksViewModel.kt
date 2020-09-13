@@ -7,6 +7,7 @@ import androidx.lifecycle.*
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.models.userTag.Tag
@@ -26,14 +27,12 @@ class BookmarksViewModel(
     val repository: BookmarksRepository,
     private val userTagRepository: UserTagRepository,
     private val ignoredEntryRepository: IgnoredEntryRepository
-) : ViewModel(),
-        ReportDialog.Listener,
-        UserTagSelectionDialog.Listener
-{
+) : ViewModel(), ReportDialog.Listener {
     val DIALOG_BOOKMARK_MENU by lazy { "DIALOG_BOOKMARK_MENU" }
     private val DIALOG_REPORT by lazy { "DIALOG_REPORT" }
     private val DIALOG_SELECT_USER_TAG by lazy { "DIALOG_SELECT_USER_TAG" }
     private val DIALOG_POST_STAR by lazy { "DIALOG_POST_STAR" }
+    private val DIALOG_NEW_USER_TAG by lazy { "DIALOG_NEW_USER_TAG" }
 
     var fragmentManager : FragmentManager? = null
         private set
@@ -462,8 +461,49 @@ class BookmarksViewModel(
 
     /** ユーザータグをロードする */
     suspend fun loadUserTags() {
-        taggedUsers.value = (userTagRepository.loadUsers())
-        userTags.value = (userTagRepository.loadTags())
+        taggedUsers.value = userTagRepository.loadUsers()
+        userTags.value = userTagRepository.loadTags()
+    }
+
+    /** タグが存在するか確認する */
+    suspend fun findUserTag(tagName: String) =
+        userTagRepository.containsTag(tagName)
+
+    /**
+     * ユーザータグを作成し、対象ユーザーを追加するダイアログを開く
+     */
+    fun openUserTagDialog(
+        userName: String?,
+        fragmentManager: FragmentManager,
+        dialogTag: String?
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        UserTagDialogFragment.createInstance().run {
+            showAllowingStateLoss(fragmentManager, dialogTag)
+
+            setOnCompleteListener listener@ { (tagName) ->
+                val context = SatenaApplication.instance
+                return@listener if (findUserTag(tagName)) {
+                    context.showToast(R.string.msg_user_tag_existed)
+                    false
+                }
+                else {
+                    createTag(tagName)
+                    val tags = userTagRepository.loadTags()
+                    userTags.value = tags
+
+                    if (userName == null) {
+                        context.showToast(R.string.msg_user_tag_created, tagName)
+                    }
+                    else {
+                        val tag = tags.firstOrNull { it.userTag.name == tagName } ?: throw RuntimeException("")
+                        tagUser(userName, tag.userTag)
+                        loadUserTags()
+                        context.showToast(R.string.msg_user_tag_created_and_added_user, tagName, userName)
+                    }
+                    true
+                }
+            }
+        }
     }
 
     /** ブコメにスターをつける */
@@ -682,10 +722,32 @@ class BookmarksViewModel(
             .showAllowingStateLoss(fragmentManager, DIALOG_REPORT)
     }
 
-    private fun onSetUserTag(user: String) {
-        val fragmentManager = fragmentManager ?: return
-        UserTagSelectionDialog.createInstance(user)
-            .showAllowingStateLoss(fragmentManager, DIALOG_SELECT_USER_TAG)
+    /** ユーザーにつけるユーザータグを選択するダイアログを開く */
+    private fun onSetUserTag(user: String) = viewModelScope.launch(Dispatchers.Main) {
+        val fragmentManager = fragmentManager ?: return@launch
+        UserTagSelectionDialog.createInstance(user).run {
+            showAllowingStateLoss(fragmentManager, DIALOG_SELECT_USER_TAG)
+
+            setOnAddNewTagListener {
+                openUserTagDialog(user, fragmentManager, DIALOG_NEW_USER_TAG)
+            }
+
+            setOnActivateTagsListener { (user, activeTags) ->
+                activeTags.forEach { tag ->
+                    tagUser(user, tag)
+                }
+            }
+
+            setOnInactivateTagsListener { (user, inactiveTags) ->
+                inactiveTags.forEach { tag ->
+                    unTagUser(user, tag)
+                }
+            }
+
+            setOnCompleteListener {
+                loadUserTags()
+            }
+        }
     }
 
     private fun onDeleteStar(bookmark: Bookmark) {
@@ -807,47 +869,7 @@ class BookmarksViewModel(
 
     // --- UserTagSelectionDialogの処理 --- //
 
-    override fun getUserTags() =
-        userTags.value ?: emptyList()
-
-    override suspend fun activateTags(user: String, activeTags: List<Tag>) {
-        activeTags.forEach { tag ->
-            tagUser(user, tag)
-        }
-    }
-
-    override suspend fun inactivateTags(user: String, inactiveTags: List<Tag>) {
-        inactiveTags.forEach { tag ->
-            unTagUser(user, tag)
-        }
-    }
-
-    override suspend fun reloadUserTags() {
-        loadUserTags()
-    }
-
-    // --- UserTagDialogの処理 --- //
-
-    /*
-    suspend fun onCompletedEditTagName(tagName: String): Boolean =
-        try {
-            createTag(tagName)
-            loadUserTags()
-            true
-        }
-        catch (e: Throwable) {
-            Log.e("BookmarksActivity", Log.getStackTraceString(e))
-            false
-        }
-
-    suspend fun onAddUserToCreatedTag(context: Context, tagName: String, user: String) {
-        val tag = userTags.value?.firstOrNull { it.userTag.name == tagName } ?: throw RuntimeException("")
-        tagUser(user, tag.userTag)
-        loadUserTags()
-
-        context.showToast(R.string.msg_user_tag_created_and_added_user, tagName, user)
-    }
-    */
+    fun getUserTags() = userTags.value ?: emptyList()
 
     // ------- //
 

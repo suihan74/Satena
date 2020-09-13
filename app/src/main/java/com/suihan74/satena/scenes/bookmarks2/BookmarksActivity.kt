@@ -22,7 +22,6 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
@@ -32,10 +31,7 @@ import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
 
-class BookmarksActivity :
-    AppCompatActivity(),
-    UserTagDialogFragment.Listener
-{
+class BookmarksActivity : AppCompatActivity() {
     companion object {
         // Intent EXTRA keys
         /** Entryを直接渡す場合 */
@@ -344,33 +340,4 @@ class BookmarksActivity :
             true
         }
         else false
-
-    // --- UserTagDialogの処理 --- //
-
-    override suspend fun onCompletedEditTagName(
-        tagName: String,
-        dialog: UserTagDialogFragment
-    ): Boolean {
-        return try {
-            viewModel.createTag(tagName)
-            viewModel.loadUserTags()
-            true
-        }
-        catch (e: Throwable) {
-            Log.e("BookmarksActivity", Log.getStackTraceString(e))
-            false
-        }
-    }
-
-    override suspend fun onAddUserToCreatedTag(
-        tagName: String,
-        user: String,
-        dialog: UserTagDialogFragment
-    ) {
-        val tag = viewModel.userTags.value?.firstOrNull { it.userTag.name == tagName } ?: throw RuntimeException("")
-        viewModel.tagUser(user, tag.userTag)
-        viewModel.loadUserTags()
-
-        showToast(R.string.msg_user_tag_created_and_added_user, tagName, user)
-    }
 }

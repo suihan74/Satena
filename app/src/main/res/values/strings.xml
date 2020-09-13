@@ -244,6 +244,8 @@
     <string name="pref_user_tags_back_button_desc">ユーザータグ一覧に戻る</string>
     <string name="user_tag_dialog_name_hint">ユーザータグ名</string>
     <string name="tagged_user_dialog_name_hint">はてなID</string>
+    <string name="msg_user_tag_deleted">「%s」を削除しました</string>
+    <string name="msg_user_tag_relation_deleted">id:%sのタグ「%s」を外しました</string>
     <!-- ユーザータグに対する操作メニュー -->
     <string name="pref_user_tags_tag_menu_edit">編集</string>
     <string name="pref_user_tags_tag_menu_remove">タグを削除</string>

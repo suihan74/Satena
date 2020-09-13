@@ -13,3 +13,12 @@ typealias OnFinally = ()->Unit
 
 /** 汎用リスナ */
 typealias Listener<T> = (T)->Unit
+
+/** 汎用リスナ(suspend関数) */
+typealias SuspendListener<T> = suspend (T)->Unit
+
+/** 処理が成功したかを返すリスナ */
+typealias Switcher<T> = (T)->Boolean
+
+/** 処理が成功したかを返すリスナ(suspend関数) */
+typealias SuspendSwitcher<T> = suspend (T)->Boolean

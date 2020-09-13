@@ -71,8 +71,13 @@ class UserTagRepository(
 
     /** ユーザーからタグを外す */
     suspend fun deleteRelation(tag: Tag, user: User) = withContext(Dispatchers.IO) {
-        dao.findRelation(tag, user)?.let {
-            dao.deleteRelation(it)
+        try {
+            dao.findRelation(tag, user)!!.let {
+                dao.deleteRelation(it)
+            }
+        }
+        catch (e: Throwable) {
+            Log.d("UserTag", "relation not found: tag: ${tag.name}, user: ${user.name}")
         }
     }
 
