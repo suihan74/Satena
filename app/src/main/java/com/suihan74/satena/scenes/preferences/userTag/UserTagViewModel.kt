@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.preferences.userTag
 
 import android.content.Intent
 import android.util.Log
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -219,6 +220,7 @@ class UserTagViewModel(
 
     /** ユーザーに対するメニューダイアログを開く */
     fun openUserMenuDialog(
+        activity: FragmentActivity,
         targetUser: User,
         fragmentManager: FragmentManager
     ) = viewModelScope.launch(Dispatchers.Main) {
@@ -229,15 +231,14 @@ class UserTagViewModel(
                 val intent = Intent(activity, EntriesActivity::class.java).apply {
                     putExtra(EntriesActivity.EXTRA_USER, user.name)
                 }
-                activity?.startActivity(intent)
+                activity.startActivity(intent)
             }
 
             setOnDeleteListener { user ->
-                val context = SatenaApplication.instance
                 try {
                     val tag = currentTag.value?.userTag ?: return@setOnDeleteListener
                     deleteRelation(tag, user)
-                    context.showToast(R.string.msg_user_tag_relation_deleted, user.name, tag.name)
+                    activity.showToast(R.string.msg_user_tag_relation_deleted, user.name, tag.name)
                 }
                 catch (e: Throwable) {
                     Log.e("DeleteRelation", Log.getStackTraceString(e))

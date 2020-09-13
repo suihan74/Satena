@@ -39,7 +39,7 @@ class TaggedUsersListFragment : CoroutineScopeFragment() {
 
         val taggedUsersAdapter = object : TaggedUsersAdapter() {
             override fun onItemClicked(user: User) {
-                viewModel.openUserMenuDialog(user, userTagsFragment.childFragmentManager)
+                viewModel.openUserMenuDialog(requireActivity(), user, userTagsFragment.childFragmentManager)
             }
 
             override fun onItemLongClicked(user: User): Boolean {
