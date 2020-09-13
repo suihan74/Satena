@@ -373,25 +373,6 @@ class BookmarksViewModel(
         return recent
     }
 
-    /** 指定ユーザーのブクマが得られるまで新着順ブクマリストを追加ロードする */
-    fun loadNextRecentToUser(user: String, onError: OnError? = null) = viewModelScope.launch(
-        CoroutineExceptionHandler { _, e ->
-            onError?.invoke(e)
-        }
-    ) {
-        if (repository.bookmarksRecent.any { it.user == user }) {
-            return@launch
-        }
-
-        while (true) {
-            val list = repository.loadNextBookmarksRecentAsync().await()
-            if (list.isEmpty() || list.any { it.user == user }) break
-        }
-
-        bookmarksRecent.postValue(repository.bookmarksRecent)
-        bookmarksEntry.postValue(repository.bookmarksEntry)
-    }
-
     /** 人気ブクマリストを再読み込み */
     fun updateDigest(onError: OnError? = null) = viewModelScope.launch(
         CoroutineExceptionHandler { _, e ->
