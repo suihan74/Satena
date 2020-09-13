@@ -22,13 +22,8 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.UserTagDialogFragment
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.saveHistory
-import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
-import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
@@ -36,10 +31,7 @@ import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
 
-class BookmarksActivity :
-    AppCompatActivity(),
-    UserTagDialogFragment.Listener
-{
+class BookmarksActivity : AppCompatActivity() {
     companion object {
         // Intent EXTRA keys
         /** Entryを直接渡す場合 */
@@ -107,26 +99,19 @@ class BookmarksActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-        setTheme(
-            prefs.getBoolean(PreferenceKey.DARK_THEME).let {
-                if (it) R.style.AppTheme_Dark
-                else R.style.AppTheme_Light
-            }
-        )
+        setTheme(viewModel.themeId)
         setContentView(R.layout.activity_bookmarks2)
 
-        val targetUser = intent.getStringExtra(EXTRA_TARGET_USER)
-
         val firstLaunching = !viewModel.repository.isInitialized
-        val entry =
-            if (firstLaunching) intent.getObjectExtra<Entry>(EXTRA_ENTRY)
-            else viewModel.repository.entry
 
         progress_bar.visibility = View.VISIBLE
 
+        viewModel.toolbarTitle.observe(this, Observer {
+            toolbar.title = it
+        })
+
         val onSuccess: OnSuccess<Entry> = {
+            val targetUser = intent.getStringExtra(EXTRA_TARGET_USER)
             init(firstLaunching, it, targetUser)
 
             val entryInformationFragment = EntryInformationFragment.createInstance()
@@ -154,28 +139,12 @@ class BookmarksActivity :
             progress_bar.visibility = View.INVISIBLE
         }
 
-        if (entry == null) {
-            // Entryのロードが必要な場合
-            val eid = intent.getLongExtra(EXTRA_ENTRY_ID, 0L)
-            if (eid > 0L) {
-                toolbar.title = "eid=$eid"
-                viewModel.loadEntry(eid, onSuccess, onError)
-            }
-            else {
-                val url = getUrlFromIntent(intent)
-                toolbar.title = url
-                viewModel.loadEntry(url, onSuccess, onError)
-            }
-        }
-        else {
-            // Entryは既に取得済みの場合
-            viewModel.loadEntry(entry, onSuccess, onError)
-        }
+        viewModel.onCreate(intent, onSuccess, onError)
 
         // スクロールでツールバーを隠す
         toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
             scrollFlags =
-                if (prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING))
+                if (viewModel.hideToolbarByScrolling)
                     AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
                 else
                     0
@@ -184,7 +153,7 @@ class BookmarksActivity :
         // スクロールでボタンを隠す
         buttons_layout.updateLayoutParams<CoordinatorLayout.LayoutParams> {
             behavior =
-                if (prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING))
+                if (viewModel.hideButtonsByScrolling)
                     HideBottomViewOnScrollBehavior<View>(this@BookmarksActivity, null)
                 else
                     null
@@ -215,30 +184,6 @@ class BookmarksActivity :
             ?.behavior as? HideBottomViewOnScrollBehavior
             ?: return
         behavior.slideUp(buttons_layout)
-    }
-
-    /** Intentから適切なエントリーURLを受け取る */
-    private fun getUrlFromIntent(intent: Intent) : String {
-        return intent.getStringExtra(EXTRA_ENTRY_URL)
-            ?: when (intent.action) {
-                // 閲覧中のURLが送られてくる場合
-                Intent.ACTION_SEND ->
-                    intent.getStringExtra(Intent.EXTRA_TEXT)!!
-
-                // ブコメページのURLが送られてくる場合
-                Intent.ACTION_VIEW -> {
-                    val dataString = intent.dataString!!
-                    try {
-                        HatenaClient.getEntryUrlFromCommentPageUrl(dataString)
-                    }
-                    catch (e: Throwable) {
-                        Log.e("entryUrl", "cannot parse entry-url: $dataString")
-                        dataString
-                    }
-                }
-
-                else -> throw InvalidUrlException()
-            }
     }
 
     /** entryロード完了後に画面を初期化 */
@@ -285,7 +230,7 @@ class BookmarksActivity :
 
                 // ユーザーが指定されている場合そのユーザーのブクマ詳細画面に直接遷移する
                 if (!targetUser.isNullOrBlank()) {
-                    showBookmarkDetail(targetUser)
+                    viewModel.showBookmarkDetail(this, targetUser)
                 }
             }
 
@@ -304,7 +249,6 @@ class BookmarksActivity :
 
         // Toolbar
         toolbar.apply {
-            title = entry.title
             if (!firstLaunching) {
                 val bookmarksEntry = viewModel.bookmarksEntry.value
                 val entireBookmarksCount = bookmarksEntry?.bookmarks?.size ?: 0
@@ -389,39 +333,6 @@ class BookmarksActivity :
         }
     }
 
-    /** ブクマ詳細画面を開く */
-    fun showBookmarkDetail(bookmark: Bookmark) {
-        val backStackName = "detail: ${bookmark.user}"
-        if (backStackName == supportFragmentManager.topBackStackEntry?.name)
-            return
-
-        val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
-        supportFragmentManager.beginTransaction()
-            .add(R.id.detail_content_layout, bookmarkDetailFragment)
-            .addToBackStack(backStackName)
-            .commitAllowingStateLoss()
-    }
-
-    /** ブクマ詳細画面を開く */
-    fun showBookmarkDetail(user: String) {
-        val backStackName = "detail: $user"
-        if (backStackName == supportFragmentManager.topBackStackEntry?.name)
-            return
-
-        var observer: Observer<BookmarksEntry>? = null
-        observer = Observer { bEntry: BookmarksEntry ->
-            val bookmark = bEntry.bookmarks.firstOrNull { it.user == user } ?: return@Observer
-            val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
-            supportFragmentManager.beginTransaction()
-                .add(R.id.detail_content_layout, bookmarkDetailFragment)
-                .addToBackStack(backStackName)
-                .commitAllowingStateLoss()
-
-            viewModel.bookmarksEntry.removeObserver(observer!!)
-        }
-        viewModel.bookmarksEntry.observe(this, observer)
-    }
-
     /** エントリ情報ドロワを閉じる */
     fun closeDrawer() : Boolean =
         if (drawer_layout.isDrawerOpen(GravityCompat.END)) {
@@ -429,63 +340,4 @@ class BookmarksActivity :
             true
         }
         else false
-
-    // --- UserTagDialogの処理 --- //
-
-    override suspend fun onCompletedEditTagName(
-        tagName: String,
-        dialog: UserTagDialogFragment
-    ): Boolean {
-        return try {
-            viewModel.createTag(tagName)
-            viewModel.loadUserTags()
-            true
-        }
-        catch (e: Throwable) {
-            Log.e("BookmarksActivity", Log.getStackTraceString(e))
-            false
-        }
-    }
-
-    override suspend fun onAddUserToCreatedTag(
-        tagName: String,
-        user: String,
-        dialog: UserTagDialogFragment
-    ) {
-        val tag = viewModel.userTags.value?.firstOrNull { it.userTag.name == tagName } ?: throw RuntimeException("")
-        viewModel.tagUser(user, tag.userTag)
-        viewModel.loadUserTags()
-
-        showToast(R.string.msg_user_tag_created_and_added_user, tagName, user)
-    }
-
-    // --- ブックマーク中のリンクの処理 --- //
-
-    fun onBookmarkClicked(bookmark: Bookmark) {
-        showBookmarkDetail(bookmark)
-    }
-
-    fun onBookmarkLongClicked(bookmark: Bookmark): Boolean {
-        viewModel.openBookmarkMenuDialog(this, bookmark)
-        return true
-    }
-
-    fun onLinkClicked(url: String) {
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-        val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
-        EntryMenuDialog.act(this, url, act, supportFragmentManager)
-    }
-
-    fun onLinkLongClicked(url: String) {
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-        val act = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
-        EntryMenuDialog.act(this, url, act, supportFragmentManager)
-    }
-
-    fun onEntryIdClicked(eid: Long) {
-        val intent = Intent(this, BookmarksActivity::class.java).apply {
-            putExtra(EXTRA_ENTRY_ID, eid)
-        }
-        startActivity(intent)
-    }
 }

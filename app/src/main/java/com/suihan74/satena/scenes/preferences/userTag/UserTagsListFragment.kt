@@ -4,84 +4,53 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
-import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.bindings.setDivider
-import kotlinx.coroutines.launch
+import kotlinx.android.synthetic.main.fragment_user_tags_list.view.*
 
 class UserTagsListFragment : CoroutineScopeFragment() {
-    private val model: UserTagViewModel by lazy {
-        ViewModelProvider(requireParentFragment())[UserTagViewModel::class.java]
-    }
-    private lateinit var mUserTagsAdapter : UserTagsAdapter
+    private val userTagsFragment: PreferencesUserTagsFragment
+        get() = requireParentFragment() as PreferencesUserTagsFragment
 
-    var menuItems: Array<out Pair<String, (TagAndUsers)->Unit>>? = null
-        private set
+    private val viewModel: UserTagViewModel
+        get() = userTagsFragment.viewModel
 
     companion object {
         fun createInstance() = UserTagsListFragment()
-
-        const val DIALOG_TAG_MENU = "UserTagsListFragment.DIALOG_TAG_MENU"
-        const val DIALOG_MODIFY_TAG = "UserTagsListFragment.DIALOG_MODIFY_TAG"
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_user_tags_list, container, false)
+        val userTagsFragment = userTagsFragment
 
-        val parentFragment = parentFragment as PreferencesUserTagsFragment
-
-        menuItems = arrayOf(
-            getString(R.string.pref_user_tags_tag_menu_edit) to { t -> this@UserTagsListFragment.modifyItem(t) },
-            getString(R.string.pref_user_tags_tag_menu_remove) to { t -> this@UserTagsListFragment.removeItem(t) }
-        )
-
-        mUserTagsAdapter = object : UserTagsAdapter() {
+        val userTagsAdapter = object : UserTagsAdapter() {
             override fun onItemClicked(tag: TagAndUsers) {
-                model.currentTag.postValue(tag)
-                parentFragment.showTaggedUsersList()
+                viewModel.currentTag.postValue(tag)
+                userTagsFragment.showTaggedUsersList()
             }
 
             override fun onItemLongClicked(tag: TagAndUsers): Boolean {
-                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
-                    .setTitle(tag.userTag.name)
-                    .setNegativeButton(R.string.dialog_cancel)
-                    .setItems(menuItems!!.map { it.first })
-                    .setAdditionalData("tag", tag)
-                    .showAllowingStateLoss(parentFragment.childFragmentManager, DIALOG_TAG_MENU)
-
+                viewModel.openTagMenuDialog(tag.userTag, userTagsFragment.childFragmentManager)
                 return true
             }
         }
 
-        root.findViewById<RecyclerView>(R.id.user_tags_list)?.apply {
+        root.user_tags_list?.apply {
             setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(context)
-            adapter = mUserTagsAdapter
+            adapter = userTagsAdapter
         }
 
         // リストの変更を監視
-        model.tags.observe(viewLifecycleOwner) { tags ->
-            mUserTagsAdapter.setItems(tags)
+        viewModel.tags.observe(viewLifecycleOwner) { tags ->
+            userTagsAdapter.setItems(tags)
         }
 
         return root
-    }
-
-    private fun removeItem(tag: TagAndUsers) = launch {
-        model.deleteTag(tag)
-    }
-
-    private fun modifyItem(tag: TagAndUsers) {
-        UserTagDialogFragment.Builder(R.style.AlertDialogStyle)
-            .setUserTag(tag.userTag)
-            .showAllowingStateLoss(requireParentFragment().childFragmentManager, DIALOG_MODIFY_TAG)
     }
 }

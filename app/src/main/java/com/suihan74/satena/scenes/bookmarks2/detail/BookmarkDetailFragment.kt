@@ -311,20 +311,20 @@ class BookmarkDetailFragment :
             movementMethod = object : MutableLinkMovementMethod2() {
                 override fun onSinglePressed(link: String) {
                     if (link.startsWith("http")) {
-                        bookmarksActivity?.onLinkClicked(link)
+                        activityViewModel.onLinkClicked(bookmarksActivity, link)
                     }
                     else {
                         analyzedComment.entryIds
                             .firstOrNull { eid -> link.contains(eid.toString()) }
                             ?.let { eid ->
-                                bookmarksActivity?.onEntryIdClicked(eid)
+                                activityViewModel.onEntryIdClicked(bookmarksActivity, eid)
                             }
                     }
                 }
 
                 override fun onLongPressed(link: String) {
                     if (link.startsWith("http")) {
-                        bookmarksActivity?.onLinkLongClicked(link)
+                        activityViewModel.onLinkLongClicked(bookmarksActivity, link)
                     }
                 }
             }

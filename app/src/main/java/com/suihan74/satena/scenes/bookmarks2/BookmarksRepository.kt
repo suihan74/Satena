@@ -3,7 +3,9 @@ package com.suihan74.satena.scenes.bookmarks2
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.OnError
@@ -67,6 +69,22 @@ class BookmarksRepository(
     val userSignedIn
         get() = client.account?.name
 
+    /** テーマ */
+    val themeId: Int by lazy {
+        if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppTheme_Dark
+        else R.style.AppTheme_Light
+    }
+
+    /** スクロールでツールバーを隠す */
+    val hideToolbarByScrolling: Boolean by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING)
+    }
+
+    /** スクロールで下部ボタンを隠す */
+    val hideButtonsByScrolling: Boolean by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
+    }
+
     /** 表示ユーザーリストを監視するライブデータを生成する */
     val ignoredUsersLiveData by lazy {
         IgnoredUsersLiveData(this)
@@ -89,6 +107,16 @@ class BookmarksRepository(
     /** スター送信前に確認する */
     val usePostStarDialog by lazy {
         prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
+    }
+
+    /** リンクをシングルタップしたときの処理 */
+    val linkSingleTapAction : TapEntryAction by lazy {
+        TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
+    }
+
+    /** リンクをロングタップしたときの処理 */
+    val linkLongTapAction : TapEntryAction by lazy {
+        TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
     }
 
     /** リポジトリ初期化 */

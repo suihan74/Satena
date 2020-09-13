@@ -69,23 +69,23 @@ class BookmarksTabFragment :
             activityViewModel.repository
         ).apply {
             setOnItemClickedListener { bookmark ->
-                bookmarksActivity.onBookmarkClicked(bookmark)
+                activityViewModel.onBookmarkClicked(bookmarksActivity, bookmark)
             }
 
             setOnItemLongClickedListener { bookmark ->
-                bookmarksActivity.onBookmarkLongClicked(bookmark)
+                activityViewModel.onBookmarkLongClicked(bookmarksActivity, bookmark)
             }
 
             setOnLinkClickedListener { url ->
-                bookmarksActivity.onLinkClicked(url)
+                activityViewModel.onLinkClicked(bookmarksActivity, url)
             }
 
             setOnLinkLongClickedListener { url ->
-                bookmarksActivity.onLinkLongClicked(url)
+                activityViewModel.onLinkLongClicked(bookmarksActivity, url)
             }
 
             setOnEntryIdClickedListener { eid ->
-                bookmarksActivity.onEntryIdClicked(eid)
+                activityViewModel.onEntryIdClicked(bookmarksActivity, eid)
             }
 
             setOnAdditionalLoadingListener {
