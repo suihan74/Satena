@@ -195,7 +195,7 @@ class UserTagViewModel(
         fragmentManager: FragmentManager
     ) = viewModelScope.launch(Dispatchers.Main) {
         TagMenuDialog.createInstance(targetTag).run {
-            showAllowingStateLoss(fragmentManager, DIALOG_USER_MENU)
+            showAllowingStateLoss(fragmentManager, DIALOG_TAG_MENU)
 
             setOnEditListener { tag ->
                 openUserTagDialog(tag, fragmentManager)
