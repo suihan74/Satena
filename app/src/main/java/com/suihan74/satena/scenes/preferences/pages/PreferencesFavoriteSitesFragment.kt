@@ -50,10 +50,15 @@ class PreferencesFavoriteSitesFragment : PreferencesFragmentBase() {
         }
 
         binding.recyclerView.also {
-            it.adapter = FavoriteSitesAdapter(viewLifecycleOwner)
             it.layoutManager = LinearLayoutManager(requireContext())
             it.setDivider(R.drawable.recycler_view_item_divider)
             it.setHasFixedSize(true)
+
+            it.adapter = FavoriteSitesAdapter(viewLifecycleOwner).apply {
+                setOnClickItemListener { targetSite ->
+                    viewModel.openMenuDialog(targetSite, childFragmentManager)
+                }
+            }
         }
 
         return binding.root

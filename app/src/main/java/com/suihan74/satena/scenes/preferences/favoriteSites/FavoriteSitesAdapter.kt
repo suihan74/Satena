@@ -19,9 +19,9 @@ class FavoriteSitesAdapter(
     private val lifecycleOwner: LifecycleOwner
 ) : ListAdapter<RecyclerState<FavoriteSite>, RecyclerView.ViewHolder>(DiffCallback())
 {
-    var onClickItem: Listener<FavoriteSite>? = null
+    private var onClickItem: Listener<FavoriteSite>? = null
 
-    var onLongClickItem: Listener<FavoriteSite>? = null
+    private var onLongClickItem: Listener<FavoriteSite>? = null
 
     fun setOnClickItemListener(listener: Listener<FavoriteSite>?) {
         onClickItem = listener
