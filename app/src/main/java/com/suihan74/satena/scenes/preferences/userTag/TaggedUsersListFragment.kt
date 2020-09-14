@@ -6,17 +6,17 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
-import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.DrawableCompat
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_tagged_users_list.view.*
 
-class TaggedUsersListFragment : CoroutineScopeFragment() {
+class TaggedUsersListFragment : Fragment() {
     private val userTagsFragment : PreferencesUserTagsFragment
         get() = requireParentFragment() as PreferencesUserTagsFragment
 

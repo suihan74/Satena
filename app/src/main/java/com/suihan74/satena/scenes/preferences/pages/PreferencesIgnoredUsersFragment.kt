@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -76,7 +77,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
             },
 
             getString(R.string.pref_ignored_users_unignore) to { user ->
-                launch(Dispatchers.Main) {
+                lifecycleScope.launch(Dispatchers.Main) {
                     try {
                         HatenaClient.unignoreUserAsync(user).await()
                         mIgnoredUsersAdapter!!.removeUser(user)
@@ -114,7 +115,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
             setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
-                launch(Dispatchers.Main) {
+                lifecycleScope.launch(Dispatchers.Main) {
                     refresh()
                     swipeLayout.isRefreshing = false
                 }
@@ -124,7 +125,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
         // 非表示ユーザー取得
         root.detail_progress_bar.visibility = View.VISIBLE
 
-        launch { refresh() }
+        lifecycleScope.launch { refresh() }
 
         return root
     }

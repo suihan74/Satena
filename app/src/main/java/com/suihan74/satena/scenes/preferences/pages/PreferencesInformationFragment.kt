@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.PreferencesMigration
@@ -98,7 +99,7 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
         val activity = activity as? ActivityBase
         activity?.showProgressBar()
 
-        launch(Dispatchers.Main) {
+        lifecycleScope.launch(Dispatchers.Main) {
             val context = SatenaApplication.instance.applicationContext
             try {
                 PreferencesMigration.Output(context).run {
@@ -127,7 +128,7 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
         val activity = activity as? ActivityBase
         activity?.showProgressBar()
 
-        launch(Dispatchers.Main) {
+        lifecycleScope.launch(Dispatchers.Main) {
             val context = SatenaApplication.instance.applicationContext
             try {
                 PreferencesMigration.Input(context)

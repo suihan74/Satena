@@ -4,16 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
-import com.suihan74.utilities.CoroutineScopeFragment
 import com.suihan74.utilities.bindings.setDivider
 import kotlinx.android.synthetic.main.fragment_user_tags_list.view.*
 
-class UserTagsListFragment : CoroutineScopeFragment() {
+class UserTagsListFragment : Fragment() {
     private val userTagsFragment: PreferencesUserTagsFragment
         get() = requireParentFragment() as PreferencesUserTagsFragment
 
@@ -26,7 +26,6 @@ class UserTagsListFragment : CoroutineScopeFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.fragment_user_tags_list, container, false)
-        val userTagsFragment = userTagsFragment
 
         val userTagsAdapter = object : UserTagsAdapter() {
             override fun onItemClicked(tag: TagAndUsers) {
