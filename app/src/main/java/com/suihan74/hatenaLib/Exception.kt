@@ -23,3 +23,9 @@ class TimeoutException : RuntimeException {
 
 /** ユーザーが所持するスター数の取得に失敗 */
 class FetchUserStarsException(message: String? = null, cause: Throwable? = null) : Throwable(message, cause)
+
+/** (理由を問わない)通信失敗 */
+class ConnectionFailureException: RuntimeException {
+    constructor(cause: Throwable?) : super(cause)
+    constructor(message: String? = null, cause: Throwable? = null) : super(message, cause)
+}

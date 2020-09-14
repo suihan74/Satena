@@ -63,7 +63,7 @@ class FavoriteSitesSelectionDialog : DialogFragment() {
 
         /** リスト項目の表示内容 */
         val labels: Array<String> by lazy {
-            sites.map { it.url }.toTypedArray()
+            sites.map { it.title }.toTypedArray()
         }
 
         /**

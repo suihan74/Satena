@@ -19,6 +19,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.NotFoundException
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
@@ -31,6 +32,7 @@ import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.showCustomTabsIntent
 import com.suihan74.utilities.*
+import com.suihan74.utilities.exceptions.AlreadyExistedException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -579,7 +581,7 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** お気に入りに追加 */
-        private fun favorite(args: MenuItemArguments) {
+        private suspend fun favorite(args: MenuItemArguments) {
             val entry = args.entry ?: return
             val context = args.context
 
@@ -587,8 +589,14 @@ class EntryMenuDialog : DialogFragment() {
                 repository?.favoriteSite(entry)
                 context.showToast("お気に入りに追加しました")
             }
-            catch (e: Throwable) {
+            catch (e: NotFoundException) {
+                context.showToast("サイトが見つかりませんでした")
+            }
+            catch (e: AlreadyExistedException) {
                 context.showToast("既に設定が存在します")
+            }
+            catch (e: Throwable) {
+                context.showToast("お気に入り登録に失敗しました")
             }
         }
 

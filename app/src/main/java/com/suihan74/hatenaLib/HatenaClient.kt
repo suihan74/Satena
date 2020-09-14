@@ -11,6 +11,7 @@ import kotlinx.coroutines.*
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import org.jsoup.HttpStatusException
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -1769,5 +1770,23 @@ object HatenaClient : BaseClient(), CoroutineScope {
             .build()
 
         send(listType, request, GsonBuilder())
+    }
+
+    /** サイトタイトルを取得する */
+    suspend fun getSiteTitle(url: String) : String = withContext(Dispatchers.IO) {
+        try {
+            val connection = Jsoup.connect(url)
+            val root = connection.get()
+
+            val titleTag = root.getElementsByTag("title").firstOrNull()
+            titleTag?.wholeText() ?: ""
+        }
+        catch (e: HttpStatusException) {
+            throw if (e.statusCode == 404) NotFoundException()
+                  else ConnectionFailureException()
+        }
+        catch (e: Throwable) {
+            throw ConnectionFailureException("connection failed: $url")
+        }
     }
 }

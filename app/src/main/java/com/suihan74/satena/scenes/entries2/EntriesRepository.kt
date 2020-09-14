@@ -19,6 +19,7 @@ import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.checkFromSpam
+import com.suihan74.utilities.exceptions.AlreadyExistedException
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
 
@@ -565,17 +566,24 @@ class EntriesRepository(
     }
 
     /** お気に入りに追加 */
-    fun favoriteSite(entry: Entry) {
+    suspend fun favoriteSite(entry: Entry) {
         val sites = favoriteSites.value ?: emptyList()
+        val url = entry.rootUrl
 
-        if (sites.any { it.url == entry.rootUrl }) {
-            // TODO: 例外つくる
-            throw RuntimeException("already exists")
+        if (sites.any { it.url == url }) {
+            throw AlreadyExistedException()
+        }
+
+        val titleResult = kotlin.runCatching { client.getSiteTitle(url) }
+        val title = when {
+            titleResult.isSuccess -> titleResult.getOrThrow()
+            titleResult.exceptionOrNull() is ConnectionFailureException -> url
+            else -> throw titleResult.exceptionOrNull()!!
         }
 
         val newList = sites.plus(FavoriteSite(
-            url = entry.rootUrl,
-            title = entry.title,  // TODO: サイトのタイトルにする
+            url = url,
+            title = title,
             faviconUrl = entry.faviconUrl,
             isEnabled = true
         ))
