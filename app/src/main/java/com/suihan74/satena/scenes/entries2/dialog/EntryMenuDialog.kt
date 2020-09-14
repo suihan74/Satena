@@ -29,7 +29,7 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
-import com.suihan74.satena.showCustomTabsIntent
+import com.suihan74.satena.scenes.webview.BrowserActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.AlreadyExistedException
 import kotlinx.coroutines.Dispatchers
@@ -417,6 +417,16 @@ class EntryMenuDialog : DialogFragment() {
 
         /** ページを内部ブラウザで開く */
         private fun showPage(context: Context, entry: Entry?, url: String?) {
+            val intent = Intent(context, BrowserActivity::class.java).apply {
+                putExtra(
+                    BrowserActivity.EXTRA_URL,
+                    entry?.url ?: url
+                )
+            }
+            context.startActivity(intent)
+
+            // TODO: WebViewのテストが終わったら戻す
+            /*
             try {
                 if (entry != null) context.showCustomTabsIntent(entry)
                 if (url != null) context.showCustomTabsIntent(url)
@@ -426,6 +436,7 @@ class EntryMenuDialog : DialogFragment() {
                 context.showToast(R.string.msg_show_page_failed)
                 showPageInBrowser(context, entry, url)
             }
+             */
         }
 
         /** ページを外部ブラウザで開く */

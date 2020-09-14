@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.webview.BrowserViewModel" />
+    </data>
+
+    <androidx.drawerlayout.widget.DrawerLayout
+            android:id="@+id/drawer_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <com.google.android.material.appbar.AppBarLayout
+                    android:id="@+id/appbar_layout"
+                    android:elevation="8dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                <com.suihan74.utilities.MarqueeToolbar
+                        android:id="@+id/toolbar"
+                        title="@{vm.title}"
+                        app:layout_scrollFlags="enterAlways|scroll"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <WebView
+                    android:id="@+id/webview"
+                    url="@{vm.url}"
+                    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <LinearLayout
+                android:id="@+id/drawer_area"
+                android:background="?attr/panelBackground"
+                android:layout_gravity="end"
+                android:orientation="vertical"
+                android:layout_width="300dp"
+                android:layout_height="match_parent"/>
+
+    </androidx.drawerlayout.widget.DrawerLayout>
+</layout>
+
