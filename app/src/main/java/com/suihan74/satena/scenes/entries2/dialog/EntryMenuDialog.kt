@@ -256,7 +256,10 @@ class EntryMenuDialog : DialogFragment() {
             null,
             false
         ).also {
-            it.entry = entry
+            it.title = entry.title
+            it.url = entry.url
+            it.rootUrl = entry.rootUrl
+            it.faviconUrl = entry.faviconUrl
         }
 
         // メニューに表示する項目リストを作成する
