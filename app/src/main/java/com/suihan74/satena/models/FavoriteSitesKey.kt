@@ -22,7 +22,15 @@ data class FavoriteSite (
 
     /** 有効状態(フィードを取得して画面に表示するか否か) */
     val isEnabled: Boolean
-)
+) {
+    fun same(other: FavoriteSite?) : Boolean {
+        if (other == null) return false
+        return url == other.url &&
+                title == other.title &&
+                faviconUrl == other.faviconUrl &&
+                isEnabled == other.isEnabled
+    }
+}
 
 /**
  * お気に入りサイト登録情報
