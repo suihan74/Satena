@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import kotlin.reflect.KClass
 
-abstract class ViewModelFactory<ViewModelT : ViewModel>(
+class ViewModelFactory<ViewModelT : ViewModel>(
     private val creator: () -> ViewModelT,
     private val kClass: KClass<ViewModelT>
 ) : ViewModelProvider.NewInstanceFactory() {
@@ -26,7 +26,7 @@ abstract class ViewModelFactory<ViewModelT : ViewModel>(
  */
 inline fun <reified ViewModelT : ViewModel> createViewModelFactory(
     noinline creator: ()->ViewModelT
-) = object : ViewModelFactory<ViewModelT>(creator, ViewModelT::class) {}
+) = ViewModelFactory(creator, ViewModelT::class)
 
 /**
  * ViewModelを作成・取得する
