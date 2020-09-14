@@ -35,7 +35,10 @@ class FavoriteSitesAdapter(
 
     fun setItems(items: List<FavoriteSite>?, callback: Runnable? = null) {
         submitList(
-            items?.let { RecyclerState.makeStatesWithFooter(it) },
+            items?.let {
+                // 新しく追加した項目をリストの上側にする
+                RecyclerState.makeStatesWithFooter(it.asReversed())
+            },
             callback
         )
     }

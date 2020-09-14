@@ -3,12 +3,15 @@ package com.suihan74.satena.scenes.preferences.favoriteSites
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
+import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.getObject
@@ -31,8 +34,23 @@ class FavoriteSiteMenuDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        // カスタムタイトルを生成
+        val inflater = LayoutInflater.from(context)
+        val titleViewBinding = DataBindingUtil.inflate<DialogTitleEntry2Binding>(
+            inflater,
+            R.layout.dialog_title_entry2,
+            null,
+            false
+        ).also {
+            val site = viewModel.targetSite
+            it.title = site.title
+            it.url = site.url
+            it.rootUrl = site.url
+            it.faviconUrl = site.faviconUrl
+        }
+
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
-            .setTitle(viewModel.targetSite.title)
+            .setCustomTitle(titleViewBinding.root)
             .setItems(viewModel.labels) { _, which ->
                 viewModel.invokeAction(which)
             }
