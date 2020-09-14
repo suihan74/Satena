@@ -11,13 +11,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.getObject
 import com.suihan74.utilities.hideSoftInputMethod
+import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.putObject
 import kotlinx.android.synthetic.main.dialog_title_bookmark.view.*
 import kotlinx.android.synthetic.main.fragment_dialog_report.view.*
@@ -62,23 +62,16 @@ class ReportDialog : DialogFragment() {
                 ),
                 ignoreAfterReporting.value ?: false
             )
-
-        class Factory(
-            private val entry: Entry,
-            private val bookmark: Bookmark
-        ) : ViewModelProvider.NewInstanceFactory() {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : androidx.lifecycle.ViewModel?> create(modelClass: Class<T>) =
-                ViewModel(entry, bookmark) as T
-        }
     }
 
     private val viewModel: ViewModel by lazy {
-        val entry = requireArguments().getObject<Entry>(ARG_ENTRY)!!
-        val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
+        provideViewModel(this) {
+            val args = requireArguments()
+            val entry = args.getObject<Entry>(ARG_ENTRY)!!
+            val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
 
-        val factory = ViewModel.Factory(entry, bookmark)
-        ViewModelProvider(this, factory)[ViewModel::class.java]
+            ViewModel(entry, bookmark)
+        }
     }
 
     companion object {

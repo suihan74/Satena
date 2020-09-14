@@ -1,8 +1,6 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -43,15 +41,5 @@ class PreferencesFavoriteSitesViewModel(
                 SatenaApplication.instance.showToast(R.string.entry_action_unfavorite)
             }
         }
-    }
-
-    // ------ //
-
-    class Factory(
-        private val prefs: SafeSharedPreferences<FavoriteSitesKey>
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>) =
-            PreferencesFavoriteSitesViewModel(prefs) as T
     }
 }

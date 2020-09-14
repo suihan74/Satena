@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.splash
 import android.content.Context
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.utilities.OnError
@@ -29,14 +28,5 @@ class ViewModel(
                 ).toBundle()
             )
         }
-    }
-
-    class Factory(
-        private val context: Context,
-        private val repository: Repository
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>) : T =
-            ViewModel(context, repository) as T
     }
 }

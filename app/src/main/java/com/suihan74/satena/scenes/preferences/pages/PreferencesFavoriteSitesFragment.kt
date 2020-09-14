@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
@@ -18,6 +17,7 @@ import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.alsoAs
 import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.provideViewModel
 
 class PreferencesFavoriteSitesFragment : PreferencesFragmentBase() {
     companion object {
@@ -33,9 +33,10 @@ class PreferencesFavoriteSitesFragment : PreferencesFragmentBase() {
     }
 
     private val viewModel: PreferencesFavoriteSitesViewModel by lazy {
-        val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
-        val factory = PreferencesFavoriteSitesViewModel.Factory(prefs)
-        ViewModelProvider(this, factory)[PreferencesFavoriteSitesViewModel::class.java]
+        provideViewModel(this) {
+            val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
+            PreferencesFavoriteSitesViewModel(prefs)
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

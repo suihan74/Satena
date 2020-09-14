@@ -2,8 +2,6 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.*
@@ -46,13 +44,5 @@ class MyBookmarksViewModel(
         searchQuery.observe(lifecycleOwner) {
             viewModel.searchQuery = it
         }
-    }
-
-    class Factory(
-        private val repository : EntriesRepository
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-            MyBookmarksViewModel(repository) as T
     }
 }

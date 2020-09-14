@@ -14,7 +14,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
@@ -69,27 +68,27 @@ class BookmarksActivity : AppCompatActivity() {
 
     /** ViewModel */
     val viewModel: BookmarksViewModel by lazy {
-        val repository = BookmarksRepository(
-            client = HatenaClient,
-            accountLoader = AccountLoader(
-                applicationContext,
-                HatenaClient,
-                MastodonClientHolder
-            ),
-            prefs = SafeSharedPreferences.create(this)
-        )
-
-        val factory = BookmarksViewModel.Factory(
-            repository,
-            UserTagRepository(
-                SatenaApplication.instance.userTagDao
-            ),
-            IgnoredEntryRepository(
-                SatenaApplication.instance.ignoredEntryDao
+        provideViewModel(this, VIEW_MODEL_ACTIVITY) {
+            val bookmarksRepository = BookmarksRepository(
+                client = HatenaClient,
+                accountLoader = AccountLoader(
+                    applicationContext,
+                    HatenaClient,
+                    MastodonClientHolder
+                ),
+                prefs = SafeSharedPreferences.create(this)
             )
-        )
 
-        ViewModelProvider(this, factory)[VIEW_MODEL_ACTIVITY, BookmarksViewModel::class.java]
+            val userTagRepository = UserTagRepository(
+                SatenaApplication.instance.userTagDao
+            )
+
+            val ignoredEntryRepository = IgnoredEntryRepository(
+                    SatenaApplication.instance.ignoredEntryDao
+                )
+
+            BookmarksViewModel(bookmarksRepository, userTagRepository, ignoredEntryRepository)
+        }
     }
 
     val bookmarksFragment

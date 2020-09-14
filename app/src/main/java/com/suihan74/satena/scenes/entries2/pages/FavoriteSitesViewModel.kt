@@ -2,7 +2,9 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
+import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
@@ -54,15 +56,5 @@ class FavoriteSitesViewModel(
         repository.favoriteSites.observe(lifecycleOwner, Observer {
             viewModel.reloadLists()
         })
-    }
-
-    // ------ //
-
-    class Factory(
-        private val repository: EntriesRepository
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("unchecked_cast")
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-            FavoriteSitesViewModel(repository) as T
     }
 }

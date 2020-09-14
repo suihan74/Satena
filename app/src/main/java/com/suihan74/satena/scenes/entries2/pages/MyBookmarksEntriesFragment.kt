@@ -9,7 +9,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.TooltipCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import com.google.android.material.bottomappbar.BottomAppBar
@@ -17,7 +16,6 @@ import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.initialize
 import com.suihan74.utilities.*
@@ -43,9 +41,8 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
         viewModelKey: String,
         repository: EntriesRepository,
         category: Category
-    ): EntriesFragmentViewModel {
-        val factory = MyBookmarksViewModel.Factory(repository)
-        return ViewModelProvider(owner, factory)[viewModelKey, MyBookmarksViewModel::class.java]
+    ) = provideViewModel(owner, viewModelKey) {
+        MyBookmarksViewModel(repository)
     }
 
     override fun updateActivityAppBar(

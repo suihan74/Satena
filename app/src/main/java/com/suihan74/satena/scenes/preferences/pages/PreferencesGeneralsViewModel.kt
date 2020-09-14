@@ -1,7 +1,5 @@
 package com.suihan74.satena.scenes.preferences.pages
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.models.AppUpdateNoticeMode
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
@@ -57,12 +55,4 @@ class PreferencesGeneralsViewModel(
     val displayReleaseNotes = createLiveData<Boolean>(
         PreferenceKey.SHOW_RELEASE_NOTES_AFTER_UPDATE
     )
-
-    class Factory(
-        private val prefs: SafeSharedPreferences<PreferenceKey>
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>) =
-            PreferencesGeneralsViewModel(prefs) as T
-    }
 }

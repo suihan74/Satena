@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.bookmarks2.detail
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
@@ -291,14 +290,4 @@ class BookmarkDetailViewModel(
     class StarExhaustedException(val color : StarColor) : RuntimeException(
         "${color.name} star has been exhausted."
     )
-
-    class Factory(
-        private val bookmarksRepository: BookmarksRepository,
-        private val prefs: SafeSharedPreferences<PreferenceKey>,
-        private val bookmark: Bookmark
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>) =
-            BookmarkDetailViewModel(bookmarksRepository, prefs, bookmark) as T
-    }
 }

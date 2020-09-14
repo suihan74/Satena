@@ -7,8 +7,6 @@ import android.text.style.AbsoluteSizeSpan
 import androidx.appcompat.app.AlertDialog
 import androidx.core.text.buildSpannedString
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.whenStarted
 import com.suihan74.hatenaLib.Star
 import com.suihan74.satena.R
@@ -25,9 +23,11 @@ class StarDeletionDialog : DialogFragment() {
     }
 
     private val viewModel: DialogViewModel by lazy {
-        val args = requireArguments()
-        val factory = DialogViewModel.Factory(args.getObject(ARG_STARS)!!)
-        ViewModelProvider(this, factory)[DialogViewModel::class.java]
+        provideViewModel(this) {
+            DialogViewModel(
+                requireArguments().getObject(ARG_STARS)!!
+            )
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -85,13 +85,5 @@ class StarDeletionDialog : DialogFragment() {
         /** 選択結果 */
         val selectedStars: List<Star>
             get() = stars.filterIndexed { idx, _ -> checkedArray[idx] }
-
-        class Factory(
-            private val stars:List<Star>
-        ) : ViewModelProvider.NewInstanceFactory() {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                return DialogViewModel(stars) as T
-            }
-        }
     }
 }

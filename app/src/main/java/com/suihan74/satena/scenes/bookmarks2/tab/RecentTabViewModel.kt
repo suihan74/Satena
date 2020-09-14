@@ -1,6 +1,13 @@
 package com.suihan74.satena.scenes.bookmarks2.tab
 
-class RecentTabViewModel : BookmarksTabViewModel() {
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
+import com.suihan74.utilities.SafeSharedPreferences
+
+class RecentTabViewModel(
+    activityViewModel: BookmarksViewModel,
+    prefs: SafeSharedPreferences<PreferenceKey>
+) : BookmarksTabViewModel(activityViewModel, prefs) {
     override fun init() {
         super.init()
         activityViewModel.bookmarksRecent.observeForever {

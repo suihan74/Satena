@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import com.google.android.material.bottomappbar.BottomAppBar
@@ -17,7 +16,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
@@ -53,9 +51,8 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
         viewModelKey: String,
         repository: EntriesRepository,
         category: Category
-    ): EntriesFragmentViewModel {
-        val factory = SearchEntriesViewModel.Factory(repository)
-        return ViewModelProvider(owner, factory)[viewModelKey, SearchEntriesViewModel::class.java]
+    ) = provideViewModel(owner, viewModelKey) {
+        SearchEntriesViewModel(repository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

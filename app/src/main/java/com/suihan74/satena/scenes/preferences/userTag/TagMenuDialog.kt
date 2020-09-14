@@ -5,15 +5,11 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
-import com.suihan74.utilities.SuspendListener
-import com.suihan74.utilities.getObject
-import com.suihan74.utilities.putObject
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -27,11 +23,11 @@ class TagMenuDialog : DialogFragment() {
     }
 
     private val viewModel : DialogViewModel by lazy {
-        val args = requireArguments()
-        val factory = DialogViewModel.Factory(
-            args.getObject<Tag>(ARG_TARGET_TAG)!!
-        )
-        ViewModelProvider(this, factory)[DialogViewModel::class.java]
+        provideViewModel(this) {
+            DialogViewModel(
+                requireArguments().getObject<Tag>(ARG_TARGET_TAG)!!
+            )
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -65,7 +61,7 @@ class TagMenuDialog : DialogFragment() {
     // ------ //
 
     class DialogViewModel(
-        /** 捜査対象のタグ */
+        /** 操作対象のタグ */
         val targetTag: Tag
     ) : ViewModel() {
         /** メニュー項目 */
@@ -84,12 +80,6 @@ class TagMenuDialog : DialogFragment() {
         suspend fun invokeListener(which: Int) {
             val listener = items[which].second()
             listener?.invoke(targetTag)
-        }
-
-        class Factory(private val targetTag: Tag) : ViewModelProvider.NewInstanceFactory() {
-            @Suppress("unchecked_cast")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-                DialogViewModel(targetTag) as T
         }
     }
 }

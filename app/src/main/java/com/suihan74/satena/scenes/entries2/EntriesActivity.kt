@@ -14,7 +14,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -67,8 +66,8 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
     /** Entry画面全体で使用するViewModel */
     val viewModel : EntriesViewModel by lazy {
-        val factory = EntriesViewModel.Factory(
-            EntriesRepository(
+        provideViewModel(this) {
+            val repository = EntriesRepository(
                 context = this,
                 client = HatenaClient,
                 accountLoader = AccountLoader(
@@ -78,8 +77,8 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
                 ),
                 ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
             )
-        )
-        ViewModelProvider(this, factory)[EntriesViewModel::class.java]
+            EntriesViewModel(repository)
+        }
     }
 
     /** ドロワーの開閉状態 */

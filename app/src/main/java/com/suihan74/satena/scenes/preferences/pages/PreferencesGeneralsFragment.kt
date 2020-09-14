@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -19,6 +18,7 @@ import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.fragment_preferences_generals.view.*
 
 class PreferencesGeneralsFragment :
@@ -34,9 +34,10 @@ class PreferencesGeneralsFragment :
     private val DIALOG_APP_UPDATE_NOTICE_MODE by lazy { "DIALOG_APP_UPDATE_NOTICE_MODE" }
 
     private val viewModel: PreferencesGeneralsViewModel by lazy {
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val factory = PreferencesGeneralsViewModel.Factory(prefs)
-        ViewModelProvider(this, factory)[PreferencesGeneralsViewModel::class.java]
+        provideViewModel(this) {
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            PreferencesGeneralsViewModel(prefs)
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

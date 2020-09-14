@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.entries2
 import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateInfo
@@ -168,13 +167,5 @@ class EntriesViewModel(
     /** アプリのアップデートを開始する */
     private fun resumeAppUpdate(activity: EntriesActivity, info: AppUpdateInfo, requestCode: Int) {
         repository.resumeAppUpdate(activity, info, requestCode)
-    }
-
-    class Factory(
-        private val repository: EntriesRepository
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>) : T =
-            EntriesViewModel(repository) as T
     }
 }

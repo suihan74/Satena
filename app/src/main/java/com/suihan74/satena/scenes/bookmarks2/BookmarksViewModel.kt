@@ -3,7 +3,10 @@ package com.suihan74.satena.scenes.bookmarks2
 import android.content.Intent
 import android.util.Log
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.*
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -851,16 +854,4 @@ class BookmarksViewModel(
     // --- UserTagSelectionDialogの処理 --- //
 
     fun getUserTags() = userTags.value ?: emptyList()
-
-    // ------- //
-
-    class Factory(
-        private val repository: BookmarksRepository,
-        private val userTagRepository: UserTagRepository,
-        private val ignoredEntryRepository: IgnoredEntryRepository
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>) =
-            BookmarksViewModel(repository, userTagRepository, ignoredEntryRepository) as T
-    }
 }

@@ -1,7 +1,5 @@
 package com.suihan74.satena.scenes.preferences.pages
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
@@ -74,12 +72,4 @@ class PreferencesBookmarksViewModel(
     val changeHomeByLongTapping = createLiveData<Boolean>(
         PreferenceKey.BOOKMARKS_CHANGE_HOME_BY_LONG_TAPPING_TAB
     )
-
-    class Factory(
-        private val prefs: SafeSharedPreferences<PreferenceKey>
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>) =
-            PreferencesBookmarksViewModel(prefs) as T
-    }
 }

@@ -2,8 +2,6 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
@@ -51,13 +49,5 @@ class SearchEntriesViewModel(
         searchType.observe(lifecycleOwner) {
             viewModel.searchType = it
         }
-    }
-
-    class Factory(
-        private val repository : EntriesRepository
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-            SearchEntriesViewModel(repository) as T
     }
 }

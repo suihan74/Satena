@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
@@ -13,6 +12,7 @@ import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagViewModel
 import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.BackPressable
+import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.fragment_preferences_user_tags.view.*
 
 
@@ -21,10 +21,11 @@ class PreferencesUserTagsFragment :
         BackPressable
 {
     val viewModel: UserTagViewModel by lazy {
-        val factory = UserTagViewModel.Factory(
-            UserTagRepository(SatenaApplication.instance.userTagDao)
-        )
-        ViewModelProvider(this, factory)[UserTagViewModel::class.java]
+        provideViewModel(this) {
+            UserTagViewModel(
+                UserTagRepository(SatenaApplication.instance.userTagDao)
+            )
+        }
     }
 
     companion object {

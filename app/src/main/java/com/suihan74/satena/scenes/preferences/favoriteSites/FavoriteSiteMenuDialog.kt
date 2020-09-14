@@ -8,15 +8,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.utilities.Listener
-import com.suihan74.utilities.getObject
-import com.suihan74.utilities.putObject
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
 
 class FavoriteSiteMenuDialog : DialogFragment() {
     companion object {
@@ -28,9 +24,10 @@ class FavoriteSiteMenuDialog : DialogFragment() {
     }
 
     private val viewModel by lazy {
-        val targetSite = requireArguments().getObject<FavoriteSite>(ARG_TARGET_SITE)!!
-        val factory = DialogViewModel.Factory(requireContext(), targetSite)
-        ViewModelProvider(this, factory)[DialogViewModel::class.java]
+        provideViewModel(this) {
+            val targetSite = requireArguments().getObject<FavoriteSite>(ARG_TARGET_SITE)!!
+            DialogViewModel(requireContext(), targetSite)
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -83,15 +80,6 @@ class FavoriteSiteMenuDialog : DialogFragment() {
 
         fun invokeAction(which: Int) {
             menuItems[which].second.invoke()
-        }
-
-        class Factory(
-            private val context: Context,
-            private val targetSite: FavoriteSite
-        ) : ViewModelProvider.NewInstanceFactory() {
-            @Suppress("unchecked_cast")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-                DialogViewModel(context, targetSite) as T
         }
     }
 }

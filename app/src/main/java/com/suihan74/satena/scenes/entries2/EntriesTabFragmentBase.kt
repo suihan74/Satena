@@ -46,17 +46,17 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     /** タブの表示内容に関するViewModel */
     protected val viewModel : EntriesTabFragmentViewModel by lazy {
-        val arguments = requireArguments()
-        val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
-        val tabPosition = arguments.getInt(ARG_TAB_POSITION, 0)
+        provideViewModel(this) {
+            val arguments = requireArguments()
+            val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
+            val tabPosition = arguments.getInt(ARG_TAB_POSITION, 0)
 
-        val factory = EntriesTabFragmentViewModel.Factory(
-            activityViewModel.repository,
-            category,
-            tabPosition
-        )
-
-        ViewModelProvider(this, factory)[EntriesTabFragmentViewModel::class.java]
+            EntriesTabFragmentViewModel(
+                activityViewModel.repository,
+                category,
+                tabPosition
+            )
+        }
     }
 
     protected var binding : FragmentEntriesTab2Binding? = null

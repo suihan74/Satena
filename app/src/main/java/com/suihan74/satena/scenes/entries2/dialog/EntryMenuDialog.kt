@@ -14,7 +14,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
@@ -206,8 +205,10 @@ class EntryMenuDialog : DialogFragment() {
 
     /** 永続化するデータ */
     private val viewModel : DialogViewModel by lazy {
-        ViewModelProvider(this)[DialogViewModel::class.java].apply {
-            listeners = listeners ?: this@EntryMenuDialog.listeners
+        provideViewModel(this) {
+            DialogViewModel().apply {
+                listeners = listeners ?: this@EntryMenuDialog.listeners
+            }
         }
     }
 

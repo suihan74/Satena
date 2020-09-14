@@ -4,19 +4,14 @@ import android.content.res.ColorStateList
 import android.view.Menu
 import android.view.MenuInflater
 import androidx.core.view.MenuItemCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.utilities.alsoAs
-import com.suihan74.utilities.getThemeColor
-import com.suihan74.utilities.putEnum
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
 
 class FavoriteSitesFragment : MultipleTabsEntriesFragment() {
     companion object {
@@ -32,9 +27,8 @@ class FavoriteSitesFragment : MultipleTabsEntriesFragment() {
         viewModelKey: String,
         repository: EntriesRepository,
         category: Category
-    ): EntriesFragmentViewModel {
-        val factory = FavoriteSitesViewModel.Factory(repository)
-        return ViewModelProvider(owner, factory)[viewModelKey, FavoriteSitesViewModel::class.java]
+    ) = provideViewModel(owner, viewModelKey) {
+        FavoriteSitesViewModel(repository)
     }
 
     override fun updateActivityAppBar(

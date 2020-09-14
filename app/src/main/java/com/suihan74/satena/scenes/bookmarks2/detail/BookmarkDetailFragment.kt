@@ -18,7 +18,6 @@ import androidx.activity.addCallback
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
@@ -47,33 +46,38 @@ class BookmarkDetailFragment :
         get() = (requireActivity() as BookmarksActivity).viewModel
 
     val viewModel: BookmarkDetailViewModel by lazy {
-        val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val factory = BookmarkDetailViewModel.Factory(activityViewModel.repository, prefs, bookmark)
-        ViewModelProvider(this, factory)[BookmarkDetailViewModel::class.java].apply {
-            // スターロード失敗時の挙動
-            setOnLoadedStarsFailureListener { e ->
-                activity?.showToast(R.string.msg_update_stars_failed)
-                Log.e("UserStars", Log.getStackTraceString(e))
+        provideViewModel(this) {
+            val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            BookmarkDetailViewModel(activityViewModel.repository, prefs, bookmark).also {
+                initializeViewModel(it)
             }
-            // スター付与完了時の挙動を設定
-            setOnCompletedPostStarListener {
-                activity?.showToast(R.string.msg_post_star_succeeded, viewModel.bookmark.user)
-            }
-            setOnPostStarFailureListener { color, throwable ->
-                when (throwable) {
-                    is BookmarkDetailViewModel.StarExhaustedException -> {
-                        activity?.showToast(R.string.msg_no_color_stars, color)
-                    }
-                    else -> {
-                        activity?.showToast(R.string.msg_post_star_failed, viewModel.bookmark.user)
-                    }
-                }
-                Log.e("PostStar", Log.getStackTraceString(throwable))
-            }
-
-            init()
         }
+    }
+
+    private fun initializeViewModel(vm: BookmarkDetailViewModel) {
+        // スターロード失敗時の挙動
+        vm.setOnLoadedStarsFailureListener { e ->
+            activity?.showToast(R.string.msg_update_stars_failed)
+            Log.e("UserStars", Log.getStackTraceString(e))
+        }
+        // スター付与完了時の挙動を設定
+        vm.setOnCompletedPostStarListener {
+            activity?.showToast(R.string.msg_post_star_succeeded, viewModel.bookmark.user)
+        }
+        vm.setOnPostStarFailureListener { color, throwable ->
+            when (throwable) {
+                is BookmarkDetailViewModel.StarExhaustedException -> {
+                    activity?.showToast(R.string.msg_no_color_stars, color)
+                }
+                else -> {
+                    activity?.showToast(R.string.msg_post_star_failed, viewModel.bookmark.user)
+                }
+            }
+            Log.e("PostStar", Log.getStackTraceString(throwable))
+        }
+
+        vm.init()
     }
 
     private val bookmarksActivity

@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.post2
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
@@ -354,14 +353,5 @@ class ViewModel(
                 )
             }
         }
-    }
-
-    class Factory(
-        private val client: HatenaClient,
-        private val accountLoader: AccountLoader
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>) =
-            ViewModel(client, accountLoader) as T
     }
 }

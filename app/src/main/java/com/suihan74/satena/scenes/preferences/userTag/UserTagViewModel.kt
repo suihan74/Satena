@@ -6,7 +6,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -248,13 +247,5 @@ class UserTagViewModel(
                 }
             }
         }
-    }
-
-    // ViewModelProvidersを利用する一般的な使用法において、
-    // ファクトリを介してインスタンスを作成することでコンストラクタに引数を与える
-    class Factory(private val repository: UserTagRepository) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>) =
-            UserTagViewModel(repository) as T
     }
 }

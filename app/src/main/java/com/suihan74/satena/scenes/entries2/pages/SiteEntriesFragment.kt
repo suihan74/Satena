@@ -4,12 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.activity_entries2.*
@@ -29,9 +28,8 @@ class SiteEntriesFragment : MultipleTabsEntriesFragment() {
         viewModelKey: String,
         repository: EntriesRepository,
         category: Category
-    ): EntriesFragmentViewModel {
-        val factory = HatenaEntriesViewModel.Factory(repository)
-        return ViewModelProvider(owner, factory)[viewModelKey, HatenaEntriesViewModel::class.java].apply {
+    ) = provideViewModel(owner, viewModelKey) {
+        HatenaEntriesViewModel(repository).apply {
             siteUrl.value = requireArguments().getString(ARG_SITE_URL)
         }
     }

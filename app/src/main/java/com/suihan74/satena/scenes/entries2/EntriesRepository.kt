@@ -178,6 +178,7 @@ class EntriesRepository(
         get() = ExtraBottomItemsAlignment.fromInt(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT))
 
     /** お気に入りサイトリスト */
+    // TODO: 設定画面から戻ってきた後に変更が反映されない。onResume()などで明示的に更新するようにする？
     val favoriteSites : MutableLiveData<List<FavoriteSite>> by lazy {
         val sites = favoriteSitePrefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
         MutableLiveData(sites).apply {

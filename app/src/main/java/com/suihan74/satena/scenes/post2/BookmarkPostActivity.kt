@@ -10,7 +10,6 @@ import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.hatenaLib.BookmarkResult
@@ -55,7 +54,22 @@ class BookmarkPostActivity :
         private const val DIALOG_CONFIRM_POST_BOOKMARK = "DIALOG_CONFIRM_POST_BOOKMARK"
     }
 
-    private lateinit var viewModel: ViewModel
+    private val viewModel by lazy {
+        provideViewModel(this) {
+            ViewModel(
+                HatenaClient,
+                AccountLoader(
+                    context = this,
+                    client = HatenaClient,
+                    mastodonClientHolder = MastodonClientHolder
+                )
+            ).apply {
+                displayEntryTitle.value =
+                    !intent.getBooleanExtra(EXTRA_INVOKED_BY_BOOKMARKS_ACTIVITY, false)
+            }
+        }
+    }
+
     private lateinit var binding: ActivityBookmarkPost2Binding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,20 +98,6 @@ class BookmarkPostActivity :
 
                 else -> null
             }
-
-        // ViewModelの生成/取得
-        val factory = ViewModel.Factory(
-            HatenaClient,
-            AccountLoader(
-                context = this,
-                client = HatenaClient,
-                mastodonClientHolder = MastodonClientHolder
-            )
-        )
-        viewModel = ViewModelProvider(this, factory)[ViewModel::class.java].apply {
-            displayEntryTitle.value =
-                !intent.getBooleanExtra(EXTRA_INVOKED_BY_BOOKMARKS_ACTIVITY, false)
-        }
 
         // データバインド
         binding = DataBindingUtil.setContentView<ActivityBookmarkPost2Binding>(

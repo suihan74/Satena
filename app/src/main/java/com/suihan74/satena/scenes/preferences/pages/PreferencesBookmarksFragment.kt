@@ -8,7 +8,6 @@ import android.widget.Button
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModelProvider
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesBookmarksBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -17,6 +16,7 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.fragment_preferences_bookmarks.view.*
 
 class PreferencesBookmarksFragment :
@@ -33,9 +33,10 @@ class PreferencesBookmarksFragment :
     }
 
     private val viewModel: PreferencesBookmarksViewModel by lazy {
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val factory = PreferencesBookmarksViewModel.Factory(prefs)
-        ViewModelProvider(this, factory)[PreferencesBookmarksViewModel::class.java]
+        provideViewModel(this) {
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            PreferencesBookmarksViewModel(prefs)
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

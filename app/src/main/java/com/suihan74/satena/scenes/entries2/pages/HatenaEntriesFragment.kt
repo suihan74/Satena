@@ -5,7 +5,6 @@ import android.view.*
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import com.google.android.material.bottomappbar.BottomAppBar
@@ -13,10 +12,10 @@ import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.initialize
 import com.suihan74.utilities.alsoAs
+import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.putEnum
 import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.activity_entries2.*
@@ -35,9 +34,8 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
         viewModelKey: String,
         repository: EntriesRepository,
         category: Category
-    ): EntriesFragmentViewModel {
-        val factory = HatenaEntriesViewModel.Factory(repository)
-        return ViewModelProvider(owner, factory)[viewModelKey, HatenaEntriesViewModel::class.java]
+    ) = provideViewModel(owner, viewModelKey) {
+        HatenaEntriesViewModel(repository)
     }
 
     override fun onCreateView(

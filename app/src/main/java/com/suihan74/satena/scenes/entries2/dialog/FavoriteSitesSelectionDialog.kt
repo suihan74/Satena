@@ -5,14 +5,10 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.utilities.Listener
-import com.suihan74.utilities.getObject
-import com.suihan74.utilities.putObject
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
 
 /** 有効なお気に入りサイトを選択するダイアログ */
 // TODO: BottomSheetDialog化する？
@@ -27,9 +23,10 @@ class FavoriteSitesSelectionDialog : DialogFragment() {
     }
 
     private val viewModel: DialogViewModel by lazy {
-        val sites = requireArguments().getObject<List<FavoriteSite>>(ARG_SITES)!!
-        val factory = DialogViewModel.Factory(sites)
-        ViewModelProvider(this, factory)[DialogViewModel::class.java]
+        provideViewModel(this) {
+            val sites = requireArguments().getObject<List<FavoriteSite>>(ARG_SITES)!!
+            DialogViewModel(sites)
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -79,15 +76,6 @@ class FavoriteSitesSelectionDialog : DialogFragment() {
                 else value.copy(isEnabled = checkedItems[idx])
             }
             onComplete?.invoke(newList)
-        }
-
-        class Factory(
-            private val sites: List<FavoriteSite>
-        ) : ViewModelProvider.NewInstanceFactory() {
-            @Suppress("unchecked_cast")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                return DialogViewModel(sites) as T
-            }
         }
     }
 }

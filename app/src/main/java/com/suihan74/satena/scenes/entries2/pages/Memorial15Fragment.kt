@@ -10,19 +10,14 @@ import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuItemCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.utilities.alsoAs
-import com.suihan74.utilities.getThemeColor
-import com.suihan74.utilities.putEnum
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
 
 
 class Memorial15Fragment : MultipleTabsEntriesFragment() {
@@ -37,9 +32,8 @@ class Memorial15Fragment : MultipleTabsEntriesFragment() {
         viewModelKey: String,
         repository: EntriesRepository,
         category: Category
-    ): EntriesFragmentViewModel {
-        val factory = Memorial15ViewModel.Factory()
-        return ViewModelProvider(owner, factory)[viewModelKey, Memorial15ViewModel::class.java]
+    ) = provideViewModel(owner, viewModelKey) {
+        Memorial15ViewModel()
     }
 
     override fun updateActivityAppBar(

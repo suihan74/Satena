@@ -1,8 +1,6 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.CategoriesMode
@@ -180,14 +178,5 @@ class PreferencesEntriesViewModel(
                 }
             }
         }
-    }
-
-    class Factory(
-        private val prefs: SafeSharedPreferences<PreferenceKey>,
-        private val historyPrefs: SafeSharedPreferences<EntriesHistoryKey>
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>) =
-            PreferencesEntriesViewModel(prefs, historyPrefs) as T
     }
 }

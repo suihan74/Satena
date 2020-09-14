@@ -1,7 +1,9 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesAdapter
@@ -46,11 +48,5 @@ class Memorial15ViewModel : EntriesFragmentViewModel() {
                 viewModel.reloadLists(onError = onError)
             }
         }
-    }
-
-    class Factory : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-            Memorial15ViewModel() as T
     }
 }

@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.NotFoundException
@@ -30,10 +29,10 @@ class BookmarksTabFragment :
 
     val viewModel: BookmarksTabViewModel by lazy {
         val tabType = requireArguments().getEnum(ARG_TAB_TYPE, BookmarksTabType.POPULAR)
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
-        val factory = BookmarksTabViewModel.Factory(tabType, activityViewModel, prefs)
-        ViewModelProvider(this, factory)[factory.key, BookmarksTabViewModel::class.java].apply {
-            init()
+        val viewModelKey = BookmarksActivity.getTabViewModelKey(tabType)
+        provideViewModel(this, viewModelKey) {
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
+            BookmarksTabViewModel.createInstance(tabType, activityViewModel, prefs)
         }
     }
 

@@ -5,15 +5,11 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.User
-import com.suihan74.utilities.SuspendListener
-import com.suihan74.utilities.getObject
-import com.suihan74.utilities.putObject
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -27,11 +23,12 @@ class UserMenuDialog : DialogFragment() {
     }
 
     private val viewModel : DialogViewModel by lazy {
-        val args = requireArguments()
-        val factory = DialogViewModel.Factory(
-            args.getObject<User>(ARG_TARGET_USER)!!
-        )
-        ViewModelProvider(this, factory)[DialogViewModel::class.java]
+        provideViewModel(this) {
+            val args = requireArguments()
+            DialogViewModel(
+                args.getObject<User>(ARG_TARGET_USER)!!
+            )
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -84,12 +81,6 @@ class UserMenuDialog : DialogFragment() {
         suspend fun invokeListener(which: Int) {
             val listener = items[which].second()
             listener?.invoke(targetUser)
-        }
-
-        class Factory(private val targetUser: User) : ViewModelProvider.NewInstanceFactory() {
-            @Suppress("unchecked_cast")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-                DialogViewModel(targetUser) as T
         }
     }
 }

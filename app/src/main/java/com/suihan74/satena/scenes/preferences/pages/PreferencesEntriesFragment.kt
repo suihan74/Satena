@@ -9,7 +9,6 @@ import android.widget.Button
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.InverseMethod
-import androidx.lifecycle.ViewModelProvider
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesEntriesBinding
@@ -20,6 +19,7 @@ import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.fragment_preferences_entries.view.*
 
 class PreferencesEntriesFragment :
@@ -43,11 +43,12 @@ class PreferencesEntriesFragment :
         private const val DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT = "DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT"
     }
 
-    val viewModel : PreferencesEntriesViewModel by lazy {
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
-        val factory = PreferencesEntriesViewModel.Factory(prefs, historyPrefs)
-        ViewModelProvider(this, factory)[PreferencesEntriesViewModel::class.java]
+    val viewModel by lazy {
+        provideViewModel(this) {
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
+            PreferencesEntriesViewModel(prefs, historyPrefs)
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

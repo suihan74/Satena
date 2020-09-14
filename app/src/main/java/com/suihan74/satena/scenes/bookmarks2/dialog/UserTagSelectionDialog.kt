@@ -7,7 +7,6 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
@@ -16,6 +15,7 @@ import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.SuspendListener
+import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.withArguments
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,15 +30,15 @@ class UserTagSelectionDialog : DialogFragment() {
     }
 
     private val viewModel: DialogViewModel by lazy {
-        val args = requireArguments()
-        // TODO: タグ取得方法の変更
-        val tags = (requireActivity() as BookmarksActivity).viewModel.getUserTags()
-        val factory = DialogViewModel.Factory(
-            args.getString(ARG_USER)!!,
-            tags
-        )
-        ViewModelProvider(this, factory)[DialogViewModel::class.java].apply {
-            initialChecks
+        provideViewModel(this) {
+            val args = requireArguments()
+            // TODO: タグ取得方法の変更
+            val tags = (requireActivity() as BookmarksActivity).viewModel.getUserTags()
+
+            DialogViewModel(
+                args.getString(ARG_USER)!!,
+                tags
+            )
         }
     }
 
@@ -134,15 +134,6 @@ class UserTagSelectionDialog : DialogFragment() {
             finally {
                 dialog.dismiss()
             }
-        }
-
-        class Factory(
-            private val user: String,
-            private val tags: List<TagAndUsers>
-        ) : ViewModelProvider.NewInstanceFactory() {
-            @Suppress("unchecked_cast")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-                DialogViewModel(user, tags) as T
         }
     }
 

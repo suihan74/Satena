@@ -5,7 +5,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
@@ -18,6 +17,7 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesAdapter
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryViewModel
 import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_preferences_ignored_entries.view.*
@@ -25,7 +25,15 @@ import kotlinx.android.synthetic.main.fragment_preferences_ignored_entries.view.
 class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialogFragment.Listener {
     private lateinit var mIgnoredEntriesAdapter : IgnoredEntriesAdapter
 
-    private lateinit var viewModel: IgnoredEntryViewModel
+    private val viewModel: IgnoredEntryViewModel by lazy {
+        provideViewModel(this) {
+            IgnoredEntryViewModel(
+                IgnoredEntryRepository(SatenaApplication.instance.ignoredEntryDao)
+            ).apply {
+                init()
+            }
+        }
+    }
 
     private var mDialogMenuItems: Array<Pair<String, (entry: IgnoredEntry)->Unit>>? = null
 
@@ -37,16 +45,6 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
 
     companion object {
         fun createInstance() = PreferencesIgnoredEntriesFragment()
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val vmFactory = IgnoredEntryViewModel.Factory(
-            IgnoredEntryRepository(SatenaApplication.instance.ignoredEntryDao)
-        )
-        viewModel = ViewModelProvider(this, vmFactory)[IgnoredEntryViewModel::class.java]
-        viewModel.init()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

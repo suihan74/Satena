@@ -6,9 +6,14 @@ import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.UserAndTags
+import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
+import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.launch
 
-class CustomTabViewModel : BookmarksTabViewModel() {
+class CustomTabViewModel(
+    activityViewModel: BookmarksViewModel,
+    prefs: SafeSharedPreferences<PreferenceKey>
+) : BookmarksTabViewModel(activityViewModel, prefs) {
     /** カスタムタブの表示内容設定 */
     private val settingsLiveData by lazy {
         MutableLiveData<Settings>()

@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.preferences.ignored
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.utilities.OnError
@@ -69,11 +68,5 @@ class IgnoredEntryViewModel(
                 onError?.invoke(e)
             }
         }
-    }
-
-    class Factory(private val repository: IgnoredEntryRepository) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>) =
-            IgnoredEntryViewModel(repository) as T
     }
 }

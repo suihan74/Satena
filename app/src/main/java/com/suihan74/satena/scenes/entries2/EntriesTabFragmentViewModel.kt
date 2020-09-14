@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.entries2
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
@@ -251,15 +250,5 @@ class EntriesTabFragmentViewModel(
                 onFinally?.invoke()
             }
         }
-    }
-
-    class Factory(
-        private val repository: EntriesRepository,
-        private val category: Category,
-        private val tabPosition: Int = 0
-    ) : ViewModelProvider.NewInstanceFactory() {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>) =
-            EntriesTabFragmentViewModel(repository, category, tabPosition) as T
     }
 }

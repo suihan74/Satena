@@ -10,7 +10,6 @@ import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
@@ -30,9 +29,11 @@ class UserTagDialogFragment : DialogFragment() {
     }
 
     private val viewModel by lazy {
-        val args = requireArguments()
-        val factory = DialogViewModel.Factory(args.getObject<Tag>(ARG_EDITING_USER_TAG))
-        ViewModelProvider(this, factory)[DialogViewModel::class.java]
+        provideViewModel(this) {
+            DialogViewModel(
+                requireArguments().getObject<Tag>(ARG_EDITING_USER_TAG)
+            )
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -118,14 +119,6 @@ class UserTagDialogFragment : DialogFragment() {
             if (false != onComplete?.invoke(OnCompleteArguments(tagName, editingUserTag))) {
                 dialog.dismiss()
             }
-        }
-
-        class Factory(
-            private val editingUserTag: Tag?
-        ) : ViewModelProvider.NewInstanceFactory() {
-            @Suppress("unchecked_cast")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-                DialogViewModel(editingUserTag) as T
         }
     }
 

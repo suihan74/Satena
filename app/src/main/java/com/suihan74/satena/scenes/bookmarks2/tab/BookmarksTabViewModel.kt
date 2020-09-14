@@ -7,11 +7,17 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import androidx.appcompat.widget.TooltipCompat
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks2.*
+import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
+import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
+import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
+import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -19,13 +25,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** タブごとに表示内容を変更するためBookmarksTabViewModelを継承して必要なメソッドを埋める */
-abstract class BookmarksTabViewModel : ViewModel() {
-    lateinit var activityViewModel: BookmarksViewModel
-        private set
-
-    protected lateinit var preferences: SafeSharedPreferences<PreferenceKey>
-        private set
-
+abstract class BookmarksTabViewModel(
+    val activityViewModel: BookmarksViewModel,
+    val preferences: SafeSharedPreferences<PreferenceKey>
+) : ViewModel() {
     /** BookmarksAdapterで表示されている内容のキャッシュ */
     var displayStates: List<RecyclerState<BookmarksAdapter.Entity>>? = null
 
@@ -190,26 +193,19 @@ abstract class BookmarksTabViewModel : ViewModel() {
 
     // ------ //
 
-    class Factory (
-        private val bookmarksTabType: BookmarksTabType,
-        private val bookmarksViewModel: BookmarksViewModel,
-        private val preferences: SafeSharedPreferences<PreferenceKey>
-    ) : ViewModelProvider.NewInstanceFactory() {
-        val key : String by lazy {
-            BookmarksActivity.getTabViewModelKey(bookmarksTabType)
+    companion object {
+        fun createInstance(
+            tabType: BookmarksTabType,
+            activityViewModel: BookmarksViewModel,
+            prefs: SafeSharedPreferences<PreferenceKey>
+        ) : BookmarksTabViewModel = when (tabType) {
+            BookmarksTabType.POPULAR -> PopularTabViewModel(activityViewModel, prefs)
+            BookmarksTabType.RECENT -> RecentTabViewModel(activityViewModel, prefs)
+            BookmarksTabType.ALL -> AllBookmarksTabViewModel(activityViewModel, prefs)
+            BookmarksTabType.CUSTOM -> CustomTabViewModel(activityViewModel, prefs)
+        }.also {
+            it.init()
         }
-
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>) =
-            when (bookmarksTabType) {
-                BookmarksTabType.POPULAR -> PopularTabViewModel()
-                BookmarksTabType.RECENT -> RecentTabViewModel()
-                BookmarksTabType.ALL -> AllBookmarksTabViewModel()
-                BookmarksTabType.CUSTOM -> CustomTabViewModel()
-            }.apply {
-                activityViewModel = this@Factory.bookmarksViewModel
-                preferences = this@Factory.preferences
-            } as T
     }
 }
 
