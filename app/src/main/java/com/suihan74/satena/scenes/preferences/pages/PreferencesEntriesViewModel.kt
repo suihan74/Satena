@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 class PreferencesEntriesViewModel(
     prefs: SafeSharedPreferences<PreferenceKey>,
     historyPrefs: SafeSharedPreferences<EntriesHistoryKey>
-) : PreferencesViewModel(prefs) {
+) : PreferencesViewModel<PreferenceKey>(prefs) {
 
     /** レイアウトモード */
     val bottomLayoutMode = createLiveData<Boolean>(

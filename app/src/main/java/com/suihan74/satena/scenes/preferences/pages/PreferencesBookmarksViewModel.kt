@@ -9,7 +9,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 
 class PreferencesBookmarksViewModel(
     prefs: SafeSharedPreferences<PreferenceKey>
-) : PreferencesViewModel(prefs) {
+) : PreferencesViewModel<PreferenceKey>(prefs) {
 
     /** 最初に表示するタブのindex */
     val initialTabPosition = createLiveData<Int>(

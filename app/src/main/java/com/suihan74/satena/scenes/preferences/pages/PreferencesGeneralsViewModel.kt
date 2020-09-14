@@ -9,7 +9,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 
 class PreferencesGeneralsViewModel(
     prefs: SafeSharedPreferences<PreferenceKey>
-) : PreferencesViewModel(prefs) {
+) : PreferencesViewModel<PreferenceKey>(prefs) {
 
     /** テーマ(ダークテーマか否か) */
     val darkTheme = createLiveData<Boolean>(

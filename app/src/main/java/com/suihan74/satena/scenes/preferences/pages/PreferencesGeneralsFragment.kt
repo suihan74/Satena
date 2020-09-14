@@ -33,13 +33,13 @@ class PreferencesGeneralsFragment :
     private val DIALOG_CHECKING_NOTICES_INTERVAL by lazy { "DIALOG_CHECKING_NOTICES_INTERVAL" }
     private val DIALOG_APP_UPDATE_NOTICE_MODE by lazy { "DIALOG_APP_UPDATE_NOTICE_MODE" }
 
-    private lateinit var viewModel: PreferencesGeneralsViewModel
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    private val viewModel: PreferencesGeneralsViewModel by lazy {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val factory = PreferencesGeneralsViewModel.Factory(prefs)
-        viewModel = ViewModelProvider(this, factory)[PreferencesGeneralsViewModel::class.java]
+        ViewModelProvider(this, factory)[PreferencesGeneralsViewModel::class.java]
+    }
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = DataBindingUtil.inflate<FragmentPreferencesGeneralsBinding>(
             inflater,
             R.layout.fragment_preferences_generals,
@@ -52,7 +52,7 @@ class PreferencesGeneralsFragment :
         val view = binding.root
 
         // ダークテーマか否か
-        val initialTheme = prefs.getBoolean(PreferenceKey.DARK_THEME)
+        val initialTheme = viewModel.darkTheme.value
         viewModel.darkTheme.observe(viewLifecycleOwner) {
             // ユーザーの操作によって値が変更された場合のみテーマの再設定とアプリ再起動を行う
             // この判別をしないと無限ループする
@@ -60,7 +60,9 @@ class PreferencesGeneralsFragment :
 
             // 再起動
             val intent = Intent(activity, PreferencesActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
+                flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
+
                 putExtra(
                     PreferencesActivity.EXTRA_CURRENT_TAB,
                     PreferencesTabMode.GENERALS
