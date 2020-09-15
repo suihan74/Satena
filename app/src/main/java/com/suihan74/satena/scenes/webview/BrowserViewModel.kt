@@ -7,14 +7,12 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.SafeSharedPreferences
 
 class BrowserViewModel(
-    private val prefs: SafeSharedPreferences<PreferenceKey>,
+    val repository: BrowserRepository,
     initialUrl: String
 ) : ViewModel() {
     /** テーマ */
-    val themeId by lazy {
-        if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppTheme_Dark
-        else R.style.AppTheme_Light
-    }
+    val themeId : Int
+        get() = repository.themeId
 
     /** 表示中のページURL */
     val url by lazy {

@@ -1,22 +1,26 @@
 package com.suihan74.satena.scenes.webview
 
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBrowserBinding
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.utilities.MarqueeToolbar
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.hideSoftInputMethod
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_browser.*
+import kotlinx.coroutines.launch
 
 class BrowserActivity : FragmentActivity() {
     companion object {
@@ -45,7 +49,17 @@ class BrowserActivity : FragmentActivity() {
             val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
             val initialUrl = intent.getStringExtra(EXTRA_URL)!!
 
-            BrowserViewModel(prefs, initialUrl)
+            val repository = BrowserRepository(
+                HatenaClient,
+                AccountLoader(this, HatenaClient, MastodonClientHolder),
+                SafeSharedPreferences.create(this)
+            )
+
+            lifecycleScope.launch {
+                repository.initialize()
+            }
+
+            BrowserViewModel(repository, initialUrl)
         }
     }
 
