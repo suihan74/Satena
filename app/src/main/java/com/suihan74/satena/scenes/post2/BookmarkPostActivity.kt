@@ -21,7 +21,6 @@ import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.android.synthetic.main.activity_bookmark_post_2.*
 
-
 class BookmarkPostActivity : AppCompatActivity() {
     companion object {
         // Extra keys
