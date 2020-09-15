@@ -70,13 +70,23 @@
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-        <LinearLayout
+        <RelativeLayout
                 android:id="@+id/drawer_area"
                 android:background="?attr/panelBackground"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:clickable="true"
                 android:layout_gravity="end"
-                android:orientation="vertical"
                 android:layout_width="300dp"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent">
+
+            <FrameLayout
+                    android:id="@+id/bookmark_post_area"
+                    android:layout_alignParentBottom="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+        </RelativeLayout>
 
     </androidx.drawerlayout.widget.DrawerLayout>
 </layout>

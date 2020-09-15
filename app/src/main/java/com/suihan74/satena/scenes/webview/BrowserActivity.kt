@@ -45,7 +45,9 @@ class BrowserActivity : FragmentActivity() {
         }
     }
 
-    private val viewModel : BrowserViewModel by lazy {
+    private val FRAGMENT_BOOKMARK_POST = "FRAGMENT_BOOKMARK_POST"
+
+    val viewModel : BrowserViewModel by lazy {
         provideViewModel(this) {
             val initialUrl = intent.getStringExtra(EXTRA_URL)!!
 
@@ -119,6 +121,12 @@ class BrowserActivity : FragmentActivity() {
                 if (it == null) ""
                 else getString(R.string.toolbar_subtitle_bookmarks, it.count, it.bookmarks.count { b -> b.comment.isNotBlank() })
         })
+
+        // 投稿エリアを作成
+        val bookmarkPostFragment = BookmarkPostFragment.createInstance()
+        supportFragmentManager.beginTransaction()
+            .add(R.id.bookmark_post_area, bookmarkPostFragment, FRAGMENT_BOOKMARK_POST)
+            .commitAllowingStateLoss()
     }
 
     /** 「戻る」ボタンでブラウザの履歴を戻る */
