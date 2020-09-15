@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.webview
+package com.suihan74.satena.scenes.browser
 
 import android.net.Uri
 import android.util.Log
@@ -16,17 +16,6 @@ class BrowserViewModel(
     val repository: BrowserRepository,
     initialUrl: String
 ) : ViewModel() {
-    /** TODO: アドレスバー検索で使用する検索エンジン(仮置き) */
-    val searchEngine : String =
-        "https://www.google.com/search?q="
-
-    /** TODO: ユーザーエージェント(仮置き) */
-    val userAgent : SingleUpdateMutableLiveData<String?> by lazy {
-        SingleUpdateMutableLiveData(
-            null//"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36"
-        )
-    }
-
     /** テーマ */
     val themeId : Int
         get() = repository.themeId
@@ -46,9 +35,23 @@ class BrowserViewModel(
         MutableLiveData("")
     }
 
+    /** アドレスバー検索で使用する検索エンジン(仮置き) */
+    val searchEngine : String
+        get() = repository.searchEngine.value!!
+
+    /** ユーザーエージェント(仮置き) */
+    val userAgent by lazy {
+        repository.userAgent
+    }
+
     /** JavaScriptを有効にする */
     val javascriptEnabled by lazy {
-        SingleUpdateMutableLiveData(true)
+        repository.javascriptEnabled
+    }
+
+    /** URLブロッキングを使用する */
+    val useUrlBlocking by lazy {
+        repository.useUrlBlocking
     }
 
     /** アドレスバーの入力内容 */

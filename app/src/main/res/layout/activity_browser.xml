@@ -4,7 +4,7 @@
     <data>
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.webview.BrowserViewModel" />
+                type="com.suihan74.satena.scenes.browser.BrowserViewModel" />
     </data>
 
     <androidx.drawerlayout.widget.DrawerLayout

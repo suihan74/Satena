@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.webview
+package com.suihan74.satena.scenes.browser
 
 import android.graphics.Bitmap
 import android.util.Log
@@ -35,10 +35,15 @@ class BrowserWebViewClient(
         }
     }
 
+    /** URLブロック対象のリソースを読み込まないようにする */
     override fun shouldInterceptRequest(
         view: WebView?,
         request: WebResourceRequest?
     ): WebResourceResponse? {
+        if (true != viewModel.repository.useUrlBlocking.value) {
+            return super.shouldInterceptRequest(view, request)
+        }
+
         val url = request?.url?.toString() ?: return null
         return if (!viewModel.repository.blockUrlsRegex.containsMatchIn(url)) {
             super.shouldInterceptRequest(view, request)

@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.webview
+package com.suihan74.satena.scenes.browser
 
 import android.os.Bundle
 import android.text.Editable

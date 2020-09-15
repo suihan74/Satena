@@ -36,7 +36,7 @@
         <activity android:name=".scenes.entries2.EntriesActivity" android:launchMode="singleTop">
         </activity>
 
-        <activity android:name=".scenes.webview.BrowserActivity" android:launchMode="singleTask">
+        <activity android:name=".scenes.browser.BrowserActivity" android:launchMode="singleTask">
         </activity>
 
         <activity android:name=".scenes.bookmarks2.BookmarksActivity">

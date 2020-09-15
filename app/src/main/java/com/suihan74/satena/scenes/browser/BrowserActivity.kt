@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.webview
+package com.suihan74.satena.scenes.browser
 
 import android.os.Bundle
 import android.util.Log
@@ -18,6 +18,8 @@ import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBrowserBinding
+import com.suihan74.satena.models.BrowserSettingsKey
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.launch
@@ -54,7 +56,8 @@ class BrowserActivity : FragmentActivity() {
             val repository = BrowserRepository(
                 HatenaClient,
                 AccountLoader(this, HatenaClient, MastodonClientHolder),
-                SafeSharedPreferences.create(this)
+                SafeSharedPreferences.create<PreferenceKey>(this),
+                SafeSharedPreferences.create<BrowserSettingsKey>(this)
             )
 
             lifecycleScope.launch {
