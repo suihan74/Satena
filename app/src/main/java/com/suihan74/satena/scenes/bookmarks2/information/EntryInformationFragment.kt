@@ -18,7 +18,7 @@ import com.suihan74.satena.databinding.FragmentEntryInformationBinding
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.showCustomTabsIntent
+import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.makeSpannedFromHtml
 import kotlinx.android.synthetic.main.fragment_entry_information.view.*
@@ -55,7 +55,7 @@ class EntryInformationFragment : Fragment() {
             setOnClickListener {
                 bookmarksActivity?.let {
                     it.closeDrawer()
-                    it.showCustomTabsIntent(entry)
+                    it.startInnerBrowser(entry)
                 }
             }
         }

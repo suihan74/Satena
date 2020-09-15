@@ -91,7 +91,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
     }
 }
 
-private fun Context.showCustomTabsIntent(remoteViews: RemoteViews, url: String) = CustomTabsIntent
+private fun Context.startInnerBrowser(remoteViews: RemoteViews, url: String) = CustomTabsIntent
     .Builder()
     .setShowTitle(true)
     .enableUrlBarHiding()
@@ -111,14 +111,38 @@ private fun Context.showCustomTabsIntent(remoteViews: RemoteViews, url: String) 
         it.launchUrl(this, Uri.parse(url))
     }
 
-fun Context.showCustomTabsIntent(entry: Entry) =
-    showCustomTabsIntent(
-        BrowserToolbarManager.createRemoteViews(this, entry),
-        /*entry.ampUrl ?: */entry.url
-    )
+fun Context.startInnerBrowser(entry: Entry) {
+    val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+    when (BrowserMode.fromInt(prefs.getInt(PreferenceKey.BROWSER_MODE))) {
+        BrowserMode.CUSTOM_TABS_INTENT ->
+            startInnerBrowser(
+                BrowserToolbarManager.createRemoteViews(this, entry),
+                entry.url
+            )
 
-fun Context.showCustomTabsIntent(url: String) =
-    showCustomTabsIntent(
-        BrowserToolbarManager.createRemoteViews(this, url),
-        url
-    )
+        BrowserMode.WEB_VIEW -> {
+            val intent = Intent(this, BrowserActivity::class.java).apply {
+                putExtra(BrowserActivity.EXTRA_URL, entry.url)
+            }
+            startActivity(intent)
+        }
+    }
+}
+
+fun Context.startInnerBrowser(url: String) {
+    val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+    when (BrowserMode.fromInt(prefs.getInt(PreferenceKey.BROWSER_MODE))) {
+        BrowserMode.CUSTOM_TABS_INTENT ->
+            startInnerBrowser(
+                BrowserToolbarManager.createRemoteViews(this, url),
+                url
+            )
+
+        BrowserMode.WEB_VIEW -> {
+            val intent = Intent(this, BrowserActivity::class.java).apply {
+                putExtra(BrowserActivity.EXTRA_URL, url)
+            }
+            startActivity(intent)
+        }
+    }
+}
