@@ -3,6 +3,7 @@ package com.suihan74.satena.models
 import android.content.Context
 import android.view.Gravity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
+import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
@@ -184,6 +185,13 @@ enum class PreferenceKey(
 
     /** 「カスタム」タブで非表示ユーザーを表示する */
     CUSTOM_BOOKMARKS_IS_MUTED_USERS_ACTIVE(typeInfo<Boolean>(), false),
+
+    ////////////////////////////////////////
+    // browser
+    ////////////////////////////////////////
+
+    /** 使用する内部ブラウザ */
+    BROWSER_MODE(typeInfo<Int>(), BrowserMode.WEB_VIEW.id),
 }
 
 ////////////////////////////////////////////////////////////////////////////////

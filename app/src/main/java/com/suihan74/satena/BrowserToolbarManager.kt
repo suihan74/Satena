@@ -11,8 +11,12 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.browser.BrowserActivity
+import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.putObjectExtra
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
