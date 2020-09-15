@@ -8,11 +8,11 @@ import android.util.Log
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.core.view.updateLayoutParams
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.observe
 import com.google.android.material.appbar.AppBarLayout
@@ -262,7 +262,18 @@ class BookmarksActivity : AppCompatActivity() {
         }
 
         // Drawerの開閉を監視する
-        val drawerToggle = object : ActionBarDrawerToggle(
+
+        drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerOpened(drawerView: View) {
+                hideSoftInputMethod()
+                findFragmentByTag<EntryInformationFragment>(FRAGMENT_INFORMATION)
+                    ?.onShown()
+            }
+            override fun onDrawerClosed(drawerView: View) {}
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerStateChanged(newState: Int) {}
+        })
+        /*val drawerToggle = object : ActionBarDrawerToggle(
             this,
             drawer_layout,
             toolbar,
@@ -278,8 +289,7 @@ class BookmarksActivity : AppCompatActivity() {
             }
         }
         drawer_layout.addDrawerListener(drawerToggle)
-        drawerToggle.isDrawerIndicatorEnabled = false
-        drawerToggle.syncState()
+        */
 
         // Observers
         viewModel.bookmarksEntry.observe(this) {
