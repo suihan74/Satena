@@ -17,17 +17,12 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.post2.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.android.synthetic.main.activity_bookmark_post_2.*
 
 
-class BookmarkPostActivity :
-    AppCompatActivity(),
-    ConfirmPostBookmarkDialog.Listener
-{
+class BookmarkPostActivity : AppCompatActivity() {
     companion object {
         // Extra keys
         /** ブクマ対象のエントリ */
@@ -48,21 +43,18 @@ class BookmarkPostActivity :
         const val RESULT_BOOKMARK = "BookmarkPostActivity.RESULT_BOOKMARK"
         /** 失敗時: 編集途中のコメントを返す */
         const val RESULT_EDITING_COMMENT = "BookmarkPostActivity.RESULT_EDITING_COMMENT"
-
-        // Dialog tags
-        /** 投稿確認ダイアログ */
-        private const val DIALOG_CONFIRM_POST_BOOKMARK = "DIALOG_CONFIRM_POST_BOOKMARK"
     }
 
     private val viewModel by lazy {
         provideViewModel(this) {
-            ViewModel(
+            BookmarkPostViewModel(
                 HatenaClient,
                 AccountLoader(
                     context = this,
                     client = HatenaClient,
                     mastodonClientHolder = MastodonClientHolder
-                )
+                ),
+                SafeSharedPreferences.create(this)
             ).apply {
                 displayEntryTitle.value =
                     !intent.getBooleanExtra(EXTRA_INVOKED_BY_BOOKMARKS_ACTIVITY, false)
@@ -75,29 +67,13 @@ class BookmarkPostActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 設定ロード
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-
         // テーマの設定
-        setTheme(
-            if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppDialogTheme_Dark
-            else R.style.AppDialogTheme_Light
-        )
+        setTheme(viewModel.themeId)
 
         // Extraの取得
         val entry = intent.getObjectExtra<Entry>(EXTRA_ENTRY)
         val editingComment = intent.getStringExtra(EXTRA_EDITING_COMMENT)
-        val entryUrl =
-            when (intent.action) {
-                Intent.ACTION_SEND ->
-                    intent.getStringExtra(Intent.EXTRA_TEXT)
-
-                // TODO: VIEWでは送られてこない(はず)
-                Intent.ACTION_VIEW ->
-                    intent.dataString
-
-                else -> null
-            }
+        val entryUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
 
         // データバインド
         binding = DataBindingUtil.setContentView<ActivityBookmarkPost2Binding>(
@@ -132,7 +108,12 @@ class BookmarkPostActivity :
             setOnEditorActionListener { _, action, _ ->
                 when (action) {
                     EditorInfo.IME_ACTION_DONE -> {
-                        postBookmark()
+                        hideSoftInputMethod()
+                        viewModel.postBookmark(
+                            supportFragmentManager,
+                            onPostSuccess,
+                            onPostError
+                        )
                         true
                     }
                     else -> false
@@ -170,14 +151,14 @@ class BookmarkPostActivity :
                             val after = comment.selectionStart
                             if (after == 0) {
                                 val selecting =
-                                    if (before < tagsEnd) getTagsEnd(s)
+                                    if (before < tagsEnd) viewModel.getTagsEnd(s)
                                     else before + countDiff
                                 comment.setSelection(selecting)
                             }
                             comment.removeTextChangedListener(watcher)
                         }
                         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                            this.tagsEnd = getTagsEnd(s)
+                            this.tagsEnd = viewModel.getTagsEnd(s)
                             this.before = comment.selectionStart
                             this.countDiff = after - count
                         }
@@ -188,7 +169,7 @@ class BookmarkPostActivity :
                     viewModel.toggleTag(tag)
 
                 }
-                catch (e: ViewModel.TooManyTagsException) {
+                catch (e: BookmarkPostViewModel.TooManyTagsException) {
                     showToast(R.string.msg_post_too_many_tags)
                     comment.removeTextChangedListener(watcher)
                 }
@@ -203,7 +184,12 @@ class BookmarkPostActivity :
 
         // 投稿ボタン処理
         post_button.setOnClickListener {
-            postBookmark()
+            hideSoftInputMethod()
+            viewModel.postBookmark(
+                supportFragmentManager,
+                onPostSuccess,
+                onPostError
+            )
         }
 
         // 利用タグ情報をロード完了したらリストに反映する
@@ -244,14 +230,14 @@ class BookmarkPostActivity :
         when (e) {
             is AccountLoader.MastodonSignInException -> showToast(R.string.msg_auth_mastodon_failed)
 
-            is ViewModel.LoadingTagsFailureException -> showToast(R.string.msg_fetch_tags_failed)
+            is BookmarkPostViewModel.LoadingTagsFailureException -> showToast(R.string.msg_fetch_tags_failed)
 
             is InvalidUrlException -> {
                 showToast(R.string.invalid_url_error)
                 finish()
             }
 
-            is ViewModel.NotSignedInException -> {
+            is BookmarkPostViewModel.NotSignedInException -> {
                 showToast(R.string.msg_hatena_not_signed_in)
                 finish()
             }
@@ -277,55 +263,19 @@ class BookmarkPostActivity :
     /** 投稿失敗時処理 */
     private val onPostError: OnError = { e ->
         when (e) {
-            is ViewModel.MultiplePostException ->
+            is BookmarkPostViewModel.MultiplePostException ->
                 showToast(R.string.msg_multiple_post)
 
-            is ViewModel.CommentTooLongException ->
-                showToast(R.string.msg_comment_too_long, ViewModel.MAX_COMMENT_LENGTH)
+            is BookmarkPostViewModel.CommentTooLongException ->
+                showToast(R.string.msg_comment_too_long, BookmarkPostViewModel.MAX_COMMENT_LENGTH)
 
-            is ViewModel.TooManyTagsException ->
+            is BookmarkPostViewModel.TooManyTagsException ->
                 showToast(R.string.msg_post_too_many_tags)
 
             else ->
                 showToast(R.string.msg_post_bookmark_failed)
         }
         Log.e("postBookmark", Log.getStackTraceString(e))
-    }
-
-    /** ブクマ投稿を実際に送信する */
-    private fun postBookmarkImpl() {
-        hideSoftInputMethod()
-        viewModel.nowPosting.value = true
-
-        viewModel.postBookmark(
-            onSuccess = onPostSuccess,
-            onError = onPostError,
-            onFinally = { viewModel.nowPosting.value = false }
-        )
-    }
-
-    /** ブックマークを投稿する（必要ならダイアログを表示する） */
-    private fun postBookmark() {
-        if (!viewModel.checkPostable(onPostError)) return
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-        val showDialog = prefs.getBoolean(PreferenceKey.USING_POST_BOOKMARK_DIALOG)
-        if (showDialog) {
-            ConfirmPostBookmarkDialog.createInstance(viewModel)
-                .showAllowingStateLoss(supportFragmentManager, DIALOG_CONFIRM_POST_BOOKMARK) { e ->
-                    Log.e("ConfirmPostBookmark", Log.getStackTraceString(e))
-                    showToast(R.string.msg_post_bookmark_failed)
-                }
-        }
-        else {
-            postBookmarkImpl()
-        }
-    }
-
-    override fun onApprovedToPost(dialog: ConfirmPostBookmarkDialog) {
-        when (dialog.tag) {
-            DIALOG_CONFIRM_POST_BOOKMARK -> postBookmarkImpl()
-        }
     }
 
     /** 戻るボタンで閉じる場合、編集中のコメントを保存しておく */
@@ -357,11 +307,5 @@ class BookmarkPostActivity :
         val dialogBounds = Rect()
         window.decorView.getHitRect(dialogBounds)
         return !dialogBounds.contains(x, y)
-    }
-
-    /** タグ部分の終了位置を取得する */
-    private fun getTagsEnd(s: CharSequence?) : Int {
-        val results = viewModel.tagsRegex.find(s ?: "")
-        return results?.value?.length ?: 0
     }
 }

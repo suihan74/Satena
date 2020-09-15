@@ -4,7 +4,7 @@
         <import type="android.view.View"/>
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.post2.ViewModel" />
+                type="com.suihan74.satena.scenes.post2.BookmarkPostViewModel" />
     </data>
 
     <RelativeLayout

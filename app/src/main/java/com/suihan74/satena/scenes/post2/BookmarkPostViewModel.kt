@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.post2
 
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,7 +8,10 @@ import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Tag
+import com.suihan74.satena.R
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.modifySpecificUrls
+import com.suihan74.satena.scenes.post2.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.sys1yagi.mastodon4j.api.entity.Status
@@ -18,9 +22,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.ceil
 
-class ViewModel(
-    private val client: HatenaClient,
-    private val accountLoader: AccountLoader
+class BookmarkPostViewModel(
+    private val client : HatenaClient,
+    private val accountLoader : AccountLoader,
+    private val prefs : SafeSharedPreferences<PreferenceKey>
 ) : ViewModel() {
 
     class NotSignedInException : Throwable("not signed in")
@@ -37,12 +42,22 @@ class ViewModel(
     /** 多重投稿例外 */
     class MultiplePostException : Throwable("multiple post")
 
+    // ------ //
+
     companion object {
         /** ブコメ最大文字数 */
         const val MAX_COMMENT_LENGTH = 100
 
         /** 最大使用タグ数 */
         const val MAX_TAGS_COUNT = 10
+    }
+
+    // ------ //
+
+    /** テーマ */
+    val themeId : Int by lazy {
+        if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppDialogTheme_Dark
+        else R.style.AppDialogTheme_Light
     }
 
     /** 対象のエントリ */
@@ -103,6 +118,12 @@ class ViewModel(
     /** 投稿処理中かを示すフラグ */
     val nowPosting by lazy { MutableLiveData(false) }
 
+    // ------ //
+
+    private val DIALOG_CONFIRM_POST_BOOKMARK by lazy { "DIALOG_CONFIRM_POST_BOOKMARK" }
+
+    // ------ //
+
     /** 初期化 */
     fun init(url: String, editingComment: String?, onError: OnError? = null) = viewModelScope.launch(
         Dispatchers.Main + CoroutineExceptionHandler { _, e ->
@@ -146,7 +167,7 @@ class ViewModel(
     ) {
         if (initialized) return@launch
 
-        this@ViewModel.entry.value = entry
+        this@BookmarkPostViewModel.entry.value = entry
         comment.value = editingComment
                     ?: entry.bookmarkedData?.comment
                     ?: ""
@@ -208,13 +229,47 @@ class ViewModel(
             }
         } / 3f).toInt()
 
-    /** ブクマを投稿 */
+    /** ブックマークを投稿する（必要ならダイアログで確認する） */
     fun postBookmark(
+        fragmentManager: FragmentManager,
         onSuccess: OnSuccess<BookmarkResult>? = null,
         onError: OnError? = null,
         onFinally: OnFinally? = null
-    ) = viewModelScope.launch(Dispatchers.Default) {
-        var error: Throwable? = null
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        if (!checkPostable(onError)) return@launch
+
+        val onFinallyAction: OnFinally = {
+            nowPosting.value = false
+            onFinally?.invoke()
+        }
+
+        val showDialog = prefs.getBoolean(PreferenceKey.USING_POST_BOOKMARK_DIALOG)
+        if (showDialog) {
+            ConfirmPostBookmarkDialog.createInstance(this@BookmarkPostViewModel).run {
+                showAllowingStateLoss(fragmentManager, DIALOG_CONFIRM_POST_BOOKMARK)
+
+                setOnApprovedToPost {
+                    viewModelScope.launch {
+                        postBookmarkImpl(onSuccess, onError, onFinallyAction)
+                    }
+                }
+            }
+        }
+        else {
+            postBookmarkImpl(onSuccess, onError, onFinallyAction)
+        }
+    }
+
+    /** ブクマを投稿 */
+    private suspend fun postBookmarkImpl(
+        onSuccess: OnSuccess<BookmarkResult>? = null,
+        onError: OnError? = null,
+        onFinally: OnFinally? = null
+    ) = withContext(Dispatchers.Default) {
+
+        withContext(Dispatchers.Main) {
+            nowPosting.value = true
+        }
 
         val entry =
             withContext(Dispatchers.Main) {
@@ -223,8 +278,7 @@ class ViewModel(
                     onError?.invoke(e)
                     null
                 }
-            } ?: return@launch
-
+            } ?: return@withContext
 
         // private投稿の場合他サービスに共有しない
         val privateEnabled = isPrivate.value == true
@@ -232,49 +286,49 @@ class ViewModel(
         val postFacebookEnabled = !privateEnabled && postFacebook.value == true
         val postMastodonEnabled = !privateEnabled && postMastodon.value == true
 
-        val result =
-            try {
-                val comment = comment.value ?: ""
+        val result = kotlin.runCatching {
+            val comment = comment.value ?: ""
 
-                // コメント長チェック
-                if (getCommentLength(comment) > MAX_COMMENT_LENGTH) {
-                    throw CommentTooLongException()
-                }
-
-                // タグ個数チェック
-                val matches = tagRegex.findAll(comment)
-                if (matches.count() > MAX_TAGS_COUNT) {
-                    throw TooManyTagsException()
-                }
-
-                client.postBookmarkAsync(
-                    url = entry.url,
-                    comment = comment,
-                    postTwitter = postTwitterEnabled,
-                    postFacebook = postFacebookEnabled,
-                    isPrivate = privateEnabled
-                ).await()
+            // コメント長チェック
+            if (getCommentLength(comment) > MAX_COMMENT_LENGTH) {
+                throw CommentTooLongException()
             }
-            catch (e: Throwable) {
-                error = e
-                withContext(Dispatchers.Main) {
-                    onError?.invoke(e)
-                }
-                null
+
+            // タグ個数チェック
+            val matches = tagRegex.findAll(comment)
+            if (matches.count() > MAX_TAGS_COUNT) {
+                throw TooManyTagsException()
             }
+
+            client.postBookmarkAsync(
+                url = entry.url,
+                comment = comment,
+                postTwitter = postTwitterEnabled,
+                postFacebook = postFacebookEnabled,
+                isPrivate = privateEnabled
+            ).await()
+        }
+
+        var error : Throwable? =
+            if (result.isFailure) {
+                (result.exceptionOrNull() ?: RuntimeException()).also { e ->
+                    withContext(Dispatchers.Main) {
+                        onError?.invoke(e)
+                    }
+                }
+            }
+            else null
+
+        val bookmarkResult = result.getOrNull()
 
         // Mastodonに投稿
         if (error == null && postMastodonEnabled) {
-            result!!
+            bookmarkResult!!
 
             try {
                 val status =
-                    if (result.comment.isBlank()) {
-                        "\"${entry.title}\" ${entry.url}"
-                    }
-                    else {
-                        "${result.comment} / \"${entry.title}\" ${entry.url}"
-                    }
+                    if (bookmarkResult.comment.isBlank()) "\"${entry.title}\" ${entry.url}"
+                    else "${bookmarkResult.comment} / \"${entry.title}\" ${entry.url}"
 
                 val client = MastodonClientHolder.client!!
                 Statuses(client).postStatus(
@@ -296,7 +350,7 @@ class ViewModel(
 
         withContext(Dispatchers.Main) {
             if (error == null) {
-                onSuccess?.invoke(result!!)
+                onSuccess?.invoke(bookmarkResult!!)
             }
             onFinally?.invoke()
         }
@@ -353,5 +407,11 @@ class ViewModel(
                 )
             }
         }
+    }
+
+    /** タグ部分の終了位置を取得する */
+    fun getTagsEnd(s: CharSequence?) : Int {
+        val results = tagsRegex.find(s ?: "")
+        return results?.value?.length ?: 0
     }
 }
