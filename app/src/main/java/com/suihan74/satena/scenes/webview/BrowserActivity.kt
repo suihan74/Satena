@@ -31,6 +31,7 @@ class BrowserActivity : FragmentActivity() {
         @JvmStatic
         fun loadUrl(webView: WebView, url: String) {
             if (webView.url != url) {
+                webView.stopLoading()
                 webView.loadUrl(url)
             }
         }
@@ -46,7 +47,6 @@ class BrowserActivity : FragmentActivity() {
 
     private val viewModel : BrowserViewModel by lazy {
         provideViewModel(this) {
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
             val initialUrl = intent.getStringExtra(EXTRA_URL)!!
 
             val repository = BrowserRepository(
@@ -76,23 +76,38 @@ class BrowserActivity : FragmentActivity() {
             lifecycleOwner = this@BrowserActivity
         }
 
+        setActionBar(toolbar)
+
         drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
-                hideSoftInputMethod()
+                hideSoftInputMethod(main_area)
             }
             override fun onDrawerClosed(drawerView: View) {}
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {}
         })
 
-        webview.let { wv ->
-            wv.webViewClient = BrowserWebViewClient(viewModel)
-            viewModel.javascriptEnabled.observe(this, Observer {
-                wv.settings.javaScriptEnabled = it
-            })
+        initializeWebView(webview)
+
+        address_edit_text.setOnEditorActionListener { _, action, _ ->
+            when (action) {
+                EditorInfo.IME_ACTION_GO ->
+                    viewModel.goAddress().whenTrue {
+                        hideSoftInputMethod(main_area)
+                    }
+
+                else -> false
+            }
         }
+
+        viewModel.bookmarksEntry.observe(this, Observer {
+            toolbar.subtitle =
+                if (it == null) ""
+                else getString(R.string.toolbar_subtitle_bookmarks, it.count, it.bookmarks.count { b -> b.comment.isNotBlank() })
+        })
     }
 
+    /** 「戻る」ボタンでブラウザの履歴を戻る */
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean = when {
         keyCode != KeyEvent.KEYCODE_BACK -> super.onKeyDown(keyCode, event)
 
@@ -107,5 +122,60 @@ class BrowserActivity : FragmentActivity() {
         }
 
         else -> super.onKeyDown(keyCode, event)
+    }
+
+    /** WebViewの設定 */
+    private fun initializeWebView(wv: WebView) {
+        wv.webViewClient = BrowserWebViewClient(viewModel)
+        wv.webChromeClient = WebChromeClient()
+
+        wv.setOnLongClickListener {
+            val hitTestResult = wv.hitTestResult
+            when (hitTestResult.type) {
+                // 画像
+                WebView.HitTestResult.IMAGE_TYPE -> {
+                    Log.i("image", hitTestResult.extra ?: "")
+                    true
+                }
+
+                // リンク
+                WebView.HitTestResult.SRC_ANCHOR_TYPE -> {
+                    Log.i("link", hitTestResult.extra ?: "")
+                    true
+                }
+
+                // 画像リンク
+                WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
+                    Log.i("imglink", hitTestResult.extra ?: "")
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+        // jsのON/OFF
+        viewModel.javascriptEnabled.observe(this, Observer {
+            wv.settings.javaScriptEnabled = it
+        })
+
+        // UserAgentの設定
+        viewModel.userAgent.observe(this, Observer {
+            wv.settings.userAgentString = it
+        })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.browser, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.exit -> {
+            finish()
+            true
+        }
+
+        else -> false
     }
 }

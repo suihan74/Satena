@@ -13,6 +13,9 @@
             android:layout_height="match_parent">
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:id="@+id/main_area"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -25,9 +28,29 @@
                 <com.suihan74.utilities.MarqueeToolbar
                         android:id="@+id/toolbar"
                         title="@{vm.title}"
-                        app:layout_scrollFlags="enterAlways|scroll"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
+
+                <EditText
+                        android:id="@+id/address_edit_text"
+
+                        android:text="@={vm.addressText}"
+                        android:hint="@null"
+
+                        android:textSize="16sp"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="8dp"
+                        android:singleLine="true"
+                        android:inputType="text"
+                        android:imeOptions="actionGo"
+                        android:importantForAutofill="no"
+
+                        android:background="?attr/tabBackground"
+                        android:textColor="?attr/textColor"
+                        android:textColorHint="?attr/textColorHint"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
 
             </com.google.android.material.appbar.AppBarLayout>
 
