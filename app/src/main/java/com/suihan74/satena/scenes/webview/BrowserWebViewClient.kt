@@ -1,13 +1,20 @@
 package com.suihan74.satena.scenes.webview
 
 import android.graphics.Bitmap
+import android.util.Log
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import java.io.ByteArrayInputStream
 
 class BrowserWebViewClient(
     private val viewModel: BrowserViewModel
 ) : WebViewClient() {
+
+    private val emptyResourceRequest : WebResourceResponse by lazy {
+        WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream("".toByteArray()));
+    }
 
     /** ページに遷移するか否かを決定する */
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
@@ -23,10 +30,33 @@ class BrowserWebViewClient(
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
         viewModel.title.value = view!!.title
+        if (url != null) {
+            viewModel.onPageFinished?.invoke(url)
+        }
+    }
+
+    override fun shouldInterceptRequest(
+        view: WebView?,
+        request: WebResourceRequest?
+    ): WebResourceResponse? {
+        val url = request?.url?.toString() ?: return null
+        return if (!viewModel.repository.blockUrlsRegex.containsMatchIn(url)) {
+            super.shouldInterceptRequest(view, request)
+        }
+        else {
+            Log.i("abort", url)
+            emptyResourceRequest
+        }
     }
 
     /** すべてのリソースの読み込み時に呼ばれる */
     override fun onLoadResource(view: WebView?, url: String?) {
-        super.onLoadResource(view, url)
+        url ?: return
+        if (!viewModel.repository.blockUrlsRegex.containsMatchIn(url)) {
+            super.onLoadResource(view, url)
+        }
+        else {
+            Log.i("abort", url)
+        }
     }
 }

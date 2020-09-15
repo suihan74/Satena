@@ -22,6 +22,26 @@ class BrowserRepository(
     val signedIn: Boolean
         get() = client.signedIn()
 
+    /** TODO: ブロックするURLリスト */
+    val blockUrls = listOf(
+        "amazon-adsystem",  // テスト用のデータ
+        ".adnxs.com",
+        ".logly.co.jp",
+        "pb.ladsp.com",
+        "impact-ad.jp",
+        ".adtdp.com",
+        "socdm.com/adsv",
+        ".yimg.jp",
+        ".doubleclick.net",
+        ".criteo.net"
+    )
+
+    val blockUrlsRegex = Regex(
+        blockUrls.joinToString(separator = "|") { Regex.escape(it) }
+    )
+
+    // ------ //
+
     /** サインインを行う */
     suspend fun initialize() {
         accountLoader.signInAccounts(reSignIn = false)

@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.BookmarksEntry
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -60,6 +61,15 @@ class BrowserViewModel(
     /** 表示中のページのBookmarksEntry */
     val bookmarksEntry by lazy {
         MutableLiveData<BookmarksEntry?>(null)
+    }
+
+    // ------ //
+
+    // ページ読み込み完了時に呼ぶ処理
+    var onPageFinished: Listener<String>? = null
+
+    fun setOnPageFinishedListener(listener: Listener<String>?) {
+        onPageFinished = listener
     }
 
     // ------ //

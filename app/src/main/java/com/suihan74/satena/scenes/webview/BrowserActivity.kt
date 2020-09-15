@@ -89,6 +89,7 @@ class BrowserActivity : FragmentActivity() {
 
         initializeWebView(webview)
 
+        // IMEの決定ボタンでページ遷移する
         address_edit_text.setOnEditorActionListener { _, action, _ ->
             when (action) {
                 EditorInfo.IME_ACTION_GO ->
@@ -97,6 +98,19 @@ class BrowserActivity : FragmentActivity() {
                     }
 
                 else -> false
+            }
+        }
+
+        // スワイプしてページを更新する
+        swipe_layout.let {
+            it.setProgressBackgroundColorSchemeColor(getThemeColor(R.attr.swipeRefreshBackground))
+            it.setColorSchemeColors(getThemeColor(R.attr.colorPrimary))
+            it.setOnRefreshListener {
+                viewModel.setOnPageFinishedListener {
+                    swipe_layout.isRefreshing = false
+                    viewModel.setOnPageFinishedListener(null)
+                }
+                webview.reload()
             }
         }
 
