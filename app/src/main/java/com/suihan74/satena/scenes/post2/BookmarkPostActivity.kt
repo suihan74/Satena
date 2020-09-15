@@ -62,8 +62,6 @@ class BookmarkPostActivity : AppCompatActivity() {
         }
     }
 
-    private lateinit var binding: ActivityBookmarkPost2Binding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -76,7 +74,7 @@ class BookmarkPostActivity : AppCompatActivity() {
         val entryUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
 
         // データバインド
-        binding = DataBindingUtil.setContentView<ActivityBookmarkPost2Binding>(
+        DataBindingUtil.setContentView<ActivityBookmarkPost2Binding>(
             this,
             R.layout.activity_bookmark_post_2
         ).apply {
