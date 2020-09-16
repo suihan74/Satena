@@ -419,4 +419,5 @@
     <string name="browser_url_blocking_regex_check_box_text">正規表現</string>
     <string name="msg_add_url_blocking_succeeded">URLブロック設定を追加しました</string>
     <string name="msg_url_blocked">既にブロックされています</string>
+    <string name="msg_empty_url_blocking_pattern">パターンを入力してください</string>
 </resources>

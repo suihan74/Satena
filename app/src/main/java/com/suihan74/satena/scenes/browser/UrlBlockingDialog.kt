@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.browser
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -52,9 +53,7 @@ class UrlBlockingDialog : DialogFragment() {
             .setCustomTitle(titleViewBinding.root)
             .setItems(viewModel.labels, null)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setPositiveButton(R.string.dialog_register) { _, _ ->
-                viewModel.invokeOnComplete()
-            }
+            .setPositiveButton(R.string.dialog_register, null)
             .show()
             .apply {
                 // IMEを表示するための設定
@@ -78,6 +77,17 @@ class UrlBlockingDialog : DialogFragment() {
                         context.showToast(R.string.msg_url_blocked)
                     }
                     true
+                }
+
+                // 登録前に空白チェック
+                getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                    if (viewModel.pattern.value.isNullOrBlank()) {
+                        context.showToast(R.string.msg_empty_url_blocking_pattern)
+                    }
+                    else {
+                        viewModel.invokeOnComplete()
+                        dismiss()
+                    }
                 }
             }
     }
