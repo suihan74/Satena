@@ -107,6 +107,11 @@ class BookmarksRepository(
         prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
     }
 
+    /** IDコールされた非表示ユーザーを表示する */
+    val showCalledIgnoredUsers by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
+    }
+
     private val entryLock by lazy { Any() }
     private val bookmarksEntryLock by lazy { Any() }
     private val bookmarksDigestLock by lazy { Any() }

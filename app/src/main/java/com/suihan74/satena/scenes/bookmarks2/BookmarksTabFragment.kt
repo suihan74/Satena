@@ -176,8 +176,8 @@ class BookmarksTabFragment :
             val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
             val userTags = activityViewModel.taggedUsers.value ?: emptyList()
             val ignoredUsers = activityViewModel.ignoredUsers.value
-            val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
-            lifecycleScope.launch(Dispatchers.Default) {
+            val displayMutedMention = activityViewModel.repository.showCalledIgnoredUsers//prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
+            lifecycleScope.launch {
                 bookmarksAdapter.setBookmarks(
                     it,
                     bookmarksEntry,
@@ -194,8 +194,8 @@ class BookmarksTabFragment :
             if (bookmarks != null) {
                 val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
                 val ignoredUsers = activityViewModel.ignoredUsers.value
-                val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
-                lifecycleScope.launch(Dispatchers.Default) {
+                val displayMutedMention = activityViewModel.repository.showCalledIgnoredUsers
+                lifecycleScope.launch {
                     bookmarksAdapter.setBookmarks(
                         bookmarks,
                         bookmarksEntry,
