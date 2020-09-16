@@ -114,7 +114,7 @@ class BookmarksViewModel(
     ) = viewModelScope.launch {
         try {
             loadAction.invoke()
-            init(fragmentManager, true, onError)
+//            init(fragmentManager, true, onError)
         }
         catch (e: Throwable) {
             withContext(Dispatchers.Main) {
@@ -229,13 +229,21 @@ class BookmarksViewModel(
             }
 
             // キーワードが更新されたら各リストを再生成する
+            var initializedFilteringWord = false
             filteringWord.observeForever {
-                reloadLists()
+                if (initializedFilteringWord) {
+                    reloadLists()
+                }
+                initializedFilteringWord = true
             }
 
             // 非表示ユーザーリストの更新を監視
+            var initializedIgnoredUsers = false
             ignoredUsers.observeForever {
-                reloadLists()
+                if (initializedIgnoredUsers) {
+                    reloadLists()
+                }
+                initializedIgnoredUsers = true
             }
         }
 
