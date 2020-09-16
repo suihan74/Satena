@@ -38,7 +38,8 @@ enum class BrowserSettingsKey (
         "socdm.com/adsv",
         ".yimg.jp",
         ".doubleclick.net",
-        ".criteo.net"
+        ".criteo.net",
+        "ads.nicovideo.jp"
     ).map { BlockUrlSetting(it, false) })
 }
 

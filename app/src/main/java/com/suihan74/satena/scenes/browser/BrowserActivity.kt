@@ -180,6 +180,15 @@ class BrowserActivity : FragmentActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.browser, menu)
+
+        menu?.findItem(R.id.adblock)?.title =
+            if (viewModel.useUrlBlocking.value == true) "AdBlock : ON"
+            else "AdBlock : OFF"
+
+        menu?.findItem(R.id.javascript)?.title =
+            if (viewModel.javascriptEnabled.value == true) "JavaScript : ON"
+            else "JavaScript : OFF"
+
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -199,6 +208,24 @@ class BrowserActivity : FragmentActivity() {
                 it.putExtra(Intent.EXTRA_TEXT, viewModel.url.value!!)
             }
             startActivity(intent)
+            true
+        }
+
+        R.id.adblock -> {
+            viewModel.useUrlBlocking.value = viewModel.useUrlBlocking.value != true
+            item.title =
+                if (viewModel.useUrlBlocking.value == true) "AdBlock : ON"
+                else "AdBlock : OFF"
+            webview.reload()
+            true
+        }
+
+        R.id.javascript -> {
+            viewModel.javascriptEnabled.value = viewModel.javascriptEnabled.value != true
+            item.title =
+                if (viewModel.javascriptEnabled.value == true) "JavaScript : ON"
+                else "JavaScript : OFF"
+            webview.reload()
             true
         }
 

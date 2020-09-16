@@ -10,6 +10,14 @@
             android:title="@string/browser_menu_share"/>
 
     <item
+            android:id="@+id/adblock"
+            android:title="AdBlock"/>
+
+    <item
+            android:id="@+id/javascript"
+            android:title="JavaScript"/>
+
+    <item
             android:id="@+id/settings"
             android:title="@string/browser_menu_settings"/>
 
