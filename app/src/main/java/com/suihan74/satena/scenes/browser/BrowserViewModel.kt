@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -70,6 +71,11 @@ class BrowserViewModel(
 
     // ------ //
 
+    /** 表示中のページのはてなエントリURL */
+    val entryUrl by lazy {
+        MutableLiveData<String>("")
+    }
+
     /** 表示中のページのBookmarksEntry */
     val bookmarksEntry by lazy {
         MutableLiveData<BookmarksEntry?>(null)
@@ -88,8 +94,15 @@ class BrowserViewModel(
 
     /** BookmarksEntryを更新 */
     private fun loadBookmarksEntry(url: String) = viewModelScope.launch(Dispatchers.Default) {
+        // 渡されたページURLをエントリURLに修正する
+        val modifyResult = kotlin.runCatching {
+            modifySpecificUrls(url)
+        }
+        val modifiedUrl = modifyResult.getOrNull() ?: url
+        entryUrl.postValue(modifiedUrl)
+
         try {
-            bookmarksEntry.postValue(repository.getBookmarksEntry(url))
+            bookmarksEntry.postValue(repository.getBookmarksEntry(modifiedUrl))
         }
         catch (e: Throwable) {
             Log.e("loadBookmarksEntry", Log.getStackTraceString(e))
