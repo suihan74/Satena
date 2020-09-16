@@ -17,16 +17,20 @@
         <!-- enable fragment transition -->
         <item name="android:windowContentTransitions">true</item>
 
-        <!-- Toolbarハンバーガーボタンなどの色 -->
-        <item name="android:textColorSecondary">@color/colorPrimaryText</item>
-
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
 
         <!-- action bar area -->
+        <item name="android:actionOverflowButtonStyle">@style/ActionBarButtonStyle</item>
+        <!-- バーの背景色 -->
         <item name="android:statusBarColor">@color/colorPrimary</item>
+        <!-- titleの文字色 -->
         <item name="android:textColorPrimary">@color/colorPrimaryText</item>
+        <!-- subtitleの文字色 -->
+        <item name="android:textColorSecondary">@color/colorPrimaryText</item>
+        <!-- ポップアップ部分の文字色 -->
+        <item name="android:textColor">@color/textColor</item>
 
         <!-- SearchView -->
         <item name="searchViewStyle">@style/SearchViewStyle.Toolbar</item>
@@ -85,6 +89,10 @@
 
         <item name="android:windowEnterTransition">@android:transition/fade</item>
         <item name="android:windowExitTransition">@android:transition/fade</item>
+    </style>
+
+    <style name="ActionBarButtonStyle" parent="@style/Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:tint">@color/colorPrimaryText</item>
     </style>
 
     <!-- 設定画面のトグルボタン -->

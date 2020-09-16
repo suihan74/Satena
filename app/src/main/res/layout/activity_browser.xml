@@ -31,26 +31,31 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
 
-                <EditText
-                        android:id="@+id/address_edit_text"
-
-                        android:text="@={vm.addressText}"
-                        android:hint="@null"
-
-                        android:textSize="16sp"
-                        android:paddingVertical="8dp"
-                        android:paddingHorizontal="8dp"
-                        android:singleLine="true"
-                        android:inputType="text"
-                        android:imeOptions="actionGo"
-                        android:importantForAutofill="no"
-
+                <FrameLayout
                         android:background="?attr/tabBackground"
-                        android:textColor="?attr/textColor"
-                        android:textColorHint="?attr/textColorHint"
-
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content">
+                    <EditText
+                            android:id="@+id/address_edit_text"
+
+                            android:text="@={vm.addressText}"
+                            android:hint="@null"
+
+                            android:textSize="16sp"
+                            android:paddingVertical="8dp"
+                            android:paddingHorizontal="8dp"
+                            android:singleLine="true"
+                            android:inputType="text"
+                            android:imeOptions="actionGo"
+                            android:importantForAutofill="no"
+
+                            android:background="?selectableItemBackground"
+                            android:textColor="?attr/textColor"
+                            android:textColorHint="?attr/textColorHint"
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+                </FrameLayout>
 
             </com.google.android.material.appbar.AppBarLayout>
 
