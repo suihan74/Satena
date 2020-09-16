@@ -61,8 +61,6 @@ class BookmarksTabFragment :
     ): View? {
         val view = inflater.inflate(R.layout.fragment_bookmarks_tab, container, false)
 
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-
         val bookmarksAdapter = BookmarksAdapter(
             viewLifecycleOwner,
             viewModel,
@@ -128,6 +126,8 @@ class BookmarksTabFragment :
                 }
             )
         }
+        // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
+        scrollingUpdater.isEnabled = false
 
         // recycler view
         view.bookmarks_list.apply {
@@ -184,7 +184,10 @@ class BookmarksTabFragment :
                     userTags,
                     ignoredUsers,
                     displayMutedMention
-                )
+                ) {
+                    // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
+                    scrollingUpdater.isEnabled = true
+                }
             }
         }
 
