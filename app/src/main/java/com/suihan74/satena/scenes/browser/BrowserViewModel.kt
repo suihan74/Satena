@@ -62,7 +62,7 @@ class BrowserViewModel(
     }
 
     /** 現在表示中のページで読み込んだすべてのURL */
-    val loadedResources : List<ResourceUrl>
+    val resourceUrls : List<ResourceUrl>
         get() = repository.resourceUrls
 
     // ------ //
