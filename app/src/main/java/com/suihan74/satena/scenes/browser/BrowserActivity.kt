@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.browser
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -20,6 +21,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBrowserBinding
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.launch
@@ -196,6 +198,29 @@ class BrowserActivity : FragmentActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.bookmarks -> {
+            val intent = Intent(this, BookmarksActivity::class.java).apply {
+                putExtra(BookmarksActivity.EXTRA_ENTRY_URL, viewModel.url.value!!)
+            }
+            startActivity(intent)
+            true
+        }
+
+        R.id.share -> {
+            val intent = Intent().also {
+                it.action = Intent.ACTION_SEND
+                it.type = "text/plain"
+                it.putExtra(Intent.EXTRA_TEXT, viewModel.url.value!!)
+            }
+            startActivity(intent)
+            true
+        }
+
+        R.id.settings -> {
+            // TODO:
+            true
+        }
+
         R.id.exit -> {
             finish()
             true
