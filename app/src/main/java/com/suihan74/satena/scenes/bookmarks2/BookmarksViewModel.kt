@@ -179,7 +179,7 @@ class BookmarksViewModel(
     ) = viewModelScope.launch {
         try {
             loadAction.invoke()
-            init(fragmentManager, true, onError)
+//            init(fragmentManager, true, onError)
 
             withContext(Dispatchers.Main) {
                 toolbarTitle.value = entry.title
@@ -294,13 +294,22 @@ class BookmarksViewModel(
             }
 
             // キーワードが更新されたら各リストを再生成する
+            var initializedFilteringWord = false
             filteringWord.observeForever {
                 refreshLists()
+                if (initializedFilteringWord) {
+                    refreshLists()
+                }
+                initializedFilteringWord = true
             }
 
             // 非表示ユーザーリストの更新を監視
+            var initializedIgnoredUsers = false
             ignoredUsers.observeForever {
-                refreshLists()
+                if (initializedIgnoredUsers) {
+                    refreshLists()
+                }
+                initializedIgnoredUsers = true
             }
         }
 

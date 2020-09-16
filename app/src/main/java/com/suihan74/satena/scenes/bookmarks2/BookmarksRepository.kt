@@ -8,10 +8,8 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
-import com.suihan74.utilities.lock
 import kotlinx.coroutines.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -26,37 +24,59 @@ class BookmarksRepository(
 
     /** エントリ情報 */
     var entry: Entry
-        get() = _entry!!
+        get() = synchronized(entryLock) { _entry!! }
         private set(value) {
-            _entry = value
+            synchronized(entryLock) {
+                _entry = value
+            }
         }
 
     private var _entry: Entry? = null
 
     /** ブクマエントリ */
     var bookmarksEntry: BookmarksEntry? = null
-        private set
+        get() = synchronized(bookmarksEntryLock) { field }
+        private set(value) {
+            synchronized(bookmarksEntryLock) {
+                field = value
+            }
+        }
 
     /** 人気ブクマリストを含む概要データのキャッシュ */
     var bookmarksDigest: BookmarksDigest? = null
-        private set
+        get() = synchronized(bookmarksDigestLock) { field }
+        private set(value) {
+            synchronized(bookmarksDigestLock) {
+                field = value
+            }
+        }
 
     /** 人気ブクマリストのキャッシュ */
     var bookmarksPopular: List<Bookmark> = emptyList()
-        private set
+        get() = synchronized(bookmarksPopularLock) { field }
+        private set(value) {
+            synchronized(bookmarksPopularLock) {
+                field = value
+            }
+        }
 
     /** 新着ブクマリストのキャッシュ */
     var bookmarksRecent: List<Bookmark> = emptyList()
-        get() = synchronized(field) { field }
+        get() = synchronized(bookmarksRecentLock) { field }
         private set(value) {
-            synchronized(field) {
+            synchronized(bookmarksRecentLock) {
                 field = value
             }
         }
 
     /** 非表示ユーザーIDリストのキャッシュ */
     var ignoredUsers: List<String> = emptyList()
-        private set
+        get() = synchronized(ignoredUsersLock) { field }
+        private set(value) {
+            synchronized(ignoredUsersLock) {
+                field = value
+            }
+        }
 
     /** スター情報のキャッシュ -> key = 対象ユーザー名, value = スター情報 */
     private val starsMap = HashMap<String, StarsEntry>()
@@ -97,16 +117,17 @@ class BookmarksRepository(
 
     /** エントリ中のブクマについたすべてのスター取得を監視するライブデータを作成する */
     val allStarsLiveData by lazy {
-        StarsLiveData(
-            client,
-            entry,
-            this
-        )
+        StarsLiveData(this)
     }
 
     /** スター送信前に確認する */
     val usePostStarDialog by lazy {
         prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
+    }
+
+    /** IDコールされた非表示ユーザーを表示する */
+    val showCalledIgnoredUsers by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
     }
 
     /** リンクをシングルタップしたときの処理 */
@@ -119,18 +140,28 @@ class BookmarksRepository(
         TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
     }
 
+    private val entryLock by lazy { Any() }
+    private val bookmarksEntryLock by lazy { Any() }
+    private val bookmarksDigestLock by lazy { Any() }
+    private val bookmarksPopularLock by lazy { Any() }
+    private val bookmarksRecentLock by lazy { Any() }
+    private val ignoredUsersLock by lazy { Any() }
+    private val recentBookmarksCursorLock by lazy { Any() }
+
+    // ------ //
+
     /** リポジトリ初期化 */
     suspend fun init() {
         accountLoader.signInAccounts()
     }
 
     /** ユーザーに付けられたスター情報を取得する */
-    fun getStarsEntryTo(user: String) = lock(starsMap) { starsMap[user] }
+    fun getStarsEntryTo(user: String) = synchronized(starsMap) { starsMap[user] }
     /** ユーザーに付けられたスター情報を登録or更新する */
-    private fun setStarsEntryTo(user: String, entry: StarsEntry) = lock(starsMap) { starsMap[user] = entry }
+    private fun setStarsEntryTo(user: String, entry: StarsEntry) = synchronized(starsMap) { starsMap[user] = entry }
 
     /** ユーザーが付けたスター情報を取得する */
-    fun getStarsEntryFrom(user: String) = lock(starsMap) {
+    fun getStarsEntryFrom(user: String) = synchronized(starsMap) {
         starsMap.mapNotNull m@ {
             if (it.value.allStars.any { star -> star.user == user }) it.value
             else null
@@ -190,7 +221,6 @@ class BookmarksRepository(
         }
 
     /** 追加ロード用のカーソル */
-    private val recentBookmarksCursorLock by lazy { Any() }
     private var recentBookmarksCursor: String? = null
         get() = synchronized(recentBookmarksCursorLock) { field }
         set(value) {
@@ -212,12 +242,11 @@ class BookmarksRepository(
                 var cursor: String? = null
                 val bookmarks = ArrayList<BookmarkWithStarCount>()
                 while (true) {
-                    val response = try {
+                    val result = kotlin.runCatching {
                         client.getRecentBookmarksAsync(url = url, cursor = cursor).await()
                     }
-                    catch (e: Throwable) {
-                        break
-                    }
+
+                    val response = result.getOrNull() ?: break
 
                     cursor = response.cursor
                     bookmarks.addAll(response.bookmarks)
@@ -234,12 +263,10 @@ class BookmarksRepository(
 
     /** 新着ブクマを取得 */
     fun loadBookmarksRecentAsync(
-        additionalLoading: Boolean = false
+        additionalLoading: Boolean = false,
+        leastCommentsNum: Int = 10
     ) : Deferred<List<Bookmark>> = client.async(Dispatchers.Default) {
         if (additionalLoading && recentBookmarksCursor == null) return@async emptyList()
-
-        var cursor: String? = null
-        val page = ArrayList<Bookmark>()
 
         val response =
             if (!additionalLoading) loadMostRecentBookmarksAsync(url = entry.url).await()
@@ -248,11 +275,13 @@ class BookmarksRepository(
                     cursor = recentBookmarksCursor
                 ).await()
 
-        cursor = response.cursor
-        page.addAll(response.bookmarks.map { Bookmark.create(it) })
+        var cursor = response.cursor
+        val page = ArrayList<Bookmark>(
+            response.bookmarks.map { Bookmark.create(it) }
+        )
 
         // 有言ブクマを一定数確保するために繰り返し続きをロードする
-        while (cursor != null && page.count { it.comment.isNotBlank() } < 10) {
+        while (cursor != null && page.count { it.comment.isNotBlank() } < leastCommentsNum) {
             val r = client.getRecentBookmarksAsync(
                 url = entry.url,
                 cursor = cursor
@@ -295,7 +324,7 @@ class BookmarksRepository(
 
         // 追加分のスターを読み込む
         if (!allStarsLiveData.loading) {
-            allStarsLiveData.updateAsync().start()
+            allStarsLiveData.update()
         }
 
         return@async page
@@ -359,8 +388,6 @@ class BookmarksRepository(
     /** ブクマに付けられたスター取得を監視するライブデータを生成する */
     fun createStarsEntryLiveData(bookmark: Bookmark) =
         StarsEntryLiveData(
-            client,
-            entry,
             bookmark,
             this
         ).also { liveData ->
@@ -489,15 +516,16 @@ class BookmarksRepository(
 
     /** エントリ中の全スター情報取得を監視するライブデータ */
     class StarsLiveData(
-        private val client: HatenaClient,
-        private val entry: Entry,
         private val repository: BookmarksRepository
     ) : LiveData<List<StarsEntry>>(emptyList()) {
         private var task: Deferred<List<StarsEntry>>? = null
-            get() = lock(this) { field }
+            get() = synchronized(this) { field }
             private set(value) {
-                lock(this) { field = value }
+                synchronized(this) { field = value }
             }
+
+        private val client : HatenaClient
+            get() = repository.client
 
         /** ロード中か否か */
         val loading: Boolean
@@ -509,7 +537,11 @@ class BookmarksRepository(
         }
 
         override fun onActive() {
-            updateAsync().start()
+            client.launch {
+                kotlin.runCatching {
+                    update()
+                }
+            }
         }
 
         override fun onInactive() {
@@ -518,8 +550,13 @@ class BookmarksRepository(
         }
 
         /** 特定のブコメに対するスター情報を再読み込み */
-        suspend fun update(bookmark: Bookmark, onError: OnError? = null) {
+        suspend fun update(
+            bookmark: Bookmark
+        ) = withContext(Dispatchers.Default) {
             try {
+                val entry = repository.entry
+
+                val client = repository.client
                 val result = client.getStarsEntryAsync(bookmark.getBookmarkUrl(entry)).await()
                 repository.setStarsEntryTo(bookmark.user, result)
 
@@ -529,13 +566,17 @@ class BookmarksRepository(
                 postValue(new)
             }
             catch (e: Throwable) {
-                onError?.invoke(e)
+                throw e
             }
         }
 
         /** スター情報を再読み込み */
-        fun updateAsync(forceUpdate: Boolean = false) : Deferred<List<StarsEntry>> {
+        suspend fun update(
+            forceUpdate: Boolean = false
+        ) : List<StarsEntry> = withContext(Dispatchers.Default) {
             task?.cancel()
+
+            val entry = repository.entry
 
             val userAndUrls =
                 repository.bookmarksEntry?.bookmarks
@@ -545,29 +586,30 @@ class BookmarksRepository(
                     ?.map { Pair(it.user, it.getBookmarkUrl(entry)) }
                     ?: emptyList()
 
-            return client.getStarsEntryAsync(userAndUrls.map { it.second }).also {
-                it.invokeOnCompletion { e ->
-                    if (e == null) {
-                        val result = it.getCompleted()
+            val task = client.getStarsEntryAsync(userAndUrls.map { it.second })
+            this@StarsLiveData.task = task
 
-                        result.forEach { starEntry ->
-                            val user = userAndUrls.firstOrNull { pair ->
-                                pair.second == starEntry.url
-                            }?.first
+            return@withContext try {
+                val result = task.await()
 
-                            if (user != null) {
-                                repository.setStarsEntryTo(user, starEntry)
-                            }
-                        }
+                result.forEach { starEntry ->
+                    val user = userAndUrls.firstOrNull { pair ->
+                        pair.second == starEntry.url
+                    }?.first
 
-                        // タスク完了
-                        task = null
-
-                        postValue(result)
+                    if (user != null) {
+                        repository.setStarsEntryTo(user, starEntry)
                     }
                 }
 
-                task = it
+                // タスク完了
+                this@StarsLiveData.task = null
+                postValue(result)
+
+                result
+            }
+            catch (e: Throwable) {
+                throw e
             }
         }
     }
@@ -576,15 +618,20 @@ class BookmarksRepository(
 
     /** ブクマに付けられたスター情報取得を監視するライブデータ */
     class StarsEntryLiveData(
-        private val client: HatenaClient,
-        private val entry: Entry,
         private val bookmark: Bookmark,
         private val repository: BookmarksRepository
     ) : LiveData<StarsEntry?>() {
         private var task: Deferred<StarsEntry>? = null
 
+        private val client: HatenaClient
+            get() = repository.client
+
         override fun onActive() {
-            updateAsync().start()
+            client.launch {
+                kotlin.runCatching {
+                    update()
+                }
+            }
         }
 
         override fun onInactive() {
@@ -598,29 +645,30 @@ class BookmarksRepository(
         }
 
         /** スター情報を強制再読み込み */
-        fun updateAsync(forceUpdate: Boolean = false) : Deferred<StarsEntry> {
+        suspend fun update(
+            forceUpdate: Boolean = false
+        ) : StarsEntry = withContext(Dispatchers.Default) {
             task?.cancel()
             task = null
 
             val cache = repository.getStarsEntryTo(bookmark.user)
-            return if (!forceUpdate && cache != null) {
-                GlobalScope.async {
-                    return@async cache.also {
-                        postValue(it)
-                    }
-                }
+
+            if (!forceUpdate && cache != null) {
+                return@withContext cache.also { postValue(it) }
             }
-            else {
-                client.getStarsEntryAsync(bookmark.getBookmarkUrl(entry)).also {
-                    it.invokeOnCompletion { e ->
-                        if (e == null) {
-                            val result = it.getCompleted()
-                            repository.setStarsEntryTo(bookmark.user, result)
-                            postValue(result)
-                        }
-                    }
-                    task = it
-                }
+
+            return@withContext try {
+                val entry = repository.entry
+                val task = client.getStarsEntryAsync(bookmark.getBookmarkUrl(entry))
+                this@StarsEntryLiveData.task = task
+                val result = task.await()
+                repository.setStarsEntryTo(bookmark.user, result)
+                postValue(result)
+
+                result
+            }
+            catch (e: Throwable) {
+                throw e
             }
         }
     }

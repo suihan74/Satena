@@ -40,12 +40,24 @@ class RecyclerViewScrollingUpdater(
 
     /** ロード処理実行中か否かを表す */
     var isLoading : Boolean = false
-        get() = synchronized(this) { field }
+        get() = synchronized(isLoadingLock) { field }
         private set(value) {
-            synchronized(this) {
+            synchronized(isLoadingLock) {
                 field = value
             }
         }
+
+    /** 利用可能か */
+    var isEnabled : Boolean = true
+        get() = synchronized(isEnabledLock) { field }
+        set(value) {
+            synchronized(isEnabledLock) {
+                field = value
+            }
+        }
+
+    private val isLoadingLock by lazy { Any() }
+    private val isEnabledLock by lazy { Any() }
 
     /**
      * ロード完了時に手動で必ず呼ぶ
@@ -71,7 +83,7 @@ class RecyclerViewScrollingUpdater(
     }
 
     private fun checkInvoking(invokingPosition: Int, lastInScreen: Int) =
-        invokingPosition > 0 && !isLoading && invokingPosition <= lastInScreen
+        isEnabled && !isLoading && invokingPosition > 0 && invokingPosition <= lastInScreen
 
     private fun load() {
         var error : Throwable? = null
