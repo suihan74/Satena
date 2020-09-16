@@ -413,4 +413,10 @@
     <string name="browser_menu_share">共有</string>
     <string name="browser_menu_settings">設定</string>
     <string name="browser_menu_exit">終了</string>
+
+    <string name="browser_url_blocking_dialog_title">URLブロック設定を追加</string>
+    <string name="browser_url_blocking_pattern_hint">パターン</string>
+    <string name="browser_url_blocking_regex_check_box_text">正規表現</string>
+    <string name="msg_add_url_blocking_succeeded">URLブロック設定を追加しました</string>
+    <string name="msg_url_blocked">既にブロックされています</string>
 </resources>

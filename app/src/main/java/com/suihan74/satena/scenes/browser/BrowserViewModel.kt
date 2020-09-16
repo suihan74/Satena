@@ -4,13 +4,14 @@ import android.net.Uri
 import android.util.Log
 import android.webkit.URLUtil
 import android.webkit.WebView
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.BookmarksEntry
-import com.suihan74.utilities.Listener
-import com.suihan74.utilities.SingleUpdateMutableLiveData
-import com.suihan74.utilities.addUnique
+import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -18,6 +19,8 @@ class BrowserViewModel(
     val repository: BrowserRepository,
     initialUrl: String
 ) : ViewModel() {
+    private val DIALOG_BLOCK_URL by lazy { "DIALOG_BLOCK_URL" }
+
     /** テーマ */
     val themeId : Int
         get() = repository.themeId
@@ -132,5 +135,26 @@ class BrowserViewModel(
     /** リソースを追加 */
     fun addResource(url: String, blocked: Boolean) = viewModelScope.launch(Dispatchers.IO) {
         repository.resourceUrls.addUnique(ResourceUrl(url, blocked))
+    }
+
+    // ------ //
+
+    /** 新しいブロック設定を追加するダイアログを開く */
+    fun openBlockUrlDialog(
+        fragmentManager: FragmentManager
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        UrlBlockingDialog.createInstance(resourceUrls).run {
+            showAllowingStateLoss(fragmentManager, DIALOG_BLOCK_URL)
+
+            setOnCompleteListener { setting ->
+                val blockList = repository.blockUrls.value ?: emptyList()
+
+                if (blockList.none { it.pattern == setting.pattern }) {
+                    repository.blockUrls.value = blockList.plus(setting)
+                }
+
+                SatenaApplication.instance.showToast(R.string.msg_add_url_blocking_succeeded)
+            }
+        }
     }
 }

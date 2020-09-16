@@ -211,6 +211,11 @@ class BrowserActivity : FragmentActivity() {
             true
         }
 
+        R.id.add_blocking -> {
+            viewModel.openBlockUrlDialog(supportFragmentManager)
+            true
+        }
+
         R.id.adblock -> {
             viewModel.useUrlBlocking.value = viewModel.useUrlBlocking.value != true
             item.title =

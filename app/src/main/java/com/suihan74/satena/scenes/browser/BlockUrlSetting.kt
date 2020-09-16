@@ -4,10 +4,10 @@ package com.suihan74.satena.scenes.browser
  * ブロックするURLの設定
  */
 data class BlockUrlSetting(
-    /** queueの内容が含まれるURLをブロックする */
-    val queue: String,
+    /** patternの内容が含まれるURLをブロックする */
+    val pattern: String,
 
-    /** queueが正規表現である */
+    /** patternが正規表現である */
     val isRegex: Boolean
 )
 
@@ -15,7 +15,7 @@ data class BlockUrlSetting(
 val List<BlockUrlSetting>.regex
     get() = Regex(
         joinToString(separator = "|") {
-            if (it.isRegex) it.queue
-            else Regex.escape(it.queue)
+            if (it.isRegex) it.pattern
+            else Regex.escape(it.pattern)
         }
     )

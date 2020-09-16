@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.browser.UrlBlockingDialog.DialogViewModel" />
+    </data>
+
+    <RelativeLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:paddingTop="12dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/title"
+                android:text="@string/browser_url_blocking_dialog_title"
+                android:textSize="20sp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <EditText
+                android:id="@+id/edit_text"
+                android:text="@={vm.pattern}"
+                android:textColor="@color/textColor"
+                android:hint="@string/browser_url_blocking_pattern_hint"
+                android:autofillHints="false"
+                android:inputType="text"
+                android:layout_below="@id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <CheckBox
+                android:id="@+id/regex_check_box"
+                android:text="@string/browser_url_blocking_regex_check_box_text"
+                android:checked="@={vm.isRegex}"
+                android:layout_below="@id/edit_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+</layout>
+
