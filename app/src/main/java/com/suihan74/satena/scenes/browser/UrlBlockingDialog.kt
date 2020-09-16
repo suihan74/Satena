@@ -120,11 +120,14 @@ class UrlBlockingDialog : DialogFragment() {
 
         // ------ //
 
+        private val domainRegex : Regex by lazy {
+            Regex("""^https?://([^/]+)""")
+        }
+
         /** 選択したURLのドメイン部分をパターン候補として返す */
         fun getPatternCandidate(which: Int) : String {
-            val regex = Regex("""^https?://([^/]+)""")
             val url = urls[which].url
-            val match = regex.find(url)
+            val match = domainRegex.find(url)
 
             return match?.groupValues?.getOrNull(1) ?: url
         }
