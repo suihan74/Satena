@@ -214,12 +214,11 @@ class BookmarksRepository(
                 var cursor: String? = null
                 val bookmarks = ArrayList<BookmarkWithStarCount>()
                 while (true) {
-                    val response = try {
+                    val result = kotlin.runCatching {
                         client.getRecentBookmarksAsync(url = url, cursor = cursor).await()
                     }
-                    catch (e: Throwable) {
-                        break
-                    }
+
+                    val response = result.getOrNull() ?: break
 
                     cursor = response.cursor
                     bookmarks.addAll(response.bookmarks)
@@ -236,12 +235,10 @@ class BookmarksRepository(
 
     /** 新着ブクマを取得 */
     fun loadBookmarksRecentAsync(
-        additionalLoading: Boolean = false
+        additionalLoading: Boolean = false,
+        leastCommentsNum: Int = 10
     ) : Deferred<List<Bookmark>> = client.async(Dispatchers.Default) {
         if (additionalLoading && recentBookmarksCursor == null) return@async emptyList()
-
-        var cursor: String? = null
-        val page = ArrayList<Bookmark>()
 
         val response =
             if (!additionalLoading) loadMostRecentBookmarksAsync(url = entry.url).await()
@@ -250,11 +247,13 @@ class BookmarksRepository(
                     cursor = recentBookmarksCursor
                 ).await()
 
-        cursor = response.cursor
-        page.addAll(response.bookmarks.map { Bookmark.create(it) })
+        var cursor = response.cursor
+        val page = ArrayList<Bookmark>(
+            response.bookmarks.map { Bookmark.create(it) }
+        )
 
         // 有言ブクマを一定数確保するために繰り返し続きをロードする
-        while (cursor != null && page.count { it.comment.isNotBlank() } < 10) {
+        while (cursor != null && page.count { it.comment.isNotBlank() } < leastCommentsNum) {
             val r = client.getRecentBookmarksAsync(
                 url = entry.url,
                 cursor = cursor
