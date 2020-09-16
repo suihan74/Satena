@@ -73,7 +73,7 @@ abstract class BookmarksTabViewModel : ViewModel() {
     ) = viewModelScope.launch(Dispatchers.Main) {
         try {
             val next = withContext(Dispatchers.Default) {
-                updateBookmarks().join()
+//                updateBookmarks().join()
                 loadNextBookmarks()
             }
             onSuccess?.invoke(next)

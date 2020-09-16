@@ -61,8 +61,6 @@ class BookmarksTabFragment :
     ): View? {
         val view = inflater.inflate(R.layout.fragment_bookmarks_tab, container, false)
 
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-
         val bookmarksAdapter = BookmarksAdapter(
             viewLifecycleOwner,
             viewModel,
@@ -128,6 +126,8 @@ class BookmarksTabFragment :
                 }
             )
         }
+        // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
+        scrollingUpdater.isEnabled = false
 
         // recycler view
         view.bookmarks_list.apply {
@@ -176,15 +176,18 @@ class BookmarksTabFragment :
             val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
             val userTags = activityViewModel.taggedUsers.value ?: emptyList()
             val ignoredUsers = activityViewModel.ignoredUsers.value
-            val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
-            lifecycleScope.launch(Dispatchers.Default) {
+            val displayMutedMention = activityViewModel.repository.showCalledIgnoredUsers//prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
+            lifecycleScope.launch {
                 bookmarksAdapter.setBookmarks(
                     it,
                     bookmarksEntry,
                     userTags,
                     ignoredUsers,
                     displayMutedMention
-                )
+                ) {
+                    // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
+                    scrollingUpdater.isEnabled = true
+                }
             }
         }
 
@@ -194,8 +197,8 @@ class BookmarksTabFragment :
             if (bookmarks != null) {
                 val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
                 val ignoredUsers = activityViewModel.ignoredUsers.value
-                val displayMutedMention = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
-                lifecycleScope.launch(Dispatchers.Default) {
+                val displayMutedMention = activityViewModel.repository.showCalledIgnoredUsers
+                lifecycleScope.launch {
                     bookmarksAdapter.setBookmarks(
                         bookmarks,
                         bookmarksEntry,

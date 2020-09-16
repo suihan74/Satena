@@ -226,8 +226,10 @@ class BookmarksAdapter(
         bookmarksEntry: BookmarksEntry,
         taggedUsers: List<UserAndTags>,
         ignoredUsers: List<String>,
-        displayMutedMention: Boolean
-    ) {
+        displayMutedMention: Boolean,
+        onSubmitted: Runnable? = null
+    ) = withContext(Dispatchers.Default) {
+
         val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
             val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
             val stars = bookmarksRepository.getStarsEntryTo(it.user)
@@ -249,7 +251,7 @@ class BookmarksAdapter(
         viewModel.displayStates = newStates
 
         withContext(Dispatchers.Main) {
-            submitList(newStates)
+            submitList(newStates, onSubmitted)
         }
     }
 

@@ -38,6 +38,7 @@ import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BookmarkDetailFragment :
     Fragment(),
@@ -252,8 +253,15 @@ class BookmarkDetailFragment :
 
             if (state == NetworkReceiver.State.CONNECTED) {
                 viewModel.viewModelScope.launch {
-                    viewModel.starsToUser.updateAsync().await()
-                    viewModel.starsAll.updateAsync().await()
+                    try {
+                        viewModel.starsToUser.update()
+                        viewModel.starsAll.update()
+                    }
+                    catch (e: Throwable) {
+                        withContext(Dispatchers.Main) {
+                            context?.showToast(R.string.msg_update_stars_failed)
+                        }
+                    }
                 }
             }
         }
