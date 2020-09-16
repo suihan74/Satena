@@ -4,10 +4,8 @@ import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
-import com.suihan74.satena.models.BlockUrlSetting
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.regex
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SingleUpdateMutableLiveData
@@ -95,6 +93,9 @@ class BrowserRepository(
             return _blockUrlsRegex ?: Regex("")
         }
 
+    /** ページ中のすべてのリソースURL */
+    val resourceUrls = ArrayList<ResourceUrl>()
+
     // ------ //
 
     /** サインインを行う */
@@ -107,3 +108,12 @@ class BrowserRepository(
         return client.getBookmarksEntryAsync(url).await()
     }
 }
+
+/** リソースURL情報 */
+data class ResourceUrl(
+    /** 対象URL */
+    val url: String,
+
+    /** AdBlock設定によりブロックされた */
+    val blocked: Boolean
+)

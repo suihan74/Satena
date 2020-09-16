@@ -3,12 +3,14 @@ package com.suihan74.satena.scenes.browser
 import android.net.Uri
 import android.util.Log
 import android.webkit.URLUtil
+import android.webkit.WebView
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.SingleUpdateMutableLiveData
+import com.suihan74.utilities.addUnique
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -59,6 +61,10 @@ class BrowserViewModel(
         SingleUpdateMutableLiveData("")
     }
 
+    /** 現在表示中のページで読み込んだすべてのURL */
+    val loadedResources : List<ResourceUrl>
+        get() = repository.resourceUrls
+
     // ------ //
 
     /** 表示中のページのBookmarksEntry */
@@ -69,10 +75,10 @@ class BrowserViewModel(
     // ------ //
 
     // ページ読み込み完了時に呼ぶ処理
-    var onPageFinished: Listener<String>? = null
+    private var onPageFinishedListener: Listener<String>? = null
 
     fun setOnPageFinishedListener(listener: Listener<String>?) {
-        onPageFinished = listener
+        onPageFinishedListener = listener
     }
 
     // ------ //
@@ -106,5 +112,25 @@ class BrowserViewModel(
                 true
             }
         }
+    }
+
+    /** ページ読み込み開始時の処理 */
+    fun onPageStarted(url: String) {
+        this.title.value = url
+        this.url.value = url
+        repository.resourceUrls.clear()
+    }
+
+    /** ページ読み込み完了時の処理 */
+    fun onPageFinished(view: WebView?, url: String) {
+        this.title.value = view?.title ?: url
+        repository.resourceUrls.addUnique(ResourceUrl(url, false))
+
+        onPageFinishedListener?.invoke(url)
+    }
+
+    /** リソースを追加 */
+    fun addResource(url: String, blocked: Boolean) = viewModelScope.launch(Dispatchers.IO) {
+        repository.resourceUrls.addUnique(ResourceUrl(url, blocked))
     }
 }

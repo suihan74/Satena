@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.browser
 
 import android.graphics.Bitmap
-import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -23,15 +22,15 @@ class BrowserWebViewClient(
 
     /** WebView内でのページ遷移をViewModelに伝える */
     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+        url ?: return
         super.onPageStarted(view, url, favicon)
-        viewModel.url.value = url
+        viewModel.onPageStarted(url)
     }
 
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
-        viewModel.title.value = view!!.title
         if (url != null) {
-            viewModel.onPageFinished?.invoke(url)
+            viewModel.onPageFinished(view, url)
         }
     }
 
@@ -40,28 +39,27 @@ class BrowserWebViewClient(
         view: WebView?,
         request: WebResourceRequest?
     ): WebResourceResponse? {
-        if (true != viewModel.repository.useUrlBlocking.value) {
-            return super.shouldInterceptRequest(view, request)
+        val url = request?.url?.toString() ?: return null
+        val blocked =
+            viewModel.useUrlBlocking.value == true &&
+            viewModel.repository.blockUrlsRegex.containsMatchIn(url)
+
+        val result =
+            if (!blocked) super.shouldInterceptRequest(view, request)
+            else emptyResourceRequest
+
+        if (blocked) {
+            viewModel.addResource(url, blocked = true)
         }
 
-        val url = request?.url?.toString() ?: return null
-        return if (!viewModel.repository.blockUrlsRegex.containsMatchIn(url)) {
-            super.shouldInterceptRequest(view, request)
-        }
-        else {
-            Log.i("abort", url)
-            emptyResourceRequest
-        }
+        return result
     }
 
-    /** すべてのリソースの読み込み時に呼ばれる */
+    /** ページ中のリソースURLをすべて記録する */
     override fun onLoadResource(view: WebView?, url: String?) {
-        url ?: return
-        if (!viewModel.repository.blockUrlsRegex.containsMatchIn(url)) {
-            super.onLoadResource(view, url)
-        }
-        else {
-            Log.i("abort", url)
+        super.onLoadResource(view, url)
+        if (url != null) {
+            viewModel.addResource(url, blocked = false)
         }
     }
 }
