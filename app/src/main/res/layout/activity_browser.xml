@@ -25,37 +25,40 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                <com.suihan74.utilities.MarqueeToolbar
+                <Toolbar
                         android:id="@+id/toolbar"
-                        title="@{vm.title}"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
+                        android:layout_height="match_parent">
 
-                <FrameLayout
-                        android:background="?attr/tabBackground"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                    <EditText
-                            android:id="@+id/address_edit_text"
-
-                            android:text="@={vm.addressText}"
-                            android:hint="@null"
-
-                            android:textSize="16sp"
-                            android:paddingVertical="8dp"
-                            android:paddingHorizontal="8dp"
-                            android:singleLine="true"
-                            android:inputType="text"
-                            android:imeOptions="actionGo"
-                            android:importantForAutofill="no"
-
-                            android:background="?selectableItemBackground"
-                            android:textColor="?attr/textColor"
-                            android:textColorHint="?attr/textColorHint"
-
+                    <FrameLayout
+                            android:background="@drawable/browser_address_area_background"
+                            android:layout_marginRight="8dp"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
-                </FrameLayout>
+                            android:layout_height="wrap_content">
+
+                        <EditText
+                                android:id="@+id/address_edit_text"
+
+                                android:text="@={vm.addressText}"
+                                android:hint="@null"
+
+                                android:textSize="16sp"
+                                android:paddingVertical="8dp"
+                                android:paddingHorizontal="8dp"
+                                android:singleLine="true"
+                                android:inputType="text"
+                                android:imeOptions="actionGo"
+                                android:importantForAutofill="no"
+
+                                android:background="@android:color/transparent"
+                                android:textColor="@color/colorPrimaryText"
+                                android:textColorHint="?attr/textColorHint"
+
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"/>
+                    </FrameLayout>
+
+                </Toolbar>
 
             </com.google.android.material.appbar.AppBarLayout>
 

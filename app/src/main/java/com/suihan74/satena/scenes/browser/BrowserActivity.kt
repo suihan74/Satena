@@ -39,14 +39,6 @@ class BrowserActivity : FragmentActivity() {
                 webView.loadUrl(url)
             }
         }
-
-        @BindingAdapter("title")
-        @JvmStatic
-        fun setToolbarTitle(toolbar: MarqueeToolbar, title: String) {
-            if (toolbar.title != title) {
-                toolbar.title = title
-            }
-        }
     }
 
     private val FRAGMENT_BOOKMARK_POST = "FRAGMENT_BOOKMARK_POST"
@@ -120,12 +112,6 @@ class BrowserActivity : FragmentActivity() {
                 webview.reload()
             }
         }
-
-        viewModel.bookmarksEntry.observe(this, Observer {
-            toolbar.subtitle =
-                if (it == null) ""
-                else getString(R.string.toolbar_subtitle_bookmarks, it.count, it.bookmarks.count { b -> b.comment.isNotBlank() })
-        })
 
         // 投稿エリアを作成
         val bookmarkPostFragment = BookmarkPostFragment.createInstance()

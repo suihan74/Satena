@@ -26,7 +26,7 @@ class BrowserViewModel(
     val url by lazy {
         SingleUpdateMutableLiveData(initialUrl).apply {
             observeForever {
-                addressText.value = it
+                addressText.value = Uri.decode(it)
                 loadBookmarksEntry(it)
             }
         }
