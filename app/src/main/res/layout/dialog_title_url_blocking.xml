@@ -30,8 +30,11 @@
                 android:text="@={vm.pattern}"
                 android:textColor="@color/textColor"
                 android:hint="@string/browser_url_blocking_pattern_hint"
+
                 android:autofillHints="false"
                 android:inputType="text"
+                android:singleLine="true"
+
                 android:layout_below="@id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>

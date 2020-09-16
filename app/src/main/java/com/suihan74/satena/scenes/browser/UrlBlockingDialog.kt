@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
+import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.core.text.buildSpannedString
 import androidx.databinding.DataBindingUtil
@@ -56,10 +57,22 @@ class UrlBlockingDialog : DialogFragment() {
             }
             .show()
             .apply {
+                // IMEを表示するための設定
+                window?.run {
+                    clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+                    setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+                }
+                requireActivity().showSoftInputMethod(
+                    titleViewBinding.editText,
+                    WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+                )
+
+                // クリックしたURLをEditTextに入力する
                 listView.setOnItemClickListener { adapterView, view, i, l ->
-                    viewModel.pattern.value = viewModel.labels[i].toString()
+                    viewModel.pattern.value = viewModel.getPatternCandidate(i)
                 }
 
+                // 既にブロックされている設定の説明を表示する
                 listView.setOnItemLongClickListener { adapterView, view, i, l ->
                     if (viewModel.urls[i].blocked) {
                         context.showToast(R.string.msg_url_blocked)
@@ -103,6 +116,17 @@ class UrlBlockingDialog : DialogFragment() {
         /** 正規表現として扱う */
         val isRegex by lazy {
             MutableLiveData(false)
+        }
+
+        // ------ //
+
+        /** 選択したURLのドメイン部分をパターン候補として返す */
+        fun getPatternCandidate(which: Int) : String {
+            val regex = Regex("""^https?://([^/]+)""")
+            val url = urls[which].url
+            val match = regex.find(url)
+
+            return match?.groupValues?.getOrNull(1) ?: url
         }
 
         fun invokeOnComplete() {
