@@ -34,6 +34,7 @@
                 android:autofillHints="false"
                 android:inputType="text"
                 android:singleLine="true"
+                android:imeOptions="actionDone"
 
                 android:layout_below="@id/title"
                 android:layout_width="match_parent"
