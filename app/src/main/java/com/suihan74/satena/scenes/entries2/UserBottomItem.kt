@@ -4,13 +4,14 @@ import android.content.res.ColorStateList
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.DrawableRes
+import androidx.annotation.IntRange
 import androidx.annotation.StringRes
 import androidx.core.view.MenuItemCompat
 import com.suihan74.satena.R
 
 /** ボトムバーに表示する項目 */
 enum class UserBottomItem(
-    val id: Int,
+    @IntRange(from=0, to=9) val id: Int,
     @DrawableRes val iconId: Int,
     @StringRes val textId: Int,
     val requireSignedIn: Boolean = false
@@ -30,6 +31,11 @@ enum class UserBottomItem(
         R.drawable.ic_mybookmarks,
         R.string.my_bookmarks_desc,
         requireSignedIn = true
+    ),
+
+    INNER_BROWSER(9,
+        R.drawable.ic_world,
+        R.string.inner_browser
     ),
 
     SEARCH(3,

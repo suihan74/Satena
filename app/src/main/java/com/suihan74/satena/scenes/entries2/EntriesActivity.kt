@@ -37,6 +37,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
+import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_entries2.*
 
@@ -553,6 +554,8 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         UserBottomItem.MYBOOKMARKS -> showCategory(Category.MyBookmarks)
 
         UserBottomItem.NOTICE -> showCategory(Category.Notices)
+
+        UserBottomItem.INNER_BROWSER -> startInnerBrowser()
 
         UserBottomItem.SEARCH -> showCategory(Category.Search)
 

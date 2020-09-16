@@ -409,6 +409,8 @@
     <string name="mentioned_item_menu_show_user_entries">@string/bookmark_show_user_entries</string>
 
     <!-- 内部ブラウザ -->
+    <string name="inner_browser">内部ブラウザ</string>
+
     <string name="browser_menu_bookmarks">ブクマ画面を表示</string>
     <string name="browser_menu_share">共有</string>
     <string name="browser_menu_settings">設定</string>
