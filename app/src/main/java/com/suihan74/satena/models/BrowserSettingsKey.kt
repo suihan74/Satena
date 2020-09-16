@@ -36,7 +36,6 @@ enum class BrowserSettingsKey (
         "impact-ad.jp",
         ".adtdp.com",
         "socdm.com/adsv",
-        ".yimg.jp",
         ".doubleclick.net",
         ".criteo.net",
         "ads.nicovideo.jp"
