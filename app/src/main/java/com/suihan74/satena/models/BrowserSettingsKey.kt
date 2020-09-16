@@ -21,6 +21,9 @@ enum class BrowserSettingsKey (
     /** 検索エンジン */
     SEARCH_ENGINE(typeInfo<String>(), "https://www.google.com/search?q="),
 
+    /** スタートページ */
+    START_PAGE_URL(typeInfo<String>(), "https://www.hatena.ne.jp/"),
+
     /** JavaScriptを有効にする */
     JAVASCRIPT_ENABLED(typeInfo<Boolean>(), true),
 

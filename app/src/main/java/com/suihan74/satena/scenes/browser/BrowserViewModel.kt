@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 
 class BrowserViewModel(
     val repository: BrowserRepository,
-    initialUrl: String
+    initialUrl: String?
 ) : ViewModel() {
     private val DIALOG_BLOCK_URL by lazy { "DIALOG_BLOCK_URL" }
 
@@ -28,7 +28,8 @@ class BrowserViewModel(
 
     /** 表示中のページURL */
     val url by lazy {
-        SingleUpdateMutableLiveData(initialUrl).apply {
+        val startPage = initialUrl ?: repository.startPage
+        SingleUpdateMutableLiveData(startPage).apply {
             observeForever {
                 addressText.value = Uri.decode(it)
                 loadBookmarksEntry(it)

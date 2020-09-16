@@ -11,6 +11,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.BrowserActivity
@@ -133,14 +134,20 @@ fun Context.startInnerBrowser(entry: Entry) {
     }
 }
 
-fun Context.startInnerBrowser(url: String) {
+fun Context.startInnerBrowser(url: String? = null) {
     val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
     when (BrowserMode.fromInt(prefs.getInt(PreferenceKey.BROWSER_MODE))) {
-        BrowserMode.CUSTOM_TABS_INTENT ->
+        BrowserMode.CUSTOM_TABS_INTENT -> {
+            val startUrl = url ?: let {
+                val browserSettings = SafeSharedPreferences.create<BrowserSettingsKey>(this)
+                browserSettings.get(BrowserSettingsKey.START_PAGE_URL)
+            }
+
             startInnerBrowser(
-                BrowserToolbarManager.createRemoteViews(this, url),
-                url
+                BrowserToolbarManager.createRemoteViews(this, startUrl),
+                startUrl
             )
+        }
 
         BrowserMode.WEB_VIEW -> {
             val intent = Intent(this, BrowserActivity::class.java).apply {

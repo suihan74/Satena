@@ -26,6 +26,11 @@ class BrowserRepository(
     val signedIn: Boolean
         get() = client.signedIn()
 
+    /** スタートページ */
+    val startPage : String by lazy {
+        browserSettings.getString(BrowserSettingsKey.START_PAGE_URL)!!
+    }
+
     /** UserAgent */
     val userAgent = SingleUpdateMutableLiveData<String?>(
         browserSettings.getString(BrowserSettingsKey.USER_AGENT)

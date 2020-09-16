@@ -45,7 +45,7 @@ class BrowserActivity : FragmentActivity() {
 
     val viewModel : BrowserViewModel by lazy {
         provideViewModel(this) {
-            val initialUrl = intent.getStringExtra(EXTRA_URL)!!
+            val initialUrl = intent.getStringExtra(EXTRA_URL)
 
             val repository = BrowserRepository(
                 HatenaClient,
