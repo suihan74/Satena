@@ -203,7 +203,7 @@ class BookmarkDetailViewModel(
     fun updateStarsToUser(forceUpdate: Boolean = false) = viewModelScope.launch {
         try {
             starsAll.update(bookmark)
-            starsToUser.updateAsync(forceUpdate).await()
+            starsToUser.update(forceUpdate)
         }
         catch (e: Throwable) {
             withContext(Dispatchers.Main) {
@@ -214,12 +214,10 @@ class BookmarkDetailViewModel(
 
     fun updateStarsAll(forceUpdate: Boolean) = viewModelScope.launch {
         try {
-            starsAll.updateAsync(forceUpdate).await()
+            starsAll.update(forceUpdate)
         }
         catch (e: Throwable) {
-            withContext(Dispatchers.Main) {
-                onLoadedStarsFailureListener?.invoke(e)
-            }
+            onLoadedStarsFailureListener?.invoke(e)
         }
     }
 
