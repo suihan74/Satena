@@ -303,6 +303,9 @@ class BrowserViewModel(
     /** ブクマ一覧画面を開く */
     private fun openBookmarksActivity(url: String, activity: BrowserActivity) {
         val intent = Intent(activity, BookmarksActivity::class.java).apply {
+            bookmarksEntry.value?.id?.onNot(0L) { id ->
+                putExtra(BookmarksActivity.EXTRA_ENTRY_ID, id)
+            }
             putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
         }
         activity.startActivity(intent)
