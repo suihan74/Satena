@@ -1,18 +1,29 @@
 package com.suihan74.satena.scenes.browser
 
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.view.Gravity
+import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.View
 import android.webkit.URLUtil
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.BookmarksEntry
+import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.modifySpecificUrls
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
 import com.suihan74.utilities.*
+import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -20,7 +31,9 @@ class BrowserViewModel(
     val repository: BrowserRepository,
     initialUrl: String?
 ) : ViewModel() {
+
     private val DIALOG_BLOCK_URL by lazy { "DIALOG_BLOCK_URL" }
+    private val DIALOG_CONTEXT_MENU by lazy { "DIALOG_CONTEXT_MENU" }
 
     /** テーマ */
     val themeId : Int
@@ -93,6 +106,188 @@ class BrowserViewModel(
 
     // ------ //
 
+    /** WebViewの設定 */
+    fun initializeWebView(wv: WebView, activity: BrowserActivity) {
+        wv.webViewClient = BrowserWebViewClient(this)
+        wv.webChromeClient = WebChromeClient()
+
+        // どういうわけかクリック時にもonLongClickListenerが呼ばれることがあるので、
+        // クリックとして処理したかどうかを記憶しておく
+        var handledAsClick = false
+
+        // WebView単体ではシングルタップが検知できないので、onTouchListenerで無理矢理シングルタップを検知させる
+        // あくまでリンククリックだけを検出したいので、あえてWebViewClientを使用した方法をとっていない
+        @Suppress("ClickableViewAccessibility")
+        wv.setOnTouchListener { view, motionEvent ->
+            when (motionEvent?.action) {
+                MotionEvent.ACTION_UP -> {
+                    val duration = motionEvent.eventTime - motionEvent.downTime
+                    handledAsClick = duration < 200L
+                    if (handledAsClick) {
+                        val hitTestResult = wv.hitTestResult
+                        val url = hitTestResult.extra ?: return@setOnTouchListener false
+                        val keywordRegex = Regex("""^https?://(anond\.hatelabo|d\.hatena\.ne)\.jp/keyword/(.+)$""")
+                        val word = keywordRegex.find(url)?.groupValues?.getOrNull(2)
+                        (word != null).whenTrue {
+                            viewModelScope.launch {
+                                val result = kotlin.runCatching {
+                                    repository.getKeyword(word!!)
+                                }
+
+                                val response = result.getOrNull()
+                                if (response != null) {
+                                    openKeywordPopup(response, view, motionEvent.x.toInt(), motionEvent.y.toInt(), activity)
+                                }
+                            }
+                        }
+                    }
+                    else false
+                }
+
+                else -> false
+            }
+        }
+
+        wv.setOnLongClickListener {
+            if (handledAsClick) return@setOnLongClickListener true
+
+            val hitTestResult = wv.hitTestResult
+            val url = hitTestResult.extra ?: return@setOnLongClickListener false
+            when (hitTestResult.type) {
+                // 画像
+                WebView.HitTestResult.IMAGE_TYPE -> {
+                    Log.i("image", hitTestResult.extra ?: "")
+                    true
+                }
+
+                // リンク
+                WebView.HitTestResult.SRC_ANCHOR_TYPE -> {
+                    val dialog = AlertDialogFragment2.Builder()
+                        .setTitle(Uri.decode(url))
+                        .setItems(listOf(
+                            R.string.dialog_open,
+                            R.string.browser_menu_share,
+                            R.string.browser_menu_bookmarks
+                        )) { _, which -> when(which) {
+                            0 -> goAddress(url)
+                            1 -> share(url, activity)
+                            2 -> openBookmarksActivity(url, activity)
+                        } }
+                        .setNegativeButton(R.string.dialog_close)
+                        .create()
+                    dialog.showAllowingStateLoss(activity.supportFragmentManager, DIALOG_CONTEXT_MENU) { e ->
+                        Log.e("error", Log.getStackTraceString(e))
+                    }
+                    true
+                }
+
+                // 画像リンク
+                WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
+                    Log.i("imglink", hitTestResult.extra ?: "")
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+        // jsのON/OFF
+        javascriptEnabled.observe(activity) {
+            wv.settings.javaScriptEnabled = it
+        }
+
+        // UserAgentの設定
+        userAgent.observe(activity) {
+            wv.settings.userAgentString = it
+        }
+    }
+
+    /** オプションメニューの処理 */
+    fun onOptionsItemSelected(item: MenuItem, activity: BrowserActivity): Boolean = when (item.itemId) {
+        R.id.bookmarks -> {
+            openBookmarksActivity(url.value!!, activity)
+            true
+        }
+
+        R.id.share -> {
+            share(url.value!!, activity)
+            true
+        }
+
+        R.id.add_blocking -> {
+            openBlockUrlDialog(activity.supportFragmentManager)
+            true
+        }
+
+        R.id.adblock -> {
+            useUrlBlocking.value = useUrlBlocking.value != true
+            item.title =
+                if (useUrlBlocking.value == true) "AdBlock : ON"
+                else "AdBlock : OFF"
+            activity.webview.reload()
+            true
+        }
+
+        R.id.javascript -> {
+            javascriptEnabled.value = javascriptEnabled.value != true
+            item.title =
+                if (javascriptEnabled.value == true) "JavaScript : ON"
+                else "JavaScript : OFF"
+            activity.webview.reload()
+            true
+        }
+
+        R.id.settings -> {
+            // TODO:
+            true
+        }
+
+        R.id.exit -> {
+            activity.finish()
+            true
+        }
+
+        else -> false
+    }
+
+    /** はてなキーワードの解説ポップアップを開く */
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun openKeywordPopup(response: List<Keyword>, anchor: View, x: Int, y: Int, activity: BrowserActivity) {
+        if (response.isNotEmpty()) {
+            // 一般的な用法を優先して表示する
+            val generalItem = response.firstOrNull { it.category.contains("一般") }
+            val data =
+                if (generalItem == null) response
+                else  buildList {
+                    add(generalItem)
+                    addAll(response.minus(generalItem))
+                }
+
+            val popup = HatenaKeywordPopup(activity, data)
+            popup.showAsDropDown(anchor, x - 100, y - 32, Gravity.TOP)
+        }
+    }
+
+    /** ブクマ一覧画面を開く */
+    private fun openBookmarksActivity(url: String, activity: BrowserActivity) {
+        val intent = Intent(activity, BookmarksActivity::class.java).apply {
+            putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
+        }
+        activity.startActivity(intent)
+    }
+
+    /** リンクを共有 */
+    private fun share(url: String, activity: BrowserActivity) {
+        val intent = Intent().also {
+            it.action = Intent.ACTION_SEND
+            it.type = "text/plain"
+            it.putExtra(Intent.EXTRA_TEXT, url)
+        }
+        activity.startActivity(intent)
+    }
+
+    // ------ //
+
     /** BookmarksEntryを更新 */
     private fun loadBookmarksEntry(url: String) = viewModelScope.launch(Dispatchers.Default) {
         // 渡されたページURLをエントリURLに修正する
@@ -112,7 +307,9 @@ class BrowserViewModel(
     }
 
     /** アドレスバーの入力内容に沿ってページ遷移 */
-    fun goAddress() : Boolean {
+    fun goAddress(moveToUrl: String? = null) : Boolean {
+        moveToUrl?.let { addressText.value = moveToUrl }
+
         val addr = addressText.value
         return when {
             addr.isNullOrBlank() -> false

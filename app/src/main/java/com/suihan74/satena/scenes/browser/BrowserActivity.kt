@@ -1,27 +1,22 @@
 package com.suihan74.satena.scenes.browser
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBrowserBinding
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.launch
@@ -86,7 +81,7 @@ class BrowserActivity : FragmentActivity() {
             override fun onDrawerStateChanged(newState: Int) {}
         })
 
-        initializeWebView(webview)
+        viewModel.initializeWebView(webview, this)
 
         // IMEの決定ボタンでページ遷移する
         address_edit_text.setOnEditorActionListener { _, action, _ ->
@@ -137,47 +132,6 @@ class BrowserActivity : FragmentActivity() {
         else -> super.onKeyDown(keyCode, event)
     }
 
-    /** WebViewの設定 */
-    private fun initializeWebView(wv: WebView) {
-        wv.webViewClient = BrowserWebViewClient(viewModel)
-        wv.webChromeClient = WebChromeClient()
-
-        wv.setOnLongClickListener {
-            val hitTestResult = wv.hitTestResult
-            when (hitTestResult.type) {
-                // 画像
-                WebView.HitTestResult.IMAGE_TYPE -> {
-                    Log.i("image", hitTestResult.extra ?: "")
-                    true
-                }
-
-                // リンク
-                WebView.HitTestResult.SRC_ANCHOR_TYPE -> {
-                    Log.i("link", hitTestResult.extra ?: "")
-                    true
-                }
-
-                // 画像リンク
-                WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
-                    Log.i("imglink", hitTestResult.extra ?: "")
-                    true
-                }
-
-                else -> false
-            }
-        }
-
-        // jsのON/OFF
-        viewModel.javascriptEnabled.observe(this, Observer {
-            wv.settings.javaScriptEnabled = it
-        })
-
-        // UserAgentの設定
-        viewModel.userAgent.observe(this, Observer {
-            wv.settings.userAgentString = it
-        })
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.browser, menu)
 
@@ -192,58 +146,7 @@ class BrowserActivity : FragmentActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.bookmarks -> {
-            val intent = Intent(this, BookmarksActivity::class.java).apply {
-                putExtra(BookmarksActivity.EXTRA_ENTRY_URL, viewModel.url.value!!)
-            }
-            startActivity(intent)
-            true
-        }
-
-        R.id.share -> {
-            val intent = Intent().also {
-                it.action = Intent.ACTION_SEND
-                it.type = "text/plain"
-                it.putExtra(Intent.EXTRA_TEXT, viewModel.url.value!!)
-            }
-            startActivity(intent)
-            true
-        }
-
-        R.id.add_blocking -> {
-            viewModel.openBlockUrlDialog(supportFragmentManager)
-            true
-        }
-
-        R.id.adblock -> {
-            viewModel.useUrlBlocking.value = viewModel.useUrlBlocking.value != true
-            item.title =
-                if (viewModel.useUrlBlocking.value == true) "AdBlock : ON"
-                else "AdBlock : OFF"
-            webview.reload()
-            true
-        }
-
-        R.id.javascript -> {
-            viewModel.javascriptEnabled.value = viewModel.javascriptEnabled.value != true
-            item.title =
-                if (viewModel.javascriptEnabled.value == true) "JavaScript : ON"
-                else "JavaScript : OFF"
-            webview.reload()
-            true
-        }
-
-        R.id.settings -> {
-            // TODO:
-            true
-        }
-
-        R.id.exit -> {
-            finish()
-            true
-        }
-
-        else -> false
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return viewModel.onOptionsItemSelected(item, this)
     }
 }

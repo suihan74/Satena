@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.browser
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.R
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
@@ -101,6 +102,11 @@ class BrowserRepository(
     /** ページ中のすべてのリソースURL */
     val resourceUrls = ArrayList<ResourceUrl>()
 
+    /** キーワードのキャッシュ */
+    val keywordsCache by lazy {
+        HashMap<String, List<Keyword>>()
+    }
+
     // ------ //
 
     /** サインインを行う */
@@ -111,6 +117,15 @@ class BrowserRepository(
     /** BookmarksEntryを取得 */
     suspend fun getBookmarksEntry(url: String) : BookmarksEntry {
         return client.getBookmarksEntryAsync(url).await()
+    }
+
+    /** キーワードを取得 */
+    suspend fun getKeyword(word: String) : List<Keyword> {
+        return keywordsCache[word] ?: let {
+            val value = client.getKeyword(word)
+            keywordsCache[word] = value
+            value
+        }
     }
 }
 
