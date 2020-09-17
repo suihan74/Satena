@@ -54,6 +54,7 @@
                                 android:background="@android:color/transparent"
                                 android:textColor="@color/colorPrimaryText"
                                 android:textColorHint="?attr/textColorHint"
+                                android:textCursorDrawable="@drawable/searchview_cursor"
 
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"/>
