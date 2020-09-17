@@ -410,6 +410,7 @@
 
     <!-- 内部ブラウザ -->
     <string name="inner_browser">内部ブラウザ</string>
+    <string name="browser_address_bar_hint">検索語句またはウェブアドレスを入力</string>
 
     <string name="browser_menu_bookmarks">ブクマ画面を表示</string>
     <string name="browser_menu_share">共有</string>

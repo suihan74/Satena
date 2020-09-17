@@ -82,4 +82,7 @@
 
     <!-- 障害情報 -->
     <color name="maintenanceResolved">#19BD3F</color>
+
+    <!-- 内部ブラウザ -->
+    <color name="BrowserAddressBarHintColor">#aaffffff</color>
 </resources>

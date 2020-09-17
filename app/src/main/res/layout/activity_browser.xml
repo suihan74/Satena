@@ -40,7 +40,7 @@
                                 android:id="@+id/address_edit_text"
 
                                 android:text="@={vm.addressText}"
-                                android:hint="@null"
+                                android:hint="@string/browser_address_bar_hint"
 
                                 android:textSize="16sp"
                                 android:paddingVertical="8dp"
@@ -53,7 +53,7 @@
 
                                 android:background="@android:color/transparent"
                                 android:textColor="@color/colorPrimaryText"
-                                android:textColorHint="?attr/textColorHint"
+                                android:textColorHint="@color/BrowserAddressBarHintColor"
                                 android:textCursorDrawable="@drawable/searchview_cursor"
 
                                 android:layout_width="match_parent"
