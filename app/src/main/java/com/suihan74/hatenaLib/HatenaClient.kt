@@ -1789,4 +1789,36 @@ object HatenaClient : BaseClient(), CoroutineScope {
             throw ConnectionFailureException("connection failed: $url")
         }
     }
+
+    /** はてなブログタグを取得する */
+    suspend fun getKeyword(word: String) : List<Keyword> = withContext(Dispatchers.IO) {
+        val url = "https://d.hatena.ne.jp/keyword/$word"
+        try {
+            val connection = Jsoup.connect(url)
+            val root = connection.get()
+
+            val tagBody = root.getElementById("tag-body")
+            val items = tagBody.getElementsByClass("sc-fMiknA")
+
+            return@withContext items.map { item ->
+                val header = item.getElementsByTag("header").first()
+                val title = header.getElementsByTag("h1").first().wholeText()
+                val headerExtras = header.getElementsByTag("div")
+                val category = headerExtras[1].wholeText()
+                val kana = headerExtras[2].wholeText()
+
+                val body = item.getElementsByClass("sc-fBuWsC").first()
+                val bodyHtml = body.html()
+                val bodyText = body.wholeText()
+                Keyword(title, kana, category, bodyText, bodyHtml)
+            }
+        }
+        catch (e: HttpStatusException) {
+            throw if (e.statusCode == 404) NotFoundException()
+            else ConnectionFailureException()
+        }
+        catch (e: Throwable) {
+            throw ConnectionFailureException("connection failed: $url")
+        }
+    }
 }
