@@ -3,10 +3,7 @@ package com.suihan74.satena.scenes.browser
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.view.Gravity
-import android.view.MenuItem
-import android.view.MotionEvent
-import android.view.View
+import android.view.*
 import android.webkit.URLUtil
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -26,6 +23,7 @@ import com.suihan74.utilities.*
 import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 class BrowserViewModel(
     val repository: BrowserRepository,
@@ -114,16 +112,50 @@ class BrowserViewModel(
         // どういうわけかクリック時にもonLongClickListenerが呼ばれることがあるので、
         // クリックとして処理したかどうかを記憶しておく
         var handledAsClick = false
+        var touchMoved = false
+        var velocityTracker: VelocityTracker? = null
 
         // WebView単体ではシングルタップが検知できないので、onTouchListenerで無理矢理シングルタップを検知させる
         // あくまでリンククリックだけを検出したいので、あえてWebViewClientを使用した方法をとっていない
         @Suppress("ClickableViewAccessibility")
         wv.setOnTouchListener { view, motionEvent ->
             when (motionEvent?.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    touchMoved = false
+                    handledAsClick = false
+                    velocityTracker?.clear()
+                    velocityTracker = velocityTracker ?: VelocityTracker.obtain()
+                    velocityTracker?.addMovement(motionEvent)
+                    false
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    velocityTracker?.also { vt ->
+                        val pointerId = motionEvent.getPointerId(motionEvent.actionIndex)
+                        vt.addMovement(motionEvent)
+                        vt.computeCurrentVelocity(1000)
+                        if (vt.xVelocity.absoluteValue > 100.0f || vt.yVelocity.absoluteValue > 100.0f) {
+                            touchMoved = true
+                        }
+                    }
+                    false
+                }
+
+                MotionEvent.ACTION_CANCEL -> {
+                    velocityTracker?.recycle()
+                    velocityTracker = null
+                    false
+                }
+
                 MotionEvent.ACTION_UP -> {
+                    velocityTracker?.recycle()
+                    velocityTracker = null
+
                     val duration = motionEvent.eventTime - motionEvent.downTime
                     handledAsClick = duration < 200L
                     if (handledAsClick) {
+                        if (touchMoved) return@setOnTouchListener false
+
                         val hitTestResult = wv.hitTestResult
                         val url = hitTestResult.extra ?: return@setOnTouchListener false
                         val keywordRegex = Regex("""^https?://(anond\.hatelabo|d\.hatena\.ne)\.jp/keyword/(.+)$""")
