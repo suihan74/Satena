@@ -61,10 +61,6 @@ class UrlBlockingDialog : DialogFragment() {
                     clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
                     setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
                 }
-                requireActivity().showSoftInputMethod(
-                    titleViewBinding.editText,
-                    WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-                )
 
                 // クリックしたURLをEditTextに入力する
                 listView.setOnItemClickListener { adapterView, view, i, l ->
