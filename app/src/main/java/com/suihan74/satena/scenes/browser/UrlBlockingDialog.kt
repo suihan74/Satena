@@ -63,12 +63,12 @@ class UrlBlockingDialog : DialogFragment() {
                 }
 
                 // クリックしたURLをEditTextに入力する
-                listView.setOnItemClickListener { adapterView, view, i, l ->
+                listView?.setOnItemClickListener { adapterView, view, i, l ->
                     viewModel.pattern.value = viewModel.getPatternCandidate(i)
                 }
 
                 // 既にブロックされている設定の説明を表示する
-                listView.setOnItemLongClickListener { adapterView, view, i, l ->
+                listView?.setOnItemLongClickListener { adapterView, view, i, l ->
                     if (viewModel.urls[i].blocked) {
                         context.showToast(R.string.msg_url_blocked)
                     }
@@ -76,7 +76,7 @@ class UrlBlockingDialog : DialogFragment() {
                 }
 
                 // 登録前に空白チェック
-                getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
                     if (viewModel.pattern.value.isNullOrBlank()) {
                         context.showToast(R.string.msg_empty_url_blocking_pattern)
                     }
