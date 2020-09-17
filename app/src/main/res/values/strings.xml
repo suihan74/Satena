@@ -416,6 +416,7 @@
     <string name="browser_menu_settings">設定</string>
     <string name="browser_menu_exit">終了</string>
 
+    <string name="dialog_url_blocking_continuous_register">連続登録</string>
     <string name="browser_url_blocking_dialog_title">URLブロック設定を追加</string>
     <string name="browser_url_blocking_pattern_hint">パターン</string>
     <string name="browser_url_blocking_regex_check_box_text">正規表現</string>

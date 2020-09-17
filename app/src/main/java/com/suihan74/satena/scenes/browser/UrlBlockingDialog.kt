@@ -54,6 +54,7 @@ class UrlBlockingDialog : DialogFragment() {
             .setItems(viewModel.labels, null)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setPositiveButton(R.string.dialog_register, null)
+            .setNeutralButton(R.string.dialog_url_blocking_continuous_register, null)
             .show()
             .apply {
                 // IMEを表示するための設定
@@ -75,17 +76,32 @@ class UrlBlockingDialog : DialogFragment() {
                     true
                 }
 
-                // 登録前に空白チェック
+                // 一件だけ追加して閉じる
                 getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
-                    if (viewModel.pattern.value.isNullOrBlank()) {
-                        context.showToast(R.string.msg_empty_url_blocking_pattern)
-                    }
-                    else {
-                        viewModel.invokeOnComplete()
+                    if (invokeRegister()) {
                         dismiss()
                     }
                 }
+
+                // 連続追加
+                getButton(DialogInterface.BUTTON_NEUTRAL)?.setOnClickListener {
+                    if (invokeRegister()) {
+                        viewModel.pattern.value = ""
+                    }
+                }
             }
+    }
+
+    /** 空白確認して設定を登録する */
+    private fun invokeRegister() : Boolean {
+        return if (viewModel.pattern.value.isNullOrBlank()) {
+            context?.showToast(R.string.msg_empty_url_blocking_pattern)
+            false
+        }
+        else {
+            viewModel.invokeOnComplete()
+            true
+        }
     }
 
     // ------ //
