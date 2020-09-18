@@ -8,6 +8,7 @@ import android.webkit.URLUtil
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -231,6 +232,18 @@ class BrowserViewModel(
         // UserAgentの設定
         userAgent.observe(activity) {
             wv.settings.userAgentString = it
+        }
+    }
+
+    /** 状態変化をオプションメニュー項目に通知する */
+    fun bindOptionsMenu(owner: LifecycleOwner, menu: Menu) {
+        useUrlBlocking.observe(owner) {
+            val state = if (it) "ON" else "OFF"
+            menu.findItem(R.id.adblock)?.title = "リソースブロック: $state"
+        }
+        javascriptEnabled.observe(owner) {
+            val state = if (it) "ON" else "OFF"
+            menu.findItem(R.id.javascript)?.title = "JavaScript: $state"
         }
     }
 
