@@ -36,8 +36,6 @@ class BrowserActivity : FragmentActivity() {
         }
     }
 
-    private val FRAGMENT_BOOKMARK_POST = "FRAGMENT_BOOKMARK_POST"
-
     val viewModel : BrowserViewModel by lazy {
         provideViewModel(this) {
             val initialUrl = intent.getStringExtra(EXTRA_URL)
