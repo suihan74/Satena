@@ -1,5 +1,7 @@
 package com.suihan74.satena.scenes.preferences
 
+import androidx.annotation.LayoutRes
+import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
@@ -9,8 +11,8 @@ import com.suihan74.satena.scenes.preferences.pages.*
 
 enum class PreferencesTabMode(
     val int : Int,
-    val titleId : Int = 0,
-    val iconId : Int = 0,
+    @StringRes val titleId : Int = 0,
+    @LayoutRes val iconId : Int = 0,
     val fragmentGenerator : () -> Fragment = { Fragment() }
 ) {
     // 環状スクロールできるように細工
@@ -41,27 +43,32 @@ enum class PreferencesTabMode(
         R.id.preferences_tab_bookmarks,
         { PreferencesBookmarksFragment.createInstance() }),
 
-    FAVORITE_SITES(6,
+    BROWSER(6,
+        R.string.pref_title_browser,
+        R.id.preferences_tab_browser,
+        { PreferencesBrowserFragment.createInstance() }),
+
+    FAVORITE_SITES(7,
         R.string.category_favorite_sites,
         R.id.preferences_tab_favorite_sites,
         { PreferencesFavoriteSitesFragment.createInstance() }),
 
-    IGNORED_ENTRIES(7,
+    IGNORED_ENTRIES(8,
         R.string.pref_title_ignored_entries,
         R.id.preferences_tab_filters,
         { PreferencesIgnoredEntriesFragment.createInstance() }),
 
-    IGNORED_USERS(8,
+    IGNORED_USERS(9,
         R.string.pref_title_ignored_users,
         R.id.preferences_tab_ignored_users,
         { PreferencesIgnoredUsersFragment.createInstance() }),
 
-    USER_TAGS(9,
+    USER_TAGS(10,
         R.string.pref_title_user_tags,
         R.id.preferences_tab_user_tags,
         { PreferencesUserTagsFragment.createInstance() }),
 
-    DUMMY_TAIL(10);
+    DUMMY_TAIL(11);
 
     companion object {
         fun fromInt(i: Int) = values().firstOrNull { it.int == i } ?: INFORMATION

@@ -139,6 +139,7 @@
     <string name="pref_title_generals">基本</string>
     <string name="pref_title_entries">エントリ画面</string>
     <string name="pref_title_bookmarks">ブックマーク画面</string>
+    <string name="pref_title_browser">アプリ内ブラウザ</string>
     <string name="pref_title_ignored_entries">非表示URL/TEXT</string>
     <string name="pref_title_ignored_users">非表示ユーザー</string>
     <string name="pref_title_user_tags">ユーザータグ</string>
@@ -261,6 +262,14 @@
     <string name="pref_fonts_entry_title_desc">エントリータイトル</string>
     <string name="pref_fonts_bookmark_user_desc">ブコメユーザー名</string>
     <string name="pref_fonts_bookmark_comment_desc">ブコメ本文</string>
+
+    <!-- 内部ブラウザ -->
+    <string name="pref_browser_start_page_desc">スタートページ</string>
+    <string name="pref_browser_start_page_hint">ウェブアドレスを入力</string>
+    <string name="pref_browser_javascript_enabled_desc">JavaScriptを使用する</string>
+    <string name="pref_browser_use_url_blocking_desc">リソースブロックを使用する</string>
+    <string name="pref_browser_user_agent_desc">UserAgent</string>
+    <string name="pref_browser_user_agent_hint">空欄: デフォルト設定</string>
 
     <!-- 非表示エントリ登録ダイアログ -->
     <string name="ignored_entry_dialog_title">非表示エントリを作成</string>

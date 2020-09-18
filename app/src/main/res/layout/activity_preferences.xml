@@ -84,6 +84,16 @@
                             android:contentDescription="@string/pref_title_bookmarks" />
 
                     <ImageButton
+                            android:id="@+id/preferences_tab_browser"
+                            android:src="@drawable/ic_world"
+                            android:tint="?attr/textColor"
+                            android:background="@null"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:onClick="onClickedTab"
+                            android:contentDescription="@string/pref_title_browser" />
+
+                    <ImageButton
                             android:id="@+id/preferences_tab_favorite_sites"
                             android:src="@drawable/ic_user_tag"
                             android:tint="?attr/textColor"
