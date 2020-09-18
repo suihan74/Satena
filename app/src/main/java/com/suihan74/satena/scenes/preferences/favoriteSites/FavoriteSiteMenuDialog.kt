@@ -8,7 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.models.FavoriteSite
@@ -57,7 +57,11 @@ class FavoriteSiteMenuDialog : DialogFragment() {
 
     // ------ //
 
-    suspend fun setOnDeleteListener(listener: Listener<FavoriteSite>?) = whenStarted {
+    fun setOnOpenListener(listener: Listener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onOpen = listener
+    }
+
+    fun setOnDeleteListener(listener: Listener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDelete = listener
     }
 
@@ -69,11 +73,15 @@ class FavoriteSiteMenuDialog : DialogFragment() {
     ) : ViewModel() {
         /** メニュー項目と対応するイベント */
         val menuItems = listOf(
+            R.string.dialog_open to { onOpen?.invoke(targetSite) },
             R.string.dialog_delete to { onDelete?.invoke(targetSite) }
         )
 
         /** メニュー表示項目 */
         val labels = menuItems.map { context.getString(it.first) }.toTypedArray()
+
+        /** 対象アイテムを内部ブラウザで開く */
+        var onOpen: Listener<FavoriteSite>? = null
 
         /** 対象アイテムを削除 */
         var onDelete: Listener<FavoriteSite>? = null

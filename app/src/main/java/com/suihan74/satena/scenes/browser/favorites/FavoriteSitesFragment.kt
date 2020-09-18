@@ -54,6 +54,10 @@ class FavoriteSitesFragment : Fragment() {
                 activityViewModel.goAddress(site.url)
                 browserActivity.closeDrawer()
             }
+
+            it.setOnLongLickItemListener { site ->
+                viewModel.openMenuDialog(site, childFragmentManager)
+            }
         }
 
         return binding.root

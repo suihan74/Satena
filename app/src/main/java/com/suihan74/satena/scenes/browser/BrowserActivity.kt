@@ -157,4 +157,14 @@ class BrowserActivity : FragmentActivity() {
     fun closeDrawer() {
         drawer_layout.closeDrawer(drawer_area)
     }
+
+    /**
+     * URLを開く
+     *
+     * BrowserActivityに依存するフラグメント側からページ遷移するために使用
+     */
+    fun openUrl(url: String) {
+        viewModel.goAddress(url)
+        closeDrawer()
+    }
 }
