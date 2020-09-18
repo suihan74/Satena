@@ -56,7 +56,7 @@ class FavoriteSitesFragment : Fragment() {
             }
 
             it.setOnLongLickItemListener { site ->
-                viewModel.openMenuDialog(site, childFragmentManager)
+                viewModel.openMenuDialog(browserActivity, site, childFragmentManager)
             }
         }
 

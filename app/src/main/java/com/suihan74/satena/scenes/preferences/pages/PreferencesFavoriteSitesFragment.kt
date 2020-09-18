@@ -57,7 +57,7 @@ class PreferencesFavoriteSitesFragment : PreferencesFragmentBase() {
 
             it.adapter = FavoriteSitesAdapter(viewLifecycleOwner).apply {
                 setOnClickItemListener { targetSite ->
-                    viewModel.openMenuDialog(targetSite, childFragmentManager)
+                    viewModel.openMenuDialog(requireActivity(), targetSite, childFragmentManager)
                 }
             }
         }

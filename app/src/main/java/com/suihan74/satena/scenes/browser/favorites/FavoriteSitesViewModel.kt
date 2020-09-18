@@ -4,7 +4,6 @@ import android.content.Intent
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.scenes.browser.BrowserActivity
@@ -34,6 +33,7 @@ class FavoriteSitesViewModel(
 
     /** メニューダイアログを開く */
     fun openMenuDialog(
+        activity: BrowserActivity,
         targetSite: FavoriteSite,
         fragmentManager: FragmentManager
     ) {
@@ -45,7 +45,6 @@ class FavoriteSitesViewModel(
             }
 
             setOnOpenEntriesListener { site ->
-                val activity = activity ?: return@setOnOpenEntriesListener
                 val intent = Intent(activity, EntriesActivity::class.java).apply {
                     putExtra(EntriesActivity.EXTRA_SITE_URL, site.url)
                 }
@@ -55,7 +54,7 @@ class FavoriteSitesViewModel(
             setOnDeleteListener { site ->
                 val oldSites = sites.value ?: emptyList()
                 sites.value = oldSites.filterNot { it.url == site.url }
-                SatenaApplication.instance.showToast(R.string.entry_action_unfavorite)
+                activity.showToast(R.string.entry_action_unfavorite)
             }
 
             showAllowingStateLoss(fragmentManager, DIALOG_MENU)
