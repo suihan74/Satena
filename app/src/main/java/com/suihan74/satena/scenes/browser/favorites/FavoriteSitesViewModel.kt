@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.browser.favorites
 
+import android.content.Intent
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import com.suihan74.satena.R
@@ -8,6 +9,7 @@ import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.PreferenceLiveData
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteMenuDialog
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.alsoAs
@@ -40,6 +42,14 @@ class FavoriteSitesViewModel(
                 activity.alsoAs<BrowserActivity> { activity ->
                     activity.openUrl(site.url)
                 }
+            }
+
+            setOnOpenEntriesListener { site ->
+                val activity = activity ?: return@setOnOpenEntriesListener
+                val intent = Intent(activity, EntriesActivity::class.java).apply {
+                    putExtra(EntriesActivity.EXTRA_SITE_URL, site.url)
+                }
+                activity.startActivity(intent)
             }
 
             setOnDeleteListener { site ->

@@ -1,10 +1,12 @@
 package com.suihan74.satena.scenes.preferences.pages
 
+import android.content.Intent
 import androidx.fragment.app.FragmentManager
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.models.FavoriteSitesKey
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteMenuDialog
 import com.suihan74.satena.startInnerBrowser
@@ -33,6 +35,14 @@ class PreferencesFavoriteSitesViewModel(
         FavoriteSiteMenuDialog.createInstance(targetSite).run {
             setOnOpenListener { site ->
                 context?.startInnerBrowser(site.url)
+            }
+
+            setOnOpenEntriesListener { site ->
+                val activity = activity ?: return@setOnOpenEntriesListener
+                val intent = Intent(activity, EntriesActivity::class.java).apply {
+                    putExtra(EntriesActivity.EXTRA_SITE_URL, site.url)
+                }
+                activity.startActivity(intent)
             }
 
             setOnDeleteListener { site ->

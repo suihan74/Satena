@@ -24,6 +24,9 @@ enum class BrowserSettingsKey (
     /** スタートページ */
     START_PAGE_URL(typeInfo<String>(), "https://www.hatena.ne.jp/"),
 
+    /** ドロワが開かれるまでブクマ情報を取得しない */
+    BOOKMARKS_LAZY_LOADING(typeInfo<Boolean>(), true),
+
     /** JavaScriptを有効にする */
     JAVASCRIPT_ENABLED(typeInfo<Boolean>(), true),
 

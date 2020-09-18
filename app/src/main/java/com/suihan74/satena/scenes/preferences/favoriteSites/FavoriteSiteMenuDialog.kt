@@ -61,6 +61,10 @@ class FavoriteSiteMenuDialog : DialogFragment() {
         viewModel.onOpen = listener
     }
 
+    fun setOnOpenEntriesListener(listener: Listener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onOpenEntries = listener
+    }
+
     fun setOnDeleteListener(listener: Listener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDelete = listener
     }
@@ -73,8 +77,9 @@ class FavoriteSiteMenuDialog : DialogFragment() {
     ) : ViewModel() {
         /** メニュー項目と対応するイベント */
         val menuItems = listOf(
-            R.string.dialog_open to { onOpen?.invoke(targetSite) },
-            R.string.dialog_delete to { onDelete?.invoke(targetSite) }
+            R.string.dialog_favorite_sites_open to { onOpen?.invoke(targetSite) },
+            R.string.dialog_favorite_sites_open_entries to { onOpenEntries?.invoke(targetSite) },
+            R.string.dialog_favorite_sites_delete to { onDelete?.invoke(targetSite) }
         )
 
         /** メニュー表示項目 */
@@ -82,6 +87,9 @@ class FavoriteSiteMenuDialog : DialogFragment() {
 
         /** 対象アイテムを内部ブラウザで開く */
         var onOpen: Listener<FavoriteSite>? = null
+
+        /** 対象サイトのエントリ一覧を開く */
+        var onOpenEntries: Listener<FavoriteSite>? = null
 
         /** 対象アイテムを削除 */
         var onDelete: Listener<FavoriteSite>? = null
