@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.browser
 
-import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Keyword
@@ -11,12 +10,34 @@ import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 
+class PreferenceLiveData<PrefT, KeyT, ValueT>(
+    prefs: PrefT,
+    key: KeyT,
+    initializer: ((PrefT)->ValueT)? = null
+) : SingleUpdateMutableLiveData<ValueT>(initializer?.invoke(prefs))
+        where PrefT: SafeSharedPreferences<KeyT>,
+              KeyT: SafeSharedPreferences.Key, KeyT: Enum<KeyT>
+{
+    init {
+        observeForever {
+            prefs.edit {
+                put(key, it)
+            }
+        }
+    }
+}
+
 class BrowserRepository(
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
     private val prefs: SafeSharedPreferences<PreferenceKey>,
     private val browserSettings: SafeSharedPreferences<BrowserSettingsKey>
 ) {
+    private fun <ValueT> createBrowserSettingsLiveData(
+        key: BrowserSettingsKey,
+        initializer: ((SafeSharedPreferences<BrowserSettingsKey>)->ValueT)? = null
+    ) = PreferenceLiveData(browserSettings, key, initializer)
+
     /** テーマ */
     val themeId by lazy {
         if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppTheme_Dark
@@ -28,65 +49,44 @@ class BrowserRepository(
         get() = client.signedIn()
 
     /** スタートページ */
-    val startPage : String by lazy {
-        browserSettings.getString(BrowserSettingsKey.START_PAGE_URL)!!
-    }
+    val startPage =
+        createBrowserSettingsLiveData(BrowserSettingsKey.START_PAGE_URL) { p ->
+            p.getString(BrowserSettingsKey.START_PAGE_URL)
+        }
 
     /** UserAgent */
-    val userAgent = SingleUpdateMutableLiveData<String?>(
-        browserSettings.getString(BrowserSettingsKey.USER_AGENT)
-    ).apply {
-        observeForever {
-            browserSettings.edit {
-                put(BrowserSettingsKey.USER_AGENT, it)
-            }
+    val userAgent =
+        createBrowserSettingsLiveData(BrowserSettingsKey.USER_AGENT) { p ->
+            p.getString(BrowserSettingsKey.USER_AGENT)
         }
-    }
 
     /** 検索エンジン */
-    val searchEngine = SingleUpdateMutableLiveData<String>(
-        browserSettings.getString(BrowserSettingsKey.SEARCH_ENGINE)
-    ).apply {
-        observeForever {
-            browserSettings.edit {
-                put(BrowserSettingsKey.SEARCH_ENGINE, it)
-            }
+    val searchEngine =
+        createBrowserSettingsLiveData(BrowserSettingsKey.SEARCH_ENGINE) { p ->
+            p.getString(BrowserSettingsKey.SEARCH_ENGINE)
         }
-    }
 
     /** JavaScriptの有効状態 */
-    val javascriptEnabled = SingleUpdateMutableLiveData(
-        browserSettings.getBoolean(BrowserSettingsKey.JAVASCRIPT_ENABLED)
-    ).apply {
-        observeForever {
-            browserSettings.edit {
-                put(BrowserSettingsKey.JAVASCRIPT_ENABLED, it)
-            }
+    val javascriptEnabled =
+        createBrowserSettingsLiveData(BrowserSettingsKey.JAVASCRIPT_ENABLED) { p ->
+            p.getBoolean(BrowserSettingsKey.JAVASCRIPT_ENABLED)
         }
-    }
 
     /** URLブロックを使用する */
-    val useUrlBlocking = MutableLiveData<Boolean>(
-        browserSettings.getBoolean(BrowserSettingsKey.USE_URL_BLOCKING)
-    ).apply {
-        observeForever {
-            browserSettings.edit {
-                put(BrowserSettingsKey.USE_URL_BLOCKING, it)
-            }
+    val useUrlBlocking =
+        createBrowserSettingsLiveData(BrowserSettingsKey.USE_URL_BLOCKING) { p ->
+            p.getBoolean(BrowserSettingsKey.USE_URL_BLOCKING)
         }
-    }
 
     /** ブロックするURLリスト */
-    val blockUrls = MutableLiveData<List<BlockUrlSetting>>(
-        browserSettings.get(BrowserSettingsKey.BLOCK_URLS)
-    ).apply {
-        observeForever {
-            browserSettings.edit {
-                put(BrowserSettingsKey.BLOCK_URLS, it)
+    val blockUrls =
+        createBrowserSettingsLiveData(BrowserSettingsKey.BLOCK_URLS) { p ->
+            p.get<List<BlockUrlSetting>>(BrowserSettingsKey.BLOCK_URLS)
+        }.apply {
+            observeForever {
                 _blockUrlsRegex = null
             }
         }
-    }
 
     private var _blockUrlsRegex : Regex? = null
 

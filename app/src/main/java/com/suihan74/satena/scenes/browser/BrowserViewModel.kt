@@ -40,7 +40,7 @@ class BrowserViewModel(
 
     /** 表示中のページURL */
     val url by lazy {
-        val startPage = initialUrl ?: repository.startPage
+        val startPage = initialUrl ?: repository.startPage.value!!
         SingleUpdateMutableLiveData(startPage).apply {
             observeForever {
                 addressText.value = Uri.decode(it)
@@ -266,24 +266,18 @@ class BrowserViewModel(
 
         R.id.adblock -> {
             useUrlBlocking.value = useUrlBlocking.value != true
-            item.title =
-                if (useUrlBlocking.value == true) "AdBlock : ON"
-                else "AdBlock : OFF"
             activity.webview.reload()
             true
         }
 
         R.id.javascript -> {
             javascriptEnabled.value = javascriptEnabled.value != true
-            item.title =
-                if (javascriptEnabled.value == true) "JavaScript : ON"
-                else "JavaScript : OFF"
             activity.webview.reload()
             true
         }
 
         R.id.settings -> {
-            // TODO:
+            activity.showPreferencesFragment()
             true
         }
 

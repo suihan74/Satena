@@ -72,6 +72,7 @@ class BrowserActivity : FragmentActivity() {
 
         setActionBar(toolbar)
 
+        // ドロワーを開いたときにIMEを閉じる
         drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
                 hideSoftInputMethod(main_area)
@@ -81,6 +82,10 @@ class BrowserActivity : FragmentActivity() {
             override fun onDrawerStateChanged(newState: Int) {}
         })
 
+        val drawerTabAdapter = DrawerTabAdapter(supportFragmentManager)
+        drawerTabAdapter.setup(this, drawer_tab_layout, drawer_view_pager)
+
+        // WebViewの設定
         viewModel.initializeWebView(webview, this)
 
         // IMEの決定ボタンでページ遷移する
@@ -107,12 +112,6 @@ class BrowserActivity : FragmentActivity() {
                 webview.reload()
             }
         }
-
-        // 投稿エリアを作成
-        val bookmarkPostFragment = BookmarkPostFragment.createInstance()
-        supportFragmentManager.beginTransaction()
-            .add(R.id.bookmark_post_area, bookmarkPostFragment, FRAGMENT_BOOKMARK_POST)
-            .commitAllowingStateLoss()
     }
 
     /** 「戻る」ボタンでブラウザの履歴を戻る */
@@ -142,5 +141,11 @@ class BrowserActivity : FragmentActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return viewModel.onOptionsItemSelected(item, this)
+    }
+
+    /** ドロワを開いて設定タブを表示する */
+    fun showPreferencesFragment() {
+        drawer_view_pager.currentItem = DrawerTab.SETTINGS.ordinal
+        drawer_layout.openDrawer(drawer_area)
     }
 }

@@ -31,7 +31,7 @@
                 android:textColor="@color/textColor"
                 android:hint="@string/browser_url_blocking_pattern_hint"
 
-                android:autofillHints="false"
+                android:importantForAutofill="no"
                 android:inputType="text"
                 android:singleLine="true"
                 android:imeOptions="actionDone"

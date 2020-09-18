@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.browser
+package com.suihan74.satena.scenes.browser.bookmarks
 
 import android.os.Bundle
 import android.text.Editable
@@ -13,6 +13,8 @@ import androidx.lifecycle.Observer
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
+import com.suihan74.satena.scenes.browser.BrowserActivity
+import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.post2.BookmarkPostViewModel
 import com.suihan74.utilities.*
 
@@ -66,6 +68,12 @@ class BookmarkPostFragment : Fragment() {
             comment.setHorizontallyScrolling(false)
             // 注: XML側に書くと表示部分の縦幅が一行分だけになる
             comment.maxLines = Int.MAX_VALUE
+
+            comment.setOnFocusChangeListener { view, b ->
+                if (!b) {
+                    activity?.hideSoftInputMethod(binding.bookmarkPostLayout)
+                }
+            }
 
             // DONEボタンとかSEARCHボタンとかが押された時の処理
             comment.setOnEditorActionListener { _, action, _ ->
