@@ -24,33 +24,29 @@
                 android:layout_alignParentTop="true"
                 />
 
-        <TextView
+        <com.suihan74.utilities.MarqueeTextView
                 android:id="@+id/title"
+                style="@style/MarqueeTextView"
                 android:text="@{site.title}"
                 android:contentDescription="@null"
                 android:textColor="?attr/textColor"
                 android:textSize="16sp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:lines="1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/favicon"
-                android:layout_alignParentTop="true"/>
+                android:layout_alignParentTop="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
-        <TextView
+        <com.suihan74.utilities.MarqueeTextView
                 android:id="@+id/url"
+                style="@style/MarqueeTextView"
                 android:text="@{site.url}"
                 android:textColor="?attr/tagTextColor"
                 android:textSize="13sp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:lines="1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:layout_below="@id/title"
                 android:layout_alignStart="@id/title"
                 android:layout_alignEnd="@id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"/>
 
     </RelativeLayout>
