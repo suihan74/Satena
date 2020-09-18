@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
@@ -21,6 +20,8 @@ import com.suihan74.utilities.*
 class BookmarkPostFragment : Fragment() {
     companion object {
         fun createInstance() = BookmarkPostFragment()
+
+        const val VIEW_MODEL_BOOKMARK_POST = "VIEW_MODEL_BOOKMARK_POST"
     }
 
     private val browserActivity
@@ -30,7 +31,8 @@ class BookmarkPostFragment : Fragment() {
         get() = browserActivity.viewModel
 
     private val viewModel : BookmarkPostViewModel by lazy {
-        provideViewModel(this) {
+        // オーナーをアクティビティにすることで、タブ切り替えでリロードされないようにする
+        provideViewModel(requireActivity(), VIEW_MODEL_BOOKMARK_POST) {
             val context = requireContext()
             BookmarkPostViewModel(
                 HatenaClient,
@@ -102,27 +104,31 @@ class BookmarkPostFragment : Fragment() {
         }
 
         // WebViewがページ遷移したらエントリ情報をリロードする
-        activityViewModel.bookmarksEntry.observe(viewLifecycleOwner, Observer {
-            if (it == null) return@Observer
+        activityViewModel.bookmarksEntry.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
             viewModel.init(it.url, viewModel.comment.value)
-        })
+        }
 
         // 各トグルボタンをONにしたときにメッセージを表示する
-        viewModel.postMastodon.observe(viewLifecycleOwner, Observer {
+        viewModel.postMastodon.observe(viewLifecycleOwner){
+            if (it == null) return@observe
             if (it) context?.showToast(R.string.hint_mastodon_toggle)
-        })
+        }
 
-        viewModel.postTwitter.observe(viewLifecycleOwner, Observer {
+        viewModel.postTwitter.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
             if (it) context?.showToast(R.string.hint_twitter_toggle)
-        })
+        }
 
-        viewModel.postFacebook.observe(viewLifecycleOwner, Observer {
+        viewModel.postFacebook.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
             if (it) context?.showToast(R.string.hint_facebook_toggle)
-        })
+        }
 
-        viewModel.isPrivate.observe(viewLifecycleOwner, Observer {
+        viewModel.isPrivate.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
             if (it) context?.showToast(R.string.hint_private_toggle)
-        })
+        }
 
         return binding.root
     }
