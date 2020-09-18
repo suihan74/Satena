@@ -13,10 +13,9 @@
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view"
+                style="@style/RecyclerView.Linear"
                 items="@{vm.sites}"
-                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
-                android:scrollbarSize="4dp"
-                android:scrollbars="vertical"
+                divider="@{@drawable/recycler_view_item_divider}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
