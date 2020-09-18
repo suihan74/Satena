@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksFragment
+import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesFragment
 import com.suihan74.satena.scenes.preferences.pages.PreferencesBrowserFragment
 
 /** ドロワに表示するタブ */
@@ -19,7 +20,7 @@ enum class DrawerTab(
 
     FAVORITES(1,
         R.drawable.ic_star,
-        { Fragment() }
+        { FavoriteSitesFragment.createInstance() }
     ),
 
     HISTORY(2,

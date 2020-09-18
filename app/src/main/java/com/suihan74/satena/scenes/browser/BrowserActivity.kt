@@ -148,4 +148,13 @@ class BrowserActivity : FragmentActivity() {
         drawer_view_pager.currentItem = DrawerTab.SETTINGS.ordinal
         drawer_layout.openDrawer(drawer_area)
     }
+
+    /**
+     * ドロワを閉じる
+     *
+     * BrowserActivityに依存するフラグメント側から閉じるために使用
+     */
+    fun closeDrawer() {
+        drawer_layout.closeDrawer(drawer_area)
+    }
 }
