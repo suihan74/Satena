@@ -29,7 +29,7 @@ class LockableDrawerLayout @JvmOverloads constructor(
 
     override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
         val view = drawerView ?: return super.onInterceptTouchEvent(ev)
-        if (!closeSwipeEnabled && isDrawerVisible(view)) {
+        if (ev?.action == MotionEvent.ACTION_MOVE && !closeSwipeEnabled && isDrawerVisible(view)) {
             return false
         }
         return super.onInterceptTouchEvent(ev)
