@@ -27,8 +27,7 @@ import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.whenTrue
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.activity_browser.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlin.math.absoluteValue
 
 class BrowserViewModel(
@@ -103,6 +102,16 @@ class BrowserViewModel(
     val bookmarksEntry by lazy {
         MutableLiveData<BookmarksEntry?>(null)
     }
+
+    /** ロード完了前にページ遷移した場合にロード処理を中断する */
+    private var loadBookmarksEntryTask : Deferred<Unit>? = null
+        get() = synchronized(loadBookmarksEntryTaskLock) { field }
+        set(value) {
+            synchronized(loadBookmarksEntryTaskLock) {
+                field = value
+            }
+        }
+    private val loadBookmarksEntryTaskLock = Any()
 
     // ------ //
 
@@ -346,20 +355,30 @@ class BrowserViewModel(
     // ------ //
 
     /** BookmarksEntryを更新 */
-    private fun loadBookmarksEntry(url: String) = viewModelScope.launch(Dispatchers.Default) {
-        // 渡されたページURLをエントリURLに修正する
-        val modifyResult = kotlin.runCatching {
-            modifySpecificUrls(url)
-        }
-        val modifiedUrl = modifyResult.getOrNull() ?: url
-        entryUrl.postValue(modifiedUrl)
-
-        try {
-            bookmarksEntry.postValue(repository.getBookmarksEntry(modifiedUrl))
-        }
-        catch (e: Throwable) {
-            Log.e("loadBookmarksEntry", Log.getStackTraceString(e))
+    private fun loadBookmarksEntry(url: String) {
+        loadBookmarksEntryTask?.cancel()
+        loadBookmarksEntryTask = viewModelScope.async(Dispatchers.Default) {
             bookmarksEntry.postValue(null)
+
+            // 渡されたページURLをエントリURLに修正する
+            val modifyResult = kotlin.runCatching {
+                modifySpecificUrls(url)
+            }
+            val modifiedUrl = modifyResult.getOrNull() ?: url
+            entryUrl.postValue(modifiedUrl)
+
+            try {
+                bookmarksEntry.postValue(repository.getBookmarksEntry(modifiedUrl))
+            }
+            catch (e: CancellationException) {
+                Log.w("coroutine", "loadBookmarksEntryTask has been canceled")
+            }
+            catch (e: Throwable) {
+                Log.e("loadBookmarksEntry", Log.getStackTraceString(e))
+                bookmarksEntry.postValue(null)
+            }
+
+            loadBookmarksEntryTask = null
         }
     }
 

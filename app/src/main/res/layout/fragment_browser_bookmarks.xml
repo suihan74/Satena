@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<layout>
+    <data>
+    </data>
 
-    <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view"
-            android:layout_above="@id/bookmark_post_area"
+    <RelativeLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent">
 
-    <FrameLayout
-            android:id="@+id/bookmark_post_area"
-            android:layout_alignParentBottom="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                style="@style/RecyclerView.Linear"
+                divider="@{@drawable/recycler_view_item_divider}"
+                android:layout_above="@id/bookmark_post_area"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
 
-</RelativeLayout>
+        <FrameLayout
+                android:id="@+id/bookmark_post_area"
+                android:layout_alignParentBottom="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+</layout>
