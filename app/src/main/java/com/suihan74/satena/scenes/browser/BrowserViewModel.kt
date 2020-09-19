@@ -113,6 +113,11 @@ class BrowserViewModel(
         }
     private val loadBookmarksEntryTaskLock = Any()
 
+    /** ローディング状態を通知する */
+    val loadingBookmarksEntry by lazy {
+        MutableLiveData<Boolean>(false)
+    }
+
     // ------ //
 
     // ページ読み込み完了時に呼ぶ処理
@@ -358,6 +363,7 @@ class BrowserViewModel(
     private fun loadBookmarksEntry(url: String) {
         loadBookmarksEntryTask?.cancel()
         loadBookmarksEntryTask = viewModelScope.async(Dispatchers.Default) {
+            loadingBookmarksEntry.postValue(true)
             bookmarksEntry.postValue(null)
 
             // 渡されたページURLをエントリURLに修正する
@@ -379,6 +385,7 @@ class BrowserViewModel(
             }
 
             loadBookmarksEntryTask = null
+            loadingBookmarksEntry.postValue(false)
         }
     }
 

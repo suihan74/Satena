@@ -39,6 +39,7 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             container,
             false
         ).apply {
+            browserViewModel = activityViewModel
             lifecycleOwner = viewLifecycleOwner
         }
 
