@@ -47,6 +47,8 @@
                     app:backgroundTint="@color/colorPrimary"
                     app:elevation="24dp"
                     android:visibility="@{vm.useBottomAppBar}"
+                    app:contentInsetLeft="8dp"
+                    app:contentInsetRight="8dp"
                     android:layout_gravity="bottom"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
