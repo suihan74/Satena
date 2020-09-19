@@ -11,6 +11,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBrowserBinding
@@ -79,6 +80,15 @@ class BrowserActivity : FragmentActivity() {
 
         val drawerTabAdapter = DrawerTabAdapter(supportFragmentManager)
         drawerTabAdapter.setup(this, drawer_tab_layout, drawer_view_pager)
+        drawer_tab_layout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                // ドロワー内のタブ切り替え操作と干渉するため
+                // 一番左のタブを表示中以外はスワイプで閉じないようにする
+                drawer_layout.setCloseSwipeEnabled(tab?.position == 0, drawer_area)
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
 
         // WebViewの設定
         viewModel.initializeWebView(webview, this)

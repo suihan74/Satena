@@ -6,7 +6,7 @@
                 type="com.suihan74.satena.scenes.browser.BrowserViewModel" />
     </data>
 
-    <androidx.drawerlayout.widget.DrawerLayout
+    <com.suihan74.utilities.LockableDrawerLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/drawer_layout"
@@ -59,7 +59,7 @@
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:clickable="true"
-                android:layout_gravity="end"
+                android:layout_gravity="right"
                 android:layout_width="300dp"
                 android:layout_height="match_parent">
 
@@ -85,6 +85,6 @@
 
         </RelativeLayout>
 
-    </androidx.drawerlayout.widget.DrawerLayout>
+    </com.suihan74.utilities.LockableDrawerLayout>
 </layout>
 
