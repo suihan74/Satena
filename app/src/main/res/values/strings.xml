@@ -270,7 +270,7 @@
     <string name="pref_browser_use_url_blocking_desc">リソースブロックを使用する</string>
     <string name="pref_browser_user_agent_desc">UserAgent</string>
     <string name="pref_browser_user_agent_hint">空欄: デフォルト設定</string>
-    <string name="pref_browser_use_bottom_app_bar_desc">アプリバーを画面下部に配置する</string>
+    <string name="pref_browser_use_bottom_app_bar_desc">アドレスバーを画面下部に配置する</string>
 
     <!-- お気に入りサイト -->
     <string name="dialog_favorite_sites_open">開く</string>
