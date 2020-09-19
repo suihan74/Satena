@@ -5,14 +5,17 @@ import androidx.core.view.updateLayoutParams
 import androidx.databinding.BindingAdapter
 import com.google.android.material.appbar.AppBarLayout
 
-@BindingAdapter("android:visibility")
-fun AppBarLayout.setVisibility(isVisible: Boolean?) {
-    // visibility = isVisible.toVisibility(disabledDefault ?: View.GONE)
-    // AppBarLayoutの場合GONEにすると領域が残る
-    // 高さを0にすることで代替する
-    updateLayoutParams<CoordinatorLayout.LayoutParams> {
-        height =
-            if (isVisible == true) CoordinatorLayout.LayoutParams.WRAP_CONTENT
-            else 0
+// ViewのBindingAdapterと重複するため、objectで用意する
+object AppBarLayoutBindingAdapters {
+    @JvmStatic
+    @BindingAdapter("android:visibility")
+    fun setVisibility(view: AppBarLayout, isVisible: Boolean?) {
+        // AppBarLayoutの場合GONEにすると領域が残る
+        // 高さを0にすることで代替する
+        view.updateLayoutParams<CoordinatorLayout.LayoutParams> {
+            height =
+                if (isVisible == true) CoordinatorLayout.LayoutParams.WRAP_CONTENT
+                else 0
+        }
     }
 }

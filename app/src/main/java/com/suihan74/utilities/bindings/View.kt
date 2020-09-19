@@ -2,10 +2,17 @@ package com.suihan74.utilities.bindings
 
 import android.view.View
 import androidx.databinding.BindingAdapter
+import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.utilities.extensions.toVisibility
 
 @BindingAdapter(value = ["android:visibility", "disabledDefaultVisibility"], requireAll = false)
 fun View.setVisibility(isVisible: Boolean?, disabledDefault: Int? = View.GONE) {
+    // こちらのアダプタの方が優先して呼ばれてしまうので、
+    // ここで明示的にAppBarLayout用のアダプタを呼ぶ
+    if (this is AppBarLayout) {
+        return AppBarLayoutBindingAdapters.setVisibility(this, isVisible)
+    }
+
     // - レイアウト側でdisabledDefaultVisibilityを省略した場合、nullが渡される
     // - 引数を省略した関数呼び出しでの利用も考慮している
     // 以上を満足させるため、引数ではnullableにしてデフォルト値を与えた上で、代入時にもnull比較を行っている
