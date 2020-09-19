@@ -42,17 +42,26 @@ class BrowserToolbar @JvmOverloads constructor(
             it.lifecycleOwner = lifecycleOwner
         }
 
-        // IMEの決定ボタンでページ遷移する
-        binding.addressEditText.setOnEditorActionListener { _, action, _ ->
-            when (action) {
-                EditorInfo.IME_ACTION_GO ->
-                    viewModel.goAddress().whenTrue {
-                        context.alsoAs<Activity> { activity ->
-                            activity.hideSoftInputMethod(binding.toolbar)
-                        }
-                    }
+        binding.addressEditText.let { editText ->
+            // フォーカスを失ったときに空欄だったら表示中のページのURLをセットし直す
+            editText.setOnFocusChangeListener { view, b ->
+                if (!b && viewModel.addressText.value.isNullOrBlank()) {
+                    viewModel.addressText.value = viewModel.url.value ?: ""
+                }
+            }
 
-                else -> false
+            // IMEの決定ボタンでページ遷移する
+            editText.setOnEditorActionListener { _, action, _ ->
+                when (action) {
+                    EditorInfo.IME_ACTION_GO ->
+                        viewModel.goAddress().whenTrue {
+                            context.alsoAs<Activity> { activity ->
+                                activity.hideSoftInputMethod(binding.toolbar)
+                            }
+                        }
+
+                    else -> false
+                }
             }
         }
 
