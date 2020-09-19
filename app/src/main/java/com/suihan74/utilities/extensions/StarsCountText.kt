@@ -1,4 +1,4 @@
-package com.suihan74.utilities
+package com.suihan74.utilities.extensions
 
 import android.content.Context
 import android.text.SpannableStringBuilder
@@ -6,24 +6,24 @@ import android.text.style.TextAppearanceSpan
 import androidx.core.content.ContextCompat
 import com.suihan74.satena.R
 
-fun appendStarText(builder: StringBuilder, count: Int, context: Context, colorId: Int) {
+fun StringBuilder.appendStarText(count: Int, context: Context, colorId: Int) {
     val color = ContextCompat.getColor(context, colorId)
-    builder.append("<font color=\"$color\">")
+    this.append("<font color=\"$color\">")
     val star = context.getString(R.string.star)
     val starWithCount = context.getString(R.string.star_with_count)
     if (count > 10) {
-        builder.append(String.format(starWithCount, count))
+        this.append(String.format(starWithCount, count))
     }
     else {
-        repeat(count) { builder.append(star) }
+        repeat(count) { this.append(star) }
     }
-    builder.append("</font>")
+    this.append("</font>")
 }
 
 /**
  * @return 追加した文字列の長さ
  */
-fun appendStarSpan(builder: SpannableStringBuilder, count: Int, context: Context, spanStyleId: Int): Int {
+fun SpannableStringBuilder.appendStarSpan(count: Int, context: Context, spanStyleId: Int): Int {
     val text =
         if (count > 10) context.getString(R.string.star_with_count, count)
         else buildString {
@@ -33,7 +33,7 @@ fun appendStarSpan(builder: SpannableStringBuilder, count: Int, context: Context
 
     val colorSpan = TextAppearanceSpan(context, spanStyleId)
 
-    builder.append(text, colorSpan)
+    this.append(text, colorSpan)
 
     return text.length
 }

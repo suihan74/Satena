@@ -17,7 +17,7 @@ import com.suihan74.hatenaLib.Notice
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
-import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -130,11 +130,11 @@ fun TextView.setBookmarkResult(comment: String?, starsCount: List<Star>?) {
         val purpleStarCount = starsCount.firstOrNull { it.color == StarColor.Purple }?.count ?: 0
 
         commentBuilder.append(" ")
-        appendStarText(commentBuilder, purpleStarCount, context, R.color.starPurple)
-        appendStarText(commentBuilder, blueStarCount, context, R.color.starBlue)
-        appendStarText(commentBuilder, redStarCount, context, R.color.starRed)
-        appendStarText(commentBuilder, greenStarCount, context, R.color.starGreen)
-        appendStarText(commentBuilder, yellowStarCount, context, R.color.starYellow)
+        commentBuilder.appendStarText(purpleStarCount, context, R.color.starPurple)
+        commentBuilder.appendStarText(blueStarCount, context, R.color.starBlue)
+        commentBuilder.appendStarText(redStarCount, context, R.color.starRed)
+        commentBuilder.appendStarText(greenStarCount, context, R.color.starGreen)
+        commentBuilder.appendStarText(yellowStarCount, context, R.color.starYellow)
     }
 
     setHtml(commentBuilder.toString())

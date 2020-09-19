@@ -10,7 +10,8 @@ import androidx.lifecycle.whenStarted
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
-import com.suihan74.utilities.*
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.extensions.*
 
 class PostStarDialog : DialogFragment() {
     companion object {

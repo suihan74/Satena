@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.R
-import com.suihan74.utilities.makeSpannedFromHtml
+import com.suihan74.utilities.extensions.makeSpannedFromHtml
 import kotlinx.android.synthetic.main.listview_item_hatena_keyword.view.*
 
 /** キーワードの解説項目を表示するアダプタ */

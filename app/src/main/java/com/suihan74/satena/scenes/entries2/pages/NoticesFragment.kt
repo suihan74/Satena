@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModelStoreOwner
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
+import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.putEnum
-import com.suihan74.utilities.withArguments
 
 class NoticesFragment : SingleTabEntriesFragment() {
     companion object {

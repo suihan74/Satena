@@ -13,8 +13,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.setOnTabLongClickListener
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.extensions.setOnTabLongClickListener
+import com.suihan74.utilities.extensions.showToast
 import kotlinx.android.synthetic.main.fragment_bookmarks2.view.*
 
 class BookmarksFragmentViewModel : ViewModel() {

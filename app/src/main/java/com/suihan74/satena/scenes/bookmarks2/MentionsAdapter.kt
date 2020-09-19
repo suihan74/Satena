@@ -8,9 +8,9 @@ import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
-import com.suihan74.utilities.appendStarText
-import com.suihan74.utilities.setHtml
-import com.suihan74.utilities.toVisibility
+import com.suihan74.utilities.extensions.appendStarText
+import com.suihan74.utilities.extensions.setHtml
+import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.android.synthetic.main.listview_item_comment.view.*
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -59,11 +59,11 @@ open class MentionsAdapter (
                     val purpleStarCount = it.firstOrNull { s -> s.color == StarColor.Purple }?.count ?: 0
 
                     commentBuilder.append(" ")
-                    appendStarText(commentBuilder, purpleStarCount, view.context, R.color.starPurple)
-                    appendStarText(commentBuilder, blueStarCount, view.context, R.color.starBlue)
-                    appendStarText(commentBuilder, redStarCount, view.context, R.color.starRed)
-                    appendStarText(commentBuilder, greenStarCount, view.context, R.color.starGreen)
-                    appendStarText(commentBuilder, yellowStarCount, view.context, R.color.starYellow)
+                    commentBuilder.appendStarText(purpleStarCount, view.context, R.color.starPurple)
+                    commentBuilder.appendStarText(blueStarCount, view.context, R.color.starBlue)
+                    commentBuilder.appendStarText(redStarCount, view.context, R.color.starRed)
+                    commentBuilder.appendStarText(greenStarCount, view.context, R.color.starGreen)
+                    commentBuilder.appendStarText(yellowStarCount, view.context, R.color.starYellow)
                 }
                 view.comment.apply {
                     setHtml(commentBuilder.toString())

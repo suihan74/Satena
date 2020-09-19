@@ -12,8 +12,8 @@ import com.suihan74.hatenaLib.StarColor
 import com.suihan74.hatenaLib.UserColorStarsCount
 import com.suihan74.satena.R
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.dp2px
-import com.suihan74.utilities.sp2px
+import com.suihan74.utilities.extensions.dp2px
+import com.suihan74.utilities.extensions.sp2px
 import kotlinx.android.synthetic.main.popup_add_star.view.*
 
 class AddStarPopupMenu(context: Context) : PopupWindow() {

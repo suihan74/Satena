@@ -34,6 +34,7 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks2.dialog.PostStarDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.*
 import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

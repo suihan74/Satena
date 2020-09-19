@@ -18,7 +18,7 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.putObjectExtra
+import com.suihan74.utilities.extensions.putObjectExtra
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job

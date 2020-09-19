@@ -10,7 +10,7 @@ import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.DividerItemDecorator
-import com.suihan74.utilities.toVisibility
+import com.suihan74.utilities.extensions.toVisibility
 
 /** 区切り線 */
 @BindingAdapter("divider")

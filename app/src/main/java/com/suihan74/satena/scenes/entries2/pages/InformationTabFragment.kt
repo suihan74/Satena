@@ -6,9 +6,9 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.satena.scenes.entries2.InformationAdapter
-import com.suihan74.utilities.getThemeColor
-import com.suihan74.utilities.putEnum
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.withArguments
 
 class InformationTabFragment : EntriesTabFragmentBase() {
     companion object {

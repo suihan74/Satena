@@ -15,10 +15,10 @@ import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.utilities.getObject
-import com.suihan74.utilities.hideSoftInputMethod
+import com.suihan74.utilities.extensions.getObject
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.putObject
 import kotlinx.android.synthetic.main.dialog_title_bookmark.view.*
 import kotlinx.android.synthetic.main.fragment_dialog_report.view.*
 

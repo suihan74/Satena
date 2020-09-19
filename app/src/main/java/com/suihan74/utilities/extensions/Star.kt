@@ -1,4 +1,4 @@
-package com.suihan74.utilities
+package com.suihan74.utilities.extensions
 
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarColor

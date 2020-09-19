@@ -8,9 +8,9 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.putEnum
-import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.activity_entries2.*
 
 class SiteEntriesFragment : MultipleTabsEntriesFragment() {

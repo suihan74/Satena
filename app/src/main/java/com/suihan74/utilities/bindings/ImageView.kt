@@ -5,7 +5,7 @@ import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Notice
-import com.suihan74.utilities.users
+import com.suihan74.utilities.extensions.users
 
 /** URL先の画像をImageViewで表示 */
 @BindingAdapter("src")

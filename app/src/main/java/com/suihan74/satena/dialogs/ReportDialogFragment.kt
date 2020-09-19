@@ -14,7 +14,7 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.ReportCategory
 import com.suihan74.satena.R
-import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.*
 import kotlinx.android.synthetic.main.fragment_dialog_report.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

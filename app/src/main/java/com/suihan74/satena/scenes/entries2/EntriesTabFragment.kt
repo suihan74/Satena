@@ -7,7 +7,11 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.utilities.*
+import com.suihan74.utilities.RecyclerViewScrollingUpdater
+import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.withArguments
 
 class EntriesTabFragment : EntriesTabFragmentBase() {
     companion object {

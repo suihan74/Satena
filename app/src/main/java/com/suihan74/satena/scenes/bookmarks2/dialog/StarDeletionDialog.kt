@@ -10,7 +10,9 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.whenStarted
 import com.suihan74.hatenaLib.Star
 import com.suihan74.satena.R
-import com.suihan74.utilities.*
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.provideViewModel
 
 class StarDeletionDialog : DialogFragment() {
     companion object {
@@ -35,7 +37,7 @@ class StarDeletionDialog : DialogFragment() {
 
         val items = viewModel.stars.map { star ->
             buildSpannedString {
-                val length = appendStarSpan(this, star.count, context, star.styleId)
+                val length = appendStarSpan(star.count, context, star.styleId)
                 setSpan(
                     AbsoluteSizeSpan(20, true),
                     this.length - length,

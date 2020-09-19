@@ -1,4 +1,4 @@
-package com.suihan74.utilities
+package com.suihan74.utilities.extensions
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

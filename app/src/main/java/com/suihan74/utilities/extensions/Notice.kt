@@ -1,4 +1,4 @@
-package com.suihan74.utilities
+package com.suihan74.utilities.extensions
 
 import android.content.Context
 import androidx.core.content.ContextCompat

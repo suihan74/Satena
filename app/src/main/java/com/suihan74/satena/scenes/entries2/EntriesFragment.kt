@@ -14,8 +14,8 @@ import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
-import com.suihan74.utilities.getEnum
-import com.suihan74.utilities.toVisibility
+import com.suihan74.utilities.extensions.getEnum
+import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.android.synthetic.main.activity_entries2.*
 import java.util.*
 

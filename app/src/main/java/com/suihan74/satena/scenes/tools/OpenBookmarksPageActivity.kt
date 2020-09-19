@@ -8,9 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.modifySpecificUrls
-import com.suihan74.utilities.createIntentWithoutThisApplication
 import com.suihan74.utilities.exceptions.InvalidUrlException
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
+import com.suihan74.utilities.extensions.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

@@ -11,9 +11,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ToolbarBrowserBinding
-import com.suihan74.utilities.alsoAs
-import com.suihan74.utilities.hideSoftInputMethod
-import com.suihan74.utilities.whenTrue
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.whenTrue
 
 class BrowserToolbar @JvmOverloads constructor(
     context: Context,

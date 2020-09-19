@@ -12,7 +12,11 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.satena.scenes.entries2.NoticesAdapter
 import com.suihan74.satena.scenes.entries2.dialog.NoticeMenuDialog
-import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.withArguments
+import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.fragment_entries_tab2.*
 
 class NoticesTabFragment : EntriesTabFragmentBase() {

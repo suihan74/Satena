@@ -10,9 +10,9 @@ import androidx.lifecycle.LifecycleOwner
 import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.PopupHatenaKeywordBinding
-import com.suihan74.utilities.append
-import com.suihan74.utilities.dp2px
-import com.suihan74.utilities.sp2px
+import com.suihan74.utilities.extensions.append
+import com.suihan74.utilities.extensions.dp2px
+import com.suihan74.utilities.extensions.sp2px
 
 /** キーワードの解説を表示するポップアップ */
 class HatenaKeywordPopup(

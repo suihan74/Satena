@@ -17,7 +17,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleUrlBlockingBinding
-import com.suihan74.utilities.*
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.provideViewModel
 
 class UrlBlockingDialog : DialogFragment() {
     companion object {

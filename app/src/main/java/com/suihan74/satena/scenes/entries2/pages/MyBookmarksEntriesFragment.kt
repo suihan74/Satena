@@ -18,8 +18,9 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.initialize
-import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
+import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.activity_entries2.*
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 

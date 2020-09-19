@@ -19,6 +19,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
+import com.suihan74.utilities.extensions.*
 import kotlinx.android.synthetic.main.activity_bookmark_post_2.*
 
 class BookmarkPostActivity : AppCompatActivity() {

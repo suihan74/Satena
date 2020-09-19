@@ -11,8 +11,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.satena.scenes.post2.BookmarkPostViewModel
 import com.suihan74.utilities.Listener
+import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.withArguments
 
 class ConfirmPostBookmarkDialog : DialogFragment() {
     companion object {

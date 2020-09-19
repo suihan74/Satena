@@ -1,6 +1,8 @@
 package com.suihan74.utilities
 
 import android.os.Bundle
+import com.suihan74.utilities.extensions.getEnum
+import com.suihan74.utilities.extensions.putEnum
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

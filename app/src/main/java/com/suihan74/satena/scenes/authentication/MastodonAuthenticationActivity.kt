@@ -12,7 +12,8 @@ import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.extensions.showToast
+
 import com.sys1yagi.mastodon4j.MastodonClient
 import com.sys1yagi.mastodon4j.api.Scope
 import com.sys1yagi.mastodon4j.api.entity.auth.AppRegistration

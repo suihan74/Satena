@@ -19,7 +19,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
-import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.*
 import kotlinx.android.synthetic.main.fragment_dialog_ignored_entry.view.*
 
 enum class IgnoredEntryDialogTab(

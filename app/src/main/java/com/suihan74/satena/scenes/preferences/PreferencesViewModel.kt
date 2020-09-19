@@ -3,7 +3,7 @@ package com.suihan74.satena.scenes.preferences
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.getEnumConstants
+import com.suihan74.utilities.extensions.getEnumConstants
 
 abstract class PreferencesViewModel<KeyT> (
     val prefs: SafeSharedPreferences<KeyT>

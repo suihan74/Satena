@@ -1,8 +1,7 @@
-package com.suihan74.utilities
+package com.suihan74.utilities.extensions
 
 import android.app.Activity
 import android.content.Context
-import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -37,15 +36,6 @@ fun Activity.hideSoftInputMethod(focusTarget: View? = null) : Boolean {
     currentFocus?.clearFocus()
     (focusTarget ?: window.decorView.rootView)?.requestFocus()
     return result ?: false
-}
-
-/**
- * テーマに設定された色を取得する
- */
-fun Context.getThemeColor(attrId: Int) : Int {
-    val outValue = TypedValue()
-    theme.resolveAttribute(attrId, outValue, true)
-    return outValue.data
 }
 
 /**

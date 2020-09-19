@@ -13,8 +13,11 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
-import com.suihan74.utilities.*
+import com.suihan74.utilities.RecyclerViewScrollingUpdater
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

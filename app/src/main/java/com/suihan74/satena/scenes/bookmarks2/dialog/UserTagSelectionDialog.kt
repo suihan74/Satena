@@ -15,8 +15,8 @@ import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.SuspendListener
+import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.withArguments
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

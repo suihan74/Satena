@@ -17,14 +17,13 @@ import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
 import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.bindings.setDivider
-import com.suihan74.utilities.getThemeColor
-import com.suihan74.utilities.showToast
-import com.suihan74.utilities.toVisibility
+import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.android.synthetic.main.fragment_preferences_ignored_users.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 
 class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable, AlertDialogFragment.Listener {
     private var mIgnoredUsersAdapter: IgnoredUsersAdapter? = null

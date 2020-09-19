@@ -17,7 +17,11 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.withArguments
+import com.suihan74.utilities.provideViewModel
 
 
 class Memorial15Fragment : MultipleTabsEntriesFragment() {

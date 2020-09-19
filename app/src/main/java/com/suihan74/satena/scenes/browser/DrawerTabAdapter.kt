@@ -8,7 +8,11 @@ import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
-import com.suihan74.utilities.*
+import com.suihan74.utilities.DrawableCompat
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.getThemeColor
 
 abstract class IconFragmentPagerAdapter(
     fragmentManager: FragmentManager,

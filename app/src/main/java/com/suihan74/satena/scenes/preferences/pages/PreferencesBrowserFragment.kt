@@ -15,7 +15,11 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.utilities.*
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.provideViewModel
 
 class PreferencesBrowserFragment : Fragment() {
     companion object {

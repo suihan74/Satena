@@ -14,9 +14,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.onNot
+import com.suihan74.utilities.extensions.onNot
+import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.withArguments
 
 class AlertDialogFragment2 : DialogFragment() {
     companion object {

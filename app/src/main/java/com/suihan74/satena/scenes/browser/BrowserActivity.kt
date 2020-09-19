@@ -17,7 +17,12 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBrowserBinding
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.utilities.*
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.launch
 

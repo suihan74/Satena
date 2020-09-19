@@ -16,8 +16,9 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.PreferenceKeyMigration
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.lock
-import com.suihan74.utilities.showToast
+
 import java.util.*
 
 class SatenaApplication : Application() {

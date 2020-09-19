@@ -9,7 +9,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
-import com.suihan74.utilities.*
+import com.suihan74.utilities.SuspendListener
+import com.suihan74.utilities.extensions.getObject
+import com.suihan74.utilities.extensions.putObject
+import com.suihan74.utilities.extensions.withArguments
+import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

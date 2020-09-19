@@ -24,6 +24,9 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
+import com.suihan74.utilities.extensions.getObjectExtra
+import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.topBackStackEntry
 import kotlinx.coroutines.*
 
 class BookmarksViewModel(

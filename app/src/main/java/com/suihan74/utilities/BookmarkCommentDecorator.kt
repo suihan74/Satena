@@ -7,6 +7,7 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ClickableSpan
 import android.view.View
+import com.suihan74.utilities.extensions.makeSpannedFromHtml
 
 data class AnalyzedBookmarkComment(
     val comment : Spanned,

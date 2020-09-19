@@ -15,7 +15,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
-import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
 
 class FloatingActionButtonsFragment :

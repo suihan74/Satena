@@ -15,7 +15,7 @@ import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.MenuItemCompat
 import com.suihan74.satena.R
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.getThemeColor
+import com.suihan74.utilities.extensions.getThemeColor
 
 fun Spinner.initialize(
     context: Context,

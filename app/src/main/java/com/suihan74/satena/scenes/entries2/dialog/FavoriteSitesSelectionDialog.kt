@@ -8,7 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.utilities.*
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.extensions.getObject
+import com.suihan74.utilities.extensions.putObject
+import com.suihan74.utilities.extensions.withArguments
+import com.suihan74.utilities.provideViewModel
 
 /** 有効なお気に入りサイトを選択するダイアログ */
 // TODO: BottomSheetDialog化する？

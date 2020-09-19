@@ -15,10 +15,10 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.satena.scenes.entries2.initialize
-import com.suihan74.utilities.alsoAs
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.putEnum
-import com.suihan74.utilities.withArguments
 import kotlinx.android.synthetic.main.activity_entries2.*
 
 class UserEntriesFragment : SingleTabEntriesFragment() {

@@ -16,7 +16,12 @@ import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.utilities.*
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.getObject
+import com.suihan74.utilities.extensions.putObject
+import com.suihan74.utilities.extensions.users
+import com.suihan74.utilities.extensions.withArguments
+import com.suihan74.utilities.showAllowingStateLoss
 
 class NoticeMenuDialog : AlertDialogFragment() {
     companion object {

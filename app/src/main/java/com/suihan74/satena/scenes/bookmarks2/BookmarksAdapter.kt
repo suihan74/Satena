@@ -23,6 +23,8 @@ import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.bindings.setVisibility
+import com.suihan74.utilities.extensions.appendStarSpan
+import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.android.synthetic.main.listview_item_bookmarks.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -368,11 +370,11 @@ class BookmarksAdapter(
                     val blueStarCount = stars.filter { it.color == StarColor.Blue }.sumBy { it.count }
                     val purpleStarCount = stars.filter { it.color == StarColor.Purple }.sumBy { it.count }
 
-                    appendStarSpan(builder, purpleStarCount, view.context, R.style.StarSpan_Purple)
-                    appendStarSpan(builder, blueStarCount, view.context, R.style.StarSpan_Blue)
-                    appendStarSpan(builder, redStarCount, view.context, R.style.StarSpan_Red)
-                    appendStarSpan(builder, greenStarCount, view.context, R.style.StarSpan_Green)
-                    appendStarSpan(builder, yellowStarCount, view.context, R.style.StarSpan_Yellow)
+                    builder.appendStarSpan(purpleStarCount, view.context, R.style.StarSpan_Purple)
+                    builder.appendStarSpan(blueStarCount, view.context, R.style.StarSpan_Blue)
+                    builder.appendStarSpan(redStarCount, view.context, R.style.StarSpan_Red)
+                    builder.appendStarSpan(greenStarCount, view.context, R.style.StarSpan_Green)
+                    builder.appendStarSpan(yellowStarCount, view.context, R.style.StarSpan_Yellow)
                 }
             }
 

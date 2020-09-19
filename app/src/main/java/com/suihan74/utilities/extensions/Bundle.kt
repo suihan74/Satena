@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.suihan74.utilities
+package com.suihan74.utilities.extensions
 
 import android.content.Intent
 import android.os.Bundle

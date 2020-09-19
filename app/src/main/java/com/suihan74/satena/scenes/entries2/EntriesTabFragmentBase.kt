@@ -22,7 +22,13 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialogListeners
-import com.suihan74.utilities.*
+import com.suihan74.utilities.OnError
+import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.getEnum
+import com.suihan74.utilities.extensions.putObjectExtra
+import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.fragment_entries_tab2.*
 import kotlinx.android.synthetic.main.fragment_entries_tab2.view.*
 

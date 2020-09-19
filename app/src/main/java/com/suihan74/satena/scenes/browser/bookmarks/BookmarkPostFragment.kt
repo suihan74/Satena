@@ -15,7 +15,12 @@ import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.post2.BookmarkPostViewModel
-import com.suihan74.utilities.*
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.provideViewModel
 
 class BookmarkPostFragment : Fragment() {
     companion object {

@@ -12,7 +12,8 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.extensions.showToast
+
 import kotlinx.android.synthetic.main.activity_hatena_authentication.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

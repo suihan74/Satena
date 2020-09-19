@@ -15,7 +15,11 @@ import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.utilities.*
+import com.suihan74.utilities.OnError
+import com.suihan74.utilities.OnFinally
+import com.suihan74.utilities.OnSuccess
+import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

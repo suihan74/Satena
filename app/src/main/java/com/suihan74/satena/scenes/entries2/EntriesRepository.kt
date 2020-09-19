@@ -18,8 +18,8 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.checkFromSpam
 import com.suihan74.utilities.exceptions.AlreadyExistedException
+import com.suihan74.utilities.extensions.checkFromSpam
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
 

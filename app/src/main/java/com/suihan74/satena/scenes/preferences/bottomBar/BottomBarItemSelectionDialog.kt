@@ -14,7 +14,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.UserBottomItem
-import com.suihan74.utilities.*
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.extensions.*
 
 class BottomBarItemSelectionDialog : DialogFragment() {
     companion object {

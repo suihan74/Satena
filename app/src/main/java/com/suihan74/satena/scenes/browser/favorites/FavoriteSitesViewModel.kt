@@ -11,9 +11,10 @@ import com.suihan74.satena.scenes.browser.PreferenceLiveData
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteMenuDialog
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.alsoAs
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
-import com.suihan74.utilities.showToast
+
 
 class FavoriteSitesViewModel(
     private val prefs: SafeSharedPreferences<FavoriteSitesKey>

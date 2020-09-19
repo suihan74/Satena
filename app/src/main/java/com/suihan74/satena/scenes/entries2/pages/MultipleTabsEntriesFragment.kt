@@ -18,9 +18,9 @@ import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragment
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.alsoAs
-import com.suihan74.utilities.setOnTabLongClickListener
-import com.suihan74.utilities.showToast
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.setOnTabLongClickListener
+import com.suihan74.utilities.extensions.showToast
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 abstract class MultipleTabsEntriesFragment : EntriesFragment() {

@@ -20,7 +20,12 @@ import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
-import com.suihan74.utilities.*
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.SingleUpdateMutableLiveData
+import com.suihan74.utilities.extensions.addUnique
+import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.whenTrue
+import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

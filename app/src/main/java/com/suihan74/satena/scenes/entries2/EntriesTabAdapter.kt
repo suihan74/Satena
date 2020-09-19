@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
-import com.suihan74.utilities.map
+import com.suihan74.utilities.extensions.map
 
 class EntriesTabAdapter(
     private val container: ViewGroup,

@@ -28,6 +28,10 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
+import com.suihan74.utilities.extensions.findFragmentByTag
+import com.suihan74.utilities.extensions.getObjectExtra
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.showToast
 import kotlinx.android.synthetic.main.activity_bookmarks2.*
 
 class BookmarksActivity : AppCompatActivity() {

@@ -9,7 +9,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
-import com.suihan74.utilities.*
+import com.suihan74.utilities.FooterViewHolder
+import com.suihan74.utilities.RecyclerState
+import com.suihan74.utilities.RecyclerType
+import com.suihan74.utilities.extensions.setHtml
+import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.android.synthetic.main.listview_item_stars.view.*
 
 open class StarsAdapter : ListAdapter<RecyclerState<StarWithBookmark>, RecyclerView.ViewHolder>(DiffCallback()) {

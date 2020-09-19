@@ -12,7 +12,7 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.bindings.setDivider
-import com.suihan74.utilities.getThemeColor
+import com.suihan74.utilities.extensions.getThemeColor
 import kotlinx.android.synthetic.main.fragment_stars_tab.view.*
 
 class StarsToUserFragment : Fragment(), ScrollableToTop {

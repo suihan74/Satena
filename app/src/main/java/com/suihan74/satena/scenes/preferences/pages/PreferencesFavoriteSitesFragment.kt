@@ -15,8 +15,8 @@ import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.alsoAs
 import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.provideViewModel
 
 class PreferencesFavoriteSitesFragment : PreferencesFragmentBase() {

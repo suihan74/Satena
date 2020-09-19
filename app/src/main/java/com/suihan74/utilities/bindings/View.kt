@@ -2,7 +2,7 @@ package com.suihan74.utilities.bindings
 
 import android.view.View
 import androidx.databinding.BindingAdapter
-import com.suihan74.utilities.toVisibility
+import com.suihan74.utilities.extensions.toVisibility
 
 @BindingAdapter(value = ["android:visibility", "disabledDefaultVisibility"], requireAll = false)
 fun View.setVisibility(isVisible: Boolean?, disabledDefault: Int? = View.GONE) {

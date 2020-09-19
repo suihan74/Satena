@@ -14,8 +14,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ViewUserBottomItemsSetterBinding
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.utilities.Listener
+import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.views.bindMenuItemsGravity
-import com.suihan74.utilities.getThemeColor
 import kotlinx.android.synthetic.main.view_user_bottom_items_setter.view.*
 
 class UserBottomItemsSetter : CoordinatorLayout {

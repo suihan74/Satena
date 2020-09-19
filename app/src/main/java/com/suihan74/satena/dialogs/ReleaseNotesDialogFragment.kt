@@ -14,8 +14,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
-import com.suihan74.utilities.showToast
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.withArguments
 import kotlinx.android.synthetic.main.fragment_dialog_release_notes.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -11,8 +11,9 @@ import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteMenuDialog
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
-import com.suihan74.utilities.showToast
+
 
 class PreferencesFavoriteSitesViewModel(
     prefs: SafeSharedPreferences<FavoriteSitesKey>

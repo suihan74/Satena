@@ -17,9 +17,10 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesAdapter
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryViewModel
 import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
-import com.suihan74.utilities.showToast
+
 import kotlinx.android.synthetic.main.fragment_preferences_ignored_entries.view.*
 
 class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialogFragment.Listener {

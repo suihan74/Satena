@@ -14,7 +14,11 @@ import androidx.lifecycle.*
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
-import com.suihan74.utilities.*
+import com.suihan74.utilities.OnError
+import com.suihan74.utilities.SuspendSwitcher
+import com.suihan74.utilities.extensions.showSoftInputMethod
+import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.lock
 import kotlinx.android.synthetic.main.fragment_dialog_tagged_user.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

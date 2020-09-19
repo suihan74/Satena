@@ -7,8 +7,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import com.suihan74.utilities.OnError
-import com.suihan74.utilities.getObject
-import com.suihan74.utilities.putObject
+import com.suihan74.utilities.extensions.getObject
+import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.showAllowingStateLoss
 
 /**

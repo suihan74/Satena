@@ -23,9 +23,9 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.tools.RestartActivity
-import com.suihan74.utilities.setHtml
+import com.suihan74.utilities.extensions.setHtml
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
-import com.suihan74.utilities.showToast
 import kotlinx.android.synthetic.main.fragment_preferences_information.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

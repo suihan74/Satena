@@ -14,9 +14,9 @@ import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.getObject
-import com.suihan74.utilities.putObject
-import com.suihan74.utilities.withArguments
+import com.suihan74.utilities.extensions.getObject
+import com.suihan74.utilities.extensions.putObject
+import com.suihan74.utilities.extensions.withArguments
 
 class BookmarkMenuDialog : DialogFragment() {
     companion object {
