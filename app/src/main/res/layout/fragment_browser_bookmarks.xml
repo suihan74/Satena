@@ -11,24 +11,30 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view"
-                style="@style/RecyclerView.Linear"
-                divider="@{@drawable/recycler_view_item_divider}"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/swipe_layout"
                 app:layout_constraintBottom_toTopOf="@+id/bookmark_post_area"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_width="match_parent"
+                android:layout_height="0dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_view"
+                    style="@style/RecyclerView.Linear"
+                    divider="@{@drawable/recycler_view_item_divider}"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <ProgressBar
                 android:id="@+id/progress_bar"
-                android:visibility="@{browserViewModel.loadingBookmarksEntry}"
-                app:layout_constraintBottom_toBottomOf="@+id/recycler_view"
-                app:layout_constraintLeft_toLeftOf="@+id/recycler_view"
-                app:layout_constraintRight_toRightOf="@+id/recycler_view"
-                app:layout_constraintTop_toTopOf="@+id/recycler_view"
+                app:layout_constraintBottom_toBottomOf="@+id/swipe_layout"
+                app:layout_constraintLeft_toLeftOf="@+id/swipe_layout"
+                app:layout_constraintRight_toRightOf="@+id/swipe_layout"
+                app:layout_constraintTop_toTopOf="@+id/swipe_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 

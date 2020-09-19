@@ -45,8 +45,12 @@ class BrowserRepository(
     }
 
     /** サインイン状態 */
-    val signedIn: Boolean
+    val signedIn : Boolean
         get() = client.signedIn()
+
+    /** サインインしているユーザー名 */
+    val userSignedIn : String?
+        get() = client.account?.name
 
     /** スタートページ */
     val startPage =

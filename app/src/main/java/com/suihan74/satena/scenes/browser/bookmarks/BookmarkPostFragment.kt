@@ -111,6 +111,15 @@ class BookmarkPostFragment : Fragment() {
         // WebViewがページ遷移したらエントリ情報をリロードする
         activityViewModel.bookmarksEntry.observe(viewLifecycleOwner) {
             if (it == null) return@observe
+            val userSignedIn = activityViewModel.repository.userSignedIn
+            val userComment =
+                if (userSignedIn == null) null
+                else it.bookmarks.firstOrNull { b -> b.user == userSignedIn }
+
+            if (viewModel.comment.value.isNullOrBlank()) {
+                viewModel.comment.value = userComment?.comment ?: ""
+            }
+
             viewModel.init(it.url, viewModel.comment.value)
         }
 

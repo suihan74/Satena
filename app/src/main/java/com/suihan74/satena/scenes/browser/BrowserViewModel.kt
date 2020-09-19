@@ -21,6 +21,7 @@ import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
 import com.suihan74.utilities.Listener
+import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 import com.suihan74.utilities.extensions.addUnique
 import com.suihan74.utilities.extensions.showToast
@@ -48,6 +49,7 @@ class BrowserViewModel(
         SingleUpdateMutableLiveData(startPage).apply {
             observeForever {
                 addressText.value = Uri.decode(it)
+                bookmarksEntry.value = null
                 loadBookmarksEntry(it)
             }
         }
@@ -360,11 +362,10 @@ class BrowserViewModel(
     // ------ //
 
     /** BookmarksEntryを更新 */
-    private fun loadBookmarksEntry(url: String) {
+    fun loadBookmarksEntry(url: String, onFinally: OnFinally? = null) {
         loadBookmarksEntryTask?.cancel()
         loadBookmarksEntryTask = viewModelScope.async(Dispatchers.Default) {
             loadingBookmarksEntry.postValue(true)
-            bookmarksEntry.postValue(null)
 
             // 渡されたページURLをエントリURLに修正する
             val modifyResult = kotlin.runCatching {
@@ -382,6 +383,9 @@ class BrowserViewModel(
             catch (e: Throwable) {
                 Log.e("loadBookmarksEntry", Log.getStackTraceString(e))
                 bookmarksEntry.postValue(null)
+            }
+            finally {
+                onFinally?.invoke()
             }
 
             loadBookmarksEntryTask = null

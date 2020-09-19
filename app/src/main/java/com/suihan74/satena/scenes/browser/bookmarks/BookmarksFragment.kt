@@ -12,6 +12,7 @@ import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.extensions.getThemeColor
 import kotlinx.android.synthetic.main.fragment_browser_bookmarks.*
 import kotlinx.coroutines.launch
 
@@ -46,23 +47,44 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
         val bookmarksAdapter = BookmarksAdapter()
         binding.recyclerView.adapter = bookmarksAdapter
 
+        activityViewModel.loadingBookmarksEntry.observe(viewLifecycleOwner) {
+            if (it == true) {
+                if (!binding.swipeLayout.isRefreshing) {
+                    binding.swipeLayout.isEnabled = false
+                    binding.progressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+
         activityViewModel.bookmarksEntry.observe(viewLifecycleOwner) {
             if (it == null) {
                 bookmarksAdapter.submitList(null)
             }
             else {
-                bookmarksAdapter.submitList(null) {
-                    lifecycleScope.launch {
-                        bookmarksAdapter.setBookmarks(
-                            bookmarks = it.bookmarks.filter { b -> b.comment.isNotBlank() },
-                            bookmarksEntry = it,
-                            taggedUsers = emptyList(),
-                            ignoredUsers = emptyList(),
-                            displayMutedMention = false,
-                            starsEntryGetter = { null }
-                        )
+                lifecycleScope.launch {
+                    bookmarksAdapter.setBookmarks(
+                        bookmarks = it.bookmarks.filter { b -> b.comment.isNotBlank() },
+                        bookmarksEntry = it,
+                        taggedUsers = emptyList(),
+                        ignoredUsers = emptyList(),
+                        displayMutedMention = false,
+                        starsEntryGetter = { null }
+                    ) {
+                        binding.swipeLayout.isRefreshing = false
+                        binding.swipeLayout.isEnabled = true
+                        binding.progressBar.visibility = View.GONE
                     }
                 }
+            }
+        }
+
+        // スワイプしてブクマリストを更新する
+        binding.swipeLayout.let { swipeLayout ->
+            val activity = requireActivity()
+            swipeLayout.setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
+            swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
+            swipeLayout.setOnRefreshListener {
+                activityViewModel.loadBookmarksEntry(activityViewModel.url.value!!)
             }
         }
 
