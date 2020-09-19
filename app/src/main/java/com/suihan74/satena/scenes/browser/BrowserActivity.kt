@@ -5,7 +5,6 @@ import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.inputmethod.EditorInfo
 import android.webkit.WebView
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
@@ -68,8 +67,6 @@ class BrowserActivity : FragmentActivity() {
             lifecycleOwner = this@BrowserActivity
         }
 
-        setActionBar(toolbar)
-
         // ドロワーを開いたときにIMEを閉じる
         drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
@@ -86,16 +83,21 @@ class BrowserActivity : FragmentActivity() {
         // WebViewの設定
         viewModel.initializeWebView(webview, this)
 
-        // IMEの決定ボタンでページ遷移する
-        address_edit_text.setOnEditorActionListener { _, action, _ ->
-            when (action) {
-                EditorInfo.IME_ACTION_GO ->
-                    viewModel.goAddress().whenTrue {
-                        hideSoftInputMethod(main_area)
-                    }
+        // ツールバーをセット
+        val toolbar = BrowserToolbar(this)
+        viewModel.useBottomAppBar.observe(this) {
+            // もう一方の方をクリアしておく
+            val another =
+                if (it) appbar_layout
+                else bottom_app_bar
+            another.removeAllViews()
 
-                else -> false
-            }
+            val appBar =
+                if (it) bottom_app_bar
+                else appbar_layout
+
+            val toolbarBinding = toolbar.inflate(viewModel, this, appBar, true)
+            setActionBar(toolbarBinding.toolbar)
         }
 
         // スワイプしてページを更新する

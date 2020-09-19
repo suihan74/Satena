@@ -54,6 +54,12 @@ class BrowserRepository(
             p.getString(BrowserSettingsKey.START_PAGE_URL)
         }
 
+    /** アプリバーを下部に配置する */
+    val useBottomAppBar =
+        createBrowserSettingsLiveData(BrowserSettingsKey.USE_URL_BLOCKING) { p ->
+            p.getBoolean(BrowserSettingsKey.USE_BOTTOM_APP_BAR)
+        }
+
     /** UserAgent */
     val userAgent =
         createBrowserSettingsLiveData(BrowserSettingsKey.USER_AGENT) { p ->

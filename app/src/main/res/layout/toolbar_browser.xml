@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.browser.BrowserViewModel" />
+    </data>
+
+    <Toolbar
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/toolbar"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <FrameLayout
+                android:background="@drawable/browser_address_area_background"
+                android:layout_marginRight="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <EditText
+                    android:id="@+id/address_edit_text"
+
+                    android:text="@={vm.addressText}"
+                    android:hint="@string/browser_address_bar_hint"
+
+                    android:textSize="16sp"
+                    android:paddingVertical="8dp"
+                    android:paddingHorizontal="8dp"
+                    android:singleLine="true"
+                    android:inputType="text"
+                    android:imeOptions="actionGo"
+                    android:importantForAutofill="no"
+                    android:selectAllOnFocus="true"
+
+                    android:background="@android:color/transparent"
+                    android:textColor="@color/colorPrimaryText"
+                    android:textColorHint="@color/BrowserAddressBarHintColor"
+                    android:textCursorDrawable="@drawable/searchview_cursor"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+        </FrameLayout>
+
+    </Toolbar>
+</layout>

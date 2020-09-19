@@ -15,6 +15,9 @@ enum class BrowserSettingsKey (
     override val defaultValue: Any?
 ) : SafeSharedPreferences.Key {
 
+    /** アプリバーを下部に配置する */
+    USE_BOTTOM_APP_BAR(typeInfo<Boolean>(), true),
+
     /** UserAgent設定(null = デフォルト) */
     USER_AGENT(typeInfo<String?>(), null),
 

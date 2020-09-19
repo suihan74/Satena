@@ -73,6 +73,11 @@ class BrowserViewModel(
         repository.useUrlBlocking
     }
 
+    /** アプリバーを画面下部に配置する */
+    val useBottomAppBar by lazy {
+        repository.useBottomAppBar
+    }
+
     /** アドレスバーの入力内容 */
     val addressText by lazy {
         SingleUpdateMutableLiveData("")

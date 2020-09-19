@@ -22,4 +22,8 @@ class PreferencesBrowserViewModel(
     val useUrlBlock by lazy {
         repository.useUrlBlocking
     }
+
+    val useBottomAppBar by lazy {
+        repository.useBottomAppBar
+    }
 }

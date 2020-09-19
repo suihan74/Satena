@@ -77,6 +77,19 @@
                     android:layout_height="wrap_content"/>
 
             <TextView
+                    android:text="@string/pref_browser_use_bottom_app_bar_desc"
+                    android:layout_marginTop="24dp"
+                    android:textColor="?attr/textColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <ToggleButton
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:checked="@={vm.useBottomAppBar}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
                     android:text="@string/pref_browser_user_agent_desc"
                     android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
