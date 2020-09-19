@@ -106,7 +106,7 @@
         />
 
         <activity
-                android:name="com.suihan74.utilities.RestartActivity"
+                android:name=".scenes.tools.RestartActivity"
                 android:excludeFromRecents="true"
                 android:exported="false"
                 android:launchMode="singleInstance"

@@ -88,7 +88,7 @@
                     android:layout_height="wrap_content"/>
         </LinearLayout>
 
-        <com.suihan74.utilities.TextFloatingActionButton
+        <com.suihan74.utilities.views.TextFloatingActionButton
                 android:id="@+id/bookmark_button"
                 style="@style/FloatingActionButtonStyle"
                 android:layout_width="wrap_content"

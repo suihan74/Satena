@@ -22,7 +22,7 @@ import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
-import com.suihan74.utilities.RestartActivity
+import com.suihan74.satena.scenes.tools.RestartActivity
 import com.suihan74.utilities.setHtml
 import com.suihan74.utilities.showAllowingStateLoss
 import com.suihan74.utilities.showToast

@@ -24,7 +24,7 @@
                 android:layout_alignParentTop="true"
                 />
 
-        <com.suihan74.utilities.MarqueeTextView
+        <com.suihan74.utilities.views.MarqueeTextView
                 android:id="@+id/title"
                 style="@style/MarqueeTextView"
                 android:text="@{site.title}"
@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
-        <com.suihan74.utilities.MarqueeTextView
+        <com.suihan74.utilities.views.MarqueeTextView
                 android:id="@+id/url"
                 style="@style/MarqueeTextView"
                 android:text="@{site.url}"

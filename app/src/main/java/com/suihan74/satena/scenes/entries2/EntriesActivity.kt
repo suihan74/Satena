@@ -39,6 +39,8 @@ import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.*
+import com.suihan74.utilities.views.CustomBottomAppBar
+import com.suihan74.utilities.views.bindMenuItemsGravity
 import kotlinx.android.synthetic.main.activity_entries2.*
 
 class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {

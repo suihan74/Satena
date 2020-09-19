@@ -6,7 +6,7 @@
                 type="com.suihan74.satena.scenes.browser.BrowserViewModel" />
     </data>
 
-    <com.suihan74.utilities.LockableDrawerLayout
+    <com.suihan74.utilities.views.LockableDrawerLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/drawer_layout"
@@ -85,6 +85,6 @@
 
         </RelativeLayout>
 
-    </com.suihan74.utilities.LockableDrawerLayout>
+    </com.suihan74.utilities.views.LockableDrawerLayout>
 </layout>
 

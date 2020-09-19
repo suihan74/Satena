@@ -1,4 +1,4 @@
-package com.suihan74.utilities
+package com.suihan74.utilities.views
 
 import android.content.Context
 import android.util.AttributeSet

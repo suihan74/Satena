@@ -1,4 +1,4 @@
-package com.suihan74.utilities
+package com.suihan74.satena.scenes.tools
 
 import android.app.Activity
 import android.content.Context

@@ -12,7 +12,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-        <com.suihan74.utilities.CustomBottomAppBar
+        <com.suihan74.utilities.views.CustomBottomAppBar
                 android:id="@+id/bottom_app_bar"
                 app:backgroundTint="?attr/tabBackground"
                 app:fabCradleRoundedCornerRadius="8dp"
