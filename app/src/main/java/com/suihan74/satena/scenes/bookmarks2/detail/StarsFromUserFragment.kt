@@ -74,6 +74,7 @@ class StarsFromUserFragment : Fragment(), ScrollableToTop {
         return view
     }
 
-    override fun scrollToTop() =
+    override fun scrollToTop() {
         view?.stars_list?.scrollToPosition(0)
+    }
 }
