@@ -6,10 +6,10 @@ import android.text.style.ImageSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -19,7 +19,6 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
-import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.bindings.setVisibility
@@ -38,9 +37,7 @@ fun <T> List<T>?.contentsEquals(other: List<T>?) =
 
 
 class BookmarksAdapter(
-    private val lifecycleOwner: LifecycleOwner,
-    private val viewModel: BookmarksTabViewModel,
-    private val bookmarksRepository: BookmarksRepository
+    cache: List<RecyclerState<Entity>>? = null
 ) : ListAdapter<RecyclerState<BookmarksAdapter.Entity>, RecyclerView.ViewHolder>(DiffCallback()) {
     private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entity>>() {
         override fun areItemsTheSame(
@@ -98,6 +95,9 @@ class BookmarksAdapter(
     /** フッターの追加ロードをタップしたときの処理 */
     private var onAdditionalLoading: Listener<Unit>? = null
 
+    /** スターをつける処理をボタンに設定する */
+    private var addStarButtonBinder : ((button: ImageButton, bookmark: Bookmark)->Unit)? = null
+
     fun setOnItemClickedListener(listener: Listener<Bookmark>?) {
         onItemClicked = listener
     }
@@ -126,6 +126,11 @@ class BookmarksAdapter(
         onAdditionalLoading = listener
     }
 
+    /** スターをつける処理をボタンに設定する */
+    fun setAddStarButtonBinder(binder: ((button: ImageButton, bookmark: Bookmark)->Unit)?) {
+        addStarButtonBinder = binder
+    }
+
     /** 追加ロードボタンを表示するか */
     var additionalLoadable: Boolean = false
         set (value) {
@@ -150,7 +155,6 @@ class BookmarksAdapter(
     init {
         // キャッシュが存在する場合、その内容を引き継ぐ
         // 画面回転のたびにリストが再生成されるのを防ぐために行っている
-        val cache = viewModel.displayStates
         if (!cache.isNullOrEmpty()) {
             submitList(cache)
         }
@@ -229,12 +233,13 @@ class BookmarksAdapter(
         taggedUsers: List<UserAndTags>,
         ignoredUsers: List<String>,
         displayMutedMention: Boolean,
-        onSubmitted: Runnable? = null
+        starsEntryGetter: (user: String)->StarsEntry?,
+        onSubmitted: Listener<List<RecyclerState<Entity>>>? = null
     ) = withContext(Dispatchers.Default) {
 
         val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
             val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
-            val stars = bookmarksRepository.getStarsEntryTo(it.user)
+            val stars = starsEntryGetter(it.user)
             val bookmark = it.copy(starCount = stars?.allStars ?: it.starCount)
             Entity(
                 bookmark = bookmark,
@@ -250,10 +255,10 @@ class BookmarksAdapter(
             )
         })
 
-        viewModel.displayStates = newStates
-
         withContext(Dispatchers.Main) {
-            submitList(newStates, onSubmitted)
+            submitList(newStates) {
+                onSubmitted?.invoke(newStates)
+            }
         }
     }
 
@@ -382,12 +387,7 @@ class BookmarksAdapter(
             view.bookmark_timestamp.text = builder
 
             // スターを付けるボタンを設定
-            bookmarksAdapter.viewModel.initializeAddStarButton(
-                view.context!!,
-                bookmarksAdapter.lifecycleOwner,
-                view.add_star_button,
-                bookmark
-            )
+            bookmarksAdapter.addStarButtonBinder?.invoke(view.add_star_button, bookmark)
 
             // ユーザータグ
             if (userTags.isNullOrEmpty()) {
