@@ -61,11 +61,7 @@ class BookmarksTabFragment :
     ): View? {
         val view = inflater.inflate(R.layout.fragment_bookmarks_tab, container, false)
 
-        val bookmarksAdapter = BookmarksAdapter(
-            viewLifecycleOwner,
-            viewModel,
-            activityViewModel.repository
-        ).apply {
+        val bookmarksAdapter = BookmarksAdapter(viewModel.displayStates).apply {
             setOnItemClickedListener { bookmark ->
                 bookmarksActivity.onBookmarkClicked(bookmark)
             }
@@ -98,6 +94,15 @@ class BookmarksTabFragment :
                     onFinally = {
                         stopLoading((viewModel is CustomTabViewModel) && viewModel.additionalLoadable)
                     }
+                )
+            }
+
+            setAddStarButtonBinder { button, bookmark ->
+                viewModel.initializeAddStarButton(
+                    requireContext(),
+                    viewLifecycleOwner,
+                    button,
+                    bookmark
                 )
             }
         }
@@ -183,10 +188,12 @@ class BookmarksTabFragment :
                     bookmarksEntry,
                     userTags,
                     ignoredUsers,
-                    displayMutedMention
-                ) {
+                    displayMutedMention,
+                    { user -> activityViewModel.repository.getStarsEntryTo(user) }
+                ) { newStates ->
                     // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
                     scrollingUpdater.isEnabled = true
+                    viewModel.displayStates = newStates
                 }
             }
         }
@@ -204,8 +211,11 @@ class BookmarksTabFragment :
                         bookmarksEntry,
                         it,
                         ignoredUsers,
-                        displayMutedMention
-                    )
+                        displayMutedMention,
+                        { user -> activityViewModel.repository.getStarsEntryTo(user) }
+                    ) { newStates ->
+                        viewModel.displayStates = newStates
+                    }
                 }
             }
         }
