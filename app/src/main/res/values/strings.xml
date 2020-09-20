@@ -272,6 +272,12 @@
     <string name="pref_browser_user_agent_hint">空欄: デフォルト設定</string>
     <string name="pref_browser_use_bottom_app_bar_desc">アドレスバーを画面下部に配置する</string>
 
+    <string name="pref_browser_theme_desc">ウェブサイトのテーマ</string>
+    <string name="pref_browser_theme_auto">Satenaにあわせる</string>
+    <string name="pref_browser_theme_normal">設定しない</string>
+    <string name="pref_browser_theme_dark">可能なら暗くする</string>
+    <string name="pref_browser_theme_force_dark">強制的に暗くする</string>
+
     <!-- お気に入りサイト -->
     <string name="dialog_favorite_sites_open">開く</string>
     <string name="dialog_favorite_sites_open_entries">エントリ一覧を開く</string>

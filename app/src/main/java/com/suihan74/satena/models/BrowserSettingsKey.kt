@@ -1,6 +1,7 @@
 package com.suihan74.satena.models
 
 import com.suihan74.satena.scenes.browser.BlockUrlSetting
+import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -17,6 +18,9 @@ enum class BrowserSettingsKey (
 
     /** アプリバーを下部に配置する */
     USE_BOTTOM_APP_BAR(typeInfo<Boolean>(), true),
+
+    /** ダークテーマを使用するかどうかの設定 */
+    THEME(typeInfo<WebViewTheme>(), WebViewTheme.AUTO),
 
     /** UserAgent設定(null = デフォルト) */
     USER_AGENT(typeInfo<String?>(), null),

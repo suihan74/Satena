@@ -169,3 +169,7 @@
 -keep class com.suihan74.hatenaLib.** { *; }
 -keep class com.suihan74.satena.** { *; }
 -keep class com.suihan74.utilities.** { *; }
+
+##---------------Begin: proguard configuration for WebView  ----------
+
+-keep class androidx.webkit.** { *; }

@@ -9,22 +9,23 @@ import androidx.fragment.app.Fragment
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesBrowserBinding
+import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.BrowserViewModel
+import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.provideViewModel
 
 class PreferencesBrowserFragment : Fragment() {
     companion object {
         fun createInstance() = PreferencesBrowserFragment()
     }
+
+    private val DIALOG_WEB_VIEW_THEME by lazy { "DIALOG_WEB_VIEW_THEME" }
 
     private val preferencesActivity : PreferencesActivity?
         get() = requireActivity() as? PreferencesActivity
@@ -75,6 +76,30 @@ class PreferencesBrowserFragment : Fragment() {
             if (!b) {
                 requireActivity().hideSoftInputMethod(binding.contentLayout)
             }
+        }
+
+        @OptIn(ExperimentalStdlibApi::class)
+        binding.webViewThemeButton.setOnClickListener {
+            val items = buildList {
+                add(WebViewTheme.AUTO)
+                add(WebViewTheme.NORMAL)
+                if (viewModel.isForceDarkSupported) {
+                    if (viewModel.isForceDarkStrategySupported) {
+                        add(WebViewTheme.DARK)
+                    }
+                    add(WebViewTheme.FORCE_DARK)
+                }
+            }
+            val labels = items.map { it.textId }
+
+            val dialog = AlertDialogFragment2.Builder()
+                .setTitle(R.string.pref_browser_theme_desc)
+                .setItems(labels) { _, which ->
+                    viewModel.webViewTheme.value = items[which]
+                }
+                .create()
+
+            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_WEB_VIEW_THEME)
         }
 
         return binding.root

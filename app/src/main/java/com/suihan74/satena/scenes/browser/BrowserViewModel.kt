@@ -12,6 +12,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.webkit.WebSettingsCompat
 import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.R
@@ -39,9 +40,14 @@ class BrowserViewModel(
     private val DIALOG_BLOCK_URL by lazy { "DIALOG_BLOCK_URL" }
     private val DIALOG_CONTEXT_MENU by lazy { "DIALOG_CONTEXT_MENU" }
 
-    /** テーマ */
+    /** アプリのテーマ */
     val themeId : Int
         get() = repository.themeId
+
+    /** Webサイトのテーマ指定 */
+    val webViewTheme by lazy {
+        repository.webViewTheme
+    }
 
     /** 表示中のページURL */
     val url by lazy {
@@ -141,6 +147,9 @@ class BrowserViewModel(
         var handledAsClick = false
         var touchMoved = false
         var velocityTracker: VelocityTracker? = null
+
+        wv.settings.useWideViewPort = true
+        wv.settings.loadWithOverviewMode = true
 
         // WebView単体ではシングルタップが検知できないので、onTouchListenerで無理矢理シングルタップを検知させる
         // あくまでリンククリックだけを検出したいので、あえてWebViewClientを使用した方法をとっていない
@@ -258,6 +267,32 @@ class BrowserViewModel(
         // UserAgentの設定
         userAgent.observe(activity) {
             wv.settings.userAgentString = it
+        }
+
+        // テーマの設定
+        webViewTheme.observe(activity) {
+            val theme =
+                when (it) {
+                    WebViewTheme.AUTO ->
+                        if (repository.isThemeDark) WebViewTheme.DARK
+                        else WebViewTheme.NORMAL
+
+                    else -> it
+                }
+
+            if (theme == WebViewTheme.DARK && repository.isForceDarkStrategySupported && repository.isForceDarkSupported) {
+                WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_ON)
+                WebSettingsCompat.setForceDarkStrategy(wv.settings, WebSettingsCompat.DARK_STRATEGY_WEB_THEME_DARKENING_ONLY)
+            }
+            else if (theme == WebViewTheme.FORCE_DARK && repository.isForceDarkSupported) {
+                WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_ON)
+                if (repository.isForceDarkStrategySupported) {
+                    WebSettingsCompat.setForceDarkStrategy(wv.settings, WebSettingsCompat.DARK_STRATEGY_USER_AGENT_DARKENING_ONLY)
+                }
+            }
+            else if (repository.isForceDarkSupported) {
+                WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_OFF)
+            }
         }
     }
 

@@ -26,4 +26,16 @@ class PreferencesBrowserViewModel(
     val useBottomAppBar by lazy {
         repository.useBottomAppBar
     }
+
+    val webViewTheme by lazy {
+        repository.webViewTheme
+    }
+
+    val isForceDarkSupported by lazy {
+        repository.isForceDarkSupported
+    }
+
+    val isForceDarkStrategySupported by lazy {
+        repository.isForceDarkStrategySupported
+    }
 }

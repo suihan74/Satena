@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.browser
 
+import androidx.webkit.WebViewFeature
 import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Keyword
@@ -38,11 +39,22 @@ class BrowserRepository(
         initializer: ((SafeSharedPreferences<BrowserSettingsKey>)->ValueT)? = null
     ) = PreferenceLiveData(browserSettings, key, initializer)
 
-    /** テーマ */
+    /** アプリのテーマがダークテーマか */
+    val isThemeDark by lazy {
+        prefs.getBoolean(PreferenceKey.DARK_THEME)
+    }
+
+    /** アプリのテーマID */
     val themeId by lazy {
         if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppTheme_Dark
         else R.style.AppTheme_Light
     }
+
+    /** ウェブサイトのテーマ指定 */
+    val webViewTheme =
+        createBrowserSettingsLiveData(BrowserSettingsKey.THEME) { p ->
+            p.get<WebViewTheme>(BrowserSettingsKey.THEME)
+        }
 
     /** サインイン状態 */
     val signedIn : Boolean
@@ -116,6 +128,14 @@ class BrowserRepository(
     val keywordsCache by lazy {
         HashMap<String, List<Keyword>>()
     }
+
+    // ------ //
+
+    val isForceDarkStrategySupported
+        get() = WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK_STRATEGY)
+
+    val isForceDarkSupported
+        get() = WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)
 
     // ------ //
 
