@@ -270,11 +270,23 @@
 
     <string name="pref_browser_start_page_desc">スタートページ</string>
     <string name="pref_browser_start_page_hint">ウェブアドレスを入力</string>
+    <string name="pref_browser_private_browsing_enabled_desc">プライベートブラウジング</string>
     <string name="pref_browser_javascript_enabled_desc">JavaScriptを使用する</string>
     <string name="pref_browser_use_url_blocking_desc">リソースブロックを使用する</string>
     <string name="pref_browser_user_agent_desc">UserAgent</string>
     <string name="pref_browser_user_agent_hint">空欄: デフォルト設定</string>
     <string name="pref_browser_use_bottom_app_bar_desc">アドレスバーを画面下部に配置する</string>
+
+    <string name="pref_browser_clear_cache_desc">キャッシュを削除する</string>
+    <string name="pref_browser_clear_cache_dialog_message">キャッシュを削除するとストレージ使用量を削減できる一方、一時的に通信量が増えてウェブページの読み込みが遅くなります。削除しますか？</string>
+
+    <string name="pref_browser_clear_cookie_desc">クッキーを削除する</string>
+    <string name="pref_browser_clear_cookie_dialog_message">クッキーを削除すると全てのサイトのログインなどの状態がクリアされます。削除しますか？</string>
+
+    <string name="pref_browser_clear_history_desc">閲覧履歴を削除する</string>
+    <string name="pref_browser_clear_history_dialog_message">閲覧履歴を削除すると過去に閲覧した全てのサイト情報がクリアされます。削除しますか？</string>
+
+    <string name="pref_browser_clear_button">実行</string>
 
     <string name="pref_browser_theme_desc">ウェブサイトのテーマ</string>
     <string name="pref_browser_theme_auto">Satenaにあわせる</string>

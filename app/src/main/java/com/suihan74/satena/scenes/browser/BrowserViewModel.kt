@@ -4,15 +4,14 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.view.*
-import android.webkit.URLUtil
-import android.webkit.WebChromeClient
-import android.webkit.WebView
+import android.webkit.*
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewFeature
 import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.R
@@ -75,8 +74,12 @@ class BrowserViewModel(
         repository.userAgent
     }
 
+    val privateBrowsingEnabled by lazy {
+        repository.privateBrowsingEnabled
+    }
+
     /** JavaScriptを有効にする */
-    val javascriptEnabled by lazy {
+    val javaScriptEnabled by lazy {
         repository.javascriptEnabled
     }
 
@@ -142,14 +145,20 @@ class BrowserViewModel(
         wv.webViewClient = BrowserWebViewClient(this)
         wv.webChromeClient = WebChromeClient()
 
+        wv.settings.useWideViewPort = true
+        wv.settings.loadWithOverviewMode = true
+        setPrivateBrowsing(wv, privateBrowsingEnabled.value ?: false)
+
+        // セキュリティ保護を利用可能な全てのバージョンでデフォルトで保護を行う
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.SAFE_BROWSING_ENABLE)) {
+            WebSettingsCompat.setSafeBrowsingEnabled(wv.settings, true)
+        }
+
         // どういうわけかクリック時にもonLongClickListenerが呼ばれることがあるので、
         // クリックとして処理したかどうかを記憶しておく
         var handledAsClick = false
         var touchMoved = false
         var velocityTracker: VelocityTracker? = null
-
-        wv.settings.useWideViewPort = true
-        wv.settings.loadWithOverviewMode = true
 
         // WebView単体ではシングルタップが検知できないので、onTouchListenerで無理矢理シングルタップを検知させる
         // あくまでリンククリックだけを検出したいので、あえてWebViewClientを使用した方法をとっていない
@@ -260,11 +269,13 @@ class BrowserViewModel(
         }
 
         // jsのON/OFF
-        javascriptEnabled.observe(activity) {
+        wv.settings.javaScriptEnabled = javaScriptEnabled.value ?: true
+        javaScriptEnabled.observe(activity) {
             wv.settings.javaScriptEnabled = it
         }
 
         // UserAgentの設定
+        wv.settings.userAgentString = userAgent.value
         userAgent.observe(activity) {
             wv.settings.userAgentString = it
         }
@@ -294,6 +305,36 @@ class BrowserViewModel(
                 WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_OFF)
             }
         }
+
+        var initialPrivateBrowsingEnabled : Boolean? = privateBrowsingEnabled.value
+        privateBrowsingEnabled.observe(activity) {
+            setPrivateBrowsing(wv, it)
+            if (it != initialPrivateBrowsingEnabled) {
+                initialPrivateBrowsingEnabled = null
+                wv.reload()
+            }
+        }
+    }
+
+    /**
+     * プライベートブラウジングを有効化する
+     */
+    fun setPrivateBrowsing(wv: WebView, enabled: Boolean) {
+        val settings = wv.settings
+        if (enabled) {
+            // cookie
+            CookieManager.getInstance().setAcceptCookie(false)
+            // cache
+            settings.cacheMode = WebSettings.LOAD_NO_CACHE
+            settings.setAppCacheEnabled(false)
+        }
+        else {
+            // cookie
+            CookieManager.getInstance().setAcceptCookie(true)
+            // cache
+            settings.cacheMode = WebSettings.LOAD_DEFAULT
+            settings.setAppCacheEnabled(true)
+        }
     }
 
     /** 状態変化をオプションメニュー項目に通知する */
@@ -302,7 +343,7 @@ class BrowserViewModel(
             val state = if (it) "ON" else "OFF"
             menu.findItem(R.id.adblock)?.title = "リソースブロック: $state"
         }
-        javascriptEnabled.observe(owner) {
+        javaScriptEnabled.observe(owner) {
             val state = if (it) "ON" else "OFF"
             menu.findItem(R.id.javascript)?.title = "JavaScript: $state"
         }
@@ -332,7 +373,7 @@ class BrowserViewModel(
         }
 
         R.id.javascript -> {
-            javascriptEnabled.value = javascriptEnabled.value != true
+            javaScriptEnabled.value = javaScriptEnabled.value != true
             activity.webview.reload()
             true
         }

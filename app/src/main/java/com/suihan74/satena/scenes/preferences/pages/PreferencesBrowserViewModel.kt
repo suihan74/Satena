@@ -18,6 +18,10 @@ class PreferencesBrowserViewModel(
         repository.startPage
     }
 
+    val secretModeEnabled by lazy {
+        repository.privateBrowsingEnabled
+    }
+
     val javascriptEnabled by lazy {
         repository.javascriptEnabled
     }

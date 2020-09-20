@@ -102,6 +102,12 @@ class BrowserRepository(
             p.getString(BrowserSettingsKey.SEARCH_ENGINE)
         }
 
+    /** シークレットモードの有効状態 */
+    val privateBrowsingEnabled =
+        createBrowserSettingsLiveData(BrowserSettingsKey.PRIVATE_BROWSING_ENABLED) { p ->
+            p.getBoolean(BrowserSettingsKey.PRIVATE_BROWSING_ENABLED)
+        }
+
     /** JavaScriptの有効状態 */
     val javascriptEnabled =
         createBrowserSettingsLiveData(BrowserSettingsKey.JAVASCRIPT_ENABLED) { p ->

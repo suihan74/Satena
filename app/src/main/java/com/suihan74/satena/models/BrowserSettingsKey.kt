@@ -34,6 +34,9 @@ enum class BrowserSettingsKey (
     /** ドロワが開かれるまでブクマ情報を取得しない */
     BOOKMARKS_LAZY_LOADING(typeInfo<Boolean>(), true),
 
+    /** セーフブラウジングを有効にする */
+    PRIVATE_BROWSING_ENABLED(typeInfo<Boolean>(), false),
+
     /** JavaScriptを有効にする */
     JAVASCRIPT_ENABLED(typeInfo<Boolean>(), true),
 
