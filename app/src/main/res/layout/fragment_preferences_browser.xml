@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <import type="com.suihan74.satena.scenes.browser.BrowserMode"/>
 
@@ -181,7 +181,8 @@
                         android:id="@+id/web_view_clear_cache_button"
                         android:text="@string/pref_browser_clear_button"
                         style="@style/Widget.AppCompat.Button"
-                        android:textColor="@color/textColor"
+                        app:backgroundTint="@color/colorAccent"
+                        android:textColor="@color/colorPrimaryText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
 
@@ -196,7 +197,8 @@
                         android:id="@+id/web_view_clear_cookie_button"
                         android:text="@string/pref_browser_clear_button"
                         style="@style/Widget.AppCompat.Button"
-                        android:textColor="@color/textColor"
+                        app:backgroundTint="@color/colorAccent"
+                        android:textColor="@color/colorPrimaryText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
 
@@ -211,7 +213,8 @@
                         android:id="@+id/web_view_clear_history_button"
                         android:text="@string/pref_browser_clear_button"
                         style="@style/Widget.AppCompat.Button"
-                        android:textColor="@color/textColor"
+                        app:backgroundTint="@color/colorAccent"
+                        android:textColor="@color/colorPrimaryText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </LinearLayout>
