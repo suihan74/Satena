@@ -12,10 +12,7 @@ import com.suihan74.satena.databinding.FragmentPreferencesBrowserBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.browser.BrowserActivity
-import com.suihan74.satena.scenes.browser.BrowserRepository
-import com.suihan74.satena.scenes.browser.BrowserViewModel
-import com.suihan74.satena.scenes.browser.WebViewTheme
+import com.suihan74.satena.scenes.browser.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.hideSoftInputMethod
@@ -26,6 +23,7 @@ class PreferencesBrowserFragment : Fragment() {
     }
 
     private val DIALOG_WEB_VIEW_THEME by lazy { "DIALOG_WEB_VIEW_THEME" }
+    private val DIALOG_BROWSER_MODE by lazy { "DIALOG_BROWSER_MODE" }
 
     private val preferencesActivity : PreferencesActivity?
         get() = requireActivity() as? PreferencesActivity
@@ -51,7 +49,10 @@ class PreferencesBrowserFragment : Fragment() {
                     SafeSharedPreferences.create<PreferenceKey>(context),
                     SafeSharedPreferences.create<BrowserSettingsKey>(context)
                 )
-            PreferencesBrowserViewModel(repository)
+
+            PreferencesBrowserViewModel(repository).also {
+                it.isPreferencesActivity = preferencesActivity != null
+            }
         }
     }
 
@@ -94,12 +95,26 @@ class PreferencesBrowserFragment : Fragment() {
 
             val dialog = AlertDialogFragment2.Builder()
                 .setTitle(R.string.pref_browser_theme_desc)
+                .setNegativeButton(R.string.dialog_cancel)
                 .setItems(labels) { _, which ->
                     viewModel.webViewTheme.value = items[which]
                 }
                 .create()
 
             dialog.showAllowingStateLoss(childFragmentManager, DIALOG_WEB_VIEW_THEME)
+        }
+
+        binding.browserModeButton.setOnClickListener {
+            val labels = BrowserMode.values().map { it.textId }
+            val dialog = AlertDialogFragment2.Builder()
+                .setTitle(R.string.pref_browser_mode_desc)
+                .setNegativeButton(R.string.dialog_cancel)
+                .setItems(labels) { _, which ->
+                    viewModel.browserMode.value = BrowserMode.fromOrdinal(which)
+                }
+                .create()
+
+            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_BROWSER_MODE)
         }
 
         return binding.root

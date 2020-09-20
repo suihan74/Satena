@@ -7,6 +7,13 @@ class PreferencesBrowserViewModel(
     repository: BrowserRepository
 ) : ViewModel() {
 
+    /** 設定アクティビティで開かれているかどうか */
+    var isPreferencesActivity : Boolean = false
+
+    val browserMode by lazy {
+        repository.browserMode
+    }
+
     val startPage by lazy {
         repository.startPage
     }

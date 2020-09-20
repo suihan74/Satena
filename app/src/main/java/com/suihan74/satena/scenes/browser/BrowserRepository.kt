@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.browser
 
+import androidx.lifecycle.MutableLiveData
 import androidx.webkit.WebViewFeature
 import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.hatenaLib.HatenaClient
@@ -38,6 +39,19 @@ class BrowserRepository(
         key: BrowserSettingsKey,
         initializer: ((SafeSharedPreferences<BrowserSettingsKey>)->ValueT)? = null
     ) = PreferenceLiveData(browserSettings, key, initializer)
+
+    /** 利用する内部ブラウザ */
+    val browserMode by lazy {
+        MutableLiveData(
+            BrowserMode.fromId(prefs.getInt(PreferenceKey.BROWSER_MODE))
+        ).apply {
+            observeForever {
+                prefs.edit {
+                    putInt(PreferenceKey.BROWSER_MODE, it.id)
+                }
+            }
+        }
+    }
 
     /** アプリのテーマがダークテーマか */
     val isThemeDark by lazy {

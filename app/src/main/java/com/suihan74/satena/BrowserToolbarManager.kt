@@ -118,7 +118,7 @@ private fun Context.startInnerBrowser(remoteViews: RemoteViews, url: String) = C
 
 fun Context.startInnerBrowser(entry: Entry) {
     val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-    when (BrowserMode.fromInt(prefs.getInt(PreferenceKey.BROWSER_MODE))) {
+    when (BrowserMode.fromId(prefs.getInt(PreferenceKey.BROWSER_MODE))) {
         BrowserMode.CUSTOM_TABS_INTENT ->
             startInnerBrowser(
                 BrowserToolbarManager.createRemoteViews(this, entry),
@@ -136,7 +136,7 @@ fun Context.startInnerBrowser(entry: Entry) {
 
 fun Context.startInnerBrowser(url: String? = null) {
     val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-    when (BrowserMode.fromInt(prefs.getInt(PreferenceKey.BROWSER_MODE))) {
+    when (BrowserMode.fromId(prefs.getInt(PreferenceKey.BROWSER_MODE))) {
         BrowserMode.CUSTOM_TABS_INTENT -> {
             val startUrl = url ?: let {
                 val browserSettings = SafeSharedPreferences.create<BrowserSettingsKey>(this)
