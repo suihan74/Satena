@@ -52,8 +52,6 @@ abstract class BookmarksTabViewModel(
     val additionalLoadable: Boolean
         get() = activityViewModel.repository.additionalLoadable
 
-    var bookmarksAdapter: BookmarksAdapter? = null
-
     /** 初期化 */
     open fun init() {
         bookmarks.observeForever {

@@ -282,7 +282,7 @@ class BookmarkDetailFragment :
                 viewModel.starsMenuOpened.postValue(false)
             }
             else {
-                bookmarksActivity?.onBackPressedCallback?.handleOnBackPressed()
+                bookmarksActivity.onBackPressedCallback.handleOnBackPressed()
             }
         }
     }

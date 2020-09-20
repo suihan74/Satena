@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.bookmarks2
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,8 +26,7 @@ import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.appendStarSpan
 import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.android.synthetic.main.listview_item_bookmarks.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.threeten.bp.format.DateTimeFormatter
 
 fun <T> List<T>?.contentsEquals(other: List<T>?) =
@@ -167,17 +167,7 @@ class BookmarksAdapter(
                     ViewHolder(
                         inflater.inflate(R.layout.listview_item_bookmarks, parent, false),
                         this
-                    ).apply {
-                        itemView.setOnClickListener {
-                            val bookmark = currentList[adapterPosition].body!!.bookmark
-                            onItemClicked?.invoke(bookmark)
-                        }
-                        itemView.setOnLongClickListener {
-                            val bookmark = currentList[adapterPosition].body!!.bookmark
-                            onItemLongClicked?.invoke(bookmark)
-                            onItemLongClicked != null
-                        }
-                    }
+                    )
 
                 RecyclerType.FOOTER -> loadableFooter ?:
                     LoadableFooterViewHolder(
@@ -203,6 +193,16 @@ class BookmarksAdapter(
                 (holder as ViewHolder).run {
                     val entity = currentList[position].body!!
                     bookmark = entity
+
+                    itemView.setOnClickListener {
+                        val bookmark = entity.bookmark
+                        onItemClicked?.invoke(bookmark)
+                    }
+                    itemView.setOnLongClickListener {
+                        val bookmark = entity.bookmark
+                        onItemLongClicked?.invoke(bookmark)
+                        onItemLongClicked != null
+                    }
                 }
             }
 
@@ -227,7 +227,17 @@ class BookmarksAdapter(
         loadableFooter?.hideProgressBar(additionalLoadable)
     }
 
-    suspend fun setBookmarks(
+    private var setBookmarksJob : Job? = null
+        get() = synchronized(setBookmarksTaskLock) { field }
+        set(value) {
+            synchronized(setBookmarksTaskLock) {
+                field = value
+            }
+        }
+    private val setBookmarksTaskLock = Any()
+
+    fun setBookmarks(
+        coroutineScope: CoroutineScope,
         bookmarks: List<Bookmark>,
         bookmarksEntry: BookmarksEntry,
         taggedUsers: List<UserAndTags>,
@@ -235,29 +245,45 @@ class BookmarksAdapter(
         displayMutedMention: Boolean,
         starsEntryGetter: (user: String)->StarsEntry?,
         onSubmitted: Listener<List<RecyclerState<Entity>>>? = null
-    ) = withContext(Dispatchers.Default) {
+    ) {
+        setBookmarksJob?.cancel()
+        setBookmarksJob = coroutineScope.launch(Dispatchers.Default) {
+            try {
+                val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
+                    val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
+                    val stars = starsEntryGetter(it.user)
+                    val bookmark = it.copy(starCount = stars?.allStars ?: it.starCount)
+                    Entity(
+                        bookmark = bookmark,
+                        analyzedComment = analyzedComment,
+                        isIgnored = ignoredUsers.contains(it.user),
+                        mentions = analyzedComment.ids.mapNotNull { called ->
+                            bookmarksEntry.bookmarks.firstOrNull { b -> b.user == called }
+                                ?.let { mentioned ->
+                                    if (!displayMutedMention && ignoredUsers.contains(mentioned.user)) null
+                                    else mentioned
+                                }
+                        },
+                        userTags = taggedUsers.firstOrNull { t -> t.user.name == it.user }?.tags
+                            ?: emptyList()
+                    )
+                })
 
-        val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
-            val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
-            val stars = starsEntryGetter(it.user)
-            val bookmark = it.copy(starCount = stars?.allStars ?: it.starCount)
-            Entity(
-                bookmark = bookmark,
-                analyzedComment = analyzedComment,
-                isIgnored = ignoredUsers.contains(it.user),
-                mentions = analyzedComment.ids.mapNotNull { called ->
-                    bookmarksEntry.bookmarks.firstOrNull { b -> b.user == called }?.let { mentioned ->
-                        if (!displayMutedMention && ignoredUsers.contains(mentioned.user)) null
-                        else mentioned
+                withContext(Dispatchers.Main) {
+                    submitList(newStates) {
+                        coroutineScope.launch(Dispatchers.Main) {
+                            onSubmitted?.invoke(newStates)
+                        }
                     }
-                },
-                userTags = taggedUsers.firstOrNull { t -> t.user.name == it.user }?.tags ?: emptyList()
-            )
-        })
+                }
 
-        withContext(Dispatchers.Main) {
-            submitList(newStates) {
-                onSubmitted?.invoke(newStates)
+                setBookmarksJob = null
+            }
+            catch (e: CancellationException) {
+                Log.i("BookmarksAdapter", "#setBookmarks() is canceled")
+            }
+            catch (e: Throwable) {
+                Log.e("BookmarksAdapter", Log.getStackTraceString(e))
             }
         }
     }
