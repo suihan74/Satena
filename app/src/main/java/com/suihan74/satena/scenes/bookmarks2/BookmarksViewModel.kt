@@ -26,7 +26,6 @@ import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.showToast
-import com.suihan74.utilities.extensions.topBackStackEntry
 import kotlinx.coroutines.*
 
 class BookmarksViewModel(
@@ -767,8 +766,11 @@ class BookmarksViewModel(
         val fragmentManager = activity.supportFragmentManager
 
         val backStackName = "detail: ${bookmark.user}"
-        if (backStackName == fragmentManager.topBackStackEntry?.name)
+        val currentTop = fragmentManager.findFragmentById(R.id.detail_content_layout)
+        val currentTopTag = currentTop?.tag
+        if (currentTopTag != null && currentTopTag == backStackName) {
             return
+        }
 
         val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
         fragmentManager.beginTransaction()
@@ -782,8 +784,11 @@ class BookmarksViewModel(
         val fragmentManager = activity.supportFragmentManager
 
         val backStackName = "detail: $user"
-        if (backStackName == fragmentManager.topBackStackEntry?.name)
+        val currentTop = fragmentManager.findFragmentById(R.id.detail_content_layout)
+        val currentTopTag = currentTop?.tag
+        if (currentTopTag != null && currentTopTag == backStackName) {
             return
+        }
 
         var observer: Observer<BookmarksEntry>? = null
         observer = Observer { bEntry: BookmarksEntry ->

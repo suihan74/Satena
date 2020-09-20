@@ -63,6 +63,7 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             else {
                 lifecycleScope.launch {
                     bookmarksAdapter.setBookmarks(
+                        lifecycleScope,
                         bookmarks = it.bookmarks.filter { b -> b.comment.isNotBlank() },
                         bookmarksEntry = it,
                         taggedUsers = emptyList(),
