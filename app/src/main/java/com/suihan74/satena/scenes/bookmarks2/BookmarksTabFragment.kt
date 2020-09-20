@@ -177,24 +177,28 @@ class BookmarksTabFragment :
         // --- Observers --- //
 
         // ブクマリストの更新を監視
+        var initializedList = false
         viewModel.bookmarks.observe(viewLifecycleOwner) {
             val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
             val userTags = activityViewModel.taggedUsers.value ?: emptyList()
             val ignoredUsers = activityViewModel.ignoredUsers.value
-            val displayMutedMention = activityViewModel.repository.showCalledIgnoredUsers//prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
-            lifecycleScope.launch {
-                bookmarksAdapter.setBookmarks(
-                    it,
-                    bookmarksEntry,
-                    userTags,
-                    ignoredUsers,
-                    displayMutedMention,
-                    { user -> activityViewModel.repository.getStarsEntryTo(user) }
-                ) { newStates ->
-                    // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
-                    scrollingUpdater.isEnabled = true
-                    viewModel.displayStates = newStates
+            val displayMutedMention = activityViewModel.repository.showCalledIgnoredUsers
+            bookmarksAdapter.setBookmarks(
+                lifecycleScope,
+                it,
+                bookmarksEntry,
+                userTags,
+                ignoredUsers,
+                displayMutedMention,
+                { user -> activityViewModel.repository.getStarsEntryTo(user) }
+            ) { newStates ->
+                // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
+                if (!initializedList && savedInstanceState == null) {
+                    view.bookmarks_list.adapter = bookmarksAdapter
+                    initializedList = true
                 }
+                scrollingUpdater.isEnabled = true
+                viewModel.displayStates = newStates
             }
         }
 
@@ -205,17 +209,16 @@ class BookmarksTabFragment :
                 val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
                 val ignoredUsers = activityViewModel.ignoredUsers.value
                 val displayMutedMention = activityViewModel.repository.showCalledIgnoredUsers
-                lifecycleScope.launch {
-                    bookmarksAdapter.setBookmarks(
-                        bookmarks,
-                        bookmarksEntry,
-                        it,
-                        ignoredUsers,
-                        displayMutedMention,
-                        { user -> activityViewModel.repository.getStarsEntryTo(user) }
-                    ) { newStates ->
-                        viewModel.displayStates = newStates
-                    }
+                bookmarksAdapter.setBookmarks(
+                    lifecycleScope,
+                    bookmarks,
+                    bookmarksEntry,
+                    it,
+                    ignoredUsers,
+                    displayMutedMention,
+                    { user -> activityViewModel.repository.getStarsEntryTo(user) }
+                ) { newStates ->
+                    viewModel.displayStates = newStates
                 }
             }
         }
