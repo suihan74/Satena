@@ -271,8 +271,8 @@
     <string name="pref_browser_start_page_desc">スタートページ</string>
     <string name="pref_browser_start_page_hint">ウェブアドレスを入力</string>
     <string name="pref_browser_private_browsing_enabled_desc">プライベートブラウジング</string>
-    <string name="pref_browser_javascript_enabled_desc">JavaScriptを使用する</string>
-    <string name="pref_browser_use_url_blocking_desc">リソースブロックを使用する</string>
+    <string name="pref_browser_javascript_enabled_desc">JavaScript</string>
+    <string name="pref_browser_use_url_blocking_desc">URLブロック</string>
     <string name="pref_browser_user_agent_desc">UserAgent</string>
     <string name="pref_browser_user_agent_hint">空欄: デフォルト設定</string>
     <string name="pref_browser_use_bottom_app_bar_desc">アドレスバーを画面下部に配置する</string>

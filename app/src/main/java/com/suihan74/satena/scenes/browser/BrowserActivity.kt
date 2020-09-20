@@ -149,7 +149,7 @@ class BrowserActivity : FragmentActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.browser, menu)
         if (menu != null) {
-            viewModel.bindOptionsMenu(this, menu)
+            viewModel.bindOptionsMenu(this, this, menu)
         }
         return super.onCreateOptionsMenu(menu)
     }

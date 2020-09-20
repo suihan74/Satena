@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.browser
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -338,14 +339,18 @@ class BrowserViewModel(
     }
 
     /** 状態変化をオプションメニュー項目に通知する */
-    fun bindOptionsMenu(owner: LifecycleOwner, menu: Menu) {
+    fun bindOptionsMenu(owner: LifecycleOwner, context: Context, menu: Menu) {
+        val textOn = "ON"
+        val textOff = "OFF"
         useUrlBlocking.observe(owner) {
-            val state = if (it) "ON" else "OFF"
-            menu.findItem(R.id.adblock)?.title = "リソースブロック: $state"
+            val state = if (it) textOn else textOff
+            val title = context.getText(R.string.pref_browser_use_url_blocking_desc)
+            menu.findItem(R.id.adblock)?.title = "$title: $state"
         }
         javaScriptEnabled.observe(owner) {
-            val state = if (it) "ON" else "OFF"
-            menu.findItem(R.id.javascript)?.title = "JavaScript: $state"
+            val state = if (it) textOn else textOff
+            val title = context.getText(R.string.pref_browser_javascript_enabled_desc)
+            menu.findItem(R.id.javascript)?.title = "$title: $state"
         }
     }
 
