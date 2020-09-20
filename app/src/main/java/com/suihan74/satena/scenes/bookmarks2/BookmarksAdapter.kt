@@ -3,13 +3,14 @@ package com.suihan74.satena.scenes.bookmarks2
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -19,13 +20,11 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
-import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.bindings.setVisibility
 import kotlinx.android.synthetic.main.listview_item_bookmarks.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.threeten.bp.format.DateTimeFormatter
 
 fun <T> List<T>?.contentsEquals(other: List<T>?) =
@@ -36,9 +35,7 @@ fun <T> List<T>?.contentsEquals(other: List<T>?) =
 
 
 class BookmarksAdapter(
-    private val lifecycleOwner: LifecycleOwner,
-    private val viewModel: BookmarksTabViewModel,
-    private val bookmarksRepository: BookmarksRepository
+    cache: List<RecyclerState<Entity>>? = null
 ) : ListAdapter<RecyclerState<BookmarksAdapter.Entity>, RecyclerView.ViewHolder>(DiffCallback()) {
     private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entity>>() {
         override fun areItemsTheSame(
@@ -96,6 +93,9 @@ class BookmarksAdapter(
     /** フッターの追加ロードをタップしたときの処理 */
     private var onAdditionalLoading: Listener<Unit>? = null
 
+    /** スターをつける処理をボタンに設定する */
+    private var addStarButtonBinder : ((button: ImageButton, bookmark: Bookmark)->Unit)? = null
+
     fun setOnItemClickedListener(listener: Listener<Bookmark>?) {
         onItemClicked = listener
     }
@@ -124,6 +124,11 @@ class BookmarksAdapter(
         onAdditionalLoading = listener
     }
 
+    /** スターをつける処理をボタンに設定する */
+    fun setAddStarButtonBinder(binder: ((button: ImageButton, bookmark: Bookmark)->Unit)?) {
+        addStarButtonBinder = binder
+    }
+
     /** 追加ロードボタンを表示するか */
     var additionalLoadable: Boolean = false
         set (value) {
@@ -148,7 +153,6 @@ class BookmarksAdapter(
     init {
         // キャッシュが存在する場合、その内容を引き継ぐ
         // 画面回転のたびにリストが再生成されるのを防ぐために行っている
-        val cache = viewModel.displayStates
         if (!cache.isNullOrEmpty()) {
             submitList(cache)
         }
@@ -161,17 +165,7 @@ class BookmarksAdapter(
                     ViewHolder(
                         inflater.inflate(R.layout.listview_item_bookmarks, parent, false),
                         this
-                    ).apply {
-                        itemView.setOnClickListener {
-                            val bookmark = currentList[adapterPosition].body!!.bookmark
-                            onItemClicked?.invoke(bookmark)
-                        }
-                        itemView.setOnLongClickListener {
-                            val bookmark = currentList[adapterPosition].body!!.bookmark
-                            onItemLongClicked?.invoke(bookmark)
-                            onItemLongClicked != null
-                        }
-                    }
+                    )
 
                 RecyclerType.FOOTER -> loadableFooter ?:
                     LoadableFooterViewHolder(
@@ -197,6 +191,16 @@ class BookmarksAdapter(
                 (holder as ViewHolder).run {
                     val entity = currentList[position].body!!
                     bookmark = entity
+
+                    itemView.setOnClickListener {
+                        val bookmark = entity.bookmark
+                        onItemClicked?.invoke(bookmark)
+                    }
+                    itemView.setOnLongClickListener {
+                        val bookmark = entity.bookmark
+                        onItemLongClicked?.invoke(bookmark)
+                        onItemLongClicked != null
+                    }
                 }
             }
 
@@ -221,37 +225,64 @@ class BookmarksAdapter(
         loadableFooter?.hideProgressBar(additionalLoadable)
     }
 
-    suspend fun setBookmarks(
+    private var setBookmarksJob : Job? = null
+        get() = synchronized(setBookmarksTaskLock) { field }
+        set(value) {
+            synchronized(setBookmarksTaskLock) {
+                field = value
+            }
+        }
+    private val setBookmarksTaskLock = Any()
+
+    fun setBookmarks(
+        coroutineScope: CoroutineScope,
         bookmarks: List<Bookmark>,
         bookmarksEntry: BookmarksEntry,
         taggedUsers: List<UserAndTags>,
         ignoredUsers: List<String>,
         displayMutedMention: Boolean,
-        onSubmitted: Runnable? = null
-    ) = withContext(Dispatchers.Default) {
+        starsEntryGetter: (user: String)->StarsEntry?,
+        onSubmitted: Listener<List<RecyclerState<Entity>>>? = null
+    ) {
+        setBookmarksJob?.cancel()
+        setBookmarksJob = coroutineScope.launch(Dispatchers.Default) {
+            try {
+                val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
+                    val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
+                    val stars = starsEntryGetter(it.user)
+                    val bookmark = it.copy(starCount = stars?.allStars ?: it.starCount)
+                    Entity(
+                        bookmark = bookmark,
+                        analyzedComment = analyzedComment,
+                        isIgnored = ignoredUsers.contains(it.user),
+                        mentions = analyzedComment.ids.mapNotNull { called ->
+                            bookmarksEntry.bookmarks.firstOrNull { b -> b.user == called }
+                                ?.let { mentioned ->
+                                    if (!displayMutedMention && ignoredUsers.contains(mentioned.user)) null
+                                    else mentioned
+                                }
+                        },
+                        userTags = taggedUsers.firstOrNull { t -> t.user.name == it.user }?.tags
+                            ?: emptyList()
+                    )
+                })
 
-        val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
-            val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
-            val stars = bookmarksRepository.getStarsEntryTo(it.user)
-            val bookmark = it.copy(starCount = stars?.allStars ?: it.starCount)
-            Entity(
-                bookmark = bookmark,
-                analyzedComment = analyzedComment,
-                isIgnored = ignoredUsers.contains(it.user),
-                mentions = analyzedComment.ids.mapNotNull { called ->
-                    bookmarksEntry.bookmarks.firstOrNull { b -> b.user == called }?.let { mentioned ->
-                        if (!displayMutedMention && ignoredUsers.contains(mentioned.user)) null
-                        else mentioned
+                withContext(Dispatchers.Main) {
+                    submitList(newStates) {
+                        coroutineScope.launch(Dispatchers.Main) {
+                            onSubmitted?.invoke(newStates)
+                        }
                     }
-                },
-                userTags = taggedUsers.firstOrNull { t -> t.user.name == it.user }?.tags ?: emptyList()
-            )
-        })
+                }
 
-        viewModel.displayStates = newStates
-
-        withContext(Dispatchers.Main) {
-            submitList(newStates, onSubmitted)
+                setBookmarksJob = null
+            }
+            catch (e: CancellationException) {
+                Log.i("BookmarksAdapter", "#setBookmarks() is canceled")
+            }
+            catch (e: Throwable) {
+                Log.e("BookmarksAdapter", Log.getStackTraceString(e))
+            }
         }
     }
 
@@ -380,12 +411,7 @@ class BookmarksAdapter(
             view.bookmark_timestamp.text = builder
 
             // スターを付けるボタンを設定
-            bookmarksAdapter.viewModel.initializeAddStarButton(
-                view.context!!,
-                bookmarksAdapter.lifecycleOwner,
-                view.add_star_button,
-                bookmark
-            )
+            bookmarksAdapter.addStarButtonBinder?.invoke(view.add_star_button, bookmark)
 
             // ユーザータグ
             if (userTags.isNullOrEmpty()) {

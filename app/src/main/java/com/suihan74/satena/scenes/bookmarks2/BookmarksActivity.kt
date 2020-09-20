@@ -392,12 +392,15 @@ class BookmarksActivity :
     /** ブクマ詳細画面を開く */
     fun showBookmarkDetail(bookmark: Bookmark) {
         val backStackName = "detail: ${bookmark.user}"
-        if (backStackName == supportFragmentManager.topBackStackEntry?.name)
+        val currentTop = supportFragmentManager.findFragmentById(R.id.detail_content_layout)
+        val currentTopTag = currentTop?.tag
+        if (currentTopTag != null && currentTopTag == backStackName) {
             return
+        }
 
         val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
         supportFragmentManager.beginTransaction()
-            .add(R.id.detail_content_layout, bookmarkDetailFragment)
+            .add(R.id.detail_content_layout, bookmarkDetailFragment, backStackName)
             .addToBackStack(backStackName)
             .commitAllowingStateLoss()
     }
@@ -405,15 +408,18 @@ class BookmarksActivity :
     /** ブクマ詳細画面を開く */
     fun showBookmarkDetail(user: String) {
         val backStackName = "detail: $user"
-        if (backStackName == supportFragmentManager.topBackStackEntry?.name)
+        val currentTop = supportFragmentManager.findFragmentById(R.id.detail_content_layout)
+        val currentTopTag = currentTop?.tag
+        if (currentTopTag != null && currentTopTag == backStackName) {
             return
+        }
 
         var observer: Observer<BookmarksEntry>? = null
         observer = Observer { bEntry: BookmarksEntry ->
             val bookmark = bEntry.bookmarks.firstOrNull { it.user == user } ?: return@Observer
             val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
             supportFragmentManager.beginTransaction()
-                .add(R.id.detail_content_layout, bookmarkDetailFragment)
+                .add(R.id.detail_content_layout, bookmarkDetailFragment, backStackName)
                 .addToBackStack(backStackName)
                 .commitAllowingStateLoss()
 
