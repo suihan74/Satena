@@ -4,7 +4,7 @@ import android.content.Context
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.widget.TextView
-import android.widget.Toolbar
+import androidx.appcompat.widget.Toolbar
 
 class MarqueeToolbar : Toolbar {
     constructor(context: Context, attributeSet: AttributeSet? = null) :

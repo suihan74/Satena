@@ -6,10 +6,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.webkit.WebView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.HatenaClient
@@ -26,7 +26,7 @@ import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.launch
 
-class BrowserActivity : FragmentActivity() {
+class BrowserActivity : AppCompatActivity() {
     companion object {
         /** 最初に開くページのURL */
         const val EXTRA_URL = "BrowserActivity.EXTRA_URL"
@@ -112,7 +112,7 @@ class BrowserActivity : FragmentActivity() {
                 else appbar_layout
 
             val toolbarBinding = toolbar.inflate(viewModel, this, appBar, true)
-            setActionBar(toolbarBinding.toolbar)
+            setSupportActionBar(toolbarBinding.toolbar)
         }
 
         // スワイプしてページを更新する

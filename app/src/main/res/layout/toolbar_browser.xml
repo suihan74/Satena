@@ -6,7 +6,7 @@
                 type="com.suihan74.satena.scenes.browser.BrowserViewModel" />
     </data>
 
-    <Toolbar
+    <androidx.appcompat.widget.Toolbar
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/toolbar"
             android:focusable="true"
@@ -44,5 +44,5 @@
                     android:layout_height="wrap_content"/>
         </FrameLayout>
 
-    </Toolbar>
+    </androidx.appcompat.widget.Toolbar>
 </layout>
