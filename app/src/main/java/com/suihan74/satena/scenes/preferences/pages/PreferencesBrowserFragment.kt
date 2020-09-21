@@ -8,6 +8,7 @@ import android.webkit.CookieManager
 import android.webkit.WebView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -24,12 +25,6 @@ class PreferencesBrowserFragment : Fragment() {
     companion object {
         fun createInstance() = PreferencesBrowserFragment()
     }
-
-    private val DIALOG_WEB_VIEW_THEME by lazy { "DIALOG_WEB_VIEW_THEME" }
-    private val DIALOG_BROWSER_MODE by lazy { "DIALOG_BROWSER_MODE" }
-    private val DIALOG_CLEAR_CACHE by lazy { "DIALOG_CLEAR_CACHE" }
-    private val DIALOG_CLEAR_COOKIE by lazy { "DIALOG_CLEAR_COOKIE" }
-    private val DIALOG_CLEAR_HISTORY by lazy { "DIALOG_CLEAR_HISTORY" }
 
     private val preferencesActivity : PreferencesActivity?
         get() = requireActivity() as? PreferencesActivity
@@ -86,83 +81,27 @@ class PreferencesBrowserFragment : Fragment() {
             }
         }
 
-        @OptIn(ExperimentalStdlibApi::class)
         binding.webViewThemeButton.setOnClickListener {
-            val items = buildList {
-                add(WebViewTheme.AUTO)
-                add(WebViewTheme.NORMAL)
-                if (viewModel.isForceDarkSupported) {
-                    if (viewModel.isForceDarkStrategySupported) {
-                        add(WebViewTheme.DARK)
-                    }
-                    add(WebViewTheme.FORCE_DARK)
-                }
-            }
-            val labels = items.map { it.textId }
-
-            val dialog = AlertDialogFragment2.Builder()
-                .setTitle(R.string.pref_browser_theme_desc)
-                .setNegativeButton(R.string.dialog_cancel)
-                .setItems(labels) { _, which ->
-                    viewModel.webViewTheme.value = items[which]
-                }
-                .create()
-
-            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_WEB_VIEW_THEME)
+            viewModel.openWebViewThemeSelectionDialog(childFragmentManager)
         }
 
         binding.browserModeButton.setOnClickListener {
-            val labels = BrowserMode.values().map { it.textId }
-            val dialog = AlertDialogFragment2.Builder()
-                .setTitle(R.string.pref_browser_mode_desc)
-                .setNegativeButton(R.string.dialog_cancel)
-                .setItems(labels) { _, which ->
-                    viewModel.browserMode.value = BrowserMode.fromOrdinal(which)
-                }
-                .create()
-
-            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_BROWSER_MODE)
+            viewModel.openBrowserModeSelectionDialog(childFragmentManager)
         }
 
         // キャッシュ削除
         binding.webViewClearCacheButton.setOnClickListener {
-            val dialog = AlertDialogFragment2.Builder()
-                .setTitle(R.string.confirm_dialog_title_simple)
-                .setMessage(R.string.pref_browser_clear_cache_dialog_message)
-                .setNegativeButton(R.string.dialog_cancel)
-                .setPositiveButton(R.string.dialog_ok) {
-                    WebView(SatenaApplication.instance).clearCache(true)
-                }
-                .create()
-            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_CLEAR_CACHE)
+            viewModel.openClearCacheDialog(childFragmentManager)
         }
 
         // クッキー削除
         binding.webViewClearCookieButton.setOnClickListener {
-            val dialog = AlertDialogFragment2.Builder()
-                .setTitle(R.string.confirm_dialog_title_simple)
-                .setMessage(R.string.pref_browser_clear_cookie_dialog_message)
-                .setNegativeButton(R.string.dialog_cancel)
-                .setPositiveButton(R.string.dialog_ok) {
-                    val instance = CookieManager.getInstance()
-                    instance.removeAllCookies(null)
-                    instance.flush()
-                }
-                .create()
-            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_CLEAR_COOKIE)
+            viewModel.openClearCookieDialog(childFragmentManager)
         }
 
         // 閲覧履歴削除
         binding.webViewClearHistoryButton.setOnClickListener {
-            val dialog = AlertDialogFragment2.Builder()
-                .setTitle(R.string.confirm_dialog_title_simple)
-                .setMessage(R.string.pref_browser_clear_history_dialog_message)
-                .setNegativeButton(R.string.dialog_cancel)
-                .setPositiveButton(R.string.dialog_ok) {
-                    // TODO: まず閲覧履歴を実装する
-                }
-                .create()
-            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_CLEAR_HISTORY)
+            viewModel.openClearHistoryDialog(childFragmentManager)
         }
 
         return binding.root
