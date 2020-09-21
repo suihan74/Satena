@@ -57,14 +57,17 @@ class HistoryFragment : Fragment() {
             it.lifecycleOwner = viewLifecycleOwner
         }
 
-        binding.recyclerView.adapter = HistoryAdapter(viewLifecycleOwner).also {
-            it.setOnClickItemListener { binding ->
-                val site = binding.site ?: return@setOnClickItemListener
-                activityViewModel.goAddress(site.url)
-                browserActivity.closeDrawer()
-            }
+        binding.recyclerView.let { recyclerView ->
+            recyclerView.setHasFixedSize(true)
+            recyclerView.adapter = HistoryAdapter(viewLifecycleOwner).also {
+                it.setOnClickItemListener { binding ->
+                    val site = binding.site ?: return@setOnClickItemListener
+                    activityViewModel.goAddress(site.url)
+                    browserActivity.closeDrawer()
+                }
 
-            it.setOnLongLickItemListener { binding ->
+                it.setOnLongLickItemListener { binding ->
+                }
             }
         }
 

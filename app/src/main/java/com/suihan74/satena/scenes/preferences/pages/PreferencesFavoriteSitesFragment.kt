@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesFavoriteSitesBinding
@@ -15,7 +14,6 @@ import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.provideViewModel
 
@@ -51,10 +49,7 @@ class PreferencesFavoriteSitesFragment : PreferencesFragmentBase() {
         }
 
         binding.recyclerView.also {
-            it.layoutManager = LinearLayoutManager(requireContext())
-            it.setDivider(R.drawable.recycler_view_item_divider)
             it.setHasFixedSize(true)
-
             it.adapter = FavoriteSitesAdapter(viewLifecycleOwner).apply {
                 setOnClickItemListener { binding ->
                     val site = binding.site ?: return@setOnClickItemListener

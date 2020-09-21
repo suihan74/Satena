@@ -14,8 +14,8 @@
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view"
                 style="@style/RecyclerView.Linear"
-                items="@{vm.sites}"
                 divider="@{@drawable/recycler_view_item_divider}"
+                items="@{vm.sites}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
