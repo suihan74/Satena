@@ -12,13 +12,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.satena.models.AppDatabase
+import com.suihan74.satena.models.Migration1to2
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.PreferenceKeyMigration
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.lock
-
 import java.util.*
 
 class SatenaApplication : Application() {
@@ -151,6 +151,8 @@ class SatenaApplication : Application() {
     fun initializeDataBase() {
         appDatabase = Room.databaseBuilder(this, AppDatabase::class.java, APP_DATABASE_FILE_NAME)
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
+            .addMigrations(Migration1to2())
+            .fallbackToDestructiveMigration()
             .build()
     }
 
@@ -161,6 +163,10 @@ class SatenaApplication : Application() {
     /** 非表示エントリDBへのアクセスオブジェクトを取得 */
     val ignoredEntryDao
         get() = appDatabase.ignoredEntryDao()
+
+    /** 内部ブラウザ用DB */
+    val browserDao
+        get() = appDatabase.browserDao()
 
     /** 各種設定のバージョン移行が必要か確認 */
     fun updatePreferencesVersion() {

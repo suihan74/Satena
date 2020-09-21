@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksFragment
 import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesFragment
+import com.suihan74.satena.scenes.browser.history.HistoryFragment
 import com.suihan74.satena.scenes.preferences.pages.PreferencesBrowserFragment
 
 /** ドロワに表示するタブ */
@@ -25,7 +26,7 @@ enum class DrawerTab(
 
     HISTORY(2,
         R.drawable.ic_category_history,
-        { Fragment() }
+        { HistoryFragment.createInstance() }
     ),
 
     SETTINGS(3,

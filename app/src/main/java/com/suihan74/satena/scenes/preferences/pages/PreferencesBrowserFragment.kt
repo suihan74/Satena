@@ -53,7 +53,8 @@ class PreferencesBrowserFragment : Fragment() {
                         MastodonClientHolder
                     ),
                     SafeSharedPreferences.create<PreferenceKey>(context),
-                    SafeSharedPreferences.create<BrowserSettingsKey>(context)
+                    SafeSharedPreferences.create<BrowserSettingsKey>(context),
+                    SatenaApplication.instance.browserDao
                 )
 
             PreferencesBrowserViewModel(repository).also {

@@ -1,24 +1,32 @@
-package com.suihan74.satena.scenes.browser.favorites
+package com.suihan74.satena.scenes.browser.history
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
-import com.suihan74.satena.databinding.FragmentBrowserFavoritesBinding
-import com.suihan74.satena.models.FavoriteSitesKey
+import com.suihan74.satena.databinding.FragmentBrowserHistoryBinding
+import com.suihan74.satena.models.browser.History
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
-import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.provideViewModel
 
-/** お気に入りサイトを表示するタブ */
-class FavoriteSitesFragment : Fragment() {
+class HistoryFragment : Fragment() {
     companion object {
-        fun createInstance() = FavoriteSitesFragment()
+        fun createInstance() = HistoryFragment()
+
+        @BindingAdapter("items")
+        @JvmStatic
+        fun setHistory(recyclerView: RecyclerView, items: List<History>) {
+            recyclerView.adapter.alsoAs<HistoryAdapter> { adapter ->
+                adapter.setItems(items)
+            }
+        }
     }
 
     private val browserActivity : BrowserActivity
@@ -29,8 +37,8 @@ class FavoriteSitesFragment : Fragment() {
 
     private val viewModel by lazy {
         provideViewModel(this) {
-            val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(requireContext())
-            FavoriteSitesViewModel(prefs)
+            val repository = activityViewModel.repository
+            HistoryViewModel(repository)
         }
     }
 
@@ -39,9 +47,9 @@ class FavoriteSitesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val binding = DataBindingUtil.inflate<FragmentBrowserFavoritesBinding>(
+        val binding = DataBindingUtil.inflate<FragmentBrowserHistoryBinding>(
             inflater,
-            R.layout.fragment_browser_favorites,
+            R.layout.fragment_browser_history,
             container,
             false
         ).also {
@@ -49,7 +57,7 @@ class FavoriteSitesFragment : Fragment() {
             it.lifecycleOwner = viewLifecycleOwner
         }
 
-        binding.recyclerView.adapter = FavoriteSitesAdapter(viewLifecycleOwner).also {
+        binding.recyclerView.adapter = HistoryAdapter(viewLifecycleOwner).also {
             it.setOnClickItemListener { binding ->
                 val site = binding.site ?: return@setOnClickItemListener
                 activityViewModel.goAddress(site.url)
@@ -57,8 +65,6 @@ class FavoriteSitesFragment : Fragment() {
             }
 
             it.setOnLongLickItemListener { binding ->
-                val site = binding.site ?: return@setOnLongLickItemListener
-                viewModel.openMenuDialog(browserActivity, site, childFragmentManager)
             }
         }
 

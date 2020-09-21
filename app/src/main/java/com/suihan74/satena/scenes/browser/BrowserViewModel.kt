@@ -115,6 +115,11 @@ class BrowserViewModel(
         MutableLiveData<BookmarksEntry?>(null)
     }
 
+    /** 閲覧履歴 */
+    val histories by lazy {
+        repository.histories
+    }
+
     /** ロード完了前にページ遷移した場合にロード処理を中断する */
     private var loadBookmarksEntryTask : Deferred<Unit>? = null
         get() = synchronized(loadBookmarksEntryTaskLock) { field }
@@ -505,8 +510,14 @@ class BrowserViewModel(
 
     /** ページ読み込み完了時の処理 */
     fun onPageFinished(view: WebView?, url: String) {
-        this.title.value = view?.title ?: url
+        val title = view?.title ?: url
+        val faviconUrl = repository.getFaviconUrl(url)
+
+        this.title.value = title
         repository.resourceUrls.addUnique(ResourceUrl(url, false))
+        viewModelScope.launch {
+            repository.insertHistory(url, title, faviconUrl)
+        }
 
         onPageFinishedListener?.invoke(url)
     }

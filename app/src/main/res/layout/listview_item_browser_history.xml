@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable name="site" type="com.suihan74.satena.models.browser.History"/>
+    </data>
+
+    <RelativeLayout
+            android:background="?android:attr/selectableItemBackground"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/favicon"
+                src="@{site.faviconUrl}"
+                android:contentDescription="@null"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="6dp"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_alignParentTop="true"
+                />
+
+        <com.suihan74.utilities.views.MarqueeTextView
+                android:id="@+id/title"
+                style="@style/MarqueeTextView"
+                android:text="@{site.title}"
+                android:contentDescription="@null"
+                android:textColor="?attr/textColor"
+                android:textSize="16sp"
+                android:layout_toEndOf="@id/favicon"
+                android:layout_alignParentTop="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <com.suihan74.utilities.views.MarqueeTextView
+                android:id="@+id/url"
+                style="@style/MarqueeTextView"
+                android:text="@{site.url}"
+                android:textColor="?attr/tagTextColor"
+                android:textSize="13sp"
+                android:layout_below="@id/title"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"/>
+
+    </RelativeLayout>
+</layout>

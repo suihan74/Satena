@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityBrowserBinding
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
@@ -49,7 +50,8 @@ class BrowserActivity : AppCompatActivity() {
                 HatenaClient,
                 AccountLoader(this, HatenaClient, MastodonClientHolder),
                 SafeSharedPreferences.create<PreferenceKey>(this),
-                SafeSharedPreferences.create<BrowserSettingsKey>(this)
+                SafeSharedPreferences.create<BrowserSettingsKey>(this),
+                SatenaApplication.instance.browserDao
             )
 
             lifecycleScope.launch {

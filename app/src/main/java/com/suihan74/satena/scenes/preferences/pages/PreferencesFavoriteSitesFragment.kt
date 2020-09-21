@@ -56,8 +56,9 @@ class PreferencesFavoriteSitesFragment : PreferencesFragmentBase() {
             it.setHasFixedSize(true)
 
             it.adapter = FavoriteSitesAdapter(viewLifecycleOwner).apply {
-                setOnClickItemListener { targetSite ->
-                    viewModel.openMenuDialog(requireActivity(), targetSite, childFragmentManager)
+                setOnClickItemListener { binding ->
+                    val site = binding.site ?: return@setOnClickItemListener
+                    viewModel.openMenuDialog(requireActivity(), site, childFragmentManager)
                 }
             }
         }
