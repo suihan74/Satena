@@ -299,6 +299,11 @@
     <string name="dialog_favorite_sites_open_entries">エントリ一覧を開く</string>
     <string name="dialog_favorite_sites_delete">削除</string>
 
+    <!-- 閲覧履歴 -->
+    <string name="dialog_history_open">開く</string>
+    <string name="dialog_history_open_entries">エントリ一覧を開く</string>
+    <string name="dialog_history_delete">削除</string>
+
     <!-- 非表示エントリ登録ダイアログ -->
     <string name="ignored_entry_dialog_title">非表示エントリを作成</string>
     <string name="ignored_entry_dialog_tab_url">URL</string>

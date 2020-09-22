@@ -150,10 +150,15 @@ fun Context.startInnerBrowser(url: String? = null) {
         }
 
         BrowserMode.WEB_VIEW -> {
-            val intent = Intent(this, BrowserActivity::class.java).apply {
-                putExtra(BrowserActivity.EXTRA_URL, url)
+            if (this is BrowserActivity) {
+                this.viewModel.goAddress(url)
             }
-            startActivity(intent)
+            else {
+                val intent = Intent(this, BrowserActivity::class.java).apply {
+                    putExtra(BrowserActivity.EXTRA_URL, url)
+                }
+                startActivity(intent)
+            }
         }
     }
 }

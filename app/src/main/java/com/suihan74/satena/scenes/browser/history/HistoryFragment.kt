@@ -62,11 +62,12 @@ class HistoryFragment : Fragment() {
             recyclerView.adapter = HistoryAdapter(viewLifecycleOwner).also {
                 it.setOnClickItemListener { binding ->
                     val site = binding.site ?: return@setOnClickItemListener
-                    activityViewModel.goAddress(site.url)
-                    browserActivity.closeDrawer()
+                    viewModel.goAddress(site.url, browserActivity)
                 }
 
                 it.setOnLongLickItemListener { binding ->
+                    val site = binding.site ?: return@setOnLongLickItemListener
+                    viewModel.openItemMenuDialog(site, browserActivity, childFragmentManager)
                 }
             }
         }
