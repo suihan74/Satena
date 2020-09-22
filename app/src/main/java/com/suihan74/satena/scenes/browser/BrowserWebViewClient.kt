@@ -1,6 +1,8 @@
 package com.suihan74.satena.scenes.browser
 
+import android.content.Intent
 import android.graphics.Bitmap
+import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -8,6 +10,7 @@ import android.webkit.WebViewClient
 import java.io.ByteArrayInputStream
 
 class BrowserWebViewClient(
+    private val activity: BrowserActivity,
     private val viewModel: BrowserViewModel
 ) : WebViewClient() {
 
@@ -17,7 +20,36 @@ class BrowserWebViewClient(
 
     /** ページに遷移するか否かを決定する */
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-        return super.shouldOverrideUrlLoading(view, request)
+        val uri = request?.url ?: return false
+        val scheme = uri.scheme
+
+        return when (scheme) {
+            "https", "http" ->
+                super.shouldOverrideUrlLoading(view, request)
+
+            "intent", "android-app" -> {
+                try {
+                    val intentScheme =
+                        if (scheme == "intent") Intent.URI_INTENT_SCHEME
+                        else Intent.URI_ANDROID_APP_SCHEME
+                    val intent = Intent.parseUri(uri.toString(), intentScheme).also {
+                        it.addCategory(Intent.CATEGORY_BROWSABLE)
+                        it.component = null
+                        it.selector?.let { selector ->
+                            selector.addCategory(Intent.CATEGORY_BROWSABLE)
+                            selector.component = null
+                        }
+                    }
+                    activity.startActivity(intent)
+                }
+                catch (e: Throwable) {
+                    Log.e("error", Log.getStackTraceString(e))
+                }
+                false
+            }
+
+            else -> false
+        }
     }
 
     /** WebView内でのページ遷移をViewModelに伝える */

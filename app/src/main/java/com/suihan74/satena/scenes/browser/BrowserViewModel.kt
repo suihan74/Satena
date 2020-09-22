@@ -148,7 +148,7 @@ class BrowserViewModel(
 
     /** WebViewの設定 */
     fun initializeWebView(wv: WebView, activity: BrowserActivity) {
-        wv.webViewClient = BrowserWebViewClient(this)
+        wv.webViewClient = BrowserWebViewClient(activity, this)
         wv.webChromeClient = WebChromeClient()
 
         wv.settings.useWideViewPort = true
