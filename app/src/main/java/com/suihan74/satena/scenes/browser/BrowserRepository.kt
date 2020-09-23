@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.browser
 
-import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.webkit.WebViewFeature
 import com.suihan74.hatenaLib.BookmarksEntry
@@ -9,33 +8,9 @@ import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.R
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.browser.BrowserDao
-import com.suihan74.satena.models.browser.History
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.SingleUpdateMutableLiveData
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.threeten.bp.LocalDateTime
-
-class PreferenceLiveData<PrefT, KeyT, ValueT>(
-    prefs: PrefT,
-    key: KeyT,
-    initializer: ((PrefT)->ValueT)? = null
-) : SingleUpdateMutableLiveData<ValueT>(initializer?.invoke(prefs))
-        where PrefT: SafeSharedPreferences<KeyT>,
-              KeyT: SafeSharedPreferences.Key, KeyT: Enum<KeyT>
-{
-    init {
-        observeForever {
-            prefs.edit {
-                put(key, it)
-            }
-        }
-    }
-}
-
-// ------ //
 
 class BrowserRepository(
     private val client: HatenaClient,
@@ -46,7 +21,7 @@ class BrowserRepository(
 ) {
     private fun <ValueT> createBrowserSettingsLiveData(
         key: BrowserSettingsKey,
-        initializer: ((SafeSharedPreferences<BrowserSettingsKey>)->ValueT)? = null
+        initializer: ((p: SafeSharedPreferences<BrowserSettingsKey>, key: BrowserSettingsKey)->ValueT)? = null
     ) = PreferenceLiveData(browserSettings, key, initializer)
 
     /** 利用する内部ブラウザ */
@@ -75,8 +50,8 @@ class BrowserRepository(
 
     /** ウェブサイトのテーマ指定 */
     val webViewTheme =
-        createBrowserSettingsLiveData(BrowserSettingsKey.THEME) { p ->
-            p.get<WebViewTheme>(BrowserSettingsKey.THEME)
+        createBrowserSettingsLiveData(BrowserSettingsKey.THEME) { p, key ->
+            p.get<WebViewTheme>(key)
         }
 
     /** サインイン状態 */
@@ -89,50 +64,50 @@ class BrowserRepository(
 
     /** スタートページ */
     val startPage =
-        createBrowserSettingsLiveData(BrowserSettingsKey.START_PAGE_URL) { p ->
-            p.getString(BrowserSettingsKey.START_PAGE_URL)
+        createBrowserSettingsLiveData(BrowserSettingsKey.START_PAGE_URL) { p, key ->
+            p.getString(key)
         }
 
     /** アプリバーを下部に配置する */
     val useBottomAppBar =
-        createBrowserSettingsLiveData(BrowserSettingsKey.USE_BOTTOM_APP_BAR) { p ->
-            p.getBoolean(BrowserSettingsKey.USE_BOTTOM_APP_BAR)
+        createBrowserSettingsLiveData(BrowserSettingsKey.USE_BOTTOM_APP_BAR) { p, key ->
+            p.getBoolean(key)
         }
 
     /** UserAgent */
     val userAgent =
-        createBrowserSettingsLiveData(BrowserSettingsKey.USER_AGENT) { p ->
-            p.getString(BrowserSettingsKey.USER_AGENT)
+        createBrowserSettingsLiveData(BrowserSettingsKey.USER_AGENT) { p, key ->
+            p.getString(key)
         }
 
     /** 検索エンジン */
     val searchEngine =
-        createBrowserSettingsLiveData(BrowserSettingsKey.SEARCH_ENGINE) { p ->
-            p.getString(BrowserSettingsKey.SEARCH_ENGINE)
+        createBrowserSettingsLiveData(BrowserSettingsKey.SEARCH_ENGINE) { p, key ->
+            p.getString(key)
         }
 
     /** シークレットモードの有効状態 */
     val privateBrowsingEnabled =
-        createBrowserSettingsLiveData(BrowserSettingsKey.PRIVATE_BROWSING_ENABLED) { p ->
-            p.getBoolean(BrowserSettingsKey.PRIVATE_BROWSING_ENABLED)
+        createBrowserSettingsLiveData(BrowserSettingsKey.PRIVATE_BROWSING_ENABLED) { p, key ->
+            p.getBoolean(key)
         }
 
     /** JavaScriptの有効状態 */
     val javascriptEnabled =
-        createBrowserSettingsLiveData(BrowserSettingsKey.JAVASCRIPT_ENABLED) { p ->
-            p.getBoolean(BrowserSettingsKey.JAVASCRIPT_ENABLED)
+        createBrowserSettingsLiveData(BrowserSettingsKey.JAVASCRIPT_ENABLED) { p, key ->
+            p.getBoolean(key)
         }
 
     /** URLブロックを使用する */
     val useUrlBlocking =
-        createBrowserSettingsLiveData(BrowserSettingsKey.USE_URL_BLOCKING) { p ->
-            p.getBoolean(BrowserSettingsKey.USE_URL_BLOCKING)
+        createBrowserSettingsLiveData(BrowserSettingsKey.USE_URL_BLOCKING) { p, key ->
+            p.getBoolean(key)
         }
 
     /** ブロックするURLリスト */
     val blockUrls =
-        createBrowserSettingsLiveData(BrowserSettingsKey.BLOCK_URLS) { p ->
-            p.get<List<BlockUrlSetting>>(BrowserSettingsKey.BLOCK_URLS)
+        createBrowserSettingsLiveData(BrowserSettingsKey.BLOCK_URLS) { p, key ->
+            p.get<List<BlockUrlSetting>>(key)
         }.apply {
             observeForever {
                 _blockUrlsRegex = null
@@ -170,7 +145,6 @@ class BrowserRepository(
 
     /** 初期化処理 */
     suspend fun initialize() {
-        reloadHistories()
         accountLoader.signInAccounts(reSignIn = false)
     }
 
@@ -187,50 +161,5 @@ class BrowserRepository(
             value
         }
     }
-
-    // ------ //
-
-    /** 閲覧履歴 */
-    val histories by lazy {
-        MutableLiveData<List<History>>(emptyList())
-    }
-
-    /** (代替の)faviconのURLを取得する */
-    fun getFaviconUrl(url: String) : String =
-        client.getFaviconUrl(url)
-
-    /** 履歴を追加する */
-    suspend fun insertHistory(url: String, title: String, faviconUrl: String) = withContext(Dispatchers.IO) {
-        val history = History(
-            url = Uri.decode(url),
-            title = title,
-            faviconUrl = faviconUrl,
-            lastVisited = LocalDateTime.now()
-        )
-        dao.insertHistory(history)
-
-        reloadHistories()
-    }
-
-    /** 履歴リストを更新 */
-    suspend fun reloadHistories() = withContext(Dispatchers.IO) {
-        histories.postValue(
-            dao.getAllHistory()
-        )
-    }
-
-    /** 履歴をすべて削除 */
-    suspend fun clearHistories() = withContext(Dispatchers.IO) {
-        dao.clearHistory()
-        reloadHistories()
-    }
 }
 
-/** リソースURL情報 */
-data class ResourceUrl(
-    /** 対象URL */
-    val url: String,
-
-    /** AdBlock設定によりブロックされた */
-    val blocked: Boolean
-)
