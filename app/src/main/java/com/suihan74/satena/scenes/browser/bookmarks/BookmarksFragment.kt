@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -12,6 +13,8 @@ import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.bindings.setIconId
+import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.getThemeColor
 import kotlinx.android.synthetic.main.fragment_browser_bookmarks.*
 import kotlinx.coroutines.launch
@@ -89,10 +92,23 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             }
         }
 
+        // 投稿エリアの表示状態を変更する
+        binding.openPostAreaButton.setOnClickListener {
+            val postLayout = binding.bookmarkPostFrameLayout
+            val opened = postLayout.isVisible
+
+            binding.openPostAreaButton.setIconId(
+                if (opened) R.drawable.ic_add_comment
+                else R.drawable.ic_baseline_close
+            )
+
+            postLayout.setVisibility(!opened)
+        }
+
         // 投稿エリアを作成
         val bookmarkPostFragment = BookmarkPostFragment.createInstance()
         childFragmentManager.beginTransaction()
-            .add(R.id.bookmark_post_area, bookmarkPostFragment, FRAGMENT_BOOKMARK_POST)
+            .add(R.id.bookmark_post_frame_layout, bookmarkPostFragment, FRAGMENT_BOOKMARK_POST)
             .commitAllowingStateLoss()
 
         return binding.root
