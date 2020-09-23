@@ -13,10 +13,11 @@ import com.suihan74.satena.databinding.FragmentBrowserHistoryBinding
 import com.suihan74.satena.models.browser.History
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
+import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.provideViewModel
 
-class HistoryFragment : Fragment() {
+class HistoryFragment : Fragment(), ScrollableToTop {
     companion object {
         fun createInstance() = HistoryFragment()
 
@@ -35,6 +36,8 @@ class HistoryFragment : Fragment() {
     private val activityViewModel : BrowserViewModel
         get() = browserActivity.viewModel
 
+    private lateinit var binding: FragmentBrowserHistoryBinding
+
     private val viewModel by lazy {
         provideViewModel(this) {
             val repository = activityViewModel.repository
@@ -47,7 +50,7 @@ class HistoryFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val binding = DataBindingUtil.inflate<FragmentBrowserHistoryBinding>(
+        binding = DataBindingUtil.inflate<FragmentBrowserHistoryBinding>(
             inflater,
             R.layout.fragment_browser_history,
             container,
@@ -73,5 +76,9 @@ class HistoryFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    override fun scrollToTop() {
+        binding.recyclerView.scrollToPosition(0)
     }
 }

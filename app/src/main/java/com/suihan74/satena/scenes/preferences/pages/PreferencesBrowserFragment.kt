@@ -4,24 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.CookieManager
-import android.webkit.WebView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesBrowserBinding
-import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.browser.*
+import com.suihan74.satena.scenes.browser.BrowserActivity
+import com.suihan74.satena.scenes.browser.BrowserRepository
+import com.suihan74.satena.scenes.browser.BrowserViewModel
+import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 
-class PreferencesBrowserFragment : Fragment() {
+class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
     companion object {
         fun createInstance() = PreferencesBrowserFragment()
     }
@@ -34,6 +33,8 @@ class PreferencesBrowserFragment : Fragment() {
 
     private val browserViewModel : BrowserViewModel?
         get() = browserActivity?.viewModel
+
+    private lateinit var binding: FragmentPreferencesBrowserBinding
 
     private val viewModel: PreferencesBrowserViewModel by lazy {
         // ブラウザから直接開かれている場合はリポジトリを共有して変更をすぐに反映させる
@@ -59,7 +60,7 @@ class PreferencesBrowserFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = DataBindingUtil.inflate<FragmentPreferencesBrowserBinding>(
+        binding = DataBindingUtil.inflate<FragmentPreferencesBrowserBinding>(
             inflater,
             R.layout.fragment_preferences_browser,
             container,
@@ -113,5 +114,9 @@ class PreferencesBrowserFragment : Fragment() {
         if (preferencesActivity != null) {
             setHasOptionsMenu(false)
         }
+    }
+
+    override fun scrollToTop() {
+        binding.scrollView.scrollTo(0, 0)
     }
 }
