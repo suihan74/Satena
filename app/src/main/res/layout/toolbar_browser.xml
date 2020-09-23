@@ -8,15 +8,21 @@
 
     <androidx.appcompat.widget.Toolbar
             xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/toolbar"
             android:focusable="true"
             android:focusableInTouchMode="true"
+            app:contentInsetStart="8dp"
+            app:contentInsetLeft="8dp"
+            app:contentInsetEnd="8dp"
+            app:contentInsetRight="8dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <FrameLayout
+        <RelativeLayout
                 android:background="@drawable/browser_address_area_background"
-                android:layout_marginRight="8dp"
+                android:paddingHorizontal="12dp"
+                android:layout_marginRight="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -40,9 +46,23 @@
                     android:textColorHint="@color/BrowserAddressBarHintColor"
                     android:textCursorDrawable="@drawable/searchview_cursor"
 
+                    android:layout_toLeftOf="@id/favorite_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
-        </FrameLayout>
+
+            <ImageButton
+                    android:id="@+id/favorite_button"
+                    android:src="@drawable/ic_star"
+                    android:tint="@color/colorPrimaryText"
+                    android:background="?selectableItemBackgroundBorderless"
+
+                    android:layout_marginLeft="2dp"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+        </RelativeLayout>
 
     </androidx.appcompat.widget.Toolbar>
 </layout>

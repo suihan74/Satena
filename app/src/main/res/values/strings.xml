@@ -454,6 +454,12 @@
     <string name="inner_browser">内部ブラウザ</string>
     <string name="browser_address_bar_hint">検索語句またはウェブアドレスを入力</string>
 
+    <string name="browser_favorite_button_tooltip">お気に入りに追加します</string>
+    <string name="browser_unfavorite_button_tooltip">お気に入りから除外します</string>
+
+    <string name="browser_open_post_bookmark_frame">ブクマエディタを開く</string>
+    <string name="browser_close_post_bookmark_frame">ブクマエディタを閉じる</string>
+
     <string name="browser_menu_bookmarks">ブクマ画面を表示</string>
     <string name="browser_menu_share">共有</string>
     <string name="browser_menu_settings">設定</string>

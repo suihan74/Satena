@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -95,14 +96,21 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
         // 投稿エリアの表示状態を変更する
         binding.openPostAreaButton.setOnClickListener {
             val postLayout = binding.bookmarkPostFrameLayout
-            val opened = postLayout.isVisible
+            // "変更後の"表示状態
+            val opened = !postLayout.isVisible
 
             binding.openPostAreaButton.setIconId(
-                if (opened) R.drawable.ic_add_comment
-                else R.drawable.ic_baseline_close
+                if (opened) R.drawable.ic_baseline_close
+                else R.drawable.ic_add_comment
             )
 
-            postLayout.setVisibility(!opened)
+            TooltipCompat.setTooltipText(
+                binding.openPostAreaButton,
+                if (opened) context?.getString(R.string.browser_close_post_bookmark_frame)
+                else context?.getString(R.string.browser_open_post_bookmark_frame)
+            )
+
+            postLayout.setVisibility(opened)
         }
 
         // 投稿エリアを作成
