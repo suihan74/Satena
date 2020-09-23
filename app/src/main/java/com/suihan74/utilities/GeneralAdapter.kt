@@ -32,11 +32,12 @@ abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
 
     // ------ //
 
+    /** モデルをリストアイテムビューにバインドする */
     abstract fun bind(model: ModelT?, binding: BindingT)
 
     // ------ //
 
-    fun setItems(items: List<ModelT>?, callback: Runnable? = null) {
+    open fun setItems(items: List<ModelT>?, callback: Runnable? = null) {
         submitList(
             items?.let {
                 // 新しく追加した項目をリストの上側にする

@@ -21,8 +21,14 @@ enum class RecyclerType(val int: Int) {
 }
 
 class RecyclerState<T>(
+    /** アイテムの種類 */
     val type: RecyclerType,
-    var body: T? = null
+
+    /** RecyclerType.BODYの場合のアイテムデータ */
+    var body: T? = null,
+
+    /** HEADER, FOOTER, SECTION用の追加情報 */
+    var extra: Any? = null
 ) {
     companion object {
         fun <T> makeStatesWithFooter(src : List<T>) : ArrayList<RecyclerState<T>> =

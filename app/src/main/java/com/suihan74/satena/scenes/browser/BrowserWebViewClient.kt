@@ -33,6 +33,7 @@ class BrowserWebViewClient(
                         if (scheme == "intent") Intent.URI_INTENT_SCHEME
                         else Intent.URI_ANDROID_APP_SCHEME
                     val intent = Intent.parseUri(uri.toString(), intentScheme).also {
+                        // 外部に公開していないアクティビティを開かないようにする加工を行い脆弱性を改善する
                         it.addCategory(Intent.CATEGORY_BROWSABLE)
                         it.component = null
                         it.selector?.let { selector ->
