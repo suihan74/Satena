@@ -75,7 +75,7 @@ class BrowserWebViewClient(
         val url = request?.url?.toString() ?: return null
         val blocked =
             viewModel.useUrlBlocking.value == true &&
-            viewModel.repository.blockUrlsRegex.containsMatchIn(url)
+            viewModel.browserRepo.blockUrlsRegex.containsMatchIn(url)
 
         val result =
             if (!blocked) super.shouldInterceptRequest(view, request)

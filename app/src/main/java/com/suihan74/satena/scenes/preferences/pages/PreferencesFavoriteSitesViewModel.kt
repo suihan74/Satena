@@ -3,28 +3,27 @@ package com.suihan74.satena.scenes.preferences.pages
 import android.app.Activity
 import android.content.Intent
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModel
 import com.suihan74.satena.R
 import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.satena.models.FavoriteSitesKey
+import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteMenuDialog
 import com.suihan74.satena.startInnerBrowser
-import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 
 
 class PreferencesFavoriteSitesViewModel(
-    prefs: SafeSharedPreferences<FavoriteSitesKey>
-) : PreferencesViewModel<FavoriteSitesKey>(prefs) {
+    private val favoriteSitesRepo : FavoriteSitesRepository
+) : ViewModel() {
 
     private val DIALOG_MENU by lazy { "DIALOG_MENU" }
 
-    /** アップデート後初回起動時にリリースノートを表示する */
-    val sites = createLiveData<List<FavoriteSite>>(
-        FavoriteSitesKey.SITES
-    )
+    /** お気に入りサイトリスト */
+    val sites by lazy {
+        favoriteSitesRepo.sites
+    }
 
     // ------ //
 
@@ -47,8 +46,7 @@ class PreferencesFavoriteSitesViewModel(
             }
 
             setOnDeleteListener { site ->
-                val oldSites = sites.value ?: emptyList()
-                sites.value = oldSites.filterNot { it.url == site.url }
+                favoriteSitesRepo.unfavorite(site)
                 activity.showToast(R.string.entry_action_unfavorite)
             }
 

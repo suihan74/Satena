@@ -11,12 +11,16 @@ import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.WebViewTheme
+import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class PreferencesBrowserViewModel(
-    val repository: BrowserRepository
+    val browserRepo : BrowserRepository,
+    val historyRepo : HistoryRepository,
+    /** 設定アクティビティで開かれているかどうか */
+    val isPreferencesActivity : Boolean
 ) : ViewModel() {
 
     private val DIALOG_WEB_VIEW_THEME by lazy { "DIALOG_WEB_VIEW_THEME" }
@@ -27,47 +31,44 @@ class PreferencesBrowserViewModel(
 
     // ------ //
 
-    /** 設定アクティビティで開かれているかどうか */
-    var isPreferencesActivity : Boolean = false
-
     val browserMode by lazy {
-        repository.browserMode
+        browserRepo.browserMode
     }
 
     val startPage by lazy {
-        repository.startPage
+        browserRepo.startPage
     }
 
     val secretModeEnabled by lazy {
-        repository.privateBrowsingEnabled
+        browserRepo.privateBrowsingEnabled
     }
 
     val javascriptEnabled by lazy {
-        repository.javascriptEnabled
+        browserRepo.javascriptEnabled
     }
 
     val userAgent by lazy {
-        repository.userAgent
+        browserRepo.userAgent
     }
 
     val useUrlBlock by lazy {
-        repository.useUrlBlocking
+        browserRepo.useUrlBlocking
     }
 
     val useBottomAppBar by lazy {
-        repository.useBottomAppBar
+        browserRepo.useBottomAppBar
     }
 
     val webViewTheme by lazy {
-        repository.webViewTheme
+        browserRepo.webViewTheme
     }
 
     val isForceDarkSupported by lazy {
-        repository.isForceDarkSupported
+        browserRepo.isForceDarkSupported
     }
 
     val isForceDarkStrategySupported by lazy {
-        repository.isForceDarkStrategySupported
+        browserRepo.isForceDarkStrategySupported
     }
 
     // ------ //
@@ -149,7 +150,7 @@ class PreferencesBrowserViewModel(
             .setPositiveButton(R.string.dialog_ok) { dialog ->
                 viewModelScope.launch(Dispatchers.Main) {
                     kotlin.runCatching {
-                        repository.clearHistories()
+                        historyRepo.clearHistories()
                     }
                     dialog.dismiss()
                 }

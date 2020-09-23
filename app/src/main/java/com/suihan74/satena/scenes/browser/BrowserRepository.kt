@@ -16,8 +16,7 @@ class BrowserRepository(
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
     private val prefs: SafeSharedPreferences<PreferenceKey>,
-    private val browserSettings: SafeSharedPreferences<BrowserSettingsKey>,
-    private val dao: BrowserDao
+    private val browserSettings: SafeSharedPreferences<BrowserSettingsKey>
 ) {
     private fun <ValueT> createBrowserSettingsLiveData(
         key: BrowserSettingsKey,

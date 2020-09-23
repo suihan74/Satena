@@ -40,8 +40,7 @@ class HistoryFragment : Fragment(), ScrollableToTop {
 
     private val viewModel by lazy {
         provideViewModel(this) {
-            val repository = activityViewModel.repository
-            HistoryViewModel(repository)
+            HistoryViewModel(activityViewModel.historyRepo)
         }
     }
 

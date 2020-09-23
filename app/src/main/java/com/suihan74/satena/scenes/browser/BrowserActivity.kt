@@ -10,14 +10,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityBrowserBinding
 import com.suihan74.satena.models.BrowserSettingsKey
+import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepository
+import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
@@ -25,7 +27,6 @@ import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.activity_browser.*
-import kotlinx.coroutines.launch
 
 class BrowserActivity : AppCompatActivity() {
     companion object {
@@ -46,19 +47,22 @@ class BrowserActivity : AppCompatActivity() {
         provideViewModel(this) {
             val initialUrl = intent.getStringExtra(EXTRA_URL)
 
-            val repository = BrowserRepository(
+            val browserRepo = BrowserRepository(
                 HatenaClient,
                 AccountLoader(this, HatenaClient, MastodonClientHolder),
                 SafeSharedPreferences.create<PreferenceKey>(this),
-                SafeSharedPreferences.create<BrowserSettingsKey>(this),
+                SafeSharedPreferences.create<BrowserSettingsKey>(this)
+            )
+
+            val favoriteSitesRepo = FavoriteSitesRepository(
+                SafeSharedPreferences.create<FavoriteSitesKey>(this)
+            )
+
+            val historyRepo = HistoryRepository(
                 SatenaApplication.instance.browserDao
             )
 
-            lifecycleScope.launch {
-                repository.initialize()
-            }
-
-            BrowserViewModel(repository, initialUrl)
+            BrowserViewModel(browserRepo, favoriteSitesRepo, historyRepo, initialUrl)
         }
     }
 

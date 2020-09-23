@@ -40,7 +40,7 @@ class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
         // ブラウザから直接開かれている場合はリポジトリを共有して変更をすぐに反映させる
         provideViewModel(this) {
             val context = requireContext()
-            val repository = browserViewModel?.repository ?:
+            val browserRepo = browserViewModel?.browserRepo ?:
                 BrowserRepository(
                     HatenaClient,
                     AccountLoader(
@@ -49,13 +49,15 @@ class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
                         MastodonClientHolder
                     ),
                     SafeSharedPreferences.create<PreferenceKey>(context),
-                    SafeSharedPreferences.create<BrowserSettingsKey>(context),
-                    SatenaApplication.instance.browserDao
+                    SafeSharedPreferences.create<BrowserSettingsKey>(context)
                 )
 
-            PreferencesBrowserViewModel(repository).also {
-                it.isPreferencesActivity = preferencesActivity != null
-            }
+            val historyRepo = browserViewModel?.historyRepo ?:
+                HistoryRepository(SatenaApplication.instance.browserDao)
+
+            val isPreferencesActivity = preferencesActivity != null
+
+            PreferencesBrowserViewModel(browserRepo, historyRepo, isPreferencesActivity)
         }
     }
 

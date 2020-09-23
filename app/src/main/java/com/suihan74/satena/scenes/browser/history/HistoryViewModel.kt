@@ -7,13 +7,12 @@ import androidx.lifecycle.ViewModel
 import com.suihan74.satena.R
 import com.suihan74.satena.models.browser.History
 import com.suihan74.satena.scenes.browser.BrowserActivity
-import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 
 class HistoryViewModel(
-    val repository: BrowserRepository
+    val repository: HistoryRepository
 ) : ViewModel() {
 
     private val DIALOG_MENU by lazy { "DIALOG_MENU" }

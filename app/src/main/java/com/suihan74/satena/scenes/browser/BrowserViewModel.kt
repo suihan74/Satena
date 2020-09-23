@@ -20,6 +20,8 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepository
+import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.OnFinally
@@ -33,29 +35,42 @@ import kotlinx.coroutines.*
 import kotlin.math.absoluteValue
 
 class BrowserViewModel(
-    val repository: BrowserRepository,
+    val browserRepo: BrowserRepository,
+    val favoriteSitesRepo: FavoriteSitesRepository,
+    val historyRepo: HistoryRepository,
     initialUrl: String?
 ) : ViewModel() {
+    init {
+        viewModelScope.launch {
+            browserRepo.initialize()
+            historyRepo.initialize()
+        }
+    }
+
+    // ------ //
 
     private val DIALOG_BLOCK_URL by lazy { "DIALOG_BLOCK_URL" }
     private val DIALOG_CONTEXT_MENU by lazy { "DIALOG_CONTEXT_MENU" }
 
+    // ------ //
+
     /** アプリのテーマ */
     val themeId : Int
-        get() = repository.themeId
+        get() = browserRepo.themeId
 
     /** Webサイトのテーマ指定 */
     val webViewTheme by lazy {
-        repository.webViewTheme
+        browserRepo.webViewTheme
     }
 
     /** 表示中のページURL */
     val url by lazy {
-        val startPage = initialUrl ?: repository.startPage.value!!
+        val startPage = initialUrl ?: browserRepo.startPage.value!!
         SingleUpdateMutableLiveData(startPage).apply {
             observeForever {
                 addressText.value = Uri.decode(it)
                 bookmarksEntry.value = null
+                isUrlFavorite.value = checkUrlFavorite(it)
                 loadBookmarksEntry(it)
             }
         }
@@ -68,30 +83,30 @@ class BrowserViewModel(
 
     /** アドレスバー検索で使用する検索エンジン(仮置き) */
     val searchEngine : String
-        get() = repository.searchEngine.value!!
+        get() = browserRepo.searchEngine.value!!
 
     /** ユーザーエージェント(仮置き) */
     val userAgent by lazy {
-        repository.userAgent
+        browserRepo.userAgent
     }
 
     val privateBrowsingEnabled by lazy {
-        repository.privateBrowsingEnabled
+        browserRepo.privateBrowsingEnabled
     }
 
     /** JavaScriptを有効にする */
     val javaScriptEnabled by lazy {
-        repository.javascriptEnabled
+        browserRepo.javascriptEnabled
     }
 
     /** URLブロッキングを使用する */
     val useUrlBlocking by lazy {
-        repository.useUrlBlocking
+        browserRepo.useUrlBlocking
     }
 
     /** アプリバーを画面下部に配置する */
     val useBottomAppBar by lazy {
-        repository.useBottomAppBar
+        browserRepo.useBottomAppBar
     }
 
     /** アドレスバーの入力内容 */
@@ -101,7 +116,22 @@ class BrowserViewModel(
 
     /** 現在表示中のページで読み込んだすべてのURL */
     val resourceUrls : List<ResourceUrl>
-        get() = repository.resourceUrls
+        get() = browserRepo.resourceUrls
+
+    /** お気に入りサイト */
+    val favoriteSites by lazy {
+        favoriteSitesRepo.sites.also {
+            it.observeForever {
+                val url = url.value ?: return@observeForever
+                isUrlFavorite.value = checkUrlFavorite(url)
+            }
+        }
+    }
+
+    /** 表示中のページがお気に入りに登録されているか */
+    val isUrlFavorite by lazy {
+        MutableLiveData(false)
+    }
 
     // ------ //
 
@@ -117,7 +147,7 @@ class BrowserViewModel(
 
     /** 閲覧履歴 */
     val histories by lazy {
-        repository.histories
+        historyRepo.histories
     }
 
     /** ロード完了前にページ遷移した場合にロード処理を中断する */
@@ -214,7 +244,7 @@ class BrowserViewModel(
                         (word != null).whenTrue {
                             viewModelScope.launch {
                                 val result = kotlin.runCatching {
-                                    repository.getKeyword(word!!)
+                                    browserRepo.getKeyword(word!!)
                                 }
 
                                 val response = result.getOrNull()
@@ -291,23 +321,23 @@ class BrowserViewModel(
             val theme =
                 when (it) {
                     WebViewTheme.AUTO ->
-                        if (repository.isThemeDark) WebViewTheme.DARK
+                        if (browserRepo.isThemeDark) WebViewTheme.DARK
                         else WebViewTheme.NORMAL
 
                     else -> it
                 }
 
-            if (theme == WebViewTheme.DARK && repository.isForceDarkStrategySupported && repository.isForceDarkSupported) {
+            if (theme == WebViewTheme.DARK && browserRepo.isForceDarkStrategySupported && browserRepo.isForceDarkSupported) {
                 WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_ON)
                 WebSettingsCompat.setForceDarkStrategy(wv.settings, WebSettingsCompat.DARK_STRATEGY_WEB_THEME_DARKENING_ONLY)
             }
-            else if (theme == WebViewTheme.FORCE_DARK && repository.isForceDarkSupported) {
+            else if (theme == WebViewTheme.FORCE_DARK && browserRepo.isForceDarkSupported) {
                 WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_ON)
-                if (repository.isForceDarkStrategySupported) {
+                if (browserRepo.isForceDarkStrategySupported) {
                     WebSettingsCompat.setForceDarkStrategy(wv.settings, WebSettingsCompat.DARK_STRATEGY_USER_AGENT_DARKENING_ONLY)
                 }
             }
-            else if (repository.isForceDarkSupported) {
+            else if (browserRepo.isForceDarkSupported) {
                 WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_OFF)
             }
         }
@@ -461,7 +491,7 @@ class BrowserViewModel(
             entryUrl.postValue(modifiedUrl)
 
             try {
-                bookmarksEntry.postValue(repository.getBookmarksEntry(modifiedUrl))
+                bookmarksEntry.postValue(browserRepo.getBookmarksEntry(modifiedUrl))
             }
             catch (e: CancellationException) {
                 Log.w("coroutine", "loadBookmarksEntryTask has been canceled")
@@ -505,18 +535,16 @@ class BrowserViewModel(
     fun onPageStarted(url: String) {
         this.title.value = url
         this.url.value = url
-        repository.resourceUrls.clear()
+        browserRepo.resourceUrls.clear()
     }
 
     /** ページ読み込み完了時の処理 */
     fun onPageFinished(view: WebView?, url: String) {
         val title = view?.title ?: url
-        val faviconUrl = repository.getFaviconUrl(url)
-
         this.title.value = title
-        repository.resourceUrls.addUnique(ResourceUrl(url, false))
+        browserRepo.resourceUrls.addUnique(ResourceUrl(url, false))
         viewModelScope.launch {
-            repository.insertHistory(url, title, faviconUrl)
+            historyRepo.insertHistory(url, title)
         }
 
         onPageFinishedListener?.invoke(url)
@@ -524,7 +552,27 @@ class BrowserViewModel(
 
     /** リソースを追加 */
     fun addResource(url: String, blocked: Boolean) = viewModelScope.launch(Dispatchers.IO) {
-        repository.resourceUrls.addUnique(ResourceUrl(url, blocked))
+        browserRepo.resourceUrls.addUnique(ResourceUrl(url, blocked))
+    }
+
+    // ------ //
+
+    fun checkUrlFavorite(url: String) : Boolean {
+        return favoriteSites.value?.any { s -> s.url == url } ?: false
+    }
+
+    /** 表示中のページをお気に入りに登録する */
+    fun favoriteCurrentPage() {
+        val url = url.value ?: return
+        val title = title.value ?: url
+        favoriteSitesRepo.favorite(url, title, historyRepo.getFaviconUrl(url))
+    }
+
+    /** 表示中のページをお気に入りから除外する */
+    fun unfavoriteCurrentPage() {
+        val url = url.value ?: return
+        val site = favoriteSitesRepo.sites.value?.firstOrNull { it.url == url } ?: return
+        favoriteSitesRepo.unfavorite(site)
     }
 
     // ------ //
@@ -537,10 +585,10 @@ class BrowserViewModel(
             showAllowingStateLoss(fragmentManager, DIALOG_BLOCK_URL)
 
             setOnCompleteListener { setting ->
-                val blockList = repository.blockUrls.value ?: emptyList()
+                val blockList = browserRepo.blockUrls.value ?: emptyList()
 
                 if (blockList.none { it.pattern == setting.pattern }) {
-                    repository.blockUrls.value = blockList.plus(setting)
+                    browserRepo.blockUrls.value = blockList.plus(setting)
                 }
 
                 SatenaApplication.instance.showToast(R.string.msg_add_url_blocking_succeeded)

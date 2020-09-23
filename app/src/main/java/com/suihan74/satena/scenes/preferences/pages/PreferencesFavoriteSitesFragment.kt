@@ -47,8 +47,12 @@ class PreferencesFavoriteSitesFragment : Fragment(), ScrollableToTop {
 
     private val viewModel: PreferencesFavoriteSitesViewModel by lazy {
         provideViewModel(this) {
-            val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
-            PreferencesFavoriteSitesViewModel(prefs)
+            val favoriteSitesRepo = browserViewModel?.favoriteSitesRepo ?:
+                FavoriteSitesRepository(
+                    SafeSharedPreferences.create(requireContext())
+                )
+
+            PreferencesFavoriteSitesViewModel(favoriteSitesRepo)
         }
     }
 

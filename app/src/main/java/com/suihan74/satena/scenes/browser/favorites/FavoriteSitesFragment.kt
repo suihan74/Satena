@@ -8,11 +8,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserFavoritesBinding
-import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
-import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.provideViewModel
 
 /** お気に入りサイトを表示するタブ */
@@ -29,8 +27,7 @@ class FavoriteSitesFragment : Fragment() {
 
     private val viewModel by lazy {
         provideViewModel(this) {
-            val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(requireContext())
-            FavoriteSitesViewModel(prefs)
+            FavoriteSitesViewModel(activityViewModel.favoriteSitesRepo)
         }
     }
 
