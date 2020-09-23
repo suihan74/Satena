@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.browser
 
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.webkit.WebViewFeature
 import com.suihan74.hatenaLib.BookmarksEntry
@@ -201,7 +202,7 @@ class BrowserRepository(
     /** 履歴を追加する */
     suspend fun insertHistory(url: String, title: String, faviconUrl: String) = withContext(Dispatchers.IO) {
         val history = History(
-            url = url,
+            url = Uri.decode(url),
             title = title,
             faviconUrl = faviconUrl,
             lastVisited = LocalDateTime.now()
