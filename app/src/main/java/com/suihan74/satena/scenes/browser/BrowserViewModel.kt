@@ -181,6 +181,7 @@ class BrowserViewModel(
         wv.webViewClient = BrowserWebViewClient(activity, this)
         wv.webChromeClient = WebChromeClient()
 
+        wv.settings.domStorageEnabled = true
         wv.settings.useWideViewPort = true
         wv.settings.loadWithOverviewMode = true
         setPrivateBrowsing(wv, privateBrowsingEnabled.value ?: false)
