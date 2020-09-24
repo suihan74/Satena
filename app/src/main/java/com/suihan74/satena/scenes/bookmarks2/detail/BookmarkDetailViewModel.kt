@@ -10,10 +10,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
-import com.suihan74.utilities.BookmarkCommentDecorator
-import com.suihan74.utilities.OnError
-import com.suihan74.utilities.OnSuccess
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -61,7 +58,7 @@ class BookmarkDetailViewModel(
     val starsMenuOpened by lazy { MutableLiveData<Boolean>() }
 
     /** スターを付ける際のコメント引用 */
-    val quote by lazy { MutableLiveData<String>() }
+    val quote by lazy { SingleUpdateMutableLiveData<String>() }
 
     // --- Listeners --- //
 
@@ -222,11 +219,11 @@ class BookmarkDetailViewModel(
     }
 
     /** 対象ブクマにスターを付ける */
-    fun postStar(color: StarColor) = viewModelScope.launch {
+    fun postStar(color: StarColor, quote: String?) = viewModelScope.launch {
         if (!checkStarCount(color)) return@launch
 
         try {
-            bookmarksRepository.postStar(bookmark, color, quote.value ?: "")
+            bookmarksRepository.postStar(bookmark, color, quote ?: "")
             bookmarksRepository.userStarsLiveData.load()
         }
         catch (e: Throwable) {

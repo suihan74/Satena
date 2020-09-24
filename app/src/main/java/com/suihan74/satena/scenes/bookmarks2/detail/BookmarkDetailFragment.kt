@@ -416,19 +416,21 @@ class BookmarkDetailFragment :
     private fun postStar(color: StarColor) {
         if (!viewModel.checkStarCount(color)) return
 
+        val quote = viewModel.quote.value
+
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val showDialog = prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
         if (showDialog) {
             viewModel.viewModelScope.launch(Dispatchers.Main) {
-                val dialog = PostStarDialog.createInstance(bookmark, color, viewModel.quote.value ?: "")
+                val dialog = PostStarDialog.createInstance(bookmark, color, quote ?: "")
                 dialog.showAllowingStateLoss(childFragmentManager, DIALOG_CONFIRM_POST_STAR)
                 dialog.setOnPostStar { (_, starColor, _) ->
-                    viewModel.postStar(starColor)
+                    viewModel.postStar(starColor, quote)
                 }
             }
         }
         else {
-            viewModel.postStar(color)
+            viewModel.postStar(color, quote)
         }
     }
 

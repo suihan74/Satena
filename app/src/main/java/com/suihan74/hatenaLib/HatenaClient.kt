@@ -1074,7 +1074,11 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * 対象URLにスターをつける
      */
-    fun postStarAsync(url: String, color: StarColor = StarColor.Yellow, quote: String = "") : Deferred<Star> = async {
+    fun postStarAsync(
+        url: String,
+        color: StarColor = StarColor.Yellow,
+        quote: String = ""
+    ) : Deferred<Star> = async {
         checkSignedInStar("need to sign-in to post star")
 
         val paletteChanged = changeStarColorPalette(url, color)
