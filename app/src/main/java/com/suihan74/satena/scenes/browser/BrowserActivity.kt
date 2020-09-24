@@ -152,6 +152,15 @@ class BrowserActivity : AppCompatActivity() {
         else -> super.onKeyDown(keyCode, event)
     }
 
+    override fun finish() {
+        // リソースの読み込み、スクリプトの実行をすべて中断させる
+        // https://developer.android.com/reference/android/webkit/WebView.html#clearView()
+        webview.stopLoading()
+        webview.loadUrl("about:blank")
+
+        super.finish()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.browser, menu)
         if (menu != null) {
@@ -162,15 +171,6 @@ class BrowserActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return viewModel.onOptionsItemSelected(item, this)
-    }
-
-    override fun onDestroy() {
-        // リソースの読み込み、スクリプトの実行をすべて中断させる
-        // https://developer.android.com/reference/android/webkit/WebView.html#clearView()
-        webview.stopLoading()
-        webview.loadUrl("about:blank")
-
-        super.onDestroy()
     }
 
     /** ドロワを開いて設定タブを表示する */

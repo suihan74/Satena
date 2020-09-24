@@ -544,8 +544,12 @@ class BrowserViewModel(
         val title = view?.title ?: url
         this.title.value = title
         browserRepo.resourceUrls.addUnique(ResourceUrl(url, false))
-        viewModelScope.launch {
-            historyRepo.insertHistory(url, title)
+
+        // 通常のwebページだけを履歴に追加する
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            viewModelScope.launch {
+                historyRepo.insertHistory(url, title)
+            }
         }
 
         onPageFinishedListener?.invoke(url)
