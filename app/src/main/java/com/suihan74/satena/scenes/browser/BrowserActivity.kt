@@ -164,6 +164,15 @@ class BrowserActivity : AppCompatActivity() {
         return viewModel.onOptionsItemSelected(item, this)
     }
 
+    override fun onDestroy() {
+        // リソースの読み込み、スクリプトの実行をすべて中断させる
+        // https://developer.android.com/reference/android/webkit/WebView.html#clearView()
+        webview.stopLoading()
+        webview.loadUrl("about:blank")
+
+        super.onDestroy()
+    }
+
     /** ドロワを開いて設定タブを表示する */
     fun showPreferencesFragment() {
         drawer_view_pager.currentItem = DrawerTab.SETTINGS.ordinal
