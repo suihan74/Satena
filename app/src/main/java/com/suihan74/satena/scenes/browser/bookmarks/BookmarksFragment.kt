@@ -13,6 +13,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.browser.BrowserActivity
+import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.bindings.setIconId
 import com.suihan74.utilities.bindings.setVisibility
@@ -27,10 +28,10 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
 
     private val FRAGMENT_BOOKMARK_POST = "FRAGMENT_BOOKMARK_POST"
 
-    private val browserActivity
+    private val browserActivity : BrowserActivity
         get() = requireActivity() as BrowserActivity
 
-    private val activityViewModel
+    private val activityViewModel : BrowserViewModel
         get() = browserActivity.viewModel
 
     override fun onCreateView(
