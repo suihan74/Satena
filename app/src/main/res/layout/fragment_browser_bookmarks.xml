@@ -71,8 +71,9 @@
                 android:id="@+id/bookmark_post_frame_layout"
                 android:background="?attr/tabBackground"
                 app:layout_constraintBottom_toBottomOf="parent"
+                android:visibility="gone"
                 android:layout_width="match_parent"
-                android:layout_height="100dp"/>
+                android:layout_height="wrap_content"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
