@@ -19,7 +19,6 @@ import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.provideViewModel
 
 class BookmarkPostFragment : Fragment() {
@@ -123,6 +122,7 @@ class BookmarkPostFragment : Fragment() {
             viewModel.init(it.url, viewModel.comment.value)
         }
 
+        /*
         // 各トグルボタンをONにしたときにメッセージを表示する
         viewModel.postMastodon.observe(viewLifecycleOwner){
             if (it == null) return@observe
@@ -143,6 +143,7 @@ class BookmarkPostFragment : Fragment() {
             if (it == null) return@observe
             if (it) context?.showToast(R.string.hint_private_toggle)
         }
+        */
 
         return binding.root
     }

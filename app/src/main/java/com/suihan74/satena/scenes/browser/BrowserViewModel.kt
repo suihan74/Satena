@@ -7,10 +7,7 @@ import android.util.Log
 import android.view.*
 import android.webkit.*
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.suihan74.hatenaLib.BookmarksEntry
@@ -59,8 +56,13 @@ class BrowserViewModel(
         get() = browserRepo.themeId
 
     /** Webサイトのテーマ指定 */
-    val webViewTheme by lazy {
+    val webViewTheme : LiveData<WebViewTheme> by lazy {
         browserRepo.webViewTheme
+    }
+
+    /** サインイン状態 */
+    val signedIn : LiveData<Boolean> by lazy {
+        browserRepo.signedIn
     }
 
     /** 表示中のページURL */

@@ -7,14 +7,16 @@
                 type="com.suihan74.satena.scenes.browser.BrowserViewModel" />
     </data>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                 android:id="@+id/swipe_layout"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/bookmark_post_frame_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="0dp">
 
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_view"
@@ -27,41 +29,51 @@
 
         <ProgressBar
                 android:id="@+id/progress_bar"
-                app:layout_anchor="@id/swipe_layout"
-                app:layout_anchorGravity="center"
+                app:layout_constraintTop_toTopOf="@id/swipe_layout"
+                app:layout_constraintStart_toStartOf="@id/swipe_layout"
+                app:layout_constraintEnd_toEndOf="@id/swipe_layout"
+                app:layout_constraintBottom_toBottomOf="@id/swipe_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/open_post_area_button"
-                android:src="@drawable/ic_add_comment"
-                app:fabSize="mini"
-                app:backgroundTint="@color/colorPrimary"
-                android:gravity="center"
-                app:layout_anchorGravity="center_horizontal"
-                app:layout_anchor="@id/bottom_app_bar"
-                app:layout_dodgeInsetEdges="bottom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        <com.google.android.material.bottomappbar.BottomAppBar
-                android:id="@+id/bottom_app_bar"
-                android:backgroundTint="?attr/tabBackground"
-                app:fabAlignmentMode="center"
-                android:layout_gravity="bottom"
-                app:layout_dodgeInsetEdges="bottom"
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:id="@+id/bottom_area"
+                app:layout_constraintBottom_toTopOf="@id/bookmark_post_frame_layout"
                 android:layout_width="match_parent"
-                android:layout_height="32dp"/>
+                android:layout_height="wrap_content">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/open_post_area_button"
+                    android:src="@drawable/ic_add_comment"
+                    app:fabSize="mini"
+                    app:backgroundTint="@color/colorPrimary"
+
+                    android:visibility="@{browserViewModel.signedIn}"
+                    android:gravity="center"
+                    app:layout_anchorGravity="center_horizontal"
+                    app:layout_anchor="@id/bottom_app_bar"
+                    app:layout_dodgeInsetEdges="bottom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <com.google.android.material.bottomappbar.BottomAppBar
+                    android:id="@+id/bottom_app_bar"
+                    android:backgroundTint="?attr/tabBackground"
+                    app:fabAlignmentMode="center"
+                    android:layout_gravity="bottom"
+                    android:visibility="@{browserViewModel.signedIn}"
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"/>
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         <FrameLayout
                 android:id="@+id/bookmark_post_frame_layout"
                 android:background="?attr/tabBackground"
+                app:layout_constraintBottom_toBottomOf="parent"
                 android:visibility="gone"
-                app:layout_insetEdge="bottom"
-                android:layout_gravity="bottom"
-android:layout_width="match_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
-
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

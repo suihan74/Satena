@@ -11,6 +11,8 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class BrowserRepository(
     private val client: HatenaClient,
@@ -54,8 +56,9 @@ class BrowserRepository(
         }
 
     /** サインイン状態 */
-    val signedIn : Boolean
-        get() = client.signedIn()
+    val signedIn by lazy {
+        MutableLiveData(false)
+    }
 
     /** サインインしているユーザー名 */
     val userSignedIn : String?
@@ -143,8 +146,9 @@ class BrowserRepository(
     // ------ //
 
     /** 初期化処理 */
-    suspend fun initialize() {
+    suspend fun initialize() = withContext(Dispatchers.Default) {
         accountLoader.signInAccounts(reSignIn = false)
+        signedIn.postValue(client.signedIn())
     }
 
     /** BookmarksEntryを取得 */
