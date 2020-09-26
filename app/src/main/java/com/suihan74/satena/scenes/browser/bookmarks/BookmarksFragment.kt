@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.browser.bookmarks
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,8 @@ import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.transition.Slide
+import androidx.transition.TransitionManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
@@ -100,18 +103,7 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             // "変更後の"表示状態
             val opened = !postLayout.isVisible
 
-            binding.openPostAreaButton.setIconId(
-                if (opened) R.drawable.ic_baseline_close
-                else R.drawable.ic_add_comment
-            )
-
-            TooltipCompat.setTooltipText(
-                binding.openPostAreaButton,
-                if (opened) context?.getString(R.string.browser_close_post_bookmark_frame)
-                else context?.getString(R.string.browser_open_post_bookmark_frame)
-            )
-
-            postLayout.setVisibility(opened)
+            switchPostLayout(binding, opened)
         }
 
         // 投稿エリアを作成
@@ -121,6 +113,28 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             .commitAllowingStateLoss()
 
         return binding.root
+    }
+
+    /** 投稿エリアの表示状態を切り替える */
+    private fun switchPostLayout(binding: FragmentBrowserBookmarksBinding, opened: Boolean) {
+        binding.openPostAreaButton.setIconId(
+            if (opened) R.drawable.ic_baseline_close
+            else R.drawable.ic_add_comment
+        )
+
+        TooltipCompat.setTooltipText(
+            binding.openPostAreaButton,
+            if (opened) context?.getString(R.string.browser_close_post_bookmark_frame)
+            else context?.getString(R.string.browser_open_post_bookmark_frame)
+        )
+
+        TransitionManager.beginDelayedTransition(
+            binding.bookmarkPostFrameLayout,
+            Slide(Gravity.BOTTOM).also {
+                it.duration = 200
+            }
+        )
+        binding.bookmarkPostFrameLayout.setVisibility(opened)
     }
 
     override fun scrollToTop() {

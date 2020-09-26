@@ -31,6 +31,12 @@ class HistoryViewModel(
         browserActivity.closeDrawer()
     }
 
+    /** 履歴の続きを取得する */
+    suspend fun loadAdditional() {
+        repository.loadAdditional()
+    }
+
+    /** 項目に対するメニューダイアログを開く */
     fun openItemMenuDialog(targetSite: History, activity: BrowserActivity, fragmentManager: FragmentManager) {
         HistoryMenuDialog.createInstance(targetSite).run {
             setOnOpenListener { site ->
