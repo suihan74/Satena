@@ -13,7 +13,6 @@ import androidx.drawerlayout.widget.DrawerLayout
  * > drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
  * を使用すると、スワイプで開くこともできなくなるので、スワイプ処理を判定する処理を付加したやつを用意した
  */
-@Suppress("RtlHardCoded")
 class LockableDrawerLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -22,9 +21,11 @@ class LockableDrawerLayout @JvmOverloads constructor(
     private var closeSwipeEnabled : Boolean = true
     private var drawerView: View? = null
 
-    fun setCloseSwipeEnabled(enabled: Boolean, drawerView: View) {
+    fun setCloseSwipeEnabled(enabled: Boolean, drawerView: View? = null) {
         this.closeSwipeEnabled = enabled
-        this.drawerView = drawerView
+        if (drawerView != null) {
+            this.drawerView = drawerView
+        }
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
@@ -34,5 +35,4 @@ class LockableDrawerLayout @JvmOverloads constructor(
         }
         return super.onInterceptTouchEvent(ev)
     }
-
 }
