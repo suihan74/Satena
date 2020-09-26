@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -16,6 +17,7 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
@@ -87,6 +89,11 @@ class HistoryFragment : Fragment(), ScrollableToTop {
                     }
                 }
             )
+        }
+
+        binding.searchButton.setOnClickListener {
+            val opened = !binding.searchText.isVisible
+            binding.searchText.setVisibility(opened)
         }
 
         return binding.root

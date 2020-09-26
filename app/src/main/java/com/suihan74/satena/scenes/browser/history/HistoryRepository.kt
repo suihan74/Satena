@@ -17,6 +17,14 @@ class HistoryRepository(
         MutableLiveData<List<History>>(emptyList())
     }
 
+    /** ロード済みの全閲覧履歴データのキャッシュ */
+    private var historiesCache = ArrayList<History>()
+
+    /** 検索ワード */
+    val keyword by lazy {
+        MutableLiveData<String?>(null)
+    }
+
     // ------ //
 
     /** 初期化処理 */
@@ -46,19 +54,20 @@ class HistoryRepository(
         )
         dao.insertHistory(history)
 
-        val prevList = histories.value ?: emptyList()
-        val currentList = prevList
-            .filterNot { it.url == history.url }
-            .plus(history)
+        historiesCache.removeAll { it.url == history.url }
+        historiesCache.add(history)
 
-        histories.postValue(currentList)
+        updateHistoriesLiveData()
     }
 
     /** 履歴リストを更新 */
     suspend fun reloadHistories() = withContext(Dispatchers.IO) {
-        histories.postValue(
+        historiesCache.clear()
+        historiesCache.addAll(
             dao.getRecentHistories()
         )
+
+        updateHistoriesLiveData()
     }
 
     /** 履歴をすべて削除 */
@@ -69,11 +78,25 @@ class HistoryRepository(
 
     /** 履歴リストの続きを取得 */
     suspend fun loadAdditional() = withContext(Dispatchers.IO) {
-        val prevList = histories.value ?: emptyList()
-        val additional = dao.getRecentHistories(offset = prevList.size)
-        val currentList = additional.plus(prevList)
-            .sortedBy { it.lastVisited }
+        val additional = dao.getRecentHistories(offset = historiesCache.size)
 
-        histories.postValue(currentList)
+        historiesCache.addAll(additional)
+        historiesCache.sortBy { it.lastVisited }
+
+        updateHistoriesLiveData()
+    }
+
+    /** 表示用の履歴リストを更新する */
+    suspend fun updateHistoriesLiveData() = withContext(Dispatchers.IO) {
+        val keyword = keyword.value
+        if (keyword.isNullOrBlank()) {
+            histories.postValue(historiesCache)
+        }
+        else {
+            val list = historiesCache.filter {
+                it.title.contains(keyword) || it.url.contains(keyword)
+            }
+            histories.postValue(list)
+        }
     }
 }
