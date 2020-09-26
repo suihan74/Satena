@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.browser.history
 import android.content.Intent
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
@@ -33,6 +34,11 @@ class HistoryViewModel(
                 }
             }
         }
+    }
+
+    /** キーワード入力ボックスの表示状態 */
+    val keywordEditTextVisible by lazy {
+        MutableLiveData<Boolean>(false)
     }
 
     // ------ //

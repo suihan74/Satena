@@ -17,6 +17,7 @@ import org.threeten.bp.LocalDate
 import org.threeten.bp.format.DateTimeFormatter
 
 class HistoryAdapter(
+    val viewModel: HistoryViewModel,
     lifecycleOwner: LifecycleOwner
 ) : GeneralAdapter<History, ListviewItemBrowserHistoryBinding>(
     lifecycleOwner,
@@ -30,6 +31,7 @@ class HistoryAdapter(
 
     override fun bind(model: History?, binding: ListviewItemBrowserHistoryBinding) {
         binding.site = model
+        binding.vm = viewModel
     }
 
     override fun setItems(items: List<History>?, callback: Runnable?) {

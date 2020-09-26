@@ -17,7 +17,6 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.ScrollableToTop
-import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
@@ -67,7 +66,7 @@ class HistoryFragment : Fragment(), ScrollableToTop {
 
         binding.recyclerView.let { recyclerView ->
             recyclerView.setHasFixedSize(true)
-            recyclerView.adapter = HistoryAdapter(viewLifecycleOwner).also {
+            recyclerView.adapter = HistoryAdapter(viewModel, viewLifecycleOwner).also {
                 it.setOnClickItemListener { binding ->
                     val site = binding.site ?: return@setOnClickItemListener
                     viewModel.goAddress(site.url, browserActivity)
@@ -93,7 +92,7 @@ class HistoryFragment : Fragment(), ScrollableToTop {
 
         binding.searchButton.setOnClickListener {
             val opened = !binding.searchText.isVisible
-            binding.searchText.setVisibility(opened)
+            viewModel.keywordEditTextVisible.value = opened
         }
 
         return binding.root

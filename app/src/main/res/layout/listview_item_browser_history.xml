@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
+        <variable name="vm" type="com.suihan74.satena.scenes.browser.history.HistoryViewModel"/>
         <variable name="site" type="com.suihan74.satena.models.browser.History"/>
     </data>
 
@@ -28,6 +29,7 @@
                 android:id="@+id/title"
                 style="@style/MarqueeTextView"
                 android:text="@{site.title}"
+                marqueeEnabled="@{!vm.keywordEditTextVisible}"
                 android:contentDescription="@null"
                 android:textColor="?attr/textColor"
                 android:textSize="16sp"
@@ -39,6 +41,7 @@
         <com.suihan74.utilities.views.MarqueeTextView
                 android:id="@+id/url"
                 style="@style/MarqueeTextView"
+                marqueeEnabled="@{!vm.keywordEditTextVisible}"
                 android:text="@{site.url}"
                 android:textColor="?attr/tagTextColor"
                 android:textSize="13sp"
@@ -53,6 +56,7 @@
                 android:id="@+id/last_visited"
                 style="@style/MarqueeTextView"
                 timestamp="@{site.lastVisited}"
+                marqueeEnabled="@{!vm.keywordEditTextVisible}"
                 android:textColor="?attr/tagTextColor"
                 android:textSize="13sp"
                 android:layout_below="@id/url"
