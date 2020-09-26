@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
@@ -18,6 +19,7 @@ import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -90,9 +92,27 @@ class HistoryFragment : Fragment(), ScrollableToTop {
             )
         }
 
+        // 検索ボックスの表示切替
         binding.searchButton.setOnClickListener {
             val opened = !binding.searchText.isVisible
+
+            if (!opened) {
+                browserActivity.hideSoftInputMethod(binding.mainLayout)
+            }
+
             viewModel.keywordEditTextVisible.value = opened
+        }
+
+        // 入力完了でIMEを閉じる
+        binding.searchText.setOnEditorActionListener { _, action, _ ->
+            when (action) {
+                EditorInfo.IME_ACTION_DONE -> {
+                    browserActivity.hideSoftInputMethod(binding.mainLayout)
+                    true
+                }
+
+                else -> false
+            }
         }
 
         return binding.root
