@@ -31,6 +31,9 @@
     <!-- App Bar の文字色 -->
     <color name="colorPrimaryText">#FFF</color>
 
+    <!-- ツールバー検索ボックスの選択部分の色 -->
+    <color name="searchViewHighlight">#1A68A6</color>
+
     <!-- タブ -->
     <color name="tabBackground">#F0F0F0</color>
     <color name="tabBackgroundDark">#565653</color>

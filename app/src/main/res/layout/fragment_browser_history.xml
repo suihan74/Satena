@@ -27,6 +27,9 @@
                 android:textSize="18sp"
                 android:textColor="@color/colorPrimaryText"
                 android:background="@drawable/rounded_search_text_view"
+                android:textColorHint="@color/BrowserAddressBarHintColor"
+                android:textCursorDrawable="@drawable/searchview_cursor"
+                android:textColorHighlight="@color/searchViewHighlight"
 
                 android:maxLines="1"
                 android:inputType="text"

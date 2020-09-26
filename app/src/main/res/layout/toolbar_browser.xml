@@ -45,6 +45,7 @@
                     android:textColor="@color/colorPrimaryText"
                     android:textColorHint="@color/BrowserAddressBarHintColor"
                     android:textCursorDrawable="@drawable/searchview_cursor"
+                    android:textColorHighlight="@color/searchViewHighlight"
 
                     android:layout_toLeftOf="@id/favorite_button"
                     android:layout_width="match_parent"
