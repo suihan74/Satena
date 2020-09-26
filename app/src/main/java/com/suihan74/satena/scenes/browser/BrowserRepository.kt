@@ -147,7 +147,9 @@ class BrowserRepository(
 
     /** 初期化処理 */
     suspend fun initialize() = withContext(Dispatchers.Default) {
-        accountLoader.signInAccounts(reSignIn = false)
+        runCatching {
+            accountLoader.signInAccounts(reSignIn = false)
+        }
         signedIn.postValue(client.signedIn())
     }
 
