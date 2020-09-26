@@ -18,6 +18,7 @@ import com.suihan74.satena.scenes.post2.BookmarkPostViewModel
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.provideViewModel
 
@@ -64,6 +65,10 @@ class BookmarkPostFragment : Fragment() {
             vm = viewModel
             lifecycleOwner = viewLifecycleOwner
         }
+
+        binding.bookmarkPostLayout.setBackgroundColor(
+            browserActivity.getThemeColor(R.attr.tabBackground)
+        )
 
         binding.postButton.setOnClickListener {
             postBookmark()
