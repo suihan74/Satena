@@ -3,23 +3,27 @@ package com.suihan74.satena.scenes.browser.bookmarks
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.post2.BookmarkPostViewModel
+import com.suihan74.satena.scenes.post2.TagsListAdapter
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.provideViewModel
 
 class BookmarkPostFragment : Fragment() {
@@ -127,36 +131,86 @@ class BookmarkPostFragment : Fragment() {
             viewModel.init(it.url, viewModel.comment.value)
         }
 
-        /*
-        // 各トグルボタンをONにしたときにメッセージを表示する
-        viewModel.postMastodon.observe(viewLifecycleOwner){
-            if (it == null) return@observe
-            if (it) context?.showToast(R.string.hint_mastodon_toggle)
-        }
-
-        viewModel.postTwitter.observe(viewLifecycleOwner) {
-            if (it == null) return@observe
-            if (it) context?.showToast(R.string.hint_twitter_toggle)
-        }
-
-        viewModel.postFacebook.observe(viewLifecycleOwner) {
-            if (it == null) return@observe
-            if (it) context?.showToast(R.string.hint_facebook_toggle)
-        }
-
-        viewModel.isPrivate.observe(viewLifecycleOwner) {
-            if (it == null) return@observe
-            if (it) context?.showToast(R.string.hint_private_toggle)
-        }
-        */
+        // タグリストを初期化
+        setupTagsList(binding)
 
         return binding.root
     }
 
+    /** ブクマを投稿する */
     private fun postBookmark() {
         browserActivity.hideSoftInputMethod()
         viewModel.postBookmark(
             childFragmentManager,
+            onSuccess = {
+                activity?.showToast(R.string.msg_post_bookmark_succeeded)
+            },
+            onError = { e ->
+                activity?.showToast(R.string.msg_post_bookmark_failed)
+                Log.e("PostBookmark", Log.getStackTraceString(e))
+            }
         )
+    }
+
+    /** タグリストを初期化 */
+    private fun setupTagsList(binding: ActivityBookmarkPost2Binding) {
+        val comment = binding.comment
+        val tagsList = binding.tagsList
+
+        tagsList.layoutManager = LinearLayoutManager(context).apply {
+            orientation = LinearLayoutManager.HORIZONTAL
+        }
+        tagsList.adapter = TagsListAdapter().also { adapter ->
+            adapter.setOnItemClickedListener { tag ->
+                var watcher: TextWatcher? = null
+                try {
+                    watcher = object : TextWatcher {
+                        private var before: Int = 0
+                        private var countDiff: Int = 0
+                        private var tagsEnd: Int = 0
+
+                        override fun afterTextChanged(s: Editable?) {
+                            val after = comment.selectionStart
+                            if (after == 0) {
+                                val selecting =
+                                    if (before < tagsEnd) viewModel.getTagsEnd(s)
+                                    else before + countDiff
+                                comment.setSelection(selecting)
+                            }
+                            comment.removeTextChangedListener(watcher)
+                        }
+                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                            this.tagsEnd = viewModel.getTagsEnd(s)
+                            this.before = comment.selectionStart
+                            this.countDiff = after - count
+                        }
+                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    }
+
+                    comment.addTextChangedListener(watcher)
+                    viewModel.toggleTag(tag)
+
+                }
+                catch (e: BookmarkPostViewModel.TooManyTagsException) {
+                    activity?.showToast(R.string.msg_post_too_many_tags)
+                    comment.removeTextChangedListener(watcher)
+                }
+            }
+
+            // タッチイベントを他に伝播させない
+            // このフラグメントが属するタブやドロワのタッチ処理を防止して
+            // タグリストのスクロールだけを行うようにする
+            adapter.setOnItemTouchListener {
+                tagsList.parent.requestDisallowInterceptTouchEvent(true)
+                false
+            }
+
+            // 使ったことがあるタグを入力するボタンを表示する
+            viewModel.tags.observe(viewLifecycleOwner) {
+                adapter.setTags(
+                    it.map { t -> t.text }
+                )
+            }
+        }
     }
 }

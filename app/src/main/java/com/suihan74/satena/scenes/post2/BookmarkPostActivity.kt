@@ -136,8 +136,8 @@ class BookmarkPostActivity : AppCompatActivity() {
         }
 
         // タグリストを初期化
-        val tagsListAdapter = object : TagsListAdapter() {
-            override fun onItemClicked(tag: String) {
+        val tagsListAdapter = TagsListAdapter().also { adapter ->
+            adapter.setOnItemClickedListener { tag ->
                 var watcher: TextWatcher? = null
                 try {
                     watcher = object : TextWatcher {

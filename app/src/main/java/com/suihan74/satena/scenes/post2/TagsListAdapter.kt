@@ -1,19 +1,35 @@
 package com.suihan74.satena.scenes.post2
 
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.Switcher
 import kotlinx.android.synthetic.main.listview_item_tags.view.*
 
-open class TagsListAdapter : RecyclerView.Adapter<TagsListAdapter.ViewHolder>() {
+class TagsListAdapter : RecyclerView.Adapter<TagsListAdapter.ViewHolder>() {
 
     private var tags = emptyList<String>()
 
-    open fun onItemClicked(tag: String) {}
-    open fun onItemLongClicked(tag: String) : Boolean = false
+    private var onItemClicked : Listener<String>? = null
+    private var onItemLongClicked : Listener<String>? = null
+    private var onItemTouch : Switcher<MotionEvent>? = null
+
+    fun setOnItemClickedListener(l: Listener<String>?) {
+        onItemClicked = l
+    }
+
+    fun setOnItemLongClickedListener(l: Listener<String>?) {
+        onItemLongClicked = l
+    }
+
+    fun setOnItemTouchListener(l: Switcher<MotionEvent>?) {
+        onItemTouch = l
+    }
 
     /** タグリストを更新 */
     fun setTags(newTags: List<String>) {
@@ -36,11 +52,24 @@ open class TagsListAdapter : RecyclerView.Adapter<TagsListAdapter.ViewHolder>() 
         .let {
             ViewHolder(it).apply {
                 itemView.setOnClickListener {
-                    onItemClicked(tag!!)
+                    val tag = tag ?: return@setOnClickListener
+                    onItemClicked?.invoke(tag)
                 }
 
                 itemView.setOnLongClickListener {
-                    return@setOnLongClickListener onItemLongClicked(tag!!)
+                    val tag = tag ?: return@setOnLongClickListener false
+                    onItemLongClicked?.invoke(tag)
+                    return@setOnLongClickListener onItemLongClicked != null
+                }
+
+                @Suppress("ClickableViewAccessibility")
+                itemView.setOnTouchListener { _, motionEvent ->
+                    if (motionEvent == null || onItemTouch == null) {
+                        return@setOnTouchListener false
+                    }
+                    else {
+                        return@setOnTouchListener onItemTouch?.invoke(motionEvent) ?: false
+                    }
                 }
             }
         }
