@@ -33,8 +33,11 @@ class HistoryRepository(
     fun getFaviconUrl(url: String) : String = getFaviconUrl(Uri.parse(url))
 
     /** 履歴を追加する */
-    suspend fun insertHistory(url: String, title: String, faviconUrl: String? = null) = withContext(
-        Dispatchers.IO) {
+    suspend fun insertHistory(
+        url: String,
+        title: String,
+        faviconUrl: String? = null
+    ) = withContext(Dispatchers.IO) {
         val history = History(
             url = Uri.decode(url),
             title = title,
@@ -43,13 +46,18 @@ class HistoryRepository(
         )
         dao.insertHistory(history)
 
-        reloadHistories()
+        val prevList = histories.value ?: emptyList()
+        val currentList = prevList
+            .filterNot { it.url == history.url }
+            .plus(history)
+
+        histories.postValue(currentList)
     }
 
     /** 履歴リストを更新 */
     suspend fun reloadHistories() = withContext(Dispatchers.IO) {
         histories.postValue(
-            dao.getAllHistory()
+            dao.getRecentHistories()
         )
     }
 
@@ -59,4 +67,13 @@ class HistoryRepository(
         reloadHistories()
     }
 
+    /** 履歴リストの続きを取得 */
+    suspend fun loadAdditional() = withContext(Dispatchers.IO) {
+        val prevList = histories.value ?: emptyList()
+        val additional = dao.getRecentHistories(offset = prevList.size)
+        val currentList = additional.plus(prevList)
+            .sortedBy { it.lastVisited }
+
+        histories.postValue(currentList)
+    }
 }

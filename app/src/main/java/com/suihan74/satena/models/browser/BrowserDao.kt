@@ -15,9 +15,16 @@ interface BrowserDao {
 
     @Query("""
         select * from history 
+        order by lastVisited desc
+        limit :offset, :limit
+        """)
+    suspend fun getRecentHistories(offset: Int = 0, limit: Int = 10) : List<History>
+
+    @Query("""
+        select * from history 
         where url=:url
         limit 1
-    """)
+        """)
     suspend fun findHistory(url: String): History?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
