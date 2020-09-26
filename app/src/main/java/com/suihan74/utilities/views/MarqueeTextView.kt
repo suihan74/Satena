@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Rect
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.databinding.BindingAdapter
 
 /** Marqueeを正しく動作させるためのTextView */
 class MarqueeTextView @JvmOverloads constructor(
@@ -12,17 +13,28 @@ class MarqueeTextView @JvmOverloads constructor(
     defStyleId: Int = 0
 ) : AppCompatTextView(context, attrs, defStyleId) {
 
+    companion object {
+        @JvmStatic
+        @BindingAdapter("marqueeEnabled")
+        fun setMarqueeEnabled(view: MarqueeTextView, b: Boolean) {
+            view.marqueeEnabled = b
+            view.isSelected = b
+        }
+    }
+
+    var marqueeEnabled: Boolean = true
+
     override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
-        if (focused) {
+        if (!marqueeEnabled || focused) {
             super.onFocusChanged(focused, direction, previouslyFocusedRect)
         }
     }
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
-        if (hasWindowFocus) {
+        if (!marqueeEnabled || hasWindowFocus) {
             super.onWindowFocusChanged(hasWindowFocus)
         }
     }
 
-    override fun isFocused(): Boolean = true
+    override fun isFocused(): Boolean = marqueeEnabled
 }
