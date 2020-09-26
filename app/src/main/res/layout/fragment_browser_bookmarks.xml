@@ -39,16 +39,16 @@
         <androidx.coordinatorlayout.widget.CoordinatorLayout
                 android:id="@+id/bottom_area"
                 app:layout_constraintBottom_toTopOf="@id/bookmark_post_frame_layout"
+                android:visibility="@{browserViewModel.signedIn}"
+                android:elevation="8dp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="64dp">
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/open_post_area_button"
                     android:src="@drawable/ic_add_comment"
                     app:fabSize="mini"
                     app:backgroundTint="@color/colorPrimary"
-
-                    android:visibility="@{browserViewModel.signedIn}"
                     app:layout_anchor="@id/bottom_app_bar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
@@ -58,7 +58,6 @@
                     android:backgroundTint="?attr/tabBackground"
                     app:fabAlignmentMode="center"
                     android:layout_gravity="bottom"
-                    android:visibility="@{browserViewModel.signedIn}"
                     android:layout_width="match_parent"
                     android:layout_height="32dp"/>
 
@@ -69,6 +68,7 @@
                 android:background="?attr/tabBackground"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:visibility="gone"
+                android:elevation="8dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
