@@ -49,10 +49,7 @@
                     app:backgroundTint="@color/colorPrimary"
 
                     android:visibility="@{browserViewModel.signedIn}"
-                    android:gravity="center"
-                    app:layout_anchorGravity="center_horizontal"
                     app:layout_anchor="@id/bottom_app_bar"
-                    app:layout_dodgeInsetEdges="bottom"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
