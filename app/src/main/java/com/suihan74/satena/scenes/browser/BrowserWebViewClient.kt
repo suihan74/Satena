@@ -15,7 +15,7 @@ class BrowserWebViewClient(
 ) : WebViewClient() {
 
     private val emptyResourceRequest : WebResourceResponse by lazy {
-        WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream("".toByteArray()));
+        WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream("".toByteArray()))
     }
 
     /** ページに遷移するか否かを決定する */
