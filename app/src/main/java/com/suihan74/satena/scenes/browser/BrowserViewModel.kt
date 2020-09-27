@@ -188,6 +188,8 @@ class BrowserViewModel(
         wv.settings.loadWithOverviewMode = true
         setPrivateBrowsing(wv, privateBrowsingEnabled.value ?: false)
 
+        CookieManager.getInstance().acceptThirdPartyCookies(wv)
+
         // セキュリティ保護を利用可能な全てのバージョンでデフォルトで保護を行う
         if (WebViewFeature.isFeatureSupported(WebViewFeature.SAFE_BROWSING_ENABLE)) {
             WebSettingsCompat.setSafeBrowsingEnabled(wv.settings, true)
