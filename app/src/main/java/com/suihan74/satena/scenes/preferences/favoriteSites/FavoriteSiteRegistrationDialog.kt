@@ -2,9 +2,9 @@ package com.suihan74.satena.scenes.preferences.favoriteSites
 
 import android.app.Dialog
 import android.content.DialogInterface
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
@@ -65,9 +65,6 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
         }
     }
 
-    private var binding : DialogFavoriteSiteRegistrationBinding? = null
-    private var dialog: AlertDialog? = null
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = requireContext()
         val inflater = LayoutInflater.from(context)
@@ -77,9 +74,9 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
             null,
             false
         ).also {
+            it.lifecycleOwner = activity
             it.vm = viewModel
         }
-        this.binding = binding
 
         return AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setTitle(viewModel.mode.titleId)
@@ -88,7 +85,16 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
             .setView(binding.root)
             .show()
             .also { dialog ->
-                this.dialog = dialog
+                val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+                val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+
+                activity?.let { activity ->
+                    viewModel.waiting.observe(activity) {
+                        positiveButton?.isEnabled = !it
+                        negativeButton?.isEnabled = !it
+                    }
+                }
+
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
                     viewModel.waiting.value = true
                     lifecycleScope.launch(Dispatchers.Default) {
@@ -107,20 +113,6 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                     }
                 }
             }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        binding?.lifecycleOwner = viewLifecycleOwner
-        dialog?.let { dialog ->
-            val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-            val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
-            viewModel.waiting.observe(viewLifecycleOwner) {
-                positiveButton?.isEnabled = !it
-                negativeButton?.isEnabled = !it
-            }
-        }
     }
 
     // ------ //
@@ -148,7 +140,11 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
     ) : ViewModel() {
 
         val url by lazy {
-            MutableLiveData(targetSite?.url ?: "")
+            MutableLiveData(targetSite?.url ?: "").also {
+                it.observeForever { u ->
+                    faviconUrl.value = Uri.parse(u).faviconUrl
+                }
+            }
         }
 
         val title by lazy {
