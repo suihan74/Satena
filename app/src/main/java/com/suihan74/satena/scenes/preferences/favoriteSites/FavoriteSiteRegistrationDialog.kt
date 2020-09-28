@@ -192,6 +192,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
             if (!URLUtil.isValidUrl(site.url)
                 || !URLUtil.isHttpsUrl(site.url)
                 || !URLUtil.isHttpsUrl(site.url)
+                || Uri.parse(site.url).host.isNullOrBlank()
             ) {
                 throw InvalidUrlException(site.url)
             }
