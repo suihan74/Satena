@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.satena.models.browser.BrowserDao
 import com.suihan74.satena.models.browser.History
+import com.suihan74.utilities.extensions.faviconUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
@@ -32,14 +33,6 @@ class HistoryRepository(
         reloadHistories()
     }
 
-    /**
-     * URLからファビコンURLを取得する
-     */
-    fun getFaviconUrl(uri: Uri) : String = "https://www.google.com/s2/favicons?domain=${uri.host}"
-
-    /** (代替の)faviconのURLを取得する */
-    fun getFaviconUrl(url: String) : String = getFaviconUrl(Uri.parse(url))
-
     /** 履歴を追加する */
     suspend fun insertHistory(
         url: String,
@@ -49,7 +42,7 @@ class HistoryRepository(
         val history = History(
             url = Uri.decode(url),
             title = title,
-            faviconUrl = faviconUrl ?: getFaviconUrl(url),
+            faviconUrl = faviconUrl ?: Uri.parse(url).faviconUrl,
             lastVisited = LocalDateTime.now()
         )
         dao.insertHistory(history)

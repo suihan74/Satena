@@ -24,6 +24,7 @@ import com.suihan74.utilities.Listener
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 import com.suihan74.utilities.extensions.addUnique
+import com.suihan74.utilities.extensions.faviconUrl
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.whenTrue
 import com.suihan74.utilities.showAllowingStateLoss
@@ -574,7 +575,8 @@ class BrowserViewModel(
     fun favoriteCurrentPage() {
         val url = url.value ?: return
         val title = title.value ?: url
-        favoriteSitesRepo.favorite(url, title, historyRepo.getFaviconUrl(url))
+        val uri = Uri.parse(url)
+        favoriteSitesRepo.favorite(url, title, uri.faviconUrl)
     }
 
     /** 表示中のページをお気に入りから除外する */

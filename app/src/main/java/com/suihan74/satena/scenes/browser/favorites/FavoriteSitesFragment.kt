@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.browser.favorites
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
+import com.suihan74.utilities.extensions.faviconUrl
 import com.suihan74.utilities.provideViewModel
 
 /** お気に入りサイトを表示するタブ */
@@ -67,7 +69,7 @@ class FavoriteSitesFragment : Fragment() {
                 val site = FavoriteSite(
                     url = url,
                     title = vm.title.value ?: url,
-                    faviconUrl = vm.historyRepo.getFaviconUrl(url),
+                    faviconUrl = Uri.parse(url).faviconUrl,
                     isEnabled = false
                 )
                 viewModel.openItemRegistrationDialog(site, childFragmentManager)
