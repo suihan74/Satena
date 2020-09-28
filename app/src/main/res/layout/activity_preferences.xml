@@ -95,7 +95,7 @@
 
                     <ImageButton
                             android:id="@+id/preferences_tab_favorite_sites"
-                            android:src="@drawable/ic_user_tag"
+                            android:src="@drawable/ic_star"
                             android:tint="?attr/textColor"
                             android:background="@null"
                             android:layout_width="48dp"
