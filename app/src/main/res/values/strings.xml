@@ -306,6 +306,8 @@
     <string name="dialog_favorite_site_title_desc">タイトル</string>
     <string name="msg_favorite_site_already_existed">既にお気に入りに登録されています</string>
     <string name="msg_favorite_site_registration_succeeded">お気に入りに登録しました</string>
+    <string name="msg_favorite_site_invalid_url">URLが不正です</string>
+    <string name="msg_favorite_site_invalid_title">タイトルを入力してください</string>
 
     <!-- 閲覧履歴 -->
     <string name="dialog_history_open">開く</string>

@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.webkit.URLUtil
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
@@ -17,6 +18,9 @@ import com.suihan74.satena.databinding.DialogFavoriteSiteRegistrationBinding
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.Switcher
+import com.suihan74.utilities.exceptions.DuplicateException
+import com.suihan74.utilities.exceptions.EmptyException
+import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
@@ -98,16 +102,32 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
                     viewModel.waiting.value = true
                     lifecycleScope.launch(Dispatchers.Default) {
-                        val result = viewModel.invokePositiveAction()
+                        val result = runCatching {
+                            viewModel.invokePositiveAction()
+                        }
+
                         withContext(Dispatchers.Main) {
                             val c = SatenaApplication.instance
-                            if (result) {
-                                c.showToast(R.string.msg_favorite_site_registration_succeeded)
-                                dismissAllowingStateLoss()
-                            }
-                            else {
-                                c.showToast(R.string.msg_favorite_site_already_existed)
-                                viewModel.waiting.value = false
+                            when (val e = result.exceptionOrNull()) {
+                                is DuplicateException -> {
+                                    c.showToast(R.string.msg_favorite_site_already_existed)
+                                    viewModel.waiting.value = false
+                                }
+
+                                is EmptyException -> {
+                                    c.showToast(R.string.msg_favorite_site_invalid_title)
+                                    viewModel.waiting.value = false
+                                }
+
+                                is InvalidUrlException -> {
+                                    c.showToast(R.string.msg_favorite_site_invalid_url)
+                                    viewModel.waiting.value = false
+                                }
+
+                                else -> {
+                                    c.showToast(R.string.msg_favorite_site_registration_succeeded)
+                                    dismissAllowingStateLoss()
+                                }
                             }
                         }
                     }
@@ -161,7 +181,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
 
         // ------ //
 
-        suspend fun invokePositiveAction() : Boolean {
+        suspend fun invokePositiveAction() {
             val site = FavoriteSite(
                 url = url.value!!,
                 title = title.value!!,
@@ -169,8 +189,18 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                 isEnabled = false
             )
 
-            val result = duplicationChecker?.invoke(site) ?: false
+            if (!URLUtil.isValidUrl(site.url)
+                || !URLUtil.isHttpsUrl(site.url)
+                || !URLUtil.isHttpsUrl(site.url)
+            ) {
+                throw InvalidUrlException(site.url)
+            }
 
+            if (site.title.isBlank()) {
+                throw EmptyException()
+            }
+
+            val result = duplicationChecker?.invoke(site) ?: false
             if (result) {
                 withContext(Dispatchers.Main) {
                     when (mode) {
@@ -179,8 +209,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                     }
                 }
             }
-
-            return result
+            else throw DuplicateException()
         }
 
         // ------ //
