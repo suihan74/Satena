@@ -92,13 +92,15 @@ class FavoriteSitesViewModel(
             dialog.setOnModifyListener { site ->
                 val prevList = sites.value ?: emptyList()
                 sites.value = prevList
-                    .filterNot { it.url == targetSite.url }
-                    .plus(site)
+                    .map {
+                        if (it.url == targetSite.url) site
+                        else it
+                    }
             }
 
             dialog.setDuplicationChecker { site ->
                 targetSite.url == site.url ||
-                sites.value?.none { it.url == site.url } ?: true
+                        sites.value?.none { it.url == site.url } ?: true
             }
 
             dialog.showAllowingStateLoss(fragmentManager, DIALOG_ITEM_MODIFICATION)
