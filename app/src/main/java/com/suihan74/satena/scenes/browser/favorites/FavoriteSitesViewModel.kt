@@ -19,6 +19,7 @@ class FavoriteSitesViewModel(
 ) : ViewModel() {
 
     private val DIALOG_MENU by lazy { "DIALOG_MENU" }
+    private val DIALOG_ITEM_REGISTRATION by lazy { "DIALOG_ITEM_REGISTRATION" }
     private val DIALOG_ITEM_MODIFICATION by lazy { "DIALOG_ITEM_MODIFICATION" }
 
     /** 登録済みのお気に入りサイト */
@@ -63,17 +64,31 @@ class FavoriteSitesViewModel(
 
     // ------ //
 
+    /** 項目を追加する */
+    fun openItemRegistrationDialog(
+        targetSite: FavoriteSite?,
+        fragmentManager: FragmentManager
+    ) {
+        FavoriteSiteRegistrationDialog.createRegistrationInstance(targetSite).let { dialog ->
+            dialog.setOnRegisterListener { site ->
+                val prevList = sites.value ?: emptyList()
+                sites.value = prevList.plus(site)
+            }
+
+            dialog.setDuplicationChecker { site ->
+                sites.value?.none { it.url == site.url } ?: true
+            }
+
+            dialog.showAllowingStateLoss(fragmentManager, DIALOG_ITEM_REGISTRATION)
+        }
+    }
+
     /** 項目を編集する */
     fun openItemModificationDialog(
         targetSite: FavoriteSite,
         fragmentManager: FragmentManager
     ) {
-        FavoriteSiteRegistrationDialog.createInstance(
-            mode = FavoriteSiteRegistrationDialog.Mode.MODIFY,
-            url = targetSite.url,
-            title = targetSite.title,
-            faviconUrl = targetSite.faviconUrl
-        ).let { dialog ->
+        FavoriteSiteRegistrationDialog.createModificationInstance(targetSite).let { dialog ->
             dialog.setOnModifyListener { site ->
                 val prevList = sites.value ?: emptyList()
                 sites.value = prevList

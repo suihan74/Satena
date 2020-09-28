@@ -17,10 +17,7 @@ import com.suihan74.satena.databinding.DialogFavoriteSiteRegistrationBinding
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.Switcher
-import com.suihan74.utilities.extensions.getEnum
-import com.suihan74.utilities.extensions.putEnum
-import com.suihan74.utilities.extensions.showToast
-import com.suihan74.utilities.extensions.withArguments
+import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,38 +35,33 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
     }
 
     companion object {
-        fun createInstance(
-            mode: Mode,
-            url: String,
-            title: String,
-            faviconUrl: String
+        /** 編集 */
+        fun createModificationInstance(
+            site: FavoriteSite
         ) = FavoriteSiteRegistrationDialog().withArguments {
-            putEnum(ARG_MODE, mode)
-            putString(ARG_URL, url)
-            putString(ARG_TITLE, title)
-            putString(ARG_FAVICON_URL, faviconUrl)
+            putEnum(ARG_MODE, Mode.MODIFY)
+            putObject(ARG_TARGET_SITE, site)
+        }
+
+        /** 追加 */
+        fun createRegistrationInstance(
+            site: FavoriteSite? = null
+        ) = FavoriteSiteRegistrationDialog().withArguments {
+            putEnum(ARG_MODE, Mode.ADD)
+            putObject(ARG_TARGET_SITE, site)
         }
 
         private const val ARG_MODE = "ARG_MODE"
-        private const val ARG_URL = "ARG_URL"
-        private const val ARG_TITLE = "ARG_TITLE"
-        private const val ARG_FAVICON_URL = "ARG_FAVICON_URL"
+        private const val ARG_TARGET_SITE = "ARG_TARGET_SITE"
     }
 
     private val viewModel by lazy {
         val args = requireArguments()
         val mode = args.getEnum<Mode>(ARG_MODE)!!
-        val url = args.getString(ARG_URL)!!
-        val title = args.getString(ARG_TITLE)!!
-        val faviconUrl = args.getString(ARG_FAVICON_URL)!!
+        val site = args.getObject<FavoriteSite>(ARG_TARGET_SITE)
 
         provideViewModel(this) {
-            DialogViewModel(
-                mode,
-                url,
-                title,
-                faviconUrl
-            )
+            DialogViewModel(mode, site)
         }
     }
 
@@ -152,21 +144,19 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
 
     class DialogViewModel(
         val mode: Mode,
-        url: String,
-        title: String,
-        faviconUrl: String
+        val targetSite: FavoriteSite?
     ) : ViewModel() {
 
         val url by lazy {
-            MutableLiveData(url)
+            MutableLiveData(targetSite?.url ?: "")
         }
 
         val title by lazy {
-            MutableLiveData(title)
+            MutableLiveData(targetSite?.title ?: "")
         }
 
         val faviconUrl by lazy {
-            MutableLiveData(faviconUrl)
+            MutableLiveData(targetSite?.faviconUrl ?: "")
         }
 
         val waiting by lazy {

@@ -20,6 +20,7 @@ class PreferencesFavoriteSitesViewModel(
 ) : ViewModel() {
 
     private val DIALOG_MENU by lazy { "DIALOG_MENU" }
+    private val DIALOG_ITEM_REGISTRATION by lazy { "DIALOG_ITEM_REGISTRATION" }
     private val DIALOG_ITEM_MODIFICATION by lazy { "DIALOG_ITEM_MODIFICATION" }
 
     /** お気に入りサイトリスト */
@@ -62,22 +63,37 @@ class PreferencesFavoriteSitesViewModel(
 
     // ------ //
 
+    /** 項目を追加する */
+    fun openItemRegistrationDialog(
+        fragmentManager: FragmentManager
+    ) {
+        FavoriteSiteRegistrationDialog.createRegistrationInstance().let { dialog ->
+            dialog.setOnRegisterListener { site ->
+                val prevList = sites.value ?: emptyList()
+                sites.value = prevList.plus(site)
+            }
+
+            dialog.setDuplicationChecker { site ->
+                sites.value?.none { it.url == site.url } ?: true
+            }
+
+            dialog.showAllowingStateLoss(fragmentManager, DIALOG_ITEM_REGISTRATION)
+        }
+    }
+
     /** 項目を編集する */
     fun openItemModificationDialog(
         targetSite: FavoriteSite,
         fragmentManager: FragmentManager
     ) {
-        FavoriteSiteRegistrationDialog.createInstance(
-            mode = FavoriteSiteRegistrationDialog.Mode.MODIFY,
-            url = targetSite.url,
-            title = targetSite.title,
-            faviconUrl = targetSite.faviconUrl
-        ).let { dialog ->
+        FavoriteSiteRegistrationDialog.createModificationInstance(targetSite).let { dialog ->
             dialog.setOnModifyListener { site ->
                 val prevList = sites.value ?: emptyList()
                 sites.value = prevList
-                    .filterNot { it.url == targetSite.url }
-                    .plus(site)
+                    .map {
+                        if (it.url == targetSite.url) site
+                        else it
+                    }
             }
 
             dialog.setDuplicationChecker { site ->

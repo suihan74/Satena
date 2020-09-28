@@ -77,6 +77,12 @@ class PreferencesFavoriteSitesFragment : Fragment(), ScrollableToTop {
             }
         }
 
+        binding.addButton.also { fab ->
+            fab.setOnClickListener {
+                viewModel.openItemRegistrationDialog(childFragmentManager)
+            }
+        }
+
         return binding.root
     }
 

@@ -8,6 +8,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserFavoritesBinding
+import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
@@ -56,6 +57,20 @@ class FavoriteSitesFragment : Fragment() {
             it.setOnLongLickItemListener { binding ->
                 val site = binding.site ?: return@setOnLongLickItemListener
                 viewModel.openMenuDialog(browserActivity, site, childFragmentManager)
+            }
+        }
+
+        binding.addButton.also { fab ->
+            fab.setOnClickListener {
+                val vm = browserActivity.viewModel
+                val url = vm.url.value ?: ""
+                val site = FavoriteSite(
+                    url = url,
+                    title = vm.title.value ?: url,
+                    faviconUrl = vm.historyRepo.getFaviconUrl(url),
+                    isEnabled = false
+                )
+                viewModel.openItemRegistrationDialog(site, childFragmentManager)
             }
         }
 

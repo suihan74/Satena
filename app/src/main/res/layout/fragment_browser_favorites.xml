@@ -6,8 +6,9 @@
                 type="com.suihan74.satena.scenes.browser.favorites.FavoriteSitesViewModel" />
     </data>
 
-    <RelativeLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -19,5 +20,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
-    </RelativeLayout>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/add_button"
+                android:src="@drawable/ic_baseline_add"
+                app:backgroundTint="@color/colorPrimary"
+                app:fabSize="mini"
+
+                android:layout_marginBottom="14dp"
+                android:layout_marginEnd="24dp"
+                app:layout_anchorGravity="bottom|end"
+                app:layout_anchor="@id/recycler_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
