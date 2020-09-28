@@ -297,7 +297,15 @@
     <!-- お気に入りサイト -->
     <string name="dialog_favorite_sites_open">開く</string>
     <string name="dialog_favorite_sites_open_entries">エントリ一覧を開く</string>
+    <string name="dialog_favorite_sites_modify">編集</string>
     <string name="dialog_favorite_sites_delete">削除</string>
+
+    <string name="dialog_title_favorite_site_registration">お気に入りに追加</string>
+    <string name="dialog_title_favorite_site_modification">お気に入りを編集</string>
+    <string name="dialog_favorite_site_url_desc">URL</string>
+    <string name="dialog_favorite_site_title_desc">タイトル</string>
+    <string name="msg_favorite_site_already_existed">既にお気に入りに登録されています</string>
+    <string name="msg_favorite_site_registration_succeeded">お気に入りに登録しました</string>
 
     <!-- 閲覧履歴 -->
     <string name="dialog_history_open">開く</string>

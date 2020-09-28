@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 /** Enum<T>::classから直接valuesを取得する */
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T : Enum<T>> KClass<T>.getEnumConstants() =
-    Class.forName(T::class.qualifiedName!!).enumConstants as Array<out T>
+    T::class.java.enumConstants as Array<out T>
 
 // --------- //
 
