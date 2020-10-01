@@ -10,13 +10,12 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
-import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
-import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
 import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
@@ -29,11 +28,14 @@ import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.whenTrue
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.activity_browser.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 class BrowserViewModel(
     val browserRepo: BrowserRepository,
+    val bookmarksRepo: BookmarksRepository,
     val favoriteSitesRepo: FavoriteSitesRepository,
     val historyRepo: HistoryRepository,
     initialUrl: String?
@@ -139,13 +141,17 @@ class BrowserViewModel(
     // ------ //
 
     /** 表示中のページのはてなエントリURL */
-    val entryUrl by lazy {
-        MutableLiveData<String>("")
-    }
+    val entryUrl: String
+        get() = bookmarksRepo.url
 
     /** 表示中のページのBookmarksEntry */
     val bookmarksEntry by lazy {
-        MutableLiveData<BookmarksEntry?>(null)
+        bookmarksRepo.bookmarksEntry
+    }
+
+    /** 表示するブクマリスト */
+    val bookmarks by lazy {
+        bookmarksRepo.recentBookmarks
     }
 
     /** 閲覧履歴 */
@@ -154,14 +160,7 @@ class BrowserViewModel(
     }
 
     /** ロード完了前にページ遷移した場合にロード処理を中断する */
-    private var loadBookmarksEntryTask : Deferred<Unit>? = null
-        get() = synchronized(loadBookmarksEntryTaskLock) { field }
-        set(value) {
-            synchronized(loadBookmarksEntryTaskLock) {
-                field = value
-            }
-        }
-    private val loadBookmarksEntryTaskLock = Any()
+    private var loadBookmarksEntryJob : Job? = null
 
     /** ローディング状態を通知する */
     val loadingBookmarksEntry by lazy {
@@ -485,33 +484,29 @@ class BrowserViewModel(
 
     /** BookmarksEntryを更新 */
     fun loadBookmarksEntry(url: String, onFinally: OnFinally? = null) {
-        loadBookmarksEntryTask?.cancel()
-        loadBookmarksEntryTask = viewModelScope.async(Dispatchers.Default) {
-            loadingBookmarksEntry.postValue(true)
+        loadBookmarksEntryJob?.cancel()
 
-            // 渡されたページURLをエントリURLに修正する
-            val modifyResult = kotlin.runCatching {
-                modifySpecificUrls(url)
+        if (URLUtil.isNetworkUrl(url)) {
+            loadingBookmarksEntry.value = true
+            loadBookmarksEntryJob = viewModelScope.launch {
+                bookmarksRepo.launchLoadingUrl(url) {
+                    onFinally?.invoke()
+                    loadBookmarksEntryJob = null
+                    loadingBookmarksEntry.value = false
+                }
             }
-            val modifiedUrl = modifyResult.getOrNull() ?: url
-            entryUrl.postValue(modifiedUrl)
+        }
+    }
 
-            try {
-                bookmarksEntry.postValue(browserRepo.getBookmarksEntry(modifiedUrl))
-            }
-            catch (e: CancellationException) {
-                Log.w("coroutine", "loadBookmarksEntryTask has been canceled")
-            }
-            catch (e: Throwable) {
-                Log.e("loadBookmarksEntry", Log.getStackTraceString(e))
-                bookmarksEntry.postValue(null)
-            }
-            finally {
-                onFinally?.invoke()
-            }
-
-            loadBookmarksEntryTask = null
-            loadingBookmarksEntry.postValue(false)
+    /** 最新ブクマリストを再取得 */
+    fun reloadBookmarks(onFinally: OnFinally? = null) = viewModelScope.launch {
+        loadBookmarksEntryJob?.join()
+        loadBookmarksEntryJob = viewModelScope.launch(Dispatchers.Main) {
+            bookmarksRepo.loadRecentBookmarks(
+                additionalLoading = false
+            )
+            onFinally?.invoke()
+            loadBookmarksEntryJob = null
         }
     }
 

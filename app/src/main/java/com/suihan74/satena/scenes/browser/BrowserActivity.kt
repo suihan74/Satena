@@ -18,6 +18,7 @@ import com.suihan74.satena.databinding.ActivityBrowserBinding
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
 import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.utilities.AccountLoader
@@ -47,11 +48,20 @@ class BrowserActivity : AppCompatActivity() {
         provideViewModel(this) {
             val initialUrl = intent.getStringExtra(EXTRA_URL)
 
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+
             val browserRepo = BrowserRepository(
                 HatenaClient,
                 AccountLoader(this, HatenaClient, MastodonClientHolder),
-                SafeSharedPreferences.create<PreferenceKey>(this),
+                prefs,
                 SafeSharedPreferences.create<BrowserSettingsKey>(this)
+            )
+
+            val bookmarksRepo = BookmarksRepository(
+                HatenaClient,
+                prefs,
+                SatenaApplication.instance.ignoredEntryDao,
+                SatenaApplication.instance.userTagDao
             )
 
             val favoriteSitesRepo = FavoriteSitesRepository(
@@ -62,7 +72,13 @@ class BrowserActivity : AppCompatActivity() {
                 SatenaApplication.instance.browserDao
             )
 
-            BrowserViewModel(browserRepo, favoriteSitesRepo, historyRepo, initialUrl)
+            BrowserViewModel(
+                browserRepo,
+                bookmarksRepo,
+                favoriteSitesRepo,
+                historyRepo,
+                initialUrl
+            )
         }
     }
 

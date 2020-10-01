@@ -17,11 +17,13 @@ import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
+import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.bindings.setIconId
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.getThemeColor
 import kotlinx.android.synthetic.main.fragment_browser_bookmarks.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class BookmarksFragment : Fragment(), ScrollableToTop {
@@ -52,19 +54,33 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             lifecycleOwner = viewLifecycleOwner
         }
 
+        val scrollingUpdater = RecyclerViewScrollingUpdater {
+            lifecycleScope.launch(Dispatchers.Main) {
+                activityViewModel.bookmarksRepo.loadRecentBookmarks(
+                    additionalLoading = true
+                )
+                loadCompleted()
+            }
+        }
+
         val bookmarksAdapter = BookmarksAdapter()
-        binding.recyclerView.adapter = bookmarksAdapter
+
+        binding.recyclerView.let { recyclerView ->
+            recyclerView.adapter = bookmarksAdapter
+            recyclerView.addOnScrollListener(scrollingUpdater)
+        }
 
         activityViewModel.loadingBookmarksEntry.observe(viewLifecycleOwner) {
             if (it == true) {
                 if (!binding.swipeLayout.isRefreshing) {
+                    bookmarksAdapter.submitList(null)
                     binding.swipeLayout.isEnabled = false
                     binding.progressBar.visibility = View.VISIBLE
                 }
             }
         }
 
-        activityViewModel.bookmarksEntry.observe(viewLifecycleOwner) {
+        activityViewModel.bookmarks.observe(viewLifecycleOwner) {
             if (it == null) {
                 bookmarksAdapter.submitList(null)
             }
@@ -72,8 +88,8 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
                 lifecycleScope.launch {
                     bookmarksAdapter.setBookmarks(
                         lifecycleScope,
-                        bookmarks = it.bookmarks.filter { b -> b.comment.isNotBlank() },
-                        bookmarksEntry = it,
+                        bookmarks = it,
+                        bookmarksEntry = activityViewModel.bookmarksEntry.value,
                         taggedUsers = emptyList(),
                         ignoredUsers = emptyList(),
                         displayMutedMention = false,
@@ -93,7 +109,10 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             swipeLayout.setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
             swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
             swipeLayout.setOnRefreshListener {
-                activityViewModel.loadBookmarksEntry(activityViewModel.url.value!!)
+                //activityViewModel.loadBookmarksEntry(activityViewModel.url.value!!)
+                activityViewModel.reloadBookmarks {
+                    swipeLayout.isRefreshing = false
+                }
             }
         }
 

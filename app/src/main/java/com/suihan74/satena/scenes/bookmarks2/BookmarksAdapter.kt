@@ -239,7 +239,7 @@ class BookmarksAdapter(
     fun setBookmarks(
         coroutineScope: CoroutineScope,
         bookmarks: List<Bookmark>,
-        bookmarksEntry: BookmarksEntry,
+        bookmarksEntry: BookmarksEntry?,
         taggedUsers: List<UserAndTags>,
         ignoredUsers: List<String>,
         displayMutedMention: Boolean,
@@ -258,7 +258,7 @@ class BookmarksAdapter(
                         analyzedComment = analyzedComment,
                         isIgnored = ignoredUsers.contains(it.user),
                         mentions = analyzedComment.ids.mapNotNull { called ->
-                            bookmarksEntry.bookmarks.firstOrNull { b -> b.user == called }
+                            bookmarksEntry?.bookmarks?.firstOrNull { b -> b.user == called }
                                 ?.let { mentioned ->
                                     if (!displayMutedMention && ignoredUsers.contains(mentioned.user)) null
                                     else mentioned
