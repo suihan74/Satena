@@ -546,7 +546,7 @@ class BrowserViewModel(
         browserRepo.resourceUrls.addUnique(ResourceUrl(url, false))
 
         // 通常のwebページだけを履歴に追加する
-        if (url.startsWith("http://") || url.startsWith("https://")) {
+        if (privateBrowsingEnabled.value != true && URLUtil.isNetworkUrl(url)) {
             viewModelScope.launch {
                 historyRepo.insertHistory(url, title)
             }
