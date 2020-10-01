@@ -53,6 +53,14 @@ class HistoryRepository(
         updateHistoriesLiveData()
     }
 
+    /** 履歴を削除する */
+    suspend fun deleteHistory(history: History) = withContext(Dispatchers.IO) {
+        dao.deleteHistory(history)
+
+        historiesCache.removeAll { it.url == history.url }
+        updateHistoriesLiveData()
+    }
+
     /** 履歴リストを更新 */
     suspend fun reloadHistories() = withContext(Dispatchers.IO) {
         historiesCache.clear()

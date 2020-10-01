@@ -1,9 +1,6 @@
 package com.suihan74.satena.models.browser
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
 interface BrowserDao {
@@ -29,6 +26,9 @@ interface BrowserDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHistory(history: History)
+
+    @Delete
+    suspend fun deleteHistory(history: History)
 
     @Query("delete from history")
     suspend fun clearHistory()

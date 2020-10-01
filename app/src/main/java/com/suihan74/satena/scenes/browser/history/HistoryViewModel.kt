@@ -12,6 +12,7 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class HistoryViewModel(
@@ -74,9 +75,10 @@ class HistoryViewModel(
             }
 
             setOnDeleteListener { site ->
-                val oldSites = histories.value ?: emptyList()
-                repository.histories.value = oldSites.filterNot { it.url == site.url }
-                activity.showToast(R.string.entry_action_unfavorite)
+                viewModelScope.launch(Dispatchers.Main) {
+                    repository.deleteHistory(site)
+                    activity.showToast(R.string.msg_browser_removed_history)
+                }
             }
 
             showAllowingStateLoss(fragmentManager, DIALOG_MENU)

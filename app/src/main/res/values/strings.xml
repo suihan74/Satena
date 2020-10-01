@@ -466,6 +466,7 @@
 
     <string name="browser_favorite_button_tooltip">お気に入りに追加します</string>
     <string name="browser_unfavorite_button_tooltip">お気に入りから除外します</string>
+    <string name="msg_browser_removed_history">履歴を削除しました</string>
 
     <string name="browser_open_post_bookmark_frame">ブクマエディタを開く</string>
     <string name="browser_close_post_bookmark_frame">ブクマエディタを閉じる</string>
