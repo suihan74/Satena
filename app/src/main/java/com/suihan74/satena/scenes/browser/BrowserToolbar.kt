@@ -82,8 +82,8 @@ class BrowserToolbar @JvmOverloads constructor(
 
                 TooltipCompat.setTooltipText(
                     favButton,
-                    if (it) context?.getString(R.string.browser_favorite_button_tooltip)
-                    else context?.getString(R.string.browser_unfavorite_button_tooltip)
+                    if (it) context?.getString(R.string.browser_unfavorite_button_tooltip)
+                    else context?.getString(R.string.browser_favorite_button_tooltip)
                 )
             }
 
