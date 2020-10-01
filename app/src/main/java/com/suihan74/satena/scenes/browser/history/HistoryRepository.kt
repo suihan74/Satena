@@ -8,6 +8,9 @@ import com.suihan74.utilities.extensions.faviconUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.format.DateTimeFormatter
+import java.util.*
+import kotlin.collections.ArrayList
 
 class HistoryRepository(
     private val dao: BrowserDao
@@ -89,13 +92,20 @@ class HistoryRepository(
 
     /** 表示用の履歴リストを更新する */
     suspend fun updateHistoriesLiveData() = withContext(Dispatchers.IO) {
-        val keyword = keyword.value
+        val locale = Locale.JAPANESE
+        val keyword = keyword.value?.toLowerCase(locale)
         if (keyword.isNullOrBlank()) {
             histories.postValue(historiesCache)
         }
         else {
+            val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu/MM/dd hh:mm")
+            val keywords = keyword.split(Regex("""\s+"""))
             val list = historiesCache.filter {
-                it.title.contains(keyword) || it.url.contains(keyword)
+                keywords.all { k ->
+                    it.title.toLowerCase(locale).contains(k)
+                    || it.url.toLowerCase(locale).contains(k)
+                    || it.lastVisited.format(dateTimeFormatter).contains(k)
+                }
             }
             histories.postValue(list)
         }
