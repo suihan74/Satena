@@ -270,6 +270,8 @@
 
     <string name="pref_browser_start_page_desc">スタートページ</string>
     <string name="pref_browser_start_page_hint">ウェブアドレスを入力</string>
+    <string name="msg_browser_updating_start_page_succeeded">スタートページを更新しました</string>
+    <string name="msg_browser_updating_start_page_failed">不正なURLです</string>
     <string name="pref_browser_private_browsing_enabled_desc">プライベートブラウジング</string>
     <string name="pref_browser_javascript_enabled_desc">JavaScript</string>
     <string name="pref_browser_use_url_blocking_desc">URLブロック</string>

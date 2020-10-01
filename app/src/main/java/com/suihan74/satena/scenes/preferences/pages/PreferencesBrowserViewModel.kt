@@ -1,8 +1,10 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.webkit.CookieManager
+import android.webkit.URLUtil
 import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
@@ -12,6 +14,7 @@ import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
+import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,6 +40,11 @@ class PreferencesBrowserViewModel(
 
     val startPage by lazy {
         browserRepo.startPage
+    }
+
+    /** 編集中のスタートページURL */
+    val startPageEditText by lazy {
+        MutableLiveData<String>("")
     }
 
     val secretModeEnabled by lazy {
@@ -72,6 +80,16 @@ class PreferencesBrowserViewModel(
     }
 
     // ------ //
+
+    /** スタートページURLを登録する */
+    @Throws(InvalidUrlException::class)
+    fun registerStartPageUrl() {
+        val url = startPageEditText.value ?: ""
+        if (!URLUtil.isNetworkUrl(url)) {
+            throw InvalidUrlException(url)
+        }
+        startPage.value = url
+    }
 
     /** WebViewのテーマを指定する */
     @OptIn(ExperimentalStdlibApi::class)

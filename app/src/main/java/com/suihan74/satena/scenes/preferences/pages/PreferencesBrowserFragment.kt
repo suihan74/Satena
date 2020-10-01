@@ -18,7 +18,9 @@ import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.*
+import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.showToast
 
 class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
     companion object {
@@ -55,10 +57,19 @@ class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
             val historyRepo = browserViewModel?.historyRepo ?:
                 HistoryRepository(SatenaApplication.instance.browserDao)
 
-            val isPreferencesActivity = preferencesActivity != null
-
-            PreferencesBrowserViewModel(browserRepo, historyRepo, isPreferencesActivity)
+            PreferencesBrowserViewModel(
+                browserRepo,
+                historyRepo,
+                isPreferencesActivity = preferencesActivity != null)
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // ブラウザ画面から開かれている場合、
+        // 閲覧中のページのアドレスを入力する
+        viewModel.startPageEditText.value = browserViewModel?.url?.value ?: ""
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -75,6 +86,16 @@ class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
         binding.startPageEditText.setOnFocusChangeListener { view, b ->
             if (!b) {
                 requireActivity().hideSoftInputMethod(binding.contentLayout)
+            }
+        }
+
+        binding.registerStartPageButton.setOnClickListener {
+            try {
+                viewModel.registerStartPageUrl()
+                context?.showToast(R.string.msg_browser_updating_start_page_succeeded)
+            }
+            catch (e: InvalidUrlException) {
+                context?.showToast(R.string.msg_browser_updating_start_page_failed)
             }
         }
 

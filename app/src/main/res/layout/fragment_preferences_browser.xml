@@ -53,21 +53,46 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
-            <EditText
-                    android:id="@+id/start_page_edit_text"
-                    style="@style/Widget.AppCompat.EditText"
+            <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-                    android:text="@={vm.startPage}"
-                    android:hint="@string/pref_browser_start_page_hint"
+                <EditText
+                        android:id="@+id/start_page_edit_text"
+                        style="@style/Widget.AppCompat.EditText"
+
+                        android:text="@={vm.startPageEditText}"
+                        android:hint="@string/pref_browser_start_page_hint"
+                        android:textColor="?attr/textColor"
+                        android:textSize="18sp"
+                        android:textColorHint="?attr/textColorHint"
+
+                        android:inputType="text"
+                        android:importantForAutofill="no"
+                        android:singleLine="true"
+                        android:imeOptions="actionDone"
+                        android:selectAllOnFocus="true"
+
+                        android:layout_toLeftOf="@id/register_start_page_button"
+                        android:layout_centerVertical="true"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+
+                <Button
+                        android:id="@+id/register_start_page_button"
+                        style="@style/Widget.AppCompat.Button"
+                        android:text="@string/dialog_register"
+                        android:layout_marginLeft="4dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+            </RelativeLayout>
+
+            <TextView
+                    android:text="@{`現在値:` + vm.startPage}"
                     android:textColor="?attr/textColor"
-                    android:textColorHint="?attr/textColorHint"
-
-                    android:inputType="text"
-                    android:importantForAutofill="no"
-                    android:singleLine="true"
-                    android:imeOptions="actionDone"
-                    android:selectAllOnFocus="true"
-
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
 
