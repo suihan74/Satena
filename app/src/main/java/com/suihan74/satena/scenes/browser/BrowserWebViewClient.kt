@@ -44,12 +44,28 @@ class BrowserWebViewClient(
                     activity.startActivity(intent)
                 }
                 catch (e: Throwable) {
-                    Log.e("error", Log.getStackTraceString(e))
+                    Log.e("WebViewClient", Log.getStackTraceString(e))
                 }
                 false
             }
 
-            else -> false
+            else -> {
+                try {
+                    val intent = Intent(Intent.ACTION_DEFAULT, uri).also {
+                        it.addCategory(Intent.CATEGORY_BROWSABLE)
+                        it.component = null
+                        it.selector?.let { selector ->
+                            selector.addCategory(Intent.CATEGORY_BROWSABLE)
+                            selector.component = null
+                        }
+                    }
+                    activity.startActivity(intent)
+                }
+                catch (e: Throwable) {
+                    Log.e("WebViewClient", Log.getStackTraceString(e))
+                }
+                false
+            }
         }
     }
 
