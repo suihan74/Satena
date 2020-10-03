@@ -6,6 +6,7 @@ import android.net.Uri
 import android.util.Log
 import android.view.*
 import android.webkit.*
+import androidx.annotation.MainThread
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import androidx.webkit.WebSettingsCompat
@@ -511,10 +512,9 @@ class BrowserViewModel(
     }
 
     /** アドレスバーの入力内容に沿ってページ遷移 */
+    @MainThread
     fun goAddress(moveToUrl: String? = null) : Boolean {
-        moveToUrl?.let { addressText.value = moveToUrl }
-
-        val addr = addressText.value
+        val addr = moveToUrl ?: addressText.value
         return when {
             addr.isNullOrBlank() -> false
 

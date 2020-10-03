@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.webkit.WebView
+import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
@@ -190,6 +191,7 @@ class BrowserActivity : AppCompatActivity() {
     }
 
     /** ドロワを開いて設定タブを表示する */
+    @MainThread
     fun showPreferencesFragment() {
         drawer_view_pager.currentItem = DrawerTab.SETTINGS.ordinal
         drawer_layout.openDrawer(drawer_area)
@@ -200,6 +202,7 @@ class BrowserActivity : AppCompatActivity() {
      *
      * BrowserActivityに依存するフラグメント側から閉じるために使用
      */
+    @MainThread
     fun closeDrawer() {
         drawer_layout.closeDrawer(drawer_area)
     }
@@ -209,6 +212,7 @@ class BrowserActivity : AppCompatActivity() {
      *
      * BrowserActivityに依存するフラグメント側からページ遷移するために使用
      */
+    @MainThread
     fun openUrl(url: String) {
         viewModel.goAddress(url)
         closeDrawer()
