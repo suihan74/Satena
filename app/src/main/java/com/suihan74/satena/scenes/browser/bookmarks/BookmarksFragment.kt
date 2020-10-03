@@ -86,12 +86,14 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             }
             else {
                 lifecycleScope.launch {
+                    val repo = activityViewModel.bookmarksRepo
+
                     bookmarksAdapter.setBookmarks(
                         lifecycleScope,
                         bookmarks = it,
                         bookmarksEntry = activityViewModel.bookmarksEntry.value,
-                        taggedUsers = emptyList(),
-                        ignoredUsers = emptyList(),
+                        taggedUsers = repo.userTags,
+                        ignoredUsers = repo.ignoredUsers,
                         displayMutedMention = false,
                         starsEntryGetter = { null }
                     ) {

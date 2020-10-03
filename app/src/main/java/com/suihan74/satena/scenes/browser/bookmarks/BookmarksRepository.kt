@@ -8,6 +8,7 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
+import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.OnFinally
@@ -16,6 +17,8 @@ import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
@@ -78,10 +81,17 @@ class BookmarksRepository(
     // 設定に関するキャッシュ
 
     /** アプリ側で設定した非表示ワード */
-    private var ignoredWords : List<String> = emptyList()
+    var ignoredWords : List<String> = emptyList()
+        private set
 
     /** はてなで設定した非表示ユーザー */
-    private var ignoredUsers : List<String> = emptyList()
+    var ignoredUsers : List<String> = emptyList()
+        private set
+
+    /** ユーザーに対応するユーザータグのキャッシュ */
+    private val userTagsCache = ArrayList<UserAndTags>()
+    val userTags : List<UserAndTags>
+        get() = userTagsCache
 
     /** 「すべて」ブクマリストでは非表示対象を表示する */
     private val showIgnoredUsersInAllBookmarks by lazy {
@@ -204,6 +214,25 @@ class BookmarksRepository(
         ignoredUsers = result.getOrDefault(emptyList())
     }
 
+    /** ユーザータグを取得する */
+    private suspend fun loadUserTags(user: String) : UserAndTags? = withContext(Dispatchers.IO) {
+        userTagsMutex.withLock {
+            val existed = userTagsCache.firstOrNull { it.user.name == user }
+            if (existed != null) {
+                return@withLock existed
+            }
+            else {
+                val tag = userTagDao.getUserAndTags(user)
+                if (tag != null) {
+                    userTagsCache.add(tag)
+                }
+                return@withLock tag
+            }
+        }
+    }
+
+    private val userTagsMutex by lazy { Mutex() }
+
     // ------ //
 
     /** 非表示対象を除外する */
@@ -244,9 +273,12 @@ class BookmarksRepository(
         }
 
         bookmarksDigestCache = digest
-        popularBookmarks.postValue(
-            filterIgnored(digest.scoredBookmarks)
-        )
+        val bookmarks = filterIgnored(digest.scoredBookmarks)
+        bookmarks.forEach {
+            loadUserTags(it.user)
+        }
+
+        popularBookmarks.postValue(bookmarks)
 
         Log.i("bookmarksPopular", "completed")
     }
@@ -296,6 +328,11 @@ class BookmarksRepository(
             }
             .plus(response.bookmarks)
             .sortedByDescending { it.timestamp }
+
+        // ユーザータグを更新
+        response.bookmarks.forEach {
+            loadUserTags(it.user)
+        }
 
         // 各表示用リストに変更を通知する
         val items = filterIgnored(bookmarksRecentCache.filter { b ->
