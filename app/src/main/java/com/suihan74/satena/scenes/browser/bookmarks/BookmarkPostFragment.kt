@@ -116,6 +116,10 @@ class BookmarkPostFragment : Fragment() {
             }
         }
 
+        activityViewModel.bookmarksRepo.loadingEntry.observe(viewLifecycleOwner) {
+            viewModel.nowPosting.value = it
+        }
+
         // WebViewがページ遷移したらエントリ情報をリロードする
         activityViewModel.entry.observe(viewLifecycleOwner) {
             if (it == null) return@observe

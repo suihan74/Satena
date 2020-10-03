@@ -13,6 +13,7 @@ import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.SingleUpdateMutableLiveData
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -39,6 +40,11 @@ class BookmarksRepository(
     /** エントリ情報 */
     val entry by lazy {
         MutableLiveData<Entry?>()
+    }
+
+    /** エントリをロード中かどうか */
+    val loadingEntry by lazy {
+        SingleUpdateMutableLiveData<Boolean>(false)
     }
 
     /** ブクマを含むエントリ情報 */
@@ -107,6 +113,8 @@ class BookmarksRepository(
         url: String,
         onFinally: OnFinally?
     ) = withContext(Dispatchers.Default) {
+        loadingEntry.postValue(true)
+
         val modifyResult = runCatching {
             modifySpecificUrls(url)
         }
@@ -123,6 +131,8 @@ class BookmarksRepository(
             )
             loadingIgnoresTasks.awaitAll()
             loadEntry(modifiedUrl)
+
+            loadingEntry.postValue(false)
 
             val loadingContentsTasks = listOf(
                 async {
@@ -144,6 +154,7 @@ class BookmarksRepository(
             loadingContentsTasks.awaitAll()
         }
         catch (e: Throwable) {
+            loadingEntry.postValue(false)
             Log.e("BookmarksRepo", Log.getStackTraceString(e))
         }
         finally {
