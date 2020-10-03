@@ -7,6 +7,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.suihan74.utilities.extensions.withSafety
 import java.io.ByteArrayInputStream
 
 class BrowserWebViewClient(
@@ -32,15 +33,7 @@ class BrowserWebViewClient(
                     val intentScheme =
                         if (scheme == "intent") Intent.URI_INTENT_SCHEME
                         else Intent.URI_ANDROID_APP_SCHEME
-                    val intent = Intent.parseUri(uri.toString(), intentScheme).also {
-                        // 外部に公開していないアクティビティを開かないようにする加工を行い脆弱性を改善する
-                        it.addCategory(Intent.CATEGORY_BROWSABLE)
-                        it.component = null
-                        it.selector?.let { selector ->
-                            selector.addCategory(Intent.CATEGORY_BROWSABLE)
-                            selector.component = null
-                        }
-                    }
+                    val intent = Intent.parseUri(uri.toString(), intentScheme).withSafety()
                     activity.startActivity(intent)
                 }
                 catch (e: Throwable) {
@@ -51,14 +44,7 @@ class BrowserWebViewClient(
 
             else -> {
                 try {
-                    val intent = Intent(Intent.ACTION_DEFAULT, uri).also {
-                        it.addCategory(Intent.CATEGORY_BROWSABLE)
-                        it.component = null
-                        it.selector?.let { selector ->
-                            selector.addCategory(Intent.CATEGORY_BROWSABLE)
-                            selector.component = null
-                        }
-                    }
+                    val intent = Intent(Intent.ACTION_DEFAULT, uri).withSafety()
                     activity.startActivity(intent)
                 }
                 catch (e: Throwable) {
