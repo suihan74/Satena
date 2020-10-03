@@ -348,6 +348,11 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
 
         // 画面遷移後や復元後にツールバーを強制的に再表示する
         showAppBar()
+
+        // ドロワを配置
+        drawer_area.updateLayoutParams<DrawerLayout.LayoutParams> {
+            gravity = viewModel.drawerGravity
+        }
     }
 
     override fun onRestart() {

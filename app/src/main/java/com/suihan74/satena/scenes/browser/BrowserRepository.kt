@@ -55,6 +55,11 @@ class BrowserRepository(
             p.get<WebViewTheme>(key)
         }
 
+    /** ドロワ位置 */
+    val drawerGravity by lazy {
+        prefs.getInt(PreferenceKey.DRAWER_GRAVITY)
+    }
+
     /** サインイン状態 */
     val signedIn by lazy {
         MutableLiveData(false)

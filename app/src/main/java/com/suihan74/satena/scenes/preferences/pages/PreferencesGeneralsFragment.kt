@@ -2,10 +2,14 @@ package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ToggleButton
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.InverseBindingAdapter
 import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -28,6 +32,21 @@ class PreferencesGeneralsFragment :
 {
     companion object {
         fun createInstance() = PreferencesGeneralsFragment()
+
+        @JvmStatic
+        @InverseBindingAdapter(attribute = "drawerGravity", event="android:checkedAttrChanged")
+        fun inverseSetDrawerGravityToggle(view: ToggleButton) : Int {
+            return if (view.isChecked) Gravity.LEFT else Gravity.RIGHT
+        }
+
+        @JvmStatic
+        @BindingAdapter("drawerGravity")
+        fun setDrawerGravityToggle(view: ToggleButton, gravity: Int) {
+            val new = gravity == Gravity.LEFT
+            if (view.isChecked != new) {
+                view.isChecked = new
+            }
+        }
     }
 
     private val DIALOG_CHECKING_NOTICES_INTERVAL by lazy { "DIALOG_CHECKING_NOTICES_INTERVAL" }

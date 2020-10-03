@@ -89,6 +89,11 @@ class BookmarksRepository(
     val userSignedIn
         get() = client.account?.name
 
+    /** ドロワ位置 */
+    val drawerGravity : Int by lazy {
+        prefs.getInt(PreferenceKey.DRAWER_GRAVITY)
+    }
+
     /** テーマ */
     val themeId: Int by lazy {
         if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppTheme_Dark

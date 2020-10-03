@@ -42,6 +42,10 @@ class BookmarksViewModel(
     var fragmentManager : FragmentManager? = null
         private set
 
+    /** ドロワ位置 */
+    val drawerGravity
+        get() = repository.drawerGravity
+
     val entry
         get() = repository.entry
 

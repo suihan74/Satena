@@ -79,7 +79,6 @@
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:clickable="true"
-                android:layout_gravity="right"
                 android:layout_width="300dp"
                 android:layout_height="match_parent">
 

@@ -14,6 +14,11 @@ class PreferencesGeneralsViewModel(
         PreferenceKey.DARK_THEME
     )
 
+    /** ドロワーの位置 */
+    val drawerGravity = createLiveData<Int>(
+        PreferenceKey.DRAWER_GRAVITY
+    )
+
     /** アプリ内アップデート通知を使用する */
     val appUpdateNoticeMode = createLiveDataEnum(
         PreferenceKey.APP_UPDATE_NOTICE_MODE,

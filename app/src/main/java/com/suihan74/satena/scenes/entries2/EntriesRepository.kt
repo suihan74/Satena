@@ -113,6 +113,10 @@ class EntriesRepository(
 
     val signedInLiveData = SignedInLiveData()
 
+    /** ドロワ位置 */
+    val drawerGravity : Int
+        get() = prefs.getInt(PreferenceKey.DRAWER_GRAVITY)
+
     /** ホームカテゴリ */
     val homeCategory : Category
         get() = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))

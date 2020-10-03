@@ -64,6 +64,11 @@ class BrowserViewModel(
         browserRepo.webViewTheme
     }
 
+    /** ドロワ位置 */
+    val drawerGravity by lazy {
+        browserRepo.drawerGravity
+    }
+
     /** サインイン状態 */
     val signedIn : LiveData<Boolean> by lazy {
         browserRepo.signedIn

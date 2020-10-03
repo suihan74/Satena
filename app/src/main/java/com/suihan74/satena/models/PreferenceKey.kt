@@ -42,6 +42,9 @@ enum class PreferenceKey(
     /** ダークテーマを使用 */
     DARK_THEME(typeInfo<Boolean>(), false),
 
+    /** ドロワーの位置 */
+    DRAWER_GRAVITY(typeInfo<Int>(), Gravity.RIGHT),
+
     /** アプリ内アップデート通知 */
     APP_UPDATE_NOTICE_MODE(typeInfo<Int>(), AppUpdateNoticeMode.FIX.int),
 

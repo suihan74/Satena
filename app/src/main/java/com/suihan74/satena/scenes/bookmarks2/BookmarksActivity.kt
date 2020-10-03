@@ -10,7 +10,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.GravityCompat
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
@@ -180,6 +179,11 @@ class BookmarksActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         appbar_layout.setExpanded(true, false)
+
+        // ドロワを配置
+        entry_information_layout.updateLayoutParams<DrawerLayout.LayoutParams> {
+            gravity = viewModel.drawerGravity
+        }
     }
 
     fun showButtons() {
@@ -348,8 +352,8 @@ class BookmarksActivity : AppCompatActivity() {
 
     /** エントリ情報ドロワを閉じる */
     fun closeDrawer() : Boolean =
-        if (drawer_layout.isDrawerOpen(GravityCompat.END)) {
-            drawer_layout.closeDrawer(GravityCompat.END)
+        if (drawer_layout.isDrawerOpen(entry_information_layout)) {
+            drawer_layout.closeDrawer(entry_information_layout)
             true
         }
         else false

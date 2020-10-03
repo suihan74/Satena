@@ -51,6 +51,10 @@ class EntriesViewModel(
         }
     }
 
+    /** ドロワ位置 */
+    val drawerGravity
+        get() = repository.drawerGravity
+
     /** ホームカテゴリ */
     val homeCategory : Category
         get() = repository.homeCategory

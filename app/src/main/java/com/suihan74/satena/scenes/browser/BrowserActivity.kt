@@ -8,6 +8,7 @@ import android.view.View
 import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.updateLayoutParams
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
@@ -149,6 +150,14 @@ class BrowserActivity : AppCompatActivity() {
                 }
                 webview.reload()
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        drawer_area.updateLayoutParams<DrawerLayout.LayoutParams> {
+            gravity = viewModel.drawerGravity
         }
     }
 
