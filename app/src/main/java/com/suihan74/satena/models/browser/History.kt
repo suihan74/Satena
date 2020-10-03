@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import org.threeten.bp.LocalDateTime
 
 /**
- * ユーザータグ
+ * 内部ブラウザ閲覧履歴
  */
 @Entity(
     tableName = "history",
