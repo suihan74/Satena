@@ -117,18 +117,18 @@ class BookmarkPostFragment : Fragment() {
         }
 
         // WebViewがページ遷移したらエントリ情報をリロードする
-        activityViewModel.bookmarksEntry.observe(viewLifecycleOwner) {
+        activityViewModel.entry.observe(viewLifecycleOwner) {
             if (it == null) return@observe
             val userSignedIn = activityViewModel.browserRepo.userSignedIn
             val userComment =
                 if (userSignedIn == null) null
-                else it.bookmarks.firstOrNull { b -> b.user == userSignedIn }
+                else it.bookmarkedData?.commentRaw
 
-            if (viewModel.comment.value.isNullOrBlank()) {
-                viewModel.comment.value = userComment?.comment ?: ""
-            }
-
-            viewModel.init(it.url, viewModel.comment.value)
+            viewModel.comment.value = userComment ?: ""
+            viewModel.init(
+                entry = it,
+                editingComment = viewModel.comment.value
+            )
         }
 
         // タグリストを初期化

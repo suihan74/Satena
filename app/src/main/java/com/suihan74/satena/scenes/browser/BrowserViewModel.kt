@@ -150,6 +150,11 @@ class BrowserViewModel(
     val entryUrl: String
         get() = bookmarksRepo.url
 
+    /** 表示中のページのEntry */
+    val entry by lazy {
+        bookmarksRepo.entry
+    }
+
     /** 表示中のページのBookmarksEntry */
     val bookmarksEntry by lazy {
         bookmarksRepo.bookmarksEntry
