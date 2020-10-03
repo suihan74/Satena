@@ -1,10 +1,7 @@
 package com.suihan74.satena.scenes.browser
 
 import android.os.Bundle
-import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
@@ -112,8 +109,17 @@ class BrowserActivity : AppCompatActivity() {
         drawer_tab_layout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 // ドロワー内のタブ切り替え操作と干渉するため
-                // 一番左のタブを表示中以外はスワイプで閉じないようにする
-                drawer_layout.setCloseSwipeEnabled(tab?.position == 0, drawer_area)
+                // 一番端のタブを表示中以外はスワイプで閉じないようにする
+                when (viewModel.drawerGravity) {
+                    Gravity.LEFT -> {
+                        drawer_layout.setCloseSwipeEnabled(tab?.position == drawerTabAdapter.count - 1, drawer_area)
+
+                    }
+
+                    Gravity.RIGHT -> {
+                        drawer_layout.setCloseSwipeEnabled(tab?.position == 0, drawer_area)
+                    }
+                }
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
