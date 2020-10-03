@@ -22,9 +22,7 @@ class BrowserWebViewClient(
     /** ページに遷移するか否かを決定する */
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
         val uri = request?.url ?: return false
-        val scheme = uri.scheme
-
-        return when (scheme) {
+        return when (val scheme = uri.scheme) {
             "https", "http" ->
                 super.shouldOverrideUrlLoading(view, request)
 
