@@ -15,6 +15,7 @@ import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.utilities.exceptions.InvalidUrlException
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -139,6 +140,7 @@ class PreferencesBrowserViewModel(
             .setNegativeButton(R.string.dialog_cancel)
             .setPositiveButton(R.string.dialog_ok) {
                 WebView(SatenaApplication.instance).clearCache(true)
+                SatenaApplication.instance.showToast(R.string.msg_browser_removed_all_caches)
             }
             .create()
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_CLEAR_CACHE)
@@ -154,6 +156,7 @@ class PreferencesBrowserViewModel(
                 val instance = CookieManager.getInstance()
                 instance.removeAllCookies(null)
                 instance.flush()
+                SatenaApplication.instance.showToast(R.string.msg_browser_removed_all_cookies)
             }
             .create()
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_CLEAR_COOKIE)
@@ -167,13 +170,12 @@ class PreferencesBrowserViewModel(
             .setNegativeButton(R.string.dialog_cancel)
             .setPositiveButton(R.string.dialog_ok) { dialog ->
                 viewModelScope.launch(Dispatchers.Main) {
-                    kotlin.runCatching {
+                    runCatching {
                         historyRepo.clearHistories()
                     }
-                    dialog.dismiss()
+                    SatenaApplication.instance.showToast(R.string.msg_browser_removed_all_histories)
                 }
             }
-            .dismissOnClickButton(false)
             .create()
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_CLEAR_HISTORY)
     }

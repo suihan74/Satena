@@ -293,6 +293,10 @@
     <string name="pref_browser_clear_history_desc">閲覧履歴を削除する</string>
     <string name="pref_browser_clear_history_dialog_message">閲覧履歴を削除すると過去に閲覧した全てのサイト情報がクリアされます。削除しますか？</string>
 
+    <string name="msg_browser_removed_all_caches">キャッシュを削除しました</string>
+    <string name="msg_browser_removed_all_cookies">クッキーを削除しました</string>
+    <string name="msg_browser_removed_all_histories">全履歴を削除しました</string>
+
     <string name="pref_browser_clear_button">実行</string>
 
     <string name="pref_browser_theme_desc">ウェブサイトのテーマ</string>
