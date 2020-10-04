@@ -7,14 +7,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemBrowserHistoryBinding
 import com.suihan74.satena.models.browser.History
-import com.suihan74.utilities.GeneralAdapter
-import com.suihan74.utilities.RecyclerState
-import com.suihan74.utilities.RecyclerType
-import com.suihan74.utilities.SectionViewHolder
+import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.alsoAs
 import kotlinx.android.synthetic.main.listview_section_history.view.*
 import org.threeten.bp.LocalDate
-import org.threeten.bp.format.DateTimeFormatter
 
 class HistoryAdapter(
     val viewModel: HistoryViewModel,
@@ -24,9 +20,12 @@ class HistoryAdapter(
     R.layout.listview_item_browser_history,
     DiffCallback()
 ) {
-    /** 日付表示のフォーマット */
-    private val dateFormatter : DateTimeFormatter by lazy {
-        DateTimeFormatter.ofPattern("uuuu年MM月dd日")
+    /** 日付指定で履歴を削除する */
+    private var onClearByDate : Listener<LocalDate>? = null
+
+    /** 日付指定で履歴を削除する */
+    fun setOnClearByDateListener(l: Listener<LocalDate>?) {
+        onClearByDate = l
     }
 
     override fun bind(model: History?, binding: ListviewItemBrowserHistoryBinding) {
@@ -85,7 +84,12 @@ class HistoryAdapter(
             RecyclerType.SECTION -> {
                 holder.alsoAs<SectionViewHolder> { vh ->
                     val date = item.extra as? LocalDate
-                    vh.itemView.text_view.text = date?.format(dateFormatter) ?: ""
+                    vh.itemView.text_view?.text = date?.format(viewModel.dateFormatter) ?: ""
+                    vh.itemView.clear_button?.setOnClickListener {
+                        if (date != null) {
+                            onClearByDate?.invoke(date)
+                        }
+                    }
                 }
             }
 

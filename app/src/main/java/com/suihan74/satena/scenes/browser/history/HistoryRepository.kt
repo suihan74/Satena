@@ -7,6 +7,7 @@ import com.suihan74.satena.models.browser.History
 import com.suihan74.utilities.extensions.faviconUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.util.*
@@ -78,6 +79,19 @@ class HistoryRepository(
     suspend fun clearHistories() = withContext(Dispatchers.IO) {
         dao.clearHistory()
         reloadHistories()
+    }
+
+    /** 指定した日付の履歴をすべて削除 */
+    suspend fun clearHistories(date: LocalDate) = withContext(Dispatchers.IO) {
+        val start = date.atTime(0, 0)
+        val end = date.plusDays(1L).atTime(0, 0)
+        dao.deleteHistory(start, end)
+
+        historiesCache.removeAll { h ->
+            h.lastVisited.toLocalDate() == date
+        }
+
+        updateHistoriesLiveData()
     }
 
     /** 履歴リストの続きを取得 */

@@ -7,6 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.models.browser.History
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
@@ -14,12 +16,17 @@ import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDate
+import org.threeten.bp.format.DateTimeFormatter
 
 class HistoryViewModel(
     val repository: HistoryRepository
 ) : ViewModel() {
 
     private val DIALOG_MENU by lazy { "DIALOG_MENU" }
+    private val DIALOG_CLEAR_DATE by lazy { "DIALOG_CLEAR_DATE" }
+
+    // ------ //
 
     /** 閲覧履歴 */
     val histories : LiveData<List<History>> by lazy {
@@ -40,6 +47,11 @@ class HistoryViewModel(
     /** キーワード入力ボックスの表示状態 */
     val keywordEditTextVisible by lazy {
         MutableLiveData<Boolean>(false)
+    }
+
+    /** 日付表示のフォーマット */
+    val dateFormatter : DateTimeFormatter by lazy {
+        DateTimeFormatter.ofPattern("uuuu年MM月dd日")
     }
 
     // ------ //
@@ -83,5 +95,28 @@ class HistoryViewModel(
 
             showAllowingStateLoss(fragmentManager, DIALOG_MENU)
         }
+    }
+
+    /** 日付を指定して履歴を削除する(かを確認してから行う) */
+    fun openClearByDateDialog(date: LocalDate, fragmentManager: FragmentManager) {
+        val context = SatenaApplication.instance
+        val dialog = AlertDialogFragment2.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(context.getString(R.string.msg_browser_clear_history_by_date, date.format(dateFormatter)))
+            .setNegativeButton(R.string.dialog_cancel) { it.dismiss() }
+            .setPositiveButton(R.string.dialog_ok) {
+                viewModelScope.launch(Dispatchers.Main) {
+                    val result = runCatching {
+                        repository.clearHistories(date)
+                    }
+                    if (result.isSuccess) {
+                        context.showToast(R.string.msg_browser_removed_history)
+                    }
+                    it.dismiss()
+                }
+            }
+            .dismissOnClickButton(false)
+            .create()
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_CLEAR_DATE)
     }
 }

@@ -1,6 +1,7 @@
 package com.suihan74.satena.models.browser
 
 import androidx.room.*
+import org.threeten.bp.LocalDateTime
 
 @Dao
 interface BrowserDao {
@@ -29,6 +30,12 @@ interface BrowserDao {
 
     @Delete
     suspend fun deleteHistory(history: History)
+
+    @Query("""
+        delete from history
+        where lastVisited>=:start and lastVisited<:end
+    """)
+    suspend fun deleteHistory(start: LocalDateTime, end: LocalDateTime)
 
     @Query("delete from history")
     suspend fun clearHistory()

@@ -68,15 +68,20 @@ class HistoryFragment : Fragment(), ScrollableToTop {
 
         binding.recyclerView.let { recyclerView ->
             recyclerView.setHasFixedSize(true)
-            recyclerView.adapter = HistoryAdapter(viewModel, viewLifecycleOwner).also {
-                it.setOnClickItemListener { binding ->
+            recyclerView.adapter = HistoryAdapter(viewModel, viewLifecycleOwner).also { adapter ->
+                adapter.setOnClickItemListener { binding ->
                     val site = binding.site ?: return@setOnClickItemListener
                     viewModel.goAddress(site.url, browserActivity)
                 }
 
-                it.setOnLongLickItemListener { binding ->
+                adapter.setOnLongLickItemListener { binding ->
                     val site = binding.site ?: return@setOnLongLickItemListener
                     viewModel.openItemMenuDialog(site, browserActivity, childFragmentManager)
+                }
+
+                // 日付指定で履歴を一括削除する
+                adapter.setOnClearByDateListener { date ->
+                    viewModel.openClearByDateDialog(date, childFragmentManager)
                 }
             }
             // スクロールで続きを取得

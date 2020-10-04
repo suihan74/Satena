@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:background="?attr/dividerColor"
         android:paddingTop="8dp"
         android:paddingBottom="4dp"
         android:paddingHorizontal="10dp"
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -14,7 +14,21 @@
             android:textStyle="bold"
             android:textColor="@color/textColorDark"
             android:textSize="14sp"
+
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@id/clear_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
-</LinearLayout>
+    <ImageButton
+            android:id="@+id/clear_button"
+            app:srcCompat="@drawable/ic_clear_history_by_date"
+            app:tint="?attr/textColor"
+            android:background="?attr/actionBarItemBackground"
+            android:contentDescription="@null"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+</RelativeLayout>
