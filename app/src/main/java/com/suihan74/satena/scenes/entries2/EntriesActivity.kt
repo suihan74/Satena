@@ -530,8 +530,11 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         val menuItems = viewModel.bottomBarItems
             .take(maxButtonsNum)
             .mapNotNull { item ->
-                if (item.requireSignedIn && viewModel.signedIn.value != true) null
-                else item.toMenuItem(bottomAppBar.menu, tint)
+                val result = runCatching {
+                    if (item.requireSignedIn && viewModel.signedIn.value != true) null
+                    else item.toMenuItem(bottomAppBar.menu, tint)
+                }
+                result.getOrNull()
             }
 
         bottomAppBar.setOnMenuItemClickListener { clicked ->
