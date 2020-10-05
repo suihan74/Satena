@@ -44,6 +44,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /** はてなスターの情報取得にログイン情報が必要なリクエストに付加するキー */
     private var mRksForStar : String? = null
 
+    /** rkの値 クッキー情報の"rk=???;"の???部分 */
+    val rkStr : String?
+        get() = mRk?.value
+
     /** 現在ログイン済みのユーザ情報 */
     var account : Account? = null
         get() = synchronized(this) { field }
@@ -117,23 +121,35 @@ object HatenaClient : BaseClient(), CoroutineScope {
     }
 
     /**
-     * クッキーを使って再ログイン
+     * クッキーを使用して再サインイン
      */
-    fun signInAsync(b: HttpCookie, rk: HttpCookie) : Deferred<Account> = async {
+    suspend fun signIn(rk: String) : Account = withContext(Dispatchers.IO) {
         if (signedIn()) {
             signOut()
         }
 
-        val url = "$W_BASE_URL/login"
+        val cookie = HttpCookie.parse("rk=$rk;").first().also {
+            it.domain = ".hatena.ne.jp"
+            it.path = "/"
+        }
+        cookieManager.cookieStore.add(URI(cookie.domain), cookie)
 
-        cookieManager.cookieStore.add(URI(b.domain), b)
-        cookieManager.cookieStore.add(URI(rk.domain), rk)
+        try {
+            mRk = cookie
+            mSignedIn = true
+            account = getAccountAsync().await()
+        }
+        catch (e: Throwable) {
+            mRk = null
+            mSignedIn = false
+            throw SignInFailureException(e)
+        }
 
-        val response =
-            try { get(url) }
-            catch (e: Throwable) { throw SignInFailureException(e) }
+        runCatching {
+            getIgnoredUsersAsync().await()
+        }
 
-        signInImpl(response)
+        return@withContext account!!
     }
 
     private suspend fun signInImpl(response: Response) : Account = response.use {
@@ -143,8 +159,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
             throw SignInFailureException("connection error")
         }
 
-        cookieManager.cookieStore.cookies.firstOrNull { it.name == "rk" }?.let {
-            mRk = it
+        cookieManager.cookieStore.cookies.firstOrNull { it.name == "rk" }?.let { rk ->
+            mRk = rk
         }
 
         try {

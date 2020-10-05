@@ -25,11 +25,14 @@ enum class PreferenceKey(
     /** 端末ごとのユニークID */
     ID(typeInfo<String>(), ""),
 
-    /** はてなのログインID(暗号化) */
+    /** はてなのログインID */
     HATENA_USER_NAME(typeInfo<String>(), ""),
 
-    /** はてなのパスワード(暗号化) */
+    /** はてなのパスワード */
     HATENA_PASSWORD(typeInfo<String>(), ""),
+
+    /** はてなのクッキー */
+    HATENA_RK(typeInfo<String>(), ""),
 
     /** Mastodonのアクセストークン(暗号化) */
     MASTODON_ACCESS_TOKEN(typeInfo<String>(), ""),

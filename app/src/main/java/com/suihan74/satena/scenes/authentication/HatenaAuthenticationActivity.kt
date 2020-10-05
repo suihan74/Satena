@@ -76,7 +76,7 @@ class HatenaAuthenticationActivity : ActivityBase() {
                 applicationContext,
                 HatenaClient,
                 MastodonClientHolder
-            ).saveHatenaAccount(name, password)
+            ).saveHatenaAccount(name, password, HatenaClient.rkStr!!)
             SatenaApplication.instance.startNotificationService()
 
             // 前の画面に戻る

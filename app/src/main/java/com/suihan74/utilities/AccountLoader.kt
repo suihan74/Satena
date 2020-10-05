@@ -38,22 +38,46 @@ class AccountLoader(
         }
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
+        val key = createKey(context)
+
+        // クッキーを使用してログイン状態復元を試行
+        val userRkEncryptedStr = prefs.getString(PreferenceKey.HATENA_RK)
+        if (userRkEncryptedStr?.isNotEmpty() == true) {
+            val userRkEncryptedData = serializer.deserialize(userRkEncryptedStr!!)
+            val rk = CryptUtility.decrypt(userRkEncryptedData, key)
+
+            val result = runCatching {
+                client.signIn(rk)
+            }
+
+            if (result.isFailure) {
+                Log.d("HatenaLoginWithCookie", Log.getStackTraceString(result.exceptionOrNull()))
+            }
+            else {
+                hatenaMutex.unlock()
+                return@async result.getOrNull()
+            }
+        }
+
+        // ID・パスワードを使用して再ログイン
         val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
         val userPasswordEncryptedStr = prefs.getString(PreferenceKey.HATENA_PASSWORD)
-
-        // Hatenaログイン
         if (userNameEncryptedStr?.isNotEmpty() == true && userPasswordEncryptedStr?.isNotEmpty() == true) {
-            val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
             try {
-                val key = createKey(context)
-
                 val userNameEncryptedData = serializer.deserialize(userNameEncryptedStr)
                 val name = CryptUtility.decrypt(userNameEncryptedData, key)
 
                 val passwordEncryptedData = serializer.deserialize(userPasswordEncryptedStr)
                 val password = CryptUtility.decrypt(passwordEncryptedData, key)
 
-                client.signInAsync(name, password).await()
+                val account = client.signInAsync(name, password).await()
+
+                client.rkStr?.let { rk ->
+                    saveHatenaCookie(rk)
+                }
+
+                return@async account
             }
             catch (e: Throwable) {
                 Log.d("HatenaLogin", Log.getStackTraceString(e))
@@ -112,16 +136,29 @@ class AccountLoader(
         }
     }
 
-    fun saveHatenaAccount(name: String, password: String) {
+    fun saveHatenaAccount(name: String, password: String, rk: String) {
         val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
         val key = createKey(context)
+
         val encryptedName = CryptUtility.encrypt(name, key)
         val encryptedPassword = CryptUtility.encrypt(password, key)
+        val encryptedRk = CryptUtility.encrypt(rk, key)
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         prefs.edit {
             putString(PreferenceKey.HATENA_USER_NAME, serializer.serialize(encryptedName))
             putString(PreferenceKey.HATENA_PASSWORD, serializer.serialize(encryptedPassword))
+            putString(PreferenceKey.HATENA_RK, serializer.serialize(encryptedRk))
+        }
+    }
+
+    fun saveHatenaCookie(rk: String) {
+        val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
+        val key = createKey(context)
+        val encryptedRk = CryptUtility.encrypt(rk, key)
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        prefs.edit {
+            putString(PreferenceKey.HATENA_RK, serializer.serialize(encryptedRk))
         }
     }
 
@@ -146,6 +183,7 @@ class AccountLoader(
             prefs.edit {
                 remove(PreferenceKey.HATENA_USER_NAME)
                 remove(PreferenceKey.HATENA_PASSWORD)
+                remove(PreferenceKey.HATENA_RK)
             }
             client.signOut()
         }
