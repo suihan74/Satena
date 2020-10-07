@@ -16,7 +16,7 @@ import org.jsoup.Jsoup
 suspend fun modifySpecificUrls(url: String?) : String? =
     if (url == null) null
     else when (val modifiedTemp = modifySpecificUrlsWithoutConnection(url)) {
-        url -> modifySpecificUrlsForEntry(url) /*modifySpecificUrlsWithConnection(url)*/
+        url -> runCatching { modifySpecificUrlsForEntry(url) /*modifySpecificUrlsWithConnection(url)*/ }.getOrNull()
         else -> modifiedTemp
     }
 
