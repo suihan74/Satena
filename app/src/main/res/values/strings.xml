@@ -322,7 +322,8 @@
 
     <!-- 閲覧履歴 -->
     <string name="dialog_history_open">開く</string>
-    <string name="dialog_history_open_entries">エントリ一覧を開く</string>
+    <string name="dialog_history_open_bookmarks">ブクマ一覧画面を開く</string>
+    <string name="dialog_history_open_entries">このサイトのエントリを探す</string>
     <string name="dialog_history_delete">削除</string>
 
     <!-- 非表示エントリ登録ダイアログ -->

@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.browser.history
 
 import android.content.Intent
+import android.net.Uri
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,6 +11,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.models.browser.History
+import com.suihan74.satena.modifySpecificUrls
+import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.extensions.showToast
@@ -69,21 +72,35 @@ class HistoryViewModel(
     }
 
     /** 項目に対するメニューダイアログを開く */
-    fun openItemMenuDialog(targetSite: History, activity: BrowserActivity, fragmentManager: FragmentManager) {
+    fun openItemMenuDialog(
+        targetSite: History,
+        activity: BrowserActivity,
+        fragmentManager: FragmentManager
+    ) {
         HistoryMenuDialog.createInstance(targetSite).run {
             setOnOpenListener { site ->
                 activity.viewModel.goAddress(site.url)
             }
 
-            setOnOpenEntriesListener { site ->
-                val intent = Intent(activity, EntriesActivity::class.java).apply {
-                    putExtra(EntriesActivity.EXTRA_SITE_URL, site.url)
+            setOnOpenBookmarksListener { site ->
+                val intent = Intent(activity, BookmarksActivity::class.java).apply {
+                    putExtra(BookmarksActivity.EXTRA_ENTRY_URL, site.url)
                 }
                 activity.startActivity(intent)
             }
 
-            setOnFavoriteListener { site ->
-                // TODO
+            setOnOpenEntriesListener { site ->
+                viewModelScope.launch {
+                    val modifiedUrl = modifySpecificUrls(site.url) ?: site.url
+                    val intent = Intent(activity, EntriesActivity::class.java).apply {
+                        val uri = Uri.parse(modifiedUrl)
+                        val domainUrl = runCatching {
+                            uri.scheme + "://" + uri.authority + "/"
+                        }.getOrDefault(modifiedUrl)
+                        putExtra(EntriesActivity.EXTRA_SITE_URL, domainUrl)
+                    }
+                    activity.startActivity(intent)
+                }
             }
 
             setOnDeleteListener { site ->

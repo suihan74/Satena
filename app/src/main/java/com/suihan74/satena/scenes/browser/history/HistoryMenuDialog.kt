@@ -65,12 +65,12 @@ class HistoryMenuDialog : DialogFragment() {
         viewModel.onOpen = listener
     }
 
-    fun setOnOpenEntriesListener(listener: Listener<History>?) = lifecycleScope.launchWhenCreated {
-        viewModel.onOpenEntries = listener
+    fun setOnOpenBookmarksListener(listener: Listener<History>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onOpenBookmarks = listener
     }
 
-    fun setOnFavoriteListener(listener: Listener<History>?) = lifecycleScope.launchWhenCreated {
-        viewModel.onFavorite = listener
+    fun setOnOpenEntriesListener(listener: Listener<History>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onOpenEntries = listener
     }
 
     fun setOnDeleteListener(listener: Listener<History>?) = lifecycleScope.launchWhenCreated {
@@ -84,8 +84,9 @@ class HistoryMenuDialog : DialogFragment() {
         val targetSite: History
     ) : ViewModel() {
         /** メニュー項目と対応するイベント */
-        val menuItems = listOf(
+        private val menuItems = listOf(
             R.string.dialog_history_open to { onOpen?.invoke(targetSite) },
+            R.string.dialog_history_open_bookmarks to { onOpenBookmarks?.invoke(targetSite) },
             R.string.dialog_history_open_entries to { onOpenEntries?.invoke(targetSite) },
             R.string.dialog_history_delete to { onDelete?.invoke(targetSite) }
         )
@@ -96,11 +97,11 @@ class HistoryMenuDialog : DialogFragment() {
         /** 対象アイテムを内部ブラウザで開く */
         var onOpen : Listener<History>? = null
 
+        /** ブクマ一覧画面を開く */
+        var onOpenBookmarks : Listener<History>? = null
+
         /** 対象サイトのエントリ一覧を開く */
         var onOpenEntries : Listener<History>? = null
-
-        /** お気に入りに追加 */
-        var onFavorite : Listener<History>? = null
 
         /** 対象アイテムを削除 */
         var onDelete : Listener<History>? = null
