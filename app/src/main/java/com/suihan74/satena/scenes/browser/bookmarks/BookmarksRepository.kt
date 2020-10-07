@@ -11,10 +11,7 @@ import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.OnFinally
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.SingleUpdateMutableLiveData
+import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -115,6 +112,17 @@ class BookmarksRepository(
     /** 「すべて」ブクマリストでは非表示対象を表示する */
     private val showIgnoredUsersInAllBookmarks by lazy {
         prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS)
+    }
+
+    // ------ //
+
+    /** ブクマ投稿後に呼ばれるイベント */
+    var afterPosted : Listener<BookmarkResult>? = null
+        private set
+
+    /** ブクマ投稿後に呼ばれるイベントをセットする */
+    fun setAfterPostedListener(l: Listener<BookmarkResult>?) {
+        afterPosted = l
     }
 
     // ------ //
@@ -284,6 +292,78 @@ class BookmarksRepository(
             .map { Bookmark.create(it) }
     }
 
+    /** 各種リストに変更を通知する */
+    @WorkerThread
+    private fun updateRecentBookmarksLiveData(rawList: List<BookmarkWithStarCount>) {
+        // 各表示用リストに変更を通知する
+        val items = filterIgnored(rawList.filter { b ->
+            b.comment.isNotBlank()
+        })
+
+        recentBookmarks.postValue(items)
+        allBookmarks.postValue(
+            if (showIgnoredUsersInAllBookmarks) rawList.map { Bookmark.create(it) }
+            else filterIgnored(rawList)
+        )
+        // TODO: カスタムタブ
+        customBookmarks.postValue(
+            emptyList()
+        )
+    }
+
+    /** 同じユーザーのブクマを渡された内容に更新する */
+    suspend fun updateBookmark(result: BookmarkResult) = withContext(Dispatchers.IO) {
+        entry.postValue(
+            entry.value?.copy(bookmarkedData = result)
+        )
+        val bookmark = BookmarkWithStarCount(
+            BookmarkWithStarCount.User(result.user, result.userIconUrl),
+            comment = result.comment,
+            isPrivate = result.private ?: false,
+            link = result.permalink,
+            tags = result.tags,
+            timestamp = result.timestamp,
+            starCount = result.starsCount?.map {
+                StarCount(it.color, it.count)
+            } ?: emptyList()
+        )
+        updateBookmark(bookmark)
+    }
+
+    /** 同じユーザーのブクマを渡された内容に更新する */
+    suspend fun updateBookmark(bookmark: BookmarkWithStarCount) = withContext(Dispatchers.IO) {
+        val user = bookmark.user
+
+        val bEntry = bookmarksEntry.value?.let { e ->
+            e.copy(bookmarks =
+                e.bookmarks.map {
+                    if (it.user == user) Bookmark.create(bookmark) else it
+                }
+            )
+        }
+        bookmarksEntry.postValue(bEntry)
+
+        bookmarksDigestCache = BookmarksDigest(
+            bookmarksDigestCache?.referredBlogEntries,
+            bookmarksDigestCache?.scoredBookmarks?.map {
+                if (it.user == user) bookmark else it
+            } ?: emptyList(),
+            bookmarksDigestCache?.favoriteBookmarks?.map {
+                if (it.user == user) bookmark else it
+            } ?: emptyList()
+        )
+        val bookmarks = filterIgnored(bookmarksDigestCache!!.scoredBookmarks)
+        bookmarks.forEach {
+            loadUserTags(it.user)
+        }
+        popularBookmarks.postValue(bookmarks)
+
+        bookmarksRecentCache = bookmarksRecentCache.map {
+            if (it.user == user) bookmark else it
+        }
+        updateRecentBookmarksLiveData(bookmarksRecentCache)
+    }
+
     /** 人気ブクマリストを取得する */
     @Throws(
         InvalidUrlException::class,
@@ -369,19 +449,7 @@ class BookmarksRepository(
         }
 
         // 各表示用リストに変更を通知する
-        val items = filterIgnored(bookmarksRecentCache.filter { b ->
-            b.comment.isNotBlank()
-        })
-
-        recentBookmarks.postValue(items)
-        allBookmarks.postValue(
-            if (showIgnoredUsersInAllBookmarks) bookmarksRecentCache.map { Bookmark.create(it) }
-            else filterIgnored(bookmarksRecentCache)
-        )
-        // TODO: カスタムタブ
-        customBookmarks.postValue(
-            emptyList()
-        )
+        updateRecentBookmarksLiveData(bookmarksRecentCache)
 
         Log.i("bookmarksRecent", "completed")
     }

@@ -12,6 +12,7 @@ import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.suihan74.satena.R
@@ -142,6 +143,16 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             viewLifecycleOwner,
             false
         ) {
+            switchPostLayout(binding, false)
+        }
+
+        // 投稿完了後にリストを更新して投稿エリアを閉じる
+        viewModel.repository.setAfterPostedListener { bookmarkResult ->
+            viewModel.reloadBookmarks {
+                viewModel.viewModelScope.launch {
+                    viewModel.repository.updateBookmark(bookmarkResult)
+                }
+            }
             switchPostLayout(binding, false)
         }
 

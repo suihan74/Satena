@@ -33,7 +33,7 @@ class BookmarkPostFragment : Fragment() {
         const val VIEW_MODEL_BOOKMARK_POST = "VIEW_MODEL_BOOKMARK_POST"
     }
 
-    private val browserActivity
+    private val browserActivity : BrowserActivity
         get() = requireActivity() as BrowserActivity
 
     private val activityViewModel : BrowserViewModel
@@ -137,6 +137,13 @@ class BookmarkPostFragment : Fragment() {
             )
         }
 
+        bookmarksRepo.bookmarksEntry.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
+            val userSignedIn = bookmarksRepo.userSignedIn
+            val bookmark = it.bookmarks.firstOrNull { b -> b.user == userSignedIn }
+            viewModel.comment.value = bookmark?.comment ?: ""
+        }
+
         // タグリストを初期化
         setupTagsList(binding)
 
@@ -148,7 +155,8 @@ class BookmarkPostFragment : Fragment() {
         browserActivity.hideSoftInputMethod()
         viewModel.postBookmark(
             childFragmentManager,
-            onSuccess = {
+            onSuccess = { bookmarkResult ->
+                activityViewModel.bookmarksRepo.afterPosted?.invoke(bookmarkResult)
                 activity?.showToast(R.string.msg_post_bookmark_succeeded)
             },
             onError = { e ->

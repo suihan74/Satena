@@ -2,8 +2,6 @@ package com.suihan74.satena.scenes.browser.bookmarks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.suihan74.hatenaLib.BookmarkResult
-import com.suihan74.utilities.Listener
 import com.suihan74.utilities.OnFinally
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,22 +32,14 @@ class BookmarksViewModel(
 
     // ------ //
 
-    /** ブクマ投稿後に呼ばれるイベント */
-    private var afterPostedListener : Listener<BookmarkResult>? = null
-
-    /** ブクマ投稿後に呼ばれるイベントをセットする */
-    fun setAfterPostedListener(l: Listener<BookmarkResult>?) {
-        afterPostedListener = l
-    }
-
-    // ------ //
-
     /** 最新ブクマリストを再取得 */
     fun reloadBookmarks(onFinally: OnFinally? = null) = viewModelScope.launch {
         viewModelScope.launch(Dispatchers.Main) {
-            repository.loadRecentBookmarks(
-                additionalLoading = false
-            )
+            runCatching {
+                repository.loadRecentBookmarks(
+                    additionalLoading = false
+                )
+            }
             onFinally?.invoke()
         }
     }
