@@ -5,6 +5,8 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
@@ -38,6 +40,8 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
 
     private val activityViewModel : BrowserViewModel
         get() = browserActivity.viewModel
+
+    private var onBackPressedCallback: OnBackPressedCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -127,6 +131,14 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             switchPostLayout(binding, opened)
         }
 
+        // 戻るボタンで投稿エリアを隠す
+        onBackPressedCallback = activity?.onBackPressedDispatcher?.addCallback(
+            viewLifecycleOwner,
+            false
+        ) {
+            switchPostLayout(binding, false)
+        }
+
         // 投稿エリアを作成
         val bookmarkPostFragment = BookmarkPostFragment.createInstance()
         childFragmentManager.beginTransaction()
@@ -138,6 +150,9 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
 
     /** 投稿エリアの表示状態を切り替える */
     private fun switchPostLayout(binding: FragmentBrowserBookmarksBinding, opened: Boolean) {
+        // 戻るボタンの割り込みを再設定する
+        onBackPressedCallback?.isEnabled = opened
+
         binding.openPostAreaButton.setIconId(
             if (opened) R.drawable.ic_baseline_close
             else R.drawable.ic_add_comment

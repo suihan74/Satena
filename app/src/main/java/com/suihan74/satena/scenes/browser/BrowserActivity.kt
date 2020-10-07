@@ -1,7 +1,10 @@
 package com.suihan74.satena.scenes.browser
 
 import android.os.Bundle
-import android.view.*
+import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
@@ -159,29 +162,29 @@ class BrowserActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        if (onBackPressedDispatcher.hasEnabledCallbacks()) {
+            onBackPressedDispatcher.onBackPressed()
+        }
+        else {
+            when {
+                drawer_layout.isDrawerOpen(drawer_area) -> {
+                    drawer_layout.closeDrawer(drawer_area)
+                }
+
+                webview.canGoBack() -> webview.goBack()
+
+                else -> super.onBackPressed()
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
 
         drawer_area.updateLayoutParams<DrawerLayout.LayoutParams> {
             gravity = viewModel.drawerGravity
         }
-    }
-
-    /** 「戻る」ボタンでブラウザの履歴を戻る */
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean = when {
-        keyCode != KeyEvent.KEYCODE_BACK -> super.onKeyDown(keyCode, event)
-
-        drawer_layout.isDrawerOpen(drawer_area) -> {
-            drawer_layout.closeDrawer(drawer_area)
-            true
-        }
-
-        webview.canGoBack() -> {
-            webview.goBack()
-            true
-        }
-
-        else -> super.onKeyDown(keyCode, event)
     }
 
     override fun finish() {
