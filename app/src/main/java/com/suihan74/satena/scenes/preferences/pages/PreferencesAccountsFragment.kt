@@ -40,9 +40,11 @@ class PreferencesAccountsFragment : PreferencesFragmentBase() {
     override fun onResume() {
         super.onResume()
 
+        // TODO: サインイン状態でもアカウントが取得されない場合がある
+
         view?.preferences_accounts_hatena_name?.apply {
             if (HatenaClient.signedIn()) {
-                text = HatenaClient.account!!.name
+                text = HatenaClient.account?.name ?: ""
                 visibility = View.VISIBLE
             }
             else {
@@ -52,11 +54,11 @@ class PreferencesAccountsFragment : PreferencesFragmentBase() {
 
         view?.preferences_accounts_mastodon_name?.apply {
             if (MastodonClientHolder.signedIn()) {
-                text = String.format(
-                    "%s@%s",
-                    MastodonClientHolder.account!!.userName,
-                    MastodonClientHolder.client!!.getInstanceName()
-                )
+                val userName = MastodonClientHolder.account?.userName
+                val instanceName = MastodonClientHolder.client?.getInstanceName()
+                if (userName != null && instanceName != null) {
+                    text = String.format("%s@%s", userName, instanceName)
+                }
                 visibility = View.VISIBLE
             }
             else {
