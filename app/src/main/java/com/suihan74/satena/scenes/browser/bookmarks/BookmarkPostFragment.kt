@@ -116,14 +116,16 @@ class BookmarkPostFragment : Fragment() {
             }
         }
 
-        activityViewModel.bookmarksRepo.loadingEntry.observe(viewLifecycleOwner) {
+        val bookmarksRepo = activityViewModel.bookmarksRepo
+
+        bookmarksRepo.loadingEntry.observe(viewLifecycleOwner) {
             viewModel.nowPosting.value = it
         }
 
         // WebViewがページ遷移したらエントリ情報をリロードする
-        activityViewModel.entry.observe(viewLifecycleOwner) {
+        bookmarksRepo.entry.observe(viewLifecycleOwner) {
             if (it == null) return@observe
-            val userSignedIn = activityViewModel.browserRepo.userSignedIn
+            val userSignedIn = bookmarksRepo.userSignedIn
             val userComment =
                 if (userSignedIn == null) null
                 else it.bookmarkedData?.commentRaw

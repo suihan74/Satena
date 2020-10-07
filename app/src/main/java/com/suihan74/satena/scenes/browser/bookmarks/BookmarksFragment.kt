@@ -24,6 +24,7 @@ import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.bindings.setIconId
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.fragment_browser_bookmarks.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,6 +42,12 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
     private val activityViewModel : BrowserViewModel
         get() = browserActivity.viewModel
 
+    private val viewModel by lazy {
+        provideViewModel(this) {
+            BookmarksViewModel(activityViewModel.bookmarksRepo)
+        }
+    }
+
     private var onBackPressedCallback: OnBackPressedCallback? = null
 
     override fun onCreateView(
@@ -54,7 +61,7 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             container,
             false
         ).apply {
-            browserViewModel = activityViewModel
+            vm = viewModel
             lifecycleOwner = viewLifecycleOwner
         }
 
@@ -84,18 +91,18 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             }
         }
 
-        activityViewModel.bookmarks.observe(viewLifecycleOwner) {
+        viewModel.bookmarks.observe(viewLifecycleOwner) {
             if (it == null) {
                 bookmarksAdapter.submitList(null)
             }
             else {
                 lifecycleScope.launch {
-                    val repo = activityViewModel.bookmarksRepo
+                    val repo = viewModel.repository
 
                     bookmarksAdapter.setBookmarks(
                         lifecycleScope,
                         bookmarks = it,
-                        bookmarksEntry = activityViewModel.bookmarksEntry.value,
+                        bookmarksEntry = viewModel.bookmarksEntry.value,
                         taggedUsers = repo.userTags,
                         ignoredUsers = repo.ignoredUsers,
                         displayMutedMention = false,
@@ -115,8 +122,7 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             swipeLayout.setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
             swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
             swipeLayout.setOnRefreshListener {
-                //activityViewModel.loadBookmarksEntry(activityViewModel.url.value!!)
-                activityViewModel.reloadBookmarks {
+                viewModel.reloadBookmarks {
                     swipeLayout.isRefreshing = false
                 }
             }

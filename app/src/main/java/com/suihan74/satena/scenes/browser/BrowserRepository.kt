@@ -2,21 +2,16 @@ package com.suihan74.satena.scenes.browser
 
 import androidx.lifecycle.MutableLiveData
 import androidx.webkit.WebViewFeature
-import com.suihan74.hatenaLib.BookmarksEntry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.R
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class BrowserRepository(
     private val client: HatenaClient,
-    private val accountLoader: AccountLoader,
     private val prefs: SafeSharedPreferences<PreferenceKey>,
     private val browserSettings: SafeSharedPreferences<BrowserSettingsKey>
 ) {
@@ -59,15 +54,6 @@ class BrowserRepository(
     val drawerGravity by lazy {
         prefs.getInt(PreferenceKey.DRAWER_GRAVITY)
     }
-
-    /** サインイン状態 */
-    val signedIn by lazy {
-        MutableLiveData(false)
-    }
-
-    /** サインインしているユーザー名 */
-    val userSignedIn : String?
-        get() = client.account?.name
 
     /** スタートページ */
     val startPage =
@@ -149,19 +135,6 @@ class BrowserRepository(
         get() = WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)
 
     // ------ //
-
-    /** 初期化処理 */
-    suspend fun initialize() = withContext(Dispatchers.Default) {
-        runCatching {
-            accountLoader.signInAccounts(reSignIn = false)
-        }
-        signedIn.postValue(client.signedIn())
-    }
-
-    /** BookmarksEntryを取得 */
-    suspend fun getBookmarksEntry(url: String) : BookmarksEntry {
-        return client.getBookmarksEntryAsync(url).await()
-    }
 
     /** キーワードを取得 */
     suspend fun getKeyword(word: String) : List<Keyword> {

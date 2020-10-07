@@ -43,7 +43,7 @@ class BrowserViewModel(
 ) : ViewModel() {
     init {
         viewModelScope.launch {
-            browserRepo.initialize()
+            bookmarksRepo.initialize()
             historyRepo.initialize()
         }
     }
@@ -69,18 +69,13 @@ class BrowserViewModel(
         browserRepo.drawerGravity
     }
 
-    /** サインイン状態 */
-    val signedIn : LiveData<Boolean> by lazy {
-        browserRepo.signedIn
-    }
-
     /** 表示中のページURL */
     val url by lazy {
         val startPage = initialUrl ?: browserRepo.startPage.value!!
         SingleUpdateMutableLiveData(startPage).apply {
             observeForever {
                 addressText.value = Uri.decode(it)
-                bookmarksEntry.value = null
+                bookmarksRepo.bookmarksEntry.value = null
                 isUrlFavorite.value = checkUrlFavorite(it)
                 loadBookmarksEntry(it)
             }
@@ -145,30 +140,6 @@ class BrowserViewModel(
     }
 
     // ------ //
-
-    /** 表示中のページのはてなエントリURL */
-    val entryUrl: String
-        get() = bookmarksRepo.url
-
-    /** 表示中のページのEntry */
-    val entry by lazy {
-        bookmarksRepo.entry
-    }
-
-    /** 表示中のページのBookmarksEntry */
-    val bookmarksEntry by lazy {
-        bookmarksRepo.bookmarksEntry
-    }
-
-    /** 表示するブクマリスト */
-    val bookmarks by lazy {
-        bookmarksRepo.recentBookmarks
-    }
-
-    /** 閲覧履歴 */
-    val histories by lazy {
-        historyRepo.histories
-    }
 
     /** ロード完了前にページ遷移した場合にロード処理を中断する */
     private var loadBookmarksEntryJob : Job? = null
@@ -468,7 +439,7 @@ class BrowserViewModel(
     /** ブクマ一覧画面を開く */
     private fun openBookmarksActivity(url: String, activity: BrowserActivity) {
         val intent = Intent(activity, BookmarksActivity::class.java).also {
-            val bEntry = bookmarksEntry.value
+            val bEntry = bookmarksRepo.bookmarksEntry.value
             val eid = bEntry?.id ?: 0L
 
             if (url == this.url.value && eid > 0L) {
@@ -506,18 +477,6 @@ class BrowserViewModel(
                     loadingBookmarksEntry.value = false
                 }
             }
-        }
-    }
-
-    /** 最新ブクマリストを再取得 */
-    fun reloadBookmarks(onFinally: OnFinally? = null) = viewModelScope.launch {
-        loadBookmarksEntryJob?.join()
-        loadBookmarksEntryJob = viewModelScope.launch(Dispatchers.Main) {
-            bookmarksRepo.loadRecentBookmarks(
-                additionalLoading = false
-            )
-            onFinally?.invoke()
-            loadBookmarksEntryJob = null
         }
     }
 

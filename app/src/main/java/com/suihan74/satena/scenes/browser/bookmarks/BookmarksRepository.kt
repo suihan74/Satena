@@ -11,6 +11,7 @@ import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
+import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SingleUpdateMutableLiveData
@@ -28,11 +29,23 @@ import kotlinx.coroutines.withContext
  * TODO: v1.6で.bookmarkと統合することを前提に開発すること
  */
 class BookmarksRepository(
-    val client : HatenaClient,
-    val prefs : SafeSharedPreferences<PreferenceKey>,
-    val ignoredEntryDao : IgnoredEntryDao,
-    val userTagDao: UserTagDao
+    private val client : HatenaClient,
+    private val accountLoader: AccountLoader,
+    private val prefs : SafeSharedPreferences<PreferenceKey>,
+    private val ignoredEntryDao : IgnoredEntryDao,
+    private val userTagDao: UserTagDao
 ) {
+    /** サインイン状態 */
+    val signedIn by lazy {
+        MutableLiveData(false)
+    }
+
+    /** サインインしているユーザー名 */
+    val userSignedIn : String?
+        get() = client.account?.name
+
+    // ------ //
+
     // エントリ情報
     var url: String = ""
         private set
@@ -102,6 +115,16 @@ class BookmarksRepository(
     /** 「すべて」ブクマリストでは非表示対象を表示する */
     private val showIgnoredUsersInAllBookmarks by lazy {
         prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS)
+    }
+
+    // ------ //
+
+    /** サインイン処理 */
+    suspend fun initialize() = withContext(Dispatchers.Default) {
+        runCatching {
+            accountLoader.signInAccounts(reSignIn = false)
+        }
+        signedIn.postValue(client.signedIn())
     }
 
     // ------ //

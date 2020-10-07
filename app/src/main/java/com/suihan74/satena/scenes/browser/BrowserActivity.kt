@@ -54,13 +54,13 @@ class BrowserActivity : AppCompatActivity() {
 
             val browserRepo = BrowserRepository(
                 HatenaClient,
-                AccountLoader(this, HatenaClient, MastodonClientHolder),
                 prefs,
                 SafeSharedPreferences.create<BrowserSettingsKey>(this)
             )
 
             val bookmarksRepo = BookmarksRepository(
                 HatenaClient,
+                AccountLoader(this, HatenaClient, MastodonClientHolder),
                 prefs,
                 SatenaApplication.instance.ignoredEntryDao,
                 SatenaApplication.instance.userTagDao

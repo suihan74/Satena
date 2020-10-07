@@ -17,10 +17,12 @@ import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.utilities.*
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.provideViewModel
 
 class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
     companion object {
@@ -45,11 +47,6 @@ class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
             val browserRepo = browserViewModel?.browserRepo ?:
                 BrowserRepository(
                     HatenaClient,
-                    AccountLoader(
-                        context,
-                        HatenaClient,
-                        MastodonClientHolder
-                    ),
                     SafeSharedPreferences.create<PreferenceKey>(context),
                     SafeSharedPreferences.create<BrowserSettingsKey>(context)
                 )
