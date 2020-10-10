@@ -34,7 +34,7 @@ class BookmarksRepository(
 ) {
     /** サインイン状態 */
     val signedIn by lazy {
-        MutableLiveData(false)
+        SingleUpdateMutableLiveData(false)
     }
 
     /** サインインしているユーザー名 */
@@ -63,25 +63,23 @@ class BookmarksRepository(
     }
 
     // 各タブでの表示用のブクマリスト
+
+    private val lazyBookmarksList
+        get() = lazy {
+            MutableLiveData<List<Bookmark>>()
+        }
+
     /** 人気ブクマ */
-    val popularBookmarks by lazy {
-        MutableLiveData<List<Bookmark>>()
-    }
+    val popularBookmarks by lazyBookmarksList
 
     /** 新着ブクマ */
-    val recentBookmarks by lazy {
-        MutableLiveData<List<Bookmark>>()
-    }
+    val recentBookmarks by lazyBookmarksList
 
     /** 全ブクマ */
-    val allBookmarks by lazy {
-        MutableLiveData<List<Bookmark>>()
-    }
+    val allBookmarks by lazyBookmarksList
 
     /** カスタム */
-    val customBookmarks by lazy {
-        MutableLiveData<List<Bookmark>>()
-    }
+    val customBookmarks by lazyBookmarksList
 
     // 取得したブクマデータのキャッシュ
 
@@ -308,14 +306,16 @@ class BookmarksRepository(
     /** 各種リストに変更を通知する */
     @WorkerThread
     private fun updateRecentBookmarksLiveData(rawList: List<BookmarkWithStarCount>) {
-        // 各表示用リストに変更を通知する
+
         val items = filterIgnored(rawList.filter { b ->
             b.comment.isNotBlank()
         })
-
         recentBookmarks.postValue(items)
+
         allBookmarks.postValue(
-            if (showIgnoredUsersInAllBookmarks) rawList.map { Bookmark.create(it) }
+            if (showIgnoredUsersInAllBookmarks) {
+                rawList.map { Bookmark.create(it) }
+            }
             else filterIgnored(rawList)
         )
         // TODO: カスタムタブ
@@ -406,8 +406,6 @@ class BookmarksRepository(
         }
 
         popularBookmarks.postValue(bookmarks)
-
-        Log.i("bookmarksPopular", "completed")
     }
 
     /** 新着ブクマリストを取得する */
@@ -463,12 +461,10 @@ class BookmarksRepository(
 
         // 各表示用リストに変更を通知する
         updateRecentBookmarksLiveData(bookmarksRecentCache)
-
-        Log.i("bookmarksRecent", "completed")
     }
 
     /** 最新のブクマリストを(取得済みの位置まで)取得する */
-    @Throws(TimeoutException::class)
+    @Throws(TimeoutException::class, NotFoundException::class)
     private suspend fun loadMostRecentBookmarks(url: String) : BookmarksWithCursor {
         val bookmarks = ArrayList<BookmarkWithStarCount>()
         var cursor: String? = null
@@ -500,8 +496,6 @@ class BookmarksRepository(
                 } ?: true
 
         } while (!shouldBreak)
-
-        Log.i("bookmarksMostRecent", "completed")
 
         return BookmarksWithCursor(
             bookmarks = bookmarks,
