@@ -165,9 +165,17 @@ class BrowserViewModel(
         wv.webViewClient = BrowserWebViewClient(activity, this)
         wv.webChromeClient = WebChromeClient()
 
+        // DOMストレージ使用
         wv.settings.domStorageEnabled = true
+        // ページサイズの調整
         wv.settings.useWideViewPort = true
         wv.settings.loadWithOverviewMode = true
+        // ズーム
+        wv.settings.setSupportZoom(true)
+        wv.settings.builtInZoomControls = true
+        wv.settings.displayZoomControls = false  // ズームボタンを表示しない
+        wv.setInitialScale(100)
+        // プライベートブラウジング使用時の設定
         setPrivateBrowsing(wv, privateBrowsingEnabled.value ?: false)
 
         CookieManager.getInstance().acceptThirdPartyCookies(wv)
