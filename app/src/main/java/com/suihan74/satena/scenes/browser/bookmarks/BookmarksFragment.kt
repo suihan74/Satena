@@ -85,6 +85,10 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
                 )
             }
 
+            adapter.setOnLinkClickedListener { url ->
+                browserActivity.openUrl(url)
+            }
+
             adapter.setAddStarButtonBinder { button, bookmark ->
                 button.setOnClickListener {
                     val popup = AddStarPopupMenu(requireContext()).also { popup ->
