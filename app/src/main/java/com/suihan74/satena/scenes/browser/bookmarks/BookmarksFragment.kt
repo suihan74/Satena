@@ -17,6 +17,7 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
+import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
@@ -75,7 +76,27 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             }
         }
 
-        val bookmarksAdapter = BookmarksAdapter()
+        val bookmarksAdapter = BookmarksAdapter().also { adapter ->
+            adapter.setOnItemLongClickedListener { bookmark ->
+                viewModel.openBookmarkMenuDialog(
+                    requireActivity(),
+                    bookmark,
+                    childFragmentManager
+                )
+            }
+
+            adapter.setAddStarButtonBinder { button, bookmark ->
+                button.setOnClickListener {
+                    val popup = AddStarPopupMenu(requireContext()).also { popup ->
+                        popup.setOnClickAddStarListener {
+                        }
+                        popup.setOnClickPurchaseStarsListener {
+                        }
+                    }
+                    popup.showAsDropDown(button)
+                }
+            }
+        }
 
         binding.recyclerView.let { recyclerView ->
             recyclerView.adapter = bookmarksAdapter

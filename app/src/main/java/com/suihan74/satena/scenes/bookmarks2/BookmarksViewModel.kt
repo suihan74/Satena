@@ -665,7 +665,7 @@ class BookmarksViewModel(
         activity: BookmarksActivity,
         bookmark: Bookmark,
         starTarget: Bookmark = bookmark
-    ) = viewModelScope.launch(Dispatchers.Main) {
+    ) {
         this@BookmarksViewModel.fragmentManager = activity.supportFragmentManager
         val fragmentManager = activity.supportFragmentManager
 
@@ -673,15 +673,20 @@ class BookmarksViewModel(
         val ignored = repository.ignoredUsers.contains(bookmark.user)
         val userSignedIn = repository.userSignedIn
 
-        BookmarkMenuDialog.createInstance(bookmark, starsEntry, ignored, userSignedIn).run {
-            showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
-
+        BookmarkMenuDialog.createInstance(
+            bookmark,
+            starsEntry,
+            ignored,
+            userSignedIn
+        ).run {
             setOnShowEntries { onShowEntries(activity, it) }
             setOnIgnoreUser { onIgnoreUser(it, true) }
             setOnUnignoreUser { onIgnoreUser(it, false) }
             setOnReportBookmark { onReportBookmark(it) }
             setOnSetUserTag { onSetUserTag(it) }
             setOnDeleteStar { onDeleteStar(starTarget) }
+
+            showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
         }
     }
 

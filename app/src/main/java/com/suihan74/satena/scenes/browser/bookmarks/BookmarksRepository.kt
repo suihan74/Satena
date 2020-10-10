@@ -277,18 +277,31 @@ class BookmarksRepository(
 
     // ------ //
 
+    /** ブクマが非表示対象かを判別する */
+    fun checkIgnored(bookmark: Bookmark) : Boolean {
+        if (ignoredUsers.any { bookmark.user == it }) return true
+        return ignoredWords.any { w ->
+            bookmark.commentRaw.contains(w)
+                    || bookmark.user.contains(w)
+                    || bookmark.tags.any { t -> t.contains(w) }
+        }
+    }
+
+    /** ブクマが非表示対象かを判別する */
+    fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean {
+        if (ignoredUsers.any { bookmark.user == it }) return true
+        return ignoredWords.any { w ->
+            bookmark.comment.contains(w)
+                    || bookmark.user.contains(w)
+                    || bookmark.tags.any { t -> t.contains(w) }
+        }
+    }
+
     /** 非表示対象を除外する */
     @WorkerThread
     private fun filterIgnored(src: List<BookmarkWithStarCount>) : List<Bookmark> {
         return src
-            .filter { b ->
-                ignoredUsers.none { b.user == it }
-            }
-            .filter { b ->
-                ignoredWords.none { w ->
-                    b.comment.contains(w) || b.user.contains(w)
-                }
-            }
+            .filterNot { b -> checkIgnored(b) }
             .map { Bookmark.create(it) }
     }
 

@@ -1,13 +1,13 @@
 package com.suihan74.satena.scenes.bookmarks2.dialog
 
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarsEntry
@@ -17,6 +17,7 @@ import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
+import com.suihan74.utilities.provideViewModel
 
 class BookmarkMenuDialog : DialogFragment() {
     companion object {
@@ -39,82 +40,85 @@ class BookmarkMenuDialog : DialogFragment() {
     }
 
     private val viewModel: DialogViewModel by lazy {
-        ViewModelProvider(this)[DialogViewModel::class.java]
+        provideViewModel(this) {
+            val args = requireArguments()
+            val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
+            val ignored = args.getBoolean(ARG_IGNORED, false)
+            val userSignedIn = args.getString(ARG_USER_SIGNED_IN)
+            val starsEntry = args.getObject<StarsEntry>(ARG_STARS_ENTRY)
+
+            DialogViewModel(
+                bookmark,
+                ignored,
+                userSignedIn,
+                starsEntry
+            )
+        }
     }
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val args = requireArguments()
+        val context = requireContext()
 
-        val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
-
-        val ignored = args.getBoolean(ARG_IGNORED, false)
-
-        val userSignedIn = args.getString(ARG_USER_SIGNED_IN)
-        val signedIn = !userSignedIn.isNullOrBlank()
-
-        val starsEntry = args.getObject<StarsEntry>(ARG_STARS_ENTRY)
-        val userStars = starsEntry?.allStars?.filter { it.user == userSignedIn } ?: emptyList()
-
-        val titleView = LayoutInflater.from(context).inflate(R.layout.dialog_title_bookmark, null).apply {
-            setCustomTitle(bookmark)
-        }
-
-        val items = buildList {
-            add(R.string.bookmark_show_user_entries to { viewModel.onShowEntries?.invoke(bookmark.user) })
-            if (signedIn) {
-                if (ignored) {
-                    add(R.string.bookmark_unignore to { viewModel.onUnignoreUser?.invoke(bookmark.user) })
-                }
-                else {
-                    add(R.string.bookmark_ignore to { viewModel.onIgnoreUser?.invoke(bookmark.user) })
-                }
-
-                if (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty()) {
-                    add(R.string.bookmark_report to { viewModel.onReportBookmark?.invoke(bookmark) })
-                }
-            }
-            add(R.string.bookmark_user_tags to { viewModel.onSetUserTag?.invoke(bookmark.user) })
-
-            if (userStars.isNotEmpty()) {
-                add(R.string.bookmark_delete_star to { viewModel.onDeleteStar?.invoke(bookmark to userStars) })
-            }
+        val titleView = LayoutInflater.from(context).inflate(
+            R.layout.dialog_title_bookmark,
+            null
+        ).also {
+            it.setCustomTitle(viewModel.bookmark)
         }
 
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setCustomTitle(titleView)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setItems(items.map { getString(it.first) }.toTypedArray()) { _, which ->
-                items[which].second()
+            .setItems(viewModel.createLabels(context)) { _, which ->
+                viewModel.invokeAction(which)
             }
             .create()
     }
 
-    suspend fun setOnShowEntries(listener: Listener<String>?) = whenStarted {
+    fun setOnShowEntries(listener: Listener<String>?) = lifecycleScope.launchWhenCreated {
         viewModel.onShowEntries = listener
     }
 
-    suspend fun setOnIgnoreUser(listener: Listener<String>?) = whenStarted {
+    fun setOnIgnoreUser(listener: Listener<String>?) = lifecycleScope.launchWhenCreated {
         viewModel.onIgnoreUser = listener
     }
 
-    suspend fun setOnUnignoreUser(listener: Listener<String>?) = whenStarted {
+    fun setOnUnignoreUser(listener: Listener<String>?) = lifecycleScope.launchWhenCreated {
         viewModel.onUnignoreUser = listener
     }
 
-    suspend fun setOnReportBookmark(listener: Listener<Bookmark>?) = whenStarted {
+    fun setOnReportBookmark(listener: Listener<Bookmark>?) = lifecycleScope.launchWhenCreated {
         viewModel.onReportBookmark = listener
     }
 
-    suspend fun setOnSetUserTag(listener: Listener<String>?) = whenStarted {
+    fun setOnSetUserTag(listener: Listener<String>?) = lifecycleScope.launchWhenCreated {
         viewModel.onSetUserTag = listener
     }
 
-    suspend fun setOnDeleteStar(listener: Listener<Pair<Bookmark, List<Star>>>?) = whenStarted {
+    fun setOnDeleteStar(listener: Listener<Pair<Bookmark, List<Star>>>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDeleteStar = listener
     }
 
-    class DialogViewModel : ViewModel() {
+    // ------ //
+
+    class DialogViewModel(
+        val bookmark : Bookmark,
+        val ignored : Boolean,
+        val userSignedIn : String?,
+        val starsEntry : StarsEntry?
+    ) : ViewModel() {
+
+        /** サインイン状態 */
+        val signedIn : Boolean =
+            !userSignedIn.isNullOrBlank()
+
+        /** ユーザーが付けたスター */
+        val userStars =
+            starsEntry?.allStars?.filter { it.user == userSignedIn } ?: emptyList()
+
+        // ------ //
+
         /** ユーザーが最近ブクマしたエントリ一覧を表示する */
         var onShowEntries: Listener<String>? = null
 
@@ -132,5 +136,41 @@ class BookmarkMenuDialog : DialogFragment() {
 
         /** スターを取り消す */
         var onDeleteStar: Listener<Pair<Bookmark, List<Star>>>? = null
+
+        // ------ //
+
+        /** メニュー項目 */
+        @OptIn(ExperimentalStdlibApi::class)
+        val items by lazy {
+            buildList {
+                add(R.string.bookmark_show_user_entries to { onShowEntries?.invoke(bookmark.user) })
+                if (signedIn) {
+                    if (ignored) {
+                        add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user) })
+                    }
+                    else {
+                        add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark.user) })
+                    }
+
+                    if (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty()) {
+                        add(R.string.bookmark_report to { onReportBookmark?.invoke(bookmark) })
+                    }
+                }
+                add(R.string.bookmark_user_tags to { onSetUserTag?.invoke(bookmark.user) })
+
+                if (userStars.isNotEmpty()) {
+                    add(R.string.bookmark_delete_star to { onDeleteStar?.invoke(bookmark to userStars) })
+                }
+            }
+        }
+
+        /** メニューラベル */
+        fun createLabels(context: Context) =
+            items.map { context.getString(it.first) }.toTypedArray()
+
+        /** メニューアクションを実行 */
+        fun invokeAction(which: Int) {
+            items.getOrNull(which)?.second?.invoke()
+        }
     }
 }
