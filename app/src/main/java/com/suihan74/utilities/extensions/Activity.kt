@@ -34,7 +34,13 @@ fun Activity.hideSoftInputMethod(focusTarget: View? = null) : Boolean {
     val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
     val result = imm?.hideSoftInputFromWindow(windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
     currentFocus?.clearFocus()
-    (focusTarget ?: window.decorView.rootView)?.requestFocus()
+
+    (focusTarget ?: window.decorView.rootView)?.let { target ->
+        target.isFocusable = true
+        target.isFocusableInTouchMode = true
+        target.requestFocus()
+    }
+
     return result ?: false
 }
 

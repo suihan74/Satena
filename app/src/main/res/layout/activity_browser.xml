@@ -38,10 +38,10 @@
 
             <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                     android:id="@+id/swipe_layout"
+                    app:layout_constraintTop_toBottomOf="@id/top_bar_area"
                     app:layout_constraintBottom_toTopOf="@id/bottom_bar_area"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/top_bar_area"
                     android:layout_width="match_parent"
                     android:layout_height="0dp">
 
@@ -52,6 +52,21 @@
                         android:layout_height="match_parent"/>
 
             </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+            <View
+                    android:id="@+id/click_guard"
+                    android:visibility="gone"
+                    android:background="@color/clickGuard"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+
+                    app:layout_constraintTop_toTopOf="@id/swipe_layout"
+                    app:layout_constraintBottom_toBottomOf="@id/swipe_layout"
+                    app:layout_constraintLeft_toLeftOf="@id/swipe_layout"
+                    app:layout_constraintRight_toRightOf="@id/swipe_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"/>
 
             <androidx.coordinatorlayout.widget.CoordinatorLayout
                     android:id="@+id/bottom_bar_area"

@@ -13,6 +13,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ToolbarBrowserBinding
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.hideSoftInputMethod
@@ -25,6 +26,16 @@ class BrowserToolbar @JvmOverloads constructor(
 ) : Toolbar(context, attrs, defStyleId) {
 
     private var binding: ToolbarBrowserBinding? = null
+
+    /** アドレスバー入力部分のフォーカスが変化したときの追加処理 */
+    private var onFocusChangeListener : Listener<Boolean>? = null
+
+    /** アドレスバー入力部分のフォーカスが変化したときの追加処理をセット */
+    fun setOnFocusChangeListener(l : Listener<Boolean>?) {
+        onFocusChangeListener = l
+    }
+
+    // ------ //
 
     fun inflate(
         viewModel: BrowserViewModel,
@@ -50,6 +61,10 @@ class BrowserToolbar @JvmOverloads constructor(
             editText.setOnFocusChangeListener { view, b ->
                 if (!b && viewModel.addressText.value.isNullOrBlank()) {
                     viewModel.addressText.value = viewModel.url.value ?: ""
+                }
+
+                runCatching {
+                    onFocusChangeListener?.invoke(b)
                 }
             }
 

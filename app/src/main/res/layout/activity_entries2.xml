@@ -94,7 +94,7 @@
                         android:elevation="6dp"
                         android:focusableInTouchMode="true"
                         android:visibility="gone"
-                        android:background="#a0000000"
+                        android:background="@color/clickGuard"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
 

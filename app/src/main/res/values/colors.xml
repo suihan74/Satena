@@ -12,6 +12,9 @@
     <color name="panelBackground">#EEE</color>
     <color name="panelBackgroundDark">#3F3F40</color>
 
+    <!-- クリック防止ビュー -->
+    <color name="clickGuard">#a0000000</color>
+
     <!-- TextView / EditText -->
     <color name="colorControlNormal">#999</color>
     <color name="textCursorDrawable">#777</color>

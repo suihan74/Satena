@@ -26,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            <EditText
+            <com.suihan74.utilities.views.ImeEnhancedEditText
                     android:id="@+id/address_edit_text"
 
                     android:text="@={vm.addressText}"

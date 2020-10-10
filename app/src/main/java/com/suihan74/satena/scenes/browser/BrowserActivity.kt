@@ -1,10 +1,8 @@
 package com.suihan74.satena.scenes.browser
 
+import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.Gravity
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +24,7 @@ import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.provideViewModel
@@ -84,6 +83,7 @@ class BrowserActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -132,7 +132,13 @@ class BrowserActivity : AppCompatActivity() {
         viewModel.initializeWebView(webview, this)
 
         // ツールバーをセット
-        val toolbar = BrowserToolbar(this)
+        val toolbar = BrowserToolbar(this).also { toolbar ->
+            // 入力状態になったらwebview部分にクリック防止ビューを被せる
+            toolbar.setOnFocusChangeListener { b ->
+                click_guard.setVisibility(b)
+            }
+        }
+
         viewModel.useBottomAppBar.observe(this) {
             // もう一方の方をクリアしておく
             val another =
@@ -146,6 +152,15 @@ class BrowserActivity : AppCompatActivity() {
 
             val toolbarBinding = toolbar.inflate(viewModel, this, appBar, true)
             setSupportActionBar(toolbarBinding.toolbar)
+        }
+
+        // クリック防止ビュー
+        click_guard.setOnTouchListener { _, motionEvent ->
+            if (motionEvent.action == MotionEvent.ACTION_UP) {
+                hideSoftInputMethod(main_area)
+                true
+            }
+            else false
         }
 
         // スワイプしてページを更新する
