@@ -23,7 +23,7 @@ import com.suihan74.satena.models.userTag.UserTagDao
         IgnoredEntry::class,
         History::class
     ],
-    version = 2
+    version = 3
 )
 @TypeConverters(LocalDateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -37,6 +37,17 @@ class Migration1to2 : Migration(1, 2) {
     private fun createHistoryTable(db: SupportSQLiteDatabase) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `history` (`url` TEXT NOT NULL, `title` TEXT NOT NULL, `faviconUrl` TEXT NOT NULL, `lastVisited` INTEGER NOT NULL, PRIMARY KEY(`url`))")
         db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `url` ON `history` (`url`)")
+    }
+
+    override fun migrate(database: SupportSQLiteDatabase) {
+        createHistoryTable(database)
+    }
+}
+
+/** version 2 to 3 */
+class Migration2to3 : Migration(2, 3) {
+    private fun createHistoryTable(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `history` ADD `visitTimes` INTEGER NOT NULL DEFAULT 1")
     }
 
     override fun migrate(database: SupportSQLiteDatabase) {

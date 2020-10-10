@@ -23,7 +23,7 @@ interface BrowserDao {
         where url=:url
         limit 1
         """)
-    suspend fun findHistory(url: String): History?
+    suspend fun getHistory(url: String): History?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHistory(history: History)

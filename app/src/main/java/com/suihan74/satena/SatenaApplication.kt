@@ -11,10 +11,7 @@ import androidx.core.content.pm.PackageInfoCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.jakewharton.threetenabp.AndroidThreeTen
-import com.suihan74.satena.models.AppDatabase
-import com.suihan74.satena.models.Migration1to2
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.PreferenceKeyMigration
+import com.suihan74.satena.models.*
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ServiceUtility
 import com.suihan74.utilities.extensions.showToast
@@ -151,7 +148,10 @@ class SatenaApplication : Application() {
     fun initializeDataBase() {
         appDatabase = Room.databaseBuilder(this, AppDatabase::class.java, APP_DATABASE_FILE_NAME)
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
-            .addMigrations(Migration1to2())
+            .addMigrations(
+                Migration1to2(),
+                Migration2to3()
+            )
             .fallbackToDestructiveMigration()
             .build()
     }

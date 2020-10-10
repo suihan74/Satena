@@ -43,11 +43,14 @@ class HistoryRepository(
         title: String,
         faviconUrl: String? = null
     ) = withContext(Dispatchers.IO) {
+        val existed = dao.getHistory(url)
+
         val history = History(
             url = Uri.decode(url),
             title = title,
             faviconUrl = faviconUrl ?: Uri.parse(url).faviconUrl,
-            lastVisited = LocalDateTime.now()
+            lastVisited = LocalDateTime.now(),
+            visitTimes = existed?.visitTimes?.plus(1L) ?: 1L
         )
         dao.insertHistory(history)
 

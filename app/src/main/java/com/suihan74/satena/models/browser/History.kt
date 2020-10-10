@@ -22,5 +22,7 @@ data class History (
 
     val faviconUrl : String,
 
-    val lastVisited : LocalDateTime
+    val lastVisited : LocalDateTime,
+
+    val visitTimes : Long = 1L
 )
