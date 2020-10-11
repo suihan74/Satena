@@ -6,6 +6,8 @@ import com.suihan74.satena.models.browser.BrowserDao
 import com.suihan74.satena.models.browser.History
 import com.suihan74.utilities.extensions.faviconUrl
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
@@ -24,6 +26,7 @@ class HistoryRepository(
 
     /** ロード済みの全閲覧履歴データのキャッシュ */
     private var historiesCache = ArrayList<History>()
+    private val historiesCacheLock by lazy { Mutex() }
 
     /** 検索ワード */
     val keyword by lazy {
@@ -54,8 +57,10 @@ class HistoryRepository(
         )
         dao.insertHistory(history)
 
-        historiesCache.removeAll { it.url == history.url }
-        historiesCache.add(history)
+        historiesCacheLock.withLock {
+            historiesCache.removeAll { it.url == history.url }
+            historiesCache.add(history)
+        }
 
         updateHistoriesLiveData()
     }
@@ -64,16 +69,20 @@ class HistoryRepository(
     suspend fun deleteHistory(history: History) = withContext(Dispatchers.IO) {
         dao.deleteHistory(history)
 
-        historiesCache.removeAll { it.url == history.url }
+        historiesCacheLock.withLock {
+            historiesCache.removeAll { it.url == history.url }
+        }
         updateHistoriesLiveData()
     }
 
     /** 履歴リストを更新 */
     suspend fun reloadHistories() = withContext(Dispatchers.IO) {
-        historiesCache.clear()
-        historiesCache.addAll(
-            dao.getRecentHistories()
-        )
+        historiesCacheLock.withLock {
+            historiesCache.clear()
+            historiesCache.addAll(
+                dao.getRecentHistories()
+            )
+        }
 
         updateHistoriesLiveData()
     }
@@ -90,8 +99,10 @@ class HistoryRepository(
         val end = date.plusDays(1L).atTime(0, 0)
         dao.deleteHistory(start, end)
 
-        historiesCache.removeAll { h ->
-            h.lastVisited.toLocalDate() == date
+        historiesCacheLock.withLock {
+            historiesCache.removeAll { h ->
+                h.lastVisited.toLocalDate() == date
+            }
         }
 
         updateHistoriesLiveData()
@@ -99,10 +110,12 @@ class HistoryRepository(
 
     /** 履歴リストの続きを取得 */
     suspend fun loadAdditional() = withContext(Dispatchers.IO) {
-        val additional = dao.getRecentHistories(offset = historiesCache.size)
+        historiesCacheLock.withLock {
+            val additional = dao.getRecentHistories(offset = historiesCache.size)
 
-        historiesCache.addAll(additional)
-        historiesCache.sortBy { it.lastVisited }
+            historiesCache.addAll(additional)
+            historiesCache.sortBy { it.lastVisited }
+        }
 
         updateHistoriesLiveData()
     }
@@ -111,20 +124,22 @@ class HistoryRepository(
     suspend fun updateHistoriesLiveData() = withContext(Dispatchers.IO) {
         val locale = Locale.JAPANESE
         val keyword = keyword.value?.toLowerCase(locale)
-        if (keyword.isNullOrBlank()) {
-            histories.postValue(historiesCache)
-        }
-        else {
-            val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu/MM/dd hh:mm")
-            val keywords = keyword.split(Regex("""\s+"""))
-            val list = historiesCache.filter {
-                keywords.all { k ->
-                    it.title.toLowerCase(locale).contains(k)
-                    || it.url.toLowerCase(locale).contains(k)
-                    || it.lastVisited.format(dateTimeFormatter).contains(k)
-                }
+        historiesCacheLock.withLock {
+            if (keyword.isNullOrBlank()) {
+                histories.postValue(historiesCache)
             }
-            histories.postValue(list)
+            else {
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu/MM/dd hh:mm")
+                val keywords = keyword.split(Regex("""\s+"""))
+                val list = historiesCache.filter {
+                    keywords.all { k ->
+                        it.title.toLowerCase(locale).contains(k)
+                                || it.url.toLowerCase(locale).contains(k)
+                                || it.lastVisited.format(dateTimeFormatter).contains(k)
+                    }
+                }
+                histories.postValue(list)
+            }
         }
     }
 }
