@@ -6,9 +6,12 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.OnFinally
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -79,8 +82,8 @@ class BookmarksViewModel(
             repository.userSignedIn
         ).also { dialog ->
             dialog.setOnShowEntries { showEntries(activity, it) }
-            dialog.setOnIgnoreUser { ignoreUser(it, true) }
-            dialog.setOnUnignoreUser { ignoreUser(it, false) }
+            dialog.setOnIgnoreUser { ignoreUser(it) }
+            dialog.setOnUnignoreUser { unIgnoreUser(it) }
             dialog.setOnReportBookmark { reportBookmark(it) }
             dialog.setOnSetUserTag { /* TODO */ }
             dialog.setOnDeleteStar { /* TODO */ }
@@ -89,6 +92,7 @@ class BookmarksViewModel(
         }
     }
 
+    /** ユーザーがブクマ済みのエントリ一覧画面を開く */
     private fun showEntries(activity: Activity, user: String) {
         val intent = Intent(activity, EntriesActivity::class.java).apply {
             putExtra(EntriesActivity.EXTRA_USER, user)
@@ -96,10 +100,53 @@ class BookmarksViewModel(
         activity.startActivity(intent)
     }
 
-    private fun ignoreUser(user: String, ignored: Boolean) {
-        // TODO
+    /** ユーザーを非表示にする */
+    private fun ignoreUser(user: String) {
+        viewModelScope.launch(Dispatchers.Main) {
+            val result = runCatching {
+                repository.ignoreUser(user)
+            }
+
+            if (result.isSuccess) {
+                repository.refreshBookmarks()
+                SatenaApplication.instance.showToast(
+                    R.string.msg_ignore_user_succeeded,
+                    user
+                )
+            }
+            else {
+                SatenaApplication.instance.showToast(
+                    R.string.msg_ignore_user_failed,
+                    user
+                )
+            }
+        }
     }
 
+    /** ユーザーの非表示を解除する */
+    private fun unIgnoreUser(user: String) {
+        viewModelScope.launch(Dispatchers.Main) {
+            val result = runCatching {
+                repository.unIgnoreUser(user)
+            }
+
+            if (result.isSuccess) {
+                repository.refreshBookmarks()
+                SatenaApplication.instance.showToast(
+                    R.string.msg_unignore_user_succeeded,
+                    user
+                )
+            }
+            else {
+                SatenaApplication.instance.showToast(
+                    R.string.msg_unignore_user_failed,
+                    user
+                )
+            }
+        }
+    }
+
+    /** ブクマを通報する */
     private fun reportBookmark(bookmark: Bookmark) {
         // TODO
     }
