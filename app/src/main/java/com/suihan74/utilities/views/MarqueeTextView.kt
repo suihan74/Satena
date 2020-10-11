@@ -10,7 +10,7 @@ import androidx.databinding.BindingAdapter
 class MarqueeTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleId: Int = 0
+    defStyleId: Int = android.R.attr.textViewStyle
 ) : AppCompatTextView(context, attrs, defStyleId) {
 
     companion object {

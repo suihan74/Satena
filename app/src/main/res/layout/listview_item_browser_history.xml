@@ -52,11 +52,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"/>
 
-        <com.suihan74.utilities.views.MarqueeTextView
+        <TextView
                 android:id="@+id/last_visited"
                 style="@style/MarqueeTextView"
                 timestamp="@{site.lastVisited}"
-                marqueeEnabled="@{!vm.keywordEditTextVisible}"
                 android:textColor="?attr/tagTextColor"
                 android:textSize="13sp"
                 android:layout_below="@id/url"
@@ -65,6 +64,5 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"/>
-
     </RelativeLayout>
 </layout>
