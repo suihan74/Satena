@@ -26,11 +26,6 @@ class HistoryViewModel(
     val repository: HistoryRepository
 ) : ViewModel() {
 
-    private val DIALOG_MENU by lazy { "DIALOG_MENU" }
-    private val DIALOG_CLEAR_DATE by lazy { "DIALOG_CLEAR_DATE" }
-
-    // ------ //
-
     /** 閲覧履歴 */
     val histories : LiveData<List<History>> by lazy {
         repository.histories
@@ -59,6 +54,14 @@ class HistoryViewModel(
 
     // ------ //
 
+    init {
+        viewModelScope.launch {
+            repository.loadHistories()
+        }
+    }
+
+    // ------ //
+
     /** ページを遷移する */
     fun goAddress(url: String, browserActivity: BrowserActivity) {
         val activityViewModel = browserActivity.viewModel
@@ -70,6 +73,11 @@ class HistoryViewModel(
     suspend fun loadAdditional() {
         repository.loadAdditional()
     }
+
+    // ------ //
+
+    private val DIALOG_MENU by lazy { "DIALOG_MENU" }
+    private val DIALOG_CLEAR_DATE by lazy { "DIALOG_CLEAR_DATE" }
 
     /** 項目に対するメニューダイアログを開く */
     fun openItemMenuDialog(

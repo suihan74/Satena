@@ -125,16 +125,6 @@ class BookmarksRepository(
 
     // ------ //
 
-    /** サインイン処理 */
-    suspend fun initialize() = withContext(Dispatchers.Default) {
-        runCatching {
-            accountLoader.signInAccounts(reSignIn = false)
-        }
-        signedIn.postValue(client.signedIn())
-    }
-
-    // ------ //
-
     /**
      * URLを渡して必要な初期化を行う
      */

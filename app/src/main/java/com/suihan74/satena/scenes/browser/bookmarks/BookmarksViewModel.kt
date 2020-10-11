@@ -39,6 +39,14 @@ class BookmarksViewModel(
 
     // ------ //
 
+    init {
+        viewModelScope.launch {
+            repository.signIn()
+        }
+    }
+
+    // ------ //
+
     /** 最新ブクマリストを再取得 */
     fun reloadBookmarks(onFinally: OnFinally? = null) = viewModelScope.launch {
         viewModelScope.launch(Dispatchers.Main) {

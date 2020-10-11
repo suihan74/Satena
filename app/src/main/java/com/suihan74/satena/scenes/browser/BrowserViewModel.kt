@@ -41,14 +41,6 @@ class BrowserViewModel(
     val historyRepo: HistoryRepository,
     initialUrl: String?
 ) : ViewModel() {
-    init {
-        viewModelScope.launch {
-            bookmarksRepo.initialize()
-            historyRepo.initialize()
-        }
-    }
-
-    // ------ //
 
     private val DIALOG_BLOCK_URL by lazy { "DIALOG_BLOCK_URL" }
     private val DIALOG_CONTEXT_MENU by lazy { "DIALOG_CONTEXT_MENU" }

@@ -35,11 +35,6 @@ class HistoryRepository(
 
     // ------ //
 
-    /** 初期化処理 */
-    suspend fun initialize() {
-        reloadHistories()
-    }
-
     /** 履歴を追加する */
     suspend fun insertHistory(
         url: String,
@@ -76,7 +71,7 @@ class HistoryRepository(
     }
 
     /** 履歴リストを更新 */
-    suspend fun reloadHistories() = withContext(Dispatchers.IO) {
+    suspend fun loadHistories() = withContext(Dispatchers.IO) {
         historiesCacheLock.withLock {
             historiesCache.clear()
             historiesCache.addAll(
@@ -90,7 +85,7 @@ class HistoryRepository(
     /** 履歴をすべて削除 */
     suspend fun clearHistories() = withContext(Dispatchers.IO) {
         dao.clearHistory()
-        reloadHistories()
+        loadHistories()
     }
 
     /** 指定した日付の履歴をすべて削除 */
