@@ -6,7 +6,6 @@ import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
@@ -29,6 +28,7 @@ class BookmarksRepository(
     private val userTagDao: UserTagDao
 ) :
     IgnoredUsersRepositoryInterface by IgnoredUsersRepository(accountLoader),
+    IgnoredEntriesRepositoryInterface by IgnoredEntriesRepository(ignoredEntryDao),
     UserTagsRepositoryInterface by UserTagsRepository(userTagDao)
 {
 
@@ -110,12 +110,6 @@ class BookmarksRepository(
     /** 新着ブクマの追加取得用カーソル */
     private var recentCursor : String? = null
 
-    // 設定に関するキャッシュ
-
-    /** アプリ側で設定した非表示ワード */
-    var ignoredWords : List<String> = emptyList()
-        private set
-
     /** 「すべて」ブクマリストでは非表示対象を表示する */
     private val showIgnoredUsersInAllBookmarks by lazy {
         prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS)
@@ -154,7 +148,7 @@ class BookmarksRepository(
 
         try {
             val loadingIgnoresTasks = listOf(
-                async { loadIgnoredWords() },
+                async { loadIgnoredWordsForBookmarks() },
                 async { loadIgnoredUsers() }
             )
             loadingIgnoresTasks.awaitAll()
@@ -234,15 +228,6 @@ class BookmarksRepository(
         }
 
         bookmarksEntry.postValue(e)
-    }
-
-    // ------ //
-
-    /** NGワードを取得する */
-    private suspend fun loadIgnoredWords() = withContext(Dispatchers.IO) {
-        ignoredWords = ignoredEntryDao.getAllEntries()
-            .filter { it.target contains IgnoreTarget.BOOKMARK }
-            .map { it.query }
     }
 
     // ------ //
