@@ -11,6 +11,8 @@ import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepositoryForBookmarks
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepositoryInterface
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.coroutines.Dispatchers

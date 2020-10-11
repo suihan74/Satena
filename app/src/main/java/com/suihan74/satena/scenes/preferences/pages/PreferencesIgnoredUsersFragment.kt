@@ -11,9 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesIgnoredUsersBinding
-import com.suihan74.satena.scenes.browser.bookmarks.IgnoredUsersRepository
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.MastodonClientHolder
