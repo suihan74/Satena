@@ -3,30 +3,39 @@ package com.suihan74.satena.models.ignoredEntry
 import androidx.room.*
 
 @Dao
-abstract class IgnoredEntryDao {
+interface IgnoredEntryDao {
     @Query("select * from ignored_entry")
-    abstract fun getAllEntries(): List<IgnoredEntry>
+    fun getAllEntries(): List<IgnoredEntry>
+
+    @Query("""
+        select * from ignored_entry
+        where target = :bookmarkInt or target = :allInt
+    """)
+    fun getEntriesForBookmarks(
+        bookmarkInt: Int = IgnoreTarget.BOOKMARK.int,
+        allInt: Int = IgnoreTarget.ALL.int
+    ) : List<IgnoredEntry>
 
     @Query("""
         select * from ignored_entry 
-        where type = :typeInt and `query` = :query 
+        where type = :typeInt and `query` = :query
         limit 1
     """)
-    abstract fun find(typeInt: Int, query: String) : IgnoredEntry?
+    fun find(typeInt: Int, query: String) : IgnoredEntry?
 
     fun find(type: IgnoredEntryType, query: String) =
         find(type.ordinal, query)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    abstract fun insert(entry: IgnoredEntry)
+    fun insert(entry: IgnoredEntry)
 
     @Update
-    abstract fun update(entry: IgnoredEntry)
+    fun update(entry: IgnoredEntry)
 
     @Query("""delete from ignored_entry
         where type = :typeInt and `query` = :query
     """)
-    abstract fun delete(typeInt: Int, query: String)
+    fun delete(typeInt: Int, query: String)
 
     fun delete(entry: IgnoredEntry) =
         delete(entry.type.ordinal, entry.query)
