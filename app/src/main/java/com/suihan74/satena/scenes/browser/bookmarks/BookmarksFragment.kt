@@ -130,7 +130,7 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
                         bookmarks = it,
                         bookmarksEntry = viewModel.bookmarksEntry.value,
                         taggedUsers = repo.userTags,
-                        ignoredUsers = repo.ignoredUsers,
+                        ignoredUsers = repo.ignoredUsersCache,
                         displayMutedMention = false,
                         starsEntryGetter = { null }
                     ) {

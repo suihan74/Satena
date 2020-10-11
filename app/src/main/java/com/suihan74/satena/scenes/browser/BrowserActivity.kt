@@ -58,7 +58,6 @@ class BrowserActivity : AppCompatActivity() {
             )
 
             val bookmarksRepo = BookmarksRepository(
-                HatenaClient,
                 AccountLoader(this, HatenaClient, MastodonClientHolder),
                 prefs,
                 SatenaApplication.instance.ignoredEntryDao,

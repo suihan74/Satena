@@ -8,7 +8,6 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
-import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.*
@@ -16,8 +15,6 @@ import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
@@ -26,20 +23,41 @@ import kotlinx.coroutines.withContext
  * TODO: v1.6で.bookmarkと統合することを前提に開発すること
  */
 class BookmarksRepository(
-    private val client : HatenaClient,
     private val accountLoader: AccountLoader,
     private val prefs : SafeSharedPreferences<PreferenceKey>,
     private val ignoredEntryDao : IgnoredEntryDao,
     private val userTagDao: UserTagDao
-) {
+) :
+    IgnoredUsersRepositoryInterface by IgnoredUsersRepository(accountLoader),
+    UserTagsRepositoryInterface by UserTagsRepository(userTagDao)
+{
+
+    /** はてなアクセス用クライアント */
+    private val client = accountLoader.client
+
     /** サインイン状態 */
     val signedIn by lazy {
-        SingleUpdateMutableLiveData(false)
+        SingleUpdateMutableLiveData(client.signedIn())
     }
 
     /** サインインしているユーザー名 */
     val userSignedIn : String?
         get() = client.account?.name
+
+    /** アカウントが必要な操作前にサインインする */
+    suspend fun signIn() : Account? = withContext(Dispatchers.IO) {
+        val result = runCatching {
+            accountLoader.signInAccounts(reSignIn = false)
+        }
+
+        val account =
+            if (result.isSuccess) client.account
+            else null
+
+        signedIn.postValue(account != null)
+
+        return@withContext account
+    }
 
     // ------ //
 
@@ -97,15 +115,6 @@ class BookmarksRepository(
     /** アプリ側で設定した非表示ワード */
     var ignoredWords : List<String> = emptyList()
         private set
-
-    /** はてなで設定した非表示ユーザー */
-    var ignoredUsers : List<String> = emptyList()
-        private set
-
-    /** ユーザーに対応するユーザータグのキャッシュ */
-    private val userTagsCache = ArrayList<UserAndTags>()
-    val userTags : List<UserAndTags>
-        get() = userTagsCache
 
     /** 「すべて」ブクマリストでは非表示対象を表示する */
     private val showIgnoredUsersInAllBookmarks by lazy {
@@ -236,38 +245,11 @@ class BookmarksRepository(
             .map { it.query }
     }
 
-    /** 非表示ユーザーを取得する */
-    private suspend fun loadIgnoredUsers() = withContext(Dispatchers.IO) {
-        val result = runCatching {
-            client.getIgnoredUsersAsync().await()
-        }
-        ignoredUsers = result.getOrDefault(emptyList())
-    }
-
-    /** ユーザータグを取得する */
-    private suspend fun loadUserTags(user: String) : UserAndTags? = withContext(Dispatchers.IO) {
-        userTagsMutex.withLock {
-            val existed = userTagsCache.firstOrNull { it.user.name == user }
-            if (existed != null) {
-                return@withLock existed
-            }
-            else {
-                val tag = userTagDao.getUserAndTags(user)
-                if (tag != null) {
-                    userTagsCache.add(tag)
-                }
-                return@withLock tag
-            }
-        }
-    }
-
-    private val userTagsMutex by lazy { Mutex() }
-
     // ------ //
 
     /** ブクマが非表示対象かを判別する */
     fun checkIgnored(bookmark: Bookmark) : Boolean {
-        if (ignoredUsers.any { bookmark.user == it }) return true
+        if (ignoredUsersCache.any { bookmark.user == it }) return true
         return ignoredWords.any { w ->
             bookmark.commentRaw.contains(w)
                     || bookmark.user.contains(w)
@@ -277,7 +259,7 @@ class BookmarksRepository(
 
     /** ブクマが非表示対象かを判別する */
     fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean {
-        if (ignoredUsers.any { bookmark.user == it }) return true
+        if (ignoredUsersCache.any { bookmark.user == it }) return true
         return ignoredWords.any { w ->
             bookmark.comment.contains(w)
                     || bookmark.user.contains(w)
@@ -313,6 +295,19 @@ class BookmarksRepository(
             emptyList()
         )
     }
+
+    /** 読み込み済みの各種リストを再生成する */
+    suspend fun refreshBookmarks() = withContext(Dispatchers.IO) {
+        // 人気ブクマリストを再生成
+        popularBookmarks.postValue(
+            filterIgnored(bookmarksDigestCache?.scoredBookmarks ?: emptyList())
+        )
+
+        // 新着ブクマリストを再生成
+        updateRecentBookmarksLiveData(bookmarksRecentCache)
+    }
+
+    // ------ //
 
     /** 同じユーザーのブクマを渡された内容に更新する */
     suspend fun updateBookmark(result: BookmarkResult) = withContext(Dispatchers.IO) {

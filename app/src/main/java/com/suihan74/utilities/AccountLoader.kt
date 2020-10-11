@@ -13,14 +13,14 @@ import okhttp3.OkHttpClient
 
 class AccountLoader(
     private val context: Context,
-    private val client: HatenaClient,
-    private val mastodonClientHolder: MastodonClientHolder
+    val client: HatenaClient,
+    val mastodonClientHolder: MastodonClientHolder
 ) {
     class HatenaSignInException(message: String? = null) : Throwable(message)
     class MastodonSignInException(message: String? = null) : Throwable(message)
 
-    private val hatenaMutex = Mutex()
-    private val mastodonMutex = Mutex()
+    private val hatenaMutex by lazy { Mutex() }
+    private val mastodonMutex by lazy { Mutex() }
 
     suspend fun signInAccounts(reSignIn: Boolean = false) {
         val jobs = listOf(
