@@ -9,6 +9,8 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepositoryForBookmarks
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +30,7 @@ class BookmarksRepository(
     private val userTagDao: UserTagDao
 ) :
     IgnoredUsersRepositoryInterface by IgnoredUsersRepository(accountLoader),
-    IgnoredEntriesRepositoryInterface by IgnoredEntriesRepository(ignoredEntryDao),
+    IgnoredEntriesRepositoryForBookmarks by IgnoredEntriesRepository(ignoredEntryDao),
     UserTagsRepositoryInterface by UserTagsRepository(userTagDao)
 {
 
@@ -235,7 +237,7 @@ class BookmarksRepository(
     /** ブクマが非表示対象かを判別する */
     fun checkIgnored(bookmark: Bookmark) : Boolean {
         if (ignoredUsersCache.any { bookmark.user == it }) return true
-        return ignoredWords.any { w ->
+        return ignoredWordsForBookmarks.any { w ->
             bookmark.commentRaw.contains(w)
                     || bookmark.user.contains(w)
                     || bookmark.tags.any { t -> t.contains(w) }
@@ -245,7 +247,7 @@ class BookmarksRepository(
     /** ブクマが非表示対象かを判別する */
     fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean {
         if (ignoredUsersCache.any { bookmark.user == it }) return true
-        return ignoredWords.any { w ->
+        return ignoredWordsForBookmarks.any { w ->
             bookmark.comment.contains(w)
                     || bookmark.user.contains(w)
                     || bookmark.tags.any { t -> t.contains(w) }

@@ -11,8 +11,6 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.UserTagDialogFragment
-import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
-import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.UserAndTags
@@ -20,18 +18,21 @@ import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.*
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
-import com.suihan74.utilities.*
+import com.suihan74.utilities.OnError
+import com.suihan74.utilities.OnFinally
+import com.suihan74.utilities.OnSuccess
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.*
 
 class BookmarksViewModel(
     val repository: BookmarksRepository,
     private val userTagRepository: UserTagRepository,
-    private val ignoredEntryRepository: IgnoredEntryRepository
+    private val ignoredEntryRepository: IgnoredEntriesRepository
 ) : ViewModel(), ReportDialog.Listener {
     val DIALOG_BOOKMARK_MENU by lazy { "DIALOG_BOOKMARK_MENU" }
     private val DIALOG_REPORT by lazy { "DIALOG_REPORT" }
@@ -85,11 +86,8 @@ class BookmarksViewModel(
     }
 
     /** IgnoredEntryで設定された非表示ワード */
-    var muteWords = emptyList<String>()
-        get() = lock(field) { field }
-        private set(value) {
-            lock(field) { field = value }
-        }
+    val muteWords
+        get() = ignoredEntryRepository.ignoredWordsForBookmarks
 
     /** 非表示ユーザーリストの変更を監視 */
     val ignoredUsers = repository.ignoredUsersLiveData
@@ -251,11 +249,7 @@ class BookmarksViewModel(
         this@BookmarksViewModel.fragmentManager = fragmentManager
 
         try {
-            ignoredEntryRepository.load(forceUpdate = true)
-            muteWords = ignoredEntryRepository.ignoredEntries
-                .filter { it.type == IgnoredEntryType.TEXT && it.target.contains(IgnoreTarget.BOOKMARK) }
-                .map { it.query }
-
+            ignoredEntryRepository.loadIgnoredWordsForBookmarks()
             signIn()
         }
         catch (e: Throwable) {

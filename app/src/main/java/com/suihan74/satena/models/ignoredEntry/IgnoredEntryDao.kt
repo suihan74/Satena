@@ -17,6 +17,15 @@ interface IgnoredEntryDao {
     ) : List<IgnoredEntry>
 
     @Query("""
+        select * from ignored_entry
+        where target = :entryInt or target = :allInt
+    """)
+    fun getEntriesForEntries(
+        entryInt: Int = IgnoreTarget.ENTRY.int,
+        allInt: Int = IgnoreTarget.ALL.int
+    ) : List<IgnoredEntry>
+
+    @Query("""
         select * from ignored_entry 
         where type = :typeInt and `query` = :query
         limit 1

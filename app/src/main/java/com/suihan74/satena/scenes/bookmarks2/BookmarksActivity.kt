@@ -23,7 +23,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
 import com.suihan74.satena.scenes.post2.BookmarkPostActivity
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
@@ -86,11 +86,11 @@ class BookmarksActivity : AppCompatActivity() {
                 SatenaApplication.instance.userTagDao
             )
 
-            val ignoredEntryRepository = IgnoredEntryRepository(
+            val ignoredEntriesRepository = IgnoredEntriesRepository(
                     SatenaApplication.instance.ignoredEntryDao
                 )
 
-            BookmarksViewModel(bookmarksRepository, userTagRepository, ignoredEntryRepository)
+            BookmarksViewModel(bookmarksRepository, userTagRepository, ignoredEntriesRepository)
         }
     }
 

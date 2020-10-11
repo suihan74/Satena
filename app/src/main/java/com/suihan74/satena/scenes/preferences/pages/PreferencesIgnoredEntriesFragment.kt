@@ -14,13 +14,12 @@ import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesAdapter
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryRepository
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryViewModel
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
-
 import kotlinx.android.synthetic.main.fragment_preferences_ignored_entries.view.*
 
 class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialogFragment.Listener {
@@ -29,10 +28,10 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
     private val viewModel: IgnoredEntryViewModel by lazy {
         provideViewModel(this) {
             IgnoredEntryViewModel(
-                IgnoredEntryRepository(SatenaApplication.instance.ignoredEntryDao)
-            ).apply {
-                init()
-            }
+                IgnoredEntriesRepository(
+                    SatenaApplication.instance.ignoredEntryDao
+                )
+            )
         }
     }
 
