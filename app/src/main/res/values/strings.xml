@@ -241,6 +241,7 @@
     <string name="pref_bookmarks_change_home_by_long_tapping_desc">タブ長押しで初期タブを変更する</string>
     <!-- ignored users -->
     <string name="pref_ignored_users_show_entries">@string/bookmark_show_user_entries</string>
+    <string name="pref_ignored_users_filter_text_hint">ID検索</string>
     <string name="pref_ignored_users_unignore">非表示を解除する</string>
     <string name="msg_pref_ignored_users_update_failed">非表示ユーザーリスト更新失敗</string>
     <!-- ignored entries -->
