@@ -212,6 +212,9 @@ class EntryMenuActionsImplForEntries(
             if (result.isSuccess) {
                 context.showToast(R.string.msg_favorite_site_registration_succeeded)
             }
+            else {
+                Log.e("favoriteEntry", Log.getStackTraceString(result.exceptionOrNull()))
+            }
         }
     }
 

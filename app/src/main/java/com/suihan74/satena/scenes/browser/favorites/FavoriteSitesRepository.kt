@@ -49,11 +49,10 @@ class FavoriteSitesRepository(
     FavoriteSitesRepositoryForEntries
 {
 
-    override val favoriteSites by lazy {
+    override val favoriteSites =
         PreferenceLiveData(prefs, FavoriteSitesKey.SITES) { p, key ->
             p.get<List<FavoriteSite>>(key)
         }
-    }
 
     // ------ //
 
