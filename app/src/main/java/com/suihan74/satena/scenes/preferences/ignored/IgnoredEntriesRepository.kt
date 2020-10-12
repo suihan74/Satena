@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.preferences.ignored
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.NotFoundException
+import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.utilities.exceptions.AlreadyExistedException
@@ -101,6 +102,12 @@ class IgnoredEntriesRepository(
                 dao.insert(entry)
                 dao.find(entry.type, entry.query)?.also {
                     ignoredEntriesCache?.add(it)
+                    if (it.target contains IgnoreTarget.BOOKMARK) {
+                        _ignoredWordsForBookmarks = _ignoredWordsForBookmarks.plus(it.query)
+                    }
+                    if (it.target contains IgnoreTarget.ENTRY) {
+                        _ignoredEntriesForEntries = _ignoredEntriesForEntries.plus(it)
+                    }
                 }
                 _ignoredEntries.postValue(ignoredEntriesCache)
             }
@@ -119,6 +126,15 @@ class IgnoredEntriesRepository(
             ignoredEntriesCacheLock.withLock {
                 dao.delete(entry)
                 ignoredEntriesCache?.remove(entry)
+
+                if (entry.target contains IgnoreTarget.ENTRY) {
+                    _ignoredEntriesForEntries = _ignoredEntriesForEntries.filterNot { it.id == entry.id }
+                }
+
+                if (entry.target contains IgnoreTarget.BOOKMARK) {
+                    _ignoredWordsForBookmarks = _ignoredWordsForBookmarks.filterNot { it == entry.query }
+                }
+
                 _ignoredEntries.postValue(ignoredEntriesCache)
             }
         }

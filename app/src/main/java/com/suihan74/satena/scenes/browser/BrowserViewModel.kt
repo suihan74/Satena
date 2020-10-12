@@ -118,7 +118,7 @@ class BrowserViewModel(
 
     /** お気に入りサイト */
     val favoriteSites by lazy {
-        favoriteSitesRepo.sites.also {
+        favoriteSitesRepo.favoriteSites.also {
             it.observeForever {
                 val url = url.value ?: return@observeForever
                 isUrlFavorite.value = checkUrlFavorite(url)
@@ -540,14 +540,14 @@ class BrowserViewModel(
         val url = url.value ?: return
         val title = title.value ?: url
         val uri = Uri.parse(url)
-        favoriteSitesRepo.favorite(url, title, uri.faviconUrl)
+        favoriteSitesRepo.favoritePage(url, title, uri.faviconUrl)
     }
 
     /** 表示中のページをお気に入りから除外する */
     fun unfavoriteCurrentPage() {
         val url = url.value ?: return
-        val site = favoriteSitesRepo.sites.value?.firstOrNull { it.url == url } ?: return
-        favoriteSitesRepo.unfavorite(site)
+        val site = favoriteSitesRepo.favoriteSites.value?.firstOrNull { it.url == url } ?: return
+        favoriteSitesRepo.unfavoriteSite(site)
     }
 
     // ------ //

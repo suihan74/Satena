@@ -35,6 +35,7 @@ import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
+import com.suihan74.satena.scenes.post2.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
 import com.suihan74.satena.startInnerBrowser
@@ -383,9 +384,20 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             REQUEST_CODE_UPDATE -> {
+                // アプリアップデートから戻ってきた
                 if (resultCode != RESULT_OK) {
                     Log.e("AppUpdate", "update failed. code: $resultCode")
                     showToast(R.string.msg_app_update_failed)
+                }
+            }
+
+            BookmarkPostActivity.REQUEST_CODE -> {
+                // ブクマ投稿ダイアログから戻ってきた
+                if (resultCode == RESULT_OK && data != null) {
+                    val entry = data.getObjectExtra<Entry>(BookmarkPostActivity.RESULT_ENTRY) ?: return
+                    val bookmarkResult = data.getObjectExtra<BookmarkResult>(BookmarkPostActivity.RESULT_BOOKMARK) ?: return
+
+                    updateBookmark(entry, bookmarkResult)
                 }
             }
         }

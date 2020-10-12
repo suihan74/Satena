@@ -39,6 +39,8 @@ class BookmarkPostActivity : AppCompatActivity() {
             get() = hashCode() and 0x0000ffff
 
         // Result keys
+        /** 対象のエントリ */
+        const val RESULT_ENTRY = "BookmarkPostActivity.RESULT_ENTRY"
         /** 成功時: 投稿完了したブクマ情報(BookmarkResult)を返す */
         const val RESULT_BOOKMARK = "BookmarkPostActivity.RESULT_BOOKMARK"
         /** 失敗時: 編集途中のコメントを返す */
@@ -252,6 +254,7 @@ class BookmarkPostActivity : AppCompatActivity() {
     private val onPostSuccess: OnSuccess<BookmarkResult> = { result ->
         showToast(R.string.msg_post_bookmark_succeeded)
         val intent = Intent().apply {
+            putObjectExtra(RESULT_ENTRY, viewModel.entry.value)
             putObjectExtra(RESULT_BOOKMARK, result)
         }
         setResult(RESULT_OK, intent)
@@ -280,6 +283,7 @@ class BookmarkPostActivity : AppCompatActivity() {
     override fun onBackPressed() {
         hideSoftInputMethod()
         val intent = Intent().apply {
+            putObjectExtra(RESULT_ENTRY, viewModel.entry.value)
             putExtra(RESULT_EDITING_COMMENT, viewModel.comment.value)
         }
         setResult(RESULT_CANCELED, intent)

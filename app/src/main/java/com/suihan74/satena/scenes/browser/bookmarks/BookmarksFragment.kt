@@ -183,6 +183,10 @@ class BookmarksFragment :
             switchPostLayout(binding, opened)
         }
 
+        binding.bottomAppBar.setOnClickListener {
+            scrollToTop()
+        }
+
         // 戻るボタンで投稿エリアを隠す
         onBackPressedCallback = activity?.onBackPressedDispatcher?.addCallback(
             viewLifecycleOwner,

@@ -20,8 +20,6 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
-import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialogListeners
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.alsoAs
@@ -44,11 +42,12 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         const val ARG_TAB_POSITION = "ARG_TAB_POSITION"
     }
 
+    protected val entriesActivity : EntriesActivity
+        get() = requireActivity() as EntriesActivity
+
     /** EntriesActivityのViewModel */
-    protected val activityViewModel : EntriesViewModel by lazy {
-        val activity = requireActivity() as EntriesActivity
-        activity.viewModel
-    }
+    protected val activityViewModel : EntriesViewModel
+        get() = entriesActivity.viewModel
 
     /** タブの表示内容に関するViewModel */
     protected val viewModel : EntriesTabFragmentViewModel by lazy {
@@ -134,55 +133,18 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     private fun setEntriesAdapterListeners() {
         val adapter = entries_list.adapter as? EntriesAdapter ?: return
 
-        // メニューアクション実行後に画面表示を更新する
-        val listeners = EntryMenuDialogListeners().apply {
-            onIgnoredEntry = { _ ->
-                (activity as? EntriesActivity)?.refreshLists()
-            }
-            onDeletedBookmark = { entry ->
-                (activity as? EntriesActivity)?.removeBookmark(entry)
-            }
-            onPostedBookmark = { entry, bookmarkResult ->
-                (activity as? EntriesActivity)?.updateBookmark(entry, bookmarkResult)
-            }
-        }
-
         adapter.multipleClickDuration = activityViewModel.entryMultipleClickDuration
 
         adapter.setOnItemClickedListener { entry ->
-            val context = requireContext()
-            EntryMenuDialog.act(
-                context,
-                entry,
-                activityViewModel.entryClickedAction,
-                listeners,
-                childFragmentManager,
-                EntriesTabFragment.DIALOG_ENTRY_MENU
-            )
+            viewModel.onClickEntry(entriesActivity, entry, childFragmentManager)
         }
 
         adapter.setOnItemMultipleClickedListener { entry, _ ->
-            val context = requireContext()
-            EntryMenuDialog.act(
-                context,
-                entry,
-                activityViewModel.entryMultipleClickedAction,
-                listeners,
-                childFragmentManager,
-                EntriesTabFragment.DIALOG_ENTRY_MENU
-            )
+            viewModel.onMultipleClickEntry(entriesActivity, entry, childFragmentManager)
         }
 
         adapter.setOnItemLongClickedListener { entry ->
-            val context = requireContext()
-            EntryMenuDialog.act(
-                context,
-                entry,
-                activityViewModel.entryLongClickedAction,
-                listeners,
-                childFragmentManager,
-                EntriesTabFragment.DIALOG_ENTRY_MENU
-            )
+            viewModel.onLongClickEntry(entriesActivity, entry, childFragmentManager)
             true
         }
 

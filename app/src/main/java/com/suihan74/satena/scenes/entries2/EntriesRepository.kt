@@ -16,9 +16,12 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
+import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepository
+import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepositoryForEntries
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepositoryForEntries
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.extensions.checkFromSpam
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
@@ -78,12 +81,17 @@ private data class BookmarkCommentUrl (
     val starsCount: List<Star>
 )
 
+// ------ //
+
 class EntriesRepository(
     private val context: Context,
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
-    private val ignoredEntryDao: IgnoredEntryDao
-) {
+    ignoredEntryDao: IgnoredEntryDao
+) :
+        IgnoredEntriesRepositoryForEntries by IgnoredEntriesRepository(ignoredEntryDao),
+        FavoriteSitesRepositoryForEntries by FavoriteSitesRepository(SafeSharedPreferences.create(context), client)
+{
     /** アプリ内アップデート */
     private var appUpdateManager: AppUpdateManager? = null
 
@@ -100,11 +108,6 @@ class EntriesRepository(
     /** 通知 */
     private val noticesPrefs by lazy {
         SafeSharedPreferences.create<NoticesKey>(context)
-    }
-
-    /** お気に入りサイト */
-    private val favoriteSitePrefs by lazy {
-        SafeSharedPreferences.create<FavoriteSitesKey>(context)
     }
 
     /** サインイン状態 */
@@ -181,26 +184,17 @@ class EntriesRepository(
     val extraBottomItemsAlignment : ExtraBottomItemsAlignment
         get() = ExtraBottomItemsAlignment.fromInt(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT))
 
-    /** お気に入りサイトリスト */
-    // TODO: 設定画面から戻ってきた後に変更が反映されない。onResume()などで明示的に更新するようにする？
-    val favoriteSites : MutableLiveData<List<FavoriteSite>> by lazy {
-        val sites = favoriteSitePrefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
-        MutableLiveData(sites).apply {
-            observeForever {
-                if (it != null) {
-                    favoriteSitePrefs.edit {
-                        put(FavoriteSitesKey.SITES, it)
-                    }
-                }
-            }
+    /** 初期化処理 */
+    suspend fun initialize(forceUpdate: Boolean = false) {
+        runCatching {
+            accountLoader.signInAccounts(forceUpdate)
+            signedInLiveData.post(client.signedIn())
+            categoriesLiveData.post(client.signedIn())
         }
-    }
 
-    /** サインインする */
-    suspend fun signIn(forceUpdate: Boolean = false) {
-        accountLoader.signInAccounts(forceUpdate)
-        signedInLiveData.post(client.signedIn())
-        categoriesLiveData.post(client.signedIn())
+        runCatching {
+            loadIgnoredEntriesForEntries()
+        }
     }
 
     /** 最新のエントリーリストを読み込む */
@@ -570,60 +564,56 @@ class EntriesRepository(
         }
     }
 
-    /** お気に入りに追加 */
-    suspend fun favoriteSite(entry: Entry) {
-        val sites = favoriteSites.value ?: emptyList()
-        val url = entry.rootUrl
+    // ------ //
 
-        if (sites.any { it.url == url }) {
-            throw AlreadyExistedException()
+    /** エントリを「あとで読む」タグをつけてブクマする */
+    suspend fun readLaterEntry(entry: Entry) : BookmarkResult =
+        client.postBookmarkAsync(
+            url = entry.url,
+            readLater = true
+        ).await()
+
+    /** 「あとで読む」エントリを読んだ */
+    suspend fun readEntry(entry: Entry) : Pair<EntryReadActionType, BookmarkResult?> {
+        val action = EntryReadActionType.fromInt(prefs.getInt(PreferenceKey.ENTRY_READ_ACTION_TYPE))
+
+        return action to when (action) {
+            EntryReadActionType.REMOVE -> {
+                deleteBookmark(entry)
+                null
+            }
+
+            EntryReadActionType.DIALOG -> null
+
+            else -> {
+                val comment = when (action) {
+                    EntryReadActionType.SILENT_BOOKMARK -> ""
+                    EntryReadActionType.READ_TAG -> "[読んだ]"
+                    EntryReadActionType.BOILERPLATE -> prefs.getString(PreferenceKey.ENTRY_READ_ACTION_BOILERPLATE) ?: ""
+                    else -> ""
+                }
+
+                client.postBookmarkAsync(
+                    url = entry.url,
+                    readLater = false,
+                    comment = comment
+                ).await()
+            }
         }
-
-        val titleResult = kotlin.runCatching { client.getSiteTitle(url) }
-        val title = when {
-            titleResult.isSuccess -> titleResult.getOrThrow()
-            titleResult.exceptionOrNull() is ConnectionFailureException -> url
-            else -> throw titleResult.exceptionOrNull()!!
-        }
-
-        val newList = sites.plus(FavoriteSite(
-            url = url,
-            title = title,
-            faviconUrl = entry.faviconUrl,
-            isEnabled = true
-        ))
-
-        favoriteSitePrefs.edit {
-            put(FavoriteSitesKey.SITES, newList)
-        }
-
-        favoriteSites.value = newList
     }
 
-    /** お気に入りから削除する */
-    fun unfavoriteSite(entry: Entry) {
-        val sites = favoriteSites.value ?: emptyList()
-
-        if (!sites.any { it.url == entry.rootUrl }) {
-            throw RuntimeException("target not found")
-        }
-
-        val newList = sites.filter { it.url != entry.rootUrl }
-
-        favoriteSitePrefs.edit {
-            put(FavoriteSitesKey.SITES, newList)
-        }
-
-        favoriteSites.value = newList
+    /** ブクマを削除する */
+    suspend fun deleteBookmark(entry: Entry) {
+        client.deleteBookmarkAsync(entry.url).await()
     }
 
     // ------ //
 
     /** エントリをフィルタリングする */
     suspend fun filterEntries(entries: List<Entry>) : List<Entry> = withContext(Dispatchers.IO) {
-        val ignoredEntries = ignoredEntryDao.getAllEntries()
+//        val ignoredEntries = ignoredEntryDao.getAllEntries()
         return@withContext entries.filterNot { entry ->
-            ignoredEntries.any { it.isMatched(entry) }
+            ignoredEntriesForEntries.any { it.isMatched(entry) }
         }
     }
 

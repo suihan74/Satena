@@ -119,7 +119,7 @@ class EntriesViewModel(
         onFinally: OnFinally? = null
     ) = viewModelScope.launch {
         try {
-            repository.signIn(forceUpdate)
+            repository.initialize(forceUpdate)
             onSuccess?.invoke(Unit)
         }
         catch (e: Throwable) {

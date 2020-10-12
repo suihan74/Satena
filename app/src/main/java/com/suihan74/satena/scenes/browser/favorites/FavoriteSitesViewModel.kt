@@ -24,7 +24,7 @@ class FavoriteSitesViewModel(
 
     /** 登録済みのお気に入りサイト */
     val sites by lazy {
-        favoriteSitesRepo.sites
+        favoriteSitesRepo.favoriteSites
     }
 
     // ------ //
@@ -54,7 +54,7 @@ class FavoriteSitesViewModel(
             }
 
             setOnDeleteListener { site ->
-                favoriteSitesRepo.unfavorite(site)
+                favoriteSitesRepo.unfavoriteSite(site)
                 activity.showToast(R.string.entry_action_unfavorite)
             }
 

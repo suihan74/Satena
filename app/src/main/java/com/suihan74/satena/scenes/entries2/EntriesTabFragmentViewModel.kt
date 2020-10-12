@@ -1,5 +1,7 @@
 package com.suihan74.satena.scenes.entries2
 
+import android.app.Activity
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,7 +22,10 @@ class EntriesTabFragmentViewModel(
     private val repository: EntriesRepository,
     val category: Category,
     private val tabPosition: Int
-) : ViewModel() {
+) :
+    ViewModel(),
+    EntryMenuActions by EntryMenuActionsImplForEntries(repository)
+{
     companion object {
         private const val TAB_POSITION_READ_LATER = 1
     }
@@ -250,5 +255,52 @@ class EntriesTabFragmentViewModel(
                 onFinally?.invoke()
             }
         }
+    }
+
+    // ------ //
+
+    /** エントリをシングルクリックしたときの処理 */
+    fun onClickEntry(
+        activity: Activity,
+        entry: Entry,
+        fragmentManager: FragmentManager
+    ) {
+        super.invokeEntryClickedAction(
+            activity,
+            entry,
+            repository.entryClickedAction,
+            fragmentManager,
+            viewModelScope
+        )
+    }
+
+    /** エントリを複数回クリックしたときの処理 */
+    fun onMultipleClickEntry(
+        activity: Activity,
+        entry: Entry,
+        fragmentManager: FragmentManager
+    ) {
+        super.invokeEntryClickedAction(
+            activity,
+            entry,
+            repository.entryMultipleClickedAction,
+            fragmentManager,
+            viewModelScope
+        )
+    }
+
+    /** エントリを長押ししたときの処理 */
+    fun onLongClickEntry(
+        activity: Activity,
+        entry: Entry,
+        fragmentManager: FragmentManager
+    ) {
+        super.invokeEntryClickedAction(
+            activity,
+            entry,
+            repository.entryLongClickedAction,
+            fragmentManager,
+            viewModelScope
+        )
     }
 }
