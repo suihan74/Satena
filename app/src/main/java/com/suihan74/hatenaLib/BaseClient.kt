@@ -114,24 +114,30 @@ open class BaseClient {
             }
         }
 
-    private fun <T> responseTo(type: Type, response: Response, dateFormat: String? = null) : T =
-        responseTo(type, response, GsonBuilder().registerTypeAdapter(LocalDateTime::class.java, TimestampDeserializer(dateFormat)))
+    private fun <T> responseTo(
+        type: Type,
+        response: Response,
+        dateFormat: String? = null
+    ) : T = responseTo(
+        type,
+        response,
+        GsonBuilder().registerTypeAdapter(
+            LocalDateTime::class.java,
+            TimestampDeserializer(dateFormat)
+        )
+    )
 
-    protected fun <T> getJson(type: Type, url: String, gsonBuilder: GsonBuilder) : T {
-        try {
-            get(url).use { response ->
-                return responseTo(type, response, gsonBuilder)
-            }
-        }
-        catch (e: NotFoundException) {
-            throw NotFoundException("404 not found: $url")
-        }
-        catch (e: Throwable) {
-            throw RuntimeException("${e.message ?: ""}: $url")
-        }
-    }
-
-    protected fun <T> getJson(type: Type, url: String, dateFormat: String? = null, withCookie: Boolean = true) : T {
+    @Throws(
+        ConnectionFailureException::class,
+        NotFoundException::class,
+        SocketTimeoutException::class
+    )
+    protected fun <T> getJson(
+        type: Type,
+        url: String,
+        dateFormat: String? = null,
+        withCookie: Boolean = true
+    ) : T {
         try {
             get(url, withCookie).use { response ->
                 return responseTo(type, response, dateFormat)
@@ -145,13 +151,18 @@ open class BaseClient {
             throw NotFoundException("404 not found: $url", e)
         }
         catch (e: Throwable) {
-            throw RuntimeException("${e.message ?: ""}: $url", e)
+            throw ConnectionFailureException("${e.message ?: ""}: $url", e)
         }
     }
 
-    protected inline fun <reified T> getJson(url: String, gsonBuilder: GsonBuilder) =
-        getJson<T>(T::class.java, url, gsonBuilder)
-
-    protected inline fun <reified T> getJson(url: String, dateFormat: String? = null, withCookie: Boolean = true) =
-        getJson<T>(T::class.java, url, dateFormat, withCookie)
+    @Throws(
+        ConnectionFailureException::class,
+        NotFoundException::class,
+        SocketTimeoutException::class
+    )
+    protected inline fun <reified T> getJson(
+        url: String,
+        dateFormat: String? = null,
+        withCookie: Boolean = true
+    ) = getJson<T>(T::class.java, url, dateFormat, withCookie)
 }

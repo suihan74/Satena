@@ -92,9 +92,22 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
             adapter.setAddStarButtonBinder { button, bookmark ->
                 button.setOnClickListener {
                     val popup = AddStarPopupMenu(requireContext()).also { popup ->
-                        popup.setOnClickAddStarListener {
+                        popup.observeUserStars(
+                            viewLifecycleOwner,
+                            viewModel.userColorStarsCount
+                        )
+                        popup.setOnClickAddStarListener { color ->
+                            viewModel.postStar(
+                                requireContext(),
+                                bookmark,
+                                color,
+                                childFragmentManager
+                            )
+                            popup.dismiss()
                         }
                         popup.setOnClickPurchaseStarsListener {
+                            viewModel.openPurchaseColorStarsPage(requireActivity())
+                            popup.dismiss()
                         }
                     }
                     popup.showAsDropDown(button)

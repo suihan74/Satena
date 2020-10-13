@@ -8,6 +8,7 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.hatenaLib.UserColorStarsCount
 import com.suihan74.satena.R
@@ -18,7 +19,10 @@ import kotlinx.android.synthetic.main.popup_add_star.view.*
 
 class AddStarPopupMenu(context: Context) : PopupWindow() {
     init {
-        val view = LayoutInflater.from(context).inflate(R.layout.popup_add_star, null).apply {
+        val view = LayoutInflater.from(context).inflate(
+            R.layout.popup_add_star,
+            null
+        ).apply {
             add_blue_star.setOnClickListener {
                 onClickButton(StarColor.Blue, colorStars.blue)
             }
@@ -64,7 +68,10 @@ class AddStarPopupMenu(context: Context) : PopupWindow() {
     }
 
     /** ユーザーが所持しているスター数を監視する */
-    fun observeUserStars(lifecycleOwner: LifecycleOwner, liveData: BookmarksRepository.UserStarsLiveData?) {
+    fun observeUserStars(
+        lifecycleOwner: LifecycleOwner,
+        liveData: LiveData<UserColorStarsCount>?
+    ) {
         liveData?.observe(lifecycleOwner) {
             colorStars = it ?: UserColorStarsCount(0, 0, 0, 0)
             initializeView(contentView.add_blue_star, contentView.stars_count_blue, colorStars.blue)

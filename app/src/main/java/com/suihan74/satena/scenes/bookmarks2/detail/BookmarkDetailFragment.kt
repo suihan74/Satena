@@ -32,6 +32,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks2.dialog.PostStarDialog
+import com.suihan74.satena.scenes.browser.bookmarks.StarExhaustedException
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
@@ -69,7 +70,7 @@ class BookmarkDetailFragment :
         }
         vm.setOnPostStarFailureListener { color, throwable ->
             when (throwable) {
-                is BookmarkDetailViewModel.StarExhaustedException -> {
+                is StarExhaustedException -> {
                     activity?.showToast(R.string.msg_no_color_stars, color)
                 }
                 else -> {

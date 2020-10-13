@@ -1105,6 +1105,11 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * 対象URLにスターをつける
      */
+    @Throws(
+        ConnectionFailureException::class,
+        NotFoundException::class,
+        SocketTimeoutException::class
+    )
     fun postStarAsync(
         url: String,
         color: StarColor = StarColor.Yellow,
@@ -1114,7 +1119,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
         val paletteChanged = changeStarColorPalette(url, color)
         if (!paletteChanged) {
-            throw RuntimeException("failed to change the star palette")
+            throw ConnectionFailureException("failed to change the star palette")
         }
 
         val apiUrl = "$S_BASE_URL/star.add.json?${cacheAvoidance()}" +

@@ -1,13 +1,19 @@
 package com.suihan74.satena.scenes.browser.bookmarks
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.OnFinally
@@ -40,6 +46,11 @@ class BookmarksViewModel(
         repository.recentBookmarks
     }
 
+    /** ユーザーの所持カラースター数 */
+    val userColorStarsCount by lazy {
+        repository.userColorStarsCount
+    }
+
     // ------ //
 
     init {
@@ -60,6 +71,88 @@ class BookmarksViewModel(
             }
             onFinally?.invoke()
         }
+    }
+
+    // ------ //
+
+    /** 必要に応じて確認ダイアログを表示し、ブコメにスターを付ける */
+    fun postStar(
+        context: Context,
+        bookmark: Bookmark,
+        color: StarColor,
+        fragmentManager: FragmentManager
+    ) {
+        val entry = entry.value ?: let {
+            context.showToast(
+                R.string.msg_post_star_failed,
+                bookmark.user
+            )
+            return
+        }
+
+        if (repository.useConfirmPostingStarDialog) {
+            val dialog = AlertDialogFragment2.Builder()
+                .setTitle(R.string.confirm_dialog_title_simple)
+                .setMessage(context.getString(R.string.msg_post_star_dialog, color.name))
+                .setNegativeButton(R.string.dialog_cancel) { it.dismiss() }
+                .setPositiveButton(R.string.dialog_ok) {
+                    viewModelScope.launch(Dispatchers.Main) {
+                        postStarImpl(context, entry, bookmark, color)
+                        it.dismiss()
+                    }
+                }
+                .dismissOnClickButton(false)
+                .create()
+            dialog.showAllowingStateLoss(fragmentManager)
+        }
+        else {
+            viewModelScope.launch(Dispatchers.Main) {
+                postStarImpl(context, entry, bookmark, color)
+            }
+        }
+    }
+
+    private suspend fun postStarImpl(
+        context: Context,
+        entry: Entry,
+        bookmark: Bookmark,
+        color: StarColor
+    ) {
+        val starAvailable = repository.checkColorStarAvailability(color)
+        if (!starAvailable) {
+            context.showToast(
+                R.string.msg_post_star_failed,
+                bookmark.user
+            )
+            return
+        }
+
+        val result = runCatching {
+            repository.postStar(entry, bookmark, color)
+        }
+
+        if (result.isSuccess) {
+            context.showToast(
+                R.string.msg_post_star_succeeded,
+                bookmark.user
+            )
+        }
+        else {
+            Log.w("postStar", Log.getStackTraceString(result.exceptionOrNull()))
+            context.showToast(
+                R.string.msg_post_star_failed,
+                bookmark.user
+            )
+        }
+    }
+
+    /** カラースター購入ページを開く */
+    fun openPurchaseColorStarsPage(activity: Activity) {
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse(repository.purchaseColorStarsPageUrl)
+        )
+        activity.startActivity(intent)
     }
 
     // ------ //

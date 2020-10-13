@@ -32,9 +32,10 @@ class BookmarksRepository(
     private val ignoredEntryDao : IgnoredEntryDao,
     private val userTagDao: UserTagDao
 ) :
-    IgnoredUsersRepositoryInterface by IgnoredUsersRepository(accountLoader),
-    IgnoredEntriesRepositoryForBookmarks by IgnoredEntriesRepository(ignoredEntryDao),
-    UserTagsRepositoryInterface by UserTagsRepository(userTagDao)
+        IgnoredUsersRepositoryInterface by IgnoredUsersRepository(accountLoader),
+        IgnoredEntriesRepositoryForBookmarks by IgnoredEntriesRepository(ignoredEntryDao),
+        UserTagsRepositoryInterface by UserTagsRepository(userTagDao),
+        StarRepositoryInterface by StarRepository(accountLoader, prefs)
 {
 
     /** はてなアクセス用クライアント */
@@ -59,7 +60,13 @@ class BookmarksRepository(
             if (result.isSuccess) client.account
             else null
 
-        signedIn.postValue(account != null)
+        val signedIn = account != null
+
+        this@BookmarksRepository.signedIn.postValue(signedIn)
+
+        if (signedIn) {
+            loadUserColorStarsCount()
+        }
 
         return@withContext account
     }

@@ -9,6 +9,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
+import com.suihan74.satena.scenes.browser.bookmarks.StarExhaustedException
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -280,9 +281,5 @@ class BookmarkDetailViewModel(
 
     class NotSignedInException : RuntimeException(
         "failed to an action required sign-in."
-    )
-
-    class StarExhaustedException(val color : StarColor) : RuntimeException(
-        "${color.name} star has been exhausted."
     )
 }
