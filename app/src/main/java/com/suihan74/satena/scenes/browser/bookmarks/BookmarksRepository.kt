@@ -15,6 +15,7 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepositoryInterface
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
+import com.suihan74.utilities.extensions.updateFirstOrPlus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -301,7 +302,10 @@ class BookmarksRepository(
     /** 同じユーザーのブクマを渡された内容に更新する */
     suspend fun updateBookmark(result: BookmarkResult) = withContext(Dispatchers.IO) {
         entry.postValue(
-            entry.value?.copy(bookmarkedData = result)
+            entry.value?.copy(
+                id = result.eid ?: entry.value?.id ?: 0L,
+                bookmarkedData = result
+            )
         )
         val bookmark = BookmarkWithStarCount(
             BookmarkWithStarCount.User(result.user, result.userIconUrl),
@@ -322,10 +326,9 @@ class BookmarksRepository(
         val user = bookmark.user
 
         val bEntry = bookmarksEntry.value?.let { e ->
-            e.copy(bookmarks =
-                e.bookmarks.map {
-                    if (it.user == user) Bookmark.create(bookmark) else it
-                }
+            val b = Bookmark.create(bookmark)
+            e.copy(
+                bookmarks = e.bookmarks.updateFirstOrPlus(b) { it.user == user }
             )
         }
         bookmarksEntry.postValue(bEntry)
@@ -339,16 +342,10 @@ class BookmarksRepository(
                 if (it.user == user) bookmark else it
             } ?: emptyList()
         )
-        val bookmarks = filterIgnored(bookmarksDigestCache!!.scoredBookmarks)
-        bookmarks.forEach {
-            loadUserTags(it.user)
-        }
-        popularBookmarks.postValue(bookmarks)
 
-        bookmarksRecentCache = bookmarksRecentCache.map {
-            if (it.user == user) bookmark else it
-        }
-        updateRecentBookmarksLiveData(bookmarksRecentCache)
+        bookmarksRecentCache = bookmarksRecentCache.updateFirstOrPlus(bookmark) { it.user == user }
+
+        refreshBookmarks()
     }
 
     /** 人気ブクマリストを取得する */
