@@ -112,6 +112,11 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
                     }
                     popup.showAsDropDown(button)
                 }
+
+                button.setOnLongClickListener {
+                    // TODO: スターを付けている場合スターを削除する
+                    true
+                }
             }
         }
 

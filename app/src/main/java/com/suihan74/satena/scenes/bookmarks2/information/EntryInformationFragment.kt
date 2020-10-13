@@ -58,6 +58,15 @@ class EntryInformationFragment : Fragment() {
                     it.startInnerBrowser(entry)
                 }
             }
+
+            setOnLongClickListener {
+                val intent = Intent(Intent.ACTION_SEND).also {
+                    it.putExtra(Intent.EXTRA_TEXT, entry.url)
+                    it.type = "text/plain"
+                }
+                activity?.startActivity(intent)
+                true
+            }
         }
 
         val tagsAdapter = object : TagsAdapter() {
