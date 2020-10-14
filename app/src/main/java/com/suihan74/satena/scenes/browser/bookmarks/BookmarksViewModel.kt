@@ -63,15 +63,15 @@ class BookmarksViewModel(
     // ------ //
 
     /** 最新ブクマリストを再取得 */
-    fun reloadBookmarks(onFinally: OnFinally? = null) = viewModelScope.launch {
-        viewModelScope.launch(Dispatchers.Main) {
-            runCatching {
-                repository.loadRecentBookmarks(
-                    additionalLoading = false
-                )
-            }
-            onFinally?.invoke()
+    fun reloadBookmarks(
+        onFinally: OnFinally? = null
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        runCatching {
+            repository.loadRecentBookmarks(
+                additionalLoading = false
+            )
         }
+        onFinally?.invoke()
     }
 
     // ------ //
