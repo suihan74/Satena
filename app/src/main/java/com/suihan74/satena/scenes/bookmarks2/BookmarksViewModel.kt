@@ -33,7 +33,7 @@ class BookmarksViewModel(
     val repository: BookmarksRepository,
     private val userTagRepository: UserTagRepository,
     private val ignoredEntryRepository: IgnoredEntriesRepository
-) : ViewModel(), ReportDialog.Listener {
+) : ViewModel() {
     val DIALOG_BOOKMARK_MENU by lazy { "DIALOG_BOOKMARK_MENU" }
     private val DIALOG_REPORT by lazy { "DIALOG_REPORT" }
     private val DIALOG_SELECT_USER_TAG by lazy { "DIALOG_SELECT_USER_TAG" }
@@ -622,24 +622,13 @@ class BookmarksViewModel(
     }
 
     /** ブクマを通報 */
-    fun reportBookmark(
+    suspend fun reportBookmark(
         report: Report,
-        onSuccess: OnSuccess<Unit>? = null,
-        onError: OnError? = null
-    ) = viewModelScope.launch {
-        try {
+    ) : Boolean = withContext(Dispatchers.Main) {
+        val result = runCatching {
             repository.reportBookmark(report)
         }
-        catch (e: Throwable) {
-            withContext(Dispatchers.Main) {
-                onError?.invoke(e)
-            }
-            return@launch
-        }
-
-        withContext(Dispatchers.Main) {
-            onSuccess?.invoke(Unit)
-        }
+        return@withContext result.getOrDefault(false)
     }
 
     /** ユーザーのブクマを取得 */
@@ -716,8 +705,35 @@ class BookmarksViewModel(
 
     private fun onReportBookmark(bookmark: Bookmark) {
         val fragmentManager = fragmentManager ?: return
-        ReportDialog.createInstance(entry, bookmark)
-            .showAllowingStateLoss(fragmentManager, DIALOG_REPORT)
+        ReportDialog.createInstance(entry, bookmark).run {
+            setOnReportBookmark { model ->
+                val user = model.report.bookmark.user
+                val isSuccess = reportBookmark(model.report)
+                val ignoreAfterReporting =
+                    model.ignoreAfterReporting && !ignoredUsers.value.contains(user)
+
+                if (isSuccess && ignoreAfterReporting) {
+                    setUserIgnoreState(
+                        user,
+                        true,
+                        onSuccess = {
+                            val context = SatenaApplication.instance
+                            context.showToast(R.string.msg_report_and_ignore_succeeded, user)
+                        },
+                        onError = { e ->
+                            val context = SatenaApplication.instance
+                            context.showToast(R.string.msg_ignore_user_failed, user)
+                            Log.e("ignoreUser", "failed: user = $user")
+                            e.printStackTrace()
+                        }
+                    )
+                }
+
+                return@setOnReportBookmark isSuccess
+            }
+
+            showAllowingStateLoss(fragmentManager, DIALOG_REPORT)
+        }
     }
 
     /** ユーザーにつけるユーザータグを選択するダイアログを開く */
@@ -835,40 +851,6 @@ class BookmarksViewModel(
             putExtra(BookmarksActivity.EXTRA_ENTRY_ID, eid)
         }
         activity.startActivity(intent)
-    }
-
-    // --- ReportDialogの処理 --- //
-
-    override fun onReportBookmark(dialog: ReportDialog, model: ReportDialog.Model) {
-        val activity = dialog.requireActivity()
-        val user = model.report.bookmark.user
-        reportBookmark(
-            model.report,
-            onSuccess = {
-                if (model.ignoreAfterReporting && !ignoredUsers.value.contains(user)) {
-                    setUserIgnoreState(
-                        user,
-                        true,
-                        onSuccess = {
-                            activity.showToast(R.string.msg_report_and_ignore_succeeded, user)
-                        },
-                        onError = { e ->
-                            activity.showToast(R.string.msg_ignore_user_failed, user)
-                            Log.e("ignoreUser", "failed: user = $user")
-                            e.printStackTrace()
-                        }
-                    )
-                }
-                else {
-                    activity.showToast(R.string.msg_report_succeeded, user)
-                }
-            },
-            onError = { e ->
-                activity.showToast(R.string.msg_report_failed)
-                Log.e("onReportBookmark", "error user: $user")
-                e.printStackTrace()
-            }
-        )
     }
 
     // --- UserTagSelectionDialogの処理 --- //

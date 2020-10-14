@@ -415,8 +415,11 @@ class BookmarksRepository(
         }
 
     /** ブクマを通報 */
-    suspend fun reportBookmark(report: Report) {
-        client.reportAsync(report).await()
+    suspend fun reportBookmark(report: Report) : Boolean {
+        val result = runCatching {
+            client.reportAsync(report).await()
+        }
+        return result.isSuccess
     }
 
     /** ユーザーのブクマを取得する */

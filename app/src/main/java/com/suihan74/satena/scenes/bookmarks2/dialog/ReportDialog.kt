@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks2.dialog
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,121 +9,95 @@ import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
-import androidx.core.widget.addTextChangedListener
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
-import com.bumptech.glide.Glide
-import com.suihan74.hatenaLib.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.Report
+import com.suihan74.hatenaLib.ReportCategory
 import com.suihan74.satena.R
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.utilities.extensions.getObject
-import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.extensions.putObject
+import com.suihan74.satena.databinding.FragmentDialogReport2Binding
+import com.suihan74.utilities.SuspendSwitcher
+import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.dialog_title_bookmark.view.*
-import kotlinx.android.synthetic.main.fragment_dialog_report.view.*
+import kotlinx.coroutines.launch
 
 class ReportDialog : DialogFragment() {
-    data class Model (
-        val report: Report,
-        val ignoreAfterReporting: Boolean
-    )
-
-    class ViewModel(
-        val entry: Entry,
-        val bookmark: Bookmark
-    ) : androidx.lifecycle.ViewModel() {
-
-        /** 通報カテゴリ */
-        val category by lazy {
-            MutableLiveData<ReportCategory>().apply {
-                value = ReportCategory.SPAM
-            }
-        }
-
-        /** 通報内容に加えるコメント */
-        val comment by lazy {
-            MutableLiveData<String>().apply {
-                value = ""
-            }
-        }
-
-        /** 通報後にユーザーを非表示にする */
-        val ignoreAfterReporting by lazy {
-            MutableLiveData<Boolean>()
-        }
-
-        val model
-            get() = Model(
-                Report(
-                    entry = entry,
-                    bookmark = bookmark,
-                    category = category.value ?: ReportCategory.SPAM,
-                    comment = comment.value
-                ),
-                ignoreAfterReporting.value ?: false
-            )
-    }
-
-    private val viewModel: ViewModel by lazy {
-        provideViewModel(this) {
-            val args = requireArguments()
-            val entry = args.getObject<Entry>(ARG_ENTRY)!!
-            val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
-
-            ViewModel(entry, bookmark)
-        }
-    }
-
     companion object {
-        fun createInstance(entry: Entry, bookmark: Bookmark) = ReportDialog().apply {
-            arguments = Bundle().apply {
-                putObject(ARG_ENTRY, entry)
-                putObject(ARG_BOOKMARK, bookmark)
-            }
+        fun createInstance(
+            entry: Entry,
+            bookmark: Bookmark
+        ) = ReportDialog().withArguments {
+            putObject(ARG_ENTRY, entry)
+            putObject(ARG_BOOKMARK, bookmark)
         }
 
         private const val ARG_ENTRY = "ARG_ENTRY"
         private const val ARG_BOOKMARK = "ARG_BOOKMARK"
     }
 
+    private val viewModel: DialogViewModel by lazy {
+        provideViewModel(this) {
+            val args = requireArguments()
+            val entry = args.getObject<Entry>(ARG_ENTRY)!!
+            val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
+
+            DialogViewModel(entry, bookmark)
+        }
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val content =
-            LayoutInflater.from(context)
-            .inflate(R.layout.fragment_dialog_report, null)
-            .also {
-                initialize(it)
-            }
+        val inflater = LayoutInflater.from(context)
+        val binding = DataBindingUtil.inflate<FragmentDialogReport2Binding>(
+            inflater,
+            R.layout.fragment_dialog_report2,
+            null,
+            false
+        ).also {
+            it.vm = viewModel
+            it.lifecycleOwner = parentFragment?.viewLifecycleOwner
+            initialize(it)
+        }
 
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setTitle(R.string.report_bookmark_dialog_title)
-            .setView(content)
-            .setPositiveButton(R.string.report_dialog_ok) { _, _ ->
-                val activity = requireActivity() as BookmarksActivity
-                val listener = activity.viewModel as Listener
-                listener.onReportBookmark(this, viewModel.model)
-            }
+            .setView(binding.root)
+            .setPositiveButton(R.string.report_dialog_ok, null)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .create()
+            .show()
+            .also { dialog ->
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                    lifecycleScope.launch {
+                        val result = viewModel.invokeOnReport()
+                        if (result) {
+                            val user = viewModel.bookmark.user
+                            if (viewModel.ignoreAfterReporting.value == true) {
+                                context?.showToast(R.string.msg_report_and_ignore_succeeded, user)
+                            }
+                            else {
+                                context?.showToast(R.string.msg_report_succeeded, user)
+                            }
+                            dialog.dismiss()
+                        }
+                        else {
+                            context?.showToast(R.string.msg_report_failed)
+                        }
+                    }
+                }
+
+                dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener {
+                    dialog.dismiss()
+                }
+            }
     }
 
     /** コンテンツの初期化 */
-    private fun initialize(content: View) {
-        // ブクマ表示
-        content.user_name.text = viewModel.bookmark.user
-        content.bookmark_comment.text = viewModel.bookmark.comment
-        content.user_icon.let {
-            Glide.with(requireContext()).run {
-                clear(it)
-                load(HatenaClient.getUserIconUrl(viewModel.bookmark.user))
-                .into(it)
-            }
-        }
-
+    private fun initialize(binding: FragmentDialogReport2Binding) {
         // 通報内容、備考
-        content.text.run {
-            setText(viewModel.comment.value)
-
+        binding.text.run {
             // 右端で自動折り返しはするが改行は受け付けない
             setHorizontallyScrolling(false)
             maxLines = Int.MAX_VALUE
@@ -134,15 +109,10 @@ class ReportDialog : DialogFragment() {
                     else -> false
                 }
             }
-
-            // テキストの変更をモデルに反映
-            addTextChangedListener {
-                viewModel.comment.postValue(it.toString())
-            }
         }
 
         // 通報カテゴリ
-        content.category_spinner.apply {
+        binding.categorySpinner.apply {
             adapter = ArrayAdapter(
                 requireContext(),
                 R.layout.spinner_report,
@@ -168,14 +138,57 @@ class ReportDialog : DialogFragment() {
 
             setSelection(viewModel.category.value?.ordinal ?: 0)
         }
-
-        // 通報したあと非表示にするかどうか
-        content.ignore_user_after_reporting.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.ignoreAfterReporting.postValue(isChecked)
-        }
     }
 
-    interface Listener {
-        fun onReportBookmark(dialog: ReportDialog, model: Model)
+    // ------ //
+
+    /** 送信処理をセット */
+    fun setOnReportBookmark(l : SuspendSwitcher<Model>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onReport = l
+    }
+
+    // ------ //
+
+    data class Model (
+        val report: Report,
+        val ignoreAfterReporting: Boolean
+    )
+
+    // ------ //
+
+    class DialogViewModel(
+        val entry: Entry,
+        val bookmark: Bookmark
+    ) : ViewModel() {
+
+        /** 通報カテゴリ */
+        val category =
+            MutableLiveData<ReportCategory>(ReportCategory.SPAM)
+
+        /** 通報内容に加えるコメント */
+        val comment =
+            MutableLiveData<String>("")
+
+        /** 通報後にユーザーを非表示にする */
+        val ignoreAfterReporting =
+            MutableLiveData<Boolean>()
+
+        val model
+            get() = Model(
+                Report(
+                    entry = entry,
+                    bookmark = bookmark,
+                    category = category.value ?: ReportCategory.SPAM,
+                    comment = comment.value
+                ),
+                ignoreAfterReporting.value ?: false
+            )
+
+        /** 送信時アクション */
+        var onReport : SuspendSwitcher<Model>? = null
+
+        suspend fun invokeOnReport() : Boolean {
+            return onReport?.invoke(model) ?: true
+        }
     }
 }
