@@ -308,6 +308,24 @@ class BookmarksRepository(
         updateRecentBookmarksLiveData(bookmarksRecentCache)
     }
 
+    /** 他の画面から復帰時にキャッシュを再読み込みする */
+    suspend fun onRestart() {
+        loadIgnoredUsers()
+        loadUserTags()
+
+        val users = bookmarksDigestCache?.scoredBookmarks?.map { it.user }
+            ?.plus(
+                bookmarksRecentCache.map { it.user }
+            )
+            ?.distinct() ?: emptyList()
+
+        users.forEach { user ->
+            loadUserTags(user, forceRefresh = true)
+        }
+
+        refreshBookmarks()
+    }
+
     // ------ //
 
     /** 同じユーザーのブクマを渡された内容に更新する */

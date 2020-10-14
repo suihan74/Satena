@@ -10,6 +10,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.viewModelScope
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -29,6 +30,8 @@ import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.activity_browser.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class BrowserActivity : AppCompatActivity() {
     companion object {
@@ -198,6 +201,13 @@ class BrowserActivity : AppCompatActivity() {
 
         drawer_area.updateLayoutParams<DrawerLayout.LayoutParams> {
             gravity = viewModel.drawerGravity
+        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        viewModel.viewModelScope.launch(Dispatchers.Default) {
+            viewModel.bookmarksRepo.onRestart()
         }
     }
 
