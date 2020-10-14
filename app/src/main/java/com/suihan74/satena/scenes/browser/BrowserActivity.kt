@@ -206,6 +206,7 @@ class BrowserActivity : AppCompatActivity() {
 
     override fun onRestart() {
         super.onRestart()
+        // 別画面で更新されている可能性があるキャッシュを再読み込みする
         viewModel.viewModelScope.launch(Dispatchers.Default) {
             viewModel.bookmarksRepo.onRestart()
         }
