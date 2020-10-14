@@ -8,10 +8,10 @@ inline fun <T> List<T>.updateFirstOrPlus(value: T, predicate: (T)->Boolean) : Li
     val prevList = this
     val idx = prevList.indexOfFirst(predicate)
 
-    return if (idx < 0) buildList(this.size + 1) {
+    return if (idx < 0) prevList.plus(value)
+    else buildList(this.size + 1) {
         addAll(prevList.subList(0, idx))
         add(value)
         addAll(prevList.subList(idx + 1, prevList.size))
     }
-    else prevList.plus(value)
 }
