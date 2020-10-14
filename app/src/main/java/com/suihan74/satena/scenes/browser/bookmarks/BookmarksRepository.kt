@@ -446,7 +446,10 @@ class BookmarksRepository(
     }
 
     /** 最新のブクマリストを(取得済みの位置まで)取得する */
-    @Throws(TimeoutException::class, NotFoundException::class)
+    @Throws(
+        TimeoutException::class,
+        NotFoundException::class
+    )
     private suspend fun loadMostRecentBookmarks(url: String) : BookmarksWithCursor {
         val bookmarks = ArrayList<BookmarkWithStarCount>()
         var cursor: String? = null

@@ -257,6 +257,7 @@ class BookmarksViewModel(
                 val context = SatenaApplication.instance
                 if (result.isSuccess) {
                     if (model.ignoreAfterReporting) {
+                        repository.refreshBookmarks()
                         context.showToast(R.string.msg_report_and_ignore_succeeded, model.user)
                     }
                     else {
