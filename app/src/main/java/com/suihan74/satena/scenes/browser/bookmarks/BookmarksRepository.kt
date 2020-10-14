@@ -22,7 +22,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 
 /**
- * ブクマリスト周りのビジネスロジック
+ * ブクマ画面用のリポジトリ
  *
  * TODO: v1.6で.bookmarkと統合することを前提に開発すること
  */
@@ -32,9 +32,13 @@ class BookmarksRepository(
     private val ignoredEntryDao : IgnoredEntryDao,
     private val userTagDao: UserTagDao
 ) :
+        // ユーザー非表示
         IgnoredUsersRepositoryInterface by IgnoredUsersRepository(accountLoader),
+        // NGワード
         IgnoredEntriesRepositoryForBookmarks by IgnoredEntriesRepository(ignoredEntryDao),
+        // ユーザータグ
         UserTagsRepositoryInterface by UserTagsRepository(userTagDao),
+        // スター
         StarRepositoryInterface by StarRepository(accountLoader, prefs)
 {
 
