@@ -16,6 +16,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
+import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.extensions.showToast
@@ -179,7 +180,7 @@ class BookmarksViewModel(
             dialog.setOnIgnoreUser { ignoreUser(it) }
             dialog.setOnUnignoreUser { unIgnoreUser(it) }
             dialog.setOnReportBookmark { reportBookmark(it, fragmentManager) }
-            dialog.setOnSetUserTag { /* TODO */ }
+            dialog.setOnSetUserTag { openUserTagSelectionDialog(it, fragmentManager) }
             dialog.setOnDeleteStar { /* TODO */ }
 
             dialog.showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
@@ -195,81 +196,131 @@ class BookmarksViewModel(
     }
 
     /** ユーザーを非表示にする */
-    private fun ignoreUser(user: String) {
-        viewModelScope.launch(Dispatchers.Main) {
-            val result = runCatching {
-                repository.ignoreUser(user)
-            }
+    private fun ignoreUser(
+        user: String
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        val result = runCatching {
+            repository.ignoreUser(user)
+        }
 
-            if (result.isSuccess) {
-                repository.refreshBookmarks()
-                SatenaApplication.instance.showToast(
-                    R.string.msg_ignore_user_succeeded,
-                    user
-                )
-            }
-            else {
-                SatenaApplication.instance.showToast(
-                    R.string.msg_ignore_user_failed,
-                    user
-                )
-            }
+        if (result.isSuccess) {
+            repository.refreshBookmarks()
+            SatenaApplication.instance.showToast(
+                R.string.msg_ignore_user_succeeded,
+                user
+            )
+        }
+        else {
+            SatenaApplication.instance.showToast(
+                R.string.msg_ignore_user_failed,
+                user
+            )
         }
     }
 
     /** ユーザーの非表示を解除する */
-    private fun unIgnoreUser(user: String) {
-        viewModelScope.launch(Dispatchers.Main) {
-            val result = runCatching {
-                repository.unIgnoreUser(user)
-            }
+    private fun unIgnoreUser(
+        user: String
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        val result = runCatching {
+            repository.unIgnoreUser(user)
+        }
 
-            if (result.isSuccess) {
-                repository.refreshBookmarks()
-                SatenaApplication.instance.showToast(
-                    R.string.msg_unignore_user_succeeded,
-                    user
-                )
-            }
-            else {
-                SatenaApplication.instance.showToast(
-                    R.string.msg_unignore_user_failed,
-                    user
-                )
-            }
+        if (result.isSuccess) {
+            repository.refreshBookmarks()
+            SatenaApplication.instance.showToast(
+                R.string.msg_unignore_user_succeeded,
+                user
+            )
+        }
+        else {
+            SatenaApplication.instance.showToast(
+                R.string.msg_unignore_user_failed,
+                user
+            )
         }
     }
 
     /** ブクマを通報する */
-    private fun reportBookmark(bookmark: Bookmark, fragmentManager: FragmentManager) {
-        ReportDialog.createInstance(
+    private fun reportBookmark(
+        bookmark: Bookmark,
+        fragmentManager: FragmentManager
+    ) {
+        val dialog = ReportDialog.createInstance(
             user = bookmark.user,
             userIconUrl = bookmark.userIconUrl,
             comment = bookmark.commentRaw
-        ).also { dialog ->
-            dialog.setOnReportBookmark { model ->
-                val entry = entry.value ?: return@setOnReportBookmark false
+        )
 
-                val result = runCatching {
-                    repository.reportBookmark(entry, bookmark, model.category, model)
-                }
+        dialog.setOnReportBookmark { model ->
+            val entry = entry.value ?: return@setOnReportBookmark false
 
-                val context = SatenaApplication.instance
-                if (result.isSuccess) {
-                    if (model.ignoreAfterReporting) {
-                        repository.refreshBookmarks()
-                        context.showToast(R.string.msg_report_and_ignore_succeeded, model.user)
-                    }
-                    else {
-                        context.showToast(R.string.msg_report_succeeded, model.user)
-                    }
+            val result = runCatching {
+                repository.reportBookmark(entry, bookmark, model.category, model)
+            }
+
+            val context = SatenaApplication.instance
+            if (result.isSuccess) {
+                if (model.ignoreAfterReporting) {
+                    repository.refreshBookmarks()
+                    context.showToast(R.string.msg_report_and_ignore_succeeded, model.user)
                 }
                 else {
-                    Log.e("reportBookmark", Log.getStackTraceString(result.exceptionOrNull()))
-                    context.showToast(R.string.msg_report_failed)
+                    context.showToast(R.string.msg_report_succeeded, model.user)
                 }
+            }
+            else {
+                Log.e("reportBookmark", Log.getStackTraceString(result.exceptionOrNull()))
+                context.showToast(R.string.msg_report_failed)
+            }
 
-                return@setOnReportBookmark result.isSuccess
+            return@setOnReportBookmark result.isSuccess
+        }
+
+        dialog.showAllowingStateLoss(fragmentManager)
+    }
+
+    /** ユーザーにタグをつけるダイアログを開く */
+    private fun openUserTagSelectionDialog(
+        user: String,
+        fragmentManager: FragmentManager
+    ) {
+        viewModelScope.launch(Dispatchers.Main) {
+            repository.loadUserTags()
+            val userAndTags = repository.loadUserTags(user)?.let {
+                it.tags.map { tag -> tag.id }
+            } ?: emptyList()
+
+            val dialog = UserTagSelectionDialog.createInstance(
+                user,
+                repository.userTags,
+                userAndTags
+            )
+
+            dialog.setOnActivateTagsListener { (user, activeTags) ->
+                activeTags.forEach { tag ->
+                    val result = runCatching {
+                        repository.tagUser(user, tag)
+                    }
+                    if (result.isFailure) {
+                        Log.e("activateTag", Log.getStackTraceString(result.exceptionOrNull()))
+                    }
+                }
+            }
+
+            dialog.setOnInactivateTagsListener { (user, inactiveTags) ->
+                inactiveTags.forEach { tag ->
+                    val result = runCatching {
+                        repository.unTagUser(user, tag)
+                    }
+                    if (result.isFailure) {
+                        Log.e("activateTag", Log.getStackTraceString(result.exceptionOrNull()))
+                    }
+                }
+            }
+
+            dialog.setOnCompleteListener {
+                repository.refreshBookmarks()
             }
 
             dialog.showAllowingStateLoss(fragmentManager)

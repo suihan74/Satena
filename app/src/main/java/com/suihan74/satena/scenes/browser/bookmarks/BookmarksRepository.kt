@@ -55,7 +55,7 @@ class BookmarksRepository(
         get() = client.account?.name
 
     /** アカウントが必要な操作前にサインインする */
-    suspend fun signIn() : Account? = withContext(Dispatchers.IO) {
+    suspend fun signIn() : Account? = withContext(Dispatchers.Default) {
         val result = runCatching {
             accountLoader.signInAccounts(reSignIn = false)
         }
@@ -234,7 +234,7 @@ class BookmarksRepository(
 
     /** ブクマエントリ情報をロードする */
     @Throws(ConnectionFailureException::class)
-    suspend fun loadBookmarksEntry(url: String) = withContext(Dispatchers.IO) {
+    suspend fun loadBookmarksEntry(url: String) = withContext(Dispatchers.Default) {
         val result = runCatching {
             client.getBookmarksEntryAsync(url).await()
         }
@@ -298,7 +298,7 @@ class BookmarksRepository(
     }
 
     /** 読み込み済みの各種リストを再生成する */
-    suspend fun refreshBookmarks() = withContext(Dispatchers.IO) {
+    suspend fun refreshBookmarks() = withContext(Dispatchers.Default) {
         // 人気ブクマリストを再生成
         popularBookmarks.postValue(
             filterIgnored(bookmarksDigestCache?.scoredBookmarks ?: emptyList())
@@ -311,7 +311,9 @@ class BookmarksRepository(
     // ------ //
 
     /** 同じユーザーのブクマを渡された内容に更新する */
-    suspend fun updateBookmark(result: BookmarkResult) = withContext(Dispatchers.IO) {
+    suspend fun updateBookmark(
+        result: BookmarkResult
+    ) = withContext(Dispatchers.Default) {
         entry.postValue(
             entry.value?.copy(
                 id = result.eid ?: entry.value?.id ?: 0L,
@@ -333,7 +335,9 @@ class BookmarksRepository(
     }
 
     /** 同じユーザーのブクマを渡された内容に更新する */
-    suspend fun updateBookmark(bookmark: BookmarkWithStarCount) = withContext(Dispatchers.IO) {
+    suspend fun updateBookmark(
+        bookmark: BookmarkWithStarCount
+    ) = withContext(Dispatchers.Default) {
         val user = bookmark.user
 
         val bEntry = bookmarksEntry.value?.let { e ->
@@ -366,7 +370,7 @@ class BookmarksRepository(
         TimeoutException::class,
         NotFoundException::class
     )
-    suspend fun loadPopularBookmarks() = withContext(Dispatchers.IO) {
+    suspend fun loadPopularBookmarks() = withContext(Dispatchers.Default) {
         val result = runCatching {
             client.getDigestBookmarksAsync(url).await()
         }
@@ -399,7 +403,7 @@ class BookmarksRepository(
     )
     suspend fun loadRecentBookmarks(
         additionalLoading: Boolean = false
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(Dispatchers.Default) {
         // 既に最後までロードしている
         if (additionalLoading && recentCursor == null) {
             return@withContext

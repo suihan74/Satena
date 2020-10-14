@@ -140,22 +140,19 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
                 bookmarksAdapter.submitList(null)
             }
             else {
-                lifecycleScope.launch {
-                    val repo = viewModel.repository
-
-                    bookmarksAdapter.setBookmarks(
-                        lifecycleScope,
-                        bookmarks = it,
-                        bookmarksEntry = viewModel.bookmarksEntry.value,
-                        taggedUsers = repo.userTags,
-                        ignoredUsers = repo.ignoredUsersCache,
-                        displayMutedMention = false,
-                        starsEntryGetter = { null }
-                    ) {
-                        binding.swipeLayout.isRefreshing = false
-                        binding.swipeLayout.isEnabled = true
-                        binding.progressBar.visibility = View.GONE
-                    }
+                val repo = viewModel.repository
+                bookmarksAdapter.setBookmarks(
+                    lifecycleScope,
+                    bookmarks = it,
+                    bookmarksEntry = viewModel.bookmarksEntry.value,
+                    taggedUsers = repo.taggedUsers,
+                    ignoredUsers = repo.ignoredUsersCache,
+                    displayMutedMention = false,
+                    starsEntryGetter = { null }
+                ) {
+                    binding.swipeLayout.isRefreshing = false
+                    binding.swipeLayout.isEnabled = true
+                    binding.progressBar.visibility = View.GONE
                 }
             }
         }
