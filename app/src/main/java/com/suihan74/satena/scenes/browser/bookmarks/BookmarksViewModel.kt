@@ -15,6 +15,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
+import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.extensions.showToast
@@ -177,7 +178,7 @@ class BookmarksViewModel(
             dialog.setOnShowEntries { showEntries(activity, it) }
             dialog.setOnIgnoreUser { ignoreUser(it) }
             dialog.setOnUnignoreUser { unIgnoreUser(it) }
-            dialog.setOnReportBookmark { reportBookmark(it) }
+            dialog.setOnReportBookmark { reportBookmark(it, fragmentManager) }
             dialog.setOnSetUserTag { /* TODO */ }
             dialog.setOnDeleteStar { /* TODO */ }
 
@@ -240,7 +241,37 @@ class BookmarksViewModel(
     }
 
     /** ブクマを通報する */
-    private fun reportBookmark(bookmark: Bookmark) {
-        // TODO
+    private fun reportBookmark(bookmark: Bookmark, fragmentManager: FragmentManager) {
+        ReportDialog.createInstance(
+            user = bookmark.user,
+            userIconUrl = bookmark.userIconUrl,
+            comment = bookmark.commentRaw
+        ).also { dialog ->
+            dialog.setOnReportBookmark { model ->
+                val entry = entry.value ?: return@setOnReportBookmark false
+
+                val result = runCatching {
+                    repository.reportBookmark(entry, bookmark, model.category, model)
+                }
+
+                val context = SatenaApplication.instance
+                if (result.isSuccess) {
+                    if (model.ignoreAfterReporting) {
+                        context.showToast(R.string.msg_report_and_ignore_succeeded, model.user)
+                    }
+                    else {
+                        context.showToast(R.string.msg_report_succeeded, model.user)
+                    }
+                }
+                else {
+                    Log.e("reportBookmark", Log.getStackTraceString(result.exceptionOrNull()))
+                    context.showToast(R.string.msg_report_failed)
+                }
+
+                return@setOnReportBookmark result.isSuccess
+            }
+
+            dialog.showAllowingStateLoss(fragmentManager)
+        }
     }
 }

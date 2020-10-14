@@ -2,9 +2,10 @@ package com.suihan74.satena.scenes.preferences.ignored
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.suihan74.hatenaLib.FetchIgnoredUsersFailureException
-import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.*
+import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -28,6 +29,15 @@ interface IgnoredUsersRepositoryInterface {
     /** ユーザーの非表示を解除する */
     @Throws(FetchIgnoredUsersFailureException::class)
     suspend fun unIgnoreUser(user: String)
+
+    /** ブコメを通報する */
+    @Throws(TaskFailureException::class, FetchIgnoredUsersFailureException::class)
+    suspend fun reportBookmark(
+        entry: Entry,
+        bookmark: Bookmark,
+        category: ReportCategory,
+        model: ReportDialog.Model
+    )
 }
 
 /**
@@ -49,7 +59,7 @@ class IgnoredUsersRepository(
     override val ignoredUsers: LiveData<List<String>>
         get() = _ignoredUsers
 
-    override suspend fun loadIgnoredUsers() = withContext(Dispatchers.IO) {
+    override suspend fun loadIgnoredUsers() = withContext(Dispatchers.Default) {
         val result = runCatching {
             val client = signIn()
             client.getIgnoredUsersAsync().await()
@@ -63,7 +73,7 @@ class IgnoredUsersRepository(
     }
 
     @Throws(FetchIgnoredUsersFailureException::class)
-    override suspend fun ignoreUser(user: String) = withContext(Dispatchers.IO) {
+    override suspend fun ignoreUser(user: String) = withContext(Dispatchers.Default) {
         val result = runCatching {
             val client = signIn()
             client.ignoreUserAsync(user).await()
@@ -83,7 +93,7 @@ class IgnoredUsersRepository(
     }
 
     @Throws(FetchIgnoredUsersFailureException::class)
-    override suspend fun unIgnoreUser(user: String) = withContext(Dispatchers.IO) {
+    override suspend fun unIgnoreUser(user: String) = withContext(Dispatchers.Default) {
         val result = runCatching {
             val client = signIn()
             client.unignoreUserAsync(user).await()
@@ -99,6 +109,28 @@ class IgnoredUsersRepository(
                 message = e?.message,
                 cause = e
             )
+        }
+    }
+
+    /** ブコメを通報する */
+    @Throws(TaskFailureException::class, FetchIgnoredUsersFailureException::class)
+    override suspend fun reportBookmark(
+        entry: Entry,
+        bookmark: Bookmark,
+        category: ReportCategory,
+        model: ReportDialog.Model
+    ) {
+        val result = runCatching {
+            val client = signIn()
+            client.reportAsync(entry, bookmark, category, model.comment).await()
+        }
+
+        if (result.isFailure) {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+
+        if (model.ignoreAfterReporting) {
+            ignoreUser(model.user)
         }
     }
 
