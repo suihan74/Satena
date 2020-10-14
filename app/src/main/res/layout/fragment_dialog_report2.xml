@@ -18,22 +18,19 @@
             android:layout_height="wrap_content">
 
         <RelativeLayout
-                android:paddingTop="12dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
             <ImageView
                     android:id="@+id/user_icon"
-                    src="@{vm.bookmark.userIconUrl}"
+                    src="@{vm.userIconUrl}"
                     android:contentDescription="@null"
                     android:layout_width="48dp"
                     android:layout_height="48dp"/>
 
             <TextView
                     android:id="@+id/user_name"
-                    android:text="@{vm.bookmark.user}"
+                    android:text="@{vm.user}"
                     android:textStyle="bold"
                     android:textColor="@color/textColor"
                     android:singleLine="true"
@@ -47,7 +44,7 @@
 
             <TextView
                     android:id="@+id/bookmark_comment"
-                    android:text="@{vm.bookmark.commentRaw}"
+                    android:text="@{vm.userComment}"
                     android:textColor="@color/textColor"
                     android:layout_alignStart="@id/user_name"
                     android:layout_below="@id/user_name"

@@ -705,10 +705,20 @@ class BookmarksViewModel(
 
     private fun onReportBookmark(bookmark: Bookmark) {
         val fragmentManager = fragmentManager ?: return
-        ReportDialog.createInstance(entry, bookmark).run {
+        ReportDialog.createInstance(
+            user = bookmark.user,
+            userIconUrl = bookmark.userIconUrl,
+            comment = bookmark.commentRaw
+        ).run {
             setOnReportBookmark { model ->
-                val user = model.report.bookmark.user
-                val isSuccess = reportBookmark(model.report)
+                val user = model.user
+                val report = Report(
+                    entry = entry,
+                    bookmark = bookmark,
+                    category = model.category,
+                    comment = model.comment
+                )
+                val isSuccess = reportBookmark(report)
                 val ignoreAfterReporting =
                     model.ignoreAfterReporting && !ignoredUsers.value.contains(user)
 

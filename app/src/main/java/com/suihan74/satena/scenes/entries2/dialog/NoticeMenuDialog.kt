@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.entries2.dialog
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
@@ -9,18 +10,16 @@ import androidx.databinding.DataBindingUtil
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogTitleUserBinding
 import com.suihan74.satena.databinding.ListviewItemNotices2Binding
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.ReportDialogFragment
 import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
+import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.extensions.getObject
-import com.suihan74.utilities.extensions.putObject
-import com.suihan74.utilities.extensions.users
-import com.suihan74.utilities.extensions.withArguments
+import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.showAllowingStateLoss
 
 class NoticeMenuDialog : AlertDialogFragment() {
@@ -44,7 +43,7 @@ class NoticeMenuDialog : AlertDialogFragment() {
         onNoticeRemovedListener = listener
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?) : Dialog {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val arguments = requireArguments()
         val notice = arguments.getObject<Notice>(ARG_NOTICE)!!
         val users = notice.users
@@ -58,11 +57,16 @@ class NoticeMenuDialog : AlertDialogFragment() {
             it.notice = notice
         }
 
-        val items : List<Pair<String, ()->Unit>> = users
-            .map { "id:$it" to {
-                val userMenuDialog = NoticeUserMenuDialog.createInstance(it)
-                userMenuDialog.showAllowingStateLoss(parentFragmentManager, DIALOG_NOTICE_USER_MENU)
-            } }
+        val items: List<Pair<String, () -> Unit>> = users
+            .map {
+                "id:$it" to {
+                    val userMenuDialog = NoticeUserMenuDialog.createInstance(it)
+                    userMenuDialog.showAllowingStateLoss(
+                        parentFragmentManager,
+                        DIALOG_NOTICE_USER_MENU
+                    )
+                }
+            }
             .plus(
                 getString(R.string.menu_notice_remove) to { removeNotice(notice) }
             )
@@ -103,7 +107,7 @@ class NoticeMenuDialog : AlertDialogFragment() {
             const val DIALOG_REPORT = "NoticeUserMenuDialog.DIALOG_REPORT"
         }
 
-        override fun onCreateDialog(savedInstanceState: Bundle?) : Dialog {
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             val arguments = requireArguments()
             val user = arguments.getString(ARG_USER)!!
 
@@ -117,7 +121,7 @@ class NoticeMenuDialog : AlertDialogFragment() {
                 it.iconUrl = HatenaClient.getUserIconUrl(user)
             }
 
-            val items = arrayOf<Pair<Int, (String)->Unit>>(
+            val items = arrayOf<Pair<Int, (String) -> Unit>>(
                 R.string.bookmark_show_user_entries to { u -> showBookmarkedEntries(u) },
                 R.string.bookmark_report to { u -> showReportDialog(u) }
             )
@@ -140,8 +144,48 @@ class NoticeMenuDialog : AlertDialogFragment() {
 
         /** ユーザーを通報する */
         private fun showReportDialog(user: String) {
-            val dialog = ReportDialogFragment.createInstance(user)
-            dialog.showAllowingStateLoss(parentFragmentManager, DIALOG_REPORT)
+            ReportDialog.createInstance(
+                user = user,
+                userIconUrl = HatenaClient.getUserIconUrl(user)
+            ).also { dialog ->
+                dialog.setOnReportBookmark { model ->
+                    val isSuccess = reportUser(model)
+                    val ignoreAfterReporting = model.ignoreAfterReporting
+
+                    if (isSuccess && ignoreAfterReporting) {
+                        val result = runCatching { ignoreUser(user) }
+                        val context = SatenaApplication.instance
+                        if (result.isSuccess) {
+                            context.showToast(R.string.msg_report_and_ignore_succeeded, user)
+                        }
+                        else {
+                            context.showToast(R.string.msg_ignore_user_failed, user)
+                            Log.e("ignoreUser", "failed: user = $user")
+                            result.exceptionOrNull()?.printStackTrace()
+                        }
+                        return@setOnReportBookmark result.isSuccess
+                    }
+                    else {
+                        return@setOnReportBookmark isSuccess
+                    }
+                }
+                dialog.showAllowingStateLoss(parentFragmentManager, DIALOG_REPORT)
+            }
+        }
+
+        private suspend fun reportUser(model: ReportDialog.Model): Boolean {
+            val result = runCatching {
+                HatenaClient.reportAsync(
+                    user = model.user,
+                    category = model.category,
+                    text = model.comment
+                ).await()
+            }
+            return result.getOrDefault(false)
+        }
+
+        private suspend fun ignoreUser(user: String) {
+            HatenaClient.ignoreUserAsync(user).await()
         }
     }
 }

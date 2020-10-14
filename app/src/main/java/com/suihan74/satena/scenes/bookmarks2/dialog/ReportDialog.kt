@@ -14,38 +14,42 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
-import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.hatenaLib.Entry
-import com.suihan74.hatenaLib.Report
 import com.suihan74.hatenaLib.ReportCategory
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogReport2Binding
 import com.suihan74.utilities.SuspendSwitcher
-import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class ReportDialog : DialogFragment() {
     companion object {
         fun createInstance(
-            entry: Entry,
-            bookmark: Bookmark
+            user: String,
+            userIconUrl: String,
+            comment: String? = null
         ) = ReportDialog().withArguments {
-            putObject(ARG_ENTRY, entry)
-            putObject(ARG_BOOKMARK, bookmark)
+            putString(ARG_USER, user)
+            putString(ARG_USER_ICON_URL, userIconUrl)
+            putString(ARG_COMMENT, comment)
         }
 
-        private const val ARG_ENTRY = "ARG_ENTRY"
-        private const val ARG_BOOKMARK = "ARG_BOOKMARK"
+        private const val ARG_USER = "ARG_USER"
+        private const val ARG_USER_ICON_URL = "ARG_USER_ICON_URL"
+        private const val ARG_COMMENT = "ARG_COMMENT"
     }
 
     private val viewModel: DialogViewModel by lazy {
         provideViewModel(this) {
             val args = requireArguments()
-            val entry = args.getObject<Entry>(ARG_ENTRY)!!
-            val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
+            val user = args.getString(ARG_USER)!!
+            val userIconUrl = args.getString(ARG_USER_ICON_URL)!!
+            val comment = args.getString(ARG_COMMENT) ?: ""
 
-            DialogViewModel(entry, bookmark)
+            DialogViewModel(user, userIconUrl, comment)
         }
     }
 
@@ -70,10 +74,10 @@ class ReportDialog : DialogFragment() {
             .show()
             .also { dialog ->
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(Dispatchers.Main) {
                         val result = viewModel.invokeOnReport()
                         if (result) {
-                            val user = viewModel.bookmark.user
+                            val user = viewModel.user
                             if (viewModel.ignoreAfterReporting.value == true) {
                                 context?.showToast(R.string.msg_report_and_ignore_succeeded, user)
                             }
@@ -112,31 +116,32 @@ class ReportDialog : DialogFragment() {
         }
 
         // 通報カテゴリ
-        binding.categorySpinner.apply {
-            adapter = ArrayAdapter(
-                requireContext(),
-                R.layout.spinner_report,
-                ReportCategory.values().map { it.description }
-            ).apply {
-                setDropDownViewResource(R.layout.spinner_drop_down_item)
-                onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        val category = ReportCategory.fromInt(position)
-                        viewModel.category.postValue(category)
-                    }
+        binding.categorySpinner.also { spinner ->
+            spinner.adapter =
+                ArrayAdapter(
+                    requireContext(),
+                    R.layout.spinner_report,
+                    ReportCategory.values().map { it.description }
+                ).also { adapter ->
+                    adapter.setDropDownViewResource(R.layout.spinner_drop_down_item)
+                }
 
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-                        viewModel.category.postValue(null)
-                    }
+            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    viewModel.category.value = ReportCategory.fromInt(position)
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    viewModel.category.value = null
                 }
             }
 
-            setSelection(viewModel.category.value?.ordinal ?: 0)
+            spinner.setSelection(viewModel.category.value?.ordinal ?: 0)
         }
     }
 
@@ -150,15 +155,25 @@ class ReportDialog : DialogFragment() {
     // ------ //
 
     data class Model (
-        val report: Report,
-        val ignoreAfterReporting: Boolean
+        /** 通報対象ユーザー */
+        val user : String,
+
+        /** 通報カテゴリ */
+        val category : ReportCategory,
+
+        /** 通報内容に加えるコメント */
+        val comment : String,
+
+        /** 通報後に非表示にする */
+        val ignoreAfterReporting : Boolean
     )
 
     // ------ //
 
     class DialogViewModel(
-        val entry: Entry,
-        val bookmark: Bookmark
+        val user: String,
+        val userIconUrl: String,
+        val userComment: String
     ) : ViewModel() {
 
         /** 通報カテゴリ */
@@ -175,13 +190,10 @@ class ReportDialog : DialogFragment() {
 
         val model
             get() = Model(
-                Report(
-                    entry = entry,
-                    bookmark = bookmark,
-                    category = category.value ?: ReportCategory.SPAM,
-                    comment = comment.value
-                ),
-                ignoreAfterReporting.value ?: false
+                user = user,
+                category = category.value ?: ReportCategory.SPAM,
+                comment = comment.value ?: "",
+                ignoreAfterReporting = ignoreAfterReporting.value ?: false
             )
 
         /** 送信時アクション */
