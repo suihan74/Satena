@@ -16,7 +16,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.ReportCategory
 import com.suihan74.satena.R
-import com.suihan74.satena.databinding.FragmentDialogReport2Binding
+import com.suihan74.satena.databinding.FragmentDialogReportBinding
 import com.suihan74.utilities.SuspendSwitcher
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
@@ -55,9 +55,9 @@ class ReportDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
-        val binding = DataBindingUtil.inflate<FragmentDialogReport2Binding>(
+        val binding = DataBindingUtil.inflate<FragmentDialogReportBinding>(
             inflater,
-            R.layout.fragment_dialog_report2,
+            R.layout.fragment_dialog_report,
             null,
             false
         ).also {
@@ -99,7 +99,7 @@ class ReportDialog : DialogFragment() {
     }
 
     /** コンテンツの初期化 */
-    private fun initialize(binding: FragmentDialogReport2Binding) {
+    private fun initialize(binding: FragmentDialogReportBinding) {
         // 通報内容、備考
         binding.text.run {
             // 右端で自動折り返しはするが改行は受け付けない
