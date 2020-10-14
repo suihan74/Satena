@@ -7,12 +7,10 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
-import com.suihan74.satena.models.userTag.TagAndUsers
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.SuspendListener
 import com.suihan74.utilities.extensions.withArguments
@@ -22,23 +20,26 @@ import kotlinx.coroutines.launch
 
 class UserTagSelectionDialog : DialogFragment() {
     companion object {
-        fun createInstance(user: String) = UserTagSelectionDialog().withArguments {
+        fun createInstance(
+            user: String,
+            tags: List<Tag>,
+            initialCheckedTagIds: List<Int>
+        ) = UserTagSelectionDialog().withArguments {
             putString(ARG_USER, user)
+            putIntArray(ARG_INITIAL_CHECKED_IDS, initialCheckedTagIds.toIntArray())
+            it.setUserTags(tags)
         }
 
         private const val ARG_USER = "ARG_USER"
+        private const val ARG_INITIAL_CHECKED_IDS = "ARG_INITIAL_CHECKED_IDS"
     }
 
     private val viewModel: DialogViewModel by lazy {
         provideViewModel(this) {
             val args = requireArguments()
-            // TODO: タグ取得方法の変更
-            val tags = (requireActivity() as BookmarksActivity).viewModel.getUserTags()
-
-            DialogViewModel(
-                args.getString(ARG_USER)!!,
-                tags
-            )
+            val user = args.getString(ARG_USER)!!
+            val initialCheckedTagIds = args.getIntArray(ARG_INITIAL_CHECKED_IDS) ?: IntArray(0)
+            DialogViewModel(user, initialCheckedTagIds)
         }
     }
 
@@ -56,35 +57,58 @@ class UserTagSelectionDialog : DialogFragment() {
             .show()
             .apply {
                 getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                    // 処理中の操作を禁止する
+                    getButton(DialogInterface.BUTTON_NEGATIVE).isEnabled = false
+                    getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = false
+                    getButton(DialogInterface.BUTTON_NEUTRAL).isEnabled = false
+                    setCanceledOnTouchOutside(false)
+                    listView?.isEnabled = false
+
                     viewModel.invokeOnComplete(this@UserTagSelectionDialog)
                 }
             }
     }
 
-    suspend fun setOnAddNewTagListener(listener: Listener<Unit>?) = whenStarted {
-        viewModel.onAddNewTag = listener
+    fun setUserTags(
+        tags: List<Tag>
+    ) = lifecycleScope.launchWhenCreated {
+        viewModel.tags = tags
     }
 
-    suspend fun setOnActivateTagsListener(listener: SuspendListener<ActivateUserTagsArguments>?) = whenStarted {
-        viewModel.onActivateTags = listener
+    fun setOnAddNewTagListener(
+        l: Listener<Unit>?
+    ) = lifecycleScope.launchWhenCreated {
+        viewModel.onAddNewTag = l
     }
 
-    suspend fun setOnInactivateTagsListener(listener: SuspendListener<ActivateUserTagsArguments>?) = whenStarted {
-        viewModel.onInactivateTags = listener
+    fun setOnActivateTagsListener(
+        l: SuspendListener<ActivateUserTagsArguments>?
+    ) = lifecycleScope.launchWhenCreated {
+        viewModel.onActivateTags = l
     }
 
-    suspend fun setOnCompleteListener(listener: SuspendListener<Unit>?) = whenStarted {
-        viewModel.onComplete = listener
+    fun setOnInactivateTagsListener(
+        l: SuspendListener<ActivateUserTagsArguments>?
+    ) = lifecycleScope.launchWhenCreated {
+        viewModel.onInactivateTags = l
+    }
+
+    fun setOnCompleteListener(
+        l: SuspendListener<Unit>?
+    ) = lifecycleScope.launchWhenCreated {
+        viewModel.onComplete = l
     }
 
     // ------ //
 
     class DialogViewModel(
         val user: String,
-        val tags: List<TagAndUsers>
+        private val initialCheckedTagIds: IntArray
     ) : ViewModel() {
+        var tags: List<Tag> = emptyList()
+
         val tagNames: Array<String> by lazy {
-            tags.map { it.userTag.name }.toTypedArray()
+            tags.map { it.name }.toTypedArray()
         }
 
         /** ダイアログでのタグ選択状態を保持する */
@@ -93,20 +117,19 @@ class UserTagSelectionDialog : DialogFragment() {
         }
 
         /** ダイアログが開かれた時点での選択状態 */
-        val initialChecks: BooleanArray =
-            tags.map { it.users.any { u -> u.name == user } }.toBooleanArray()
+        val initialChecks: BooleanArray by lazy {
+            tags.map { initialCheckedTagIds.contains(it.id) }.toBooleanArray()
+        }
 
         /** 選択状態から非選択状態に変更されたアイテム */
         val inactivatedTags: List<Tag>
             get() = tags
                 .filterIndexed { idx, _ -> !checks[idx] && initialChecks[idx] }
-                .map { it.userTag }
 
         /** 非選択状態から選択状態に変更されたアイテム */
         val activatedTags: List<Tag>
             get() = tags
                 .filterIndexed { idx, _ -> checks[idx] && !initialChecks[idx] }
-                .map { it.userTag }
 
         // --- //
 
@@ -122,10 +145,16 @@ class UserTagSelectionDialog : DialogFragment() {
         /** 有効化・無効化が完了 */
         var onComplete: SuspendListener<Unit>? = null
 
-        fun invokeOnComplete(dialog: UserTagSelectionDialog) = viewModelScope.launch(Dispatchers.Main) {
+        fun invokeOnComplete(
+            dialog: UserTagSelectionDialog
+        ) = viewModelScope.launch(Dispatchers.Main) {
             try {
-                onActivateTags?.invoke(ActivateUserTagsArguments(user, activatedTags))
-                onInactivateTags?.invoke(ActivateUserTagsArguments(user, inactivatedTags))
+                onActivateTags?.invoke(
+                    ActivateUserTagsArguments(user, activatedTags)
+                )
+                onInactivateTags?.invoke(
+                    ActivateUserTagsArguments(user, inactivatedTags)
+                )
                 onComplete?.invoke(Unit)
             }
             catch (e: Throwable) {

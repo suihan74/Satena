@@ -747,31 +747,42 @@ class BookmarksViewModel(
     }
 
     /** ユーザーにつけるユーザータグを選択するダイアログを開く */
-    private fun onSetUserTag(user: String) = viewModelScope.launch(Dispatchers.Main) {
-        val fragmentManager = fragmentManager ?: return@launch
-        UserTagSelectionDialog.createInstance(user).run {
-            showAllowingStateLoss(fragmentManager, DIALOG_SELECT_USER_TAG)
+    private fun onSetUserTag(user: String) {
+        val fragmentManager = fragmentManager ?: return
 
-            setOnAddNewTagListener {
-                openUserTagDialog(user, fragmentManager, DIALOG_NEW_USER_TAG)
-            }
+        val allUserTags = getUserTags()
+        val tags = allUserTags.map { it.userTag }
+        val initialCheckedIds = allUserTags.mapNotNull { t ->
+            if (t.users.any { u -> u.name == user }) t.userTag.id else null
+        }
 
-            setOnActivateTagsListener { (user, activeTags) ->
-                activeTags.forEach { tag ->
-                    tagUser(user, tag)
-                }
-            }
+        val dialog = UserTagSelectionDialog.createInstance(
+            user,
+            tags,
+            initialCheckedIds
+        )
 
-            setOnInactivateTagsListener { (user, inactiveTags) ->
-                inactiveTags.forEach { tag ->
-                    unTagUser(user, tag)
-                }
-            }
+        dialog.setOnAddNewTagListener {
+            openUserTagDialog(user, fragmentManager, DIALOG_NEW_USER_TAG)
+        }
 
-            setOnCompleteListener {
-                loadUserTags()
+        dialog.setOnActivateTagsListener { (user, activeTags) ->
+            activeTags.forEach { tag ->
+                tagUser(user, tag)
             }
         }
+
+        dialog.setOnInactivateTagsListener { (user, inactiveTags) ->
+            inactiveTags.forEach { tag ->
+                unTagUser(user, tag)
+            }
+        }
+
+        dialog.setOnCompleteListener {
+            loadUserTags()
+        }
+
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_SELECT_USER_TAG)
     }
 
     private fun onDeleteStar(bookmark: Bookmark) {
