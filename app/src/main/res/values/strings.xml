@@ -382,6 +382,8 @@
     <string name="msg_user_tagged">id:%sに%d個のタグを設定しました</string>
     <string name="msg_user_tagged_single">id:%s にタグをつけました</string>
     <string name="msg_user_has_already_tagged">タグ「%s」はid:%sに既についています</string>
+    <string name="msg_user_tag_creation_failure">ユーザータグ作成に失敗しました</string>
+    <string name="msg_user_tag_selection_failure">ユーザータグ設定に失敗しました</string>
 
     <!-- リリースノートダイアログ -->
     <string name="release_notes_dialog_title">更新履歴</string>

@@ -14,11 +14,14 @@ import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.OnFinally
+import com.suihan74.utilities.exceptions.AlreadyExistedException
+import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
@@ -299,24 +302,18 @@ class BookmarksViewModel(
 
             dialog.setOnActivateTagsListener { (user, activeTags) ->
                 activeTags.forEach { tag ->
-                    val result = runCatching {
-                        repository.tagUser(user, tag)
-                    }
-                    if (result.isFailure) {
-                        Log.e("activateTag", Log.getStackTraceString(result.exceptionOrNull()))
-                    }
+                    repository.tagUser(user, tag)
                 }
             }
 
             dialog.setOnInactivateTagsListener { (user, inactiveTags) ->
                 inactiveTags.forEach { tag ->
-                    val result = runCatching {
-                        repository.unTagUser(user, tag)
-                    }
-                    if (result.isFailure) {
-                        Log.e("activateTag", Log.getStackTraceString(result.exceptionOrNull()))
-                    }
+                    repository.unTagUser(user, tag)
                 }
+            }
+
+            dialog.setOnAddNewTagListener {
+                openUserTagCreationDialog(user, fragmentManager)
             }
 
             dialog.setOnCompleteListener {
@@ -328,6 +325,51 @@ class BookmarksViewModel(
     }
 
     /** 新しいタグを作成してユーザーにつけるダイアログを開く */
-    fun openUserTagCreationDialog(user: String?) {
+    fun openUserTagCreationDialog(user: String?, fragmentManager: FragmentManager) {
+        val dialog = UserTagDialogFragment.createInstance()
+
+        dialog.setOnCompleteListener { (tagName) ->
+            val context = SatenaApplication.instance
+            val result = runCatching {
+                repository.createUserTag(tagName)
+            }
+            if (result.isFailure) {
+                when (val e = result.exceptionOrNull()) {
+                    is AlreadyExistedException -> {
+                        context.showToast(R.string.msg_user_tag_existed)
+                    }
+
+                    else -> {
+                        Log.e("UserTagCreation", Log.getStackTraceString(e))
+                        context.showToast(R.string.msg_user_tag_creation_failure)
+                    }
+                }
+                return@setOnCompleteListener false
+            }
+
+            val tag = result.getOrNull()
+            if (!user.isNullOrBlank() && tag != null) {
+                try {
+                    repository.tagUser(user, tag)
+                    repository.refreshBookmarks()
+                    context.showToast(
+                        R.string.msg_user_tag_created_and_added_user,
+                        tagName,
+                        user
+                    )
+                }
+                catch (e: TaskFailureException) {
+                    Log.e("UserTagCreation", Log.getStackTraceString(e))
+                    context.showToast(R.string.msg_user_tag_selection_failure)
+                }
+            }
+            else {
+                context.showToast(R.string.msg_user_tag_created, tagName)
+            }
+
+            true
+        }
+
+        dialog.showAllowingStateLoss(fragmentManager)
     }
 }

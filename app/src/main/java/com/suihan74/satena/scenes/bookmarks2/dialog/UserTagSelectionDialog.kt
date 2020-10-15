@@ -8,11 +8,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.SuspendListener
+import com.suihan74.utilities.exceptions.TaskFailureException
+import com.suihan74.utilities.extensions.setButtonsEnabled
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
@@ -55,16 +57,24 @@ class UserTagSelectionDialog : DialogFragment() {
             }
             .setPositiveButton(R.string.dialog_ok, null)
             .show()
-            .apply {
-                getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+            .also { dialog ->
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
                     // 処理中の操作を禁止する
-                    getButton(DialogInterface.BUTTON_NEGATIVE).isEnabled = false
-                    getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = false
-                    getButton(DialogInterface.BUTTON_NEUTRAL).isEnabled = false
-                    setCanceledOnTouchOutside(false)
-                    listView?.isEnabled = false
+                    dialog.setButtonsEnabled(false)
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        val result = runCatching {
+                            viewModel.invokeOnComplete()
+                        }
 
-                    viewModel.invokeOnComplete(this@UserTagSelectionDialog)
+                        if (result.isSuccess) {
+                            dialog.dismiss()
+                        }
+                        else {
+                            Log.e("UserTagSelection", Log.getStackTraceString(result.exceptionOrNull()))
+                            context?.showToast(R.string.msg_user_tag_selection_failure)
+                            dialog.setButtonsEnabled(true)
+                        }
+                    }
                 }
             }
     }
@@ -145,23 +155,24 @@ class UserTagSelectionDialog : DialogFragment() {
         /** 有効化・無効化が完了 */
         var onComplete: SuspendListener<Unit>? = null
 
-        fun invokeOnComplete(
-            dialog: UserTagSelectionDialog
-        ) = viewModelScope.launch(Dispatchers.Main) {
-            try {
+        @Throws(TaskFailureException::class)
+        suspend fun invokeOnComplete() {
+            val result = runCatching {
                 onActivateTags?.invoke(
                     ActivateUserTagsArguments(user, activatedTags)
                 )
                 onInactivateTags?.invoke(
                     ActivateUserTagsArguments(user, inactivatedTags)
                 )
-                onComplete?.invoke(Unit)
             }
-            catch (e: Throwable) {
-                Log.e("userTagSelection", Log.getStackTraceString(e))
+
+            if (result.isSuccess) {
+                runCatching {
+                    onComplete?.invoke(Unit)
+                }
             }
-            finally {
-                dialog.dismiss()
+            if (result.isFailure) {
+                throw TaskFailureException(cause = result.exceptionOrNull())
             }
         }
     }

@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.browser.bookmarks
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.satena.models.userTag.UserTagDao
+import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.updateFirstOrPlus
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,13 @@ interface UserTagsRepositoryInterface {
         user: String,
         forceRefresh: Boolean = false
     ) : UserAndTags?
+
+    /** タグを作成する */
+    @Throws(
+        AlreadyExistedException::class,
+        TaskFailureException::class
+    )
+    suspend fun createUserTag(tagName: String) : Tag
 
     /** ユーザーにタグをつける */
     @Throws(TaskFailureException::class)
@@ -79,6 +87,34 @@ class UserTagsRepository(
                 return@withLock tag
             }
         }
+    }
+
+    /** タグを作成する */
+    @Throws(
+        AlreadyExistedException::class,
+        TaskFailureException::class
+    )
+    override suspend fun createUserTag(
+        tagName: String
+    ) : Tag = withContext(Dispatchers.Default) {
+        if (null != dao.findTag(tagName)) {
+            throw AlreadyExistedException(tagName)
+        }
+
+        val result = runCatching {
+            dao.makeTag(tagName)
+        }
+        if (result.isFailure) {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+
+        val tag = result.getOrElse {
+            throw TaskFailureException("the created tag is not found")
+        }
+
+        userTagsCache = userTagsCache.plus(tag)
+
+        return@withContext tag
     }
 
     /** ユーザーにタグをつける */
