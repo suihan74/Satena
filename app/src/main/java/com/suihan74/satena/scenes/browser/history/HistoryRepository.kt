@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.suihan74.satena.models.browser.BrowserDao
 import com.suihan74.satena.models.browser.History
 import com.suihan74.utilities.extensions.faviconUrl
+import com.suihan74.utilities.extensions.limitedPlus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -48,7 +49,7 @@ class HistoryRepository(
             title = title,
             faviconUrl = faviconUrl ?: Uri.parse(url).faviconUrl,
             lastVisited = LocalDateTime.now(),
-            visitTimes = existed?.visitTimes?.plus(1L) ?: 1L
+            visitTimes = existed?.visitTimes?.limitedPlus(1L) ?: 1L
         )
         dao.insertHistory(history)
 
