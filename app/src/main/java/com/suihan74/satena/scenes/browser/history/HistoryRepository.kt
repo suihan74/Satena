@@ -41,7 +41,7 @@ class HistoryRepository(
         url: String,
         title: String,
         faviconUrl: String? = null
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(Dispatchers.Default) {
         val existed = dao.getHistory(url)
 
         val history = History(
@@ -62,7 +62,7 @@ class HistoryRepository(
     }
 
     /** 履歴を削除する */
-    suspend fun deleteHistory(history: History) = withContext(Dispatchers.IO) {
+    suspend fun deleteHistory(history: History) = withContext(Dispatchers.Default) {
         dao.deleteHistory(history)
 
         historiesCacheLock.withLock {
@@ -72,7 +72,7 @@ class HistoryRepository(
     }
 
     /** 履歴リストを更新 */
-    suspend fun loadHistories() = withContext(Dispatchers.IO) {
+    suspend fun loadHistories() = withContext(Dispatchers.Default) {
         historiesCacheLock.withLock {
             historiesCache.clear()
             historiesCache.addAll(
@@ -84,13 +84,13 @@ class HistoryRepository(
     }
 
     /** 履歴をすべて削除 */
-    suspend fun clearHistories() = withContext(Dispatchers.IO) {
+    suspend fun clearHistories() = withContext(Dispatchers.Default) {
         dao.clearHistory()
         loadHistories()
     }
 
     /** 指定した日付の履歴をすべて削除 */
-    suspend fun clearHistories(date: LocalDate) = withContext(Dispatchers.IO) {
+    suspend fun clearHistories(date: LocalDate) = withContext(Dispatchers.Default) {
         val start = date.atTime(0, 0)
         val end = date.plusDays(1L).atTime(0, 0)
         dao.deleteHistory(start, end)
@@ -105,7 +105,7 @@ class HistoryRepository(
     }
 
     /** 履歴リストの続きを取得 */
-    suspend fun loadAdditional() = withContext(Dispatchers.IO) {
+    suspend fun loadAdditional() = withContext(Dispatchers.Default) {
         historiesCacheLock.withLock {
             val additional = dao.getRecentHistories(offset = historiesCache.size)
 
@@ -117,7 +117,7 @@ class HistoryRepository(
     }
 
     /** 表示用の履歴リストを更新する */
-    suspend fun updateHistoriesLiveData() = withContext(Dispatchers.IO) {
+    suspend fun updateHistoriesLiveData() = withContext(Dispatchers.Default) {
         val locale = Locale.JAPANESE
         val keyword = keyword.value?.toLowerCase(locale)
         historiesCacheLock.withLock {
