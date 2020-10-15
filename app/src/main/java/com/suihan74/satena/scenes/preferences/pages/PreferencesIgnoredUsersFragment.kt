@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
@@ -15,16 +16,14 @@ import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.fragment_preferences_ignored_users.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable {
+class PreferencesIgnoredUsersFragment : PreferencesFragmentBase() {
     companion object {
         fun createInstance() = PreferencesIgnoredUsersFragment()
 
@@ -111,19 +110,18 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase(), BackPressable
             }
         }
 
-        return binding.root
-    }
-
-    override fun onBackPressed(): Boolean {
-        val searchEditText = view?.search_text ?: return false
-        return when(searchEditText.visibility) {
-            View.VISIBLE -> {
-                searchEditText.visibility = View.INVISIBLE
-                searchEditText.text.clear()
-                true
-            }
-
-            else -> false
+        // 戻るボタンで検索部分を閉じる
+        val onBackCallback = activity.onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            viewModel.isFilterTextVisible.value == true
+        ) {
+            viewModel.isFilterTextVisible.value = false
         }
+
+        viewModel.isFilterTextVisible.observe(viewLifecycleOwner) {
+            onBackCallback.isEnabled = it
+        }
+
+        return binding.root
     }
 }

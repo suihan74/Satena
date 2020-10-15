@@ -11,14 +11,11 @@ import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersListFragment
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagViewModel
 import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
-import com.suihan74.utilities.BackPressable
 import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.fragment_preferences_user_tags.view.*
 
 
-class PreferencesUserTagsFragment :
-        PreferencesFragmentBase(),
-        BackPressable
+class PreferencesUserTagsFragment : PreferencesFragmentBase()
 {
     val viewModel: UserTagViewModel by lazy {
         provideViewModel(this) {
@@ -34,7 +31,11 @@ class PreferencesUserTagsFragment :
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_preferences_user_tags, container, false)
+        val root = inflater.inflate(
+            R.layout.fragment_preferences_user_tags,
+            container,
+            false
+        )
 
         viewModel.init(
             onFinally = { initializeViews(root) }
@@ -88,15 +89,5 @@ class PreferencesUserTagsFragment :
 
     private fun showNewUserTagDialog() {
         viewModel.openUserTagDialog(null, childFragmentManager)
-    }
-
-    override fun onBackPressed(): Boolean {
-        val fragment = getCurrentFragment<TaggedUsersListFragment>()
-        return if (fragment != null) {
-            viewModel.currentTag.postValue(null)
-            childFragmentManager.popBackStack()
-            true
-        }
-        else false
     }
 }

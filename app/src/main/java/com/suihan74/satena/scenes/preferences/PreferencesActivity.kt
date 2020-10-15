@@ -18,7 +18,10 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.utilities.*
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
+import com.suihan74.utilities.PermissionRequestable
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.getObjectExtra
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -188,15 +191,7 @@ class PreferencesActivity : ActivityBase() {
                 startActivity(intent)
                 true
             }
-            else {
-                val currentFragment = mTabAdapter.findFragment(mViewPager, mViewPager.currentItem)
-                if (currentFragment is BackPressable) {
-                    currentFragment.onBackPressed()
-                }
-                else {
-                    false
-                }
-            }
+            else false
         }
     }
 }

@@ -77,13 +77,6 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
 
     fun onBackPressed(alternativeAction: (()->Boolean)?) {
         try {
-            val fragment = currentFragment
-            if (fragment is BackPressable) {
-                if (fragment.onBackPressed()) {
-                    return
-                }
-            }
-
             if (onBackPressedDispatcher.hasEnabledCallbacks()) {
                 onBackPressedDispatcher.onBackPressed()
                 return

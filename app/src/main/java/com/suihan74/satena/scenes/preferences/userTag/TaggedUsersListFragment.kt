@@ -5,6 +5,7 @@ import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
+import androidx.activity.addCallback
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.observe
@@ -59,6 +60,12 @@ class TaggedUsersListFragment : Fragment() {
             root.tag_name.text = it.userTag.name
             root.users_count.text = String.format("%d users", it.users.size)
             taggedUsersAdapter.setItems(it.users)
+        }
+
+        // 戻るボタンで閉じる
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
+            parentFragmentManager.popBackStack()
+            remove()
         }
 
         return root

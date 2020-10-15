@@ -32,8 +32,7 @@
 
                 android:layout_marginBottom="24dp"
                 android:layout_marginEnd="24dp"
-                app:layout_anchorGravity="bottom|end"
-                app:layout_anchor="@id/recycler_view"
+                android:layout_gravity="end|bottom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
