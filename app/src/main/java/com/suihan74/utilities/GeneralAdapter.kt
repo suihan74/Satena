@@ -95,14 +95,14 @@ abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
         abstract fun areModelsTheSame(oldItem: ModelT?, newItem: ModelT?): Boolean
         abstract fun areModelContentsTheSame(oldItem: ModelT?, newItem: ModelT?): Boolean
 
-        override fun areItemsTheSame(
+        final override fun areItemsTheSame(
             oldItem: RecyclerState<ModelT>,
             newItem: RecyclerState<ModelT>
         ): Boolean =
             oldItem.type == newItem.type &&
                     (oldItem.type != RecyclerType.BODY || areModelsTheSame(oldItem.body, newItem.body))
 
-        override fun areContentsTheSame(
+        final override fun areContentsTheSame(
             oldItem: RecyclerState<ModelT>,
             newItem: RecyclerState<ModelT>
         ): Boolean =

@@ -44,6 +44,16 @@ interface StarRepositoryInterface {
         color: StarColor,
         quote: String = ""
     )
+
+    /** スターを解除する */
+    @Throws(
+        ConnectionFailureException::class
+    )
+    suspend fun deleteStar(
+        entry: Entry,
+        bookmark: Bookmark,
+        star: Star
+    )
 }
 
 // ------ //
@@ -118,19 +128,42 @@ class StarRepository(
             ).await()
         }
 
-        if (result.isSuccess) {
-            _userColorStarsCount.postValue(_userColorStarsCount.value?.let { prev ->
-                when (color) {
-                    StarColor.Red -> prev.copy(red = prev.red - 1)
-                    StarColor.Green -> prev.copy(green = prev.green - 1)
-                    StarColor.Blue -> prev.copy(blue = prev.blue - 1)
-                    StarColor.Purple -> prev.copy(purple = prev.purple - 1)
-                    else -> prev
-                }
-            })
+        if (result.isFailure) {
+            throw ConnectionFailureException(cause = result.exceptionOrNull())
         }
-        else {
-            throw ConnectionFailureException(result.exceptionOrNull())
+
+        _userColorStarsCount.postValue(_userColorStarsCount.value?.let { prev ->
+            when (color) {
+                StarColor.Red -> prev.copy(red = prev.red - 1)
+                StarColor.Green -> prev.copy(green = prev.green - 1)
+                StarColor.Blue -> prev.copy(blue = prev.blue - 1)
+                StarColor.Purple -> prev.copy(purple = prev.purple - 1)
+                else -> prev
+            }
+        })
+    }
+
+    /**
+     * スターを解除する
+     */
+    @Throws(
+        ConnectionFailureException::class
+    )
+    override suspend fun deleteStar(
+        entry: Entry,
+        bookmark: Bookmark,
+        star: Star
+    ) = withContext(Dispatchers.Default) {
+        val result = runCatching {
+            signIn()
+            client.deleteStarAsync(
+                url = bookmark.getBookmarkUrl(entry),
+                star = star
+            ).await()
+        }
+
+        if (result.isFailure) {
+            throw ConnectionFailureException(cause = result.exceptionOrNull())
         }
     }
 

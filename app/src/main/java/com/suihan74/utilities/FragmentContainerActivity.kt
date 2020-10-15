@@ -84,6 +84,11 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
                 }
             }
 
+            if (onBackPressedDispatcher.hasEnabledCallbacks()) {
+                onBackPressedDispatcher.onBackPressed()
+                return
+            }
+
             val acted = alternativeAction?.invoke() ?: false
 
             if (!acted) {

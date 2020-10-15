@@ -284,6 +284,8 @@
     <string name="pref_browser_user_agent_desc">UserAgent</string>
     <string name="pref_browser_user_agent_hint">空欄: デフォルト設定</string>
     <string name="pref_browser_use_bottom_app_bar_desc">アドレスバーを画面下部に配置する</string>
+    <string name="pref_browser_open_url_blocking_desc">URLブロック設定を編集</string>
+    <string name="pref_browser_open_url_blocking_button_text">編集</string>
 
     <string name="pref_browser_clear_cache_desc">キャッシュを削除する</string>
     <string name="pref_browser_clear_cache_dialog_message">キャッシュを削除するとストレージ使用量を削減できる一方、一時的に通信量が増えてウェブページの読み込みが遅くなります。削除しますか？</string>

@@ -17,6 +17,7 @@ import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
+import com.suihan74.satena.scenes.preferences.browser.UrlBlockingFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.exceptions.InvalidUrlException
@@ -40,7 +41,7 @@ class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
 
     private lateinit var binding: FragmentPreferencesBrowserBinding
 
-    private val viewModel: PreferencesBrowserViewModel by lazy {
+    val viewModel: PreferencesBrowserViewModel by lazy {
         // ブラウザから直接開かれている場合はリポジトリを共有して変更をすぐに反映させる
         provideViewModel(this) {
             val context = requireContext()
@@ -108,6 +109,15 @@ class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
 
         binding.browserModeButton.setOnClickListener {
             viewModel.openBrowserModeSelectionDialog(childFragmentManager)
+        }
+
+        // URLブロック設定を編集する画面を開く
+        binding.openBlockingUrlsButton.setOnClickListener {
+            val fragment = UrlBlockingFragment.createInstance()
+            childFragmentManager.beginTransaction()
+                .replace(R.id.child_fragment_layout, fragment)
+                .addToBackStack(null)
+                .commitAllowingStateLoss()
         }
 
         // キャッシュ削除
