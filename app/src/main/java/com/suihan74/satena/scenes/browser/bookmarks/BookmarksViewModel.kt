@@ -281,7 +281,7 @@ class BookmarksViewModel(
     }
 
     /** ユーザーにタグをつけるダイアログを開く */
-    private fun openUserTagSelectionDialog(
+    fun openUserTagSelectionDialog(
         user: String,
         fragmentManager: FragmentManager
     ) {
@@ -325,5 +325,9 @@ class BookmarksViewModel(
 
             dialog.showAllowingStateLoss(fragmentManager)
         }
+    }
+
+    /** 新しいタグを作成してユーザーにつけるダイアログを開く */
+    fun openUserTagCreationDialog(user: String?) {
     }
 }

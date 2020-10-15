@@ -469,34 +469,34 @@ class BookmarksViewModel(
         userName: String?,
         fragmentManager: FragmentManager,
         dialogTag: String?
-    ) = viewModelScope.launch(Dispatchers.Main) {
-        UserTagDialogFragment.createInstance().run {
-            showAllowingStateLoss(fragmentManager, dialogTag)
+    ) {
+        val dialog = UserTagDialogFragment.createInstance()
 
-            setOnCompleteListener listener@ { (tagName) ->
-                val context = SatenaApplication.instance
-                return@listener if (findUserTag(tagName)) {
-                    context.showToast(R.string.msg_user_tag_existed)
-                    false
+        dialog.setOnCompleteListener listener@ { (tagName) ->
+            val context = SatenaApplication.instance
+            return@listener if (findUserTag(tagName)) {
+                context.showToast(R.string.msg_user_tag_existed)
+                false
+            }
+            else {
+                createTag(tagName)
+                val tags = userTagRepository.loadTags()
+                userTags.value = tags
+
+                if (userName == null) {
+                    context.showToast(R.string.msg_user_tag_created, tagName)
                 }
                 else {
-                    createTag(tagName)
-                    val tags = userTagRepository.loadTags()
-                    userTags.value = tags
-
-                    if (userName == null) {
-                        context.showToast(R.string.msg_user_tag_created, tagName)
-                    }
-                    else {
-                        val tag = tags.firstOrNull { it.userTag.name == tagName } ?: throw RuntimeException("")
-                        tagUser(userName, tag.userTag)
-                        loadUserTags()
-                        context.showToast(R.string.msg_user_tag_created_and_added_user, tagName, userName)
-                    }
-                    true
+                    val tag = tags.firstOrNull { it.userTag.name == tagName } ?: throw RuntimeException("")
+                    tagUser(userName, tag.userTag)
+                    loadUserTags()
+                    context.showToast(R.string.msg_user_tag_created_and_added_user, tagName, userName)
                 }
+                true
             }
         }
+
+        dialog.showAllowingStateLoss(fragmentManager, dialogTag)
     }
 
     /** ブコメにスターをつける */

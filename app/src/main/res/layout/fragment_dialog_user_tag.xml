@@ -1,19 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.dialogs.UserTagDialogFragment.DialogViewModel" />
+    </data>
 
-    <EditText
-            android:id="@+id/tag_name"
-            android:textColor="@color/textColor"
-            android:inputType="text"
-            android:importantForAutofill="no"
-            android:singleLine="true"
-            android:hint="@string/user_tag_dialog_name_hint"
+    <RelativeLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="match_parent">
 
-</RelativeLayout>
+        <EditText
+                android:id="@+id/tag_name"
+                android:text="@={vm.tagName}"
+                android:textColor="@color/textColor"
+                android:inputType="text"
+                android:importantForAutofill="no"
+                android:singleLine="true"
+                android:hint="@string/user_tag_dialog_name_hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+</layout>

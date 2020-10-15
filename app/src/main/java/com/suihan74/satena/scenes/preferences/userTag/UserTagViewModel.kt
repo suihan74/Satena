@@ -121,45 +121,45 @@ class UserTagViewModel(
     fun openUserTagDialog(
         editingUserTag: Tag?,
         fragmentManager: FragmentManager
-    ) = viewModelScope.launch(Dispatchers.Main) {
-        UserTagDialogFragment.createInstance(editingUserTag).run {
-            val dialogTag =
-                if (editingUserTag == null) DIALOG_CREATE_TAG
-                else DIALOG_MODIFY_TAG
+    ) {
+        val dialog = UserTagDialogFragment.createInstance(editingUserTag)
 
-            showAllowingStateLoss(fragmentManager, dialogTag)
-
-            setOnCompleteListener listener@ { (tagName, editingUserTag) ->
-                val context = SatenaApplication.instance
-                if (editingUserTag == null) {
-                    return@listener if (containsTag(tagName)) {
-                        context.showToast(R.string.msg_user_tag_existed)
-                        false
-                    }
-                    else {
-                        addTag(tagName)
-                        context.showToast(R.string.msg_user_tag_created, tagName)
-                        true
-                    }
+        dialog.setOnCompleteListener listener@ { (tagName, editingUserTag) ->
+            val context = SatenaApplication.instance
+            if (editingUserTag == null) {
+                return@listener if (containsTag(tagName)) {
+                    context.showToast(R.string.msg_user_tag_existed)
+                    false
                 }
                 else {
-                    val tag = editingUserTag
-                    if (tag.name != tagName) {
-                        if (containsTag(tagName)) {
-                            context.showToast(R.string.msg_user_tag_existed)
-                            return@listener false
-                        }
-                        else {
-                            val prevName = tag.name
-                            val modified = tag.copy(name = tagName)
-                            updateTag(modified)
-                            context.showToast(R.string.msg_user_tag_updated, prevName, tagName)
-                        }
-                    }
-                    return@listener true
+                    addTag(tagName)
+                    context.showToast(R.string.msg_user_tag_created, tagName)
+                    true
                 }
             }
+            else {
+                val tag = editingUserTag
+                if (tag.name != tagName) {
+                    if (containsTag(tagName)) {
+                        context.showToast(R.string.msg_user_tag_existed)
+                        return@listener false
+                    }
+                    else {
+                        val prevName = tag.name
+                        val modified = tag.copy(name = tagName)
+                        updateTag(modified)
+                        context.showToast(R.string.msg_user_tag_updated, prevName, tagName)
+                    }
+                }
+                return@listener true
+            }
         }
+
+        val dialogTag =
+            if (editingUserTag == null) DIALOG_CREATE_TAG
+            else DIALOG_MODIFY_TAG
+
+        dialog.showAllowingStateLoss(fragmentManager, dialogTag)
     }
 
     /**

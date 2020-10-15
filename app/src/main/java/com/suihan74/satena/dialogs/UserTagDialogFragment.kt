@@ -3,28 +3,27 @@ package com.suihan74.satena.dialogs
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
-import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentDialogUserTagBinding
 import com.suihan74.satena.models.userTag.Tag
-import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SuspendSwitcher
+import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.fragment_dialog_user_tag.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class UserTagDialogFragment : DialogFragment() {
     companion object {
-        fun createInstance(editingUserTag: Tag? = null) = UserTagDialogFragment().withArguments {
+        fun createInstance(
+            editingUserTag: Tag? = null
+        ) = UserTagDialogFragment().withArguments {
             putObject(ARG_EDITING_USER_TAG, editingUserTag)
         }
 
@@ -33,52 +32,63 @@ class UserTagDialogFragment : DialogFragment() {
 
     private val viewModel by lazy {
         provideViewModel(this) {
-            DialogViewModel(
-                requireArguments().getObject<Tag>(ARG_EDITING_USER_TAG)
-            )
+            val args = requireArguments()
+            val editingUserTag = args.getObject<Tag>(ARG_EDITING_USER_TAG)
+
+            DialogViewModel(editingUserTag)
         }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = LayoutInflater.from(context)
-        val content = inflater.inflate(R.layout.fragment_dialog_user_tag, null)
-
-        content.tag_name.run {
-            setText(viewModel.tagName)
-            addTextChangedListener(object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {}
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    viewModel.tagName = text.toString()
-                }
-            })
+        val binding = DataBindingUtil.inflate<FragmentDialogUserTagBinding>(
+            inflater,
+            R.layout.fragment_dialog_user_tag,
+            null,
+            false
+        ).also {
+            it.vm = viewModel
+            it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: activity
         }
 
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
             .setTitle(viewModel.titleId)
-            .setView(content)
+            .setView(binding.root)
             .setPositiveButton(R.string.dialog_register, null)
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
-            .apply {
+            .also { dialog ->
                 // IME表示を維持するための設定
-                window?.run {
-                    clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-                    setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
-                }
-                requireActivity().showSoftInputMethod(content.tag_name, WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+                dialog.showSoftInputMethod(requireActivity(), binding.tagName)
 
                 // 登録
-                getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                    viewModel.invokeOnComplete(this@UserTagDialogFragment) { e -> when(e) {
-                        is EmptyTagNameException ->
-                            context.showToast(R.string.msg_user_tag_no_name)
-                    } }
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                    dialog.setButtonsEnabled(false)
+
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        val result = runCatching {
+                            viewModel.invokeOnComplete()
+                        }
+
+                        if (result.isSuccess) {
+                            dialog.dismiss()
+                        }
+                        else {
+                            when (result.exceptionOrNull()) {
+                                is EmptyTagNameException ->
+                                    context?.showToast(R.string.msg_user_tag_no_name)
+                            }
+
+                            dialog.setButtonsEnabled(true)
+                        }
+                    }
                 }
             }
     }
 
-    suspend fun setOnCompleteListener(listener: SuspendSwitcher<OnCompleteArguments>?) = whenStarted {
+    fun setOnCompleteListener(
+        listener: SuspendSwitcher<OnCompleteArguments>?
+    ) = lifecycleScope.launchWhenCreated {
         viewModel.onComplete = listener
     }
 
@@ -108,19 +118,23 @@ class UserTagDialogFragment : DialogFragment() {
 
         var onComplete: SuspendSwitcher<OnCompleteArguments>? = null
 
-        fun invokeOnComplete(
-            dialog: UserTagDialogFragment,
-            onError: OnError?
-        ) = viewModelScope.launch(Dispatchers.Main) {
+        @Throws(
+            EmptyTagNameException::class,
+            TaskFailureException::class
+        )
+        suspend fun invokeOnComplete() {
             val tagName = tagName
 
             if (tagName.isBlank()) {
-                onError?.invoke(EmptyTagNameException())
-                return@launch
+                throw EmptyTagNameException()
             }
 
-            if (false != onComplete?.invoke(OnCompleteArguments(tagName, editingUserTag))) {
-                dialog.dismiss()
+            val result = runCatching {
+                onComplete?.invoke(OnCompleteArguments(tagName, editingUserTag))
+            }
+
+            if (result.getOrDefault(false) != true) {
+                throw TaskFailureException(cause = result.exceptionOrNull())
             }
         }
     }
