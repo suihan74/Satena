@@ -16,6 +16,9 @@ import com.suihan74.satena.models.userTag.TagAndUserRelation
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.models.userTag.UserTagDao
 
+/**
+ * アプリで使用するDB
+ */
 @Database(
     entities = [
         User::class,
@@ -33,6 +36,31 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun ignoredEntryDao() : IgnoredEntryDao
     abstract fun browserDao() : BrowserDao
 }
+
+// ------ //
+
+/**
+ * DBのマイグレーションを設定する
+ */
+fun RoomDatabase.Builder<AppDatabase>.migrate() : RoomDatabase.Builder<AppDatabase> {
+    this.addMigrations(
+        // ------ //
+        // for development
+        Migration1to2(),
+        Migration2to3(),
+        Migration3to4(),
+        Migration4to5(),
+        // ------ //
+        Migration1to5(),
+    )
+    .fallbackToDestructiveMigration()
+
+    return this
+}
+
+// ------ //
+
+// 2,3,4は開発中に使用していたバージョン
 
 /** version 1 to 2 */
 class Migration1to2 : Migration(1, 2) {
