@@ -1,29 +1,33 @@
 package com.suihan74.satena.scenes.splash
 
-import android.content.Context
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.utilities.OnError
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.extensions.showToast
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ViewModel(
-    private val context: Context,
-    private val repository: Repository
+    val repository: Repository
 ) : ViewModel() {
     /** バージョン名 */
     val appVersion : String by lazy { SatenaApplication.instance.versionName }
 
-    fun start(onError: OnError? = null) = viewModelScope.launch(Dispatchers.Default) {
-        val intent = repository.createIntent(context, onError)
+    suspend fun start(activity: SplashActivity) {
+        val intent = repository.createIntent(activity) { e -> when (e) {
+            is AccountLoader.HatenaSignInException ->
+                activity.showToast(R.string.msg_hatena_sign_in_failed)
+
+            is AccountLoader.MastodonSignInException ->
+                activity.showToast(R.string.msg_auth_mastodon_failed)
+        } }
 
         withContext(Dispatchers.Main) {
-            context.startActivity(
+            activity.startActivity(
                 intent, ActivityOptionsCompat.makeCustomAnimation(
-                    context,
+                    activity,
                     android.R.anim.fade_in, android.R.anim.fade_out
                 ).toBundle()
             )

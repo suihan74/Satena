@@ -7,23 +7,18 @@ import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.OnError
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class Repository(
     private val accountLoader : AccountLoader
 ) {
     /** サインイン */
-    private suspend fun signIn(onError: OnError?) {
-        try {
-            accountLoader.signInAccounts(reSignIn = false)
-        }
-        catch (e : Throwable) {
-            withContext(Dispatchers.Main) {
-                onError?.invoke(e)
-            }
-        }
+    private suspend fun signIn() {
+        accountLoader.signInAccounts(reSignIn = false)
     }
+
+    /** サインイン処理を行うか */
+    val needToLoad : Boolean
+        = !SatenaApplication.instance.isFirstLaunch && !accountLoader.client.signedIn()
 
     /** 起動時の状態によって適切な処理の後画面遷移する */
     suspend fun createIntent(context: Context, onError: OnError? = null) : Intent {
@@ -37,7 +32,14 @@ class Repository(
         }
         else {
             // サインインしてエントリ画面を開く
-            signIn(onError)
+            val result = runCatching {
+                signIn()
+            }
+
+            result.exceptionOrNull()?.let { e ->
+                onError?.invoke(e)
+            }
+
             Intent(context, EntriesActivity::class.java)
         }
     }
