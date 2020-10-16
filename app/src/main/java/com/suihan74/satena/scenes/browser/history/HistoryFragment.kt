@@ -70,12 +70,12 @@ class HistoryFragment : Fragment(), ScrollableToTop {
             recyclerView.setHasFixedSize(true)
             recyclerView.adapter = HistoryAdapter(viewModel, viewLifecycleOwner).also { adapter ->
                 adapter.setOnClickItemListener { binding ->
-                    val site = binding.site ?: return@setOnClickItemListener
-                    viewModel.goAddress(site.url, browserActivity)
+                    val history = binding.history ?: return@setOnClickItemListener
+                    viewModel.goAddress(history.page.url, browserActivity)
                 }
 
                 adapter.setOnLongLickItemListener { binding ->
-                    val site = binding.site ?: return@setOnLongLickItemListener
+                    val site = binding.history ?: return@setOnLongLickItemListener
                     viewModel.openItemMenuDialog(site, browserActivity, childFragmentManager)
                 }
 

@@ -29,7 +29,7 @@ class HistoryAdapter(
     }
 
     override fun bind(model: History?, binding: ListviewItemBrowserHistoryBinding) {
-        binding.site = model
+        binding.history = model
         binding.vm = viewModel
     }
 
@@ -43,8 +43,8 @@ class HistoryAdapter(
         @OptIn(ExperimentalStdlibApi::class)
         val states = buildList {
             var currentDate: LocalDate? = null
-            items.sortedByDescending { it.lastVisited }.forEach { item ->
-                val itemDate = item.lastVisited.toLocalDate()
+            items.sortedByDescending { it.log.visitedAt }.forEach { item ->
+                val itemDate = item.log.visitedAt.toLocalDate()
                 if (currentDate != itemDate) {
                     currentDate = itemDate
                     add(RecyclerState(
@@ -101,12 +101,12 @@ class HistoryAdapter(
 
     class DiffCallback : GeneralAdapter.DiffCallback<History>() {
         override fun areModelsTheSame(oldItem: History?, newItem: History?): Boolean =
-            oldItem?.url == newItem?.url
+            oldItem?.log?.id == newItem?.log?.id
 
         override fun areModelContentsTheSame(oldItem: History?, newItem: History?): Boolean =
-            oldItem?.url == newItem?.url &&
-            oldItem?.title == newItem?.title &&
-            oldItem?.lastVisited == newItem?.lastVisited &&
-            oldItem?.faviconUrl == newItem?.faviconUrl
+            oldItem?.page?.url == newItem?.page?.url &&
+            oldItem?.page?.title == newItem?.page?.title &&
+            oldItem?.log?.visitedAt == newItem?.log?.visitedAt &&
+            oldItem?.page?.faviconUrl == newItem?.page?.faviconUrl
     }
 }

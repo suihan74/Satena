@@ -86,20 +86,20 @@ class HistoryViewModel(
         fragmentManager: FragmentManager
     ) {
         HistoryMenuDialog.createInstance(targetSite).run {
-            setOnOpenListener { site ->
-                activity.viewModel.goAddress(site.url)
+            setOnOpenListener { history ->
+                activity.viewModel.goAddress(history.page.url)
             }
 
-            setOnOpenBookmarksListener { site ->
+            setOnOpenBookmarksListener { history ->
                 val intent = Intent(activity, BookmarksActivity::class.java).apply {
-                    putExtra(BookmarksActivity.EXTRA_ENTRY_URL, site.url)
+                    putExtra(BookmarksActivity.EXTRA_ENTRY_URL, history.page.url)
                 }
                 activity.startActivity(intent)
             }
 
-            setOnOpenEntriesListener { site ->
+            setOnOpenEntriesListener { history ->
                 viewModelScope.launch {
-                    val modifiedUrl = modifySpecificUrls(site.url) ?: site.url
+                    val modifiedUrl = modifySpecificUrls(history.page.url) ?: history.page.url
                     val intent = Intent(activity, EntriesActivity::class.java).apply {
                         val uri = Uri.parse(modifiedUrl)
                         val domainUrl = runCatching {

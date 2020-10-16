@@ -18,6 +18,7 @@ import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.lock
 import java.util.*
 
+
 class SatenaApplication : Application() {
     companion object {
         lateinit var instance : SatenaApplication
@@ -149,8 +150,13 @@ class SatenaApplication : Application() {
         appDatabase = Room.databaseBuilder(this, AppDatabase::class.java, APP_DATABASE_FILE_NAME)
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
             .addMigrations(
+                // ------ //
+                // for development
                 Migration1to2(),
-                Migration2to3()
+                Migration2to3(),
+                Migration3to4(),
+                // ------ //
+                Migration1to4(),
             )
             .fallbackToDestructiveMigration()
             .build()

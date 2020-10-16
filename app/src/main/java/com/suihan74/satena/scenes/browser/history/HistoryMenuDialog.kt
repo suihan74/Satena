@@ -43,11 +43,12 @@ class HistoryMenuDialog : DialogFragment() {
             null,
             false
         ).also {
-            val site = viewModel.targetSite
-            it.title = site.title
-            it.url = site.url
-            it.rootUrl = site.url
-            it.faviconUrl = site.faviconUrl
+            val history = viewModel.targetSite
+            val page = history.page
+            it.title = page.title
+            it.url = page.url
+            it.rootUrl = page.url
+            it.faviconUrl = page.faviconUrl
         }
 
         return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
