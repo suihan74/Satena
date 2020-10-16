@@ -3,17 +3,17 @@ package com.suihan74.satena.models.userTag
 import androidx.room.*
 
 @Dao
-abstract class UserTagDao {
+interface UserTagDao {
     // ===== get all ===== //
 
     @Query("select * from user_tag order by id asc")
-    abstract fun getAllTags(): List<Tag>
+    suspend fun getAllTags(): List<Tag>
 
     @Query("select * from user_tag_user order by id asc")
-    abstract fun getAllUsers(): List<User>
+    suspend fun getAllUsers(): List<User>
 
     @Query("select * from user_tag_relation")
-    abstract fun getAllRelations(): List<TagAndUserRelation>
+    suspend fun getAllRelations(): List<TagAndUserRelation>
 
     // ===== find ===== //
 
@@ -22,43 +22,43 @@ abstract class UserTagDao {
         where name=:name 
         limit 1
     """)
-    abstract fun findTag(name: String): Tag?
+    suspend fun findTag(name: String): Tag?
 
     @Query("""
         select * from user_tag_user
         where name=:name
         limit 1
     """)
-    abstract fun findUser(name: String): User?
+    suspend fun findUser(name: String): User?
 
     @Query("""
         select * from user_tag_relation
         where tag_id=:tagId and user_id=:userId
         limit 1
     """)
-    abstract fun findRelation(tagId: Int, userId: Int): TagAndUserRelation?
+    suspend fun findRelation(tagId: Int, userId: Int): TagAndUserRelation?
 
-    fun findRelation(tag: Tag, user: User) =
+    suspend fun findRelation(tag: Tag, user: User) =
         findRelation(tag.id, user.id)
 
     // ===== insert ===== //
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    abstract fun insertTag(tag: Tag)
+    suspend fun insertTag(tag: Tag)
 
-    fun insertTag(name: String) =
+    suspend fun insertTag(name: String) =
         insertTag(Tag(name = name))
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    abstract fun insertUser(user: User)
+    suspend fun insertUser(user: User)
 
-    fun insertUser(name: String) =
+    suspend fun insertUser(name: String) =
         insertUser(User(name = name))
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    abstract fun insertRelation(relation: TagAndUserRelation)
+    suspend fun insertRelation(relation: TagAndUserRelation)
 
-    fun insertRelation(tag: Tag, user: User) =
+    suspend fun insertRelation(tag: Tag, user: User) =
         insertRelation(TagAndUserRelation(tag = tag, user = user))
 
     // ===== find or insert ===== //
@@ -66,7 +66,8 @@ abstract class UserTagDao {
     /**
      * タグを取得する。DBに存在しない場合は新しく登録する
      */
-    fun makeTag(name: String) : Tag =
+    @Transaction
+    suspend fun makeTag(name: String) : Tag =
         findTag(name) ?: let {
             insertTag(name)
             findTag(name)!!
@@ -75,7 +76,8 @@ abstract class UserTagDao {
     /**
      * ユーザーを取得する。DBに存在しない場合は新しく登録する
      */
-    fun makeUser(name: String) : User =
+    @Transaction
+    suspend fun makeUser(name: String) : User =
         findUser(name) ?: let {
             insertUser(name)
             findUser(name)!!
@@ -84,26 +86,27 @@ abstract class UserTagDao {
     // ===== update ===== //
 
     @Update
-    abstract fun updateTag(tag: Tag)
+    suspend fun updateTag(tag: Tag)
 
     @Update
-    abstract fun updateUser(user: User)
+    suspend fun updateUser(user: User)
 
     // ===== delete ===== //
 
     @Delete
-    abstract fun deleteTag(tags: Tag)
+    suspend fun deleteTag(tags: Tag)
 
     @Delete
-    abstract fun deleteUser(user: User)
+    suspend fun deleteUser(user: User)
 
     @Delete
-    abstract fun deleteRelation(relation: TagAndUserRelation)
+    suspend fun deleteRelation(relation: TagAndUserRelation)
 
     /**
      * ユーザータグに関する全てのデータを破棄する
      */
-    fun clearAll() {
+    @Transaction
+    suspend fun clearAll() {
         getAllRelations().forEach { deleteRelation(it) }
         getAllUsers().forEach { deleteUser(it) }
         getAllTags().forEach { deleteTag(it) }
@@ -116,7 +119,7 @@ abstract class UserTagDao {
         where name = :tagName
         limit 1
     """)
-    abstract fun getTagAndUsers(tagName: String): TagAndUsers?
+    suspend fun getTagAndUsers(tagName: String): TagAndUsers?
 
     @Transaction
     @Query("""
@@ -124,5 +127,5 @@ abstract class UserTagDao {
         where name = :userName
         limit 1
     """)
-    abstract fun getUserAndTags(userName: String): UserAndTags?
+    suspend fun getUserAndTags(userName: String): UserAndTags?
 }

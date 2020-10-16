@@ -5,13 +5,13 @@ import androidx.room.*
 @Dao
 interface IgnoredEntryDao {
     @Query("select * from ignored_entry")
-    fun getAllEntries(): List<IgnoredEntry>
+    suspend fun getAllEntries(): List<IgnoredEntry>
 
     @Query("""
         select * from ignored_entry
         where target = :bookmarkInt or target = :allInt
     """)
-    fun getEntriesForBookmarks(
+    suspend fun getEntriesForBookmarks(
         bookmarkInt: Int = IgnoreTarget.BOOKMARK.int,
         allInt: Int = IgnoreTarget.ALL.int
     ) : List<IgnoredEntry>
@@ -20,7 +20,7 @@ interface IgnoredEntryDao {
         select * from ignored_entry
         where target = :entryInt or target = :allInt
     """)
-    fun getEntriesForEntries(
+    suspend fun getEntriesForEntries(
         entryInt: Int = IgnoreTarget.ENTRY.int,
         allInt: Int = IgnoreTarget.ALL.int
     ) : List<IgnoredEntry>
@@ -30,26 +30,26 @@ interface IgnoredEntryDao {
         where type = :typeInt and `query` = :query
         limit 1
     """)
-    fun find(typeInt: Int, query: String) : IgnoredEntry?
+    suspend fun find(typeInt: Int, query: String) : IgnoredEntry?
 
-    fun find(type: IgnoredEntryType, query: String) =
+    suspend fun find(type: IgnoredEntryType, query: String) =
         find(type.ordinal, query)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insert(entry: IgnoredEntry)
+    suspend fun insert(entry: IgnoredEntry)
 
     @Update
-    fun update(entry: IgnoredEntry)
+    suspend fun update(entry: IgnoredEntry)
 
     @Query("""delete from ignored_entry
         where type = :typeInt and `query` = :query
     """)
-    fun delete(typeInt: Int, query: String)
+    suspend fun delete(typeInt: Int, query: String)
 
-    fun delete(entry: IgnoredEntry) =
+    suspend fun delete(entry: IgnoredEntry) =
         delete(entry.type.ordinal, entry.query)
 
-    fun clearAllEntries() {
+    suspend fun clearAllEntries() {
         getAllEntries().forEach {
             delete(it)
         }
