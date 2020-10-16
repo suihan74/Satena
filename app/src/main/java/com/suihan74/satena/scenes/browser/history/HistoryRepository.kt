@@ -4,8 +4,9 @@ import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.satena.models.browser.BrowserDao
 import com.suihan74.satena.models.browser.History
+import com.suihan74.satena.models.browser.HistoryLog
+import com.suihan74.satena.models.browser.HistoryPage
 import com.suihan74.utilities.extensions.faviconUrl
-import com.suihan74.utilities.extensions.limitedPlus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -21,18 +22,14 @@ class HistoryRepository(
 ) {
 
     /** 閲覧履歴 */
-    val histories by lazy {
-        MutableLiveData<List<History>>(emptyList())
-    }
+    val histories = MutableLiveData<List<History>>(emptyList())
 
     /** ロード済みの全閲覧履歴データのキャッシュ */
     private var historiesCache = ArrayList<History>()
-    private val historiesCacheLock by lazy { Mutex() }
+    private val historiesCacheLock = Mutex()
 
     /** 検索ワード */
-    val keyword by lazy {
-        MutableLiveData<String?>(null)
-    }
+    val keyword = MutableLiveData<String?>(null)
 
     // ------ //
 
@@ -42,20 +39,34 @@ class HistoryRepository(
         title: String,
         faviconUrl: String? = null
     ) = withContext(Dispatchers.Default) {
-        val existed = dao.getHistory(url)
+        val now = LocalDateTime.now()
+        val today = now.toLocalDate()
+        val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
+
+        val page = dao.getHistoryPage(url) ?: HistoryPage(
+            url = url,
+            title = title,
+            faviconUrl = favicon,
+            lastVisited = now
+        )
+
+        val visited = HistoryLog(visitedAt = now)
 
         val history = History(
-            url = Uri.decode(url),
-            title = title,
-            faviconUrl = faviconUrl ?: Uri.parse(url).faviconUrl,
-            lastVisited = LocalDateTime.now(),
-            visitTimes = existed?.visitTimes?.limitedPlus(1L) ?: 1L
+            page = page,
+            log = visited
         )
         dao.insertHistory(history)
+        val inserted = dao.getHistory(now)
 
-        historiesCacheLock.withLock {
-            historiesCache.removeAll { it.url == history.url }
-            historiesCache.add(history)
+        if (inserted != null) {
+            historiesCacheLock.withLock {
+                historiesCache.removeAll {
+                    it.log.visitedAt.toLocalDate() == today
+                            && it.page.url == url
+                }
+                historiesCache.add(inserted)
+            }
         }
 
         updateHistoriesLiveData()
@@ -63,10 +74,10 @@ class HistoryRepository(
 
     /** 履歴を削除する */
     suspend fun deleteHistory(history: History) = withContext(Dispatchers.Default) {
-        dao.deleteHistory(history)
+        dao.deleteHistoryItem(history.log)
 
         historiesCacheLock.withLock {
-            historiesCache.removeAll { it.url == history.url }
+            historiesCache.removeAll { it.log.id == history.log.id }
         }
         updateHistoriesLiveData()
     }
@@ -97,7 +108,7 @@ class HistoryRepository(
 
         historiesCacheLock.withLock {
             historiesCache.removeAll { h ->
-                h.lastVisited.toLocalDate() == date
+                h.log.visitedAt.toLocalDate() == date
             }
         }
 
@@ -110,7 +121,7 @@ class HistoryRepository(
             val additional = dao.getRecentHistories(offset = historiesCache.size)
 
             historiesCache.addAll(additional)
-            historiesCache.sortBy { it.lastVisited }
+            historiesCache.sortBy { it.log.visitedAt }
         }
 
         updateHistoriesLiveData()
@@ -129,9 +140,9 @@ class HistoryRepository(
                 val keywords = keyword.split(Regex("""\s+"""))
                 val list = historiesCache.filter {
                     keywords.all { k ->
-                        it.title.toLowerCase(locale).contains(k)
-                                || it.url.toLowerCase(locale).contains(k)
-                                || it.lastVisited.format(dateTimeFormatter).contains(k)
+                        it.page.title.toLowerCase(locale).contains(k)
+                                || it.page.url.toLowerCase(locale).contains(k)
+                                || it.log.visitedAt.format(dateTimeFormatter).contains(k)
                     }
                 }
                 histories.postValue(list)

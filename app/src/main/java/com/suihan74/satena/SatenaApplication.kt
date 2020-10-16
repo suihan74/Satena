@@ -155,8 +155,9 @@ class SatenaApplication : Application() {
                 Migration1to2(),
                 Migration2to3(),
                 Migration3to4(),
+                Migration4to5(),
                 // ------ //
-                Migration1to4(),
+                Migration1to5(),
             )
             .fallbackToDestructiveMigration()
             .build()

@@ -25,7 +25,7 @@ import com.suihan74.satena.models.userTag.UserTagDao
         HistoryPage::class,
         HistoryLog::class
     ],
-    version = 4
+    version = 5
 )
 @TypeConverters(LocalDateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -74,10 +74,28 @@ class Migration3to4 : Migration(3, 4) {
     }
 }
 
-/** version 1 to 4 */
-class Migration1to4 : Migration(1, 4) {
+/** version 4 to 5 */
+class Migration4to5 : Migration(4, 5) {
     private fun createHistoryTables(db: SupportSQLiteDatabase) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS `browser_history_pages` (`url` TEXT NOT NULL, `title` TEXT NOT NULL, `faviconUrl` TEXT NOT NULL, `lastVisited` INTEGER NOT NULL, `visitTimes` INTEGER NOT NULL, `id` INTEGER NOT NULL)")
+        db.execSQL("CREATE TABLE IF NOT EXISTS `browser_history_pages` (`url` TEXT NOT NULL, `title` TEXT NOT NULL, `faviconUrl` TEXT NOT NULL, `lastVisited` INTEGER NOT NULL, `visitTimes` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
+        db.execSQL("CREATE TABLE IF NOT EXISTS `browser_history_items` (`visitedAt` INTEGER NOT NULL, `pageId` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
+    }
+
+    private fun dropOldTable(db: SupportSQLiteDatabase) {
+        db.execSQL("DROP TABLE IF EXISTS `browser_history_pages`")
+        db.execSQL("DROP TABLE IF EXISTS `browser_history_items`")
+    }
+
+    override fun migrate(database: SupportSQLiteDatabase) {
+        dropOldTable(database)
+        createHistoryTables(database)
+    }
+}
+
+/** version 1 to 5 */
+class Migration1to5 : Migration(1, 5) {
+    private fun createHistoryTables(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `browser_history_pages` (`url` TEXT NOT NULL, `title` TEXT NOT NULL, `faviconUrl` TEXT NOT NULL, `lastVisited` INTEGER NOT NULL, `visitTimes` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
         db.execSQL("CREATE TABLE IF NOT EXISTS `browser_history_items` (`visitedAt` INTEGER NOT NULL, `pageId` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
     }
 
