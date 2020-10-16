@@ -74,7 +74,7 @@ class HistoryRepository(
 
     /** 履歴を削除する */
     suspend fun deleteHistory(history: History) = withContext(Dispatchers.Default) {
-        dao.deleteHistoryItem(history.log)
+        dao.deleteHistoryLog(history.log)
 
         historiesCacheLock.withLock {
             historiesCache.removeAll { it.log.id == history.log.id }

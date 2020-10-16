@@ -9,6 +9,9 @@ interface BrowserDao {
 
     // --- history --- //
 
+    /**
+     * 直近の閲覧履歴を指定件数取得する
+     */
     @Transaction
     @Query("""
         select * from browser_history_items
@@ -17,6 +20,9 @@ interface BrowserDao {
         """)
     suspend fun getRecentHistories(offset: Int = 0, limit: Int = 10) : List<History>
 
+    /**
+     * 指定URLのページ情報を取得する
+     */
     @Query("""
         select * from browser_history_pages
         where url=:url
@@ -24,6 +30,12 @@ interface BrowserDao {
         """)
     suspend fun getHistoryPage(url: String): HistoryPage?
 
+    /**
+     * 指定日時の閲覧履歴を取得する
+     *
+     * 完全に一致する時刻を指定する必要があるため、
+     * 主に履歴追加直後にIDが付加されたインスタンスを再取得するために使用する
+     */
     @Transaction
     @Query("""
         select * from browser_history_items
@@ -32,6 +44,9 @@ interface BrowserDao {
     """)
     suspend fun getHistory(visited: LocalDateTime) : History?
 
+    /**
+     * 指定期間内で指定ページを参照している閲覧履歴を取得する
+     */
     @Transaction
     @Query("""
         select * from browser_history_items
@@ -42,15 +57,31 @@ interface BrowserDao {
     // ------ //
     // INSERT
 
+    /**
+     * ページ情報を追加する
+     *
+     * 外部から直接使用しない
+     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHistoryPage(page: HistoryPage)
+    suspend fun __insertHistoryPage(page: HistoryPage)
 
+    /**
+     * ログを追加する
+     *
+     * 外部から直接使用しない
+     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHistoryItem(item: HistoryLog)
+    suspend fun __insertHistoryLog(item: HistoryLog)
 
+    /**
+     * 閲覧履歴を追加する
+     *
+     * ページ情報を追加or更新した後にそのページIDを追加したログを追加する
+     * 外部からはこのメソッドを使用して項目追加する
+     */
     @Transaction
     suspend fun insertHistory(history: History) {
-        insertHistoryPage(history.page)
+        __insertHistoryPage(history.page)
         val page = getHistoryPage(history.page.url)!!
 
         // 同日内の同一URL履歴を削除する
@@ -59,34 +90,53 @@ interface BrowserDao {
         val start = LocalDateTime.of(date, startOfDay)
         val end = LocalDateTime.of(date.plusDays(1L), startOfDay)
         findHistory(page.id, start, end).forEach {
-            deleteHistoryItem(it)
+            deleteHistoryLog(it)
         }
 
         val item = history.log.copy(pageId = page.id)
-        insertHistoryItem(item)
+        __insertHistoryLog(item)
     }
 
     // ------ //
     // DELETE
 
+    /**
+     * ページ情報を削除する
+     *
+     * 加えて、該当のページ情報を参照するすべてのログを削除する
+     */
     @Transaction
     suspend fun deleteHistoryPage(page: HistoryPage) {
-        deleteHistoryItemsWithPage(page.id)
+        deleteHistoryLogsWithPage(page.id)
         __deleteHistoryPageImpl(page)
     }
 
+    /**
+     * ページ情報を削除する
+     *
+     * 外部からは直接使用しない
+     */
     @Delete
     suspend fun __deleteHistoryPageImpl(page: HistoryPage)
 
+    /**
+     * ログを削除する
+     */
     @Delete
-    suspend fun deleteHistoryItem(item: HistoryLog)
+    suspend fun deleteHistoryLog(item: HistoryLog)
 
+    /**
+     * 該当のページIDをもつ全てのログを削除する
+     */
     @Query("""
         delete from browser_history_items
         where pageId = :pageId
     """)
-    suspend fun deleteHistoryItemsWithPage(pageId: Long)
+    suspend fun deleteHistoryLogsWithPage(pageId: Long)
 
+    /**
+     * 指定した期間内の全てのログを削除する
+     */
     @Query("""
         delete from browser_history_items
         where visitedAt>=:start and visitedAt<:end
@@ -96,16 +146,27 @@ interface BrowserDao {
     // ------ //
     // CLEAR
 
+    /**
+     * 全てのログを削除する
+     */
     @Query("delete from browser_history_items")
-    suspend fun clearHistoryItems()
+    suspend fun clearHistoryLogs()
 
+    /**
+     * 全てのページ情報を削除する
+     *
+     * これを使用する際にはログ情報も併せて全削除する必要があるので、外部から直接使用してはいけない
+     */
     @Query("delete from browser_history_pages")
-    suspend fun clearHistoryPages()
+    suspend fun __clearHistoryPages()
 
+    /**
+     * 全ての閲覧履歴を削除する
+     */
     @Transaction
     suspend fun clearHistory() {
-        clearHistoryItems()
-        clearHistoryPages()
+        clearHistoryLogs()
+        __clearHistoryPages()
     }
 
     // --------------- //
