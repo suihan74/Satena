@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.ItemClickedListener
@@ -75,7 +75,7 @@ class CategoriesAdapter : ListAdapter<Category, CategoriesAdapter.ViewHolder>(Di
 
                     val drawable = context.getDrawable(value.iconId)
 
-                    Glide.with(view)
+                    GlideApp.with(view)
                         .load(drawable)
                         .into(view.category_icon)
                 }
