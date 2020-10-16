@@ -44,7 +44,7 @@ class HistoryRepository(
         val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
 
         val page = dao.getHistoryPage(url) ?: HistoryPage(
-            url = url,
+            url = Uri.decode(url),
             title = title,
             faviconUrl = favicon,
             lastVisited = now
