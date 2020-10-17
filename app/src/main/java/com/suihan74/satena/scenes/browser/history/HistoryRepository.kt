@@ -42,9 +42,10 @@ class HistoryRepository(
         val now = LocalDateTime.now()
         val today = now.toLocalDate()
         val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
+        val decodedUrl = Uri.decode(url)
 
-        val page = dao.getHistoryPage(url) ?: HistoryPage(
-            url = Uri.decode(url),
+        val page = dao.getHistoryPage(decodedUrl) ?: HistoryPage(
+            url = decodedUrl,
             title = title,
             faviconUrl = favicon,
             lastVisited = now
@@ -63,7 +64,7 @@ class HistoryRepository(
             historiesCacheLock.withLock {
                 historiesCache.removeAll {
                     it.log.visitedAt.toLocalDate() == today
-                            && it.page.url == url
+                            && it.page.url == decodedUrl
                 }
                 historiesCache.add(inserted)
             }
