@@ -22,13 +22,11 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
 import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -99,35 +97,71 @@ class BrowserActivity : AppCompatActivity() {
             lifecycleOwner = this@BrowserActivity
         }
 
-        // ドロワーを開いたときにIMEを閉じる
         drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
+                drawer_view_pager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
+                    val position = drawer_tab_layout.selectedTabPosition
+                    adapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                        fragment.onTabSelected()
+                    }
+                }
+            }
+            override fun onDrawerClosed(drawerView: View) {
+                // 閉じたことをドロワタブに通知する
+                drawer_view_pager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
+                    val position = drawer_tab_layout.selectedTabPosition
+                    adapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                        fragment.onTabUnselected()
+                    }
+                }
+            }
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerStateChanged(newState: Int) {
+                // ドロワ開閉でIMEを閉じる
                 hideSoftInputMethod(main_area)
             }
-            override fun onDrawerClosed(drawerView: View) {}
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
-            override fun onDrawerStateChanged(newState: Int) {}
         })
 
         val drawerTabAdapter = DrawerTabAdapter(supportFragmentManager)
         drawerTabAdapter.setup(this, drawer_tab_layout, drawer_view_pager)
         drawer_tab_layout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                // ドロワー内のタブ切り替え操作と干渉するため
+                // ドロワ内のタブ切り替え操作と干渉するため
                 // 一番端のタブを表示中以外はスワイプで閉じないようにする
                 when (viewModel.drawerGravity) {
                     Gravity.LEFT -> {
-                        drawer_layout.setCloseSwipeEnabled(tab?.position == drawerTabAdapter.count - 1, drawer_area)
+                        drawer_layout.setCloseSwipeEnabled(
+                            tab?.position == drawerTabAdapter.count - 1,
+                            drawer_area)
+
 
                     }
 
                     Gravity.RIGHT -> {
-                        drawer_layout.setCloseSwipeEnabled(tab?.position == 0, drawer_area)
+                        drawer_layout.setCloseSwipeEnabled(
+                            tab?.position == 0,
+                            drawer_area
+                        )
                     }
                 }
+
+                val position = tab?.position ?: return
+                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                    fragment.onTabSelected()
+                }
             }
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+                val position = tab?.position ?: return
+                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                    fragment.onTabUnselected()
+                }
+            }
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+                val position = tab?.position ?: return
+                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                    fragment.onTabReselected()
+                }
+            }
         })
 
         // WebViewの設定

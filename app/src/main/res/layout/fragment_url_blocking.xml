@@ -16,13 +16,31 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view"
-                style="@style/RecyclerView.Linear"
-                divider="@{@drawable/recycler_view_item_divider}"
-                blockUrlSettings="@{vm.blockUrls}"
+        <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent">
+
+            <TextView
+                    android:id="@+id/title_text_view"
+                    android:text="@string/pref_browser_open_url_blocking_desc"
+                    android:textColor="?textColor"
+                    android:textSize="18sp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="12dp"
+                    android:elevation="7dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_view"
+                    style="@style/RecyclerView.Linear"
+                    divider="@{@drawable/recycler_view_item_divider}"
+                    blockUrlSettings="@{vm.blockUrls}"
+                    android:layout_below="@id/title_text_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+        </RelativeLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/add_button"

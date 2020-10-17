@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.suihan74.hatenaLib.HatenaClient
@@ -20,12 +22,17 @@ import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.browser.UrlBlockingFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.provideViewModel
 
-class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
+class PreferencesBrowserFragment :
+    Fragment(),
+    ScrollableToTop,
+    TabItem
+{
     companion object {
         fun createInstance() = PreferencesBrowserFragment()
     }
@@ -40,6 +47,8 @@ class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
         get() = browserActivity?.viewModel
 
     private lateinit var binding: FragmentPreferencesBrowserBinding
+
+    private var onBackPressedCallback : OnBackPressedCallback? = null
 
     val viewModel: PreferencesBrowserViewModel by lazy {
         // ブラウザから直接開かれている場合はリポジトリを共有して変更をすぐに反映させる
@@ -118,6 +127,12 @@ class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
                 .replace(R.id.child_fragment_layout, fragment)
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
+
+            onBackPressedCallback = activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
+                childFragmentManager.popBackStack()
+                onBackPressedCallback = null
+                this.remove()
+            }
         }
 
         // キャッシュ削除
@@ -149,4 +164,12 @@ class PreferencesBrowserFragment : Fragment(), ScrollableToTop {
     override fun scrollToTop() {
         binding.scrollView.scrollTo(0, 0)
     }
+
+    override fun onTabSelected() {}
+
+    override fun onTabUnselected() {
+        onBackPressedCallback?.handleOnBackPressed()
+    }
+
+    override fun onTabReselected() {}
 }

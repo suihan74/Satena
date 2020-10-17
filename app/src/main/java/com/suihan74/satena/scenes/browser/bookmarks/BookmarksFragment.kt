@@ -23,6 +23,7 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.bindings.setIconId
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.getThemeColor
@@ -31,7 +32,11 @@ import kotlinx.android.synthetic.main.fragment_browser_bookmarks.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class BookmarksFragment : Fragment(), ScrollableToTop {
+class BookmarksFragment :
+    Fragment(),
+    ScrollableToTop,
+    TabItem
+{
     companion object {
         fun createInstance() = BookmarksFragment()
     }
@@ -233,4 +238,14 @@ class BookmarksFragment : Fragment(), ScrollableToTop {
     override fun scrollToTop() {
         recycler_view?.scrollToPosition(0)
     }
+
+    override fun onTabSelected() {}
+
+    override fun onTabUnselected() {
+        if (onBackPressedCallback?.isEnabled == true) {
+            onBackPressedCallback?.handleOnBackPressed()
+        }
+    }
+
+    override fun onTabReselected() {}
 }

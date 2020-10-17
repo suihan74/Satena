@@ -18,10 +18,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.PermissionRequestable
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getObjectExtra
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -119,8 +117,19 @@ class PreferencesActivity : ActivityBase() {
                         else -> position
                     }
 
+                    val prevTabId = viewModel.currentTab.value?.int
+                    if (prevTabId != null) {
+                        mTabAdapter.findFragment(pager, prevTabId).alsoAs<TabItem> { fragment ->
+                            fragment.onTabUnselected()
+                        }
+                    }
+
                     val tab = PreferencesTabMode.fromInt(jumpPosition)
                     viewModel.currentTab.value = tab
+
+                    mTabAdapter.findFragment(pager, tab.int).alsoAs<TabItem> { fragment ->
+                        fragment.onTabSelected()
+                    }
 
                     val btn = findViewById<ImageButton>(mTabAdapter.getIconId(tab.int - 1))
                     btn?.setBackgroundColor(ContextCompat.getColor(this@PreferencesActivity, R.color.colorPrimary))

@@ -8,7 +8,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.addCallback
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -107,11 +106,6 @@ class UrlBlockingFragment : Fragment() {
             it.size =
                 if (activity is PreferencesActivity) FloatingActionButton.SIZE_NORMAL
                 else FloatingActionButton.SIZE_MINI
-        }
-
-        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
-            parentFragmentManager.popBackStack()
-            this.remove()
         }
 
         return binding.root
