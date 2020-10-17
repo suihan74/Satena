@@ -14,7 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -481,7 +481,7 @@ class EntryMenuDialog : DialogFragment() {
                 url = siteUrl,
                 title = entry?.title ?: "",
                 positiveAction = { dialog, ignoredEntry ->
-                    viewModelScope.launch(Dispatchers.Main) {
+                    activity?.lifecycleScope?.launch(Dispatchers.Main) {
                         try {
                             withContext(Dispatchers.IO) {
                                 val dao = SatenaApplication.instance.ignoredEntryDao
