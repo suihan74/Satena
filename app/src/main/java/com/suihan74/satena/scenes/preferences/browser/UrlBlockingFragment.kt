@@ -8,21 +8,17 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentUrlBlockingBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment2
-import com.suihan74.satena.scenes.browser.BlockUrlSetting
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.pages.PreferencesBrowserFragment
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.letAs
 import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
@@ -31,15 +27,6 @@ import com.suihan74.utilities.showAllowingStateLoss
 class UrlBlockingFragment : Fragment() {
     companion object {
         fun createInstance() = UrlBlockingFragment()
-
-        @JvmStatic
-        @BindingAdapter("blockUrlSettings")
-        fun setBlockUrlSettings(view: RecyclerView, items: List<BlockUrlSetting>?) {
-            if (items == null) return
-            view.adapter.alsoAs<BlockUrlSettingsAdapter> { adapter ->
-                adapter.setItems(items)
-            }
-        }
     }
 
     val viewModel by lazy {

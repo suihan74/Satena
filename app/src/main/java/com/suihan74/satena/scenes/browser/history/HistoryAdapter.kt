@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.browser.history
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.databinding.BindingAdapter
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
@@ -20,6 +21,19 @@ class HistoryAdapter(
     R.layout.listview_item_browser_history,
     DiffCallback()
 ) {
+    object BindingAdapters {
+        @JvmStatic
+        @BindingAdapter("items")
+        fun setHistory(view: RecyclerView, items: List<History>?) {
+            if (items == null) return
+            view.adapter.alsoAs<HistoryAdapter> { adapter ->
+                adapter.setItems(items)
+            }
+        }
+    }
+
+    // ------ //
+
     /** 日付指定で履歴を削除する */
     private var onClearByDate : Listener<LocalDate>? = null
 

@@ -3,11 +3,9 @@ package com.suihan74.satena.scenes.browser
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
-import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.viewModelScope
@@ -20,8 +18,8 @@ import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
-import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
@@ -35,15 +33,6 @@ class BrowserActivity : AppCompatActivity() {
     companion object {
         /** 最初に開くページのURL */
         const val EXTRA_URL = "BrowserActivity.EXTRA_URL"
-
-        @BindingAdapter("url")
-        @JvmStatic
-        fun loadUrl(webView: WebView, url: String) {
-            if (webView.url != url) {
-                webView.stopLoading()
-                webView.loadUrl(url)
-            }
-        }
     }
 
     val viewModel : BrowserViewModel by lazy {

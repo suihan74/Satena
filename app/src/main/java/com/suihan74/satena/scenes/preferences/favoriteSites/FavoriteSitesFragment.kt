@@ -4,33 +4,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserFavoritesBinding
-import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesActionsImplForBrowser
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ScrollableToTop
-import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.provideViewModel
-
-@BindingAdapter("items")
-fun RecyclerView.setFavoriteSites(items: List<FavoriteSite>?) {
-    if (items == null) return
-    adapter.alsoAs<FavoriteSitesAdapter> { adapter ->
-        adapter.setItems(items)
-    }
-}
-
-// ------ //
 
 /** お気に入りサイトを表示するタブ */
 class FavoriteSitesFragment :

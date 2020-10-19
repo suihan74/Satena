@@ -13,15 +13,6 @@ class MarqueeTextView @JvmOverloads constructor(
     defStyleId: Int = android.R.attr.textViewStyle
 ) : AppCompatTextView(context, attrs, defStyleId) {
 
-    companion object {
-        @JvmStatic
-        @BindingAdapter("marqueeEnabled")
-        fun setMarqueeEnabled(view: MarqueeTextView, b: Boolean) {
-            view.marqueeEnabled = b
-            view.isSelected = b
-        }
-    }
-
     var marqueeEnabled: Boolean = true
 
     override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
@@ -37,4 +28,12 @@ class MarqueeTextView @JvmOverloads constructor(
     }
 
     override fun isFocused(): Boolean = marqueeEnabled
+}
+
+// ------ //
+
+@BindingAdapter("marqueeEnabled")
+fun MarqueeTextView.setMarqueeEnabled(b: Boolean) {
+    this.marqueeEnabled = b
+    this.isSelected = b
 }

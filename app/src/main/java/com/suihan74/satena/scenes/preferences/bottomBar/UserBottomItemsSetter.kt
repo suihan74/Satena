@@ -19,8 +19,7 @@ import com.suihan74.utilities.views.bindMenuItemsGravity
 import kotlinx.android.synthetic.main.view_user_bottom_items_setter.view.*
 
 class UserBottomItemsSetter : CoordinatorLayout {
-    companion object {
-        @JvmStatic
+    object BindingAdapters {
         @BindingAdapter("items")
         fun bindItems(
             instance: UserBottomItemsSetter,
@@ -30,13 +29,17 @@ class UserBottomItemsSetter : CoordinatorLayout {
             instance.inflateButtons()
         }
 
-        @JvmStatic
         @BindingAdapter("menuGravity")
-        fun bindMenuGravity(instance: UserBottomItemsSetter, gravity: Int) {
+        fun bindMenuGravity(
+            instance: UserBottomItemsSetter,
+            gravity: Int
+        ) {
             instance.binding.bottomAppBar.bindMenuItemsGravity(gravity)
             instance.inflateButtons()
         }
+    }
 
+    companion object {
         /** 表示できるボタン数の最大値を取得する */
         fun getButtonsLimit(context: Context) : Int {
             val displayMetrics = context.resources.displayMetrics
@@ -141,3 +144,4 @@ class UserBottomItemsSetter : CoordinatorLayout {
         inflateButtons()
     }
 }
+

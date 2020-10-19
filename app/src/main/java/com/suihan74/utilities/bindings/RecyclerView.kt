@@ -8,7 +8,10 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.MaintenanceEntry
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.*
+import com.suihan74.satena.scenes.entries2.CommentsAdapter
+import com.suihan74.satena.scenes.entries2.EntriesAdapter
+import com.suihan74.satena.scenes.entries2.InformationAdapter
+import com.suihan74.satena.scenes.entries2.NoticesAdapter
 import com.suihan74.utilities.DividerItemDecorator
 import com.suihan74.utilities.extensions.toVisibility
 
@@ -39,6 +42,7 @@ fun RecyclerView.setDivider(dividerId: Int) {
     )
 }
 
+// ------ //
 
 /** エントリリスト */
 @BindingAdapter("category", "entries", "notices", "information")
@@ -70,11 +74,3 @@ fun RecyclerView.setEntryComments(entry: Entry?) {
     visibility = (!comments.isNullOrEmpty()).toVisibility()
 }
 
-/** カテゴリリスト */
-@BindingAdapter("src")
-fun RecyclerView.setCategories(categories: Array<Category>?) {
-    if (categories == null) return
-
-    val adapter = adapter as CategoriesAdapter
-    adapter.submitList(categories.toList())
-}

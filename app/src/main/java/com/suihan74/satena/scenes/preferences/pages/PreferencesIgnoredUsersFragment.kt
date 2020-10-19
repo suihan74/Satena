@@ -5,10 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesIgnoredUsersBinding
@@ -17,7 +15,6 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
@@ -26,16 +23,6 @@ import kotlinx.coroutines.launch
 class PreferencesIgnoredUsersFragment : PreferencesFragmentBase() {
     companion object {
         fun createInstance() = PreferencesIgnoredUsersFragment()
-
-        @JvmStatic
-        @BindingAdapter("ignoredUsers")
-        fun setIgnoredUsers(view: RecyclerView, items: List<String>?) {
-            view.adapter.alsoAs<IgnoredUsersAdapter> { adapter ->
-                if (!items.isNullOrEmpty()) {
-                    adapter.setItems(items)
-                }
-            }
-        }
     }
 
     private val viewModel by lazy {

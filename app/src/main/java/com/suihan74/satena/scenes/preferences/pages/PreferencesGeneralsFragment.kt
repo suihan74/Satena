@@ -32,7 +32,9 @@ class PreferencesGeneralsFragment :
 {
     companion object {
         fun createInstance() = PreferencesGeneralsFragment()
+    }
 
+    object BindingAdapters {
         @JvmStatic
         @InverseBindingAdapter(attribute = "drawerGravity", event="android:checkedAttrChanged")
         fun inverseSetDrawerGravityToggle(view: ToggleButton) : Int {

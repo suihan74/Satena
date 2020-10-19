@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.entries2
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -10,9 +11,23 @@ import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.ItemClickedListener
+import com.suihan74.utilities.extensions.alsoAs
 import kotlinx.android.synthetic.main.listview_item_categories.view.*
 
-class CategoriesAdapter : ListAdapter<Category, CategoriesAdapter.ViewHolder>(DiffCallback()) {
+class CategoriesAdapter :
+    ListAdapter<Category, CategoriesAdapter.ViewHolder>(DiffCallback())
+{
+    object BindingAdapters {
+        @JvmStatic
+        @BindingAdapter("src")
+        fun setCategories(view: RecyclerView, categories: Array<Category>?) {
+            if (categories == null) return
+            view.adapter.alsoAs<CategoriesAdapter> { adapter ->
+                adapter.submitList(categories.toList())
+            }
+        }
+    }
+
     override fun getItemCount() = currentList.size
 
     /** 表示形式にあわせてアイテムの表示を変える */

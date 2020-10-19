@@ -6,19 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.core.view.isVisible
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserHistoryBinding
-import com.suihan74.satena.models.browser.History
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.ScrollableToTop
-import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
@@ -27,14 +23,6 @@ import kotlinx.coroutines.launch
 class HistoryFragment : Fragment(), ScrollableToTop {
     companion object {
         fun createInstance() = HistoryFragment()
-
-        @BindingAdapter("items")
-        @JvmStatic
-        fun setHistory(recyclerView: RecyclerView, items: List<History>) {
-            recyclerView.adapter.alsoAs<HistoryAdapter> { adapter ->
-                adapter.setItems(items)
-            }
-        }
     }
 
     private val browserActivity : BrowserActivity

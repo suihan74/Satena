@@ -33,35 +33,38 @@ class TextViewWithDrawable @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleInt: Int = 0
-) : AppCompatTextView(context, attrs, defStyleInt) {
-    companion object {
-        /** drawableをテキストと同じサイズにして追加する */
-        @JvmStatic
-        @BindingAdapter(
-            value = ["drawableStart", "drawableTop", "drawableEnd", "drawableBottom"],
-            requireAll = false
-        )
-        fun TextViewWithDrawable.setBoundedDrawable(
-            drawableStart: Drawable? = null,
-            drawableTop: Drawable? = null,
-            drawableEnd: Drawable? = null,
-            drawableBottom: Drawable? = null,
-        ) {
-            val color = currentTextColor
+) : AppCompatTextView(context, attrs, defStyleInt)
 
-            val start = drawableStart?.setTextSizeBounds(this, color)
-            val end = drawableEnd?.setTextSizeBounds(this, color)
-            val top = drawableTop?.setTextSizeBounds(this, color)
-            val bottom = drawableBottom?.setTextSizeBounds(this, color)
+object TexViewWithDrawableBinder {
+    /** drawableをテキストと同じサイズにして追加する */
+    @JvmStatic
+    @BindingAdapter(
+        value = ["drawableStart", "drawableTop", "drawableEnd", "drawableBottom"],
+        requireAll = false
+    )
+    fun TextViewWithDrawable.setBoundedDrawable(
+        drawableStart: Drawable? = null,
+        drawableTop: Drawable? = null,
+        drawableEnd: Drawable? = null,
+        drawableBottom: Drawable? = null,
+    ) {
+        val color = currentTextColor
 
-            setCompoundDrawables(start, top, end, bottom)
-        }
+        val start = drawableStart?.setTextSizeBounds(this, color)
+        val end = drawableEnd?.setTextSizeBounds(this, color)
+        val top = drawableTop?.setTextSizeBounds(this, color)
+        val bottom = drawableBottom?.setTextSizeBounds(this, color)
 
-        private fun Drawable.setTextSizeBounds(textView: TextView, color: Int) : Drawable = apply {
-            val size = textView.textSize.toInt()
-            setBounds(0, 0, size, size)
-            setTint(color)
-        }
+        setCompoundDrawables(start, top, end, bottom)
+    }
+
+    private fun Drawable.setTextSizeBounds(
+        textView: TextView,
+        color: Int
+    ) : Drawable = apply {
+        val size = textView.textSize.toInt()
+        setBounds(0, 0, size, size)
+        setTint(color)
     }
 }
 
