@@ -14,7 +14,7 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.models.TapEntryAction
-import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepository
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.getObject

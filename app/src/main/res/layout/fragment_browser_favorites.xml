@@ -3,7 +3,7 @@
     <data>
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.browser.favorites.FavoriteSitesViewModel" />
+                type="com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

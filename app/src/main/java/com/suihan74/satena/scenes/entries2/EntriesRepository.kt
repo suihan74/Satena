@@ -16,8 +16,8 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
-import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepository
-import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesRepositoryForEntries
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepositoryForEntries
 import com.suihan74.utilities.AccountLoader

@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.suihan74.satena.R
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesFragment
 import com.suihan74.satena.scenes.preferences.pages.*
 
 enum class PreferencesTabMode(
@@ -51,7 +52,7 @@ enum class PreferencesTabMode(
     FAVORITE_SITES(7,
         R.string.category_favorite_sites,
         R.id.preferences_tab_favorite_sites,
-        { PreferencesFavoriteSitesFragment.createInstance() }),
+        { FavoriteSitesFragment.createInstance() }),
 
     IGNORED_ENTRIES(8,
         R.string.pref_title_ignored_entries,

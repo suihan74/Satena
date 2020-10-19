@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.browser.favorites
+package com.suihan74.satena.scenes.preferences.favoriteSites
 
 import androidx.annotation.MainThread
 import com.suihan74.hatenaLib.ConnectionFailureException
