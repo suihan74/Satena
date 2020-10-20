@@ -24,9 +24,11 @@
                 android:layout_alignParentTop="true"
                 />
 
+        <!-- TODO: スワイプできない問題を解消するまではマーキーしないようにする -->
         <com.suihan74.utilities.views.MarqueeTextView
                 android:id="@+id/title"
                 style="@style/MarqueeTextView"
+                android:ellipsize="end"
                 android:text="@{site.title}"
                 android:contentDescription="@null"
                 android:textColor="?attr/textColor"
@@ -36,9 +38,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
+        <!-- TODO: スワイプできない問題を解消するまではマーキーしないようにする -->
         <com.suihan74.utilities.views.MarqueeTextView
                 android:id="@+id/url"
                 style="@style/MarqueeTextView"
+                android:ellipsize="end"
                 android:text="@{site.url}"
                 android:textColor="?attr/tagTextColor"
                 android:textSize="13sp"
