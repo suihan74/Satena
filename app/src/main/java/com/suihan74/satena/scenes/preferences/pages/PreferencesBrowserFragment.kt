@@ -135,6 +135,11 @@ class PreferencesBrowserFragment :
             }
         }
 
+        // 検索エンジンを設定するダイアログを開く
+        binding.searchEngineSelectionButton.setOnClickListener {
+            viewModel.openSearchEngineSelectionDialog(childFragmentManager)
+        }
+
         // キャッシュ削除
         binding.webViewClearCacheButton.setOnClickListener {
             viewModel.openClearCacheDialog(childFragmentManager)

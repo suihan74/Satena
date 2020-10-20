@@ -79,11 +79,11 @@ class BrowserViewModel(
         MutableLiveData("")
     }
 
-    /** アドレスバー検索で使用する検索エンジン(仮置き) */
-    val searchEngine : String
+    /** アドレスバー検索で使用する検索エンジン */
+    val searchEngine : SearchEngineSetting
         get() = browserRepo.searchEngine.value!!
 
-    /** ユーザーエージェント(仮置き) */
+    /** ユーザーエージェント */
     val userAgent by lazy {
         browserRepo.userAgent
     }
@@ -495,7 +495,7 @@ class BrowserViewModel(
 
             // それ以外は入力内容をキーワードとして検索を行う
             else -> {
-                url.value = searchEngine + Uri.encode(addr)
+                url.value = browserRepo.getSearchUrl(addr)
                 true
             }
         }

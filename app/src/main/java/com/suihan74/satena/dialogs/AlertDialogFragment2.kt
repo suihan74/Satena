@@ -30,6 +30,7 @@ class AlertDialogFragment2 : DialogFragment() {
         private const val ARG_NEGATIVE_BUTTON_TEXT_ID = "ARG_NEGATIVE_BUTTON_TEXT_ID"
         private const val ARG_NEUTRAL_BUTTON_TEXT_ID = "ARG_NEUTRAL_BUTTON_TEXT_ID"
         private const val ARG_ITEM_LABEL_IDS = "ARG_ITEM_LABEL_IDS"
+        private const val ARG_ITEM_LABELS = "ARG_ITEM_LABELS"
     }
 
     private val viewModel: DialogViewModel by lazy {
@@ -45,6 +46,7 @@ class AlertDialogFragment2 : DialogFragment() {
                 vm.negativeTextId = args.getInt(ARG_NEGATIVE_BUTTON_TEXT_ID, 0)
                 vm.neutralTextId = args.getInt(ARG_NEUTRAL_BUTTON_TEXT_ID, 0)
                 vm.itemLabelIds = args.getIntArray(ARG_ITEM_LABEL_IDS)
+                vm.itemLabels = args.getStringArray(ARG_ITEM_LABELS)
             }
         }
     }
@@ -83,6 +85,9 @@ class AlertDialogFragment2 : DialogFragment() {
 
         viewModel.itemLabelIds?.let { ids ->
             val labels = ids.map { getText(it) }.toTypedArray()
+            builder.setItems(labels, null)
+        } ?: viewModel.itemLabels?.let { labels ->
+            // 文字列で与えられている場合
             builder.setItems(labels, null)
         }
 
@@ -180,6 +185,8 @@ class AlertDialogFragment2 : DialogFragment() {
 
         var itemLabelIds : IntArray? = null
 
+        var itemLabels : Array<String>? = null
+
         /** ボタンクリック処理後に自動でダイアログを閉じる */
         var dismissOnClickButton : Boolean = true
 
@@ -257,11 +264,37 @@ class AlertDialogFragment2 : DialogFragment() {
             return this
         }
 
-        fun setItems(
+        @Suppress("unchecked_cast")
+        inline fun <reified T> setItems(
+            labels: List<T>,
+            noinline listener: ((dialog: AlertDialogFragment2, which: Int)->Unit)? = null
+        ) : Builder {
+            when (T::class) {
+                Int::class -> {
+                    setItemsWithLabelIds(labels as List<Int>, listener)
+                }
+
+                String::class -> {
+                    setItemsWithLabels(labels as List<String>, listener)
+                }
+            }
+            return this
+        }
+
+        fun setItemsWithLabelIds(
             labelIds: List<Int>,
             listener: ((dialog: AlertDialogFragment2, which: Int)->Unit)? = null
         ) : Builder {
             args.putIntArray(ARG_ITEM_LABEL_IDS, labelIds.toIntArray())
+            dialog.setOnClickItem(listener)
+            return this
+        }
+
+        fun setItemsWithLabels(
+            labels: List<String>,
+            listener: ((dialog: AlertDialogFragment2, which: Int)->Unit)? = null
+        ) : Builder {
+            args.putStringArray(ARG_ITEM_LABELS, labels.toTypedArray())
             dialog.setOnClickItem(listener)
             return this
         }

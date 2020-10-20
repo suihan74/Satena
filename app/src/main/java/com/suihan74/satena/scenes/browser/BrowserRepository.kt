@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.browser
 
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.webkit.WebViewFeature
 import com.suihan74.hatenaLib.HatenaClient
@@ -76,7 +77,7 @@ class BrowserRepository(
     /** 検索エンジン */
     val searchEngine =
         createBrowserSettingsLiveData(BrowserSettingsKey.SEARCH_ENGINE) { p, key ->
-            p.getString(key)
+            p.get<SearchEngineSetting>(key)
         }
 
     /** シークレットモードの有効状態 */
@@ -143,6 +144,21 @@ class BrowserRepository(
             keywordsCache[word] = value
             value
         }
+    }
+
+    // ------ //
+
+    /** 検索用URLを生成する */
+    fun getSearchUrl(keyword: String) : String {
+        val encodedKeyword = Uri.encode(keyword)
+        val engine = searchEngine.value
+            ?: BrowserSettingsKey.SEARCH_ENGINE.defaultValue as SearchEngineSetting
+        val queryUrl = engine.query
+
+        return if (queryUrl.contains("%s")) {
+            String.format(queryUrl, encodedKeyword)
+        }
+        else queryUrl + encodedKeyword
     }
 }
 

@@ -1,6 +1,7 @@
 package com.suihan74.satena.models
 
 import com.suihan74.satena.scenes.browser.BlockUrlSetting
+import com.suihan74.satena.scenes.browser.SearchEngineSetting
 import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
@@ -25,8 +26,8 @@ enum class BrowserSettingsKey (
     /** UserAgent設定(null = デフォルト) */
     USER_AGENT(typeInfo<String?>(), null),
 
-    /** 検索エンジン */
-    SEARCH_ENGINE(typeInfo<String>(), "https://www.google.com/search?q="),
+    /** アドレスバーで使用する検索エンジン */
+    SEARCH_ENGINE(typeInfo<SearchEngineSetting>(), SearchEngineSetting.Presets.Google.setting),
 
     /** スタートページ */
     START_PAGE_URL(typeInfo<String>(), "https://www.hatena.ne.jp/"),

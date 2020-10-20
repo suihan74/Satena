@@ -12,6 +12,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.browser.BrowserRepository
+import com.suihan74.satena.scenes.browser.SearchEngineSetting
 import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.utilities.exceptions.InvalidUrlException
@@ -80,6 +81,10 @@ class PreferencesBrowserViewModel(
         browserRepo.isForceDarkStrategySupported
     }
 
+    val searchEngine by lazy {
+        browserRepo.searchEngine
+    }
+
     // ------ //
 
     /** スタートページURLを登録する */
@@ -131,6 +136,23 @@ class PreferencesBrowserViewModel(
 
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_BROWSER_MODE)
     }
+
+    /** 検索エンジンを選択する */
+    fun openSearchEngineSelectionDialog(fragmentManager: FragmentManager) {
+        val presets = SearchEngineSetting.Presets.values()
+        val labels = presets.map { it.setting.title }
+
+        val dialog = AlertDialogFragment2.Builder()
+            .setTitle(R.string.pref_browser_dialog_title_search_engine)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setItems(labels) { _, which ->
+                searchEngine.value = presets[which].setting
+            }
+            .create()
+        dialog.showAllowingStateLoss(fragmentManager)
+    }
+
+    // ------ //
 
     /** キャッシュを削除する */
     fun openClearCacheDialog(fragmentManager: FragmentManager) {
