@@ -20,6 +20,7 @@ import kotlinx.android.synthetic.main.view_user_bottom_items_setter.view.*
 
 class UserBottomItemsSetter : CoordinatorLayout {
     object BindingAdapters {
+        @JvmStatic
         @BindingAdapter("items")
         fun bindItems(
             instance: UserBottomItemsSetter,
@@ -29,6 +30,7 @@ class UserBottomItemsSetter : CoordinatorLayout {
             instance.inflateButtons()
         }
 
+        @JvmStatic
         @BindingAdapter("menuGravity")
         fun bindMenuGravity(
             instance: UserBottomItemsSetter,
