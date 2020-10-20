@@ -57,14 +57,11 @@ class PreferencesIgnoredUsersViewModel(
         val rawList = allUsers.value ?: emptyList()
         val filterText = filterText.value
 
-        if (filterText.isNullOrBlank()) {
-            users.postValue(rawList)
-        }
-        else {
-            users.postValue(
-                rawList.filter { it.contains(filterText) }
-            )
-        }
+        val list =
+            if (filterText.isNullOrBlank()) rawList
+            else rawList.filter { it.contains(filterText) }
+
+        users.postValue(list)
     }
 
     /** リストを再読み込みする */

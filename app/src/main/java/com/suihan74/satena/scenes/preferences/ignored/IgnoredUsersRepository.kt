@@ -67,7 +67,7 @@ class IgnoredUsersRepository(
 
         if (result.isSuccess) {
             _ignoredUsersCache.clear()
-            _ignoredUsersCache.addAll(result.getOrDefault(emptyList()))
+            _ignoredUsersCache.addAll(result.getOrDefault(emptyList()).reversed())
             _ignoredUsers.postValue(_ignoredUsersCache)
         }
     }
