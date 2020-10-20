@@ -22,7 +22,8 @@ class IgnoredUsersAdapter(
         fun setIgnoredUsers(view: RecyclerView, items: List<String>?) {
             if (items == null) return
             view.adapter.alsoAs<IgnoredUsersAdapter> { adapter ->
-                adapter.setItems(items)
+                if (items.isEmpty()) adapter.setItems(null)
+                else adapter.setItems(items)
             }
         }
     }
