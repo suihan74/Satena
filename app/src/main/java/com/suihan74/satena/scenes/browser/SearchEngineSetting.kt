@@ -44,14 +44,14 @@ data class SearchEngineSetting (
             "https://twitter.com/search?q=%s&src=typed_query"
         )),
 
-        GoogleTranslateEnToJa(SearchEngineSetting(
-            "Google翻訳(英→日)",
-            "https://translate.google.co.jp/?hl=ja#op=translate&sl=en&tl=ja&text=%s"
+        GoogleTranslateToJa(SearchEngineSetting(
+            "Google翻訳(和訳)",
+            "https://translate.google.co.jp/?hl=ja&tab=TT#view=home&op=translate&sl=auto&tl=ja&text=%s"
         )),
 
-        GoogleTranslateJaToEn(SearchEngineSetting(
-            "Google翻訳(日→英)",
-            "https://translate.google.co.jp/?hl=ja#op=translate&sl=ja&tl=en&text=%s"
+        GoogleTranslateToEn(SearchEngineSetting(
+            "Google翻訳(英訳)",
+            "https://translate.google.co.jp/?hl=ja&tab=TT#view=home&op=translate&sl=auto&tl=en&text=%s"
         ))
     }
 }
