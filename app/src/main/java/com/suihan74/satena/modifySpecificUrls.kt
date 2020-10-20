@@ -113,3 +113,29 @@ private suspend fun modifySpecificUrlsForEntry(srcUrl: String) : String = withCo
     if (searchResult.any { it.url == modifiedUrl }) modifiedUrl
     else modifySpecificUrlsWithConnection(modifiedUrl)
 }
+
+// ------ //
+
+/**
+ * 与えられたURLに対応するエントリのrootUrlと思われるアドレスを取得する
+ *
+ * (大体の場合https://domain/)
+ */
+suspend fun getEntryRootUrl(srcUrl: String) : String {
+    val modifiedUrl = modifySpecificUrls(srcUrl) ?: srcUrl
+
+    val twitterRegex = Regex("""^(https://twitter\.com/[a-zA-Z0-9_]+/?)""")
+    val twMatch = twitterRegex.find(modifiedUrl)
+
+    val rootUrl =
+        when {
+            twMatch != null -> twMatch.groupValues[0]
+
+            else -> runCatching {
+                val uri = Uri.parse(modifiedUrl)
+                uri.scheme + "://" + uri.authority + "/"
+            }.getOrDefault(modifiedUrl)
+        }
+
+    return rootUrl
+}

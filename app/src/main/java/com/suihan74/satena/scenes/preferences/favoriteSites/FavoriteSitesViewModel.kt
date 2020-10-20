@@ -4,11 +4,14 @@ import android.app.Activity
 import android.content.Intent
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
+import com.suihan74.satena.getEntryRootUrl
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
+import kotlinx.coroutines.launch
 
 class FavoriteSitesViewModel(
     private val favoriteSitesRepo : FavoriteSitesRepository,
@@ -46,10 +49,13 @@ class FavoriteSitesViewModel(
         }
 
         dialog.setOnOpenEntriesListener { site ->
-            val intent = Intent(activity, EntriesActivity::class.java).apply {
-                putExtra(EntriesActivity.EXTRA_SITE_URL, site.url)
+            viewModelScope.launch {
+                val rootUrl = getEntryRootUrl(site.url)
+                val intent = Intent(activity, EntriesActivity::class.java).apply {
+                    putExtra(EntriesActivity.EXTRA_SITE_URL, rootUrl)
+                }
+                activity.startActivity(intent)
             }
-            activity.startActivity(intent)
         }
 
         dialog.setOnDeleteListener { site ->

@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.browser.history
 
 import android.content.Intent
-import android.net.Uri
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,8 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.getEntryRootUrl
 import com.suihan74.satena.models.browser.History
-import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
@@ -85,41 +84,36 @@ class HistoryViewModel(
         activity: BrowserActivity,
         fragmentManager: FragmentManager
     ) {
-        HistoryMenuDialog.createInstance(targetSite).run {
-            setOnOpenListener { history ->
-                activity.viewModel.goAddress(history.page.url)
-            }
+        val dialog = HistoryMenuDialog.createInstance(targetSite)
+        dialog.setOnOpenListener { history ->
+            activity.viewModel.goAddress(history.page.url)
+        }
 
-            setOnOpenBookmarksListener { history ->
-                val intent = Intent(activity, BookmarksActivity::class.java).apply {
-                    putExtra(BookmarksActivity.EXTRA_ENTRY_URL, history.page.url)
+        dialog.setOnOpenBookmarksListener { history ->
+            val intent = Intent(activity, BookmarksActivity::class.java).apply {
+                putExtra(BookmarksActivity.EXTRA_ENTRY_URL, history.page.url)
+            }
+            activity.startActivity(intent)
+        }
+
+        dialog.setOnOpenEntriesListener { history ->
+            viewModelScope.launch {
+                val rootUrl = getEntryRootUrl(history.page.url)
+                val intent = Intent(activity, EntriesActivity::class.java).apply {
+                    putExtra(EntriesActivity.EXTRA_SITE_URL, rootUrl)
                 }
                 activity.startActivity(intent)
             }
-
-            setOnOpenEntriesListener { history ->
-                viewModelScope.launch {
-                    val modifiedUrl = modifySpecificUrls(history.page.url) ?: history.page.url
-                    val intent = Intent(activity, EntriesActivity::class.java).apply {
-                        val uri = Uri.parse(modifiedUrl)
-                        val domainUrl = runCatching {
-                            uri.scheme + "://" + uri.authority + "/"
-                        }.getOrDefault(modifiedUrl)
-                        putExtra(EntriesActivity.EXTRA_SITE_URL, domainUrl)
-                    }
-                    activity.startActivity(intent)
-                }
-            }
-
-            setOnDeleteListener { site ->
-                viewModelScope.launch(Dispatchers.Main) {
-                    repository.deleteHistory(site)
-                    activity.showToast(R.string.msg_browser_removed_history)
-                }
-            }
-
-            showAllowingStateLoss(fragmentManager, DIALOG_MENU)
         }
+
+        dialog.setOnDeleteListener { site ->
+            viewModelScope.launch(Dispatchers.Main) {
+                repository.deleteHistory(site)
+                activity.showToast(R.string.msg_browser_removed_history)
+            }
+        }
+
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_MENU)
     }
 
     /** 日付を指定して履歴を削除する(かを確認してから行う) */
