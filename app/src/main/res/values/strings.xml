@@ -114,7 +114,7 @@
     <string name="entry_action_delete_bookmark">ブックマークを削除する</string>
     <string name="entry_action_ignore">このサイトを非表示にする</string>
 
-    <string name="msg_show_page_failed">内部ブラウザを開けませんでした。外部ブラウザを開きます</string>
+    <string name="msg_show_page_failed">アプリ内ブラウザを開けませんでした。外部ブラウザを開きます</string>
     <string name="msg_show_page_in_browser_failed">外部ブラウザを開けませんでした</string>
 
     <!-- ブックマークに対する操作メニュー -->
@@ -270,9 +270,9 @@
     <string name="pref_fonts_bookmark_comment_desc">ブコメ本文</string>
 
     <!-- 内部ブラウザ -->
-    <string name="pref_browser_mode_desc">利用する内部ブラウザ</string>
-    <string name="pref_browser_mode_web_view">WebView</string>
-    <string name="pref_browser_mode_chrome_custom_tab">ChromeCustomTab</string>
+    <string name="pref_browser_mode_desc">利用するアプリ内ブラウザ</string>
+    <string name="pref_browser_mode_web_view">WebView(新)</string>
+    <string name="pref_browser_mode_chrome_custom_tab">ChromeCustomTab(旧)</string>
 
     <string name="pref_browser_start_page_desc">スタートページ</string>
     <string name="pref_browser_start_page_hint">ウェブアドレスを入力</string>
@@ -312,7 +312,7 @@
 
     <!-- お気に入りサイト -->
     <string name="dialog_favorite_sites_open">開く</string>
-    <string name="dialog_favorite_sites_open_entries">エントリ一覧を開く</string>
+    <string name="dialog_favorite_sites_open_entries">このサイトのエントリを探す</string>
     <string name="dialog_favorite_sites_modify">編集</string>
     <string name="dialog_favorite_sites_delete">削除</string>
 
@@ -482,7 +482,7 @@
     <string name="mentioned_item_menu_show_user_entries">@string/bookmark_show_user_entries</string>
 
     <!-- 内部ブラウザ -->
-    <string name="inner_browser">内部ブラウザ</string>
+    <string name="inner_browser">アプリ内ウェブブラウザ</string>
     <string name="browser_address_bar_hint">検索語句またはウェブアドレスを入力</string>
 
     <string name="browser_favorite_button_tooltip">お気に入りに追加します</string>
