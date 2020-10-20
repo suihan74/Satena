@@ -45,17 +45,42 @@ enum class BrowserSettingsKey (
     USE_URL_BLOCKING(typeInfo<Boolean>(), true),
 
     /** ブロックURLリスト */
+    @Suppress("SpellCheckingInspection")
     BLOCK_URLS(typeInfo<List<BlockUrlSetting>>(), listOf(
-        "amazon-adsystem",  // テスト用のデータ
-        ".adnxs.com",
-        ".logly.co.jp",
-        "pb.ladsp.com",
-        "impact-ad.jp",
-        ".adtdp.com",
-        "socdm.com/adsv",
-        ".doubleclick.net",
+        // プリセット
+        "sp.gmossp-sp.jp/ads",
+        "in.treasuredata.com",
+        "pixon.ads-pixiv.net",
+        "bidder.criteo.com",
+        ".openx.net",
+        "torimochi.line-apps.com",
+        "aladdin.genieesspv.jp",
+        ".ad-nex.com",
+        ".nend.net",
+        ".bidswitch.net",
+        ".teads.tv",
+        ".adsrvr.org",
+        ".taboola.com",
+        "www.google.co.jp/ads/",
+        "static.ads-twitter.com",
+        "pagead2.googlesyndication.com",
+        ".microad.jp",
+        "ads.pubmatic.com",
+        ".adingo.jp",
+        "fam-8.net",
+        ".ad-stir.com",
+        "adserver-as.adtech.advertising.com",
+        "www.googleadservices.com/pagead/",
+        "ads.nicovideo.jp",
         ".criteo.net",
-        "ads.nicovideo.jp"
+        ".doubleclick.net",
+        "socdm.com/adsv",
+        ".adtdp.com",
+        "impact-ad.jp",
+        "pb.ladsp.com",
+        ".logly.co.jp",
+        ".adnxs.com",
+        "amazon-adsystem"
     ).map { BlockUrlSetting(it, false) })
 }
 
