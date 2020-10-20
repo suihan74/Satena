@@ -13,13 +13,18 @@ import org.jsoup.Jsoup
 /**
  * ブックマーク情報が正常に取得できるURLに修正する
  */
-suspend fun modifySpecificUrls(url: String?) : String? =
-    if (url == null) null
-    else when (val modifiedTemp = modifySpecificUrlsWithoutConnection(url)) {
-        url -> runCatching { modifySpecificUrlsForEntry(url) /*modifySpecificUrlsWithConnection(url)*/ }.getOrNull()
-        else -> modifiedTemp
+suspend fun modifySpecificUrls(url: String?) : String? {
+    if (url == null) return null
+
+    val result = runCatching {
+        when (val modifiedTemp = modifySpecificUrlsWithoutConnection(url)) {
+            url -> runCatching { modifySpecificUrlsForEntry(url) }.getOrNull()
+            else -> modifiedTemp
+        }
     }
 
+    return result.getOrDefault(url)
+}
 
 /**
  * 幾つかの頻出するサイトに対して
