@@ -16,10 +16,7 @@ import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
-import com.suihan74.satena.models.AppDatabase
-import com.suihan74.satena.models.EntriesHistoryKey
-import com.suihan74.satena.models.NoticesKey
-import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.tools.RestartActivity
@@ -106,6 +103,8 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
                     addPreference<PreferenceKey>()
                     addPreference<NoticesKey>()
                     addPreference<EntriesHistoryKey>()
+                    addPreference<BrowserSettingsKey>()
+                    addPreference<FavoriteSitesKey>()
                     addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME)
                     addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME + "-shm")
                     addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME + "-wal")
