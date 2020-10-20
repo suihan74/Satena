@@ -46,12 +46,12 @@ data class SearchEngineSetting (
 
         GoogleTranslateToJa(SearchEngineSetting(
             "Google翻訳(和訳)",
-            "https://translate.google.co.jp/?hl=ja&tab=TT#view=home&op=translate&sl=auto&tl=ja&text=%s"
+            "https://translate.google.com/?hl=ja&tab=TT#view=home&op=translate&sl=auto&tl=ja&text=%s"
         )),
 
         GoogleTranslateToEn(SearchEngineSetting(
             "Google翻訳(英訳)",
-            "https://translate.google.co.jp/?hl=ja&tab=TT#view=home&op=translate&sl=auto&tl=en&text=%s"
+            "https://translate.google.com/?hl=ja&tab=TT#view=home&op=translate&sl=auto&tl=en&text=%s"
         ))
     }
 }
