@@ -169,7 +169,7 @@ class BookmarkPostViewModel(
 
         this@BookmarkPostViewModel.entry.value = entry
         comment.value = editingComment
-                    ?: entry.bookmarkedData?.comment
+                    ?: entry.bookmarkedData?.commentRaw
                     ?: ""
         isPrivate.value = entry.bookmarkedData?.private ?: false
 

@@ -130,10 +130,10 @@ class BookmarkPostFragment : Fragment() {
                 if (userSignedIn == null) null
                 else it.bookmarkedData?.commentRaw
 
-            viewModel.comment.value = userComment ?: ""
+            viewModel.comment.value = userComment.orEmpty()
             viewModel.init(
                 entry = it,
-                editingComment = viewModel.comment.value
+                editingComment = userComment.orEmpty()
             )
         }
 
@@ -141,7 +141,7 @@ class BookmarkPostFragment : Fragment() {
             if (it == null) return@observe
             val userSignedIn = bookmarksRepo.userSignedIn
             val bookmark = it.bookmarks.firstOrNull { b -> b.user == userSignedIn }
-            viewModel.comment.value = bookmark?.comment ?: ""
+            viewModel.comment.value = bookmark?.commentRaw.orEmpty()
         }
 
         // タグリストを初期化

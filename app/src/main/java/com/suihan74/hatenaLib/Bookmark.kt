@@ -72,7 +72,7 @@ data class Bookmark (
 
     /** タグを含んだコメントを取得する */
     val commentRaw : String get() =
-        getTagsText { "[$it]" } + comment
+        getTagsText(separator = "") { "[$it]" } + comment
 
     /** ブコメの中身が更新されていないかを確認する */
     fun same(other: Bookmark?) : Boolean {
