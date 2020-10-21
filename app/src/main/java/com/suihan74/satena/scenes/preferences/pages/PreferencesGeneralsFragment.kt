@@ -22,6 +22,7 @@ import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.fragment_preferences_generals.view.*
 
@@ -85,7 +86,7 @@ class PreferencesGeneralsFragment :
                 flags =
                     Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
 
-                putExtra(
+                putObjectExtra(
                     PreferencesActivity.EXTRA_CURRENT_TAB,
                     PreferencesTabMode.GENERALS
                 )
