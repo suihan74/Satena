@@ -229,15 +229,25 @@ class BrowserViewModel(
                         val keywordRegex = Regex("""^https?://(anond\.hatelabo|d\.hatena\.ne)\.jp/keyword/(.+)$""")
                         val word = keywordRegex.find(url)?.groupValues?.getOrNull(2)
                         (word != null).whenTrue {
+                            val popup = openKeywordPopup(
+                                null,
+                                view,
+                                motionEvent.x.toInt(),
+                                motionEvent.y.toInt(),
+                                activity
+                            )
+
                             viewModelScope.launch {
-                                val result = kotlin.runCatching {
+                                val result = runCatching {
                                     browserRepo.getKeyword(word!!)
                                 }
 
-                                val response = result.getOrNull()
-                                if (response != null) {
-                                    openKeywordPopup(response, view, motionEvent.x.toInt(), motionEvent.y.toInt(), activity)
+                                if (result.isFailure) {
+                                    Log.w("keyword", Log.getStackTraceString(result.exceptionOrNull()))
                                 }
+
+                                val response = result.getOrDefault(emptyList())
+                                popup.setData(response)
                             }
                         }
                     }
@@ -420,18 +430,27 @@ class BrowserViewModel(
 
     /** はてなキーワードの解説ポップアップを開く */
     @OptIn(ExperimentalStdlibApi::class)
-    private fun openKeywordPopup(response: List<Keyword>, anchor: View, x: Int, y: Int, activity: BrowserActivity) {
-        if (response.isNotEmpty()) {
-            // 一般的な用法を優先して表示する
-            val generalItem = response.firstOrNull { it.category.contains("一般") }
-            val data =
+    private fun openKeywordPopup(
+        response: List<Keyword>?,
+        anchor: View,
+        x: Int,
+        y: Int,
+        activity: BrowserActivity
+    ) : HatenaKeywordPopup {
+        val data =
+            if (!response.isNullOrEmpty()) {
+                // 一般的な用法を優先して表示する
+                val generalItem = response.firstOrNull { it.category.contains("一般") }
+
                 if (generalItem == null) response
                 else  buildList {
                     add(generalItem)
                     addAll(response.minus(generalItem))
                 }
+            }
+            else null
 
-            val popup = HatenaKeywordPopup(activity, data)
+        return HatenaKeywordPopup(activity, data).also { popup ->
             popup.showAsDropDown(anchor, x - 100, y - 32, Gravity.TOP)
         }
     }

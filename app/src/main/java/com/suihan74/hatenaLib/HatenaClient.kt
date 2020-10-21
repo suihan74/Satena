@@ -1823,7 +1823,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
             val root = connection.get()
 
             val tagBody = root.getElementById("tag-body")
-            val items = tagBody.getElementsByClass("sc-fMiknA")
+            val items = tagBody.allElements.filter { item ->
+                item.tagName() == "div" && item.children().any { it.tagName() == "header" }
+            }
 
             return@withContext items.map { item ->
                 val header = item.getElementsByTag("header").first()
@@ -1832,9 +1834,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 val category = headerExtras[1].wholeText()
                 val kana = headerExtras[2].wholeText()
 
-                val body = item.getElementsByClass("sc-fBuWsC").first()
-                val bodyHtml = body.html()
-                val bodyText = body.wholeText()
+                val body = item.children().firstOrNull { it.tagName() == "div" }
+                val bodyHtml = body?.html() ?: ""
+                val bodyText = body?.wholeText() ?: ""
                 Keyword(title, kana, category, bodyText, bodyHtml)
             }
         }
