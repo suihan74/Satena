@@ -14,14 +14,13 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentUrlBlockingBinding
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.pages.PreferencesBrowserFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.letAs
 import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.showAllowingStateLoss
 
 /** URLブロック設定を編集する */
 class UrlBlockingFragment : Fragment() {
@@ -71,21 +70,7 @@ class UrlBlockingFragment : Fragment() {
         binding.recyclerView.adapter = BlockUrlSettingsAdapter(viewLifecycleOwner).also { adapter ->
             adapter.setOnLongLickItemListener { item ->
                 val model = item.model ?: return@setOnLongLickItemListener
-
-                val labels = listOf(
-                    R.string.dialog_delete
-                )
-
-                val dialog = AlertDialogFragment2.Builder()
-                    .setTitle(model.pattern)
-                    .setNegativeButton(R.string.dialog_cancel)
-                    .setItems(labels) { _, which ->
-                        viewModel.blockUrls.value =
-                            viewModel.blockUrls.value?.minus(model)
-                    }
-                    .create()
-
-                dialog.showAllowingStateLoss(childFragmentManager)
+                viewModel.openItemMenuDialog(model, childFragmentManager)
             }
         }
 
@@ -93,6 +78,18 @@ class UrlBlockingFragment : Fragment() {
             it.size =
                 if (activity is PreferencesActivity) FloatingActionButton.SIZE_NORMAL
                 else FloatingActionButton.SIZE_MINI
+
+            it.setOnClickListener {
+                val activity = activity
+                if (activity is BrowserActivity) {
+                    // ブラウザから呼ばれている場合、
+                    // 現在表示しているページのリソース情報を含めたダイアログを表示させる
+                    activity.viewModel.openBlockUrlDialog(childFragmentManager)
+                }
+                else {
+                    viewModel.openBlockUrlDialog(childFragmentManager)
+                }
+            }
         }
 
         return binding.root

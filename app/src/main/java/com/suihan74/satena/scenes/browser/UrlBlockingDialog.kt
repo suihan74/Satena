@@ -14,7 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleUrlBlockingBinding
 import com.suihan74.utilities.Listener
@@ -23,7 +23,7 @@ import com.suihan74.utilities.provideViewModel
 
 class UrlBlockingDialog : DialogFragment() {
     companion object {
-        fun createInstance(urls: List<ResourceUrl>) = UrlBlockingDialog().withArguments {
+        fun createInstance(urls: List<ResourceUrl>? = null) = UrlBlockingDialog().withArguments {
             putObject(ARG_URLS, urls)
         }
 
@@ -32,7 +32,7 @@ class UrlBlockingDialog : DialogFragment() {
 
     private val viewModel : DialogViewModel by lazy {
         provideViewModel(this) {
-            val urls = requireArguments().getObject<List<ResourceUrl>>(ARG_URLS) ?: emptyList()
+            val urls = requireArguments().getObject<List<ResourceUrl>>(ARG_URLS)
             DialogViewModel(urls)
         }
     }
@@ -51,13 +51,18 @@ class UrlBlockingDialog : DialogFragment() {
             it.lifecycleOwner = requireActivity()
         }
 
-        return AlertDialog.Builder(context, R.style.AlertDialogStyle)
+        val builder = AlertDialog.Builder(context, R.style.AlertDialogStyle)
             .setCustomTitle(titleViewBinding.root)
-            .setItems(viewModel.labels, null)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setPositiveButton(R.string.dialog_register, null)
             .setNeutralButton(R.string.dialog_url_blocking_continuous_register, null)
-            .show()
+            .also { builder ->
+                if (!viewModel.urls.isNullOrEmpty()) {
+                    builder.setItems(viewModel.labels, null)
+                }
+            }
+
+        return builder.show()
             .apply {
                 // IMEを表示するための設定
                 window?.run {
@@ -72,7 +77,7 @@ class UrlBlockingDialog : DialogFragment() {
 
                 // 既にブロックされている設定の説明を表示する
                 listView?.setOnItemLongClickListener { adapterView, view, i, l ->
-                    if (viewModel.urls[i].blocked) {
+                    if (viewModel.urls?.get(i)?.blocked == true) {
                         context.showToast(R.string.msg_url_blocked)
                     }
                     true
@@ -108,20 +113,22 @@ class UrlBlockingDialog : DialogFragment() {
 
     // ------ //
 
-    suspend fun setOnCompleteListener(listener: Listener<BlockUrlSetting>?) = whenStarted {
+    fun setOnCompleteListener(
+        listener: Listener<BlockUrlSetting>?
+    ) = lifecycleScope.launchWhenCreated {
         viewModel.onComplete = listener
     }
 
     // ------ //
 
     class DialogViewModel(
-        val urls: List<ResourceUrl>
+        val urls: List<ResourceUrl>?
     ) : ViewModel() {
         var onComplete : Listener<BlockUrlSetting>? = null
 
         /** 候補リストの表示項目 */
         val labels by lazy {
-            urls.map {
+            urls?.map {
                 if (it.blocked) buildSpannedString {
                         append(
                             Uri.decode(it.url),
@@ -129,7 +136,7 @@ class UrlBlockingDialog : DialogFragment() {
                         )
                     }
                 else Uri.decode(it.url)
-            }.toTypedArray()
+            }?.toTypedArray() ?: emptyArray()
         }
 
         /** 登録するパターン */
@@ -150,7 +157,7 @@ class UrlBlockingDialog : DialogFragment() {
 
         /** 選択したURLのドメイン部分をパターン候補として返す */
         fun getPatternCandidate(which: Int) : String {
-            val url = urls[which].url
+            val url = urls?.get(which)?.url ?: return ""
             val match = domainRegex.find(url)
 
             return match?.groupValues?.getOrNull(1) ?: url

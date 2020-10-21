@@ -555,19 +555,19 @@ class BrowserViewModel(
     /** 新しいブロック設定を追加するダイアログを開く */
     fun openBlockUrlDialog(
         fragmentManager: FragmentManager
-    ) = viewModelScope.launch(Dispatchers.Main) {
-        UrlBlockingDialog.createInstance(resourceUrls).run {
-            showAllowingStateLoss(fragmentManager, DIALOG_BLOCK_URL)
+    ) {
+        val dialog = UrlBlockingDialog.createInstance(resourceUrls)
 
-            setOnCompleteListener { setting ->
-                val blockList = browserRepo.blockUrls.value ?: emptyList()
+        dialog.setOnCompleteListener { setting ->
+            val blockList = browserRepo.blockUrls.value ?: emptyList()
 
-                if (blockList.none { it.pattern == setting.pattern }) {
-                    browserRepo.blockUrls.value = blockList.plus(setting)
-                }
-
-                SatenaApplication.instance.showToast(R.string.msg_add_url_blocking_succeeded)
+            if (blockList.none { it.pattern == setting.pattern }) {
+                browserRepo.blockUrls.value = blockList.plus(setting)
             }
+
+            SatenaApplication.instance.showToast(R.string.msg_add_url_blocking_succeeded)
         }
+
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_BLOCK_URL)
     }
 }
