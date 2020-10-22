@@ -1,6 +1,9 @@
 package com.suihan74.satena.scenes.browser
 
 import android.content.Context
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import androidx.appcompat.widget.TooltipCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -22,7 +25,11 @@ abstract class IconFragmentPagerAdapter(
     fun findFragment(viewPager: ViewPager, position: Int) =
         instantiateItem(viewPager, position) as? Fragment
 
+    @DrawableRes
     abstract fun getIconId(position: Int) : Int
+
+    @StringRes
+    abstract fun getTitleId(position: Int) : Int
 
     /** タブリストが変更されたときに呼ばれるリスナ */
     private var onDataSetChangedListener : Listener<Unit>? = null
@@ -39,7 +46,9 @@ abstract class IconFragmentPagerAdapter(
     ) {
         onDataSetChangedListener = {
             repeat(count) { i ->
-                tabLayout.getTabAt(i)?.icon = ContextCompat.getDrawable(
+                val tab = tabLayout.getTabAt(i) ?: return@repeat
+
+                tab.icon = ContextCompat.getDrawable(
                     context,
                     getIconId(i)
                 )?.also { icon ->
@@ -49,6 +58,12 @@ abstract class IconFragmentPagerAdapter(
                     )
                     DrawableCompat.setColorFilter(icon, color)
                 }
+
+                // アイコン長押しでタブタイトルをツールチップ表示する
+                TooltipCompat.setTooltipText(
+                    tab.view,
+                    context.getString(getTitleId(i))
+                )
             }
         }
         viewPager.adapter = this
@@ -84,6 +99,11 @@ class DrawerTabAdapter(
     override fun getItem(position: Int) : Fragment =
         DrawerTab.fromOrdinal(position).generator()
 
+    @DrawableRes
     override fun getIconId(position: Int) : Int =
         DrawerTab.fromOrdinal(position).iconId
+
+    @StringRes
+    override fun getTitleId(position: Int): Int =
+        DrawerTab.fromOrdinal(position).titleId
 }
