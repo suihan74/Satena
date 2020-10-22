@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -15,12 +17,18 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.showSoftInputMethod
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class HistoryFragment : Fragment(), ScrollableToTop {
+class HistoryFragment :
+    Fragment(),
+    ScrollableToTop,
+    TabItem
+{
     companion object {
         fun createInstance() = HistoryFragment()
     }
@@ -31,20 +39,22 @@ class HistoryFragment : Fragment(), ScrollableToTop {
     private val activityViewModel : BrowserViewModel
         get() = browserActivity.viewModel
 
-    private lateinit var binding: FragmentBrowserHistoryBinding
-
     private val viewModel by lazy {
         provideViewModel(this) {
             HistoryViewModel(activityViewModel.historyRepo)
         }
     }
 
+    private var binding: FragmentBrowserHistoryBinding? = null
+
+    private var onBackPressedCallback : OnBackPressedCallback? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate<FragmentBrowserHistoryBinding>(
+        val binding = DataBindingUtil.inflate<FragmentBrowserHistoryBinding>(
             inflater,
             R.layout.fragment_browser_history,
             container,
@@ -53,6 +63,7 @@ class HistoryFragment : Fragment(), ScrollableToTop {
             it.vm = viewModel
             it.lifecycleOwner = viewLifecycleOwner
         }
+        this.binding = binding
 
         binding.recyclerView.let { recyclerView ->
             recyclerView.setHasFixedSize(true)
@@ -87,13 +98,19 @@ class HistoryFragment : Fragment(), ScrollableToTop {
 
         // 検索ボックスの表示切替
         binding.searchButton.setOnClickListener {
-            val opened = !binding.searchText.isVisible
+            viewModel.keywordEditTextVisible.value = !binding.searchText.isVisible
+        }
 
-            if (!opened) {
-                browserActivity.hideSoftInputMethod(binding.mainLayout)
+        // 検索ボックスの表示状態にあわせてIMEの表示を切り替える
+        viewModel.keywordEditTextVisible.observe(viewLifecycleOwner) {
+            if (it) {
+                browserActivity.showSoftInputMethod(binding.searchText)
+                enableOnBackPressedCallback()
             }
-
-            viewModel.keywordEditTextVisible.value = opened
+            else {
+                browserActivity.hideSoftInputMethod(binding.mainLayout)
+                disableOnBackPressedCallback()
+            }
         }
 
         // 入力完了でIMEを閉じる
@@ -111,7 +128,34 @@ class HistoryFragment : Fragment(), ScrollableToTop {
         return binding.root
     }
 
+    /** 戻るボタンで検索ボックスを閉じる */
+    private fun enableOnBackPressedCallback() {
+        onBackPressedCallback = browserActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            viewModel.keywordEditTextVisible.value = false
+            viewModel.keyword.value = ""
+            disableOnBackPressedCallback()
+        }
+    }
+
+    private fun disableOnBackPressedCallback() {
+        onBackPressedCallback?.remove()
+        onBackPressedCallback = null
+    }
+
+    // ------ //
+
     override fun scrollToTop() {
-        binding.recyclerView.scrollToPosition(0)
+        binding?.recyclerView?.scrollToPosition(0)
+    }
+
+    // ------ //
+
+    override fun onTabSelected() {}
+
+    override fun onTabUnselected() {
+        onBackPressedCallback?.handleOnBackPressed()
+    }
+
+    override fun onTabReselected() {
     }
 }
