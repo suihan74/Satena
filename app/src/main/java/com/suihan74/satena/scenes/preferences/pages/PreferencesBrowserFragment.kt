@@ -128,11 +128,7 @@ class PreferencesBrowserFragment :
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
 
-            onBackPressedCallback = activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
-                childFragmentManager.popBackStack()
-                onBackPressedCallback = null
-                this.remove()
-            }
+            enableOnBackPressedCallback()
         }
 
         // 検索エンジンを設定するダイアログを開く
@@ -166,9 +162,21 @@ class PreferencesBrowserFragment :
         }
     }
 
+    private fun enableOnBackPressedCallback() {
+        onBackPressedCallback = activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
+            childFragmentManager.popBackStack()
+            onBackPressedCallback = null
+            this.remove()
+        }
+    }
+
+    // ------ //
+
     override fun scrollToTop() {
         binding.scrollView.scrollTo(0, 0)
     }
+
+    // ------ //
 
     override fun onTabSelected() {}
 

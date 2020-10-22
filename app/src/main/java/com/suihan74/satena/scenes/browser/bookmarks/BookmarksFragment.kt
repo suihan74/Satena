@@ -239,9 +239,13 @@ class BookmarksFragment :
         binding.bookmarkPostFrameLayout.setVisibility(opened)
     }
 
+    // ------ //
+
     override fun scrollToTop() {
         recycler_view?.scrollToPosition(0)
     }
+
+    // ------ //
 
     override fun onTabSelected() {}
 
