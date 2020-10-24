@@ -30,9 +30,27 @@ class BrowserToolbar @JvmOverloads constructor(
     /** アドレスバー入力部分のフォーカスが変化したときの追加処理 */
     private var onFocusChangeListener : Listener<Boolean>? = null
 
+    /** 表示中のページをお気に入りに追加するボタンが押下された */
+    private var onFavoriteCurrentPageListener : Listener<Unit>? = null
+
+    /** 表示中のページをお気に入りから除外するボタンが押下された */
+    private var onUnfavoriteCurrentPageListener : Listener<Unit>? = null
+
+    // ------ //
+
     /** アドレスバー入力部分のフォーカスが変化したときの追加処理をセット */
-    fun setOnFocusChangeListener(l : Listener<Boolean>?) {
+    fun setOnFocusChangeListener(l: Listener<Boolean>?) {
         onFocusChangeListener = l
+    }
+
+    /** 表示中のページをお気に入りに追加するボタンが押下されたときの処理をセット */
+    fun setOnFavoriteCurrentPageListener(l: Listener<Unit>?) {
+        onFavoriteCurrentPageListener = l
+    }
+
+    /** 表示中のページをお気に入りから除外するボタンが押下されたときの処理をセット */
+    fun setOnUnfavoriteCurrentPageListener(l: Listener<Unit>?) {
+        onUnfavoriteCurrentPageListener = l
     }
 
     // ------ //
@@ -104,10 +122,10 @@ class BrowserToolbar @JvmOverloads constructor(
 
             favButton.setOnClickListener {
                 if (viewModel.isUrlFavorite.value == true) {
-                    viewModel.unfavoriteCurrentPage()
+                    onUnfavoriteCurrentPageListener?.invoke(Unit)
                 }
                 else {
-                    viewModel.favoriteCurrentPage()
+                    onFavoriteCurrentPageListener?.invoke(Unit)
                 }
             }
         }

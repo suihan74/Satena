@@ -39,6 +39,7 @@ class BrowserActivity : AppCompatActivity() {
         provideViewModel(this) {
             val initialUrl = intent.getStringExtra(EXTRA_URL)
 
+            val app = SatenaApplication.instance
             val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
 
             val browserRepo = BrowserRepository(
@@ -50,17 +51,15 @@ class BrowserActivity : AppCompatActivity() {
             val bookmarksRepo = BookmarksRepository(
                 AccountLoader(this, HatenaClient, MastodonClientHolder),
                 prefs,
-                SatenaApplication.instance.ignoredEntryDao,
-                SatenaApplication.instance.userTagDao
+                app.ignoredEntryDao,
+                app.userTagDao
             )
 
             val favoriteSitesRepo = FavoriteSitesRepository(
                 SafeSharedPreferences.create<FavoriteSitesKey>(this)
             )
 
-            val historyRepo = HistoryRepository(
-                SatenaApplication.instance.browserDao
-            )
+            val historyRepo = HistoryRepository(app.browserDao)
 
             BrowserViewModel(
                 browserRepo,
@@ -72,7 +71,6 @@ class BrowserActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -86,107 +84,14 @@ class BrowserActivity : AppCompatActivity() {
             lifecycleOwner = this@BrowserActivity
         }
 
-        drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
-            override fun onDrawerOpened(drawerView: View) {
-                drawer_view_pager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
-                    val position = drawer_tab_layout.selectedTabPosition
-                    adapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
-                        fragment.onTabSelected()
-                    }
-                }
-            }
-            override fun onDrawerClosed(drawerView: View) {
-                // 閉じたことをドロワタブに通知する
-                drawer_view_pager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
-                    val position = drawer_tab_layout.selectedTabPosition
-                    adapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
-                        fragment.onTabUnselected()
-                    }
-                }
-            }
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
-            override fun onDrawerStateChanged(newState: Int) {
-                // ドロワ開閉でIMEを閉じる
-                hideSoftInputMethod(main_area)
-            }
-        })
-
-        val drawerTabAdapter = DrawerTabAdapter(supportFragmentManager)
-        drawerTabAdapter.setup(this, drawer_tab_layout, drawer_view_pager)
-        drawer_tab_layout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                // ドロワ内のタブ切り替え操作と干渉するため
-                // 一番端のタブを表示中以外はスワイプで閉じないようにする
-                when (viewModel.drawerGravity) {
-                    Gravity.LEFT -> {
-                        drawer_layout.setCloseSwipeEnabled(
-                            tab?.position == drawerTabAdapter.count - 1,
-                            drawer_area)
-
-
-                    }
-
-                    Gravity.RIGHT -> {
-                        drawer_layout.setCloseSwipeEnabled(
-                            tab?.position == 0,
-                            drawer_area
-                        )
-                    }
-                }
-
-                val position = tab?.position ?: return
-                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
-                    fragment.onTabSelected()
-                }
-            }
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-                val position = tab?.position ?: return
-                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
-                    fragment.onTabUnselected()
-                }
-            }
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-                val position = tab?.position ?: return
-                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
-                    fragment.onTabReselected()
-                }
-            }
-        })
+        // ドロワの設定
+        initializeDrawer()
 
         // WebViewの設定
         viewModel.initializeWebView(webview, this)
 
-        // ツールバーをセット
-        val toolbar = BrowserToolbar(this).also { toolbar ->
-            // 入力状態になったらwebview部分にクリック防止ビューを被せる
-            toolbar.setOnFocusChangeListener { b ->
-                click_guard.setVisibility(b)
-            }
-        }
-
-        viewModel.useBottomAppBar.observe(this) {
-            // もう一方の方をクリアしておく
-            val another =
-                if (it) appbar_layout
-                else bottom_app_bar
-            another.removeAllViews()
-
-            val appBar =
-                if (it) bottom_app_bar
-                else appbar_layout
-
-            val toolbarBinding = toolbar.inflate(viewModel, this, appBar, true)
-            setSupportActionBar(toolbarBinding.toolbar)
-        }
-
-        // クリック防止ビュー
-        click_guard.setOnTouchListener { _, motionEvent ->
-            if (motionEvent.action == MotionEvent.ACTION_UP) {
-                hideSoftInputMethod(main_area)
-                true
-            }
-            else false
-        }
+        // ツールバーの設定
+        initializeToolbar()
 
         // スワイプしてページを更新する
         swipe_layout.let {
@@ -282,5 +187,119 @@ class BrowserActivity : AppCompatActivity() {
     fun openUrl(url: String) {
         viewModel.goAddress(url)
         closeDrawer()
+    }
+
+    // ------ //
+
+    /**
+     * ドロワの挙動を設定する
+     */
+    @MainThread
+    fun initializeDrawer() {
+        drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerOpened(drawerView: View) {
+                drawer_view_pager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
+                    val position = drawer_tab_layout.selectedTabPosition
+                    adapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                        fragment.onTabSelected()
+                    }
+                }
+            }
+            override fun onDrawerClosed(drawerView: View) {
+                // 閉じたことをドロワタブに通知する
+                drawer_view_pager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
+                    val position = drawer_tab_layout.selectedTabPosition
+                    adapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                        fragment.onTabUnselected()
+                    }
+                }
+            }
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerStateChanged(newState: Int) {
+                // ドロワ開閉でIMEを閉じる
+                hideSoftInputMethod(main_area)
+            }
+        })
+
+        val drawerTabAdapter = DrawerTabAdapter(supportFragmentManager)
+        drawerTabAdapter.setup(this, drawer_tab_layout, drawer_view_pager)
+        drawer_tab_layout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            @SuppressLint("RtlHardcoded")
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                // ドロワ内のタブ切り替え操作と干渉するため
+                // 一番端のタブを表示中以外はスワイプで閉じないようにする
+                val closerEnabled = when (viewModel.drawerGravity) {
+                    Gravity.LEFT -> tab?.position == drawerTabAdapter.count - 1
+                    Gravity.RIGHT -> tab?.position == 0
+                    else -> true // not implemented gravity
+                }
+                drawer_layout.setCloseSwipeEnabled(closerEnabled, drawer_area)
+
+                val position = tab?.position ?: return
+                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                    fragment.onTabSelected()
+                }
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+                val position = tab?.position ?: return
+                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                    fragment.onTabUnselected()
+                }
+            }
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+                val position = tab?.position ?: return
+                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                    fragment.onTabReselected()
+                }
+            }
+        })
+    }
+
+    /**
+     * ツールバーを設定する
+     */
+    @MainThread
+    @SuppressLint("ClickableViewAccessibility")
+    fun initializeToolbar() {
+        val toolbar = BrowserToolbar(this).also { toolbar ->
+            // 入力状態になったらwebview部分にクリック防止ビューを被せる
+            toolbar.setOnFocusChangeListener { b ->
+                click_guard.setVisibility(b)
+            }
+
+            // お気に入りに追加
+            toolbar.setOnFavoriteCurrentPageListener {
+                viewModel.favoriteCurrentPage(supportFragmentManager)
+            }
+
+            // お気に入りから除外
+            toolbar.setOnUnfavoriteCurrentPageListener {
+                viewModel.unfavoriteCurrentPage(supportFragmentManager)
+            }
+        }
+
+        viewModel.useBottomAppBar.observe(this) {
+            // 使わない方のツールバーをクリアしておく
+            val another =
+                if (it) appbar_layout
+                else bottom_app_bar
+            another.removeAllViews()
+
+            val appBar =
+                if (it) bottom_app_bar
+                else appbar_layout
+
+            val toolbarBinding = toolbar.inflate(viewModel, this, appBar, true)
+            setSupportActionBar(toolbarBinding.toolbar)
+        }
+
+        // クリック防止ビュー
+        click_guard.setOnTouchListener { _, motionEvent ->
+            if (motionEvent.action == MotionEvent.ACTION_UP) {
+                hideSoftInputMethod(main_area)
+                true
+            }
+            else false
+        }
     }
 }

@@ -322,6 +322,7 @@
     <string name="dialog_favorite_site_title_desc">タイトル</string>
     <string name="msg_favorite_site_already_existed">既にお気に入りに登録されています</string>
     <string name="msg_favorite_site_registration_succeeded">お気に入りに登録しました</string>
+    <string name="msg_favorite_site_registration_failed">お気に入り登録に失敗しました</string>
     <string name="msg_favorite_site_deletion_succeeded">お気に入りから除外しました</string>
 
     <string name="msg_favorite_site_invalid_url">URLが不正です</string>
@@ -487,6 +488,11 @@
 
     <string name="browser_favorite_button_tooltip">お気に入りに追加します</string>
     <string name="browser_unfavorite_button_tooltip">お気に入りから除外します</string>
+
+    <string name="browser_unfavorite_confirm_msg">「%s」をお気に入りから除外します。よろしいですか？</string>
+    <string name="unfavorite_site_succeeded">お気に入りから除外しました</string>
+    <string name="unfavorite_site_failed">お気に入り除外に失敗しました</string>
+
     <string name="msg_browser_removed_history">履歴を削除しました</string>
     <string name="msg_browser_clear_history_by_date">%sの閲覧履歴をすべて削除します。よろしいですか？</string>
 

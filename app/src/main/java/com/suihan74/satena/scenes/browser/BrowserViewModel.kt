@@ -15,10 +15,12 @@ import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteRegistrationDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.OnFinally
@@ -39,7 +41,7 @@ class BrowserViewModel(
     val bookmarksRepo: BookmarksRepository,
     val favoriteSitesRepo: FavoriteSitesRepository,
     val historyRepo: HistoryRepository,
-    initialUrl: String?
+    val initialUrl: String?
 ) : ViewModel() {
 
     private val DIALOG_BLOCK_URL by lazy { "DIALOG_BLOCK_URL" }
@@ -62,15 +64,12 @@ class BrowserViewModel(
     }
 
     /** 表示中のページURL */
-    val url by lazy {
-        val startPage = initialUrl ?: browserRepo.startPage.value!!
-        SingleUpdateMutableLiveData(startPage).apply {
-            observeForever {
-                addressText.value = Uri.decode(it)
-                bookmarksRepo.bookmarksEntry.value = null
-                isUrlFavorite.value = checkUrlFavorite(it)
-                loadBookmarksEntry(it)
-            }
+    val url = SingleUpdateMutableLiveData<String>().apply {
+        observeForever {
+            addressText.value = Uri.decode(it)
+            bookmarksRepo.bookmarksEntry.value = null
+            isUrlFavorite.value = favoriteSitesRepo.contains(it)
+            loadBookmarksEntry(it)
         }
     }
 
@@ -78,10 +77,6 @@ class BrowserViewModel(
     val title by lazy {
         MutableLiveData("")
     }
-
-    /** アドレスバー検索で使用する検索エンジン */
-    val searchEngine : SearchEngineSetting
-        get() = browserRepo.searchEngine.value!!
 
     /** ユーザーエージェント */
     val userAgent by lazy {
@@ -117,19 +112,16 @@ class BrowserViewModel(
         get() = browserRepo.resourceUrls
 
     /** お気に入りサイト */
-    val favoriteSites by lazy {
+    val favoriteSites =
         favoriteSitesRepo.favoriteSites.also {
             it.observeForever {
                 val url = url.value ?: return@observeForever
-                isUrlFavorite.value = checkUrlFavorite(url)
+                isUrlFavorite.value = favoriteSitesRepo.contains(url)
             }
         }
-    }
 
     /** 表示中のページがお気に入りに登録されているか */
-    val isUrlFavorite by lazy {
-        MutableLiveData(false)
-    }
+    val isUrlFavorite = MutableLiveData<Boolean>(false)
 
     // ------ //
 
@@ -153,6 +145,7 @@ class BrowserViewModel(
     // ------ //
 
     /** WebViewの設定 */
+    @MainThread
     fun initializeWebView(wv: WebView, activity: BrowserActivity) {
         wv.webViewClient = BrowserWebViewClient(activity, this)
         wv.webChromeClient = WebChromeClient()
@@ -176,6 +169,11 @@ class BrowserViewModel(
         if (WebViewFeature.isFeatureSupported(WebViewFeature.SAFE_BROWSING_ENABLE)) {
             WebSettingsCompat.setSafeBrowsingEnabled(wv.settings, true)
         }
+
+        val startPage = initialUrl ?: browserRepo.startPage.value!!
+        url.value = startPage
+
+        //
 
         // どういうわけかクリック時にもonLongClickListenerが呼ばれることがあるので、
         // クリックとして処理したかどうかを記憶しておく
@@ -550,26 +548,73 @@ class BrowserViewModel(
 
     // ------ //
 
-    fun checkUrlFavorite(url: String) : Boolean {
-        return favoriteSites.value?.any { s -> s.url == url } ?: false
-    }
-
     /** 表示中のページをお気に入りに登録する */
-    fun favoriteCurrentPage() {
+    fun favoriteCurrentPage(fragmentManager: FragmentManager) {
         val url = url.value ?: return
         val title = title.value ?: url
-        val uri = Uri.parse(url)
-        favoriteSitesRepo.favoritePage(url, title, uri.faviconUrl)
+        openFavoritePageDialog(url, title, fragmentManager)
     }
 
     /** 表示中のページをお気に入りから除外する */
-    fun unfavoriteCurrentPage() {
+    fun unfavoriteCurrentPage(fragmentManager: FragmentManager) {
         val url = url.value ?: return
-        val site = favoriteSitesRepo.favoriteSites.value?.firstOrNull { it.url == url } ?: return
-        favoriteSitesRepo.unfavoriteSite(site)
+        val site = favoriteSitesRepo.favoriteSites.value?.firstOrNull { it.url == url } ?: let {
+            SatenaApplication.instance.showToast(R.string.unfavorite_site_failed)
+            return
+        }
+        openUnfavoritePageDialog(site, fragmentManager)
     }
 
     // ------ //
+
+    /** ページをお気に入りに追加するダイアログを開く */
+    fun openFavoritePageDialog(
+        url: String,
+        title: String,
+        fragmentManager: FragmentManager
+    ) {
+        val faviconUrl = Uri.parse(url).faviconUrl
+        val site = FavoriteSite(url, title, faviconUrl, false)
+        val dialog = FavoriteSiteRegistrationDialog.createRegistrationInstance(site)
+
+        dialog.setOnRegisterListener {
+            favoriteSitesRepo.favoritePage(url, title, faviconUrl)
+        }
+
+        dialog.setDuplicationChecker {
+            favoriteSitesRepo.contains(url)
+        }
+
+        dialog.showAllowingStateLoss(fragmentManager)
+    }
+
+    /** ページをお気に入りから除外するか確認するダイアログを開く */
+    fun openUnfavoritePageDialog(
+        site: FavoriteSite,
+        fragmentManager: FragmentManager
+    ) {
+        val context = SatenaApplication.instance
+        val dialog = AlertDialogFragment2.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(context.getString(R.string.browser_unfavorite_confirm_msg, site.title))
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                val result = runCatching {
+                    favoriteSitesRepo.unfavoritePage(site)
+                }
+
+                if (result.isSuccess) {
+                    context.showToast(R.string.unfavorite_site_succeeded)
+                }
+                else {
+                    context.showToast(R.string.unfavorite_site_failed)
+                    Log.w("unfavorite", Log.getStackTraceString(result.exceptionOrNull()))
+                }
+            }
+            .create()
+
+        dialog.showAllowingStateLoss(fragmentManager)
+    }
 
     /** 新しいブロック設定を追加するダイアログを開く */
     fun openBlockUrlDialog(

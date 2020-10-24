@@ -4,6 +4,7 @@ import androidx.annotation.MainThread
 import com.suihan74.hatenaLib.ConnectionFailureException
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.hatenaLib.NotFoundException
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.utilities.PreferenceLiveData
@@ -18,10 +19,17 @@ interface FavoriteSitesRepositoryForBrowser {
 
     /** ページをお気に入りに登録する */
     @MainThread
+    @Throws(AlreadyExistedException::class)
     fun favoritePage(url: String, title: String, faviconUrl: String)
 
-    /** サイトをお気に入りから除外する */
-    fun unfavoriteSite(site: FavoriteSite)
+    /** ページをお気に入りに登録する */
+    @MainThread
+    @Throws(AlreadyExistedException::class)
+    fun favoritePage(site: FavoriteSite)
+
+    /** ページをお気に入りから除外する */
+    @Throws(NotFoundException::class)
+    fun unfavoritePage(site: FavoriteSite)
 }
 
 // ------ //
@@ -30,12 +38,16 @@ interface FavoriteSitesRepositoryForBrowser {
 interface FavoriteSitesRepositoryForEntries {
     val favoriteSites : PreferenceLiveData<SafeSharedPreferences<FavoriteSitesKey>, FavoriteSitesKey, List<FavoriteSite>>
 
+    /** 指定URLが既に登録されているか確認する */
+    fun contains(url: String) : Boolean
+
     /** エントリのサイトをお気に入りに追加 */
     @Throws(Throwable::class, AlreadyExistedException::class)
     suspend fun favoriteEntrySite(entry: Entry)
 
     /** エントリのサイトをお気に入りから削除する */
     @MainThread
+    @Throws(NotFoundException::class)
     fun unfavoriteEntrySite(entry: Entry)
 }
 
@@ -56,20 +68,38 @@ class FavoriteSitesRepository(
 
     // ------ //
 
+    /** 指定URLが既に登録されているか確認する */
+    override fun contains(url: String) : Boolean {
+        val list = favoriteSites.value.orEmpty()
+        return list.any { it.url == url }
+    }
+
+    // ------ //
+
     /** ページをお気に入りに登録する */
     @MainThread
+    @Throws(AlreadyExistedException::class)
     override fun favoritePage(url: String, title: String, faviconUrl: String) {
-        val list = favoriteSites.value ?: emptyList()
-        if (list.none { it.url == url }) {
-            val site = FavoriteSite(url, title, faviconUrl, isEnabled = false)
-            favoriteSites.value = list.plus(site)
+        favoritePage(FavoriteSite(url, title, faviconUrl, false))
+    }
+
+    /** ページをお気に入りに登録する */
+    @MainThread
+    @Throws(AlreadyExistedException::class)
+    override fun favoritePage(site: FavoriteSite) {
+        if (contains(site.url)) {
+            throw AlreadyExistedException("the site has already existed as the favorite site: ${site.url}")
         }
+        val list = favoriteSites.value.orEmpty()
+        favoriteSites.value = list.plus(site)
     }
 
     /** サイトをお気に入りから除外する */
-    override fun unfavoriteSite(site: FavoriteSite) {
+    @Throws(NotFoundException::class)
+    override fun unfavoritePage(site: FavoriteSite) {
         val list = favoriteSites.value ?: return
-        favoriteSites.value = list.minus(site)
+        val target = list.firstOrNull { it.same(site) } ?: throw NotFoundException("the favorite site is not found: ${site.url}")
+        favoriteSites.value = list.minus(target)
     }
 
     // ------ //
@@ -79,7 +109,7 @@ class FavoriteSitesRepository(
     override suspend fun favoriteEntrySite(
         entry: Entry
     ) = withContext(Dispatchers.Default) {
-        val sites = favoriteSites.value ?: emptyList()
+        val sites = favoriteSites.value.orEmpty()
         val url = entry.rootUrl
 
         if (sites.any { it.url == url }) {
@@ -105,11 +135,12 @@ class FavoriteSitesRepository(
 
     /** エントリのサイトをお気に入りから削除する */
     @MainThread
+    @Throws(NotFoundException::class)
     override fun unfavoriteEntrySite(entry: Entry) {
-        val sites = favoriteSites.value ?: emptyList()
+        val sites = favoriteSites.value.orEmpty()
 
         if (!sites.any { it.url == entry.rootUrl }) {
-            return
+            throw NotFoundException("the favorite site is not found: ${entry.rootUrl}")
         }
 
         val newList = sites.filter { it.url != entry.rootUrl }

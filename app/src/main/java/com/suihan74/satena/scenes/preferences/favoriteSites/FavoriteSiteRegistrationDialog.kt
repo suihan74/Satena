@@ -18,6 +18,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogFavoriteSiteRegistrationBinding
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.utilities.Listener
+import com.suihan74.utilities.OnSuccess
 import com.suihan74.utilities.Switcher
 import com.suihan74.utilities.exceptions.DuplicateException
 import com.suihan74.utilities.exceptions.EmptyException
@@ -107,19 +108,21 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                             viewModel.invokePositiveAction()
                         }
 
-                        withContext(Dispatchers.Main) {
-                            onCompleted(result.exceptionOrNull())
-                        }
+                        onCompleted(result.getOrNull(), result.exceptionOrNull())
                     }
                 }
             }
     }
 
-    private fun onCompleted(e: Throwable?) {
+    private suspend fun onCompleted(
+        site: FavoriteSite?,
+        e: Throwable?
+    ) = withContext(Dispatchers.Main) {
         val c = SatenaApplication.instance
         when (e) {
             null -> {
                 c.showToast(R.string.msg_favorite_site_registration_succeeded)
+                viewModel.onSuccess?.invoke(site!!)
                 dismissAllowingStateLoss()
             }
 
@@ -167,6 +170,11 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
         viewModel.duplicationChecker = switcher
     }
 
+    /** 登録成功後の処理をセットする */
+    fun setOnSuccessListener(listener: OnSuccess<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onSuccess = listener
+    }
+
     // ------ //
 
     class DialogViewModel(
@@ -196,7 +204,14 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
 
         // ------ //
 
-        suspend fun invokePositiveAction() {
+        @Throws(
+            InvalidUrlException::class,
+            EmptyException::class,
+            DuplicateException::class,
+            NullPointerException::class,  // 重複チェッカーが登録されていない場合
+            Throwable::class,             // onRegister, onModify内のエラー
+        )
+        suspend fun invokePositiveAction() : FavoriteSite {
             val site = FavoriteSite(
                 url = url.value!!,
                 title = title.value!!,
@@ -216,16 +231,19 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                 throw EmptyException()
             }
 
-            val result = duplicationChecker?.invoke(site) ?: true
-            if (!result) {
-                withContext(Dispatchers.Main) {
-                    when (mode) {
-                        Mode.ADD -> onRegister?.invoke(site)
-                        Mode.MODIFY -> onModify?.invoke(site)
-                    }
+            withContext(Dispatchers.Main) {
+                val duplicated = duplicationChecker!!.invoke(site)
+                if (duplicated) {
+                    throw DuplicateException()
+                }
+
+                when (mode) {
+                    Mode.ADD -> onRegister?.invoke(site)
+                    Mode.MODIFY -> onModify?.invoke(site)
                 }
             }
-            else throw DuplicateException()
+
+            return site
         }
 
         // ------ //
@@ -235,5 +253,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
         var onModify : Listener<FavoriteSite>? = null
 
         var duplicationChecker : Switcher<FavoriteSite>? = null
+
+        var onSuccess : OnSuccess<FavoriteSite>? = null
     }
 }

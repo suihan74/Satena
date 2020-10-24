@@ -34,8 +34,7 @@ class FavoriteSitesViewModel(
         fragmentManager: FragmentManager,
         tag: String? = null
     ) = viewModelScope.launch(Dispatchers.Main) {
-        // TODO: リポジトリでやる
-        val sites = repository.favoriteSites.value ?: emptyList()
+        val sites = repository.favoriteSites.value.orEmpty()
 
         FavoriteSitesSelectionDialog.createInstance(sites).run {
             showAllowingStateLoss(fragmentManager, tag)

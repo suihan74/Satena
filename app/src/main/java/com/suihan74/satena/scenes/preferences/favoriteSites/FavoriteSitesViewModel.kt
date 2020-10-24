@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.preferences.favoriteSites
 
 import android.app.Activity
 import android.content.Intent
+import android.util.Log
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -59,8 +60,17 @@ class FavoriteSitesViewModel(
         }
 
         dialog.setOnDeleteListener { site ->
-            favoriteSitesRepo.unfavoriteSite(site)
-            activity.showToast(R.string.entry_action_unfavorite)
+            val result = runCatching {
+                favoriteSitesRepo.unfavoritePage(site)
+            }
+
+            if (result.isSuccess) {
+                activity.showToast(R.string.unfavorite_site_succeeded)
+            }
+            else {
+                activity.showToast(R.string.unfavorite_site_failed)
+                Log.w("unfavoriteSite", Log.getStackTraceString(result.exceptionOrNull()))
+            }
         }
 
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_MENU)
@@ -76,8 +86,7 @@ class FavoriteSitesViewModel(
         val dialog = FavoriteSiteRegistrationDialog.createRegistrationInstance(targetSite)
 
         dialog.setOnRegisterListener { site ->
-            val prevList = sites.value ?: emptyList()
-            sites.value = prevList.plus(site)
+            favoriteSitesRepo.favoritePage(site)
         }
 
         dialog.setDuplicationChecker { site ->
