@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.webkit.URLUtil
 import androidx.appcompat.app.AlertDialog
@@ -107,32 +108,42 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                         }
 
                         withContext(Dispatchers.Main) {
-                            val c = SatenaApplication.instance
-                            when (val e = result.exceptionOrNull()) {
-                                is DuplicateException -> {
-                                    c.showToast(R.string.msg_favorite_site_already_existed)
-                                    viewModel.waiting.value = false
-                                }
-
-                                is EmptyException -> {
-                                    c.showToast(R.string.msg_favorite_site_invalid_title)
-                                    viewModel.waiting.value = false
-                                }
-
-                                is InvalidUrlException -> {
-                                    c.showToast(R.string.msg_favorite_site_invalid_url)
-                                    viewModel.waiting.value = false
-                                }
-
-                                else -> {
-                                    c.showToast(R.string.msg_favorite_site_registration_succeeded)
-                                    dismissAllowingStateLoss()
-                                }
-                            }
+                            onCompleted(result.exceptionOrNull())
                         }
                     }
                 }
             }
+    }
+
+    private fun onCompleted(e: Throwable?) {
+        val c = SatenaApplication.instance
+        when (e) {
+            null -> {
+                c.showToast(R.string.msg_favorite_site_registration_succeeded)
+                dismissAllowingStateLoss()
+            }
+
+            is DuplicateException -> {
+                c.showToast(R.string.msg_favorite_site_already_existed)
+                viewModel.waiting.value = false
+            }
+
+            is EmptyException -> {
+                c.showToast(R.string.msg_favorite_site_invalid_title)
+                viewModel.waiting.value = false
+            }
+
+            is InvalidUrlException -> {
+                c.showToast(R.string.msg_favorite_site_invalid_url)
+                viewModel.waiting.value = false
+            }
+
+            else -> {
+                c.showToast(R.string.msg_favorite_site_registration_failed)
+                Log.w("favoriteSite", Log.getStackTraceString(e))
+                viewModel.waiting.value = false
+            }
+        }
     }
 
     // ------ //
@@ -147,7 +158,11 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
         viewModel.onModify = listener
     }
 
-    /** 重複確認処理をセットする */
+    /**
+     *  重複確認処理をセットする
+     *
+     *  @return true:既に登録されている false:登録可能
+     */
     fun setDuplicationChecker(switcher: Switcher<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
         viewModel.duplicationChecker = switcher
     }
@@ -201,8 +216,8 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                 throw EmptyException()
             }
 
-            val result = duplicationChecker?.invoke(site) ?: false
-            if (result) {
+            val result = duplicationChecker?.invoke(site) ?: true
+            if (!result) {
                 withContext(Dispatchers.Main) {
                     when (mode) {
                         Mode.ADD -> onRegister?.invoke(site)

@@ -81,7 +81,7 @@ class FavoriteSitesViewModel(
         }
 
         dialog.setDuplicationChecker { site ->
-            sites.value?.none { it.url == site.url } ?: true
+            favoriteSitesRepo.contains(site.url)
         }
 
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_ITEM_REGISTRATION)
@@ -104,8 +104,7 @@ class FavoriteSitesViewModel(
         }
 
         dialog.setDuplicationChecker { site ->
-            targetSite.url == site.url ||
-                    sites.value?.none { it.url == site.url } ?: true
+            targetSite.url != site.url && favoriteSitesRepo.contains(site.url)
         }
 
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_ITEM_MODIFICATION)
