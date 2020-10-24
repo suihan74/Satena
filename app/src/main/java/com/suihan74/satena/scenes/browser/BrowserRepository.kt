@@ -18,7 +18,7 @@ class BrowserRepository(
 ) {
     private fun <ValueT> createBrowserSettingsLiveData(
         key: BrowserSettingsKey,
-        initializer: ((p: SafeSharedPreferences<BrowserSettingsKey>, key: BrowserSettingsKey)->ValueT)? = null
+        initializer: (p: SafeSharedPreferences<BrowserSettingsKey>, key: BrowserSettingsKey)->ValueT
     ) = PreferenceLiveData(browserSettings, key, initializer)
 
     /** 利用する内部ブラウザ */
