@@ -71,14 +71,6 @@ class PreferencesBrowserFragment :
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // ブラウザ画面から開かれている場合、
-        // 閲覧中のページのアドレスを入力する
-        viewModel.startPageEditText.value = browserViewModel?.url?.value ?: ""
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate<FragmentPreferencesBrowserBinding>(
             inflater,
@@ -88,6 +80,12 @@ class PreferencesBrowserFragment :
         ).apply {
             vm = viewModel
             lifecycleOwner = viewLifecycleOwner
+        }
+
+        // ブラウザ画面から開かれている場合、
+        // 閲覧中のページのアドレスを入力する
+        browserViewModel?.url?.observe(viewLifecycleOwner) {
+            viewModel.startPageEditText.value = it
         }
 
         binding.startPageEditText.setOnFocusChangeListener { view, b ->
