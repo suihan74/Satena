@@ -79,12 +79,14 @@ class BookmarkPostActivity :
         setTheme(bookmarkPostViewModel.themeId)
         setContentView(R.layout.activity_bookmark_post)
 
-        initializeViewModel()
+        if (supportFragmentManager.findFragmentById(R.id.main_layout) == null) {
+            initializeViewModel()
 
-        val fragment = BookmarkPostFragment.createInstance()
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_layout, fragment)
-            .commitAllowingStateLoss()
+            val fragment = BookmarkPostFragment.createInstance()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.main_layout, fragment)
+                .commitAllowingStateLoss()
+        }
     }
 
     /** ViewModelに必要な情報を渡す */
