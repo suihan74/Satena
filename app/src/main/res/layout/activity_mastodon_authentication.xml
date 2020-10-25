@@ -31,7 +31,7 @@
                 android:layout_alignStart="@id/title"
                 android:layout_alignEnd="@id/title"
                 android:layout_marginTop="24dp"
-                android:inputType="text"
+                android:inputType="textNoSuggestions"
                 android:importantForAutofill="no"
                 android:maxLines="1"
                 android:layout_width="match_parent"

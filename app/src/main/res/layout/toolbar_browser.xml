@@ -36,7 +36,7 @@
                     android:paddingVertical="8dp"
                     android:paddingHorizontal="8dp"
                     android:singleLine="true"
-                    android:inputType="text"
+                    android:inputType="textNoSuggestions"
                     android:imeOptions="actionGo"
                     android:importantForAutofill="no"
                     android:selectAllOnFocus="true"

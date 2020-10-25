@@ -31,7 +31,7 @@
                     android:textColor="@color/textColor"
 
                     android:singleLine="true"
-                    android:inputType="text"
+                    android:inputType="textNoSuggestions"
                     android:importantForAutofill="no"
                     android:imeOptions="actionNext"
 
@@ -91,8 +91,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

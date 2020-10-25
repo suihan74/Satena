@@ -290,7 +290,7 @@
                     android:visibility="@{vm.entryReadActionType == EntryReadActionType.BOILERPLATE}"
                     android:text="@={vm.entryReadActionBoilerPlate}"
                     android:hint="@string/pref_entries_read_action_boilerplate_hint"
-                    android:inputType="text"
+                    android:inputType="textNoSuggestions"
                     android:textColor="?attr/textColor"
                     android:importantForAutofill="no"
                     android:layout_width="match_parent"

@@ -74,7 +74,7 @@
                     android:importantForAutofill="no"
                     android:textColorHint="?attr/textColorHint"
 
-                    android:inputType="text"
+                    android:inputType="textNoSuggestions"
                     android:singleLine="true"
                     android:imeOptions="actionDone"
 

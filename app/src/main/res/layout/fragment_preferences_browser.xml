@@ -71,7 +71,7 @@
                             android:textSize="18sp"
                             android:textColorHint="?attr/textColorHint"
 
-                            android:inputType="text"
+                            android:inputType="textNoSuggestions"
                             android:importantForAutofill="no"
                             android:singleLine="true"
                             android:imeOptions="actionDone"
@@ -223,7 +223,7 @@
                             android:textColor="?attr/textColor"
                             android:textColorHint="?attr/textColorHint"
 
-                            android:inputType="text"
+                            android:inputType="textNoSuggestions"
                             android:singleLine="true"
                             android:importantForAutofill="no"
                             android:imeOptions="actionDone"

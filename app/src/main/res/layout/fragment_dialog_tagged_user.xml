@@ -10,7 +10,7 @@
     <EditText
             android:id="@+id/user_name"
             android:textColor="@color/textColor"
-            android:inputType="text"
+            android:inputType="textNoSuggestions"
             android:importantForAutofill="no"
             android:singleLine="true"
             android:hint="@string/tagged_user_dialog_name_hint"

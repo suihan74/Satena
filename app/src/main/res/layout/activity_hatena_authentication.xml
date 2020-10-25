@@ -36,7 +36,7 @@
                 android:theme="@style/LoginEditTextStyle"
                 android:nextFocusDown="@id/password"
                 android:textColor="?attr/textColor"
-                android:inputType="text"
+                android:inputType="textNoSuggestions"
                 android:maxLines="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

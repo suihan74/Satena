@@ -33,7 +33,7 @@
     <EditText
             android:id="@+id/query_text"
             android:textColor="@color/textColor"
-            android:inputType="text"
+            android:inputType="textNoSuggestions"
             android:importantForAutofill="no"
             android:singleLine="true"
             android:hint="@string/ignored_entry_dialog_tab_url"

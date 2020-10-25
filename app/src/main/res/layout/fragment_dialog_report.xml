@@ -87,7 +87,7 @@
 
                         android:importantForAutofill="no"
                         android:gravity="top"
-                        android:inputType="text"
+                        android:inputType="textNoSuggestions"
                         android:singleLine="true"
                         android:maxLines="10"
                         android:imeOptions="actionDone"

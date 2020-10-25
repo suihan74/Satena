@@ -18,7 +18,7 @@
                 android:id="@+id/tag_name"
                 android:text="@={vm.tagName}"
                 android:textColor="@color/textColor"
-                android:inputType="text"
+                android:inputType="textNoSuggestions"
                 android:importantForAutofill="no"
                 android:singleLine="true"
                 android:hint="@string/user_tag_dialog_name_hint"
