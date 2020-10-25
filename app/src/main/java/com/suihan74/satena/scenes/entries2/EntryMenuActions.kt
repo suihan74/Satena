@@ -355,7 +355,7 @@ class EntryMenuActionsImplForEntries(
 
 // ------ //
 
-/** エントリ画面用の実装 */
+/** ブクマ画面用の実装 */
 class EntryMenuActionsImplForBookmarks(
     private val favoriteSitesRepo: FavoriteSitesRepositoryForEntries
 ) : EntryMenuActionsImplBasic() {

@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.browser.bookmarks
 
 import android.util.Log
+import android.webkit.URLUtil
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
@@ -9,6 +10,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
+import com.suihan74.satena.scenes.post2.BookmarkPostViewModel
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepositoryForBookmarks
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
@@ -16,10 +18,13 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepositoryInte
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.updateFirstOrPlus
+import com.sys1yagi.mastodon4j.api.entity.Status
+import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import kotlin.math.ceil
 
 /**
  * ブクマ画面用のリポジトリ
@@ -41,6 +46,14 @@ class BookmarksRepository(
         // スター
         StarRepositoryInterface by StarRepository(accountLoader, prefs)
 {
+    companion object {
+        /** ブコメ最大文字数 */
+        const val MAX_COMMENT_LENGTH = 100
+
+        /** 同時使用可能な最大タグ数 */
+        const val MAX_TAGS_COUNT = 10
+    }
+
 
     /** はてなアクセス用クライアント */
     private val client = accountLoader.client
@@ -509,4 +522,105 @@ class BookmarksRepository(
             cursor = cursor
         )
     }
+
+    // ------ //
+
+    /** ブクマを投稿する */
+    @Throws(
+        // URLが不正
+        InvalidUrlException::class,
+        // コメント長すぎ
+        BookmarkPostViewModel.CommentTooLongException::class,
+        // タグが多すぎ
+        BookmarkPostViewModel.TooManyTagsException::class,
+        // はてなへのブクマ投稿処理中での失敗
+        ConnectionFailureException::class,
+        // Mastodonへの投稿失敗(ブクマは自体は成功)
+        BookmarkPostViewModel.PostingMastodonFailureException::class
+    )
+    suspend fun postBookmark(
+        entry: Entry,
+        commentRaw: String,
+        private: Boolean,
+        postTwitter: Boolean,
+        postMastodon: Boolean,
+        postFacebook: Boolean,
+    ) = withContext(Dispatchers.Default) {
+        val tagRegex = Regex("""\[[^%/:\[\]]+]""")
+
+        // URLスキームがhttpかhttpsであることを確認する
+        if (!URLUtil.isNetworkUrl(entry.url)) {
+            throw InvalidUrlException(entry.url)
+        }
+
+        // コメント長チェック
+        if (calcCommentLength(commentRaw, tagRegex) > MAX_COMMENT_LENGTH) {
+            throw BookmarkPostViewModel.CommentTooLongException()
+        }
+
+        // タグ個数チェック
+        val matches = tagRegex.findAll(commentRaw)
+        if (matches.count() > MAX_TAGS_COUNT) {
+            throw BookmarkPostViewModel.TooManyTagsException()
+        }
+
+        val result = runCatching {
+            accountLoader.signInHatenaAsync(reSignIn = false).await()
+            client.postBookmarkAsync(
+                url = entry.url,
+                comment = commentRaw,
+                postTwitter = postTwitter,
+                postFacebook = postFacebook,
+                isPrivate = private
+            ).await()
+        }
+
+        val bookmarkResult = result.getOrElse {
+            throw ConnectionFailureException(cause = result.exceptionOrNull())
+        }
+
+        // 既存のブクマを更新する
+        if (this@BookmarksRepository.entry.value?.url == entry.url) {
+            updateBookmark(bookmarkResult)
+        }
+
+        if (postMastodon) {
+            val mstdnResult = runCatching {
+                val status =
+                    if (bookmarkResult.comment.isBlank()) "\"${entry.title}\" ${entry.url}"
+                    else "${bookmarkResult.comment} / \"${entry.title}\" ${entry.url}"
+
+                accountLoader.signInMastodonAsync(reSignIn = false).await()
+                val client = accountLoader.mastodonClientHolder.client!!
+                Statuses(client).postStatus(
+                    status = status,
+                    inReplyToId = null,
+                    sensitive = false,
+                    visibility = Status.Visibility.Public,
+                    mediaIds = null,
+                    spoilerText = null
+                ).execute()
+            }
+
+            if (mstdnResult.isFailure) {
+                throw BookmarkPostViewModel.PostingMastodonFailureException(cause = result.exceptionOrNull())
+            }
+        }
+    }
+
+    /**
+     * 生文字列からコメント長を計算する
+     *
+     * 外部から分かる限りサーバ側での判定に極力近づけているが完璧である保証はない
+     * タグは判定外で、その他部分はバイト数から判定している模様
+     */
+    fun calcCommentLength(commentRaw: String, tagRegex: Regex) : Int =
+        ceil(commentRaw.replace(tagRegex, "").sumBy { c ->
+            val code = c.toInt()
+            when (code / 0xff) {
+                0 -> 1
+                1 -> if (code <= 0xc3bf) 1 else 3
+                else -> 3
+            }
+        } / 3f).toInt()
 }

@@ -11,6 +11,7 @@ import android.view.inputmethod.EditorInfo
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivityBookmarkPost2Binding
@@ -18,14 +19,12 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.post2.BookmarkPostViewModel
 import com.suihan74.satena.scenes.post2.TagsListAdapter
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
-import com.suihan74.utilities.provideViewModel
 
+// TODO: BookmarkPostActivityとBrowserActivityで処理を共通化する
 class BookmarkPostFragment : Fragment() {
     companion object {
         fun createInstance() = BookmarkPostFragment()
@@ -33,11 +32,11 @@ class BookmarkPostFragment : Fragment() {
         const val VIEW_MODEL_BOOKMARK_POST = "VIEW_MODEL_BOOKMARK_POST"
     }
 
-    private val browserActivity : BrowserActivity
-        get() = requireActivity() as BrowserActivity
+    private val browserActivity : BrowserActivity?
+        get() = requireActivity() as? BrowserActivity
 
-    private val activityViewModel : BrowserViewModel
-        get() = browserActivity.viewModel
+    private val browserViewModel : BrowserViewModel?
+        get() = browserActivity?.viewModel
 
     private val viewModel : BookmarkPostViewModel by lazy {
         // オーナーをアクティビティにすることで、タブ切り替えでリロードされないようにする
@@ -70,9 +69,13 @@ class BookmarkPostFragment : Fragment() {
             lifecycleOwner = viewLifecycleOwner
         }
 
-        binding.bookmarkPostLayout.setBackgroundColor(
-            browserActivity.getThemeColor(R.attr.tabBackground)
-        )
+        // ブラウザのドロワタブに表示されている場合、背景色を変化させる
+        // TODO: 透過させてアクティビティ側の背景で制御するようにする
+        browserActivity?.let { activity ->
+            binding.bookmarkPostLayout.setBackgroundColor(
+                activity.getThemeColor(R.attr.tabBackground)
+            )
+        }
 
         binding.postButton.setOnClickListener {
             postBookmark()
@@ -116,8 +119,18 @@ class BookmarkPostFragment : Fragment() {
             }
         }
 
-        val bookmarksRepo = activityViewModel.bookmarksRepo
+        browserViewModel?.let { vm ->
+            initializeForBrowser(vm.bookmarksRepo)
+        }
 
+        // タグリストを初期化
+        setupTagsList(binding)
+
+        return binding.root
+    }
+
+    /** アプリ内ブラウザで使用されている場合の接続処理 */
+    private fun initializeForBrowser(bookmarksRepo: BookmarksRepository) {
         bookmarksRepo.loadingEntry.observe(viewLifecycleOwner) {
             viewModel.nowPosting.value = it
         }
@@ -143,27 +156,45 @@ class BookmarkPostFragment : Fragment() {
             val bookmark = it.bookmarks.firstOrNull { b -> b.user == userSignedIn }
             viewModel.comment.value = bookmark?.commentRaw.orEmpty()
         }
-
-        // タグリストを初期化
-        setupTagsList(binding)
-
-        return binding.root
     }
 
     /** ブクマを投稿する */
     private fun postBookmark() {
-        browserActivity.hideSoftInputMethod()
+        activity?.hideSoftInputMethod()
         viewModel.postBookmark(
             childFragmentManager,
-            onSuccess = { bookmarkResult ->
-                activityViewModel.bookmarksRepo.afterPosted?.invoke(bookmarkResult)
-                activity?.showToast(R.string.msg_post_bookmark_succeeded)
-            },
-            onError = { e ->
-                activity?.showToast(R.string.msg_post_bookmark_failed)
-                Log.e("PostBookmark", Log.getStackTraceString(e))
-            }
+            onSuccess = onPostSuccess,
+            onError = onPostError
         )
+    }
+
+    /** 投稿成功時処理 */
+    private val onPostSuccess: OnSuccess<BookmarkResult> = { bookmarkResult ->
+        browserViewModel?.let { vm ->
+            vm.bookmarksRepo.afterPosted?.invoke(bookmarkResult)
+        }
+        activity?.showToast(R.string.msg_post_bookmark_succeeded)
+    }
+
+    /** 投稿失敗時処理 */
+    private val onPostError: OnError = { e ->
+        when (e) {
+            is BookmarkPostViewModel.MultiplePostException ->
+                activity?.showToast(R.string.msg_multiple_post)
+
+            is BookmarkPostViewModel.CommentTooLongException ->
+                activity?.showToast(
+                    R.string.msg_comment_too_long,
+                    BookmarkPostViewModel.MAX_COMMENT_LENGTH
+                )
+
+            is BookmarkPostViewModel.TooManyTagsException ->
+                activity?.showToast(R.string.msg_post_too_many_tags)
+
+            else ->
+                activity?.showToast(R.string.msg_post_bookmark_failed)
+        }
+        Log.e("postBookmark", Log.getStackTraceString(e))
     }
 
     /** タグリストを初期化 */

@@ -42,6 +42,9 @@ class BookmarkPostViewModel(
     /** 多重投稿例外 */
     class MultiplePostException : Throwable("multiple post")
 
+    /** Mastodonへの投稿に失敗 */
+    class PostingMastodonFailureException(cause: Throwable? = null) : Throwable(cause = cause)
+
     // ------ //
 
     companion object {
