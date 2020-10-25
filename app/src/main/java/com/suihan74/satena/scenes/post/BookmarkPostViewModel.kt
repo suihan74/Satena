@@ -149,10 +149,6 @@ class BookmarkPostViewModel(
     ) = viewModelScope.launch(Dispatchers.Main) {
         nowLoading.value = true
 
-        if (editData != null) {
-            restore(editData)
-        }
-
         val result = runCatching {
             initEntryAction()
         }
@@ -175,7 +171,12 @@ class BookmarkPostViewModel(
             }
         }
 
-        comment.value = entry.value?.bookmarkedData?.commentRaw.orEmpty()
+        if (editData != null) {
+            restore(editData)
+        }
+        else {
+            comment.value = entry.value?.bookmarkedData?.commentRaw.orEmpty()
+        }
 
         nowLoading.value = false
 
