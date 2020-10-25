@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.browser
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -168,6 +169,28 @@ class BrowserViewModel(
         // セキュリティ保護を利用可能な全てのバージョンでデフォルトで保護を行う
         if (WebViewFeature.isFeatureSupported(WebViewFeature.SAFE_BROWSING_ENABLE)) {
             WebSettingsCompat.setSafeBrowsingEnabled(wv.settings, true)
+        }
+
+        // コンテンツのダウンロードに割り込む
+        // pdfを開こうとした場合、処理を外部のアプリに投げる
+        wv.setDownloadListener { url, userAgent, contentDisposition, mimeType, size ->
+            if (mimeType == "application/pdf") {
+                val intent = Intent(Intent.ACTION_VIEW).also {
+                    it.setDataAndType(Uri.parse(url), mimeType)
+                }
+                try {
+                    activity.startActivity(intent)
+                }
+                catch (e: ActivityNotFoundException) {
+                    // 開けるアプリが無かったらストアを開く
+                    val storeIntent = Intent(Intent.ACTION_VIEW).also {
+                        it.data = Uri.parse("market://search?q=pdf")
+                    }
+                    runCatching {
+                        activity.startActivity(storeIntent)
+                    }
+                }
+            }
         }
 
         val startPage = initialUrl ?: browserRepo.startPage.value!!
