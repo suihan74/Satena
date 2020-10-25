@@ -13,7 +13,7 @@ import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
-import com.suihan74.satena.scenes.post2.BookmarkPostActivity
+import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.extensions.alsoAs

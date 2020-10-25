@@ -57,21 +57,11 @@
 
         <activity android:name=".scenes.preferences.PreferencesActivity" android:launchMode="singleTask"/>
 
-        <activity
-                android:name=".scenes.post2.BookmarkPostActivity"
-                android:theme="@style/AppDialogTheme">
-            <intent-filter android:label="ブコメを書く">
-                <action android:name="android.intent.action.SEND"/>
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:mimeType="text/plain"/>
-            </intent-filter>
-        </activity>
-
+        <!-- ブコメ投稿画面 -->
         <activity
                 android:name=".scenes.post.BookmarkPostActivity"
                 android:theme="@style/AppDialogTheme">
-            <intent-filter android:label="(新)ブコメを書く">
+            <intent-filter android:label="ブコメを書く">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>

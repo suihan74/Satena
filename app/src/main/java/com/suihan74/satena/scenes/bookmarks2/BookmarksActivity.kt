@@ -22,7 +22,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
-import com.suihan74.satena.scenes.post2.BookmarkPostActivity
+import com.suihan74.satena.scenes.post.BookmarkEditData
+import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
@@ -332,18 +333,17 @@ class BookmarksActivity : AppCompatActivity() {
             BookmarkPostActivity.REQUEST_CODE -> {
                 when (resultCode) {
                     Activity.RESULT_OK -> {
-                        val result = data?.getObjectExtra<BookmarkResult>(BookmarkPostActivity.RESULT_BOOKMARK)
-                            ?: return
-                        /*viewModel.resetEntry(
-                            viewModel.entry.copy(bookmarkedData = result)
-                        )*/
+                        val result = data?.getObjectExtra<BookmarkResult>(
+                            BookmarkPostActivity.RESULT_BOOKMARK
+                        ) ?: return
                         viewModel.updateUserBookmark(result)
-                        viewModel.setEditingComment(null)
+                        viewModel.editData = null
                     }
 
                     Activity.RESULT_CANCELED -> {
-                        val comment = data?.getStringExtra(BookmarkPostActivity.RESULT_EDITING_COMMENT)
-                        viewModel.setEditingComment(comment)
+                        viewModel.editData = data?.getObjectExtra<BookmarkEditData>(
+                            BookmarkPostActivity.RESULT_EDIT_DATA
+                        )
                     }
                 }
             }

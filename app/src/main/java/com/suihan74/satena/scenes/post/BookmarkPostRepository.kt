@@ -5,8 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.modifySpecificUrls
+import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
+import com.suihan74.satena.scenes.post.exceptions.PostingMastodonFailureException
 import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
-import com.suihan74.satena.scenes.post2.BookmarkPostViewModel
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
@@ -225,13 +226,13 @@ class BookmarkPostRepository(
         // URLが不正
         InvalidUrlException::class,
         // コメント長すぎ
-        BookmarkPostViewModel.CommentTooLongException::class,
+        CommentTooLongException::class,
         // タグが多すぎ
-        BookmarkPostViewModel.TooManyTagsException::class,
+        TooManyTagsException::class,
         // はてなへのブクマ投稿処理中での失敗
         ConnectionFailureException::class,
         // Mastodonへの投稿失敗(ブクマは自体は成功)
-        BookmarkPostViewModel.PostingMastodonFailureException::class
+        PostingMastodonFailureException::class
     )
     suspend fun postBookmark(editData: BookmarkEditData) : BookmarkResult = withContext(Dispatchers.Default) {
         val entry = editData.entry
@@ -243,13 +244,13 @@ class BookmarkPostRepository(
 
         // コメント長チェック
         if (calcCommentLength(editData.comment) > MAX_COMMENT_LENGTH) {
-            throw BookmarkPostViewModel.CommentTooLongException()
+            throw CommentTooLongException()
         }
 
         // タグ個数チェック
         val matches = tagRegex.findAll(editData.comment)
         if (matches.count() > MAX_TAGS_COUNT) {
-            throw BookmarkPostViewModel.TooManyTagsException()
+            throw TooManyTagsException()
         }
 
         val result = runCatching {
@@ -288,7 +289,7 @@ class BookmarkPostRepository(
             }
 
             if (mstdnResult.isFailure) {
-                throw BookmarkPostViewModel.PostingMastodonFailureException(cause = result.exceptionOrNull())
+                throw PostingMastodonFailureException(cause = result.exceptionOrNull())
             }
         }
 

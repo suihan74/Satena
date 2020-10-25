@@ -376,7 +376,10 @@ class BookmarksRepository(
             } ?: emptyList()
         )
 
-        bookmarksRecentCache = bookmarksRecentCache.updateFirstOrPlus(bookmark) { it.user == user }
+        bookmarksRecentCache =
+            bookmarksRecentCache
+                .updateFirstOrPlus(bookmark) { it.user == user }
+                .sortedByDescending { it.timestamp }
 
         refreshBookmarks()
     }

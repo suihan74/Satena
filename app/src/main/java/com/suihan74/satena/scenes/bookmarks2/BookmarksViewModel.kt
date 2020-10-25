@@ -18,6 +18,7 @@ import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.*
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
+import com.suihan74.satena.scenes.post.BookmarkEditData
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.OnError
@@ -102,6 +103,8 @@ class BookmarksViewModel(
     }
 
     /** 編集途中の投稿コメント */
+    var editData: BookmarkEditData? = null
+    /*
     val editingComment : String
         get() =
             mEditingComment
@@ -113,6 +116,7 @@ class BookmarksViewModel(
     fun setEditingComment(comment: String?) {
         mEditingComment = comment
     }
+     */
 
     fun onCreate(
         intent: Intent,

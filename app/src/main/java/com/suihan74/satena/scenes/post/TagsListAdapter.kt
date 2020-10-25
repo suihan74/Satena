@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.post2
+package com.suihan74.satena.scenes.post
 
 import android.view.LayoutInflater
 import android.view.MotionEvent

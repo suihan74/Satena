@@ -19,7 +19,6 @@ import com.suihan74.satena.scenes.post.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
 import com.suihan74.satena.scenes.post.exceptions.MultiplePostException
 import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
-import com.suihan74.satena.scenes.post2.TagsListAdapter
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.OnSuccess

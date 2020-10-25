@@ -49,7 +49,7 @@ class BookmarkPostActivity :
         const val RESULT_ENTRY = "BookmarkPostActivity.RESULT_ENTRY"
 
         /** キャンセル時: 編集データを返す */
-        const val EDIT_DATA = "BookmarkPostActivity.EDIT_DATA"
+        const val RESULT_EDIT_DATA = "BookmarkPostActivity.EDIT_DATA"
 
         /** 成功時: 投稿完了したブクマ情報(BookmarkResult)を返す */
         const val RESULT_BOOKMARK = "BookmarkPostActivity.RESULT_BOOKMARK"
@@ -131,7 +131,7 @@ class BookmarkPostActivity :
     private fun setCancelResult() {
         val intent = Intent().also {
             it.putObjectExtra(RESULT_ENTRY, bookmarkPostViewModel.entry.value)
-            it.putObjectExtra(EDIT_DATA, bookmarkPostViewModel.editData)
+            it.putObjectExtra(RESULT_EDIT_DATA, bookmarkPostViewModel.editData)
         }
         setResult(RESULT_CANCELED, intent)
     }
