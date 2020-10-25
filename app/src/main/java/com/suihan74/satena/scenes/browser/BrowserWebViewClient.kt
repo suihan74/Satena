@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.browser
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -27,31 +28,43 @@ class BrowserWebViewClient(
                 super.shouldOverrideUrlLoading(view, request)
 
             "intent", "android-app" -> {
-                try {
-                    val intentScheme =
-                        if (scheme == "intent") Intent.URI_INTENT_SCHEME
-                        else Intent.URI_ANDROID_APP_SCHEME
-                    val intent = Intent.parseUri(uri.toString(), intentScheme).withSafety()
-                    activity.startActivity(intent)
-                }
-                catch (e: Throwable) {
-                    Log.e("WebViewClient", Log.getStackTraceString(e))
-                }
-                false
+                handleIntentScheme(scheme, uri)
+                true
             }
 
             else -> {
-                try {
-                    val intent = Intent(Intent.ACTION_DEFAULT, uri).withSafety()
-                    activity.startActivity(intent)
-                }
-                catch (e: Throwable) {
-                    Log.e("WebViewClient", Log.getStackTraceString(e))
-                }
-                false
+                handleOtherSchemes(scheme, uri)
+                true
             }
         }
     }
+
+    /** intentスキームのURIを処理する */
+    private fun handleIntentScheme(scheme: String, uri: Uri) {
+        try {
+            val intentScheme =
+                if (scheme == "intent") Intent.URI_INTENT_SCHEME
+                else Intent.URI_ANDROID_APP_SCHEME
+            val intent = Intent.parseUri(uri.toString(), intentScheme).withSafety()
+            activity.startActivity(intent)
+        }
+        catch (e: Throwable) {
+            Log.e("WebViewClient", Log.getStackTraceString(e))
+        }
+    }
+
+    /** ネットワークアドレスでもなく、intentでもないアドレスを処理する */
+    private fun handleOtherSchemes(scheme: String?, uri: Uri) {
+        try {
+            val intent = Intent(Intent.ACTION_DEFAULT, uri).withSafety()
+            activity.startActivity(intent)
+        }
+        catch (e: Throwable) {
+            Log.e("WebViewClient", Log.getStackTraceString(e))
+        }
+    }
+
+    // ------ //
 
     /** WebView内でのページ遷移をViewModelに伝える */
     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
