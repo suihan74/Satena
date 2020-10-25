@@ -18,7 +18,7 @@ import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 import com.suihan74.utilities.exceptions.InvalidUrlException
-import com.suihan74.utilities.extensions.updateFirstOrPlus
+import com.suihan74.utilities.extensions.updateFirstOrPlusAhead
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -361,7 +361,7 @@ class BookmarksRepository(
         val bEntry = bookmarksEntry.value?.let { e ->
             val b = Bookmark.create(bookmark)
             e.copy(
-                bookmarks = e.bookmarks.updateFirstOrPlus(b) { it.user == user }
+                bookmarks = e.bookmarks.updateFirstOrPlusAhead(b) { it.user == user }
             )
         }
         bookmarksEntry.postValue(bEntry)
@@ -377,9 +377,7 @@ class BookmarksRepository(
         )
 
         bookmarksRecentCache =
-            bookmarksRecentCache
-                .updateFirstOrPlus(bookmark) { it.user == user }
-                .sortedByDescending { it.timestamp }
+            bookmarksRecentCache.updateFirstOrPlusAhead(bookmark) { it.user == user }
 
         refreshBookmarks()
     }
