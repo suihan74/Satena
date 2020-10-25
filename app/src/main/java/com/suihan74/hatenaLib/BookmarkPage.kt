@@ -3,6 +3,7 @@ package com.suihan74.hatenaLib
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.format.DateTimeFormatter
 
 data class BookmarkPageResponse (
     val bookmark : BookmarkPage
@@ -33,6 +34,12 @@ data class BookmarkPage (
 ) {
     // for Gson
     internal constructor() : this(0, Entry(), "", BookmarkPageComment(), "", LocalDateTime.MIN)
+
+    val permalink : String by lazy {
+        val dateFormat = DateTimeFormatter.ofPattern("uuuuMMdd")
+        val date = timestamp.format(dateFormat)
+        "${HatenaClient.B_BASE_URL}/$user/$date#bookmark-$id"
+    }
 }
 
 data class BookmarkPageComment (

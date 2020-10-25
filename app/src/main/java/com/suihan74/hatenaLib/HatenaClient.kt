@@ -848,6 +848,28 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
             val description = doc.getElementsByClass("entry-about-description").firstOrNull()?.text() ?: ""
 
+            // サインインユーザーのブクマ情報を埋め込む
+            val account = account
+            val bookmarkedData =
+                if (account == null) null
+                else {
+                    val userBookmarkPageResult = runCatching {
+                        getBookmarkPageAsync(eid, account.name).await()
+                    }
+
+                    userBookmarkPageResult.getOrNull()?.let { page ->
+                        BookmarkResult(
+                            page.user,
+                            page.comment.body,
+                            page.comment.tags,
+                            page.timestamp,
+                            getUserIconUrl(page.user),
+                            page.comment.raw,
+                            page.permalink
+                        )
+                    }
+                }
+
             Entry(
                 id = eid,
                 title = title,
@@ -856,7 +878,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 url = entryUrl,
                 rootUrl = rootUrl,
                 faviconUrl = faviconUrl,
-                imageUrl = imageUrl
+                imageUrl = imageUrl,
+                bookmarkedData = bookmarkedData
             )
         }
     }

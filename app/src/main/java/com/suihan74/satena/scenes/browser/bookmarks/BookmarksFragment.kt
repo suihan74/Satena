@@ -21,6 +21,8 @@ import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
+import com.suihan74.satena.scenes.post.BookmarkPostFragment
+import com.suihan74.satena.scenes.post.BookmarkPostViewModel
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.TabItem
@@ -48,6 +50,9 @@ class BookmarksFragment :
 
     private val activityViewModel : BrowserViewModel
         get() = browserActivity.viewModel
+
+    private val bookmarkPostViewModel : BookmarkPostViewModel
+        get() = browserActivity.bookmarkPostViewModel
 
     private val viewModel by lazy {
         provideViewModel(this) {
@@ -195,8 +200,8 @@ class BookmarksFragment :
             switchPostLayout(binding, false)
         }
 
-        // 投稿完了後にリストを更新して投稿エリアを閉じる
-        viewModel.repository.setAfterPostedListener { bookmarkResult ->
+        // 投稿完了したらそのブクマをリストに追加する
+        bookmarkPostViewModel.setOnPostSuccessListener { bookmarkResult ->
             viewModel.reloadBookmarks {
                 viewModel.viewModelScope.launch {
                     viewModel.repository.updateBookmark(bookmarkResult)
@@ -206,10 +211,16 @@ class BookmarksFragment :
         }
 
         // 投稿エリアを作成
-        val bookmarkPostFragment = BookmarkPostFragment.createInstance()
-        childFragmentManager.beginTransaction()
-            .add(R.id.bookmark_post_frame_layout, bookmarkPostFragment, FRAGMENT_BOOKMARK_POST)
-            .commitAllowingStateLoss()
+        if (childFragmentManager.findFragmentById(R.id.bookmark_post_frame_layout) == null) {
+            val bookmarkPostFragment = BookmarkPostFragment.createInstance()
+            childFragmentManager.beginTransaction()
+                .replace(
+                    R.id.bookmark_post_frame_layout,
+                    bookmarkPostFragment,
+                    FRAGMENT_BOOKMARK_POST
+                )
+                .commitAllowingStateLoss()
+        }
 
         return binding.root
     }

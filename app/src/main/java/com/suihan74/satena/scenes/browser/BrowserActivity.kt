@@ -19,6 +19,9 @@ import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
+import com.suihan74.satena.scenes.post.BookmarkPostRepository
+import com.suihan74.satena.scenes.post.BookmarkPostViewModel
+import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
@@ -29,11 +32,16 @@ import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class BrowserActivity : AppCompatActivity() {
+class BrowserActivity :
+    AppCompatActivity(),
+    BookmarkPostViewModelOwner
+{
     companion object {
         /** 最初に開くページのURL */
         const val EXTRA_URL = "BrowserActivity.EXTRA_URL"
     }
+
+    // ------ //
 
     val viewModel : BrowserViewModel by lazy {
         provideViewModel(this) {
@@ -70,6 +78,19 @@ class BrowserActivity : AppCompatActivity() {
             )
         }
     }
+
+    /** ブクマ投稿用のViewModel */
+    override val bookmarkPostViewModel: BookmarkPostViewModel by lazy {
+        provideViewModel(this) {
+            val repository = BookmarkPostRepository(
+                viewModel.bookmarksRepo.accountLoader,
+                viewModel.bookmarksRepo.prefs
+            )
+            BookmarkPostViewModel(repository)
+        }
+    }
+
+    // ------ //
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
