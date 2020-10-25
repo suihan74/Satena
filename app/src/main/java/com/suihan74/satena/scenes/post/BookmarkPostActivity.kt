@@ -142,7 +142,7 @@ class BookmarkPostActivity :
     private fun setSuccessResult(bookmarkResult: BookmarkResult) {
         val intent = Intent().also {
             it.putObjectExtra(RESULT_ENTRY, bookmarkPostViewModel.entry.value)
-            it.putObjectExtra(RESULT_BOOKMARK, it)
+            it.putObjectExtra(RESULT_BOOKMARK, bookmarkResult)
         }
         setResult(RESULT_OK, intent)
     }

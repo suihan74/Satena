@@ -162,15 +162,6 @@ class FloatingActionButtonsFragment :
                 it.putObjectExtra(BookmarkPostActivity.EXTRA_EDIT_DATA, activityViewModel.editData)
             }
             activity?.startActivityForResult(intent, BookmarkPostActivity.REQUEST_CODE)
-
-            /*
-            val intent = Intent(context, BookmarkPostActivity::class.java).apply {
-                putExtra(BookmarkPostActivity.EXTRA_INVOKED_BY_BOOKMARKS_ACTIVITY, true)
-                putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, activityViewModel.entry)
-                putExtra(BookmarkPostActivity.EXTRA_EDITING_COMMENT, activityViewModel.editingComment)
-            }
-            activity?.startActivityForResult(intent, BookmarkPostActivity.REQUEST_CODE)
-            */
         }
 
         // スクロールメニュー
