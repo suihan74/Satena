@@ -1,9 +1,12 @@
 package com.suihan74.satena.scenes.browser
 
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Handler
 import android.util.Log
 import android.view.*
 import android.webkit.*
@@ -12,7 +15,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.suihan74.hatenaLib.Keyword
+import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
@@ -35,6 +41,7 @@ import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.io.File
 import kotlin.math.absoluteValue
 
 class BrowserViewModel(
@@ -47,6 +54,9 @@ class BrowserViewModel(
 
     private val DIALOG_BLOCK_URL by lazy { "DIALOG_BLOCK_URL" }
     private val DIALOG_CONTEXT_MENU by lazy { "DIALOG_CONTEXT_MENU" }
+
+    /** 画像ファイルの保存先選択画面とのやりとり */
+    private val REQUEST_CODE_SAVE_IMAGE = 1
 
     // ------ //
 
@@ -193,11 +203,72 @@ class BrowserViewModel(
             }
         }
 
+        // リンククリックに関する挙動を設定
+        setLinkClickListener(wv, activity)
+
+        // jsのON/OFF
+        wv.settings.javaScriptEnabled = javaScriptEnabled.value ?: true
+        javaScriptEnabled.observe(activity) {
+            wv.settings.javaScriptEnabled = it
+        }
+
+        // UserAgentの設定
+        wv.settings.userAgentString = userAgent.value
+        userAgent.observe(activity) {
+            wv.settings.userAgentString = it
+        }
+
+        // テーマの設定
+        webViewTheme.observe(activity) {
+            val theme =
+                when (it) {
+                    WebViewTheme.AUTO ->
+                        if (browserRepo.isThemeDark) WebViewTheme.DARK
+                        else WebViewTheme.NORMAL
+
+                    else -> it
+                }
+
+            if (
+                theme == WebViewTheme.DARK
+                && browserRepo.isForceDarkStrategySupported
+                && browserRepo.isForceDarkSupported
+            ) {
+                WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_ON)
+                WebSettingsCompat.setForceDarkStrategy(wv.settings, WebSettingsCompat.DARK_STRATEGY_WEB_THEME_DARKENING_ONLY)
+            }
+            else if (
+                theme == WebViewTheme.FORCE_DARK
+                && browserRepo.isForceDarkSupported
+            ) {
+                WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_ON)
+                if (browserRepo.isForceDarkStrategySupported) {
+                    WebSettingsCompat.setForceDarkStrategy(wv.settings, WebSettingsCompat.DARK_STRATEGY_USER_AGENT_DARKENING_ONLY)
+                }
+            }
+            else if (browserRepo.isForceDarkSupported) {
+                WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_OFF)
+            }
+        }
+
+        var initialPrivateBrowsingEnabled : Boolean? = privateBrowsingEnabled.value
+        privateBrowsingEnabled.observe(activity) {
+            setPrivateBrowsing(wv, it)
+            if (it != initialPrivateBrowsingEnabled) {
+                initialPrivateBrowsingEnabled = null
+                wv.reload()
+            }
+        }
+
+        // スタートページに遷移
         val startPage = initialUrl ?: browserRepo.startPage.value!!
         url.value = startPage
+    }
 
-        //
-
+    /**
+     * リンククリック時の処理を設定する
+     */
+    private fun setLinkClickListener(wv: WebView, activity: BrowserActivity) {
         // どういうわけかクリック時にもonLongClickListenerが呼ばれることがあるので、
         // クリックとして処理したかどうかを記憶しておく
         var handledAsClick = false
@@ -279,6 +350,7 @@ class BrowserViewModel(
             }
         }
 
+        // リンク長押しでメニュー表示
         wv.setOnLongClickListener {
             if (handledAsClick) return@setOnLongClickListener true
 
@@ -287,93 +359,119 @@ class BrowserViewModel(
             when (hitTestResult.type) {
                 // 画像
                 WebView.HitTestResult.IMAGE_TYPE -> {
-                    Log.i("image", hitTestResult.extra ?: "")
+                    openImageMenuDialog(url, activity)
                     true
                 }
 
                 // リンク
                 WebView.HitTestResult.SRC_ANCHOR_TYPE -> {
-                    val dialog = AlertDialogFragment2.Builder()
-                        .setTitle(Uri.decode(url))
-                        .setItems(listOf(
-                            R.string.dialog_open,
-                            R.string.browser_menu_share,
-                            R.string.browser_menu_bookmarks
-                        )) { _, which -> when(which) {
-                            0 -> goAddress(url)
-                            1 -> share(url, activity)
-                            2 -> openBookmarksActivity(url, activity)
-                        } }
-                        .setNegativeButton(R.string.dialog_close)
-                        .create()
-                    dialog.showAllowingStateLoss(activity.supportFragmentManager, DIALOG_CONTEXT_MENU) { e ->
-                        Log.e("error", Log.getStackTraceString(e))
-                    }
+                    openTextLinkMenuDialog(url, activity)
                     true
                 }
 
                 // 画像リンク
                 WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
-                    Log.i("imglink", hitTestResult.extra ?: "")
+                    // リンクアドレスは別途入手する必要がある
+                    val msg = Handler().obtainMessage()
+                    wv.requestFocusNodeHref(msg)
+
+                    // リンクアドレスが取得できたら専用のメニューを開く
+                    // 何らかの理由で失敗したら画像用のメニューを開く
+                    msg.data.getString("url")?.let { linkUrl ->
+                        openImageLinkMenuDialog(linkUrl, url, activity)
+                    } ?: openImageMenuDialog(url, activity)
+
                     true
                 }
 
                 else -> false
             }
         }
+    }
 
-        // jsのON/OFF
-        wv.settings.javaScriptEnabled = javaScriptEnabled.value ?: true
-        javaScriptEnabled.observe(activity) {
-            wv.settings.javaScriptEnabled = it
-        }
+    // ------ //
 
-        // UserAgentの設定
-        wv.settings.userAgentString = userAgent.value
-        userAgent.observe(activity) {
-            wv.settings.userAgentString = it
-        }
+    /**
+     * テキストリンクに対するメニューを表示する
+     */
+    private fun openTextLinkMenuDialog(url: String, activity: BrowserActivity) {
+        val dialog = AlertDialogFragment2.Builder()
+            .setTitle(Uri.decode(url))
+            .setItems(listOf(
+                R.string.browser_link_menu_open_link,
+                R.string.browser_link_menu_share_link,
+                R.string.browser_link_menu_open_bookmarks,
+            )) { _, which -> when(which) {
+                0 -> goAddress(url)
+                1 -> share(url, activity)
+                2 -> openBookmarksActivity(url, activity)
+            } }
+            .setNegativeButton(R.string.dialog_close)
+            .create()
 
-        // テーマの設定
-        webViewTheme.observe(activity) {
-            val theme =
-                when (it) {
-                    WebViewTheme.AUTO ->
-                        if (browserRepo.isThemeDark) WebViewTheme.DARK
-                        else WebViewTheme.NORMAL
-
-                    else -> it
-                }
-
-            if (theme == WebViewTheme.DARK && browserRepo.isForceDarkStrategySupported && browserRepo.isForceDarkSupported) {
-                WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_ON)
-                WebSettingsCompat.setForceDarkStrategy(wv.settings, WebSettingsCompat.DARK_STRATEGY_WEB_THEME_DARKENING_ONLY)
-            }
-            else if (theme == WebViewTheme.FORCE_DARK && browserRepo.isForceDarkSupported) {
-                WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_ON)
-                if (browserRepo.isForceDarkStrategySupported) {
-                    WebSettingsCompat.setForceDarkStrategy(wv.settings, WebSettingsCompat.DARK_STRATEGY_USER_AGENT_DARKENING_ONLY)
-                }
-            }
-            else if (browserRepo.isForceDarkSupported) {
-                WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_OFF)
-            }
-        }
-
-        var initialPrivateBrowsingEnabled : Boolean? = privateBrowsingEnabled.value
-        privateBrowsingEnabled.observe(activity) {
-            setPrivateBrowsing(wv, it)
-            if (it != initialPrivateBrowsingEnabled) {
-                initialPrivateBrowsingEnabled = null
-                wv.reload()
-            }
+        dialog.showAllowingStateLoss(activity.supportFragmentManager, DIALOG_CONTEXT_MENU) { e ->
+            Log.e("error", Log.getStackTraceString(e))
         }
     }
 
     /**
+     * 画像に対するメニューを表示する
+     */
+    private fun openImageMenuDialog(url: String, activity: BrowserActivity) {
+        val dialog = AlertDialogFragment2.Builder()
+            .setTitle(Uri.decode(url))
+            .setItems(listOf(
+                R.string.browser_link_menu_open_image,
+                R.string.browser_link_menu_share_image,
+                R.string.browser_link_menu_save_image
+            )) { _, which -> when(which) {
+                0 -> goAddress(url)
+                1 -> shareImage(url, activity)
+                2 -> publishSaveImageIntent(url, activity)
+            } }
+            .setNegativeButton(R.string.dialog_close)
+            .create()
+
+        dialog.showAllowingStateLoss(activity.supportFragmentManager, DIALOG_CONTEXT_MENU) { e ->
+            Log.e("error", Log.getStackTraceString(e))
+        }
+    }
+
+    /**
+     * 画像リンクに対するメニューを表示する
+     */
+    private fun openImageLinkMenuDialog(linkUrl: String, imageUrl: String, activity: BrowserActivity) {
+        val dialog = AlertDialogFragment2.Builder()
+            .setTitle(Uri.decode(linkUrl))
+            .setItems(listOf(
+                R.string.browser_link_menu_open_link,
+                R.string.browser_link_menu_share_link,
+                R.string.browser_link_menu_open_bookmarks,
+                R.string.browser_link_menu_open_image,
+                R.string.browser_link_menu_share_image,
+                R.string.browser_link_menu_save_image
+            )) { _, which -> when(which) {
+                0 -> goAddress(linkUrl)
+                1 -> share(linkUrl, activity)
+                2 -> openBookmarksActivity(linkUrl, activity)
+                3 -> goAddress(imageUrl)
+                4 -> shareImage(imageUrl, activity)
+                5 -> publishSaveImageIntent(imageUrl, activity)
+            } }
+            .setNegativeButton(R.string.dialog_close)
+            .create()
+
+        dialog.showAllowingStateLoss(activity.supportFragmentManager, DIALOG_CONTEXT_MENU) { e ->
+            Log.e("error", Log.getStackTraceString(e))
+        }
+    }
+
+    // ------ //
+
+    /**
      * プライベートブラウジングを有効化する
      */
-    fun setPrivateBrowsing(wv: WebView, enabled: Boolean) {
+    private fun setPrivateBrowsing(wv: WebView, enabled: Boolean) {
         val settings = wv.settings
         if (enabled) {
             // cookie
@@ -390,6 +488,9 @@ class BrowserViewModel(
             settings.setAppCacheEnabled(true)
         }
     }
+
+    // ------ //
+    // BrowserActivityに依存する処理をここに丸投げする
 
     /** 状態変化をオプションメニュー項目に通知する */
     fun bindOptionsMenu(owner: LifecycleOwner, context: Context, menu: Menu) {
@@ -449,6 +550,24 @@ class BrowserViewModel(
         else -> false
     }
 
+    /** Intent呼び出し先から結果が返ってきたときの処理 */
+    fun onActivityResult(activity: BrowserActivity, requestCode: Int, resultCode: Int, intent: Intent?) {
+        when (requestCode) {
+            // ファイル保存先の選択
+            REQUEST_CODE_SAVE_IMAGE -> {
+                val destUri = intent?.data
+                if (resultCode != Activity.RESULT_OK || destUri == null) {
+                    Log.d("FilePick", "canceled")
+                    return
+                }
+
+                saveImage(activity, destUri)
+            }
+        }
+    }
+
+    // ------ //
+
     /** はてなキーワードの解説ポップアップを開く */
     @OptIn(ExperimentalStdlibApi::class)
     private fun openKeywordPopup(
@@ -460,6 +579,8 @@ class BrowserViewModel(
     ) : HatenaKeywordPopup {
         val data =
             if (!response.isNullOrEmpty()) {
+                // TODO: このリスト生成処理をpopup#setData()で行われるようにする
+
                 // 一般的な用法を優先して表示する
                 val generalItem = response.firstOrNull { it.category.contains("一般") }
 
@@ -499,7 +620,64 @@ class BrowserViewModel(
             it.type = "text/plain"
             it.putExtra(Intent.EXTRA_TEXT, url)
         }
-        activity.startActivity(intent)
+        runCatching {
+            activity.startActivity(intent)
+        }
+    }
+
+    /** 画像を共有 */
+    private fun shareImage(url: String, activity: BrowserActivity) {
+        val intent = Intent().also {
+            it.action = Intent.ACTION_SEND
+            it.type = "image/*"
+            it.putExtra(Intent.EXTRA_STREAM, Uri.parse(url))
+        }
+        runCatching {
+            activity.startActivity(intent)
+        }
+    }
+
+    /** 保存処理中の画像URL */
+    private var savingImageUrl : String? = null
+
+    /** 画像保存先の選択画面を開く */
+    private fun publishSaveImageIntent(url: String, activity: BrowserActivity) {
+        val uri = Uri.parse(url)
+        savingImageUrl = url
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).also {
+            it.addCategory(Intent.CATEGORY_OPENABLE)
+            it.type = "image/*"
+            it.putExtra(Intent.EXTRA_TITLE, uri.lastPathSegment ?: uri.path ?: "image")
+        }
+        activity.startActivityForResult(intent, REQUEST_CODE_SAVE_IMAGE)
+    }
+
+    /** 画像を保存する */
+    private fun saveImage(context: Context, destUri: Uri) {
+        val srcUrl = savingImageUrl ?: let {
+            context.showToast(R.string.browser_save_image_failure)
+            return
+        }
+        savingImageUrl = null
+
+        GlideApp.with(context)
+            .asFile()
+            .load(srcUrl)
+            .into(object : CustomTarget<File>() {
+                override fun onResourceReady(resource: File, transition: Transition<in File>?) {
+                    context.contentResolver.openOutputStream(destUri).use { outputStream ->
+                        if (outputStream == null) {
+                            context.showToast(R.string.browser_save_image_failure)
+                            return
+                        }
+                        resource.inputStream().copyTo(outputStream)
+                        context.showToast(R.string.browser_save_image_success)
+                    }
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {
+                }
+            })
     }
 
     // ------ //

@@ -504,6 +504,16 @@
     <string name="browser_menu_settings">設定</string>
     <string name="browser_menu_exit">終了</string>
 
+    <string name="browser_link_menu_open_link">リンクを開く</string>
+    <string name="browser_link_menu_share_link">リンクを共有</string>
+    <string name="browser_link_menu_open_bookmarks">ブクマ画面を表示</string>
+    <string name="browser_link_menu_open_image">画像を開く</string>
+    <string name="browser_link_menu_share_image">画像を共有</string>
+    <string name="browser_link_menu_save_image">画像を保存</string>
+
+    <string name="browser_save_image_success">画像を保存しました</string>
+    <string name="browser_save_image_failure">画像保存に失敗しました</string>
+
     <string name="browser_history_keyword_hint">キーワード</string>
 
     <string name="browser_drawer_title_bookmarks">ブックマーク</string>
