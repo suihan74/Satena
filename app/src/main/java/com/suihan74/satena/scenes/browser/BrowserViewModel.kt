@@ -32,10 +32,7 @@ import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesReposit
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SingleUpdateMutableLiveData
-import com.suihan74.utilities.extensions.addUnique
-import com.suihan74.utilities.extensions.faviconUrl
-import com.suihan74.utilities.extensions.showToast
-import com.suihan74.utilities.extensions.whenTrue
+import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.Dispatchers
@@ -627,14 +624,27 @@ class BrowserViewModel(
 
     /** 画像を共有 */
     private fun shareImage(url: String, activity: BrowserActivity) {
-        val intent = Intent().also {
-            it.action = Intent.ACTION_SEND
-            it.type = "image/*"
-            it.putExtra(Intent.EXTRA_STREAM, Uri.parse(url))
-        }
-        runCatching {
-            activity.startActivity(intent)
-        }
+        GlideApp.with(activity)
+            .asFile()
+            .load(url)
+            .into(object : CustomTarget<File>() {
+                override fun onResourceReady(resource: File, transition: Transition<in File>?) {
+                    val uri = activity.getSharableFileUri(resource)
+
+                    val intent = Intent().also {
+                        it.action = Intent.ACTION_SEND
+                        it.type = "image/*"
+                        it.putExtra(Intent.EXTRA_STREAM, uri)
+                    }
+
+                    runCatching {
+                        activity.startActivity(intent)
+                    }
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {
+                }
+            })
     }
 
     /** 保存処理中の画像URL */

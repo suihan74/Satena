@@ -2,12 +2,16 @@ package com.suihan74.utilities.extensions
 
 import android.app.Activity
 import android.content.Context
+import android.net.Uri
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.suihan74.satena.BuildConfig
+import java.io.File
 
 /**
  * キーボードを表示して対象にフォーカスする
@@ -43,6 +47,19 @@ fun Activity.hideSoftInputMethod(focusTarget: View? = null) : Boolean {
 
     return result ?: false
 }
+
+// ------ //
+
+/**
+ * ```FileProvider``を利用して外部アプリに共有できるファイルURIを取得する
+ *
+ * @param file ```AndroidManifest.xml```に公開可能として登録済みのディレクトリに置かれたファイル
+ */
+fun Activity.getSharableFileUri(file: File) : Uri {
+    return FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", file)
+}
+
+// ------ //
 
 /**
  * アクティビティで表示中のフラグメントを探す
