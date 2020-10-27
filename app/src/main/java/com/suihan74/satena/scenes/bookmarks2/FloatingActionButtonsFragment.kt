@@ -158,7 +158,7 @@ class FloatingActionButtonsFragment :
             bookmarkButtonClicked = true
 
             val intent = Intent(context, BookmarkPostActivity::class.java).also {
-                it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, activityViewModel.entry)
+                it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, activityViewModel.entry.value)
                 it.putObjectExtra(BookmarkPostActivity.EXTRA_EDIT_DATA, activityViewModel.editData)
             }
             activity?.startActivityForResult(intent, BookmarkPostActivity.REQUEST_CODE)

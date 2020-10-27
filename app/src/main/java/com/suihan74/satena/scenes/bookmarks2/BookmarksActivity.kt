@@ -282,23 +282,6 @@ class BookmarksActivity : AppCompatActivity() {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {}
         })
-        /*val drawerToggle = object : ActionBarDrawerToggle(
-            this,
-            drawer_layout,
-            toolbar,
-            R.string.drawer_open,
-            R.string.drawer_close
-        ) {
-            override fun onDrawerOpened(drawerView: View) {
-                super.onDrawerOpened(drawerView)
-                hideSoftInputMethod()
-
-                findFragmentByTag<EntryInformationFragment>(FRAGMENT_INFORMATION)
-                    ?.onShown()
-            }
-        }
-        drawer_layout.addDrawerListener(drawerToggle)
-        */
 
         // Observers
         viewModel.bookmarksEntry.observe(this) {

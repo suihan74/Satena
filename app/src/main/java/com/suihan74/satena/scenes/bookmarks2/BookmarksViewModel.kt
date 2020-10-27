@@ -104,19 +104,6 @@ class BookmarksViewModel(
 
     /** 編集途中の投稿コメント */
     var editData: BookmarkEditData? = null
-    /*
-    val editingComment : String
-        get() =
-            mEditingComment
-            ?: userBookmark?.commentRaw
-            ?: ""
-
-    private var mEditingComment : String? = null
-
-    fun setEditingComment(comment: String?) {
-        mEditingComment = comment
-    }
-     */
 
     fun onCreate(
         intent: Intent,
@@ -126,7 +113,7 @@ class BookmarksViewModel(
         val firstLaunching = !repository.isInitialized
         val entry =
             if (firstLaunching) intent.getObjectExtra<Entry>(BookmarksActivity.EXTRA_ENTRY)
-            else repository.entry
+            else repository.entry.value
 
         if (entry == null) {
             // Entryのロードが必要な場合
@@ -184,20 +171,16 @@ class BookmarksViewModel(
         loadAction: suspend ()->Unit,
         onSuccess: OnSuccess<Entry>? = null,
         onError: OnError? = null
-    ) = viewModelScope.launch {
+    ) = viewModelScope.launch(Dispatchers.Main) {
         try {
             loadAction.invoke()
-//            init(fragmentManager, true, onError)
 
-            withContext(Dispatchers.Main) {
-                toolbarTitle.value = entry.title
-                onSuccess?.invoke(repository.entry)
-            }
+            val entry = entry.value!!
+            toolbarTitle.value = entry.title
+            onSuccess?.invoke(entry)
         }
         catch (e: Throwable) {
-            withContext(Dispatchers.Main) {
-                onError?.invoke(e)
-            }
+            onError?.invoke(e)
         }
     }
 
@@ -283,9 +266,9 @@ class BookmarksViewModel(
 
             try {
                 listOf(
-                    repository.loadBookmarksEntryAsync(),
-                    repository.loadBookmarksDigestAsync(),
-                    repository.loadBookmarksRecentAsync()
+                    viewModelScope.async { repository.loadBookmarksEntryAsync() },
+                    viewModelScope.async { repository.loadBookmarksDigestAsync() },
+                    viewModelScope.async { repository.loadBookmarksRecentAsync() }
                 ).run {
                     awaitAll()
                     refreshLists()
@@ -353,7 +336,7 @@ class BookmarksViewModel(
 
         if (bookmarksEntry.value == null) {
             try {
-                repository.loadBookmarksEntryAsync().await()
+                repository.loadBookmarksEntryAsync()
             }
             catch (e: Throwable) {
                 onError?.invoke(e)
@@ -396,7 +379,7 @@ class BookmarksViewModel(
         }
     ) {
         loadBasics()
-        repository.loadBookmarksDigestAsync().await()
+        repository.loadBookmarksDigestAsync()
         bookmarksPopular.postValue(repository.bookmarksPopular)
     }
 
@@ -715,6 +698,7 @@ class BookmarksViewModel(
             comment = bookmark.commentRaw
         ).run {
             setOnReportBookmark { model ->
+                val entry = this@BookmarksViewModel.entry.value ?: return@setOnReportBookmark false
                 val user = model.user
                 val report = Report(
                     entry = entry,

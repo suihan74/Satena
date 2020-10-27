@@ -1,6 +1,8 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.webkit.URLUtil
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
@@ -20,18 +22,10 @@ class BookmarksRepository(
 ) {
     /** エントリ情報が正しく設定されているか */
     val isInitialized : Boolean
-        get() = _entry != null
+        get() = entry.value != null
 
     /** エントリ情報 */
-    var entry: Entry
-        get() = synchronized(entryLock) { _entry!! }
-        private set(value) {
-            synchronized(entryLock) {
-                _entry = value
-            }
-        }
-
-    private var _entry: Entry? = null
+    var entry = MutableLiveData<Entry>()
 
     /** ブクマエントリ */
     var bookmarksEntry: BookmarksEntry? = null
@@ -174,56 +168,75 @@ class BookmarksRepository(
     }
 
     /** エントリ情報を取得 */
-    suspend fun loadEntry(url: String) {
-        if (!(url.startsWith("http://") || url.startsWith("https://"))) {
+    @Throws(ConnectionFailureException::class)
+    suspend fun loadEntry(url: String) = withContext(Dispatchers.Default) {
+        if (!URLUtil.isNetworkUrl(url)) {
             throw InvalidUrlException(url)
         }
 
-        val modifiedUrl = modifySpecificUrls(url)!!
-        entry = client.getEntryAsync(modifiedUrl).await()
+        val result = runCatching {
+            val modifiedUrl = modifySpecificUrls(url)!!
+            entry.postValue(
+                client.getEntryAsync(modifiedUrl).await()
+            )
+        }
+
+        if (result.isFailure) {
+            throw ConnectionFailureException(cause = result.exceptionOrNull())
+        }
     }
 
     /** エントリ情報を取得 */
-    suspend fun loadEntry(eid: Long) {
-        entry = client.getEntryAsync(eid).await()
+    @Throws(ConnectionFailureException::class)
+    suspend fun loadEntry(eid: Long) = withContext(Dispatchers.Default) {
+        val result = runCatching {
+            entry.postValue(
+                client.getEntryAsync(eid).await()
+            )
+        }
+
+        if (result.isFailure) {
+            throw ConnectionFailureException(cause = result.exceptionOrNull())
+        }
     }
 
     /** 既にロード済みのエントリ情報をリポジトリにセットする */
-    suspend fun loadEntry(entry: Entry) {
+    suspend fun loadEntry(entry: Entry) = withContext(Dispatchers.Default) {
         if (entry.id == 0L) {
-            val eid = client.getEntryIdAsync(entry.url).await()
-            this.entry = entry.copy(id = eid ?: 0)
+            val result = runCatching {
+                client.getEntryIdAsync(entry.url).await() ?: 0L
+            }
+            this@BookmarksRepository.entry.postValue(
+                entry.copy(id = result.getOrDefault(0L))
+            )
         }
         else {
-            this.entry = entry
+            this@BookmarksRepository.entry.postValue(entry)
         }
     }
 
     /** ブックマークエントリを取得 */
-    fun loadBookmarksEntryAsync() =
-        client.getBookmarksEntryAsync(entry.url).apply {
-            invokeOnCompletion { e ->
-                if (e != null) return@invokeOnCompletion
-
-                val result = getCompleted()
-                bookmarksEntry = result
-                if (bookmarksEntry == null) return@invokeOnCompletion
-
-                allStarsLiveData
-            }
+    suspend fun loadBookmarksEntryAsync() {
+        val result = runCatching {
+            val url = entry.value!!.url
+            client.getBookmarksEntryAsync(url).await()
         }
+
+        bookmarksEntry = result.getOrNull()
+        if (bookmarksEntry != null) {
+            allStarsLiveData
+        }
+    }
 
     /** 人気ブクマなどの概要情報を取得 */
-    fun loadBookmarksDigestAsync() =
-        client.getDigestBookmarksAsync(entry.url).apply {
-            invokeOnCompletion { e ->
-                if (e == null) {
-                    val result = getCompleted()
-                    bookmarksDigest = result
-                    bookmarksPopular = result.scoredBookmarks.map { Bookmark.create(it) }
-                }
-            }
+    suspend fun loadBookmarksDigestAsync() {
+        val result = runCatching {
+            val url = entry.value!!.url
+            client.getDigestBookmarksAsync(url).await()
         }
+        bookmarksDigest = result.getOrNull()
+        bookmarksPopular = result.getOrNull()?.scoredBookmarks?.map { Bookmark.create(it) }.orEmpty()
+    }
 
     /** 追加ロード用のカーソル */
     private var recentBookmarksCursor: String? = null
@@ -273,10 +286,12 @@ class BookmarksRepository(
     ) : Deferred<List<Bookmark>> = client.async(Dispatchers.Default) {
         if (additionalLoading && recentBookmarksCursor == null) return@async emptyList()
 
+        val url = entry.value?.url ?: return@async emptyList()
+
         val response =
-            if (!additionalLoading) loadMostRecentBookmarksAsync(url = entry.url).await()
+            if (!additionalLoading) loadMostRecentBookmarksAsync(url).await()
             else client.getRecentBookmarksAsync(
-                    url = entry.url,
+                    url = url,
                     cursor = recentBookmarksCursor
                 ).await()
 
@@ -288,7 +303,7 @@ class BookmarksRepository(
         // 有言ブクマを一定数確保するために繰り返し続きをロードする
         while (cursor != null && page.count { it.comment.isNotBlank() } < leastCommentsNum) {
             val r = client.getRecentBookmarksAsync(
-                url = entry.url,
+                url = url,
                 cursor = cursor
             ).await()
 
@@ -381,13 +396,31 @@ class BookmarksRepository(
         }
 
     /** ブクマにスターをつける */
+    @Throws(ConnectionFailureException::class)
     suspend fun postStar(bookmark: Bookmark, color: StarColor, quote: String = "") : Star {
-        return client.postStarAsync(bookmark.getBookmarkUrl(entry), color, quote).await()
+        val result = runCatching {
+            val e = entry.value!!
+            client.postStarAsync(bookmark.getBookmarkUrl(e), color, quote).await()
+        }
+
+        if (result.isFailure) {
+            throw ConnectionFailureException(cause = result.exceptionOrNull())
+        }
+
+        return result.getOrNull() ?: throw ConnectionFailureException()
     }
 
     /** スターを削除する */
+    @Throws(ConnectionFailureException::class)
     suspend fun deleteStar(bookmark: Bookmark, star: Star) {
-        client.deleteStarAsync(bookmark.getBookmarkUrl(entry), star).await()
+        val result = runCatching {
+            val e = entry.value!!
+            client.deleteStarAsync(bookmark.getBookmarkUrl(e), star).await()
+        }
+
+        if (result.isFailure) {
+            throw ConnectionFailureException(cause = result.exceptionOrNull())
+        }
     }
 
     /** ブクマに付けられたスター取得を監視するライブデータを生成する */
@@ -405,9 +438,11 @@ class BookmarksRepository(
                 }
                 initialized = true
 
-                val url = bookmark.getBookmarkUrl(entry)
-                if (all.any { it.url == url }) {
-                    liveData.notifyReload()
+                runCatching {
+                    val url = entry.value!!.url
+                    if (all.any { it.url == url }) {
+                        liveData.notifyReload()
+                    }
                 }
             }
 
@@ -427,7 +462,7 @@ class BookmarksRepository(
         if (!signedIn) null
         else {
             bookmarksEntry?.bookmarks?.firstOrNull { it.user == userSignedIn }
-                ?: entry.bookmarkedData?.let { Bookmark.create(it) }
+                ?: entry.value?.bookmarkedData?.let { Bookmark.create(it) }
         }
 
     /**
@@ -435,7 +470,10 @@ class BookmarksRepository(
      */
     suspend fun updateUserBookmark(bookmarkResult: BookmarkResult) = withContext(Dispatchers.Default) {
         val bookmark = Bookmark.create(bookmarkResult)
-        loadEntry(entry.copy(bookmarkedData =  bookmarkResult))
+        entry.value?.let { entry ->
+            loadEntry(entry.copy(bookmarkedData = bookmarkResult))
+        }
+
         if (bookmarksEntry != null) {
             val bEntry = bookmarksEntry!!
             bookmarksEntry = bEntry.copy(bookmarks = bEntry.bookmarks.map {
@@ -562,7 +600,7 @@ class BookmarksRepository(
             bookmark: Bookmark
         ) = withContext(Dispatchers.Default) {
             try {
-                val entry = repository.entry
+                val entry = repository.entry.value!!
 
                 val client = repository.client
                 val result = client.getStarsEntryAsync(bookmark.getBookmarkUrl(entry)).await()
@@ -584,20 +622,20 @@ class BookmarksRepository(
         ) : List<StarsEntry> = withContext(Dispatchers.Default) {
             task?.cancel()
 
-            val entry = repository.entry
-
-            val userAndUrls =
-                repository.bookmarksEntry?.bookmarks
-                    ?.filter {
-                        (forceUpdate || repository.getStarsEntryTo(it.user) == null) && it.comment.isNotBlank()
-                    }
-                    ?.map { Pair(it.user, it.getBookmarkUrl(entry)) }
-                    ?: emptyList()
-
-            val task = client.getStarsEntryAsync(userAndUrls.map { it.second })
-            this@StarsLiveData.task = task
-
             return@withContext try {
+                val entry = repository.entry.value!!
+
+                val userAndUrls =
+                    repository.bookmarksEntry?.bookmarks
+                        ?.filter {
+                            (forceUpdate || repository.getStarsEntryTo(it.user) == null) && it.comment.isNotBlank()
+                        }
+                        ?.map { Pair(it.user, it.getBookmarkUrl(entry)) }
+                        ?: emptyList()
+
+                val task = client.getStarsEntryAsync(userAndUrls.map { it.second })
+                this@StarsLiveData.task = task
+
                 val result = task.await()
 
                 result.forEach { starEntry ->
@@ -666,7 +704,7 @@ class BookmarksRepository(
             }
 
             return@withContext try {
-                val entry = repository.entry
+                val entry = repository.entry.value!!
                 val task = client.getStarsEntryAsync(bookmark.getBookmarkUrl(entry))
                 this@StarsEntryLiveData.task = task
                 val result = task.await()

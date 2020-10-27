@@ -37,35 +37,56 @@ class EntryInformationFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val entry = activityViewModel.entry
-
         val binding = DataBindingUtil.inflate<FragmentEntryInformationBinding>(
             inflater,
             R.layout.fragment_entry_information,
             container,
             false
-        ).apply {
-            this.entry = entry
+        ).also {
+            it.vm = activityViewModel
+            it.lifecycleOwner = viewLifecycleOwner
         }
         val view = binding.root
 
-        view.page_url.apply {
-            text = makeSpannedFromHtml("<u>${Uri.decode(entry.url)}</u>")
+        activityViewModel.entry.observe(viewLifecycleOwner) { entry ->
+            view.page_url.apply {
+                text = makeSpannedFromHtml("<u>${Uri.decode(entry.url)}</u>")
 
-            setOnClickListener {
-                bookmarksActivity?.let {
-                    it.closeDrawer()
-                    it.startInnerBrowser(entry)
+                setOnClickListener {
+                    bookmarksActivity?.let {
+                        it.closeDrawer()
+                        it.startInnerBrowser(entry)
+                    }
+                }
+
+                setOnLongClickListener {
+                    val intent = Intent(Intent.ACTION_SEND).also {
+                        it.putExtra(Intent.EXTRA_TEXT, entry.url)
+                        it.type = "text/plain"
+                    }
+                    activity?.startActivity(intent)
+                    true
                 }
             }
 
-            setOnLongClickListener {
-                val intent = Intent(Intent.ACTION_SEND).also {
-                    it.putExtra(Intent.EXTRA_TEXT, entry.url)
-                    it.type = "text/plain"
+            // -1階
+            view.to_lower_floor_button.apply {
+                setVisibility(HatenaClient.isUrlCommentPages(entry.url), View.INVISIBLE)
+
+                setOnClickListener {
+                    val url = HatenaClient.getEntryUrlFromCommentPageUrl(entry.url)
+                    changeFloor(url)
                 }
-                activity?.startActivity(intent)
-                true
+            }
+
+            // +1階 (今見ているページのコメントページに移動)
+            view.to_upper_floor_button.apply {
+                setVisibility(entry.count > 0, View.INVISIBLE)
+
+                setOnClickListener {
+                    val url = HatenaClient.getCommentPageUrlFromEntryUrl(entry.url)
+                    changeFloor(url)
+                }
             }
         }
 
@@ -88,26 +109,6 @@ class EntryInformationFragment : Fragment() {
                 .build()
 
             adapter = tagsAdapter
-        }
-
-        // -1階
-        view.to_lower_floor_button.apply {
-            setVisibility(HatenaClient.isUrlCommentPages(entry.url), View.INVISIBLE)
-
-            setOnClickListener {
-                val url = HatenaClient.getEntryUrlFromCommentPageUrl(entry.url)
-                changeFloor(url)
-            }
-        }
-
-        // +1階 (今見ているページのコメントページに移動)
-        view.to_upper_floor_button.apply {
-            setVisibility(entry.count > 0, View.INVISIBLE)
-
-            setOnClickListener {
-                val url = HatenaClient.getCommentPageUrlFromEntryUrl(entry.url)
-                changeFloor(url)
-            }
         }
 
         // タグ情報を監視

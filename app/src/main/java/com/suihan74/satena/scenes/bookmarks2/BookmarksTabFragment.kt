@@ -233,7 +233,9 @@ class BookmarksTabFragment :
                 return@observe
             }
             lifecycleScope.launch(Dispatchers.Default) {
-                bookmarksAdapter.updateStars(activityViewModel.entry, it)
+                activityViewModel.entry.value?.let { entry ->
+                    bookmarksAdapter.updateStars(entry, it)
+                }
             }
         }
 

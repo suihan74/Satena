@@ -1129,6 +1129,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 対象URLにスターをつける
      */
     @Throws(
+        SignInStarFailureException::class,
         ConnectionFailureException::class,
         NotFoundException::class,
         SocketTimeoutException::class
@@ -1156,6 +1157,12 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * 一度付けたスターを削除する
      */
+    @Throws(
+        SignInStarFailureException::class,
+        ConnectionFailureException::class,
+        NotFoundException::class,
+        SocketTimeoutException::class
+    )
     fun deleteStarAsync(url: String, star: Star) : Deferred<Any> = async {
         checkSignedInStar("need to sign-in to delete star")
         val apiUrl = "$S_BASE_URL/star.delete.json?${cacheAvoidance()}" +
@@ -1166,7 +1173,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 "&quote=${Uri.encode(star.quote)}"
 
         get(apiUrl).use { response ->
-            if (!response.isSuccessful) throw RuntimeException("failed to delete a star")
+            if (!response.isSuccessful) throw ConnectionFailureException("failed to delete a star")
         }
     }
 

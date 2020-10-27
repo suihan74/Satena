@@ -3,7 +3,9 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
-        <variable name="entry" type="com.suihan74.hatenaLib.Entry"/>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel" />
     </data>
 
     <RelativeLayout
@@ -13,7 +15,7 @@
 
         <ImageView
                 android:id="@+id/icon"
-                app:src="@{entry.imageUrl}"
+                app:src="@{vm.entry.imageUrl}"
                 android:contentDescription="@null"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
@@ -28,7 +30,7 @@
                 android:layout_toStartOf="@id/icon"
                 android:layout_alignParentTop="true"
                 android:minHeight="64dp"
-                android:text="@{entry.title}"
+                android:text="@{vm.entry.title}"
                 android:textStyle="bold"
                 android:textSize="14sp"
                 android:textColor="?attr/textColor"
@@ -66,7 +68,7 @@
                 android:scrollbars="vertical"
                 android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
                 android:scrollbarSize="4dp"
-                android:text="@{entry.description}"
+                android:text="@{vm.entry.description}"
                 android:textSize="12sp"
                 android:textIsSelectable="true"
                 android:textColor="?attr/textColor"
