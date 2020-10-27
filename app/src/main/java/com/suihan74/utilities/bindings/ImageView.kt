@@ -1,5 +1,6 @@
 package com.suihan74.utilities.bindings
 
+import android.graphics.drawable.Drawable
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import com.suihan74.hatenaLib.HatenaClient
@@ -8,12 +9,21 @@ import com.suihan74.satena.GlideApp
 import com.suihan74.utilities.extensions.users
 
 /** URL先の画像をImageViewで表示 */
-@BindingAdapter("src")
-fun ImageView.setSource(url: String?) {
+@BindingAdapter(value = ["src", "errorSrc"], requireAll = false)
+fun ImageView.setSource(url: String?, errorSrc: Drawable? = null) {
     val context = context ?: return
-    if (!url.isNullOrBlank()) {
+    if (url.isNullOrBlank()) {
+        if (errorSrc == null) {
+            setImageResource(android.R.color.transparent)
+        }
+        else {
+            setImageDrawable(errorSrc)
+        }
+    }
+    else {
         GlideApp.with(context)
             .load(url)
+            .error(errorSrc)
             .into(this)
     }
 }
