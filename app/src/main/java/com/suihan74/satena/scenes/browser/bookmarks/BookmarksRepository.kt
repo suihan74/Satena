@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.browser.bookmarks
 import android.util.Log
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
@@ -17,7 +18,6 @@ import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SingleUpdateMutableLiveData
-import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.updateFirstOrPlusAhead
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -208,33 +208,46 @@ class BookmarksRepository(
         entry.value = e
     }
 
-    /** エントリ情報をロードする */
-    @Throws(ConnectionFailureException::class)
-    suspend fun loadEntry(url: String) = withContext(Dispatchers.Main) {
+    /**
+     * エントリ情報をロードする
+     *
+     * @throws ConnectionFailureException
+     */
+    suspend fun loadEntry(url: String){
         val result = runCatching {
             client.getEntryAsync(url).await()
         }
 
-        entry.value = result.getOrElse {
-            throw ConnectionFailureException(it)
+        withContext(Dispatchers.Main) {
+            entry.value = result.getOrElse {
+                throw ConnectionFailureException(it)
+            }
         }
     }
 
-    /** エントリ情報をロードする */
-    @Throws(ConnectionFailureException::class)
-    suspend fun loadEntry(eid: Long) = withContext(Dispatchers.Main) {
+    /**
+     * エントリ情報をロードする
+     *
+     * @throws ConnectionFailureException
+     */
+    suspend fun loadEntry(eid: Long) {
         val result = runCatching {
             client.getEntryAsync(eid).await()
         }
 
-        entry.value = result.getOrElse {
-            throw ConnectionFailureException(it)
+        withContext(Dispatchers.Main) {
+            entry.value = result.getOrElse {
+                throw ConnectionFailureException(it)
+            }
         }
     }
 
-    /** ブクマエントリ情報をロードする */
-    @Throws(ConnectionFailureException::class)
-    suspend fun loadBookmarksEntry(url: String) = withContext(Dispatchers.Default) {
+    /**
+     * ブクマエントリ情報をロードする
+     *
+     * @throws ConnectionFailureException
+     */
+    suspend fun loadBookmarksEntry(url: String) {
         val result = runCatching {
             client.getBookmarksEntryAsync(url).await()
         }
@@ -243,7 +256,9 @@ class BookmarksRepository(
             throw ConnectionFailureException(it)
         }
 
-        bookmarksEntry.postValue(e)
+        withContext(Dispatchers.Main) {
+            bookmarksEntry.value = e
+        }
     }
 
     // ------ //
@@ -382,13 +397,13 @@ class BookmarksRepository(
         refreshBookmarks()
     }
 
-    /** 人気ブクマリストを取得する */
-    @Throws(
-        InvalidUrlException::class,
-        ConnectionFailureException::class,
-        TimeoutException::class,
-        NotFoundException::class
-    )
+    /**
+     * 人気ブクマリストを取得する
+     *
+     * @throws ConnectionFailureException
+     * @throws TimeoutException
+     * @throws NotFoundException
+     */
     suspend fun loadPopularBookmarks() = withContext(Dispatchers.Default) {
         val result = runCatching {
             client.getDigestBookmarksAsync(url).await()
@@ -411,15 +426,18 @@ class BookmarksRepository(
         }
 
         popularBookmarks.postValue(bookmarks)
+
+        // スター情報を取得する
+        loadStarsEntriesForBookmarks(bookmarks)
     }
 
-    /** 新着ブクマリストを取得する */
-    @Throws(
-        InvalidUrlException::class,
-        TimeoutException::class,
-        NotFoundException::class,
-        ConnectionFailureException::class
-    )
+    /**
+     *  新着ブクマリストを取得する
+     *
+     * @throws ConnectionFailureException
+     * @throws TimeoutException
+     * @throws NotFoundException
+     */
     suspend fun loadRecentBookmarks(
         additionalLoading: Boolean = false
     ) = withContext(Dispatchers.Default) {
@@ -428,7 +446,7 @@ class BookmarksRepository(
             return@withContext
         }
 
-        val result = kotlin.runCatching {
+        val result = runCatching {
             if (additionalLoading) {
                 client.getRecentBookmarksAsync(
                     url = url,
@@ -466,13 +484,17 @@ class BookmarksRepository(
 
         // 各表示用リストに変更を通知する
         updateRecentBookmarksLiveData(bookmarksRecentCache)
+
+        // スター情報を取得する
+        loadStarsEntriesForBookmarksWithStarCount(response.bookmarks)
     }
 
-    /** 最新のブクマリストを(取得済みの位置まで)取得する */
-    @Throws(
-        TimeoutException::class,
-        NotFoundException::class
-    )
+    /**
+     * 最新のブクマリストを(取得済みの位置まで)取得する
+     *
+     * @throws TimeoutException
+     * @throws NotFoundException
+     */
     private suspend fun loadMostRecentBookmarks(url: String) : BookmarksWithCursor {
         val bookmarks = ArrayList<BookmarkWithStarCount>()
         var cursor: String? = null
@@ -509,5 +531,46 @@ class BookmarksRepository(
             bookmarks = bookmarks,
             cursor = cursor
         )
+    }
+
+    // ------ //
+
+    /**
+     * 対象ブクマにつけられたスター情報を取得する
+     *
+     * @return 取得失敗時null
+     */
+    suspend fun getStarsEntry(bookmark: Bookmark, forceUpdate: Boolean = false) : LiveData<StarsEntry>? {
+        return entry.value?.let { entry ->
+            getStarsEntry(bookmark.getBookmarkUrl(entry), forceUpdate)
+        }
+    }
+
+    /**
+     * 渡された全ブクマにつけられたスター情報を取得し、キャッシュしておく
+     */
+    suspend fun loadStarsEntriesForBookmarksWithStarCount(bookmarks: List<BookmarkWithStarCount>) {
+        entry.value?.let { entry ->
+            val bookmarkUrls = bookmarks.filter {
+                it.starCount.any { s -> s.count > 0 }
+            }.map {
+                it.getBookmarkUrl(entry)
+            }
+            loadStarsEntries(bookmarkUrls)
+        }
+    }
+
+    /**
+     * 渡された全ブクマにつけられたスター情報を取得し、キャッシュしておく
+     */
+    suspend fun loadStarsEntriesForBookmarks(bookmarks: List<Bookmark>) {
+        entry.value?.let { entry ->
+            val bookmarkUrls = bookmarks.filter {
+                it.comment.isNotBlank()
+            }.map {
+                it.getBookmarkUrl(entry)
+            }
+            loadStarsEntries(bookmarkUrls)
+        }
     }
 }

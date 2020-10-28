@@ -571,11 +571,10 @@ class BookmarksViewModel(
         stars: List<Star>,
         onSuccess: OnSuccess<Unit>? = null,
         onError: OnError? = null,
-    ) = viewModelScope.launch(Dispatchers.Main) {
-        val fragmentManager = fragmentManager ?: return@launch
+    ) {
+        val fragmentManager = fragmentManager ?: return
 
         val dialog = StarDeletionDialog.createInstance(stars)
-        dialog.show(fragmentManager, DIALOG_POST_STAR)
 
         dialog.setOnDeleteStars { selectedStars ->
             viewModelScope.launch {
@@ -606,6 +605,8 @@ class BookmarksViewModel(
                 }
             }
         }
+
+        dialog.show(fragmentManager, DIALOG_POST_STAR)
     }
 
     /** ブクマを通報 */

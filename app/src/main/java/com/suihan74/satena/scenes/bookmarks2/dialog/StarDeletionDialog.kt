@@ -7,7 +7,7 @@ import android.text.style.AbsoluteSizeSpan
 import androidx.appcompat.app.AlertDialog
 import androidx.core.text.buildSpannedString
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Star
 import com.suihan74.satena.R
 import com.suihan74.utilities.Listener
@@ -68,7 +68,7 @@ class StarDeletionDialog : DialogFragment() {
     }
 
     /** 削除するスターが決定したときの処理をセットする */
-    suspend fun setOnDeleteStars(listener: Listener<List<Star>>?) = whenStarted {
+    fun setOnDeleteStars(listener: Listener<List<Star>>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDeleteStars = listener
     }
 

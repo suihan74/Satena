@@ -47,7 +47,8 @@ interface StarRepositoryInterface {
         entry: Entry,
         bookmark: Bookmark,
         color: StarColor,
-        quote: String = ""
+        quote: String = "",
+        updateImmediately: Boolean = true
     )
 
     /**
@@ -58,7 +59,8 @@ interface StarRepositoryInterface {
     suspend fun deleteStar(
         entry: Entry,
         bookmark: Bookmark,
-        star: Star
+        star: Star,
+        updateCacheImmediately: Boolean = true
     )
 
     /**
@@ -140,7 +142,8 @@ class StarRepository(
         entry: Entry,
         bookmark: Bookmark,
         color: StarColor,
-        quote: String
+        quote: String,
+        updateCacheImmediately: Boolean
     ) {
         if (!checkColorStarAvailability(color)) {
             throw StarExhaustedException(color)
@@ -170,8 +173,10 @@ class StarRepository(
             }
         })
 
-        runCatching {
-            getStarsEntry(url, forceUpdate = true)
+        if (updateCacheImmediately) {
+            runCatching {
+                getStarsEntry(url, forceUpdate = true)
+            }
         }
     }
 
@@ -183,24 +188,29 @@ class StarRepository(
     override suspend fun deleteStar(
         entry: Entry,
         bookmark: Bookmark,
-        star: Star
+        star: Star,
+        updateCacheImmediately: Boolean
     ) {
         val url = bookmark.getBookmarkUrl(entry)
 
         val result = runCatching {
             signIn()
-            client.deleteStarAsync(
-                url = url,
-                star = star
-            ).await()
+            repeat(star.count) {
+                client.deleteStarAsync(
+                    url = url,
+                    star = star
+                ).await()
+            }
         }
 
         if (result.isFailure) {
             throw ConnectionFailureException(cause = result.exceptionOrNull())
         }
 
-        runCatching {
-            getStarsEntry(url, forceUpdate = true)
+        if (updateCacheImmediately) {
+            runCatching {
+                getStarsEntry(url, forceUpdate = true)
+            }
         }
     }
 
@@ -219,23 +229,24 @@ class StarRepository(
         url: String,
         forceUpdate: Boolean
     ) : LiveData<StarsEntry> {
-        if (!forceUpdate) {
-            starsEntriesLock.withLock {
+        starsEntriesLock.withLock {
+            // 読み込み完了前に再度呼ばれた場合に同じ対象に対して通信が始まらないように
+            // ひとまずのところ(getStarsEntryAsync()部分のために)処理全体をあえてロックで包んでいる
+
+            if (!forceUpdate) {
                 starsEntriesCache[url]?.let {
                     return it
                 }
             }
-        }
 
-        val result = runCatching {
-            client.getStarsEntryAsync(url).await()
-        }
+            val result = runCatching {
+                client.getStarsEntryAsync(url).await()
+            }
 
-        val entry = result.getOrElse {
-            throw ConnectionFailureException()
-        }
+            val entry = result.getOrElse {
+                throw ConnectionFailureException()
+            }
 
-        starsEntriesLock.withLock {
             val liveData = withContext(Dispatchers.Main) {
                 starsEntriesCache[entry.url]?.also {
                     it.value = entry
@@ -251,13 +262,13 @@ class StarRepository(
      * 渡された全URLに対するスター情報を取得し内部にキャッシュする
      */
     override suspend fun loadStarsEntries(urls: List<String>) {
-        val result = runCatching {
-            client.getStarsEntryAsync(urls).await()
-        }
-
-        val entries = result.getOrElse { return }
-
         starsEntriesLock.withLock {
+            val result = runCatching {
+                client.getStarsEntryAsync(urls).await()
+            }
+
+            val entries = result.getOrElse { return }
+
             entries.forEach { entry ->
                 val liveData = withContext(Dispatchers.Main) {
                     starsEntriesCache[entry.url]?.also {

@@ -158,7 +158,7 @@ class BookmarksFragment :
                     taggedUsers = repo.taggedUsers,
                     ignoredUsers = repo.ignoredUsersCache,
                     displayMutedMention = false,
-                    starsEntryGetter = { null }
+                    starsEntryGetter = { b -> repo.getStarsEntry(b)?.value }
                 ) {
                     binding.swipeLayout.isRefreshing = false
                     binding.swipeLayout.isEnabled = true

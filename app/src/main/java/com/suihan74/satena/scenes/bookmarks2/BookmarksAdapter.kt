@@ -243,7 +243,7 @@ class BookmarksAdapter(
         taggedUsers: List<UserAndTags>,
         ignoredUsers: List<String>,
         displayMutedMention: Boolean,
-        starsEntryGetter: (user: String)->StarsEntry?,
+        starsEntryGetter: suspend (bookmark: Bookmark)->StarsEntry?,
         onSubmitted: Listener<List<RecyclerState<Entity>>>? = null
     ) {
         setBookmarksJob?.cancel()
@@ -251,7 +251,7 @@ class BookmarksAdapter(
             try {
                 val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
                     val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
-                    val stars = starsEntryGetter(it.user)
+                    val stars = starsEntryGetter(it)
                     val bookmark = it.copy(starCount = stars?.allStars ?: it.starCount)
                     Entity(
                         bookmark = bookmark,

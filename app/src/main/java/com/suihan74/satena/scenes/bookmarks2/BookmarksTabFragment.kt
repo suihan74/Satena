@@ -192,7 +192,7 @@ class BookmarksTabFragment :
                 userTags,
                 ignoredUsers,
                 displayMutedMention,
-                { user -> activityViewModel.repository.getStarsEntryTo(user) }
+                { b -> activityViewModel.repository.getStarsEntryTo(b.user) }
             ) { newStates ->
                 // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
                 if (!initializedList && savedInstanceState == null) {
@@ -218,7 +218,7 @@ class BookmarksTabFragment :
                     it,
                     ignoredUsers,
                     displayMutedMention,
-                    { user -> activityViewModel.repository.getStarsEntryTo(user) }
+                    { b -> activityViewModel.repository.getStarsEntryTo(b.user) }
                 ) { newStates ->
                     viewModel.displayStates = newStates
                 }

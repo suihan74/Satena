@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -17,6 +18,7 @@ import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
+import com.suihan74.satena.scenes.bookmarks2.dialog.StarDeletionDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.OnFinally
@@ -169,9 +171,11 @@ class BookmarksViewModel(
         activity: Activity,
         bookmark: Bookmark,
         fragmentManager: FragmentManager
-    ) {
+    ) = viewModelScope.launch(Dispatchers.Main) {
+
         val ignored = repository.checkIgnored(bookmark)
-        val starsEntry = null // TODO
+
+        val starsEntry = repository.getStarsEntry(bookmark)?.value
 
         BookmarkMenuDialog.createInstance(
             bookmark,
@@ -184,7 +188,7 @@ class BookmarksViewModel(
             dialog.setOnUnignoreUser { unIgnoreUser(it) }
             dialog.setOnReportBookmark { reportBookmark(it, fragmentManager) }
             dialog.setOnSetUserTag { openUserTagSelectionDialog(it, fragmentManager) }
-            dialog.setOnDeleteStar { /* TODO */ }
+            dialog.setOnDeleteStar { openDeleteStarDialog(it.first, it.second, fragmentManager) }
 
             dialog.showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
         }
@@ -368,6 +372,41 @@ class BookmarksViewModel(
             }
 
             true
+        }
+
+        dialog.showAllowingStateLoss(fragmentManager)
+    }
+
+    /** 自分がつけたスターを取り消すダイアログを開く */
+    private fun openDeleteStarDialog(
+        bookmark: Bookmark,
+        stars: List<Star>,
+        fragmentManager: FragmentManager
+    ) {
+        val entry = entry.value ?: return
+        val dialog = StarDeletionDialog.createInstance(stars)
+
+        dialog.setOnDeleteStars { selectedStars ->
+            viewModelScope.launch(Dispatchers.Main) {
+                val completed = selectedStars.all { star ->
+                    val result = runCatching {
+                        repository.deleteStar(entry, bookmark, star, updateCacheImmediately = false)
+                    }
+                    result.isSuccess
+                }
+
+                val context = SatenaApplication.instance
+                if (completed) {
+                    context.showToast(R.string.msg_delete_star_succeeded)
+                }
+                else {
+                    context.showToast(R.string.msg_delete_star_failed)
+                }
+
+                // スター表示の更新
+                repository.getStarsEntry(bookmark, forceUpdate = true)
+                repository.refreshBookmarks()
+            }
         }
 
         dialog.showAllowingStateLoss(fragmentManager)
