@@ -268,9 +268,9 @@ class BookmarksViewModel(
 
             try {
                 listOf(
-                    viewModelScope.async { repository.loadBookmarksEntryAsync() },
-                    viewModelScope.async { repository.loadBookmarksDigestAsync() },
-                    viewModelScope.async { repository.loadBookmarksRecentAsync() }
+                    viewModelScope.async { repository.loadBookmarksEntry() },
+                    viewModelScope.async { repository.loadBookmarksDigest() },
+                    viewModelScope.async { repository.loadBookmarksRecent() }
                 ).run {
                     awaitAll()
                     refreshLists()
@@ -338,7 +338,7 @@ class BookmarksViewModel(
 
         if (bookmarksEntry.value == null) {
             try {
-                repository.loadBookmarksEntryAsync()
+                repository.loadBookmarksEntry()
             }
             catch (e: Throwable) {
                 onError?.invoke(e)
@@ -367,7 +367,7 @@ class BookmarksViewModel(
     /** 新着ブクマリストの次のページを追加ロードする */
     suspend fun loadNextRecent(onError: OnError? = null) : List<Bookmark> {
         loadBasics(onError)
-        val recent = repository.loadNextBookmarksRecentAsync().await()
+        val recent = repository.loadNextBookmarksRecent()
         bookmarksRecent.postValue(repository.bookmarksRecent)
         bookmarksEntry.postValue(repository.bookmarksEntry)
 
@@ -381,7 +381,7 @@ class BookmarksViewModel(
         }
     ) {
         loadBasics()
-        repository.loadBookmarksDigestAsync()
+        repository.loadBookmarksDigest()
         bookmarksPopular.postValue(repository.bookmarksPopular)
     }
 
@@ -392,7 +392,7 @@ class BookmarksViewModel(
         }
     ) {
         loadBasics()
-        repository.loadBookmarksRecentAsync().await()
+        repository.loadBookmarksRecent()
         bookmarksRecent.postValue(repository.bookmarksRecent)
         bookmarksEntry.postValue(repository.bookmarksEntry)
     }
@@ -808,8 +808,7 @@ class BookmarksViewModel(
 
                     if (result.isSuccess) {
                         context.showToast(R.string.msg_remove_bookmark_succeeded)
-                        updateDigest()
-                        updateRecent()
+                        refreshLists()
                     }
                     else {
                         context.showToast(R.string.msg_remove_bookmark_failed)

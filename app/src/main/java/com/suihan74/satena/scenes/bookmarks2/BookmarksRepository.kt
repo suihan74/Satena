@@ -217,7 +217,7 @@ class BookmarksRepository(
     }
 
     /** ブックマークエントリを取得 */
-    suspend fun loadBookmarksEntryAsync() {
+    suspend fun loadBookmarksEntry() {
         val result = runCatching {
             val url = entry.value!!.url
             client.getBookmarksEntryAsync(url).await()
@@ -230,7 +230,7 @@ class BookmarksRepository(
     }
 
     /** 人気ブクマなどの概要情報を取得 */
-    suspend fun loadBookmarksDigestAsync() {
+    suspend fun loadBookmarksDigest() {
         val result = runCatching {
             val url = entry.value!!.url
             client.getDigestBookmarksAsync(url).await()
@@ -281,13 +281,13 @@ class BookmarksRepository(
     }
 
     /** 新着ブクマを取得 */
-    fun loadBookmarksRecentAsync(
+    suspend fun loadBookmarksRecent(
         additionalLoading: Boolean = false,
         leastCommentsNum: Int = 10
-    ) : Deferred<List<Bookmark>> = client.async(Dispatchers.Default) {
-        if (additionalLoading && recentBookmarksCursor == null) return@async emptyList()
+    ) : List<Bookmark> = withContext(Dispatchers.Default) {
+        if (additionalLoading && recentBookmarksCursor == null) return@withContext emptyList()
 
-        val url = entry.value?.url ?: return@async emptyList()
+        val url = entry.value?.url ?: return@withContext emptyList()
 
         val response =
             if (!additionalLoading) loadMostRecentBookmarksAsync(url).await()
@@ -348,11 +348,11 @@ class BookmarksRepository(
             allStarsLiveData.update()
         }
 
-        return@async page
+        return@withContext page
     }
 
     /** 新着ブクマリストを追加ロードする */
-    fun loadNextBookmarksRecentAsync() = loadBookmarksRecentAsync(true)
+    suspend fun loadNextBookmarksRecent() = loadBookmarksRecent(true)
 
     /** 非表示ユーザーのリストをロードする */
     fun loadIgnoredUsersAsync(
