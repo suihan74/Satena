@@ -48,7 +48,7 @@ interface StarRepositoryInterface {
         bookmark: Bookmark,
         color: StarColor,
         quote: String = "",
-        updateImmediately: Boolean = true
+        updateCacheImmediately: Boolean = true
     )
 
     /**
