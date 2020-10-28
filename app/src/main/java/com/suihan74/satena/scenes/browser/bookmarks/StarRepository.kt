@@ -7,6 +7,8 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /** 使おうとしたカラースターの残数が0のときの例外 */
@@ -33,11 +35,14 @@ interface StarRepositoryInterface {
     /** カラースターを使用できるかチェックする */
     suspend fun checkColorStarAvailability(color: StarColor) : Boolean
 
-    /** ブクマにスターを付ける */
-    @Throws(
-        ConnectionFailureException::class,
-        StarExhaustedException::class
-    )
+    // ------ //
+
+    /**
+     * ブクマにスターを付ける
+     *
+     * @throws ConnectionFailureException
+     * @throws StarExhaustedException
+     */
     suspend fun postStar(
         entry: Entry,
         bookmark: Bookmark,
@@ -45,15 +50,28 @@ interface StarRepositoryInterface {
         quote: String = ""
     )
 
-    /** スターを解除する */
-    @Throws(
-        ConnectionFailureException::class
-    )
+    /**
+     *  スターを解除する
+     *
+     * @throws ConnectionFailureException
+     */
     suspend fun deleteStar(
         entry: Entry,
         bookmark: Bookmark,
         star: Star
     )
+
+    /**
+     * 指定URLに付けられたスターのリストを取得する
+     *
+     * @throws ConnectionFailureException
+     */
+    suspend fun getStarsEntry(url: String, forceUpdate: Boolean = false) : LiveData<StarsEntry>
+
+    /**
+     * 渡された全URLに対するスター情報を取得し内部にキャッシュする
+     */
+    suspend fun loadStarsEntries(urls: List<String>)
 }
 
 // ------ //
@@ -75,13 +93,22 @@ class StarRepository(
         prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
 
     /**
+     * 取得したスター情報のキャッシュ
+     *
+     * key: URL, value: スター情報
+     */
+    private val starsEntriesCache = HashMap<String, MutableLiveData<StarsEntry>>()
+
+    private val starsEntriesLock = Mutex()
+
+    /**
      * 所持カラースター数を取得する
      */
-    override suspend fun loadUserColorStarsCount() = withContext(Dispatchers.Default) {
+    override suspend fun loadUserColorStarsCount() {
         signIn()
 
         if (!client.signedIn()) {
-            return@withContext
+            return
         }
 
         val result = runCatching {
@@ -105,24 +132,25 @@ class StarRepository(
 
     /**
      * スターを付ける
+     *
+     * @throws ConnectionFailureException
+     * @throws StarExhaustedException
      */
-    @Throws(
-        ConnectionFailureException::class,
-        StarExhaustedException::class
-    )
     override suspend fun postStar(
         entry: Entry,
         bookmark: Bookmark,
         color: StarColor,
         quote: String
-    ) = withContext(Dispatchers.Default) {
+    ) {
         if (!checkColorStarAvailability(color)) {
             throw StarExhaustedException(color)
         }
 
+        val url = bookmark.getBookmarkUrl(entry)
+
         val result = runCatching {
             client.postStarAsync(
-                url = bookmark.getBookmarkUrl(entry),
+                url = url,
                 color = color,
                 quote = quote
             ).await()
@@ -141,23 +169,28 @@ class StarRepository(
                 else -> prev
             }
         })
+
+        runCatching {
+            getStarsEntry(url, forceUpdate = true)
+        }
     }
 
     /**
      * スターを解除する
+     *
+     * @throws ConnectionFailureException
      */
-    @Throws(
-        ConnectionFailureException::class
-    )
     override suspend fun deleteStar(
         entry: Entry,
         bookmark: Bookmark,
         star: Star
-    ) = withContext(Dispatchers.Default) {
+    ) {
+        val url = bookmark.getBookmarkUrl(entry)
+
         val result = runCatching {
             signIn()
             client.deleteStarAsync(
-                url = bookmark.getBookmarkUrl(entry),
+                url = url,
                 star = star
             ).await()
         }
@@ -165,11 +198,75 @@ class StarRepository(
         if (result.isFailure) {
             throw ConnectionFailureException(cause = result.exceptionOrNull())
         }
+
+        runCatching {
+            getStarsEntry(url, forceUpdate = true)
+        }
     }
 
     private suspend fun signIn() {
         runCatching {
             accountLoader.signInHatenaAsync(reSignIn = false).await()
+        }
+    }
+
+    /**
+     * 指定URLに付けられたスターのリストを取得する
+     *
+     * @throws ConnectionFailureException
+     */
+    override suspend fun getStarsEntry(
+        url: String,
+        forceUpdate: Boolean
+    ) : LiveData<StarsEntry> {
+        if (!forceUpdate) {
+            starsEntriesLock.withLock {
+                starsEntriesCache[url]?.let {
+                    return it
+                }
+            }
+        }
+
+        val result = runCatching {
+            client.getStarsEntryAsync(url).await()
+        }
+
+        val entry = result.getOrElse {
+            throw ConnectionFailureException()
+        }
+
+        starsEntriesLock.withLock {
+            val liveData = withContext(Dispatchers.Main) {
+                starsEntriesCache[entry.url]?.also {
+                    it.value = entry
+                } ?: MutableLiveData(entry)
+            }
+
+            starsEntriesCache[entry.url] = liveData
+            return liveData
+        }
+    }
+
+    /**
+     * 渡された全URLに対するスター情報を取得し内部にキャッシュする
+     */
+    override suspend fun loadStarsEntries(urls: List<String>) {
+        val result = runCatching {
+            client.getStarsEntryAsync(urls).await()
+        }
+
+        val entries = result.getOrElse { return }
+
+        starsEntriesLock.withLock {
+            entries.forEach { entry ->
+                val liveData = withContext(Dispatchers.Main) {
+                    starsEntriesCache[entry.url]?.also {
+                        it.value = entry
+                    } ?: MutableLiveData(entry)
+                }
+
+                starsEntriesCache[entry.url] = liveData
+            }
         }
     }
 }
