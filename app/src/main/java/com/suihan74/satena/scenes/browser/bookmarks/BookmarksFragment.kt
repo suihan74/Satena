@@ -17,7 +17,6 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
-import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
@@ -99,35 +98,13 @@ class BookmarksFragment :
                 browserActivity.openUrl(url)
             }
 
-            adapter.setAddStarButtonBinder { button, bookmark ->
-                button.setOnClickListener {
-                    val popup = AddStarPopupMenu(requireContext()).also { popup ->
-                        popup.observeUserStars(
-                            viewLifecycleOwner,
-                            viewModel.userColorStarsCount
-                        )
-                        popup.setOnClickAddStarListener { color ->
-                            viewModel.postStar(
-                                requireContext(),
-                                bookmark,
-                                color,
-                                childFragmentManager
-                            )
-                            popup.dismiss()
-                        }
-                        popup.setOnClickPurchaseStarsListener {
-                            viewModel.openPurchaseColorStarsPage(requireActivity())
-                            popup.dismiss()
-                        }
-                    }
-                    popup.showAsDropDown(button)
-                }
-
-                button.setOnLongClickListener {
-                    // TODO: スターを付けている場合スターを削除する
-                    true
-                }
-            }
+            viewModel.setAddStarButtonBinder(
+                requireActivity(),
+                adapter,
+                viewLifecycleOwner,
+                childFragmentManager,
+                lifecycleScope
+            )
         }
 
         binding.recyclerView.let { recyclerView ->

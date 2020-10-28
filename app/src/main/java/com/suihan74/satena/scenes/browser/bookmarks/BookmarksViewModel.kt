@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.appcompat.widget.TooltipCompat
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
@@ -16,16 +18,20 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.dialogs.UserTagDialogFragment
+import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
+import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.StarDeletionDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.OnFinally
+import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -381,7 +387,7 @@ class BookmarksViewModel(
     }
 
     /** 自分がつけたスターを取り消すダイアログを開く */
-    private fun openDeleteStarDialog(
+    fun openDeleteStarDialog(
         bookmark: Bookmark,
         stars: List<Star>,
         fragmentManager: FragmentManager
@@ -413,5 +419,71 @@ class BookmarksViewModel(
         }
 
         dialog.showAllowingStateLoss(fragmentManager)
+    }
+
+    // ------ //
+
+    /** ブクマリスト項目の「スターをつける」ボタンの準備 */
+    fun setAddStarButtonBinder(
+        activity: Activity,
+        adapter: BookmarksAdapter,
+        lifecycleOwner: LifecycleOwner,
+        fragmentManager: FragmentManager,
+        coroutineScope: CoroutineScope = viewModelScope
+    ) {
+        adapter.setAddStarButtonBinder { button, bookmark ->
+            button.setOnClickListener {
+                val popup = AddStarPopupMenu(activity).also { popup ->
+                    popup.observeUserStars(
+                        lifecycleOwner,
+                        userColorStarsCount
+                    )
+                    popup.setOnClickAddStarListener { color ->
+                        postStar(
+                            activity,
+                            bookmark,
+                            color,
+                            fragmentManager
+                        )
+                        popup.dismiss()
+                    }
+                    popup.setOnClickPurchaseStarsListener {
+                        openPurchaseColorStarsPage(activity)
+                        popup.dismiss()
+                    }
+                }
+                popup.showAsDropDown(button)
+            }
+
+            val user = repository.userSignedIn
+            if (user == null) {
+                button.setVisibility(false)
+            }
+            else {
+                button.setVisibility(true)
+                TooltipCompat.setTooltipText(button, activity.getString(R.string.add_star_popup_desc))
+            }
+
+            coroutineScope.launch(Dispatchers.Main) {
+                val liveData = repository.getStarsEntry(bookmark)
+                val userStarred = liveData?.value?.allStars?.any { it.user == user } ?: false
+                if (user != null && userStarred) {
+                    button.setImageResource(R.drawable.ic_add_star_filled)
+
+                    button.setOnLongClickListener {
+                        coroutineScope.launch(Dispatchers.Main) {
+                            repository.getUserStars(bookmark, user)?.let { stars ->
+                                openDeleteStarDialog(bookmark, stars, fragmentManager)
+                            }
+                        }
+                        true
+                    }
+                }
+                else {
+                    button.setImageResource(R.drawable.ic_add_star)
+                    button.setOnLongClickListener(null)
+                }
+            }
+        }
     }
 }

@@ -573,4 +573,10 @@ class BookmarksRepository(
             loadStarsEntries(bookmarkUrls)
         }
     }
+
+    /** 自分が対象ブクマにスターをつけているか確認する */
+    suspend fun getUserStars(bookmark: Bookmark, user: String) : List<Star>? {
+        val starsEntry = getStarsEntry(bookmark, forceUpdate = false)?.value
+        return starsEntry?.allStars?.filter { it.user == user }
+    }
 }
