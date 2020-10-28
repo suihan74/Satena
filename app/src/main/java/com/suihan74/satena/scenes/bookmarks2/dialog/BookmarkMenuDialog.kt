@@ -100,6 +100,10 @@ class BookmarkMenuDialog : DialogFragment() {
         viewModel.onDeleteStar = listener
     }
 
+    fun setOnDeleteBookmark(listener: Listener<Bookmark>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onDeleteBookmark = listener
+    }
+
     // ------ //
 
     class DialogViewModel(
@@ -137,6 +141,9 @@ class BookmarkMenuDialog : DialogFragment() {
         /** スターを取り消す */
         var onDeleteStar: Listener<Pair<Bookmark, List<Star>>>? = null
 
+        /** (自分のブクマを)削除する */
+        var onDeleteBookmark: Listener<Bookmark>? = null
+
         // ------ //
 
         /** メニュー項目 */
@@ -160,6 +167,10 @@ class BookmarkMenuDialog : DialogFragment() {
 
                 if (userStars.isNotEmpty()) {
                     add(R.string.bookmark_delete_star to { onDeleteStar?.invoke(bookmark to userStars) })
+                }
+
+                if (userSignedIn == bookmark.user) {
+                    add(R.string.bookmark_delete to { onDeleteBookmark?.invoke(bookmark) })
                 }
             }
         }

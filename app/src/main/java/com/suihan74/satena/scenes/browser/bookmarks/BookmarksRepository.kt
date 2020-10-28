@@ -18,6 +18,7 @@ import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SingleUpdateMutableLiveData
+import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.updateFirstOrPlusAhead
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -574,9 +575,59 @@ class BookmarksRepository(
         }
     }
 
-    /** 自分が対象ブクマにスターをつけているか確認する */
+    /**
+     * 自分が対象ブクマにスターをつけているか確認する
+     */
     suspend fun getUserStars(bookmark: Bookmark, user: String) : List<Star>? {
         val starsEntry = getStarsEntry(bookmark, forceUpdate = false)?.value
         return starsEntry?.allStars?.filter { it.user == user }
+    }
+
+    // ------ //
+
+    /**
+     * ブクマを削除する
+     *
+     * @throws TaskFailureException
+     */
+    suspend fun deleteBookmark(bookmark: Bookmark) = withContext(Dispatchers.Default) {
+        val url = entry.value?.url ?: throw TaskFailureException("invalid entry")
+        val user = bookmark.user
+
+        if (user != userSignedIn) {
+            throw TaskFailureException("it's not the signed-in user's bookmark")
+        }
+
+        val result = runCatching {
+            client.deleteBookmarkAsync(url).await()
+        }
+
+        if (result.isFailure) {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+
+        // 表示を更新する
+
+        entry.postValue(
+            entry.value?.copy(bookmarkedData = null)
+        )
+
+        val bEntry = bookmarksEntry.value?.let { e ->
+            e.copy(
+                bookmarks = e.bookmarks.filterNot { it.user == user }
+            )
+        }
+        bookmarksEntry.postValue(bEntry)
+
+        bookmarksDigestCache = BookmarksDigest(
+            bookmarksDigestCache?.referredBlogEntries,
+            bookmarksDigestCache?.scoredBookmarks?.filterNot { it.user == user }.orEmpty(),
+            bookmarksDigestCache?.favoriteBookmarks?.filterNot { it.user == user }.orEmpty()
+        )
+
+        bookmarksRecentCache =
+            bookmarksRecentCache.filterNot { it.user == user }
+
+        refreshBookmarks()
     }
 }

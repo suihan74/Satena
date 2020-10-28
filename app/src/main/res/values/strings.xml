@@ -119,12 +119,14 @@
 
     <!-- ブックマークに対する操作メニュー -->
     <string name="bookmark_show_user_entries">最近のブックマークを見る</string>
-    <string name="bookmark_remove">ブックマークを削除</string>
+    <string name="bookmark_delete">ブックマークを削除</string>
     <string name="bookmark_ignore">ユーザーを非表示</string>
     <string name="bookmark_unignore">ユーザー非表示を解除</string>
     <string name="bookmark_report">通報する</string>
     <string name="bookmark_user_tags">ユーザータグ</string>
     <string name="bookmark_delete_star">スターを取り消す</string>
+
+    <string name="msg_confirm_bookmark_deletion">ブックマークを削除します。よろしいですか？</string>
 
     <!-- 「あとで読む」エントリを「読んだ」したときの挙動 -->
     <string name="entry_read_action_silent">無言ブクマ</string>

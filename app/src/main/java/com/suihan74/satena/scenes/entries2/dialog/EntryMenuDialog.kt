@@ -355,7 +355,7 @@ class EntryMenuDialog : DialogFragment() {
         ),
 
         REMOVE_BOOKMARK(7,
-            R.string.bookmark_remove,
+            R.string.bookmark_delete,
             { entry, _ -> entry.bookmarkedData != null }
         ),
     }

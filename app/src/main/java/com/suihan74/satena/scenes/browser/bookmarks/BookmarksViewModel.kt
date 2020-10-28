@@ -186,21 +186,28 @@ class BookmarksViewModel(
 
         val starsEntry = repository.getStarsEntry(bookmark)?.value
 
-        BookmarkMenuDialog.createInstance(
+        val dialog = BookmarkMenuDialog.createInstance(
             bookmark,
             starsEntry,
             ignored,
             repository.userSignedIn
-        ).also { dialog ->
-            dialog.setOnShowEntries { showEntries(activity, it) }
-            dialog.setOnIgnoreUser { ignoreUser(it) }
-            dialog.setOnUnignoreUser { unIgnoreUser(it) }
-            dialog.setOnReportBookmark { reportBookmark(it, fragmentManager) }
-            dialog.setOnSetUserTag { openUserTagSelectionDialog(it, fragmentManager) }
-            dialog.setOnDeleteStar { openDeleteStarDialog(it.first, it.second, fragmentManager) }
+        )
 
-            dialog.showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
-        }
+        dialog.setOnShowEntries { showEntries(activity, it) }
+
+        dialog.setOnIgnoreUser { ignoreUser(it) }
+
+        dialog.setOnUnignoreUser { unIgnoreUser(it) }
+
+        dialog.setOnReportBookmark { reportBookmark(it, fragmentManager) }
+
+        dialog.setOnSetUserTag { openUserTagSelectionDialog(it, fragmentManager) }
+
+        dialog.setOnDeleteStar { openDeleteStarDialog(it.first, it.second, fragmentManager) }
+
+        dialog.setOnDeleteBookmark { openConfirmBookmarkDeletionDialog(activity, it, fragmentManager) }
+
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
     }
 
     /** ユーザーがブクマ済みのエントリ一覧画面を開く */
@@ -419,6 +426,34 @@ class BookmarksViewModel(
         }
 
         dialog.showAllowingStateLoss(fragmentManager)
+    }
+
+    /** 自分のブクマを削除するか確認するダイアログを開く */
+    private fun openConfirmBookmarkDeletionDialog(
+        context: Context,
+        bookmark: Bookmark,
+        fragmentManager: FragmentManager
+    ) {
+        AlertDialogFragment2.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(R.string.msg_confirm_bookmark_deletion)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                viewModelScope.launch {
+                    val result = runCatching {
+                        repository.deleteBookmark(bookmark)
+                    }
+
+                    if (result.isSuccess) {
+                        context.showToast(R.string.msg_remove_bookmark_succeeded)
+                    }
+                    else {
+                        context.showToast(R.string.msg_remove_bookmark_failed)
+                    }
+                }
+            }
+            .create()
+            .showAllowingStateLoss(fragmentManager)
     }
 
     // ------ //
