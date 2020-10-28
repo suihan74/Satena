@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.fragment.app.FragmentManager
@@ -10,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
@@ -656,6 +658,7 @@ class BookmarksViewModel(
             setOnReportBookmark { onReportBookmark(it) }
             setOnSetUserTag { onSetUserTag(it) }
             setOnDeleteStar { onDeleteStar(starTarget) }
+            setOnDeleteBookmark { openConfirmBookmarkDeletionDialog(activity, fragmentManager) }
 
             showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
         }
@@ -786,6 +789,35 @@ class BookmarksViewModel(
                 Log.e("DeleteStar", Log.getStackTraceString(e))
             }
         )
+    }
+
+    /** 自分のブクマを削除するか確認するダイアログを開く */
+    private fun openConfirmBookmarkDeletionDialog(
+        context: Context,
+        fragmentManager: FragmentManager
+    ) {
+        AlertDialogFragment2.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(R.string.msg_confirm_bookmark_deletion)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                viewModelScope.launch {
+                    val result = runCatching {
+                        repository.deleteUserBookmark()
+                    }
+
+                    if (result.isSuccess) {
+                        context.showToast(R.string.msg_remove_bookmark_succeeded)
+                        updateDigest()
+                        updateRecent()
+                    }
+                    else {
+                        context.showToast(R.string.msg_remove_bookmark_failed)
+                    }
+                }
+            }
+            .create()
+            .showAllowingStateLoss(fragmentManager)
     }
 
     // ------ //

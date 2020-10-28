@@ -12,6 +12,7 @@ import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
+import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -466,36 +467,56 @@ class BookmarksRepository(
         }
 
     /**
-     * ユーザーのブクマを更新する
+     * ユーザーのブクマを削除する
      */
-    suspend fun updateUserBookmark(bookmarkResult: BookmarkResult) = withContext(Dispatchers.Default) {
-        val bookmark = Bookmark.create(bookmarkResult)
+    suspend fun deleteUserBookmark() {
+        val result = runCatching {
+            val entryUrl = entry.value?.url ?: throw TaskFailureException()
+            client.deleteBookmarkAsync(entryUrl).await()
+        }
+
+        if (result.isFailure) {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+
+        updateUserBookmark(null)
+    }
+
+    /**
+     * ユーザーのブクマを更新する
+     *
+     * @param bookmarkResult 削除する際はnullをwタス
+     */
+    suspend fun updateUserBookmark(bookmarkResult: BookmarkResult?) = withContext(Dispatchers.Default) {
+        val bookmark = bookmarkResult?.let{ Bookmark.create(it) }
+        val user = bookmark?.user ?: userSignedIn ?: return@withContext
+
         entry.value?.let { entry ->
             loadEntry(entry.copy(bookmarkedData = bookmarkResult))
         }
 
         if (bookmarksEntry != null) {
             val bEntry = bookmarksEntry!!
-            bookmarksEntry = bEntry.copy(bookmarks = bEntry.bookmarks.map {
-                if (it.user == bookmark.user) bookmark
+            bookmarksEntry = bEntry.copy(bookmarks = bEntry.bookmarks.mapNotNull {
+                if (it.user == user) bookmark
                 else it
             })
         }
 
-        bookmarksRecent = bookmarksRecent.map {
-            if (it.user == bookmark.user) bookmark
+        bookmarksRecent = bookmarksRecent.mapNotNull {
+            if (it.user == user) bookmark
             else it
         }
 
         if (bookmarksDigest != null) {
             val bDigest = bookmarksDigest!!
-            bookmarksDigest = bDigest.copy(scoredBookmarks = bDigest.scoredBookmarks.map {
-                if (it.user == bookmark.user) it.copy(comment = bookmark.comment, tags = bookmark.tags, timestamp = bookmark.timestamp)
+            bookmarksDigest = bDigest.copy(scoredBookmarks = bDigest.scoredBookmarks.mapNotNull {
+                if (it.user == user) bookmark?.let { b -> it.copy(comment = b.comment, tags = b.tags, timestamp = b.timestamp) }
                 else it
             })
         }
-        bookmarksPopular = bookmarksPopular.map {
-            if (it.user == bookmark.user) bookmark
+        bookmarksPopular = bookmarksPopular.mapNotNull {
+            if (it.user == user) bookmark
             else it
         }
     }
