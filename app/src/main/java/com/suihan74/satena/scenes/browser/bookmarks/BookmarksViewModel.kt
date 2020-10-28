@@ -143,6 +143,9 @@ class BookmarksViewModel(
                 R.string.msg_post_star_succeeded,
                 bookmark.user
             )
+
+            // 表示を更新する
+            repository.refreshBookmarks()
         }
         else {
             Log.w("postStar", Log.getStackTraceString(result.exceptionOrNull()))
