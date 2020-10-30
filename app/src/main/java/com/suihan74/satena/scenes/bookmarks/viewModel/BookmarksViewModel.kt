@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.browser.bookmarks
+package com.suihan74.satena.scenes.bookmarks.viewModel
 
 import android.app.Activity
 import android.content.Context
@@ -18,6 +18,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.dialogs.UserTagDialogFragment
+import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.bookmarks2.dialog.BookmarkMenuDialog
@@ -62,6 +63,11 @@ class BookmarksViewModel(
     /** ユーザーの所持カラースター数 */
     val userColorStarsCount by lazy {
         repository.userColorStarsCount
+    }
+
+    /** フィルタテキスト */
+    val filteringText by lazy {
+        repository.filteringText
     }
 
     // ------ //

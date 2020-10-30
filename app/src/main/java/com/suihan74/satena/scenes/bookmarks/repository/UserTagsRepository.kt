@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.browser.bookmarks
+package com.suihan74.satena.scenes.bookmarks.repository
 
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags

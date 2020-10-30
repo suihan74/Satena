@@ -6,10 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks.repository.StarExhaustedException
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
-import com.suihan74.satena.scenes.browser.bookmarks.StarExhaustedException
 import com.suihan74.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

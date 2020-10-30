@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.browser.bookmarks
+package com.suihan74.satena.scenes.bookmarks.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

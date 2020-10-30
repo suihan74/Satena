@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.browser.bookmarks
+package com.suihan74.satena.scenes.bookmarks.repository
 
 import android.util.Log
 import androidx.annotation.MainThread
@@ -148,7 +148,7 @@ class BookmarksRepository(
      *
      * 空白区切りで複数設定、部分一致
      */
-    val filterText by lazy {
+    val filteringText by lazy {
         MutableLiveData<String?>() // null or blank で無効化
     }
 
@@ -302,7 +302,7 @@ class BookmarksRepository(
 
     /** キーワードで抽出する */
     private fun wordFilter(src: List<BookmarkWithStarCount>) : List<BookmarkWithStarCount> {
-        val keywordsRaw = filterText.value
+        val keywordsRaw = filteringText.value
         if (keywordsRaw.isNullOrBlank()) return src
 
         val keywords = keywordsRaw.split(Regex("""\s+"""))

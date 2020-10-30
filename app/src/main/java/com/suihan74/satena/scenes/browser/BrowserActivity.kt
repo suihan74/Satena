@@ -18,7 +18,7 @@ import com.suihan74.satena.databinding.ActivityBrowserBinding
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
+import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.post.BookmarkPostRepository
 import com.suihan74.satena.scenes.post.BookmarkPostViewModel

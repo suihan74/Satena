@@ -4,7 +4,7 @@
     <data>
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.browser.bookmarks.BookmarksViewModel" />
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
