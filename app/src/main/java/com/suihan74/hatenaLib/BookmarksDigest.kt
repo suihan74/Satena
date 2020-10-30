@@ -49,10 +49,18 @@ data class BookmarkWithStarCount (
     @delegate:Transient
     val user: String by lazy { mUser.name }
 
-
     @delegate:Transient
     val userIconUrl: String by lazy { mUser.profileImageUrl }
 
+    /** 内容を文字列化する */
+    @delegate:Transient
+    val string: String by lazy {
+        // 改行は使用されていないはずなので、区切り文字として使う
+        val dateFormat = DateTimeFormatter.ofPattern("uuuu-MM-dd hh:mm:ss")
+        user + "\n" + comment + "\n" + tags.joinToString("\n", postfix = "\n") + timestamp.format(dateFormat)
+    }
+
+    // ------ //
 
     fun getBookmarkUrl(entry: Entry) : String {
         val dateFormat = DateTimeFormatter.ofPattern("yyyMMdd")

@@ -143,6 +143,15 @@ class BookmarksRepository(
         prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS)
     }
 
+    /**
+     * 与えられた文字列を含むブクマを抽出する
+     *
+     * 空白区切りで複数設定、部分一致
+     */
+    val filterText by lazy {
+        MutableLiveData<String?>() // null or blank で無効化
+    }
+
     // ------ //
 
     /**
@@ -285,28 +294,42 @@ class BookmarksRepository(
     }
 
     /** 非表示対象を除外する */
-    @WorkerThread
     private fun filterIgnored(src: List<BookmarkWithStarCount>) : List<Bookmark> {
         return src
             .filterNot { b -> checkIgnored(b) }
             .map { Bookmark.create(it) }
     }
 
-    /** 各種リストに変更を通知する */
+    /** キーワードで抽出する */
+    private fun wordFilter(src: List<BookmarkWithStarCount>) : List<BookmarkWithStarCount> {
+        val keywordsRaw = filterText.value
+        if (keywordsRaw.isNullOrBlank()) return src
+
+        val keywords = keywordsRaw.split(Regex("""\s+"""))
+        val keywordsRegex = Regex(keywords.joinToString(separator = "|") { Regex.escape(it) })
+
+        return src.filter { b ->
+            keywordsRegex.containsMatchIn(b.string)
+        }
+    }
+
+    /** 新着ブクマリストに依存する各種リストに変更を通知する */
     @WorkerThread
     private fun updateRecentBookmarksLiveData(rawList: List<BookmarkWithStarCount>) {
+        val list = wordFilter(rawList)
 
-        val items = filterIgnored(rawList.filter { b ->
+        // 新着
+        val items = filterIgnored(list.filter { b ->
             b.comment.isNotBlank()
         })
         recentBookmarks.postValue(items)
 
+        // すべて
         allBookmarks.postValue(
-            if (showIgnoredUsersInAllBookmarks) {
-                rawList.map { Bookmark.create(it) }
-            }
-            else filterIgnored(rawList)
+            if (showIgnoredUsersInAllBookmarks) list.map { Bookmark.create(it) }
+            else filterIgnored(list)
         )
+
         // TODO: カスタムタブ
         customBookmarks.postValue(
             emptyList()
@@ -317,7 +340,11 @@ class BookmarksRepository(
     suspend fun refreshBookmarks() = withContext(Dispatchers.Default) {
         // 人気ブクマリストを再生成
         popularBookmarks.postValue(
-            filterIgnored(bookmarksDigestCache?.scoredBookmarks ?: emptyList())
+            filterIgnored(
+                wordFilter(
+                    bookmarksDigestCache?.scoredBookmarks.orEmpty()
+                )
+            )
         )
 
         // 新着ブクマリストを再生成
