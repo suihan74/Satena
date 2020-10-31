@@ -1,8 +1,15 @@
 package com.suihan74.satena.scenes.bookmarks.viewModel
 
+import android.content.Context
+import android.view.View
+import androidx.appcompat.widget.Toolbar
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.viewpager.widget.ViewPager
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
@@ -56,10 +63,18 @@ class ContentsViewModel(
         prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING)
     }
 
+    /** スクロールで画面下部ボタンを隠す */
+    private val hideButtonsByScrolling by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
+    }
+
     // ------ //
 
     /** 現在アクティブなタブFragmentを取得する処理 */
     private var currentTabFragmentSelector : (()->BookmarksTabFragment?)? = null
+
+    /** FAB部分を強制的に表示する処理 */
+    private var showFloatingActionButtons : (()->Unit)? = null
 
     /** タブ制御を初期化 */
     fun initializeTabPager(
@@ -79,7 +94,7 @@ class ContentsViewModel(
                     tab?.position?.let {
                         selectedTab.value = BookmarksTabType.fromOrdinal(it)
                     }
-                    //showFloatingActionButtons()
+                    showFloatingActionButtons?.invoke()
                 }
 
                 override fun onTabUnselected(p0: TabLayout.Tab?) {}
@@ -90,8 +105,7 @@ class ContentsViewModel(
                     adapter.instantiateItem(viewPager, idx).alsoAs<ScrollableToTop> { fragment ->
                         fragment.scrollToTop()
                     }
-
-                    //showFloatingActionButtons()
+                    showFloatingActionButtons?.invoke()
                 }
             })
 
@@ -112,6 +126,35 @@ class ContentsViewModel(
         currentTabFragmentSelector = {
             val idx = tabLayout.selectedTabPosition
             adapter.instantiateItem(viewPager, idx) as? BookmarksTabFragment
+        }
+    }
+
+    /** ツールバーやボタンをスクロールで隠す設定を反映する */
+    fun setScrollingBehavior(context: Context, toolbar: Toolbar, buttonsArea: View) {
+        // スクロールでツールバーを隠す
+        toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
+            scrollFlags =
+                if (hideToolbarByScrolling)
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
+                else
+                    0
+        }
+
+        // スクロールでボタンを隠す
+        buttonsArea.updateLayoutParams<CoordinatorLayout.LayoutParams> {
+            behavior =
+                if (hideButtonsByScrolling)
+                    HideBottomViewOnScrollBehavior<View>(context, null)
+                else
+                    null
+        }
+
+        showFloatingActionButtons = {
+            buttonsArea.layoutParams.alsoAs<CoordinatorLayout.LayoutParams> { layoutParams ->
+                layoutParams.behavior.alsoAs<HideBottomViewOnScrollBehavior<View>> { behavior ->
+                    behavior.slideUp(buttonsArea)
+                }
+            }
         }
     }
 

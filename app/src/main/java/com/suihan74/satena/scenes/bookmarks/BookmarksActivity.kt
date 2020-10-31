@@ -98,6 +98,13 @@ class BookmarksActivity :
             binding.tabLayout
         )
 
+        // スクロールにあわせてビューを隠す設定を反映させる
+        contentsViewModel.setScrollingBehavior(
+            this,
+            binding.toolbar,
+            binding.buttonsLayout
+        )
+
         // 下部ボタンエリアを生成
         supportFragmentManager.beginTransaction()
             .replace(R.id.buttons_layout, FloatingActionButtonsFragment.createInstance())

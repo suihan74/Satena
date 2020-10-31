@@ -541,6 +541,7 @@ class BookmarksRepository(
         if (additionalLoading || bookmarksRecentCache.isEmpty()) {
             recentCursor = response.cursor
         }
+        // キャッシュに追加
         // 重複がある場合は新しい方に更新する
         bookmarksRecentCache = bookmarksRecentCache
             .filterNot { existed ->
@@ -561,6 +562,14 @@ class BookmarksRepository(
 
         // スター情報を取得する
         loadStarsEntriesForBookmarksWithStarCount(response.bookmarks)
+
+        // BookmarksEntryのブクマリストにも追加しておく
+        bookmarksEntry.value?.let { bEntry ->
+            val diffs = response.bookmarks
+                .filter { b -> bEntry.bookmarks.none { it.user == b.user } }
+                .map { Bookmark.create(it) }
+            bookmarksEntry.postValue(bEntry.copy(bookmarks = bEntry.bookmarks.plus(diffs)))
+        }
     }
 
     /**

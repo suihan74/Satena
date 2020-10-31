@@ -8,8 +8,11 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentBookmarksFabs3Binding
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
@@ -18,6 +21,7 @@ import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
+import kotlinx.coroutines.launch
 
 /** 画面下部FAB部分のFragment */
 class FloatingActionButtonsFragment : Fragment() {
@@ -41,8 +45,8 @@ class FloatingActionButtonsFragment : Fragment() {
     private var bookmarkButtonClicked = false
 
     /** 戻るボタンの監視用コールバック */
-    private lateinit var onBackPressedCallbackForKeyword: OnBackPressedCallback
-    private lateinit var onBackPressedCallbackForScroll: OnBackPressedCallback
+    private var onBackPressedCallbackForKeyword : OnBackPressedCallback? = null
+    private var onBackPressedCallbackForScroll : OnBackPressedCallback? = null
 
     private val DIALOG_CUSTOM_TAB_SETTINGS by lazy { "DIALOG_CUSTOM_TAB_SETTINGS" }
 
@@ -53,54 +57,54 @@ class FloatingActionButtonsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_bookmarks_fabs, container, false)
+        val binding = DataBindingUtil.inflate<FragmentBookmarksFabs3Binding>(
+            inflater,
+            R.layout.fragment_bookmarks_fabs3,
+            container,
+            false
+        ).also {
+            it.bookmarksViewModel = bookmarksViewModel
+            it.contentsViewModel = contentsViewModel
+            it.lifecycleOwner = viewLifecycleOwner
+        }
 
         // FAB初期化
-        initFABs(view)
+        initFABs(binding.root)
 
-        // 「カスタム」タブでは設定ボタンを表示する
-        contentsViewModel.selectedTab.observe(viewLifecycleOwner) {
-            if (it == BookmarksTabType.CUSTOM) {
-                view.custom_settings_button.show()
-            }
-            else {
-                view.custom_settings_button.hide()
+        bookmarksViewModel.filteringText.observe(viewLifecycleOwner) {
+            lifecycleScope.launch {
+                bookmarksViewModel.repository.refreshBookmarks()
             }
         }
 
-        bookmarksViewModel.signedIn.observe(viewLifecycleOwner) {
-            if (it) {
-                view.bookmark_button.show()
+        // 戻るボタンを監視
+        onBackPressedCallbackForKeyword = requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            false
+        ) {
+            if (binding.bookmarksSearchText.visibility == View.VISIBLE) {
+                binding.bookmarksSearchText.visibility = View.GONE
+                bookmarksViewModel.filteringText.value = null
             }
-            else {
-                view.bookmark_button.hide()
-            }
+            isEnabled = false
         }
 
-        return view
+        onBackPressedCallbackForScroll = requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            false
+        ) {
+            binding.bookmarksScrollTopButton.hide()
+            binding.bookmarksScrollBottomButton.hide()
+            binding.bookmarksOpenMyBookmarkButton.hide()
+            isEnabled = false
+        }
+
+        return binding.root
     }
 
     override fun onResume() {
         super.onResume()
         bookmarkButtonClicked = false
-        // 戻るボタンを監視
-        onBackPressedCallbackForKeyword = requireActivity().onBackPressedDispatcher.addCallback(this, false) {
-            requireView().let { view ->
-                if (view.bookmarks_search_text.visibility == View.VISIBLE) {
-                    view.bookmarks_search_text.visibility = View.GONE
-                    bookmarksViewModel.filteringText.value = null
-                }
-            }
-            isEnabled = false
-        }
-        onBackPressedCallbackForScroll = requireActivity().onBackPressedDispatcher.addCallback(this, false) {
-            requireView().let { view ->
-                view.bookmarks_scroll_top_button.hide()
-                view.bookmarks_scroll_bottom_button.hide()
-                view.bookmarks_open_my_bookmark_button.hide()
-            }
-            isEnabled = false
-        }
     }
 
     /** 画面下部メニューを初期化 */
@@ -124,7 +128,7 @@ class FloatingActionButtonsFragment : Fragment() {
             }
 
             scrollFABs.forEach { fab -> fab.hide() }
-            onBackPressedCallbackForScroll.isEnabled = false
+            onBackPressedCallbackForScroll?.isEnabled = false
         }
 
         view.bookmarks_scroll_bottom_button.setOnClickListener {
@@ -139,7 +143,6 @@ class FloatingActionButtonsFragment : Fragment() {
         view.bookmarks_search_text.setVisibility(!bookmarksViewModel.filteringText.value.isNullOrBlank())
 
         // ブクマ投稿ボタン
-        view.bookmark_button.hide()
         view.bookmark_button.setOnClickListener {
             if (bookmarkButtonClicked) return@setOnClickListener
             bookmarkButtonClicked = true
@@ -164,7 +167,7 @@ class FloatingActionButtonsFragment : Fragment() {
                         view.bookmarks_open_my_bookmark_button.show()
                     }
                 }
-                onBackPressedCallbackForScroll.isEnabled = !it
+                onBackPressedCallbackForScroll?.isEnabled = !it
             }
         }
 
@@ -177,13 +180,12 @@ class FloatingActionButtonsFragment : Fragment() {
                 val activity = requireActivity()
                 if (isOn) {
                     activity.showSoftInputMethod(view.bookmarks_search_text)
-                    bookmarksViewModel.filteringText.value = view.bookmarks_search_text.text.toString()
                 }
                 else {
                     activity.hideSoftInputMethod()
                     bookmarksViewModel.filteringText.value = null
                 }
-                onBackPressedCallbackForKeyword.isEnabled = isOn
+                onBackPressedCallbackForKeyword?.isEnabled = isOn
             }
         }
 
