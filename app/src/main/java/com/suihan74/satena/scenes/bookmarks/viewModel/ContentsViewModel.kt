@@ -5,6 +5,7 @@ import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.viewpager.widget.ViewPager
@@ -14,7 +15,10 @@ import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks.*
+import com.suihan74.satena.scenes.bookmarks.BookmarkDetailOpenable
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.BookmarksTabAdapter
+import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
 import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
@@ -68,10 +72,15 @@ class ContentsViewModel(
         prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
     }
 
+    /** ドロワーの配置 */
+    val drawerGravity by lazy {
+        prefs.getInt(PreferenceKey.DRAWER_GRAVITY)
+    }
+
     // ------ //
 
     /** 現在アクティブなタブFragmentを取得する処理 */
-    private var currentTabFragmentSelector : (()->BookmarksTabFragment?)? = null
+    private var currentTabFragmentSelector : (()->Fragment?)? = null
 
     /** FAB部分を強制的に表示する処理 */
     private var showFloatingActionButtons : (()->Unit)? = null
@@ -125,7 +134,7 @@ class ContentsViewModel(
 
         currentTabFragmentSelector = {
             val idx = tabLayout.selectedTabPosition
-            adapter.instantiateItem(viewPager, idx) as? BookmarksTabFragment
+            adapter.instantiateItem(viewPager, idx) as? Fragment
         }
     }
 

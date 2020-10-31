@@ -2,21 +2,25 @@ package com.suihan74.satena.scenes.bookmarks
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityBookmarksBinding
+import com.suihan74.satena.scenes.bookmarks.information.EntryInformationFragment
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import kotlinx.android.synthetic.main.activity_bookmarks.*
 import kotlinx.coroutines.launch
 
 /**
@@ -24,9 +28,9 @@ import kotlinx.coroutines.launch
  */
 class BookmarksActivity :
     AppCompatActivity(),
-    BookmarkDetailOpenable
+    BookmarkDetailOpenable,
+    DrawerOwner
 {
-
     companion object {
         // Intent EXTRA keys
 
@@ -109,6 +113,26 @@ class BookmarksActivity :
         supportFragmentManager.beginTransaction()
             .replace(R.id.buttons_layout, FloatingActionButtonsFragment.createInstance())
             .commitAllowingStateLoss()
+
+        // ドロワエリアを生成
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.entry_information_layout, EntryInformationFragment.createInstance())
+            .commitAllowingStateLoss()
+
+        drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerOpened(drawerView: View) {}
+            override fun onDrawerClosed(drawerView: View) {}
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerStateChanged(newState: Int) {
+                // ドロワ開閉でIMEを閉じる
+                hideSoftInputMethod(main_area)
+            }
+        })
+
+        // ドロワの位置を設定
+        entry_information_layout.updateLayoutParams<DrawerLayout.LayoutParams> {
+            gravity = contentsViewModel.drawerGravity
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -116,7 +140,34 @@ class BookmarksActivity :
         bookmarksViewModel.onActivityResult(requestCode, resultCode, data)
     }
 
+    /** 戻るボタンの制御 */
+    override fun onBackPressed() {
+        if (onBackPressedDispatcher.hasEnabledCallbacks()) {
+            onBackPressedDispatcher.onBackPressed()
+        }
+        else if (drawer_layout.isDrawerOpen(entry_information_layout)) {
+            drawer_layout.closeDrawer(entry_information_layout)
+        }
+        else {
+            super.onBackPressed()
+        }
+    }
+
     // ------ //
+    // implement DrawerOwner
+
+    @MainThread
+    override fun openDrawer() {
+        drawer_layout.openDrawer(entry_information_layout)
+    }
+
+    @MainThread
+    override fun closeDrawer() {
+        drawer_layout.closeDrawer(entry_information_layout)
+    }
+
+    // ------ //
+    // implement BookmarkDetailOpenable
 
     override val fragmentManager: FragmentManager
         get() = supportFragmentManager
