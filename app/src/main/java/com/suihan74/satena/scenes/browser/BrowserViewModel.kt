@@ -699,7 +699,7 @@ class BrowserViewModel(
         if (URLUtil.isNetworkUrl(url)) {
             loadingBookmarksEntry.value = true
             loadBookmarksEntryJob = viewModelScope.launch {
-                bookmarksRepo.launchLoadingUrl(url) {
+                bookmarksRepo.loadBookmarks(url) {
                     onFinally?.invoke()
                     loadBookmarksEntryJob = null
                     loadingBookmarksEntry.value = false

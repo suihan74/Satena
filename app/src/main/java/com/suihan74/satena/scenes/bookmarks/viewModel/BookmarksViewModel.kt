@@ -5,15 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.annotation.MainThread
 import androidx.appcompat.widget.TooltipCompat
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.hatenaLib.Entry
-import com.suihan74.hatenaLib.Star
-import com.suihan74.hatenaLib.StarColor
+import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
@@ -26,10 +25,13 @@ import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.StarDeletionDialog
 import com.suihan74.satena.scenes.bookmarks2.dialog.UserTagSelectionDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.post.BookmarkEditData
+import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
+import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
@@ -41,34 +43,69 @@ class BookmarksViewModel(
 ) : ViewModel() {
 
     /** サインイン状態 */
-    val signedIn by lazy {
-        repository.signedIn
-    }
+    val signedIn
+        get() = repository.signedIn
 
     /** 表示中のページのEntry */
-    val entry by lazy {
-        repository.entry
-    }
+    val entry
+        get() = repository.entry
 
     /** 表示中のページのBookmarksEntry */
     val bookmarksEntry by lazy {
-        repository.bookmarksEntry
+        repository.bookmarksEntry.also { bEntry ->
+            bEntry.observeForever {
+                val bookmarks = it?.bookmarks ?: return@observeForever
+                val users = bookmarks.size
+                val comments = bookmarks.count { b -> b.comment.isNotBlank() }
+                subtitle.value = buildString {
+                    append(users, " user")
+                    if (users != 1) append("s")
+
+                    append(" (", comments, " comment")
+                    if (comments != 1) append("s")
+                    append(")")
+                }
+            }
+        }
     }
 
-    /** 表示するブクマリスト */
-    val bookmarks by lazy {
-        repository.recentBookmarks
+    /** アクションバーに表示するサブタイトル */
+    val subtitle by lazy {
+        MutableLiveData<String>()
     }
+
+    /** 人気ブクマリスト */
+    val popularBookmarks
+        get() = repository.popularBookmarks
+
+    /** 新着ブクマリスト */
+    val recentBookmarks
+        get() = repository.recentBookmarks
+
+    /** 無言や非表示を含むすべての新着ブクマリスト */
+    val allBookmarks
+        get() = repository.allBookmarks
+
+    /** ユーザータグによる抽出を行う新着ブクマリスト */
+    val customBookmarks
+        get() = repository.customBookmarks
+
+    /** サインインしているユーザーのブクマ */
+    val userBookmark : Bookmark?
+        get() = repository.userSignedIn?.let { user ->
+            bookmarksEntry.value?.bookmarks?.firstOrNull { it.user == user }
+        }
 
     /** ユーザーの所持カラースター数 */
-    val userColorStarsCount by lazy {
-        repository.userColorStarsCount
-    }
+    val userColorStarsCount
+        get() = repository.userColorStarsCount
 
     /** フィルタテキスト */
-    val filteringText by lazy {
-        repository.filteringText
-    }
+    val filteringText
+        get() = repository.filteringText
+
+    /** 途中で中断されたブコメ編集内容 */
+    var editData : BookmarkEditData? = null
 
     // ------ //
 
@@ -79,6 +116,15 @@ class BookmarksViewModel(
     }
 
     // ------ //
+
+    /** エントリをセットしてブクマ情報を取得する */
+    @MainThread
+    fun loadEntry(entry: Entry) {
+        repository.loadEntry(entry)
+        viewModelScope.launch(Dispatchers.Default) {
+            repository.loadBookmarks(entry.url)
+        }
+    }
 
     /** 最新ブクマリストを再取得 */
     fun reloadBookmarks(
@@ -523,6 +569,35 @@ class BookmarksViewModel(
                 else {
                     button.setImageResource(R.drawable.ic_add_star)
                     button.setOnLongClickListener(null)
+                }
+            }
+        }
+    }
+
+    // ------ //
+
+    /** BookmarkPostActivityの結果を反映させる */
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // ブクマ投稿結果をentryに反映して、次回以降の編集時に投稿内容を最初から入力した状態でダイアログを表示する
+        when (requestCode) {
+            BookmarkPostActivity.REQUEST_CODE -> {
+                when (resultCode) {
+                    Activity.RESULT_OK -> {
+                        val result = data?.getObjectExtra<BookmarkResult>(
+                            BookmarkPostActivity.RESULT_BOOKMARK
+                        ) ?: return
+
+                        editData = null
+                        viewModelScope.launch {
+                            repository.updateBookmark(result)
+                        }
+                    }
+
+                    Activity.RESULT_CANCELED -> {
+                        editData = data?.getObjectExtra<BookmarkEditData>(
+                            BookmarkPostActivity.RESULT_EDIT_DATA
+                        )
+                    }
                 }
             }
         }

@@ -123,7 +123,7 @@ class BookmarksFragment :
             }
         }
 
-        viewModel.bookmarks.observe(viewLifecycleOwner) {
+        viewModel.recentBookmarks.observe(viewLifecycleOwner) {
             if (it == null) {
                 bookmarksAdapter.submitList(null)
             }
