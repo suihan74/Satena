@@ -35,7 +35,8 @@ import kotlinx.coroutines.launch
 
 class BrowserActivity :
     AppCompatActivity(),
-    BookmarkPostViewModelOwner
+    BookmarkPostViewModelOwner,
+    DrawerOwner
 {
     companion object {
         /** 最初に開くページのURL */
@@ -194,6 +195,12 @@ class BrowserActivity :
     @MainThread
     fun showPreferencesFragment() {
         drawer_view_pager.currentItem = DrawerTab.SETTINGS.ordinal
+        openDrawer()
+    }
+
+    /** ドロワを開く */
+    @MainThread
+    override fun openDrawer() {
         drawer_layout.openDrawer(drawer_area)
     }
 
@@ -203,7 +210,7 @@ class BrowserActivity :
      * BrowserActivityに依存するフラグメント側から閉じるために使用
      */
     @MainThread
-    fun closeDrawer() {
+    override fun closeDrawer() {
         drawer_layout.closeDrawer(drawer_area)
     }
 
