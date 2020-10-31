@@ -102,6 +102,15 @@ class BookmarksTabFragment :
                 // メニューを開く
                 bookmarksViewModel.openBookmarkMenuDialog(requireActivity(), bookmark, childFragmentManager)
             }
+
+            // スターをつけるボタンの設定
+            bookmarksViewModel.setAddStarButtonBinder(
+                requireActivity(),
+                adapter,
+                viewLifecycleOwner,
+                childFragmentManager,
+                lifecycleScope
+            )
         }
         binding.recyclerView.adapter = bookmarksAdapter
 
