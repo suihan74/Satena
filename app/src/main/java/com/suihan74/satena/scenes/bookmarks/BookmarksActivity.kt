@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentManager
-import com.suihan74.hatenaLib.Entry
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -16,8 +16,8 @@ import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.provideViewModel
+import kotlinx.coroutines.launch
 
 /**
  * ブクマ一覧画面
@@ -34,13 +34,13 @@ class BookmarksActivity :
         // どれかひとつが必要
 
         /** Entryを直接渡す場合 */
-        const val EXTRA_ENTRY = "BookmarksActivity.EXTRA_ENTRY"
+        const val EXTRA_ENTRY = BookmarksRepository.EXTRA_ENTRY
 
         /** EntryのURLを渡す場合 */
-        const val EXTRA_ENTRY_URL = "BookmarksActivity.EXTRA_ENTRY_URL"
+        const val EXTRA_ENTRY_URL = BookmarksRepository.EXTRA_ENTRY_URL
 
         /** EntryのIDを渡す場合 */
-        const val EXTRA_ENTRY_ID = "BookmarksActivity.EXTRA_ENTRY_ID"
+        const val EXTRA_ENTRY_ID = BookmarksRepository.EXTRA_ENTRY_ID
 
         // ------ //
 
@@ -60,13 +60,13 @@ class BookmarksActivity :
                 SafeSharedPreferences.create(this),
                 app.ignoredEntryDao,
                 app.userTagDao
-            )
-
-            val entry = intent.getObjectExtra<Entry>(EXTRA_ENTRY)!!
-
-            BookmarksViewModel(repository).also { viewModel ->
-                viewModel.loadEntry(entry)
+            ).also { repo ->
+                lifecycleScope.launch {
+                    repo.loadEntryFromIntent(intent)
+                }
             }
+
+            BookmarksViewModel(repository)
         }
     }
 

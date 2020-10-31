@@ -1,6 +1,8 @@
 package com.suihan74.satena.scenes.bookmarks.repository
 
+import android.content.Intent
 import android.util.Log
+import android.webkit.URLUtil
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
@@ -19,6 +21,7 @@ import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 import com.suihan74.utilities.exceptions.TaskFailureException
+import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.updateFirstOrPlusAhead
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -46,13 +49,17 @@ class BookmarksRepository(
         StarRepositoryInterface by StarRepository(accountLoader, prefs)
 {
     companion object {
-        /** ブコメ最大文字数 */
-        const val MAX_COMMENT_LENGTH = 100
+        // Intentからエントリ情報を引き出すためのキー
 
-        /** 同時使用可能な最大タグ数 */
-        const val MAX_TAGS_COUNT = 10
+        /** Entryを直接渡す場合 */
+        const val EXTRA_ENTRY = "BookmarksRepository.EXTRA_ENTRY"
+
+        /** EntryのURLを渡す場合 */
+        const val EXTRA_ENTRY_URL = "BookmarksRepository.EXTRA_ENTRY_URL"
+
+        /** EntryのIDを渡す場合 */
+        const val EXTRA_ENTRY_ID = "BookmarksRepository.EXTRA_ENTRY_ID"
     }
-
 
     /** はてなアクセス用クライアント */
     private val client = accountLoader.client
@@ -221,16 +228,20 @@ class BookmarksRepository(
      *
      * @throws ConnectionFailureException
      */
-    suspend fun loadEntry(url: String){
+    suspend fun loadEntry(url: String) : Entry {
         val result = runCatching {
             client.getEntryAsync(url).await()
         }
 
-        withContext(Dispatchers.Main) {
-            entry.value = result.getOrElse {
-                throw ConnectionFailureException(it)
-            }
+        val e = result.getOrElse {
+            throw ConnectionFailureException(it)
         }
+
+        withContext(Dispatchers.Main) {
+            entry.value = e
+        }
+
+        return e
     }
 
     /**
@@ -238,16 +249,18 @@ class BookmarksRepository(
      *
      * @throws ConnectionFailureException
      */
-    suspend fun loadEntry(eid: Long) {
+    suspend fun loadEntry(eid: Long) : Entry {
         val result = runCatching {
             client.getEntryAsync(eid).await()
         }
 
+        val e = result.getOrElse { throw ConnectionFailureException(it) }
+
         withContext(Dispatchers.Main) {
-            entry.value = result.getOrElse {
-                throw ConnectionFailureException(it)
-            }
+            entry.value = e
         }
+
+        return e
     }
 
     /**
@@ -267,6 +280,41 @@ class BookmarksRepository(
         withContext(Dispatchers.Main) {
             bookmarksEntry.value = e
         }
+    }
+
+    /**
+     * Intentで渡された情報からエントリを読み込み、ブクマリストを初期化する
+     *
+     * @throws IllegalArgumentException
+     */
+    suspend fun loadEntryFromIntent(intent: Intent) {
+        val entry = intent.getObjectExtra<Entry>(EXTRA_ENTRY)
+        if (entry != null) {
+            loadEntry(entry)
+            loadBookmarks(entry.url)
+            return
+        }
+
+        val eid = intent.getLongExtra(EXTRA_ENTRY_ID, 0L)
+        if (eid > 0L) {
+            val e = loadEntry(eid)
+            loadBookmarks(e.url)
+            return
+        }
+
+        val url = intent.getStringExtra(EXTRA_ENTRY_URL) ?: when (intent.action) {
+            Intent.ACTION_VIEW -> intent.dataString
+            Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)
+            else -> null
+        }
+        if (url != null && URLUtil.isNetworkUrl(url)) {
+            val modifiedUrl = modifySpecificUrls(url) ?: url
+            val e = loadEntry(modifiedUrl)
+            loadBookmarks(e.url)
+            return
+        }
+
+        throw IllegalArgumentException()
     }
 
     // ------ //
