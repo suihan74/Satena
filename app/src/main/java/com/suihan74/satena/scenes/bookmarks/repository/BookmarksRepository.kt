@@ -30,8 +30,6 @@ import kotlinx.coroutines.withContext
 
 /**
  * ブクマ画面用のリポジトリ
- *
- * TODO: v1.6で.bookmarkと統合することを前提に開発すること
  */
 class BookmarksRepository(
     val accountLoader: AccountLoader,
