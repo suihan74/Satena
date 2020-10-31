@@ -14,57 +14,38 @@ import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
-import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.ScrollableToBottom
 import com.suihan74.utilities.ScrollableToTop
-import com.suihan74.utilities.extensions.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.getThemeColor
 
-/** ブクマリスト表示部分のFragment */
-class BookmarksTabFragment :
+abstract class BookmarksTabFragment :
     Fragment(),
     ScrollableToTop,
     ScrollableToBottom
 {
+    /** 引っ張って更新の処理内容 */
+    abstract fun reloadBookmarks()
 
-    companion object {
-        fun createInstance(tabType: BookmarksTabType) = BookmarksTabFragment().withArguments {
-            putEnum(ARG_TAB_TYPE, tabType) { it.ordinal }
-        }
+    /** ロード完了後の処理 */
+    abstract fun afterLoadedBookmarks()
 
-        private const val ARG_TAB_TYPE = "ARG_TAB_TYPE"
-    }
+    /** ブクマリスト */
+    abstract val bookmarksLiveData : LiveData<List<Bookmark>>
 
     // ------ //
 
-    val bookmarksActivity : BookmarksActivity
+    val bookmarksActivity: BookmarksActivity
         get() = requireActivity() as BookmarksActivity
 
-    val bookmarksViewModel : BookmarksViewModel
+    val bookmarksViewModel: BookmarksViewModel
         get() = bookmarksActivity.bookmarksViewModel
 
-    val contentsViewModel : ContentsViewModel
+    val contentsViewModel: ContentsViewModel
         get() = bookmarksActivity.contentsViewModel
 
-    val bookmarksLiveData : LiveData<List<Bookmark>>
-        get() = when(requireArguments().getEnum<BookmarksTabType>(ARG_TAB_TYPE)) {
-            BookmarksTabType.POPULAR ->
-                bookmarksViewModel.popularBookmarks
-
-            BookmarksTabType.RECENT ->
-                bookmarksViewModel.recentBookmarks
-
-            BookmarksTabType.ALL ->
-                bookmarksViewModel.allBookmarks
-
-            BookmarksTabType.CUSTOM ->
-                bookmarksViewModel.customBookmarks
-
-            else -> throw IllegalArgumentException()
-        }
-
-    private var binding : FragmentBookmarksTab3Binding? = null
+    var binding: FragmentBookmarksTab3Binding? = null
+        private set
 
     // ------ //
 
@@ -89,7 +70,7 @@ class BookmarksTabFragment :
     }
 
     /** ブクマリストの初期化 */
-    private fun initializeRecyclerView(binding: FragmentBookmarksTab3Binding) {
+    protected open fun initializeRecyclerView(binding: FragmentBookmarksTab3Binding) {
         val bookmarksAdapter = BookmarksAdapter().also { adapter ->
             adapter.setOnItemClickedListener { bookmark ->
                 // 詳細画面を開く
@@ -100,7 +81,11 @@ class BookmarksTabFragment :
 
             adapter.setOnItemLongClickedListener { bookmark ->
                 // メニューを開く
-                bookmarksViewModel.openBookmarkMenuDialog(requireActivity(), bookmark, childFragmentManager)
+                bookmarksViewModel.openBookmarkMenuDialog(
+                    requireActivity(),
+                    bookmark,
+                    childFragmentManager
+                )
             }
 
             // スターをつけるボタンの設定
@@ -120,30 +105,11 @@ class BookmarksTabFragment :
             swipeLayout.setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
             swipeLayout.setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             swipeLayout.setOnRefreshListener {
-                bookmarksViewModel.reloadBookmarks()
+                reloadBookmarks()
             }
             // 初期ロード中は無効にしておく
             swipeLayout.isEnabled = false
         }
-
-        // 下端までスクロールで追加分取得
-        val scrollingUpdater = RecyclerViewScrollingUpdater {
-            // "引っ張って更新"中には実行しない
-            if (binding.swipeLayout.isRefreshing) {
-                loadCompleted()
-                return@RecyclerViewScrollingUpdater
-            }
-
-            bookmarksAdapter.startLoading()
-            lifecycleScope.launch(Dispatchers.Main) {
-                bookmarksViewModel.repository.loadRecentBookmarks(additionalLoading = true)
-                bookmarksAdapter.stopLoading()
-                loadCompleted()
-            }
-        }
-        // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
-        scrollingUpdater.isEnabled = false
-        binding.recyclerView.addOnScrollListener(scrollingUpdater)
 
         // 取得したリストを表示
         bookmarksLiveData.observe(viewLifecycleOwner) {
@@ -163,7 +129,7 @@ class BookmarksTabFragment :
                 ) {
                     binding.swipeLayout.isRefreshing = false
                     binding.swipeLayout.isEnabled = true
-                    scrollingUpdater.isEnabled = true
+                    afterLoadedBookmarks()
                 }
             }
         }

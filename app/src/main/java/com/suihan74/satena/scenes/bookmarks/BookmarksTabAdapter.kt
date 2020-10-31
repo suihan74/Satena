@@ -15,7 +15,7 @@ class BookmarksTabAdapter(
         BookmarksTabType.fromOrdinal(position)
 
     override fun getItem(position: Int) =
-        BookmarksTabFragment.createInstance(getTabType(position))
+        getTabType(position).createFragment()
 
     override fun getPageTitle(position: Int): CharSequence? =
         context.getString(getTabType(position).textId)
