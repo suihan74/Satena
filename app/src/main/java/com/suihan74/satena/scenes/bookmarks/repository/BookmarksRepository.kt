@@ -157,9 +157,9 @@ class BookmarksRepository(
     /**
      * URLを渡して必要な初期化を行う
      */
-    suspend fun launchLoadingUrl(
+    suspend fun loadBookmarks(
         url: String,
-        onFinally: OnFinally?
+        onFinally: OnFinally? = null
     ) = withContext(Dispatchers.Default) {
         loadingEntry.postValue(true)
 
@@ -179,8 +179,6 @@ class BookmarksRepository(
             )
             loadingIgnoresTasks.awaitAll()
             loadEntry(modifiedUrl)
-
-            loadingEntry.postValue(false)
 
             val loadingContentsTasks = listOf(
                 async {
@@ -202,11 +200,11 @@ class BookmarksRepository(
             loadingContentsTasks.awaitAll()
         }
         catch (e: Throwable) {
-            loadingEntry.postValue(false)
             Log.e("BookmarksRepo", Log.getStackTraceString(e))
         }
         finally {
             withContext(Dispatchers.Main) {
+                loadingEntry.value = false
                 onFinally?.invoke()
             }
         }
