@@ -286,6 +286,7 @@ class BookmarksRepository(
      * Intentで渡された情報からエントリを読み込み、ブクマリストを初期化する
      *
      * @throws IllegalArgumentException
+     * @throws kotlinx.coroutines.JobCancellationException
      */
     suspend fun loadEntryFromIntent(intent: Intent) {
         val entry = intent.getObjectExtra<Entry>(EXTRA_ENTRY)

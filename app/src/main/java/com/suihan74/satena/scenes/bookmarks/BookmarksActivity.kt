@@ -20,6 +20,7 @@ import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.showToast
 import kotlinx.android.synthetic.main.activity_bookmarks.*
 import kotlinx.coroutines.launch
 
@@ -66,7 +67,14 @@ class BookmarksActivity :
                 app.userTagDao
             ).also { repo ->
                 lifecycleScope.launch {
-                    repo.loadEntryFromIntent(intent)
+                    val result = runCatching {
+                        repo.loadEntryFromIntent(intent)
+                    }
+
+                    if (result.exceptionOrNull() is IllegalArgumentException) {
+                        showToast(R.string.invalid_url_error)
+                        finish()
+                    }
                 }
             }
 
