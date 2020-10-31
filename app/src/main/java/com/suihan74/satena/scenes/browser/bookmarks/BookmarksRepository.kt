@@ -543,7 +543,10 @@ class BookmarksRepository(
      */
     suspend fun getStarsEntry(bookmark: Bookmark, forceUpdate: Boolean = false) : LiveData<StarsEntry>? {
         return entry.value?.let { entry ->
-            getStarsEntry(bookmark.getBookmarkUrl(entry), forceUpdate)
+            val result = runCatching {
+                getStarsEntry(bookmark.getBookmarkUrl(entry), forceUpdate)
+            }
+            result.getOrNull()
         }
     }
 
