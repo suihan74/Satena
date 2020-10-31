@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <import type="androidx.lifecycle.LiveData"/>
+        <import type="java.util.List"/>
+        <import type="com.suihan74.hatenaLib.Bookmark"/>
+
+        <variable
+                name="bookmarks"
+                type="LiveData&lt;List&lt;Bookmark&gt;&gt;" />
+    </data>
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/swipe_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                style="@style/RecyclerView.Linear"
+                divider="@{@drawable/recycler_view_item_divider}"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+</layout>
