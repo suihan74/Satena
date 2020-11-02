@@ -51,6 +51,11 @@ class BookmarksRepository(
 
         /** EntryのIDを渡す場合 */
         const val EXTRA_ENTRY_ID = "BookmarksRepository.EXTRA_ENTRY_ID"
+
+        // 内部的な設定
+
+        /** 一度の新着ブクマ取得ごとのコメントありブクマの最低取得件数 */
+        const val LEAST_COMMENTS_NUM = 10
     }
 
     /** はてなアクセス用クライアント */
@@ -662,11 +667,15 @@ class BookmarksRepository(
                     bookmarks.addAll(response.bookmarks)
                     cursor = response.cursor
 
-                    cursor != null
-                    || threshold == null
-                    || response.bookmarks.lastOrNull {
-                        it.timestamp <= threshold
-                    } != null
+                    val commentsNum = response.bookmarks.count { it.comment.isNotBlank() }
+
+                    when {
+                        cursor == null -> true
+
+                        threshold == null -> commentsNum >= LEAST_COMMENTS_NUM
+
+                        else -> response.bookmarks.lastOrNull { it.timestamp <= threshold } != null
+                    }
                 } ?: true
 
         } while (!shouldBreak)
