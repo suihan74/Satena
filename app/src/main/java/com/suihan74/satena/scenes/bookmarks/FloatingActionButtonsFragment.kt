@@ -204,19 +204,4 @@ class FloatingActionButtonsFragment : Fragment() {
             bookmarksViewModel.openCustomTabSettingsDialog(childFragmentManager)
         }
     }
-
-
-    // --- CustomTabSettingsDialog --- //
-
-    /*
-    fun getCustomTabSettings() =
-        (tabViewModel as CustomTabViewModel).settings!!
-
-    fun getUserTags() =
-        bookmarksViewModel.userTags.value ?: emptyList()
-
-    fun onPositiveButtonClicked(set: CustomTabViewModel.Settings) {
-        (tabViewModel as? CustomTabViewModel)?.saveSettings(set)
-    }
-    */
 }
