@@ -579,15 +579,21 @@ class BookmarksViewModel(
 
     /** 「カスタム」タブの表示対象を設定するダイアログを開く */
     fun openCustomTabSettingsDialog(fragmentManager: FragmentManager) {
-        val dialog = CustomTabSettingsDialog.createInstance(repository)
+        viewModelScope.launch(Dispatchers.Main) {
+            // 確実にダイアログで全タグを表示するため
+            // ユーザータグリストを読み込んでおく
+            repository.loadUserTags()
 
-        dialog.setOnCompletedListener {
-            viewModelScope.launch {
-                repository.refreshBookmarks()
+            val dialog = CustomTabSettingsDialog.createInstance(repository)
+
+            dialog.setOnCompletedListener {
+                viewModelScope.launch {
+                    repository.refreshBookmarks()
+                }
             }
-        }
 
-        dialog.showAllowingStateLoss(fragmentManager)
+            dialog.showAllowingStateLoss(fragmentManager)
+        }
     }
 
     // ------ //

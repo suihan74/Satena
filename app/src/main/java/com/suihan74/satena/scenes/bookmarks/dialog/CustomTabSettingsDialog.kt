@@ -75,21 +75,21 @@ class CustomTabSettingsDialog : DialogFragment() {
         /** 必ず存在する項目 */
         private val staticItems by lazy {
             listOf(
-                MenuItem(
+                MenuItem.create(
                     R.string.custom_bookmarks_no_comment_active,
                     repository.showNoCommentUsersInCustomBookmarks.value == true,
                 ) { _, value ->
                     repository.showNoCommentUsersInCustomBookmarks.value = value
                 },
 
-                MenuItem(
+                MenuItem.create(
                     R.string.custom_bookmarks_ignored_user_active,
                     repository.showMutedUsersInCustomBookmarks.value == true
                 ) { _, value ->
                     repository.showMutedUsersInCustomBookmarks.value = value
                 },
 
-                MenuItem(
+                MenuItem.create(
                     R.string.custom_bookmarks_no_user_tags_active,
                     repository.showUnaffiliatedUsersInCustomBookmarks.value == true
                 ) { _, value ->
@@ -98,11 +98,24 @@ class CustomTabSettingsDialog : DialogFragment() {
             )
         }
 
+        private val userTags by lazy {
+            repository.userTags
+        }
+
         /** メニュー項目 */
         @OptIn(ExperimentalStdlibApi::class)
         val items by lazy {
             buildList {
                 addAll(staticItems)
+
+                // ユーザータグ一覧
+                val activeIds = repository.customBookmarksActiveTagIds.value.orEmpty()
+                userTags.forEach { tag ->
+                    add(MenuItem.create(
+                        tag.name,
+                        activeIds.contains(tag.id),
+                    ))
+                }
             }
         }
 
@@ -115,7 +128,7 @@ class CustomTabSettingsDialog : DialogFragment() {
 
         /** 表示用のメニュー項目を作成 */
         fun createLabels(context: Context) =
-            items.map { item -> context.getString(item.labelId) }.toTypedArray()
+            items.map { item -> item.label ?: context.getString(item.labelId) }.toTypedArray()
 
         /** 項目のチェック状態が変化した */
         fun checkItem(which: Int, value: Boolean) {
@@ -125,24 +138,45 @@ class CustomTabSettingsDialog : DialogFragment() {
         /** 登録処理 */
         fun invokePositiveAction() {
             checkedStates.forEachIndexed { idx, b ->
-                items[idx].changer(idx, b)
+                items[idx].changer?.invoke(idx, b)
             }
+
+            // ユーザータグの選択状態を反映させる
+            val offset = staticItems.size
+            val activeIds = checkedStates.drop(offset)
+                .mapIndexedNotNull { idx, checked ->
+                    if (checked) userTags[idx].id
+                    else null
+                }
+            repository.customBookmarksActiveTagIds.value = activeIds
+
             onCompleted?.invoke(Unit)
         }
 
         // ------ //
 
         /** メニュー項目 */
-        data class MenuItem(
-            /** メニュー表示 */
+        data class MenuItem (
+            /** メニュー表示用のリソース */
             @StringRes
             val labelId : Int,
+
+            /** メニュー表示文字列 */
+            val label : String?,
 
             /** 初期値 */
             val initialChecked : Boolean,
 
             /** 値の変更 */
-            val changer : (which: Int, value: Boolean)->Unit
-        )
+            val changer : ((which: Int, value: Boolean)->Unit)?
+        ) {
+            companion object {
+                fun create(labelId: Int, initialChecked: Boolean, changer: ((which: Int, value: Boolean)->Unit)? = null) =
+                    MenuItem(labelId, null, initialChecked, changer)
+
+                fun create(label: String, initialChecked: Boolean, changer: ((which: Int, value: Boolean)->Unit)? = null) =
+                    MenuItem(0, label, initialChecked, changer)
+            }
+        }
     }
 }
