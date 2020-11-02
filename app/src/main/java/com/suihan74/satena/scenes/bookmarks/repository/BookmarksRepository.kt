@@ -16,17 +16,11 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepositoryForBookmarks
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepositoryInterface
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.OnFinally
-import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.SingleUpdateMutableLiveData
+import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.updateFirstOrPlusAhead
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 /**
  * ブクマ画面用のリポジトリ
@@ -155,6 +149,37 @@ class BookmarksRepository(
      */
     val filteringText by lazy {
         MutableLiveData<String?>() // null or blank で無効化
+    }
+
+    // ------ //
+    // カスタムタブの設定
+
+    /** 「カスタム」タブのリストに表示するユーザータグ(ID) */
+    val customBookmarksActiveTagIds by lazy {
+        PreferenceLiveData(prefs, PreferenceKey.CUSTOM_BOOKMARKS_ACTIVE_TAG_IDS) { p, key ->
+            p.getObject<List<Int>>(key)
+        }
+    }
+
+    /** 「カスタム」タブでユーザータグ未分類のユーザーを表示する */
+    val showUnaffiliatedUsersInCustomBookmarks by lazy {
+        PreferenceLiveData(prefs, PreferenceKey.CUSTOM_BOOKMARKS_IS_UNAFFILIATED_USERS_ACTIVE) { p, key ->
+            p.getBoolean(key)
+        }
+    }
+
+    /** 「カスタム」タブで無言ブクマを表示する */
+    val showNoCommentUsersInCustomBookmarks by lazy {
+        PreferenceLiveData(prefs, PreferenceKey.CUSTOM_BOOKMARKS_IS_NO_COMMENT_USERS_ACTIVE) { p, key ->
+            p.getBoolean(key)
+        }
+    }
+
+    /** 「カスタム」タブで非表示ユーザーを表示する */
+    val showMutedUsersInCustomBookmarks by lazy {
+        PreferenceLiveData(prefs, PreferenceKey.CUSTOM_BOOKMARKS_IS_MUTED_USERS_ACTIVE) { p, key ->
+            p.getBoolean(key)
+        }
     }
 
     // ------ //
@@ -358,27 +383,64 @@ class BookmarksRepository(
         }
     }
 
+    /** カスタムタブに表示するブクマを抽出する */
+    private fun filterForCustomTab(src: List<BookmarkWithStarCount>) : List<Bookmark> {
+        val filterNoCommentUsers = showNoCommentUsersInCustomBookmarks.value != true
+        val filterMutedUsers = showMutedUsersInCustomBookmarks.value != true
+        val showUntaggedUsers = showUnaffiliatedUsersInCustomBookmarks.value == true
+        val activeTagIds = customBookmarksActiveTagIds.value.orEmpty()
+
+        return src.filter { b ->
+            when {
+                // コメントがない
+                filterNoCommentUsers && b.comment.isBlank() -> false
+
+                // 非表示対象
+                filterMutedUsers && checkIgnored(b) -> false
+
+                // ユーザータグがひとつもついていない or 設定したタグがついている
+                // 予めユーザータグがロードされている必要がある
+                else -> taggedUsers.firstOrNull { it.user.name == b.user }.let { taggedUser ->
+                    taggedUser?.tags?.any { tag -> activeTagIds.any { it == tag.id } }
+                        ?: showUntaggedUsers
+                }
+            }
+        }.map { Bookmark.create(it) }
+    }
+
     /** 新着ブクマリストに依存する各種リストに変更を通知する */
     @WorkerThread
-    private fun updateRecentBookmarksLiveData(rawList: List<BookmarkWithStarCount>) {
+    private suspend fun updateRecentBookmarksLiveData(
+        rawList: List<BookmarkWithStarCount>
+    ) = coroutineScope {
         val list = wordFilter(rawList)
 
-        // 新着
-        val items = filterIgnored(list.filter { b ->
-            b.comment.isNotBlank()
-        })
-        recentBookmarks.postValue(items)
+        val jobs = listOf(
+            launch {
+                // 新着
+                val items = filterIgnored(list.filter { b ->
+                    b.comment.isNotBlank()
+                })
+                recentBookmarks.postValue(items)
+            },
 
-        // すべて
-        allBookmarks.postValue(
-            if (showIgnoredUsersInAllBookmarks) list.map { Bookmark.create(it) }
-            else filterIgnored(list)
+            launch {
+                // すべて
+                allBookmarks.postValue(
+                    if (showIgnoredUsersInAllBookmarks) list.map { Bookmark.create(it) }
+                    else filterIgnored(list)
+                )
+            },
+
+            launch {
+                // カスタムタブ
+                customBookmarks.postValue(
+                    filterForCustomTab(list)
+                )
+            }
         )
 
-        // TODO: カスタムタブ
-        customBookmarks.postValue(
-            emptyList()
-        )
+        jobs.joinAll()
     }
 
     /** 読み込み済みの各種リストを再生成する */

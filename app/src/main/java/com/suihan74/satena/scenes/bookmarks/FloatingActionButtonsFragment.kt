@@ -15,11 +15,9 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksFabs3Binding
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
-import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
-import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
 import kotlinx.coroutines.launch
 
@@ -203,8 +201,7 @@ class FloatingActionButtonsFragment : Fragment() {
 
         // カスタムタブ設定ボタン
         view.custom_settings_button.setOnClickListener {
-            val dialog = CustomTabSettingsDialog.createInstance()
-            dialog.showAllowingStateLoss(childFragmentManager, DIALOG_CUSTOM_TAB_SETTINGS)
+            bookmarksViewModel.openCustomTabSettingsDialog(childFragmentManager)
         }
     }
 

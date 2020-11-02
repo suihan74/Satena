@@ -17,6 +17,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.dialogs.UserTagDialogFragment
+import com.suihan74.satena.scenes.bookmarks.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
@@ -572,6 +573,21 @@ class BookmarksViewModel(
                 }
             }
         }
+    }
+
+    // ------ //
+
+    /** 「カスタム」タブの表示対象を設定するダイアログを開く */
+    fun openCustomTabSettingsDialog(fragmentManager: FragmentManager) {
+        val dialog = CustomTabSettingsDialog.createInstance(repository)
+
+        dialog.setOnCompletedListener {
+            viewModelScope.launch {
+                repository.refreshBookmarks()
+            }
+        }
+
+        dialog.showAllowingStateLoss(fragmentManager)
     }
 
     // ------ //
