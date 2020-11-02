@@ -27,21 +27,29 @@ interface UserTagsRepositoryInterface {
         forceRefresh: Boolean = false
     ) : UserAndTags?
 
-    /** タグを作成する */
-    @Throws(
-        AlreadyExistedException::class,
-        TaskFailureException::class
-    )
+    /** タグを作成する
+     *
+     * @throws AlreadyExistedException
+     * @throws TaskFailureException
+     */
     suspend fun createUserTag(tagName: String) : Tag
 
-    /** ユーザーにタグをつける */
-    @Throws(TaskFailureException::class)
+    /**
+     *  ユーザーにタグをつける
+     *
+     * @throws TaskFailureException
+     */
     suspend fun tagUser(userName: String, tag: Tag)
 
-    /** ユーザーからタグを外す */
-    @Throws(TaskFailureException::class)
+    /**
+     * ユーザーからタグを外す
+     *
+     * @throws TaskFailureException
+     */
     suspend fun unTagUser(userName: String, tag: Tag)
 }
+
+// ------ //
 
 class UserTagsRepository(
     private val dao: UserTagDao
@@ -58,6 +66,8 @@ class UserTagsRepository(
     private var userTagsCache : List<Tag> = emptyList()
     override val userTags: List<Tag>
         get() = userTagsCache
+
+    // ------ //
 
     /** 全てのタグ一覧を取得する */
     override suspend fun loadUserTags() {
@@ -89,11 +99,11 @@ class UserTagsRepository(
         }
     }
 
-    /** タグを作成する */
-    @Throws(
-        AlreadyExistedException::class,
-        TaskFailureException::class
-    )
+    /** タグを作成する
+     *
+     * @throws AlreadyExistedException
+     * @throws TaskFailureException
+     */
     override suspend fun createUserTag(
         tagName: String
     ) : Tag = withContext(Dispatchers.Default) {
@@ -117,8 +127,10 @@ class UserTagsRepository(
         return@withContext tag
     }
 
-    /** ユーザーにタグをつける */
-    @Throws(TaskFailureException::class)
+    /** ユーザーにタグをつける
+     *
+     * @throws TaskFailureException
+     */
     override suspend fun tagUser(
         userName: String,
         tag: Tag
@@ -152,8 +164,10 @@ class UserTagsRepository(
         }
     }
 
-    /** ユーザーからタグを外す */
-    @Throws(TaskFailureException::class)
+    /** ユーザーからタグを外す
+     *
+     * @throws TaskFailureException
+     */
     override suspend fun unTagUser(
         userName: String,
         tag: Tag
