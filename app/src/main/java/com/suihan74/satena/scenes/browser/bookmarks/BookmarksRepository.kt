@@ -27,8 +27,6 @@ import kotlinx.coroutines.withContext
 
 /**
  * ブクマ画面用のリポジトリ
- *
- * TODO: v1.6で.bookmarkと統合することを前提に開発すること
  */
 class BookmarksRepository(
     val accountLoader: AccountLoader,
@@ -46,13 +44,11 @@ class BookmarksRepository(
         StarRepositoryInterface by StarRepository(accountLoader, prefs)
 {
     companion object {
-        /** ブコメ最大文字数 */
-        const val MAX_COMMENT_LENGTH = 100
+        // 内部的な設定
 
-        /** 同時使用可能な最大タグ数 */
-        const val MAX_TAGS_COUNT = 10
+        /** 一度の新着ブクマ取得ごとのコメントありブクマの最低取得件数 */
+        const val LEAST_COMMENTS_NUM = 10
     }
-
 
     /** はてなアクセス用クライアント */
     private val client = accountLoader.client
@@ -519,11 +515,15 @@ class BookmarksRepository(
                     bookmarks.addAll(response.bookmarks)
                     cursor = response.cursor
 
-                    cursor != null
-                    || threshold == null
-                    || response.bookmarks.lastOrNull {
-                        it.timestamp <= threshold
-                    } != null
+                    val commentsNum = response.bookmarks.count { it.comment.isNotBlank() }
+
+                    when {
+                        cursor == null -> true
+
+                        threshold == null -> commentsNum >= LEAST_COMMENTS_NUM
+
+                        else -> response.bookmarks.lastOrNull { it.timestamp <= threshold } != null
+                    }
                 } ?: true
 
         } while (!shouldBreak)
