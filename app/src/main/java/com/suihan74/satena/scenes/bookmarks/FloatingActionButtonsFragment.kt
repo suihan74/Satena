@@ -46,8 +46,6 @@ class FloatingActionButtonsFragment : Fragment() {
     private var onBackPressedCallbackForKeyword : OnBackPressedCallback? = null
     private var onBackPressedCallbackForScroll : OnBackPressedCallback? = null
 
-    private val DIALOG_CUSTOM_TAB_SETTINGS by lazy { "DIALOG_CUSTOM_TAB_SETTINGS" }
-
     // ------ //
 
     override fun onCreateView(
