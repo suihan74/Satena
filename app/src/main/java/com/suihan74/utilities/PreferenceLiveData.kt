@@ -1,6 +1,11 @@
 package com.suihan74.utilities
 
-/** SafeSharedPreferenceに紐づいたLiveData */
+import androidx.annotation.MainThread
+import androidx.annotation.WorkerThread
+
+/**
+ * SafeSharedPreferenceに紐づいたLiveData
+ */
 class PreferenceLiveData<PrefT, KeyT, ValueT> : SingleUpdateMutableLiveData<ValueT>
     where PrefT: SafeSharedPreferences<KeyT>,
           KeyT: SafeSharedPreferences.Key, KeyT: Enum<KeyT>
@@ -10,18 +15,36 @@ class PreferenceLiveData<PrefT, KeyT, ValueT> : SingleUpdateMutableLiveData<Valu
         key: KeyT,
         initializer: ((p: PrefT, key: KeyT)->ValueT)
     ) : super(initializer.invoke(prefs, key)) {
-        notifyPrefs(prefs, key)
+        this.prefs = prefs
+        this.key = key
     }
 
     constructor(prefs: PrefT, key: KeyT) : super() {
-        notifyPrefs(prefs, key)
+        this.prefs = prefs
+        this.key = key
     }
 
-    private fun notifyPrefs(prefs: PrefT, key: KeyT) {
-        observeForever {
-            prefs.edit {
-                put(key, it)
-            }
+    // ------ //
+
+    private val prefs : PrefT
+
+    private val key : KeyT
+
+    // ------ //
+
+    @MainThread
+    override fun setValue(value: ValueT?) {
+        super.setValue(value)
+        prefs.edit {
+            put(key, value)
+        }
+    }
+
+    @WorkerThread
+    override fun postValue(value: ValueT?) {
+        super.postValue(value)
+        prefs.edit {
+            put(key, value)
         }
     }
 }
