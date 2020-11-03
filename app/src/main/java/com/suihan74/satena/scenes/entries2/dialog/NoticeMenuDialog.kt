@@ -16,7 +16,7 @@ import com.suihan74.satena.databinding.ListviewItemNotices2Binding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
-import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
+import com.suihan74.satena.scenes.bookmarks.dialog.ReportDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.*

@@ -29,10 +29,10 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks.dialog.PostStarDialog
 import com.suihan74.satena.scenes.bookmarks.repository.StarExhaustedException
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
-import com.suihan74.satena.scenes.bookmarks2.dialog.PostStarDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*

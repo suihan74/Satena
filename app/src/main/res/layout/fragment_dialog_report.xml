@@ -3,7 +3,7 @@
     <data>
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog.DialogViewModel" />
+                type="com.suihan74.satena.scenes.bookmarks.dialog.ReportDialog.DialogViewModel" />
     </data>
 
     <LinearLayout

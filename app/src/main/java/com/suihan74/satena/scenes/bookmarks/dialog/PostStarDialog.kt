@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.bookmarks2.dialog
+package com.suihan74.satena.scenes.bookmarks.dialog
 
 import android.app.Dialog
 import android.os.Bundle

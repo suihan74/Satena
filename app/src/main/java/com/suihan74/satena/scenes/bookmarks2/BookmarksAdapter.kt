@@ -251,8 +251,11 @@ class BookmarksAdapter(
             try {
                 val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
                     val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
-                    val stars = starsEntryGetter(it)
-                    val bookmark = it.copy(starCount = stars?.allStars ?: it.starCount)
+                    /* TODO: スターを上書きするようにすると取得を待ってしまって非常に遅くなる
+                             そもそもこれ必要か？というところも考える
+                     */
+                    //val stars = starsEntryGetter(it)
+                    val bookmark = it//it.copy(starCount = stars?.allStars ?: it.starCount)
                     Entity(
                         bookmark = bookmark,
                         analyzedComment = analyzedComment,

@@ -16,8 +16,8 @@ import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.models.userTag.UserAndTags
+import com.suihan74.satena.scenes.bookmarks.dialog.*
 import com.suihan74.satena.scenes.bookmarks2.detail.BookmarkDetailFragment
-import com.suihan74.satena.scenes.bookmarks2.dialog.*
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.satena.scenes.post.BookmarkEditData
