@@ -74,6 +74,44 @@ class BookmarkDetailFragment : Fragment() {
             it.lifecycleOwner = viewLifecycleOwner
         }
 
+        // タブの設定
+        binding.tabPager.adapter = DetailTabAdapter(childFragmentManager)
+        binding.tabLayout.setupWithViewPager(binding.tabPager)
+
+        // ブクマに対するメニュー
+        binding.menuButton.setOnClickListener {
+            val bookmark = viewModel.bookmark.value ?: return@setOnClickListener
+            bookmarksViewModel.openBookmarkMenuDialog(
+                requireActivity(),
+                bookmark,
+                childFragmentManager
+            )
+        }
+
+        // コメントの文字列選択
+        // 選択テキストを画面下部で強調表示，スターを付ける際に引用文とする
+        binding.comment.customSelectionActionModeCallback = object : ActionMode.Callback {
+            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) : Boolean {
+                val result = runCatching {
+                    binding.comment.let {
+                        it.text.substring(it.selectionStart, it.selectionEnd)
+                    }
+                }
+                viewModel.selectedText.value = result.getOrNull()
+                return false
+            }
+            override fun onDestroyActionMode(mode: ActionMode?) {
+                viewModel.selectedText.value = null
+            }
+            override fun onCreateActionMode(mode: ActionMode?, menu: Menu?) = true
+            override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?) = false
+        }
+
+        // TODO: スター付与ボタン設定
+
+        binding.showStarsButton.setOnClickListener {
+        }
+
         return binding.root
     }
 }

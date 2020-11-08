@@ -73,7 +73,7 @@ interface StarRepositoryInterface {
     /**
      * 渡された全URLに対するスター情報を取得し内部にキャッシュする
      */
-    suspend fun loadStarsEntries(urls: List<String>)
+    suspend fun loadStarsEntries(urls: List<String>, forceUpdate: Boolean = false)
 }
 
 // ------ //
@@ -261,10 +261,14 @@ class StarRepository(
     /**
      * 渡された全URLに対するスター情報を取得し内部にキャッシュする
      */
-    override suspend fun loadStarsEntries(urls: List<String>) {
+    override suspend fun loadStarsEntries(urls: List<String>, forceUpdate: Boolean) {
         starsEntriesLock.withLock {
+            val targetUrls =
+                if (forceUpdate) urls
+                else urls.filterNot { starsEntriesCache.containsKey(it) }
+
             val result = runCatching {
-                client.getStarsEntryAsync(urls).await()
+                client.getStarsEntryAsync(targetUrls).await()
             }
 
             val entries = result.getOrElse { return }

@@ -653,10 +653,14 @@ class BookmarksRepository(
 
         // BookmarksEntryのブクマリストにも追加しておく
         bookmarksEntry.value?.let { bEntry ->
-            val diffs = response.bookmarks
-                .filter { b -> bEntry.bookmarks.none { it.user == b.user } }
-                .map { Bookmark.create(it) }
-            bookmarksEntry.postValue(bEntry.copy(bookmarks = bEntry.bookmarks.plus(diffs)))
+            val exists = bEntry.bookmarks.filter { existed ->
+                response.bookmarks.none { it.user == existed.user }
+            }
+            val new = response.bookmarks.map { Bookmark.create(it) }
+
+            bookmarksEntry.postValue(
+                bEntry.copy(bookmarks = exists.plus(new).sortedByDescending { it.timestamp })
+            )
         }
     }
 
@@ -753,7 +757,7 @@ class BookmarksRepository(
     }
 
     /**
-     * 自分が対象ブクマにスターをつけているか確認する
+     * ユーザーが対象ブクマにスターをつけているか確認する
      */
     suspend fun getUserStars(bookmark: Bookmark, user: String) : List<Star>? {
         val starsEntry = getStarsEntry(bookmark, forceUpdate = false)?.value
@@ -806,5 +810,21 @@ class BookmarksRepository(
             bookmarksRecentCache.filterNot { it.user == user }
 
         refreshBookmarks()
+    }
+
+    // ------ //
+
+    /** 指定ブクマに言及しているブクマを取得する */
+    fun getMentionsTo(bookmark: Bookmark) : List<Bookmark> {
+        val idCallStr = "id:${bookmark.user}"
+        return bookmarksEntry.value?.bookmarks?.filter { it.comment.contains(idCallStr) }.orEmpty()
+    }
+
+    /** 指定ブクマが言及しているブクマを取得する */
+    fun getMentionsFrom(bookmark: Bookmark) : List<Bookmark> {
+        val mentionRegex = Regex("""(id:|>)([A-Za-z0-9_])+""")
+        val matches = mentionRegex.findAll(bookmark.comment)
+        val ids = matches.map { it.groupValues[2] }
+        return bookmarksEntry.value?.bookmarks?.filter { ids.contains(it.user) }.orEmpty()
     }
 }

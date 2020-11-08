@@ -29,4 +29,38 @@ class BookmarkDetailViewModel(
      * 引用スターに使用
      */
     val selectedText = MutableLiveData<String>()
+
+    /**
+     * ブクマにつけられたスター
+     */
+    val starsToUser by lazy {
+        MutableLiveData<List<Star>>()
+    }
+
+    /**
+     * ブクマのユーザーがつけたスター
+     */
+    val starsFromUser by lazy {
+        MutableLiveData<List<Star>>()
+    }
+
+    /**
+     * ブクマに言及している他のブクマ
+     */
+    val mentionsToUser by lazy {
+        MutableLiveData<List<Bookmark>>()
+    }
+
+    /**
+     * ブクマが言及している他のブクマ
+     */
+    val mentionsFromUser by lazy {
+        MutableLiveData<List<Bookmark>>()
+    }
+
+    // ------ //
+
+    init {
+        this.bookmark.value = bookmark
+    }
 }
