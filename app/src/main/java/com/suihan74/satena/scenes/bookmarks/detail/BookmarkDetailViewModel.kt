@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.bookmarks.detail
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Star
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 
 class BookmarkDetailViewModel(
@@ -11,7 +12,16 @@ class BookmarkDetailViewModel(
 ) : ViewModel() {
 
     /** 画面の表示対象のブクマ */
-    val bookmark = MutableLiveData<Bookmark>(bookmark)
+    val bookmark = MutableLiveData<Bookmark>().also {
+        it.observeForever { b ->
+            ignored.value = repository.checkIgnored(b)
+        }
+    }
+
+    /**
+     * 非表示ユーザーかどうか
+     */
+    val ignored = MutableLiveData<Boolean>()
 
     /**
      * 現在選択中の文字列

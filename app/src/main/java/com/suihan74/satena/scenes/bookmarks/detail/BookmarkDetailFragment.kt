@@ -4,10 +4,7 @@ import android.os.Bundle
 import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.suihan74.hatenaLib.Bookmark
@@ -73,6 +70,7 @@ class BookmarkDetailFragment : Fragment() {
             false
         ).also {
             it.vm = viewModel
+            it.bookmarksViewModel = bookmarksViewModel
             it.lifecycleOwner = viewLifecycleOwner
         }
 

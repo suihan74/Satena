@@ -103,6 +103,9 @@ class BookmarksActivity :
             it.lifecycleOwner = this
         }
 
+        // イベントリスナの設定
+        bookmarksViewModel.initializeListeners(this)
+
         // タブ制御の初期化
         contentsViewModel.initializeTabPager(
             this,
@@ -150,11 +153,11 @@ class BookmarksActivity :
 
     /** 戻るボタンの制御 */
     override fun onBackPressed() {
-        if (onBackPressedDispatcher.hasEnabledCallbacks()) {
-            onBackPressedDispatcher.onBackPressed()
-        }
-        else if (drawer_layout.isDrawerOpen(entry_information_layout)) {
+        if (drawer_layout.isDrawerOpen(entry_information_layout)) {
             drawer_layout.closeDrawer(entry_information_layout)
+        }
+        else if (onBackPressedDispatcher.hasEnabledCallbacks()) {
+            onBackPressedDispatcher.onBackPressed()
         }
         else {
             super.onBackPressed()

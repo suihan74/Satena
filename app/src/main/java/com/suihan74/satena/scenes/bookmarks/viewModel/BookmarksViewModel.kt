@@ -5,26 +5,29 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import androidx.annotation.MainThread
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.TooltipCompat
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.dialogs.UserTagDialogFragment
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.dialog.*
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntryMenuActionsImplForBookmarks
 import com.suihan74.satena.scenes.post.BookmarkEditData
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.OnFinally
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
@@ -106,22 +109,126 @@ class BookmarksViewModel(
 
     // ------ //
 
+    /**
+     * コメント中のリンクがクリックされたときの処理
+     */
+    var onLinkClicked : Listener<String>? = null
+        private set
+
+    /**
+     * コメント中のリンクが長押しされたときの処理
+     */
+    var onLinkLongClicked : Listener<String>? = null
+        private set
+
+    /**
+     * コメント中のエントリIDがクリックされたときの処理
+     */
+    var onEntryIdClicked : Listener<Long>? = null
+        private set
+
+    /**
+     * コメント中のエントリIDが長押しされたときの処理
+     */
+    var onEntryIdLongClicked : Listener<Long>? = null
+        private set
+
+    /**
+     * ブクマ中のタグがクリックされたときの処理
+     */
+    var onTagClicked : Listener<String>? = null
+        private set
+
+    // ------ //
+
     init {
         viewModelScope.launch {
             repository.signIn()
         }
     }
 
-    // ------ //
+    /**
+     * クリックに伴う画面遷移などのイベントリスナを設定する
+     */
+    fun initializeListeners(activity: AppCompatActivity) {
+        onLinkClicked = { url ->
+            val action = TapEntryAction.fromInt(repository.prefs.getInt(
+                PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION
+            ))
+            invokeLinkAction(activity, action) {
+                repository.getEntry(url)
+            }
+        }
 
-    /** エントリをセットしてブクマ情報を取得する */
-    @MainThread
-    fun loadEntry(entry: Entry) {
-        repository.loadEntry(entry)
-        viewModelScope.launch(Dispatchers.Default) {
-            repository.loadBookmarks(entry.url)
+        onLinkLongClicked = { url ->
+            val action = TapEntryAction.fromInt(repository.prefs.getInt(
+                PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION
+            ))
+            invokeLinkAction(activity, action) {
+                repository.getEntry(url)
+            }
+        }
+
+        onEntryIdClicked = { eid ->
+            val action = TapEntryAction.fromInt(repository.prefs.getInt(
+                PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION
+            ))
+            invokeLinkAction(activity, action) {
+                repository.getEntry(eid)
+            }
+        }
+
+        onEntryIdLongClicked = { eid ->
+            val action = TapEntryAction.fromInt(repository.prefs.getInt(
+                PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION
+            ))
+            invokeLinkAction(activity, action) {
+                repository.getEntry(eid)
+            }
+        }
+
+        onTagClicked = { tag ->
+            val intent = Intent(activity, EntriesActivity::class.java).also {
+                it.putExtra(EntriesActivity.EXTRA_SEARCH_TAG, tag)
+            }
+            activity.startActivity(intent)
         }
     }
+
+    /**
+     * コメント中のリンクをクリック/長押ししたときの処理
+     */
+    private fun invokeLinkAction(
+        activity: AppCompatActivity,
+        actionType: TapEntryAction,
+        entryLoader: suspend ()->Entry
+    ) {
+        val handler = EntryMenuActionsImplForBookmarks(FavoriteSitesRepository(
+            SafeSharedPreferences.create(activity),
+            HatenaClient
+        ))
+
+        activity.lifecycleScope.launch(Dispatchers.Main) {
+            val result = runCatching {
+                entryLoader()
+            }
+
+            val entry = result.getOrElse {
+                activity.showToast(R.string.msg_get_entry_failed)
+                return@launch
+            }
+
+            handler.invokeEntryClickedAction(
+                activity,
+                entry,
+                actionType,
+                activity.supportFragmentManager,
+                viewModelScope
+            )
+        }
+    }
+
+    // ------ //
 
     /** 最新ブクマリストを再取得 */
     fun reloadBookmarks(

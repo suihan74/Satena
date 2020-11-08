@@ -258,12 +258,10 @@ class BookmarksRepository(
      */
     suspend fun loadEntry(url: String) : Entry {
         val result = runCatching {
-            client.getEntryAsync(url).await()
+            getEntry(url)
         }
 
-        val e = result.getOrElse {
-            throw ConnectionFailureException(it)
-        }
+        val e = result.getOrThrow()
 
         withContext(Dispatchers.Main) {
             entry.value = e
@@ -279,16 +277,40 @@ class BookmarksRepository(
      */
     suspend fun loadEntry(eid: Long) : Entry {
         val result = runCatching {
-            client.getEntryAsync(eid).await()
+            getEntry(eid)
         }
 
-        val e = result.getOrElse { throw ConnectionFailureException(it) }
+        val e = result.getOrThrow()
 
         withContext(Dispatchers.Main) {
             entry.value = e
         }
 
         return e
+    }
+
+    /**
+     * エントリ情報を取得する(リポジトリにロードはしない)
+     *
+     * @throws ConnectionFailureException
+     */
+    suspend fun getEntry(url: String) : Entry {
+        val result = runCatching {
+            client.getEntryAsync(url).await()
+        }
+        return result.getOrElse { throw ConnectionFailureException(it) }
+    }
+
+    /**
+     * エントリ情報を取得する(リポジトリにロードはしない)
+     *
+     * @throws ConnectionFailureException
+     */
+    suspend fun getEntry(eid: Long) : Entry {
+        val result = runCatching {
+            client.getEntryAsync(eid).await()
+        }
+        return result.getOrElse { throw ConnectionFailureException(it) }
     }
 
     /**
