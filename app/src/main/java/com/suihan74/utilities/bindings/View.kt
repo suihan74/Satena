@@ -26,3 +26,11 @@ fun View.setVisibility(isVisible: Boolean?, disabledDefault: Int? = View.GONE) {
 fun View.setAlphaByAvailability(isEnabled: Boolean?, disableAlpha: Float?) {
     alpha = if (isEnabled == true) 1.0f else disableAlpha ?: 0.5f
 }
+
+/**
+ * 空文字列のとき非表示にする
+ */
+@BindingAdapter(value = ["android:visibility", "disabledDefaultVisibility"], requireAll = false)
+fun View.setVisibility(str: String?, disabledDefault: Int? = View.GONE) {
+    setVisibility(!str.isNullOrBlank(), disabledDefault)
+}
