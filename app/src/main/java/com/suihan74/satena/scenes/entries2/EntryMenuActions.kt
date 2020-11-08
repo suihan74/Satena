@@ -361,9 +361,10 @@ class EntryMenuActionsImplForBookmarks(
 ) : EntryMenuActionsImplBasic() {
 
     override fun showEntries(activity: Activity, entry: Entry) {
-        activity.alsoAs<EntriesActivity> { a ->
-            a.showSiteEntries(entry.rootUrl)
+        val intent = Intent(activity, EntriesActivity::class.java).also {
+            it.putExtra(EntriesActivity.EXTRA_SITE_URL, entry.rootUrl)
         }
+        activity.startActivity(intent)
     }
 
     override fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
