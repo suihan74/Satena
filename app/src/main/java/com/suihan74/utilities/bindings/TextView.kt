@@ -29,6 +29,18 @@ fun TextView.textSizeSp(size: Float) {
 
 //////////////////////////////////////////////////
 
+/**
+ * 数値をテキストとしてセットする
+ *
+ * 数値を直接渡す際にリソースIDとして認識されないようにするために使用
+ */
+@BindingAdapter("numText")
+fun TextView.setNumberText(value: Number?) {
+    this.text = value?.toString().orEmpty()
+}
+
+//////////////////////////////////////////////////
+
 class TextViewWithDrawable @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
