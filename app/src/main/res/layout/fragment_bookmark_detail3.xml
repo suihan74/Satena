@@ -220,6 +220,7 @@
 
             <TextView
                     android:id="@+id/green_stars_count"
+                    numText="@{bookmarksViewModel.userColorStarsCount.green}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/starGreen"
@@ -261,6 +262,7 @@
 
             <TextView
                     android:id="@+id/red_stars_count"
+                    numText="@{bookmarksViewModel.userColorStarsCount.red}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/starRed"
@@ -302,6 +304,7 @@
 
             <TextView
                     android:id="@+id/blue_stars_count"
+                    numText="@{bookmarksViewModel.userColorStarsCount.blue}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/starBlue"
@@ -343,6 +346,7 @@
 
             <TextView
                     android:id="@+id/purple_stars_count"
+                    numText="@{bookmarksViewModel.userColorStarsCount.purple}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/starPurple"

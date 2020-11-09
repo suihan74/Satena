@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.transition.Fade
 import android.transition.Slide
@@ -16,6 +17,7 @@ import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
+import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
 
 /**
  * 選択したひとつのブクマ情報を表示する画面
@@ -75,8 +77,10 @@ class BookmarkDetailFragment : Fragment() {
         }
 
         // タブの設定
-        binding.tabPager.adapter = DetailTabAdapter(childFragmentManager)
-        binding.tabLayout.setupWithViewPager(binding.tabPager)
+        viewModel.bookmark.observe(viewLifecycleOwner) { bookmark ->
+            val adapter = DetailTabAdapter(bookmark, childFragmentManager)
+            adapter.setup(requireContext(), binding.tabLayout, binding.tabPager)
+        }
 
         // ブクマに対するメニュー
         binding.menuButton.setOnClickListener {

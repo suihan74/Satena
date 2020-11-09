@@ -463,10 +463,10 @@
     <string name="infinite">∞</string>
     <string name="star">★</string>
     <string name="star_with_count">★%d</string>
-    <string name="bookmark_detail_tab_stars_from">%s → ★</string>
-    <string name="bookmark_detail_tab_stars_to">★ → %s</string>
-    <string name="bookmark_detail_tab_mentions_from">%s → mention</string>
-    <string name="bookmark_detail_tab_mentions_to">mention -> %s</string>
+    <string name="bookmark_detail_tab_stars_from">from %s</string>
+    <string name="bookmark_detail_tab_stars_to">to %s</string>
+    <string name="bookmark_detail_tab_mentions_from">from %s</string>
+    <string name="bookmark_detail_tab_mentions_to">to %s</string>
     <string name="bookmark_detail_quote_comment">"%s"</string>
     <string name="msg_post_star_dialog">%sスターをつけます。よろしいですか？</string>
     <string name="msg_delete_star_dialog">このブコメにつけたスターを削除します。よろしいですか？</string>
