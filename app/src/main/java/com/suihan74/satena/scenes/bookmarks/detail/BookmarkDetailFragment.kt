@@ -114,8 +114,144 @@ class BookmarkDetailFragment : Fragment() {
         // TODO: スター付与ボタン設定
 
         binding.showStarsButton.setOnClickListener {
+            // TODO: 表示状態を切り替えるようにする
+            openStarMenu()
         }
 
         return binding.root
+    }
+
+    // ------ //
+
+    private fun showStarButton(layoutId: Int, counterId: Int, dimenId: Int) =
+        when (resources.configuration.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> showStarButtonLandscape(layoutId, counterId, dimenId)
+            else -> showStarButtonPortrait(layoutId, counterId, dimenId)
+        }
+
+    private fun showStarButtonPortrait(layoutId: Int, counterId: Int, dimenId: Int) {
+        val view = requireView()
+        val layout = view.findViewById<View>(layoutId)
+        val counter = view.findViewById<View>(counterId)
+        val pos = requireContext().resources.getDimension(dimenId)
+
+        layout.animate()
+            .withEndAction {
+                counter.animate()
+                    .translationXBy(100f)
+                    .translationX(0f)
+                    .alphaBy(0.0f)
+                    .alpha(1.0f)
+                    .duration = 100
+            }
+            .translationYBy(0f)
+            .translationY(-pos)
+            .alphaBy(0f)
+            .alpha(1f)
+            .duration = 100
+    }
+
+    private fun showStarButtonLandscape(layoutId: Int, counterId: Int, dimenId: Int) {
+        val view = requireView()
+        val layout = view.findViewById<View>(layoutId)
+        val counter = view.findViewById<View>(counterId)
+        val pos = requireContext().resources.getDimension(dimenId)
+
+        layout.animate()
+            .withEndAction {
+                counter.animate()
+                    .translationYBy(50f)
+                    .translationY(0f)
+                    .alphaBy(0.0f)
+                    .alpha(1.0f)
+                    .duration = 100
+            }
+            .translationXBy(0f)
+            .translationX(-pos)
+            .alphaBy(0f)
+            .alpha(1f)
+            .duration = 100
+    }
+
+    private fun hideStarButton(layoutId: Int, counterId: Int) =
+        when (resources.configuration.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> hideStarButtonLandscape(layoutId, counterId)
+            else -> hideStarButtonPortrait(layoutId, counterId)
+        }
+
+    private fun hideStarButtonPortrait(layoutId: Int, counterId: Int) {
+        val view = requireView()
+        val layout = view.findViewById<View>(layoutId)
+        val counter = view.findViewById<View>(counterId)
+
+        counter.animate()
+            .withEndAction {
+                layout.animate()
+                    .translationY(0f)
+                    .alpha(0f)
+                    .duration = 100
+            }
+            .translationX(100f)
+            .alphaBy(1.0f)
+            .alpha(0.0f)
+            .duration = 100
+    }
+
+    private fun hideStarButtonLandscape(layoutId: Int, counterId: Int) {
+        val view = requireView()
+        val layout = view.findViewById<View>(layoutId)
+        val counter = view.findViewById<View>(counterId)
+
+        counter.animate()
+            .withEndAction {
+                layout.animate()
+                    .translationX(0f)
+                    .alpha(0f)
+                    .duration = 100
+            }
+            .translationY(50f)
+            .alphaBy(1.0f)
+            .alpha(0.0f)
+            .duration = 100
+    }
+
+    private fun openStarMenu() {
+        showStarButton(
+            R.id.purple_star_layout,
+            R.id.purple_stars_count,
+            R.dimen.purple_star_position
+        )
+        showStarButton(
+            R.id.blue_star_layout,
+            R.id.blue_stars_count,
+            R.dimen.blue_star_position
+        )
+        showStarButton(
+            R.id.red_star_layout,
+            R.id.red_stars_count,
+            R.dimen.red_star_position
+        )
+        showStarButton(
+            R.id.green_star_layout,
+            R.id.green_stars_count,
+            R.dimen.green_star_position
+        )
+        showStarButton(
+            R.id.yellow_star_layout,
+            R.id.yellow_stars_count,
+            R.dimen.yellow_star_position
+        )
+
+        requireView().show_stars_button.setImageResource(R.drawable.ic_baseline_close)
+    }
+
+    private fun closeStarMenu() {
+        hideStarButton(R.id.purple_star_layout, R.id.purple_stars_count)
+        hideStarButton(R.id.blue_star_layout, R.id.blue_stars_count)
+        hideStarButton(R.id.red_star_layout, R.id.red_stars_count)
+        hideStarButton(R.id.green_star_layout, R.id.green_stars_count)
+        hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
+
+        requireView().show_stars_button.setImageResource(R.drawable.ic_add_star_filled)
     }
 }
