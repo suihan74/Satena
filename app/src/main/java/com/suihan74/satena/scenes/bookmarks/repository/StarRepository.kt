@@ -74,6 +74,11 @@ interface StarRepositoryInterface {
      * 渡された全URLに対するスター情報を取得し内部にキャッシュする
      */
     suspend fun loadStarsEntries(urls: List<String>, forceUpdate: Boolean = false)
+
+    /**
+     * キャッシュされたスターの中から指定ユーザーがつけたものを探す
+     */
+    suspend fun getUserStars(user: String) : List<LiveData<StarsEntry>>
 }
 
 // ------ //
@@ -281,6 +286,17 @@ class StarRepository(
                 }
 
                 starsEntriesCache[entry.url] = liveData
+            }
+        }
+    }
+
+    /**
+     * キャッシュされたスターの中から指定ユーザーがつけたものを探す
+     */
+    override suspend fun getUserStars(user: String) : List<LiveData<StarsEntry>> {
+        return starsEntriesLock.withLock {
+            starsEntriesCache.values.filter { starsEntry ->
+                starsEntry.value?.allStars?.any { it.user == user } == true
             }
         }
     }

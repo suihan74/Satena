@@ -827,4 +827,61 @@ class BookmarksRepository(
         val ids = matches.map { it.groupValues[2] }
         return bookmarksEntry.value?.bookmarks?.filter { ids.contains(it.user) }.orEmpty()
     }
+
+    /** 指定ブクマにつけられたスターとそれをつけたユーザーのブクマを取得する */
+    suspend fun getStarRelationsTo(
+        bookmark: Bookmark,
+        forceUpdate: Boolean = false
+    ) : List<StarRelation> = withContext(Dispatchers.Default) {
+        val receiver = bookmark.user
+        val starsEntry = getStarsEntry(bookmark, forceUpdate)
+
+        starsEntry?.value?.allStars?.map { star ->
+            val sender = star.user
+            StarRelation(
+                sender,
+                receiver,
+                senderBookmark = bookmarksEntry.value?.bookmarks?.firstOrNull { it.user == sender},
+                receiverBookmark = bookmark,
+                star = star
+            )
+        }.orEmpty()
+    }
+
+    /** 指定ブクマのユーザーがつけたスターとブクマを取得する */
+    suspend fun getStarRelationsFrom(
+        bookmark: Bookmark,
+        forceUpdate: Boolean = false
+    ) : List<StarRelation> = withContext(Dispatchers.Default) {
+        if (forceUpdate) {
+            entry.value?.let { entry ->
+                bookmarksEntry.value?.bookmarks
+                    ?.filter { it.comment.isNotBlank() }
+                    ?.map {
+                        it.getBookmarkUrl(entry)
+                    }?.let { urls ->
+                        loadStarsEntries(urls, forceUpdate = true)
+                    }
+            }
+        }
+
+        val userNameRegex = Regex("""\Q${HatenaClient.B_BASE_URL}\E/([A-Za-z0-9_]+)/.*""")
+        val sender = bookmark.user
+        val starsEntries = getUserStars(sender)
+
+        starsEntries.mapNotNull { liveData ->
+            val starsEntry = liveData.value ?: return@mapNotNull null
+            val star = starsEntry.allStars.firstOrNull { it.user == sender } ?: return@mapNotNull null
+            val match = userNameRegex.find(starsEntry.url)
+            val receiver = match?.groupValues?.get(1) ?: return@mapNotNull null
+            StarRelation(
+                sender,
+                receiver,
+                senderBookmark = bookmark,
+                receiverBookmark = bookmarksEntry.value?.bookmarks?.firstOrNull { it.user == receiver}
+                    ?: return@mapNotNull  null,
+                star = star
+            )
+        }
+    }
 }
