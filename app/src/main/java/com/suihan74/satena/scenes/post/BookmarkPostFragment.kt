@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarkPostBinding
@@ -44,6 +45,14 @@ class BookmarkPostFragment : Fragment() {
         get() = (requireActivity() as BookmarkPostViewModelOwner).bookmarkPostViewModel
 
     // ------ //
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        browserViewModel?.let { vm ->
+            initializeForBrowser(vm.bookmarksRepo, savedInstanceState != null)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -100,10 +109,6 @@ class BookmarkPostFragment : Fragment() {
             })
         }
 
-        browserViewModel?.let { vm ->
-            initializeForBrowser(vm.bookmarksRepo)
-        }
-
         // タグリストを初期化
         setupTagsList(binding)
 
@@ -111,17 +116,27 @@ class BookmarkPostFragment : Fragment() {
     }
 
     /** アプリ内ブラウザで使用されている場合の接続処理 */
-    private fun initializeForBrowser(bookmarksRepo: BookmarksRepository) {
-        // WebViewがページ遷移したらエントリ情報をリロードする
-        bookmarksRepo.entry.observe(viewLifecycleOwner) {
-            if (it == null) return@observe
-            val userSignedIn = bookmarksRepo.userSignedIn
-            val userComment =
-                if (userSignedIn == null) null
-                else it.bookmarkedData?.commentRaw
+    private fun initializeForBrowser(bookmarksRepo: BookmarksRepository, restored: Boolean) {
+        // 画面復元時の初回呼び出しで実行されないようにする
+        var skipOnRestored = restored
 
-            viewModel.comment.value = userComment.orEmpty()
-            viewModel.initialize(requireContext(), entry = it)
+        // WebViewがページ遷移したらエントリ情報をリロードする
+        bookmarksRepo.entry.observe(requireActivity()) {
+            lifecycleScope.launchWhenResumed {
+                if (it == null) return@launchWhenResumed
+                if (skipOnRestored) {
+                    skipOnRestored = false
+                    return@launchWhenResumed
+                }
+
+                val userSignedIn = bookmarksRepo.userSignedIn
+                val userComment =
+                    if (userSignedIn == null) null
+                    else it.bookmarkedData?.commentRaw
+
+                viewModel.comment.value = userComment.orEmpty()
+                viewModel.initialize(requireContext(), entry = it)
+            }
         }
     }
 
