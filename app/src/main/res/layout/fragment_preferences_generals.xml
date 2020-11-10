@@ -49,7 +49,6 @@
             <ToggleButton
                     android:id="@+id/toggle_drawer_gravity"
                     style="@style/PreferencesToggleButtonStyle"
-                    android:textColor="@color/textColor"
                     drawerGravity="@={vm.drawerGravity}"
                     android:textOff="@string/pref_generals_drawer_gravity_right"
                     android:textOn="@string/pref_generals_drawer_gravity_left"
