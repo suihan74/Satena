@@ -1,358 +1,359 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/panelBackground"
-        android:clickable="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true">
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailViewModel" />
 
-    <LinearLayout
-            android:id="@+id/parent_layout"
-            android:baselineAligned="false"
+        <variable
+                name="bookmarksViewModel"
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:background="?attr/panelBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
 
-        <RelativeLayout
-                android:layout_width="0dp"
+        <LinearLayout
+                android:id="@+id/parent_layout"
+                android:baselineAligned="false"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:id="@+id/bookmark_detail_layout">
+                android:orientation="horizontal">
 
             <RelativeLayout
-                    android:id="@+id/user_info"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="16dp">
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:id="@+id/bookmark_detail_layout">
 
-                <ImageView
-                        android:id="@+id/user_icon"
-                        android:contentDescription="@null"
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"/>
-
-                <TextView
-                        android:id="@+id/user_name"
-                        android:textStyle="bold"
-                        android:textSize="16sp"
-                        android:textColor="?attr/textColor"
-                        android:gravity="center_vertical"
-                        android:textAlignment="gravity"
-                        android:maxLines="3"
-                        android:ellipsize="end"
+                <RelativeLayout
+                        android:id="@+id/user_info"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="10dp"
-                        android:layout_alignTop="@id/user_icon"
-                        android:layout_alignBottom="@id/user_icon"
-                        android:layout_toEndOf="@id/user_icon"/>
+                        android:layout_height="wrap_content"
+                        android:layout_margin="16dp">
 
-            </RelativeLayout>
+                    <ImageView
+                            android:id="@+id/user_icon"
+                            src="@{vm.bookmark.userIconUrl}"
+                            android:contentDescription="@null"
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"/>
 
-            <com.suihan74.utilities.views.SelectableTextView
-                    android:id="@+id/comment"
-                    android:textSize="14sp"
-                    android:textColor="?attr/textColor"
-                    android:minHeight="43dp"
-                    android:textIsSelectable="true"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/user_info"
-                    android:layout_alignStart="@id/user_info"
-                    android:layout_alignEnd="@id/user_info"/>
+                    <TextView
+                            android:id="@+id/user_name"
+                            android:text="@{vm.bookmark.user}"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="?attr/textColor"
+                            android:gravity="center_vertical"
+                            android:textAlignment="gravity"
+                            android:maxLines="3"
+                            android:ellipsize="end"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="10dp"
+                            android:layout_alignTop="@id/user_icon"
+                            android:layout_alignBottom="@id/user_icon"
+                            android:layout_toEndOf="@id/user_icon"/>
 
-            <LinearLayout
-                    android:id="@+id/tags_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginEnd="4dp"
-                    android:layout_below="@id/comment"
-                    android:layout_alignStart="@id/comment"
-                    android:layout_toStartOf="@id/menu_button"
-                    android:orientation="horizontal">
+                </RelativeLayout>
 
-                <ImageView
-                        android:id="@+id/tag_icon"
-                        android:contentDescription="@null"
-                        app:srcCompat="@drawable/ic_tag"
-                        app:tint="?attr/tagTextColor"
-                        android:layout_marginTop="3dp"
-                        android:layout_width="14sp"
-                        android:layout_height="14sp"/>
+                <com.suihan74.utilities.views.SelectableTextView
+                        android:id="@+id/comment"
+                        android:textSize="14sp"
+                        android:textColor="?attr/textColor"
+                        android:minHeight="43dp"
+                        android:textIsSelectable="true"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/user_info"
+                        android:layout_alignStart="@id/user_info"
+                        android:layout_alignEnd="@id/user_info"/>
+
                 <TextView
                         android:id="@+id/tags"
+                        tagLinks="@{vm.bookmark}"
+                        onTagClick="@{bookmarksViewModel.onTagClicked}"
                         android:textSize="14sp"
                         android:textColor="?attr/tagTextColor"
                         android:textColorLink="?attr/tagTextColor"
                         android:layout_marginStart="2dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"/>
+
+                <ImageView
+                        android:id="@+id/ignored_user_mark"
+                        android:visibility="@{vm.ignored}"
+                        android:contentDescription="@null"
+                        app:srcCompat="@drawable/ic_ignored_user_mark"
+                        app:tint="?attr/tagTextColor"
+                        android:layout_below="@id/tags"
+                        android:layout_alignStart="@id/tags"
+                        android:layout_marginTop="4dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"/>
+
+                <ImageButton
+                        android:id="@+id/menu_button"
+                        android:contentDescription="@null"
+                        app:srcCompat="@drawable/ic_more_horiz"
+                        app:tint="?attr/textColor"
+                        android:background="@drawable/control_background_40dp_material"
+                        android:layout_alignEnd="@id/comment"
+                        android:layout_below="@id/comment"
+                        android:layout_marginTop="2dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"/>
+            </RelativeLayout>
+
+            <LinearLayout
+                    android:id="@+id/stars_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/tab_layout"
+                        style="@style/TabLayoutStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                </com.google.android.material.tabs.TabLayout>
+
+                <androidx.viewpager.widget.ViewPager
+                        android:id="@+id/tab_pager"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
             </LinearLayout>
+        </LinearLayout>
 
-            <ImageView
-                    android:id="@+id/ignored_user_mark"
-                    android:contentDescription="@null"
-                    app:srcCompat="@drawable/ic_ignored_user_mark"
-                    app:tint="?attr/tagTextColor"
-                    android:layout_below="@id/tags_layout"
-                    android:layout_alignStart="@id/tags_layout"
-                    android:layout_marginTop="4dp"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"/>
+        <TextView
+                android:id="@+id/quote_text_view"
+                android:text="@{vm.selectedText}"
+                android:visibility="@{vm.selectedText}"
+                app:layout_anchor="@id/bookmark_detail_layout"
+                app:layout_anchorGravity="bottom"
+                android:background="#aa000000"
+                android:textColor="?attr/textColor"
+                android:textSize="20sp"
+                android:paddingStart="8dp"
+                android:paddingEnd="108dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="32dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
-            <ImageButton
-                    android:id="@+id/menu_button"
+
+        <!-- スターボタン -->
+        <LinearLayout
+                android:id="@+id/yellow_star_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="24dp"
+                android:alpha="0"
+                app:layout_anchor="@id/show_stars_button"
+                app:layout_anchorGravity="center_horizontal|bottom"
+                android:orientation="vertical">
+
+            <TextView
+                    android:id="@+id/yellow_stars_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/infinite"
+                    android:textColor="@color/starYellow"
+                    android:textStyle="bold"
+                    android:background="@drawable/rounded_corner_text_view"
+                    android:alpha="0"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:paddingLeft="6dp"
+                    android:paddingRight="6dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/yellow_star_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
                     android:contentDescription="@null"
-                    app:srcCompat="@drawable/ic_more_horiz"
-                    app:tint="?attr/textColor"
-                    android:background="@drawable/control_background_40dp_material"
-                    android:layout_alignEnd="@id/comment"
-                    android:layout_below="@id/comment"
-                    android:layout_marginTop="2dp"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"/>
-        </RelativeLayout>
+                    android:src="@drawable/ic_star"
+                    app:backgroundTint="@color/starYellow"
+                    app:fabSize="mini"/>
+        </LinearLayout>
 
         <LinearLayout
-                android:id="@+id/stars_layout"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:id="@+id/green_star_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="24dp"
+                android:alpha="0"
+                app:layout_anchor="@id/show_stars_button"
+                app:layout_anchorGravity="center_horizontal|bottom"
                 android:orientation="vertical">
-            <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/tab_layout"
-                    style="@style/TabLayoutStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-            </com.google.android.material.tabs.TabLayout>
 
-            <androidx.viewpager.widget.ViewPager
-                    android:id="@+id/tab_pager"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+            <TextView
+                    android:id="@+id/green_stars_count"
+                    numText="@{bookmarksViewModel.userColorStarsCount.green}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/starGreen"
+                    android:textStyle="bold"
+                    android:background="@drawable/rounded_corner_text_view"
+                    android:alpha="0"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:paddingLeft="6dp"
+                    android:paddingRight="6dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/green_star_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_star"
+                    app:backgroundTint="@color/starGreen"
+                    app:fabSize="mini"/>
         </LinearLayout>
-    </LinearLayout>
 
-    <TextView
-            android:id="@+id/quote_text_view"
-            android:visibility="invisible"
-            app:layout_anchor="@id/bookmark_detail_layout"
-            app:layout_anchorGravity="bottom"
-            android:background="#aa000000"
-            android:textColor="?attr/textColor"
-            android:textSize="20sp"
-            android:paddingStart="8dp"
-            android:paddingEnd="108dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="32dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-
-
-    <!-- スターボタン -->
-    <LinearLayout
-            android:id="@+id/yellow_star_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="24dp"
-            android:alpha="0"
-            app:layout_anchor="@id/show_stars_button"
-            app:layout_anchorGravity="center_horizontal|bottom"
-            android:orientation="vertical">
-
-        <TextView
-                android:id="@+id/yellow_stars_count"
+        <LinearLayout
+                android:id="@+id/red_star_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/infinite"
-                android:textColor="@color/starYellow"
-                android:textStyle="bold"
-                android:background="@drawable/rounded_corner_text_view"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="24dp"
                 android:alpha="0"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:paddingLeft="6dp"
-                android:paddingRight="6dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="8dp"/>
+                app:layout_anchor="@id/show_stars_button"
+                app:layout_anchorGravity="center_horizontal|bottom"
+                android:orientation="vertical">
+
+            <TextView
+                    android:id="@+id/red_stars_count"
+                    numText="@{bookmarksViewModel.userColorStarsCount.red}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/starRed"
+                    android:textStyle="bold"
+                    android:background="@drawable/rounded_corner_text_view"
+                    android:alpha="0"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:paddingLeft="6dp"
+                    android:paddingRight="6dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/red_star_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_star"
+                    app:backgroundTint="@color/starRed"
+                    app:fabSize="mini"/>
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/blue_star_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="24dp"
+                android:alpha="0"
+                app:layout_anchor="@id/show_stars_button"
+                app:layout_anchorGravity="center_horizontal|bottom"
+                android:orientation="vertical">
+
+            <TextView
+                    android:id="@+id/blue_stars_count"
+                    numText="@{bookmarksViewModel.userColorStarsCount.blue}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/starBlue"
+                    android:textStyle="bold"
+                    android:background="@drawable/rounded_corner_text_view"
+                    android:alpha="0"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:paddingLeft="6dp"
+                    android:paddingRight="6dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/blue_star_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_star"
+                    app:backgroundTint="@color/starBlue"
+                    app:fabSize="mini"/>
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/purple_star_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="24dp"
+                android:alpha="0"
+                app:layout_anchor="@id/show_stars_button"
+                app:layout_anchorGravity="center_horizontal|bottom"
+                android:orientation="vertical">
+
+            <TextView
+                    android:id="@+id/purple_stars_count"
+                    numText="@{bookmarksViewModel.userColorStarsCount.purple}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/starPurple"
+                    android:textStyle="bold"
+                    android:background="@drawable/rounded_corner_text_view"
+                    android:alpha="0"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:paddingLeft="6dp"
+                    android:paddingRight="6dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/purple_star_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_star"
+                    app:backgroundTint="@color/starPurple"
+                    app:fabSize="mini"/>
+        </LinearLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/yellow_star_button"
+                android:id="@+id/show_stars_button"
+                style="@style/Widget.Design.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
                 android:src="@drawable/ic_star"
-                app:backgroundTint="@color/starYellow"
-                app:fabSize="mini"/>
-    </LinearLayout>
+                app:backgroundTint="@color/colorPrimary"
+                app:layout_anchor="@id/parent_layout"
+                app:layout_anchorGravity="bottom|end|right"
+                android:contentDescription="@null"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="24dp"/>
 
-    <LinearLayout
-            android:id="@+id/green_star_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="24dp"
-            android:alpha="0"
-            app:layout_anchor="@id/show_stars_button"
-            app:layout_anchorGravity="center_horizontal|bottom"
-            android:orientation="vertical">
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-        <TextView
-                android:id="@+id/green_stars_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/starGreen"
-                android:textStyle="bold"
-                android:background="@drawable/rounded_corner_text_view"
-                android:alpha="0"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:paddingLeft="6dp"
-                android:paddingRight="6dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="8dp"/>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/green_star_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_star"
-                app:backgroundTint="@color/starGreen"
-                app:fabSize="mini"/>
-    </LinearLayout>
-
-    <LinearLayout
-            android:id="@+id/red_star_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="24dp"
-            android:alpha="0"
-            app:layout_anchor="@id/show_stars_button"
-            app:layout_anchorGravity="center_horizontal|bottom"
-            android:orientation="vertical">
-
-        <TextView
-                android:id="@+id/red_stars_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/starRed"
-                android:textStyle="bold"
-                android:background="@drawable/rounded_corner_text_view"
-                android:alpha="0"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:paddingLeft="6dp"
-                android:paddingRight="6dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="8dp"/>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/red_star_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_star"
-                app:backgroundTint="@color/starRed"
-                app:fabSize="mini"/>
-    </LinearLayout>
-
-    <LinearLayout
-            android:id="@+id/blue_star_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="24dp"
-            android:alpha="0"
-            app:layout_anchor="@id/show_stars_button"
-            app:layout_anchorGravity="center_horizontal|bottom"
-            android:orientation="vertical">
-
-        <TextView
-                android:id="@+id/blue_stars_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/starBlue"
-                android:textStyle="bold"
-                android:background="@drawable/rounded_corner_text_view"
-                android:alpha="0"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:paddingLeft="6dp"
-                android:paddingRight="6dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="8dp"/>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/blue_star_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_star"
-                app:backgroundTint="@color/starBlue"
-                app:fabSize="mini"/>
-    </LinearLayout>
-
-    <LinearLayout
-            android:id="@+id/purple_star_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="24dp"
-            android:alpha="0"
-            app:layout_anchor="@id/show_stars_button"
-            app:layout_anchorGravity="center_horizontal|bottom"
-            android:orientation="vertical">
-
-        <TextView
-                android:id="@+id/purple_stars_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/starPurple"
-                android:textStyle="bold"
-                android:background="@drawable/rounded_corner_text_view"
-                android:alpha="0"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:paddingLeft="6dp"
-                android:paddingRight="6dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="8dp"/>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/purple_star_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_star"
-                app:backgroundTint="@color/starPurple"
-                app:fabSize="mini"/>
-    </LinearLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/show_stars_button"
-            style="@style/Widget.Design.FloatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_star"
-            app:backgroundTint="@color/colorPrimary"
-            app:layout_anchor="@id/parent_layout"
-            app:layout_anchorGravity="bottom|end|right"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="24dp"/>
-
-    <ProgressBar
-            android:id="@+id/detail_progress_bar"
-            android:visibility="gone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_anchor="@id/tab_pager"
-            app:layout_anchorGravity="center"/>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>
