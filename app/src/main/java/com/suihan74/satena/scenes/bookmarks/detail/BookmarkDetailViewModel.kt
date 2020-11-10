@@ -3,8 +3,8 @@ package com.suihan74.satena.scenes.bookmarks.detail
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.hatenaLib.Star
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
+import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 
 class BookmarkDetailViewModel(
     val repository : BookmarksRepository,
@@ -31,17 +31,22 @@ class BookmarkDetailViewModel(
     val selectedText = MutableLiveData<String>()
 
     /**
+     * スター付与メニューの開閉状態
+     */
+    val starsMenuOpened = MutableLiveData<Boolean>()
+
+    /**
      * ブクマにつけられたスター
      */
     val starsToUser by lazy {
-        MutableLiveData<List<Star>>()
+        MutableLiveData<List<StarRelation>>()
     }
 
     /**
      * ブクマのユーザーがつけたスター
      */
     val starsFromUser by lazy {
-        MutableLiveData<List<Star>>()
+        MutableLiveData<List<StarRelation>>()
     }
 
     /**

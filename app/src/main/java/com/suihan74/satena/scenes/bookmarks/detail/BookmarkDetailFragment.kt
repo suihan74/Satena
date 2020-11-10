@@ -114,8 +114,14 @@ class BookmarkDetailFragment : Fragment() {
         // TODO: スター付与ボタン設定
 
         binding.showStarsButton.setOnClickListener {
-            // TODO: 表示状態を切り替えるようにする
-            openStarMenu()
+            viewModel.starsMenuOpened.value = viewModel.starsMenuOpened.value != true
+        }
+
+        viewModel.starsMenuOpened.observe(viewLifecycleOwner) {
+            when (it) {
+                true -> openStarMenu()
+                false -> closeStarMenu()
+            }
         }
 
         return binding.root
