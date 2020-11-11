@@ -50,13 +50,29 @@
         <TextView
                 android:id="@+id/stars"
                 starsEntry="@{vm.entryStarsEntry}"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/title"
                 android:layout_alignStart="@id/title"
-                android:layout_alignEnd="@id/icon"
+                android:layout_toStartOf="@id/add_star_button"
+                android:layout_marginEnd="6dp"
                 android:visibility="@{stars.text}"
                 tools:text="★" />
+
+        <ImageButton
+                android:id="@+id/add_star_button"
+                android:visibility="@{vm.signedIn}"
+                app:srcCompat="@drawable/ic_add_star"
+                android:tint="?attr/tagTextColor"
+                android:background="?attr/actionBarItemBackground"
+                android:layout_below="@id/icon"
+                android:layout_alignEnd="@id/icon"
+                android:contentDescription="@null"
+                android:layout_alignBottom="@id/stars"
+                android:layout_alignTop="@id/stars"
+                android:layout_marginEnd="3dp"
+                android:layout_width="18dp"
+                android:layout_height="18dp" />
 
         <TextView
                 android:id="@+id/page_url"
@@ -68,9 +84,10 @@
                 android:layout_alignEnd="@id/icon"
                 android:layout_marginTop="3dp"
                 android:layout_marginBottom="7dp"
+                android:layout_marginEnd="21dp"
                 android:background="?selectableItemBackground"
-                android:ellipsize="end"
-                android:maxLines="5"
+                android:ellipsize="middle"
+                android:maxLines="2"
                 android:textColor="?attr/colorPrimary"
                 android:textIsSelectable="false"
                 tools:text="https://localhost/" />
