@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.HatenaClient
@@ -32,6 +33,7 @@ import com.suihan74.utilities.extensions.hideSoftInputMethod
 import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BrowserActivity :
     AppCompatActivity(),
@@ -108,7 +110,7 @@ class BrowserActivity :
         }
 
         // ドロワの設定
-        initializeDrawer()
+        initializeDrawer(savedInstanceState != null)
 
         // WebViewの設定
         viewModel.initializeWebView(webview, this)
@@ -231,9 +233,10 @@ class BrowserActivity :
      * ドロワの挙動を設定する
      */
     @MainThread
-    fun initializeDrawer() {
+    fun initializeDrawer(onRestored : Boolean) {
         drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
+                viewModel.drawerOpened.value = true
                 drawer_view_pager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
                     val position = drawer_tab_layout.selectedTabPosition
                     adapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
@@ -242,6 +245,7 @@ class BrowserActivity :
                 }
             }
             override fun onDrawerClosed(drawerView: View) {
+                viewModel.drawerOpened.value = false
                 // 閉じたことをドロワタブに通知する
                 drawer_view_pager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
                     val position = drawer_tab_layout.selectedTabPosition
@@ -289,6 +293,15 @@ class BrowserActivity :
                 }
             }
         })
+
+        // 復元時に展開中のドロワを再度開く
+        if (onRestored && viewModel.drawerOpened.value == true) {
+            lifecycleScope.launchWhenResumed {
+                withContext(Dispatchers.Main) {
+                    drawer_layout.openDrawer(drawer_area, false)
+                }
+            }
+        }
     }
 
     /**
