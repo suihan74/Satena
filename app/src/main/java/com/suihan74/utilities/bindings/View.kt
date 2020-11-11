@@ -31,6 +31,6 @@ fun View.setAlphaByAvailability(isEnabled: Boolean?, disableAlpha: Float?) {
  * 空文字列のとき非表示にする
  */
 @BindingAdapter(value = ["android:visibility", "disabledDefaultVisibility"], requireAll = false)
-fun View.setVisibility(str: String?, disabledDefault: Int? = View.GONE) {
-    setVisibility(!str.isNullOrBlank(), disabledDefault)
+fun View.setVisibility(charSequence: CharSequence?, disabledDefault: Int? = View.GONE) {
+    setVisibility(!charSequence.isNullOrBlank(), disabledDefault)
 }
