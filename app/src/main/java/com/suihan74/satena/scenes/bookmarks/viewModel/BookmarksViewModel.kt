@@ -69,6 +69,10 @@ class BookmarksViewModel(
         }
     }
 
+    /** エントリにつけられたスター */
+    val entryStarsEntry
+        get() = repository.entryStarsEntry
+
     /** アクションバーに表示するサブタイトル */
     val subtitle by lazy {
         MutableLiveData<String>()

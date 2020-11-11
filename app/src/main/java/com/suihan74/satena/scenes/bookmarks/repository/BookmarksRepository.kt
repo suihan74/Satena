@@ -112,6 +112,11 @@ class BookmarksRepository(
         MutableLiveData<BookmarksEntry?>()
     }
 
+    /** エントリのスター情報 */
+    val entryStarsEntry by lazy {
+        MutableLiveData<StarsEntry?>()
+    }
+
     // 各タブでの表示用のブクマリスト
 
     private val lazyBookmarksList
@@ -216,16 +221,31 @@ class BookmarksRepository(
             loadEntry(modifiedUrl)
 
             val loadingContentsTasks = listOf(
+                // エントリにつけられたスター
+                async {
+                    runCatching {
+                        getStarsEntry(modifiedUrl, forceUpdate = true).let {
+                            withContext(Dispatchers.Main) {
+                                it.observeForever { starsEntry ->
+                                    entryStarsEntry.value = starsEntry
+                                }
+                            }
+                        }
+                    }
+                },
+                // 全ブクマ情報を含むエントリ
                 async {
                     runCatching {
                         loadBookmarksEntry(modifiedUrl)
                     }
                 },
+                // 人気ブクマ
                 async {
                     runCatching {
                         loadPopularBookmarks()
                     }
                 },
+                // 新着ブクマ
                 async {
                     runCatching {
                         loadRecentBookmarks(additionalLoading = false)

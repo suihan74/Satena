@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks
 
+import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.View
@@ -8,12 +9,17 @@ import android.widget.TextView
 import androidx.core.text.buildSpannedString
 import androidx.databinding.BindingAdapter
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.StarColor
+import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
 import com.suihan74.utilities.BookmarkCommentDecorator
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.MutableLinkMovementMethod2
 import com.suihan74.utilities.extensions.append
 import com.suihan74.utilities.extensions.appendDrawable
+import com.suihan74.utilities.extensions.appendStarSpan
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.format.DateTimeFormatter
 
 /**
  * ブクマ関係の汎用的なBindingAdapter
@@ -96,5 +102,43 @@ object BindingAdapters {
         }
         textView.movementMethod = LinkMovementMethod.getInstance()
         textView.visibility = View.VISIBLE
+    }
+
+    /**
+     * スター数の表示
+     *
+     * @param starsEntry スター情報
+     * @param timestamp (ブコメリスト項目では使用)投稿時刻表示
+     */
+    @JvmStatic
+    @BindingAdapter(value = ["starsEntry", "timestamp"], requireAll = false)
+    fun setStarsEntry(textView: TextView, starsEntry: StarsEntry?, timestamp: LocalDateTime?) {
+        val builder = SpannableStringBuilder()
+
+        timestamp?.let {
+            val formatter = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
+            builder.append(it.format(formatter))
+            builder.append("\u2002\u2002") // margin
+        }
+
+        val stars = starsEntry?.allStars
+        if (!stars.isNullOrEmpty()) {
+            stars.let { star ->
+                val yellowStarCount = star.filter { it.color == StarColor.Yellow }.sumBy { it.count }
+                val redStarCount = star.filter { it.color == StarColor.Red }.sumBy { it.count }
+                val greenStarCount = star.filter { it.color == StarColor.Green }.sumBy { it.count }
+                val blueStarCount = star.filter { it.color == StarColor.Blue }.sumBy { it.count }
+                val purpleStarCount = star.filter { it.color == StarColor.Purple }.sumBy { it.count }
+
+                val context = textView.context
+                builder.appendStarSpan(purpleStarCount, context, R.style.StarSpan_Purple)
+                builder.appendStarSpan(blueStarCount, context, R.style.StarSpan_Blue)
+                builder.appendStarSpan(redStarCount, context, R.style.StarSpan_Red)
+                builder.appendStarSpan(greenStarCount, context, R.style.StarSpan_Green)
+                builder.appendStarSpan(yellowStarCount, context, R.style.StarSpan_Yellow)
+            }
+        }
+
+        textView.text = builder
     }
 }

@@ -40,9 +40,18 @@
                 android:scrollbars="vertical"
                 android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
                 android:scrollbarSize="4dp"
-                android:layout_marginBottom="3dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginStart="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/stars"
+                starsEntry="@{vm.entryStarsEntry}"
+                android:visibility="@{stars.text}"
+                android:layout_below="@id/title"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/icon"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
@@ -50,12 +59,13 @@
                 android:id="@+id/page_url"
                 entryPageUrl="@{vm.entry.url}"
                 android:background="?selectableItemBackground"
-                android:layout_below="@id/title"
-                android:layout_marginBottom="6dp"
                 android:textColor="?attr/colorPrimary"
                 android:textIsSelectable="false"
                 android:maxLines="5"
                 android:ellipsize="end"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="7dp"
+                android:layout_below="@id/stars"
                 android:layout_alignStart="@id/title"
                 android:layout_alignEnd="@id/icon"
                 android:layout_width="match_parent"
@@ -63,7 +73,6 @@
 
         <TextView
                 android:id="@+id/description"
-                android:layout_below="@id/page_url"
                 android:maxLines="6"
                 android:ellipsize="end"
                 android:scrollbars="vertical"
@@ -74,6 +83,7 @@
                 android:textIsSelectable="true"
                 android:textColor="?attr/textColor"
                 android:layout_marginBottom="12dp"
+                android:layout_below="@id/page_url"
                 android:layout_alignStart="@id/title"
                 android:layout_alignEnd="@id/icon"
                 android:layout_width="match_parent"
