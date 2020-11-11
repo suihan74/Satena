@@ -149,6 +149,13 @@ class PreferencesBrowserFragment :
             viewModel.openClearHistoryDialog(childFragmentManager)
         }
 
+        // 画面復元時に戻るボタンの割り込みを設定し直す
+        if (childFragmentManager.findFragmentById(R.id.child_fragment_layout) != null
+            && onBackPressedCallback == null
+        ) {
+            enableOnBackPressedCallback()
+        }
+
         return binding.root
     }
 
