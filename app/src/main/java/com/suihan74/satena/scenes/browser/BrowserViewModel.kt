@@ -131,6 +131,9 @@ class BrowserViewModel(
     /** 表示中のページがお気に入りに登録されているか */
     val isUrlFavorite = MutableLiveData<Boolean>(false)
 
+    /** ドロワの開閉状態 */
+    val drawerOpened = MutableLiveData<Boolean>()
+
     // ------ //
 
     /** ロード完了前にページ遷移した場合にロード処理を中断する */
