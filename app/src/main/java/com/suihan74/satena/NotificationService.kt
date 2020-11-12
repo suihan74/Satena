@@ -197,9 +197,8 @@ class NotificationService : Service(), CoroutineScope {
         }
     }
 
-    private fun invokeNotice(context: Context, notice: Notice) {
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        if (prefs.getBoolean(PreferenceKey.IGNORE_NOTICES_FROM_SPAM) && notice.checkFromSpam()) {
+    private suspend fun invokeNotice(context: Context, notice: Notice) {
+        if (checkFromSpam(context, notice)) {
             return
         }
 
@@ -266,6 +265,31 @@ class NotificationService : Service(), CoroutineScope {
         }
 
         NotificationManagerCompat.from(context).notify(0, builder.build())
+    }
+
+    /**
+     * 通知するべきかをチェックする
+     *
+     * @return true: スパムと思われるので通知しない
+     */
+    private suspend fun checkFromSpam(context: Context, notice: Notice) : Boolean {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val ignoreNoticesFromSpam = prefs.getBoolean(PreferenceKey.IGNORE_NOTICES_FROM_SPAM)
+        if (!ignoreNoticesFromSpam) return false
+
+        if (notice.checkFromSpam()) return true
+        if (notice.verb != Notice.VERB_STAR) return false
+
+        // ブコメをつけていないのにスターがつけられた
+        val bookmarkPage = HatenaClient.getBookmarkPageAsync(notice.eid, notice.user).await()
+        if (bookmarkPage.comment.body.isBlank()) return true
+
+        // スターがすぐに取り消された
+        val user = notice.objects.firstOrNull()?.user ?: return true
+        val starsEntry = HatenaClient.getStarsEntryAsync(notice.link).await()
+        if (starsEntry.allStars.none { it.user ==  user}) return true
+
+        return false
     }
 }
 
