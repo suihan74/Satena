@@ -52,6 +52,32 @@ interface StarRepositoryInterface {
     )
 
     /**
+     * エントリにスターを付ける
+     *
+     * @throws ConnectionFailureException
+     * @throws StarExhaustedException
+     */
+    suspend fun postStar(
+        entry: Entry,
+        color: StarColor,
+        quote: String = "",
+        updateCacheImmediately: Boolean = true
+    )
+
+    /**
+     * スターを付ける
+     *
+     * @throws ConnectionFailureException
+     * @throws StarExhaustedException
+     */
+    suspend fun postStar(
+        url: String,
+        color: StarColor,
+        quote: String = "",
+        updateCacheImmediately: Boolean = true
+    )
+
+    /**
      *  スターを解除する
      *
      * @throws ConnectionFailureException
@@ -138,7 +164,7 @@ class StarRepository(
     }
 
     /**
-     * スターを付ける
+     * ブクマにスターを付ける
      *
      * @throws ConnectionFailureException
      * @throws StarExhaustedException
@@ -150,11 +176,49 @@ class StarRepository(
         quote: String,
         updateCacheImmediately: Boolean
     ) {
+        postStar(
+            bookmark.getBookmarkUrl(entry),
+            color,
+            quote,
+            updateCacheImmediately
+        )
+    }
+
+    /**
+     * エントリにスターを付ける
+     *
+     * @throws ConnectionFailureException
+     * @throws StarExhaustedException
+     */
+    override suspend fun postStar(
+        entry: Entry,
+        color: StarColor,
+        quote: String,
+        updateCacheImmediately: Boolean
+    ) {
+        postStar(
+            entry.url,
+            color,
+            quote,
+            updateCacheImmediately
+        )
+    }
+
+    /**
+     * スターを付ける
+     *
+     * @throws ConnectionFailureException
+     * @throws StarExhaustedException
+     */
+    override suspend fun postStar(
+        url: String,
+        color: StarColor,
+        quote: String,
+        updateCacheImmediately: Boolean
+    ) {
         if (!checkColorStarAvailability(color)) {
             throw StarExhaustedException(color)
         }
-
-        val url = bookmark.getBookmarkUrl(entry)
 
         val result = runCatching {
             client.postStarAsync(
@@ -184,6 +248,7 @@ class StarRepository(
             }
         }
     }
+
 
     /**
      * スターを解除する

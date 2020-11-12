@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.TooltipCompat
 import androidx.fragment.app.FragmentManager
@@ -37,6 +38,7 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BookmarksViewModel(
     val repository: BookmarksRepository
@@ -249,10 +251,11 @@ class BookmarksViewModel(
     // ------ //
 
     /** 必要に応じて確認ダイアログを表示し、ブコメにスターを付ける */
-    fun postStar(
+    fun postStarToBookmark(
         context: Context,
         bookmark: Bookmark,
         color: StarColor,
+        quote: String?,
         fragmentManager: FragmentManager
     ) {
         val entry = entry.value ?: let {
@@ -269,8 +272,8 @@ class BookmarksViewModel(
                 .setMessage(context.getString(R.string.msg_post_star_dialog, color.name))
                 .setNegativeButton(R.string.dialog_cancel) { it.dismiss() }
                 .setPositiveButton(R.string.dialog_ok) {
-                    viewModelScope.launch(Dispatchers.Main) {
-                        postStarImpl(context, entry, bookmark, color)
+                    viewModelScope.launch {
+                        postStarToBookmarkImpl(context, entry, bookmark, color, quote)
                         it.dismiss()
                     }
                 }
@@ -279,29 +282,30 @@ class BookmarksViewModel(
             dialog.showAllowingStateLoss(fragmentManager)
         }
         else {
-            viewModelScope.launch(Dispatchers.Main) {
-                postStarImpl(context, entry, bookmark, color)
+            viewModelScope.launch {
+                postStarToBookmarkImpl(context, entry, bookmark, color, quote)
             }
         }
     }
 
-    private suspend fun postStarImpl(
+    private suspend fun postStarToBookmarkImpl(
         context: Context,
         entry: Entry,
         bookmark: Bookmark,
-        color: StarColor
-    ) {
+        color: StarColor,
+        quote: String?
+    ) = withContext(Dispatchers.Main) {
         val starAvailable = repository.checkColorStarAvailability(color)
         if (!starAvailable) {
             context.showToast(
                 R.string.msg_post_star_failed,
                 bookmark.user
             )
-            return
+            return@withContext
         }
 
         val result = runCatching {
-            repository.postStar(entry, bookmark, color)
+            repository.postStar(entry, bookmark, color, quote.orEmpty())
         }
 
         if (result.isSuccess) {
@@ -322,6 +326,66 @@ class BookmarksViewModel(
         }
     }
 
+    /** 必要に応じて確認ダイアログを表示し、エントリにスターを付ける */
+    fun postStarToEntry(
+        context: Context,
+        color: StarColor,
+        fragmentManager: FragmentManager
+    ) {
+        val entry = entry.value ?: let {
+            context.showToast(R.string.msg_post_star_to_entry_failed)
+            return
+        }
+
+        if (repository.useConfirmPostingStarDialog) {
+            val dialog = AlertDialogFragment2.Builder()
+                .setTitle(R.string.confirm_dialog_title_simple)
+                .setMessage(context.getString(R.string.msg_post_star_dialog, color.name))
+                .setNegativeButton(R.string.dialog_cancel) { it.dismiss() }
+                .setPositiveButton(R.string.dialog_ok) {
+                    viewModelScope.launch {
+                        postStarToEntryImpl(context, entry, color)
+                        it.dismiss()
+                    }
+                }
+                .dismissOnClickButton(false)
+                .create()
+            dialog.showAllowingStateLoss(fragmentManager)
+        }
+        else {
+            viewModelScope.launch {
+                postStarToEntryImpl(context, entry, color)
+            }
+        }
+    }
+
+    private suspend fun postStarToEntryImpl(
+        context: Context,
+        entry: Entry,
+        color: StarColor
+    ) = withContext(Dispatchers.Main) {
+        val starAvailable = repository.checkColorStarAvailability(color)
+        if (!starAvailable) {
+            context.showToast(R.string.msg_post_star_to_entry_failed)
+            return@withContext
+        }
+
+        val result = runCatching {
+            repository.postStar(entry, color)
+        }
+
+        if (result.isSuccess) {
+            context.showToast(R.string.msg_post_star_to_entry_succeeded)
+
+            // 表示を更新する
+            repository.refreshBookmarks()
+        }
+        else {
+            Log.w("postStar", Log.getStackTraceString(result.exceptionOrNull()))
+            context.showToast(R.string.msg_post_star_to_entry_failed)
+        }
+    }
+
     /** カラースター購入ページを開く */
     fun openPurchaseColorStarsPage(activity: Activity) {
         val intent = Intent(
@@ -329,6 +393,32 @@ class BookmarksViewModel(
             Uri.parse(repository.purchaseColorStarsPageUrl)
         )
         activity.startActivity(intent)
+    }
+
+    /**
+     * スター付与ポップアップを開く
+     */
+    fun openAddStarPopup(
+        activity: Activity,
+        lifecycleOwner: LifecycleOwner,
+        anchor: View,
+        postingAction: (color: StarColor)->Unit
+    ) {
+        AddStarPopupMenu(activity).run {
+            observeUserStars(lifecycleOwner, userColorStarsCount)
+
+            setOnClickAddStarListener { color ->
+                postingAction(color)
+                dismiss()
+            }
+
+            setOnClickPurchaseStarsListener {
+                openPurchaseColorStarsPage(activity)
+                dismiss()
+            }
+
+            showAsDropDown(anchor)
+        }
     }
 
     // ------ //
@@ -628,26 +718,15 @@ class BookmarksViewModel(
     ) {
         adapter.setAddStarButtonBinder { button, bookmark ->
             button.setOnClickListener {
-                val popup = AddStarPopupMenu(activity).also { popup ->
-                    popup.observeUserStars(
-                        lifecycleOwner,
-                        userColorStarsCount
+                openAddStarPopup(activity, lifecycleOwner, button) { color ->
+                    postStarToBookmark(
+                        activity,
+                        bookmark,
+                        color,
+                        null,
+                        fragmentManager
                     )
-                    popup.setOnClickAddStarListener { color ->
-                        postStar(
-                            activity,
-                            bookmark,
-                            color,
-                            fragmentManager
-                        )
-                        popup.dismiss()
-                    }
-                    popup.setOnClickPurchaseStarsListener {
-                        openPurchaseColorStarsPage(activity)
-                        popup.dismiss()
-                    }
                 }
-                popup.showAsDropDown(button)
             }
 
             val user = repository.userSignedIn

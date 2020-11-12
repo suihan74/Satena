@@ -17,7 +17,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntryInformation3Binding
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
-import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.bindings.setVisibility
@@ -77,18 +76,12 @@ class EntryInformationFragment : Fragment() {
 
         // スターをつける
         binding.addStarButton.setOnClickListener {
-            AddStarPopupMenu(requireContext()).run {
-                observeUserStars(viewLifecycleOwner, bookmarksViewModel.userColorStarsCount)
-
-                setOnClickAddStarListener { color ->
-                    // TODO:
-                }
-
-                setOnClickPurchaseStarsListener {
-                    bookmarksViewModel.openPurchaseColorStarsPage(requireActivity())
-                }
-
-                showAsDropDown(binding.addStarButton)
+            bookmarksViewModel.openAddStarPopup(
+                requireActivity(),
+                viewLifecycleOwner,
+                binding.addStarButton
+            ) { color ->
+                bookmarksViewModel.postStarToEntry(requireContext(), color, childFragmentManager)
             }
         }
 
