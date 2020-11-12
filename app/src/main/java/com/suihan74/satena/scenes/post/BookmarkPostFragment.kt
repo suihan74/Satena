@@ -17,6 +17,8 @@ import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.scopedObserver
+import com.suihan74.utilities.extensions.showSoftInputMethod
 
 /**
  * 投稿ダイアログ本体
@@ -111,6 +113,14 @@ class BookmarkPostFragment : Fragment() {
 
         // タグリストを初期化
         setupTagsList(binding)
+
+        // 初回だけロード完了後にIMEを開く
+        viewModel.nowLoading.observe(viewLifecycleOwner, scopedObserver {
+            if (it == false) {
+                requireActivity().showSoftInputMethod(binding.comment)
+            }
+            viewModel.nowLoading.removeObserver(this)
+        })
 
         return binding.root
     }

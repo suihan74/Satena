@@ -202,17 +202,15 @@ class BookmarksRepository(
     }
 
     /** 既にロード済みのエントリ情報をリポジトリにセットする */
-    suspend fun loadEntry(entry: Entry) = withContext(Dispatchers.Default) {
+    suspend fun loadEntry(entry: Entry) = withContext(Dispatchers.Main) {
         if (entry.id == 0L) {
             val result = runCatching {
                 client.getEntryIdAsync(entry.url).await() ?: 0L
             }
-            this@BookmarksRepository.entry.postValue(
-                entry.copy(id = result.getOrDefault(0L))
-            )
+            this@BookmarksRepository.entry.value = entry.copy(id = result.getOrDefault(0L))
         }
         else {
-            this@BookmarksRepository.entry.postValue(entry)
+            this@BookmarksRepository.entry.value = entry
         }
     }
 
