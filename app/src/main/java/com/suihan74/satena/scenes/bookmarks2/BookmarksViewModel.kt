@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.bookmarks2
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.annotation.MainThread
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -161,12 +162,13 @@ class BookmarksViewModel(
     }
 
     /** 各リストを再構成する */
+    @MainThread
     private fun refreshLists() {
         if (repository.bookmarksEntry != null) {
-            bookmarksEntry.postValue(repository.bookmarksEntry)
+            bookmarksEntry.value = repository.bookmarksEntry
         }
-        bookmarksPopular.postValue(repository.bookmarksPopular)
-        bookmarksRecent.postValue(repository.bookmarksRecent)
+        bookmarksPopular.value = repository.bookmarksPopular
+        bookmarksRecent.value = repository.bookmarksRecent
     }
 
     private fun loadEntryImpl(
@@ -273,7 +275,9 @@ class BookmarksViewModel(
                     viewModelScope.async { repository.loadBookmarksRecent() }
                 ).run {
                     awaitAll()
-                    refreshLists()
+                    withContext(Dispatchers.Main) {
+                        refreshLists()
+                    }
                 }
             }
             catch (e: Throwable) {
@@ -801,7 +805,7 @@ class BookmarksViewModel(
             .setMessage(R.string.msg_confirm_bookmark_deletion)
             .setNegativeButton(R.string.dialog_cancel)
             .setPositiveButton(R.string.dialog_ok) {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.Main) {
                     val result = runCatching {
                         repository.deleteUserBookmark()
                     }
