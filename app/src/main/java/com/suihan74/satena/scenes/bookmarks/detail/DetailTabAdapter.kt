@@ -21,13 +21,13 @@ class DetailTabAdapter(
 
     override fun getCount() = tabs.size
 
-    override fun getItem(position: Int) : Fragment = Fragment()
+    override fun getItem(position: Int) = tabs[position].createFragment()
 
     override fun getIconId(position: Int) = tabs[position].iconId
 
     override fun getTitleId(position: Int) = tabs[position].titleId
 
-    override fun getTooltipTextId(position: Int): Int = 0
+    override fun getTooltipTextId(position: Int): Int = tabs[position].tooltipTextId
 
     override fun getTitle(context: Context, position: Int, textId: Int): CharSequence {
         return context.getString(textId, bookmark.user)
@@ -41,26 +41,36 @@ class DetailTabAdapter(
 
     enum class TabType(
         @DrawableRes val iconId: Int,
-        @StringRes val titleId: Int
+        @StringRes val titleId: Int,
+        @StringRes val tooltipTextId: Int,
+        val createFragment : ()->Fragment
     ) {
         STARS_TO_USER(
             R.drawable.ic_star,
-            R.string.bookmark_detail_tab_stars_to
+            R.string.bookmark_detail_tab_stars_to,
+            R.string.bookmark_detail_tab_tooltip_stars_to,
+            { Fragment() }
         ),
 
         STARS_FROM_USER(
             R.drawable.ic_star,
-            R.string.bookmark_detail_tab_stars_from
+            R.string.bookmark_detail_tab_stars_from,
+            R.string.bookmark_detail_tab_tooltip_stars_from,
+            { Fragment() }
         ),
 
         MENTION_TO_USER(
             R.drawable.ic_baseline_chat_bubble,
-            R.string.bookmark_detail_tab_mentions_to
+            R.string.bookmark_detail_tab_mentions_to,
+            R.string.bookmark_detail_tab_tooltip_mentions_to,
+            { Fragment() }
         ),
 
         MENTION_FROM_USER(
             R.drawable.ic_baseline_chat_bubble,
-            R.string.bookmark_detail_tab_mentions_from
+            R.string.bookmark_detail_tab_mentions_from,
+            R.string.bookmark_detail_tab_tooltip_mentions_from,
+            { Fragment() }
         )
         ;
 
