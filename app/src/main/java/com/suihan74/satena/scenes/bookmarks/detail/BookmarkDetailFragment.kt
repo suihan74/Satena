@@ -27,22 +27,36 @@ class BookmarkDetailFragment : Fragment() {
     companion object {
         fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().withArguments {
             putObject(ARG_BOOKMARK, bookmark)
+            putString(ARG_USER, bookmark.user)
         }
 
+        /** 表示対象のブクマ */
         private const val ARG_BOOKMARK = "ARG_BOOKMARK"
+
+        /**
+         * 対象ブクマのユーザー
+         *
+         * viewModel取得or生成時に毎回Bookmarkインスタンスをデシリアライズし直さないようにするため使用
+         * (あってもなくてもそれほどはパフォーマンスに影響ないとは思う)
+         */
+        private const val ARG_USER = "ARG_USER"
     }
 
     // ------ //
 
-    val bookmarksActivity : BookmarksActivity
+    private val bookmarksActivity : BookmarksActivity
         get() = requireActivity() as BookmarksActivity
 
-    val bookmarksViewModel : BookmarksViewModel
+    private val bookmarksViewModel : BookmarksViewModel
         get() = bookmarksActivity.bookmarksViewModel
 
     val viewModel by lazy {
-        provideViewModel(this) {
-            val args = requireArguments()
+        val args = requireArguments()
+        val user = args.getString(ARG_USER)!!
+        val viewModelKey = "BookmarkDetail_$user"
+
+        // 複数回同じユーザーの詳細画面が開かれた場合使いまわすためActivityをownerにしている
+        provideViewModel(bookmarksActivity, viewModelKey) {
             val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
             val repository = bookmarksViewModel.repository
             BookmarkDetailViewModel(repository, bookmark)

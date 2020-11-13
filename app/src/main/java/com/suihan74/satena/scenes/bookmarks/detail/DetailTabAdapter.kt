@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
+import com.suihan74.satena.scenes.bookmarks.detail.tabs.StarRelationsTabFragment
 import com.suihan74.utilities.IconFragmentPagerAdapter
 
 class DetailTabAdapter(
@@ -49,14 +50,14 @@ class DetailTabAdapter(
             R.drawable.ic_star,
             R.string.bookmark_detail_tab_stars_to,
             R.string.bookmark_detail_tab_tooltip_stars_to,
-            { Fragment() }
+            { StarRelationsTabFragment.createInstance(STARS_TO_USER) }
         ),
 
         STARS_FROM_USER(
             R.drawable.ic_star,
             R.string.bookmark_detail_tab_stars_from,
             R.string.bookmark_detail_tab_tooltip_stars_from,
-            { Fragment() }
+            { StarRelationsTabFragment.createInstance(STARS_FROM_USER) }
         ),
 
         MENTION_TO_USER(
