@@ -77,10 +77,10 @@ data class BookmarksWithCursor (
 
 /** 人気コメントを取得するためのレスポンス */
 data class BookmarksDigest (
-    val referredBlogEntries : List<Entry>?,
+    val referedBlogEntries : List<Entry>,
     val scoredBookmarks : List<BookmarkWithStarCount>,
     val favoriteBookmarks : List<BookmarkWithStarCount>
 ) {
     // for Gson
-    private constructor() : this(null, emptyList(), emptyList())
+    private constructor() : this(emptyList(), emptyList(), emptyList())
 }

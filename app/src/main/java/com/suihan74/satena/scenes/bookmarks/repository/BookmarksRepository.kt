@@ -564,13 +564,13 @@ class BookmarksRepository(
         bookmarksEntry.postValue(bEntry)
 
         bookmarksDigestCache = BookmarksDigest(
-            bookmarksDigestCache?.referredBlogEntries,
+            bookmarksDigestCache?.referedBlogEntries.orEmpty(),
             bookmarksDigestCache?.scoredBookmarks?.map {
                 if (it.user == user) bookmark else it
-            } ?: emptyList(),
+            }.orEmpty(),
             bookmarksDigestCache?.favoriteBookmarks?.map {
                 if (it.user == user) bookmark else it
-            } ?: emptyList()
+            }.orEmpty()
         )
 
         bookmarksRecentCache =
@@ -821,7 +821,7 @@ class BookmarksRepository(
         bookmarksEntry.postValue(bEntry)
 
         bookmarksDigestCache = BookmarksDigest(
-            bookmarksDigestCache?.referredBlogEntries,
+            bookmarksDigestCache?.referedBlogEntries.orEmpty(),
             bookmarksDigestCache?.scoredBookmarks?.filterNot { it.user == user }.orEmpty(),
             bookmarksDigestCache?.favoriteBookmarks?.filterNot { it.user == user }.orEmpty()
         )
