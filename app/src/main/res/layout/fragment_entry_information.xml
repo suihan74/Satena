@@ -117,9 +117,6 @@
                     android:text="@string/entry_information_lower_floor"
                     style="@style/Widget.AppCompat.Button"
                     android:textColor="@color/textColor"
-                    android:layout_marginBottom="12dp"
-                    android:layout_marginStart="24dp"
-                    android:layout_marginEnd="24dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -134,9 +131,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    android:layout_marginBottom="12dp"
-                    android:layout_marginStart="24dp"
-                    android:layout_marginEnd="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
