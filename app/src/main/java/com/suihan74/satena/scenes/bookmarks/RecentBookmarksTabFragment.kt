@@ -6,6 +6,7 @@ import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
@@ -45,6 +46,9 @@ class RecentBookmarksTabFragment : BookmarksTabFragment() {
 
     override fun afterLoadedBookmarks() {
         scrollingUpdater?.isEnabled = true
+        binding?.recyclerView?.adapter.alsoAs<BookmarksAdapter> { adapter ->
+            adapter.additionalLoadable = bookmarksViewModel.repository.additionalLoadable
+        }
     }
 
     // ------ //
@@ -69,15 +73,44 @@ class RecentBookmarksTabFragment : BookmarksTabFragment() {
 
             bookmarksAdapter.startLoading()
             lifecycleScope.launch(Dispatchers.Main) {
-                bookmarksViewModel.repository.loadRecentBookmarks(additionalLoading = true)
-                bookmarksAdapter.stopLoading()
-                loadCompleted()
+                try {
+                    bookmarksViewModel.repository.loadRecentBookmarks(additionalLoading = true)
+                }
+                finally {
+                    bookmarksAdapter.stopLoading()
+                    loadCompleted()
+                }
             }
         }
         this.scrollingUpdater = scrollingUpdater
         // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
         scrollingUpdater.isEnabled = false
         binding.recyclerView.addOnScrollListener(scrollingUpdater)
+
+        // 「続きを読み込む」ボタン押下による明示的な追加ロード
+        bookmarksAdapter.setOnAdditionalLoadingListener {
+            // "引っ張って更新"中には実行しない
+            if (binding.swipeLayout.isRefreshing) {
+                return@setOnAdditionalLoadingListener
+            }
+
+            // スクロールによる追加ロード中には実行しない
+            if (scrollingUpdater.isLoading) {
+                return@setOnAdditionalLoadingListener
+            }
+
+            bookmarksAdapter.startLoading()
+            scrollingUpdater.isEnabled = false
+            lifecycleScope.launch(Dispatchers.Main) {
+                try {
+                    bookmarksViewModel.repository.loadRecentBookmarks(additionalLoading = true)
+                }
+                finally {
+                    bookmarksAdapter.stopLoading()
+                    scrollingUpdater.isEnabled = true
+                }
+            }
+        }
     }
 
 }

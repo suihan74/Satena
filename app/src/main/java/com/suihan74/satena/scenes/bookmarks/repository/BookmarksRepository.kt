@@ -147,6 +147,10 @@ class BookmarksRepository(
     /** 新着ブクマの追加取得用カーソル */
     private var recentCursor : String? = null
 
+    /** 新着ブクマの続きを読み込めるかどうか */
+    val additionalLoadable : Boolean
+        get() = recentCursor != null
+
     /** 「すべて」ブクマリストでは非表示対象を表示する */
     private val showIgnoredUsersInAllBookmarks by lazy {
         prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS)
