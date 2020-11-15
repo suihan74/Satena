@@ -1,6 +1,9 @@
 package com.suihan74.satena.scenes.bookmarks.repository
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.suihan74.satena.models.userTag.Tag
+import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.utilities.exceptions.AlreadyExistedException
@@ -13,7 +16,7 @@ import kotlinx.coroutines.withContext
 
 interface UserTagsRepositoryInterface {
     /** ユーザーに対応するユーザータグ */
-    val taggedUsers : List<UserAndTags>
+    val taggedUsers : HashMap<String, MutableLiveData<UserAndTags>>
 
     /** 全てのタグリスト */
     val userTags : List<Tag>
@@ -25,7 +28,14 @@ interface UserTagsRepositoryInterface {
     suspend fun loadUserTags(
         user: String,
         forceRefresh: Boolean = false
-    ) : UserAndTags?
+    ) : LiveData<UserAndTags>
+
+    /**
+     * ユーザータグのキャッシュを取得する
+     *
+     * ロードは行われない
+     */
+    fun getUserTags(user : String) : LiveData<UserAndTags>
 
     /** タグを作成する
      *
@@ -58,9 +68,7 @@ class UserTagsRepository(
     private val userTagsMutex by lazy { Mutex() }
 
     /** ユーザーに対応するユーザータグのキャッシュ */
-    private val taggedUsersCache = ArrayList<UserAndTags>()
-    override val taggedUsers: List<UserAndTags>
-        get() = taggedUsersCache
+    override val taggedUsers = HashMap<String, MutableLiveData<UserAndTags>>()
 
     /** 全てのタグ */
     private var userTagsCache : List<Tag> = emptyList()
@@ -82,21 +90,30 @@ class UserTagsRepository(
     override suspend fun loadUserTags(
         user: String,
         forceRefresh: Boolean
-    ) : UserAndTags? = withContext(Dispatchers.Default) {
-        userTagsMutex.withLock {
-            val existed = taggedUsersCache.firstOrNull { it.user.name == user }
-            if (!forceRefresh && existed != null) {
-                return@withLock existed
-            }
-            else {
-                val tag = dao.getUserAndTags(user)
-                if (tag != null) {
-                    taggedUsersCache.removeAll { it.user.id == tag.user.id }
-                    taggedUsersCache.add(tag)
+    ) : LiveData<UserAndTags> = withContext(Dispatchers.Default) {
+        val liveData = userTagsMutex.withLock {
+            taggedUsers.getOrPut(user) { MutableLiveData<UserAndTags>() }
+        }
+
+        if (forceRefresh || liveData.value == null) {
+            withContext(Dispatchers.Main) {
+                liveData.value = dao.getUserAndTags(user) ?: UserAndTags().also {
+                    it.user = User(name = user)
+                    it.tags = emptyList()
                 }
-                return@withLock tag
             }
         }
+
+        return@withContext liveData
+    }
+
+    /**
+     * ユーザータグのキャッシュを取得する
+     *
+     * ロードは行われない
+     */
+    override fun getUserTags(user : String) : LiveData<UserAndTags> {
+        return taggedUsers.getOrPut(user) { MutableLiveData<UserAndTags>() }
     }
 
     /** タグを作成する
@@ -144,22 +161,21 @@ class UserTagsRepository(
                 throw TaskFailureException(cause = result.exceptionOrNull())
             }
 
-            val cache = taggedUsersCache.firstOrNull {
-                it.user.id == user.id
+            val liveData = userTagsMutex.withLock {
+                taggedUsers[userName]
             }
-            if (cache == null) {
+
+            if (liveData == null) {
                 loadUserTags(userName)
             }
             else {
-                userTagsMutex.withLock {
-                    taggedUsersCache.remove(cache)
-                    taggedUsersCache.add(UserAndTags().also {
-                        it.user = cache.user
-                        it.tags = cache.tags.updateFirstOrPlus(tag) { t ->
-                            t.id == tag.id
-                        }
-                    })
-                }
+                val cache = liveData.value!!
+                liveData.postValue(UserAndTags().also {
+                    it.user = cache.user
+                    it.tags = cache.tags.updateFirstOrPlus(tag) { t ->
+                        t.id == tag.id
+                    }
+                })
             }
         }
     }
@@ -183,20 +199,19 @@ class UserTagsRepository(
                     throw TaskFailureException(cause = result.exceptionOrNull())
                 }
 
-                val cache = taggedUsersCache.firstOrNull {
-                    it.user.id == user.id
+                val liveData = userTagsMutex.withLock {
+                    taggedUsers[userName]
                 }
-                if (cache == null) {
+
+                if (liveData == null) {
                     loadUserTags(userName)
                 }
                 else {
-                    userTagsMutex.withLock {
-                        taggedUsersCache.remove(cache)
-                        taggedUsersCache.add(UserAndTags().also {
-                            it.user = cache.user
-                            it.tags = cache.tags.filterNot { t -> t.id == tag.id }
-                        })
-                    }
+                    val cache = liveData.value!!
+                    liveData.postValue(UserAndTags().also {
+                        it.user = cache.user
+                        it.tags = cache.tags.filterNot { t -> t.id == tag.id }
+                    })
                 }
             }
         }

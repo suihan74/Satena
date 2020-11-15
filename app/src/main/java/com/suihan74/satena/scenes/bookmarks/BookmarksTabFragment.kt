@@ -122,7 +122,7 @@ abstract class BookmarksTabFragment :
                     lifecycleScope,
                     bookmarks = it,
                     bookmarksEntry = bookmarksViewModel.bookmarksEntry.value,
-                    taggedUsers = repo.taggedUsers,
+                    taggedUsers = repo.taggedUsers.mapNotNull { it.value.value },
                     ignoredUsers = repo.ignoredUsersCache,
                     displayMutedMention = false,
                     starsEntryGetter = { b -> repo.getStarsEntry(b)?.value }

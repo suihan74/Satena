@@ -451,8 +451,9 @@ class BookmarksRepository(
 
                 // ユーザータグがひとつもついていない or 設定したタグがついている
                 // 予めユーザータグがロードされている必要がある
-                else -> taggedUsers.firstOrNull { it.user.name == b.user }.let { taggedUser ->
-                    taggedUser?.tags?.any { tag -> activeTagIds.any { it == tag.id } }
+                // TODO: liveData化
+                else -> taggedUsers[b.user].let { liveData ->
+                    liveData?.value?.tags?.any { tag -> activeTagIds.any { it == tag.id } }
                         ?: showUntaggedUsers
                 }
             }

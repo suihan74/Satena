@@ -560,9 +560,9 @@ class BookmarksViewModel(
     ) {
         viewModelScope.launch(Dispatchers.Main) {
             repository.loadUserTags()
-            val userAndTags = repository.loadUserTags(user)?.let {
-                it.tags.map { tag -> tag.id }
-            } ?: emptyList()
+            val userAndTags = repository.loadUserTags(user).let {
+                it.value?.tags?.map { tag -> tag.id }.orEmpty()
+            }
 
             val dialog = UserTagSelectionDialog.createInstance(
                 user,
