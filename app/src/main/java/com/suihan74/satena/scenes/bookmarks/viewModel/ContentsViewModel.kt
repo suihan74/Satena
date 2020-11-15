@@ -185,7 +185,7 @@ class ContentsViewModel(
 
     // ------ //
 
-    /** 選択したブクマの詳細情報表示画面を開く */
+    /** 選択したブクマの詳細情報画面を開く */
     fun openBookmarkDetail(container: BookmarkDetailOpenable, bookmark: Bookmark) {
         val fragmentManager = container.fragmentManager
 
@@ -201,5 +201,14 @@ class ContentsViewModel(
             .add(container.bookmarkDetailFrameLayoutId, bookmarkDetailFragment, backStackName)
             .addToBackStack(backStackName)
             .commitAllowingStateLoss()
+    }
+
+    /** ブクマをつけていないユーザーの詳細情報画面を開く */
+    fun openEmptyBookmarkDetail(container: BookmarkDetailOpenable, user: String) {
+        val dummyBookmark = Bookmark(
+            user = user,
+            comment = ""
+        )
+        openBookmarkDetail(container, dummyBookmark)
     }
 }
