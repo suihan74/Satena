@@ -1,8 +1,10 @@
 package com.suihan74.satena.scenes.bookmarks
 
+import android.content.res.ColorStateList
 import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
+import android.text.style.TextAppearanceSpan
 import android.view.View
 import android.webkit.URLUtil
 import android.widget.TextView
@@ -12,12 +14,14 @@ import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
+import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.utilities.BookmarkCommentDecorator
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.MutableLinkMovementMethod2
 import com.suihan74.utilities.extensions.append
 import com.suihan74.utilities.extensions.appendDrawable
 import com.suihan74.utilities.extensions.appendStarSpan
+import com.suihan74.utilities.extensions.getThemeColor
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -140,5 +144,30 @@ object BindingAdapters {
         }
 
         textView.text = builder
+    }
+
+    /**
+     * ユーザータグの列挙
+     */
+    @JvmStatic
+    @BindingAdapter(value = ["userName", "userTags", "tagsSize"], requireAll = false)
+    fun setUserTagsText(textView: TextView, user: String?, userTags: UserAndTags?, tagsSizePx: Int?) {
+        textView.text = buildSpannedString {
+            append(user)
+
+            val tagsText = userTags?.tags?.joinToString(",") { it.name }
+            if (!tagsText.isNullOrBlank()) {
+                val color = textView.context.getThemeColor(R.attr.tagTextColor)
+                val sizePx = tagsSizePx ?: (textView.lineHeight * .8).toInt()
+                append("\u2002")
+                appendDrawable(
+                    textView = textView,
+                    resId = R.drawable.ic_user_tag,
+                    color = color,
+                    sizePx = sizePx
+                )
+                append(tagsText, TextAppearanceSpan(null, 0, sizePx, ColorStateList.valueOf(color), null))
+            }
+        }
     }
 }

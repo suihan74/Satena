@@ -1,10 +1,14 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
+import android.app.Activity
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.detail.tabs.StarRelationsAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import kotlinx.coroutines.Dispatchers
@@ -16,16 +20,39 @@ class BookmarkDetailViewModel(
 ) : ViewModel() {
 
     /** 画面の表示対象のブクマ */
-    val bookmark = MutableLiveData<Bookmark>().also {
+    val bookmark : LiveData<Bookmark> by lazy { _bookmark }
+
+    private val _bookmark = MutableLiveData<Bookmark>().also {
         it.observeForever { b ->
-            ignored.value = repository.checkIgnored(b)
+            _ignored.value = repository.checkIgnored(b)
+            viewModelScope.launch {
+                repository.loadUserTags(b.user)
+            }
         }
     }
 
     /**
      * 非表示ユーザーかどうか
      */
-    val ignored = MutableLiveData<Boolean>()
+    val ignored : LiveData<Boolean> by lazy { _ignored }
+
+    private val _ignored = MutableLiveData<Boolean>()
+
+    /**
+     * 非表示ユーザーのリスト
+     */
+    val ignoredUsers by lazy {
+        repository.ignoredUsers.also {
+            it.observeForever {
+                _ignored.value = repository.checkIgnored(bookmark)
+            }
+        }
+    }
+
+    /**
+     * ユーザータグ
+     */
+    val userTags = repository.getUserTags(bookmark.user)
 
     /**
      * 現在選択中の文字列
@@ -67,17 +94,10 @@ class BookmarkDetailViewModel(
         MutableLiveData<List<Bookmark>>()
     }
 
-    /**
-     * 非表示ユーザーのリスト
-     */
-    val ignoredUsers by lazy {
-        repository.ignoredUsers
-    }
-
     // ------ //
 
     init {
-        this.bookmark.value = bookmark
+        this._bookmark.value = bookmark
     }
 
     // ------ //
@@ -121,5 +141,42 @@ class BookmarkDetailViewModel(
             // TODO
             else -> throw NotImplementedError()
         }
+    }
+
+    // ------ //
+
+    /**
+     * スター項目をクリックしたときの挙動
+     *
+     * コメントがあるならその詳細ページを開く
+     */
+    fun onClickStarRelation(activity: BookmarksActivity, item: StarRelationsAdapter.Item?) {
+        if (item == null) return
+
+        val bookmark = item.bookmark
+        if (bookmark == null) {
+            val user = item.user
+            activity.contentsViewModel.openEmptyBookmarkDetail(
+                activity,
+                user
+            )
+        }
+        else {
+            activity.contentsViewModel.openBookmarkDetail(
+                activity,
+                bookmark
+            )
+        }
+    }
+
+    /**
+     * スター項目に対するメニューを開く
+     */
+    fun openStarRelationMenuDialog(
+        activity: Activity,
+        user: String,
+        bookmark: Bookmark?,
+        fragmentManager: FragmentManager
+    ) {
     }
 }

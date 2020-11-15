@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentStarRelationsTabBinding
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailViewModel
 import com.suihan74.satena.scenes.bookmarks.detail.DetailTabAdapter
@@ -35,6 +36,9 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
     }
 
     // ------ //
+
+    private val bookmarksActivity : BookmarksActivity
+        get() = requireActivity() as BookmarksActivity
 
     private val bookmarkDetailFragment : BookmarkDetailFragment
         get() = parentFragment as BookmarkDetailFragment
@@ -76,7 +80,14 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
             }
         }
 
-        binding.recyclerView.adapter = StarRelationsAdapter(tabType, viewLifecycleOwner)
+        binding.recyclerView.adapter = StarRelationsAdapter(tabType, viewLifecycleOwner).also { adapter ->
+            adapter.setOnClickItemListener {
+                viewModel.onClickStarRelation(bookmarksActivity, it.item)
+            }
+
+            adapter.setOnLongLickItemListener {
+            }
+        }
 
         return binding.root
     }
