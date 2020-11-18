@@ -94,7 +94,7 @@ class BottomBarItemSelectionDialog : DialogFragment() {
                     if (Build.VERSION.SDK_INT >= 29) ImageSpan.ALIGN_CENTER
                     else ImageSpan.ALIGN_BASELINE
 
-                icon.setTint(ContextCompat.getColor(context, R.color.textColor))
+                icon.setTint(context.getThemeColor(R.attr.textColor))
                 icon.setBounds(0, 0, lineHeight, lineHeight)
                 append("_", ImageSpan(icon, vAlign))
                 append("\u2002") // for margin
