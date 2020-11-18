@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.themeWrappedContext
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.*
@@ -36,7 +37,7 @@ class BottomBarItemSelectionDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val context = requireContext()
+        val context = themeWrappedContext()
         val args = requireArguments()
         val existedItems = args.getObject<List<UserBottomItem>>(ARG_EXISTED_ITEMS)!!
         val targetItem = args.getEnum<UserBottomItem>(ARG_TARGET_ITEMS)
