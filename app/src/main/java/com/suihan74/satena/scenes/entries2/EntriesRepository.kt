@@ -619,7 +619,7 @@ class EntriesRepository(
 
     /** アプリ内アップデートを使用する */
     fun startAppUpdateManager(listener: (AppUpdateInfo)->Unit) {
-        when (AppUpdateNoticeMode.fromInt(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
+        when (AppUpdateNoticeMode.fromId(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
             AppUpdateNoticeMode.NONE -> {
                 this.appUpdateManager = null
             }
@@ -663,7 +663,7 @@ class EntriesRepository(
             putLong(PreferenceKey.LAST_NOTICED_APP_UPDATE_VERSION, latestVersion)
         }
 
-        when (AppUpdateNoticeMode.fromInt(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
+        when (AppUpdateNoticeMode.fromId(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
             // 機能追加アップデートだけを通知する
             AppUpdateNoticeMode.ADD_FEATURES -> {
                 val currentMajor = app.majorVersionCode

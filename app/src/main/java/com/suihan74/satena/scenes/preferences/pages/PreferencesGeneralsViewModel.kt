@@ -30,8 +30,8 @@ class PreferencesGeneralsViewModel(
     /** アプリ内アップデート通知を使用する */
     val appUpdateNoticeMode = createLiveDataEnum(
         PreferenceKey.APP_UPDATE_NOTICE_MODE,
-        { m -> m.int },
-        { i -> AppUpdateNoticeMode.fromInt(i) }
+        { m -> m.id },
+        { i -> AppUpdateNoticeMode.fromId(i) }
     )
 
     /** 一度無視したアップデートを再度通知する */
