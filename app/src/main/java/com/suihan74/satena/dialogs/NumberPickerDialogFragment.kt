@@ -45,7 +45,7 @@ class NumberPickerDialogFragment : AlertDialogFragment() {
         currentValue = savedInstanceState?.getInt(CURRENT_VALUE) ?: defaultValue
 
         val numberPicker =
-            object : NumberPicker(context) {
+            object : NumberPicker(themeWrappedContext()) {
                 override fun addView(child: View?, index: Int, params: ViewGroup.LayoutParams?) {
                     super.addView(child, index, params)
                     if (child is EditText) {
@@ -76,9 +76,11 @@ class NumberPickerDialogFragment : AlertDialogFragment() {
         constructor(cause: Throwable) : super(cause)
     }
 
-    class Builder(themeResId: Int) {
+    class Builder(themeResId: Int? = null) {
         private val arguments = Bundle().apply {
-            putInt(THEME_RES_ID, themeResId)
+            if (themeResId != null) {
+                putInt(THEME_RES_ID, themeResId)
+            }
             putInt(MIN_VALUE, 0)
             putInt(MAX_VALUE, 100)
             putInt(DEFAULT_VALUE, 0)

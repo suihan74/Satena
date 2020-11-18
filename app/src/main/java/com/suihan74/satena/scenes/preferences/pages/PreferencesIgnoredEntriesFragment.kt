@@ -9,7 +9,7 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.AlertDialogFragment2
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
@@ -22,7 +22,7 @@ import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.fragment_preferences_ignored_entries.view.*
 
-class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialogFragment.Listener {
+class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
     private lateinit var mIgnoredEntriesAdapter : IgnoredEntriesAdapter
 
     private val viewModel: IgnoredEntryViewModel by lazy {
@@ -84,11 +84,13 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
             }
 
             override fun onItemLongClicked(entry: IgnoredEntry): Boolean {
-                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                AlertDialogFragment2.Builder()
                     .setTitle("${entry.type.name} ${entry.query}")
                     .setNegativeButton(R.string.dialog_cancel)
-                    .setItems(mDialogMenuItems!!.map { it.first })
-                    .setAdditionalData("entry", entry)
+                    .setItems(mDialogMenuItems!!.map { it.first }) { _, which ->
+                        mDialogMenuItems!![which].second.invoke(entry)
+                    }
+                    .create()
                     .showAllowingStateLoss(childFragmentManager, DIALOG_MENU)
 
                 return true
@@ -129,10 +131,5 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase(), AlertDialog
         }
 
         return root
-    }
-
-    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
-        val entry = dialog.getAdditionalData<IgnoredEntry>("entry")!!
-        mDialogMenuItems!![which].second.invoke(entry)
     }
 }

@@ -23,6 +23,7 @@ enum class ExtraBottomItemsAlignment(
     ;
 
     companion object {
-        fun fromInt(id: Int) = values().firstOrNull { it.id == id } ?: DEFAULT
+        fun fromId(id: Int) = values().firstOrNull { it.id == id } ?: DEFAULT
+        fun fromOrdinal(index: Int) = values().getOrElse(index) { DEFAULT }
     }
 }

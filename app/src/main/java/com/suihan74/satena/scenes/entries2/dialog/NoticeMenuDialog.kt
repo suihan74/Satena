@@ -1,28 +1,32 @@
 package com.suihan74.satena.scenes.entries2.dialog
 
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogTitleUserBinding
 import com.suihan74.satena.databinding.ListviewItemNotices2Binding
-import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
 
-class NoticeMenuDialog : AlertDialogFragment() {
+class NoticeMenuDialog : DialogFragment() {
     companion object {
         fun createInstance(notice: Notice) = NoticeMenuDialog().withArguments {
             putObject(ARG_NOTICE, notice)
@@ -35,29 +39,30 @@ class NoticeMenuDialog : AlertDialogFragment() {
         const val DIALOG_NOTICE_USER_MENU = "NoticeMenuDialog.DIALOG_NOTICE_USER_MENU"
     }
 
-    /** 通知削除時のイベントリスナ */
-    private var onNoticeRemovedListener: com.suihan74.utilities.Listener<Notice>? = null
+    // ------ //
 
-    /** 通知削除時のイベントリスナを設定 */
-    fun setOnNoticeRemovedListener(listener: com.suihan74.utilities.Listener<Notice>?) {
-        onNoticeRemovedListener = listener
+    val viewModel by lazy {
+        provideViewModel(this) {
+            DialogViewModel(requireArguments())
+        }
     }
 
+    // ------ //
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val arguments = requireArguments()
-        val notice = arguments.getObject<Notice>(ARG_NOTICE)!!
-        val users = notice.users
+        val notice = viewModel.notice
 
         val titleViewBinding = DataBindingUtil.inflate<ListviewItemNotices2Binding>(
-            LayoutInflater.from(ContextThemeWrapper(requireContext(), R.style.AppTheme_Light)),
+            localLayoutInflater(),
             R.layout.listview_item_notices2,
             null,
             false
         ).also {
             it.notice = notice
+            it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: requireActivity()
         }
 
-        val items: List<Pair<String, () -> Unit>> = users
+        val items: List<Pair<String, () -> Unit>> = notice.users
             .map {
                 "id:$it" to {
                     val userMenuDialog = NoticeUserMenuDialog.createInstance(it)
@@ -68,10 +73,10 @@ class NoticeMenuDialog : AlertDialogFragment() {
                 }
             }
             .plus(
-                getString(R.string.menu_notice_remove) to { removeNotice(notice) }
+                getString(R.string.menu_notice_remove) to { viewModel.removeNotice(requireContext()) }
             )
 
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setItems(items.map { it.first }.toTypedArray()) { _, which ->
@@ -80,21 +85,40 @@ class NoticeMenuDialog : AlertDialogFragment() {
             .create()
     }
 
-    /** 通知を削除 */
-    private fun removeNotice(notice: Notice) {
-        val prefs = SafeSharedPreferences.create<NoticesKey>(context)
-        val removedNotices = prefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
-            .plus(NoticeTimestamp(notice.created, notice.modified))
+    // ------ //
 
-        prefs.edit {
-            put(NoticesKey.REMOVED_NOTICE_TIMESTAMPS, removedNotices)
-        }
-
-        onNoticeRemovedListener?.invoke(notice)
+    /** 通知削除時のイベントリスナを設定 */
+    fun setOnNoticeRemovedListener(listener: Listener<Notice>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onNoticeRemovedListener = listener
     }
 
+    // ------ //
+
+    class DialogViewModel(args : Bundle) : ViewModel() {
+        /** 対象の通知 */
+        val notice by lazy { args.getObject<Notice>(ARG_NOTICE)!! }
+
+        /** 通知削除時の処理 */
+        var onNoticeRemovedListener: Listener<Notice>? = null
+
+        /** 通知を削除 */
+        fun removeNotice(context: Context) {
+            val prefs = SafeSharedPreferences.create<NoticesKey>(context)
+            val removedNotices = prefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
+                .plus(NoticeTimestamp(notice.created, notice.modified))
+
+            prefs.edit {
+                put(NoticesKey.REMOVED_NOTICE_TIMESTAMPS, removedNotices)
+            }
+
+            onNoticeRemovedListener?.invoke(notice)
+        }
+    }
+
+    // ------ //
+
     /** 通知に含まれるユーザーに対する操作 */
-    class NoticeUserMenuDialog : AlertDialogFragment() {
+    class NoticeUserMenuDialog : DialogFragment() {
         companion object {
             fun createInstance(user: String) = NoticeUserMenuDialog().withArguments {
                 putString(ARG_USER, user)
@@ -112,7 +136,7 @@ class NoticeMenuDialog : AlertDialogFragment() {
             val user = arguments.getString(ARG_USER)!!
 
             val titleViewBinding = DataBindingUtil.inflate<DialogTitleUserBinding>(
-                LayoutInflater.from(ContextThemeWrapper(requireContext(), R.style.AppTheme_Light)),
+                localLayoutInflater(),
                 R.layout.dialog_title_user,
                 null,
                 false
@@ -126,7 +150,7 @@ class NoticeMenuDialog : AlertDialogFragment() {
                 R.string.bookmark_report to { u -> showReportDialog(u) }
             )
 
-            return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+            return createBuilder()
                 .setCustomTitle(titleViewBinding.root)
                 .setItems(items.map { getString(it.first) }.toTypedArray()) { _, which ->
                     val action = items[which].second

@@ -65,10 +65,13 @@ open class AlertDialogFragment : DialogFragment() {
     }
 
     protected fun createBuilder(arguments: Bundle, savedInstanceState: Bundle?) : AlertDialog.Builder {
-        val themeResId = arguments.getInt(THEME_RES_ID)
+        val themeResId =
+            if (arguments.containsKey(THEME_RES_ID)) arguments.getInt(THEME_RES_ID)
+            else null
+
         val listener = parentFragment as? Listener ?: activity as? Listener
 
-        return AlertDialog.Builder(requireContext(), themeResId).apply {
+        return createBuilder(requireContext(), themeResId).apply {
             arguments.getInt(TITLE_ID).let {
                 if (it != 0) setTitle(it)
             }
@@ -139,9 +142,11 @@ open class AlertDialogFragment : DialogFragment() {
         }
     }
 
-    open class Builder(themeResId: Int) {
+    open class Builder(themeResId: Int?) {
         protected val arguments = Bundle().apply {
-            putInt(THEME_RES_ID, themeResId)
+            if (themeResId != null) {
+                putInt(THEME_RES_ID, themeResId)
+            }
         }
 
         open fun create() =

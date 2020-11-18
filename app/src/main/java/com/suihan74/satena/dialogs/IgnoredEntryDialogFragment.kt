@@ -5,10 +5,8 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -137,7 +135,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = LayoutInflater.from(context)
+        val inflater = localLayoutInflater()
         val content = inflater.inflate(R.layout.fragment_dialog_ignored_entry, null)
 
         // 最初に表示するタブを選択
@@ -226,7 +224,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         content.target_bookmark_checkbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
         setIgnoreTarget(content, initialIgnoreTarget)
 
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(R.string.ignored_entry_dialog_title)
             .setPositiveButton(R.string.dialog_register, null)
             .setNegativeButton(R.string.dialog_cancel, null)

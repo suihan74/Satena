@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.text.style.ImageSpan
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
 import androidx.fragment.app.DialogFragment
@@ -13,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.*
@@ -53,7 +53,7 @@ class BottomBarItemSelectionDialog : DialogFragment() {
         // 現在設定されているアイテム位置
         val checkedPosition = items.indexOf(targetItem)
 
-        val dialogBuilder = AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        val dialogBuilder = createBuilder()
             .setTitle(R.string.dialog_title_bottom_bar_item_selection)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setSingleChoiceItems(itemLabels, checkedPosition) { _, which ->

@@ -37,8 +37,7 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
         val context = requireContext()
 
         // エントリリスト用のアダプタ
-        val noticesAdapter = NoticesAdapter()
-            .apply {
+        val noticesAdapter = NoticesAdapter().apply {
             setOnItemClickedListener { notice ->
                 when (notice.verb) {
                     Notice.VERB_STAR -> onClickedForStar(notice)
@@ -49,13 +48,12 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
             }
 
             setOnItemLongClickedListener { notice ->
-                val dialog = NoticeMenuDialog.createInstance(notice).apply {
-                    setOnNoticeRemovedListener {
+                NoticeMenuDialog.createInstance(notice).also { dialog ->
+                    dialog.setOnNoticeRemovedListener {
                         viewModel.reloadLists(onError = onErrorRefreshEntries)
                     }
+                    dialog.showAllowingStateLoss(childFragmentManager, DIALOG_NOTICE_MENU)
                 }
-
-                dialog.showAllowingStateLoss(childFragmentManager, DIALOG_NOTICE_MENU)
                 true
             }
         }
