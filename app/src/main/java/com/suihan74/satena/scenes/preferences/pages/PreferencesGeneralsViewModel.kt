@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import com.suihan74.satena.models.AppUpdateNoticeMode
+import com.suihan74.satena.models.DialogThemeSetting
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
@@ -9,9 +10,16 @@ class PreferencesGeneralsViewModel(
     prefs: SafeSharedPreferences<PreferenceKey>
 ) : PreferencesViewModel<PreferenceKey>(prefs) {
 
-    /** テーマ(ダークテーマか否か) */
+    /** アプリのテーマ(ダークテーマか否か) */
     val darkTheme = createLiveData<Boolean>(
         PreferenceKey.DARK_THEME
+    )
+
+    /** ダイアログのテーマ */
+    val dialogTheme = createLiveDataEnum(
+        PreferenceKey.DIALOG_THEME,
+        { it.id },
+        { i -> DialogThemeSetting.fromId(i) }
     )
 
     /** ドロワーの位置 */

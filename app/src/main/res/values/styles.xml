@@ -60,6 +60,7 @@
         <item name="bookmarkCountColor">@color/bookmarkUsersCountText</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Light</item>
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
     </style>
 
     <!-- Dark Theme -->
@@ -77,6 +78,7 @@
         <item name="bookmarkCountColor">@color/bookmarkUsersCountTextDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
     </style>
 
     <!-- スプラッシュ画面のテーマ -->
@@ -166,14 +168,9 @@
         <item name="android:textColorHighlight">@color/colorPrimary</item>
     </style>
 
-
     <!-- AlertDialog -->
     <style name="AlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="background">@color/panelBackground</item>
-        <item name="textColor">@color/textColor</item>
-
         <item name="colorAccent">@color/colorPrimary</item>
-        <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/ButtonBarButtonStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/ButtonBarButtonStyle</item>
         <item name="buttonBarNeutralButtonStyle">@style/ButtonBarButtonStyle</item>
@@ -185,11 +182,40 @@
         <item name="tabSelectedTextColor">@color/colorPrimary</item>
         <item name="tabTextColor">@color/disabledColor</item>
         <item name="tabIndicatorColor">@color/colorPrimary</item>
+    </style>
+
+    <!-- Light -->
+    <style name="AlertDialogStyle.Light" parent="AlertDialogStyle">
+        <item name="colorBackgroundFloating">@color/panelBackground</item>
+        <item name="android:textColor">@color/textColor</item>
+        <item name="textColor">@color/textColor</item>
+        <item name="android:textColorPrimary">@color/textColor</item>
+        <item name="android:textColorSecondary">@color/textColor</item>
+        <item name="textColorAlertDialogListItem">@color/textColor</item>
+        <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
+        <!-- TabLayout -->
         <item name="tabBackground">@color/tabBackground</item>
+    </style>
+
+    <!-- Dark -->
+    <style name="AlertDialogStyle.Dark" parent="AlertDialogStyle">
+        <item name="colorBackgroundFloating">@color/panelBackgroundDark</item>
+        <item name="android:textColor">@color/textColorDark</item>
+        <item name="textColor">@color/textColorDark</item>
+        <item name="android:textColorPrimary">@color/textColorDark</item>
+        <item name="android:textColorSecondary">@color/textColorDark</item>
+        <item name="textColorAlertDialogListItem">@color/textColorDark</item>
+        <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle.Dark</item>
+        <!-- TabLayout -->
+        <item name="tabBackground">@color/tabBackgroundDark</item>
     </style>
 
     <style name="AlertDialogTitleStyle" parent="TextAppearance.AppCompat.Title">
         <item name="android:textColor">@color/textColor</item>
+    </style>
+
+    <style name="AlertDialogTitleStyle.Dark" parent="TextAppearance.AppCompat.Title">
+        <item name="android:textColor">@color/textColorDark</item>
     </style>
 
     <style name="ButtonBarButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
