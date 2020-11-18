@@ -197,6 +197,9 @@
         <item name="tabSelectedTextColor">@color/colorPrimary</item>
         <item name="tabTextColor">@color/disabledColor</item>
         <item name="tabIndicatorColor">@color/colorPrimary</item>
+
+        <!-- for NumberPicker -->
+        <item name="colorControlNormal">@color/colorPrimary</item>
     </style>
 
     <!-- Light -->

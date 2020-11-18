@@ -3,11 +3,7 @@ package com.suihan74.satena.dialogs
 import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.NumberPicker
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentManager
 import com.suihan74.satena.R
 import com.suihan74.utilities.OnError
@@ -44,20 +40,12 @@ class NumberPickerDialogFragment : AlertDialogFragment() {
 
         currentValue = savedInstanceState?.getInt(CURRENT_VALUE) ?: defaultValue
 
-        val numberPicker =
-            object : NumberPicker(themeWrappedContext()) {
-                override fun addView(child: View?, index: Int, params: ViewGroup.LayoutParams?) {
-                    super.addView(child, index, params)
-                    if (child is EditText) {
-                        child.setTextColor(ActivityCompat.getColor(context, R.color.textColor))
-                    }
-                }
-            }.apply {
-                this.minValue = minValue
-                this.maxValue = maxValue
-                value = currentValue
+        val numberPicker = NumberPicker(themeWrappedContext()).also {
+                it.minValue = minValue
+                it.maxValue = maxValue
+                it.value = currentValue
 
-                setOnValueChangedListener { _, _, newVal -> currentValue = newVal }
+                it.setOnValueChangedListener { _, _, newVal -> currentValue = newVal }
             }
 
         return createBuilder(arguments, savedInstanceState)
