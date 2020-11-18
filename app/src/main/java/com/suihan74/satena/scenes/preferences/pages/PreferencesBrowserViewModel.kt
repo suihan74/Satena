@@ -111,13 +111,15 @@ class PreferencesBrowserViewModel(
             }
         }
         val labels = items.map { it.textId }
+        val checkedItem = webViewTheme.value?.ordinal ?: 0
 
         val dialog = AlertDialogFragment2.Builder()
             .setTitle(R.string.pref_browser_theme_desc)
             .setNegativeButton(R.string.dialog_cancel)
-            .setItems(labels) { _, which ->
+            .setSingleChoiceItems(labels, checkedItem) { _, which ->
                 webViewTheme.value = items[which]
             }
+            .dismissOnClickItem(true)
             .create()
 
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_WEB_VIEW_THEME)
