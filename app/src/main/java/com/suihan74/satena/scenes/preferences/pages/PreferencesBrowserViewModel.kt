@@ -127,11 +127,14 @@ class PreferencesBrowserViewModel(
 
     /** ブラウザモードを選択する */
     fun openBrowserModeSelectionDialog(fragmentManager: FragmentManager) {
-        val labels = BrowserMode.values().map { it.textId }
+        val browserModes = BrowserMode.values()
+        val labels = browserModes.map { it.textId }
+        val checkedItem = browserModes.indexOf(browserMode.value)
+
         val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.pref_browser_mode_desc)
             .setNegativeButton(R.string.dialog_cancel)
-            .setItems(labels) { _, which ->
+            .setSingleChoiceItems(labels, checkedItem) { _, which ->
                 browserMode.value = BrowserMode.fromOrdinal(which)
             }
             .create()
