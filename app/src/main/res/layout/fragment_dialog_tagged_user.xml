@@ -9,7 +9,6 @@
 
     <EditText
             android:id="@+id/user_name"
-            android:textColor="@color/textColor"
             android:inputType="textNoSuggestions"
             android:importantForAutofill="no"
             android:singleLine="true"

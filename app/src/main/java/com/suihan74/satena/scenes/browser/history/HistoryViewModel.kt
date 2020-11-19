@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.getEntryRootUrl
 import com.suihan74.satena.models.browser.History
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
@@ -119,7 +119,7 @@ class HistoryViewModel(
     /** 日付を指定して履歴を削除する(かを確認してから行う) */
     fun openClearByDateDialog(date: LocalDate, fragmentManager: FragmentManager) {
         val context = SatenaApplication.instance
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(context.getString(R.string.msg_browser_clear_history_by_date, date.format(dateFormatter)))
             .setNegativeButton(R.string.dialog_cancel) { it.dismiss() }

@@ -4,7 +4,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.scenes.browser.BlockUrlSetting
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.UrlBlockingDialog
@@ -27,7 +27,7 @@ class UrlBlockingViewModel(
             R.string.dialog_delete
         )
 
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(model.pattern)
             .setNegativeButton(R.string.dialog_cancel)
             .setItems(labels) { _, which ->

@@ -28,7 +28,6 @@
             <EditText
                     android:text="@={vm.title}"
                     android:hint="title"
-                    android:textColor="@color/textColor"
 
                     android:singleLine="true"
                     android:inputType="textNoSuggestions"
@@ -53,7 +52,6 @@
                         android:id="@+id/url_edit_text"
                         android:text="@={vm.url}"
                         android:hint="url"
-                        android:textColor="@color/textColor"
 
                         android:singleLine="true"
                         android:inputType="textUri"

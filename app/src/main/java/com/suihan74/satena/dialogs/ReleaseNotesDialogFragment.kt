@@ -9,7 +9,6 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
@@ -42,7 +41,8 @@ class ReleaseNotesDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val activity = requireActivity()
-        val view = activity.layoutInflater.inflate(R.layout.fragment_dialog_release_notes, null)
+        val inflater = localLayoutInflater()
+        val view = inflater.inflate(R.layout.fragment_dialog_release_notes, null)
         val titleColor = ContextCompat.getColor(activity, R.color.colorPrimary)
 
         val lastVersionName = arguments?.getString(ARG_LAST_VERSION_NAME)
@@ -96,7 +96,7 @@ class ReleaseNotesDialogFragment : DialogFragment() {
             }
         }
 
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(R.string.release_notes_dialog_title)
             .setNegativeButton(R.string.dialog_close, null)
             .setView(view)

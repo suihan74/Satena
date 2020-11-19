@@ -6,13 +6,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.WindowManager
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.*
-import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SuspendSwitcher
@@ -36,7 +34,7 @@ class TagUserDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = LayoutInflater.from(context)
+        val inflater = localLayoutInflater()
         val content = inflater.inflate(R.layout.fragment_dialog_tagged_user, null)
 
         content.user_name.apply {
@@ -55,17 +53,17 @@ class TagUserDialogFragment : DialogFragment() {
         viewModel.userIconUrl.observe(requireActivity(), Observer {
             val context = requireContext()
             if (it == null) {
-                Glide.with(context)
+                GlideApp.with(context)
                     .clear(content.user_icon)
             }
             else {
-                Glide.with(context)
+                GlideApp.with(context)
                     .load(Uri.parse(it))
                     .into(content.user_icon)
             }
         })
 
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(R.string.pref_user_tags_add_user_dialog_title)
             .setView(content)
             .setPositiveButton(R.string.dialog_register, null)

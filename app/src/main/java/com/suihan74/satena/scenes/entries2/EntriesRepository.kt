@@ -170,7 +170,7 @@ class EntriesRepository(
 
     /** カテゴリリストの表示形式 */
     val categoriesMode : CategoriesMode
-        get() = CategoriesMode.fromInt(prefs.getInt(PreferenceKey.ENTRIES_CATEGORIES_MODE))
+        get() = CategoriesMode.fromOrdinal(prefs.getInt(PreferenceKey.ENTRIES_CATEGORIES_MODE))
 
     /** ボトムバーの項目 */
     val bottomBarItems : List<UserBottomItem>
@@ -182,7 +182,7 @@ class EntriesRepository(
 
     /** ボトムバーの追加項目の配置方法 */
     val extraBottomItemsAlignment : ExtraBottomItemsAlignment
-        get() = ExtraBottomItemsAlignment.fromInt(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT))
+        get() = ExtraBottomItemsAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT))
 
     /** 初期化処理 */
     suspend fun initialize(forceUpdate: Boolean = false) {
@@ -575,7 +575,7 @@ class EntriesRepository(
 
     /** 「あとで読む」エントリを読んだ */
     suspend fun readEntry(entry: Entry) : Pair<EntryReadActionType, BookmarkResult?> {
-        val action = EntryReadActionType.fromInt(prefs.getInt(PreferenceKey.ENTRY_READ_ACTION_TYPE))
+        val action = EntryReadActionType.fromOrdinal(prefs.getInt(PreferenceKey.ENTRY_READ_ACTION_TYPE))
 
         return action to when (action) {
             EntryReadActionType.REMOVE -> {
@@ -619,7 +619,7 @@ class EntriesRepository(
 
     /** アプリ内アップデートを使用する */
     fun startAppUpdateManager(listener: (AppUpdateInfo)->Unit) {
-        when (AppUpdateNoticeMode.fromInt(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
+        when (AppUpdateNoticeMode.fromId(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
             AppUpdateNoticeMode.NONE -> {
                 this.appUpdateManager = null
             }
@@ -663,7 +663,7 @@ class EntriesRepository(
             putLong(PreferenceKey.LAST_NOTICED_APP_UPDATE_VERSION, latestVersion)
         }
 
-        when (AppUpdateNoticeMode.fromInt(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
+        when (AppUpdateNoticeMode.fromId(prefs.getInt(PreferenceKey.APP_UPDATE_NOTICE_MODE))) {
             // 機能追加アップデートだけを通知する
             AppUpdateNoticeMode.ADD_FEATURES -> {
                 val currentMajor = app.majorVersionCode

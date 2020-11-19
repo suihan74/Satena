@@ -6,9 +6,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.text.style.ForegroundColorSpan
-import android.view.LayoutInflater
 import android.view.WindowManager
-import androidx.appcompat.app.AlertDialog
 import androidx.core.text.buildSpannedString
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
@@ -17,6 +15,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleUrlBlockingBinding
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
@@ -38,20 +38,17 @@ class UrlBlockingDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val context = requireContext()
-        val inflater = LayoutInflater.from(context)
-
         val titleViewBinding = DataBindingUtil.inflate<DialogTitleUrlBlockingBinding>(
-            inflater,
+            localLayoutInflater(),
             R.layout.dialog_title_url_blocking,
             null,
             false
         ).also {
             it.vm = viewModel
-            it.lifecycleOwner = requireActivity()
+            it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: requireActivity()
         }
 
-        val builder = AlertDialog.Builder(context, R.style.AlertDialogStyle)
+        val builder = createBuilder()
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setPositiveButton(R.string.dialog_register, null)

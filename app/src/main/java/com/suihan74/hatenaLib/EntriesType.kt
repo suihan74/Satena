@@ -12,7 +12,8 @@ enum class EntriesType(val int: Int) {
     private constructor() : this(0)
 
     companion object {
-        fun fromInt(i: Int) = values().first { it.int == i }
+        fun fromInt(i: Int) = values().firstOrNull { it.int == i } ?: Hot
+        fun fromOrdinal(i: Int) = values().getOrElse(i) { Hot }
     }
 }
 
@@ -32,6 +33,7 @@ enum class SearchType(
     private constructor() : this(0, 0)
 
     companion object {
-        fun fromInt(i: Int) = values().first { it.id == i }
+        fun fromId(i: Int) = values().firstOrNull { it.id == i } ?: Tag
+        fun fromOrdinal(i: Int) = values().getOrElse(i) { Tag }
     }
 }

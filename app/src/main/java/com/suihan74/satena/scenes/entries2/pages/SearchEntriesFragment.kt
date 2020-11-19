@@ -20,10 +20,11 @@ import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.activity_entries2.*
 import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
-class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment.Listener {
+class SearchEntriesFragment : MultipleTabsEntriesFragment() {
     private val searchViewModel : SearchEntriesViewModel
         get() = viewModel as SearchEntriesViewModel
 
@@ -117,10 +118,18 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
         // 検索タイプ選択メニューの設定
         menu.findItem(R.id.search_type)?.let { item ->
             item.setOnMenuItemClickListener {
-                AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                AlertDialogFragment.Builder()
                     .setTitle(R.string.desc_search_type)
                     .setNegativeButton(R.string.dialog_cancel)
-                    .setItems(SearchType.values().map { getString(it.textId) }.toTypedArray())
+                    .setItems(SearchType.values().map { it.textId }) { _, which ->
+                        val prevValue = viewModel.searchType.value
+                        viewModel.searchType.value = SearchType.fromOrdinal(which)
+
+                        if (prevValue != viewModel.searchType.value) {
+                            reloadLists()
+                        }
+                    }
+                    .create()
                     .showAllowingStateLoss(childFragmentManager, DIALOG_SEARCH_TYPE)
                 return@setOnMenuItemClickListener true
             }
@@ -201,23 +210,6 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment(), AlertDialogFragment
         // 横幅を最大化
         if (bottomAppBar == null) {
             stretchWidth(requireActivity(), menu)
-        }
-    }
-
-    // ------ //
-
-    override fun onSelectItem(dialog: AlertDialogFragment, which: Int) {
-        val viewModel = viewModel as SearchEntriesViewModel
-        val prevValue = viewModel.searchType.value
-
-        when (dialog.tag) {
-            DIALOG_SEARCH_TYPE -> {
-                viewModel.searchType.value = SearchType.values()[which]
-            }
-        }
-
-        if (prevValue != viewModel.searchType.value) {
-            reloadLists()
         }
     }
 }

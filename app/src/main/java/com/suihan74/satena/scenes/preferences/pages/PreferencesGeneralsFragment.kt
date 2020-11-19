@@ -14,9 +14,7 @@ import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesGeneralsBinding
-import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.NumberPickerDialogFragment
-import com.suihan74.satena.models.AppUpdateNoticeMode
+import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
@@ -24,21 +22,20 @@ import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.fragment_preferences_generals.view.*
 
-class PreferencesGeneralsFragment :
-    PreferencesFragmentBase(),
-    AlertDialogFragment.Listener,
-    NumberPickerDialogFragment.Listener
-{
+class PreferencesGeneralsFragment : PreferencesFragmentBase() {
     companion object {
         fun createInstance() = PreferencesGeneralsFragment()
     }
 
+    // ------ //
+
     object BindingAdapters {
         @JvmStatic
-        @InverseBindingAdapter(attribute = "drawerGravity", event="android:checkedAttrChanged")
-        fun inverseSetDrawerGravityToggle(view: ToggleButton) : Int {
+        @InverseBindingAdapter(attribute = "drawerGravity", event = "android:checkedAttrChanged")
+        fun inverseSetDrawerGravityToggle(view: ToggleButton): Int {
             return if (view.isChecked) Gravity.LEFT else Gravity.RIGHT
         }
 
@@ -52,8 +49,7 @@ class PreferencesGeneralsFragment :
         }
     }
 
-    private val DIALOG_CHECKING_NOTICES_INTERVAL by lazy { "DIALOG_CHECKING_NOTICES_INTERVAL" }
-    private val DIALOG_APP_UPDATE_NOTICE_MODE by lazy { "DIALOG_APP_UPDATE_NOTICE_MODE" }
+    // ------ //
 
     private val viewModel: PreferencesGeneralsViewModel by lazy {
         provideViewModel(this) {
@@ -62,7 +58,13 @@ class PreferencesGeneralsFragment :
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    // ------ //
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val binding = DataBindingUtil.inflate<FragmentPreferencesGeneralsBinding>(
             inflater,
             R.layout.fragment_preferences_generals,
@@ -95,6 +97,11 @@ class PreferencesGeneralsFragment :
             startActivity(intent)
         }
 
+        // ダイアログのテーマを選択
+        binding.dialogThemeButton.setOnClickListener {
+            viewModel.openDialogThemeSelectionDialog(childFragmentManager)
+        }
+
         // バックグラウンドで通知を確認する
         viewModel.checkNotices.observe(viewLifecycleOwner) {
             if (it) SatenaApplication.instance.startNotificationService()
@@ -103,39 +110,23 @@ class PreferencesGeneralsFragment :
 
         // 通知確認の間隔
         view.button_checking_notices_interval.setOnClickListener {
-            NumberPickerDialogFragment.Builder(R.style.AlertDialogStyle)
-                .setTitle(R.string.pref_generals_notices_intervals_dialog_title)
-                .setMessage(R.string.pref_generals_checking_notices_intervals_desc)
-                .setMinValue(1)
-                .setMaxValue(180)
-                .setDefaultValue(viewModel.checkNoticesInterval.value!!.toInt())
-                .showAllowingStateLoss(childFragmentManager, DIALOG_CHECKING_NOTICES_INTERVAL)
+            val dialog = NumberPickerDialog.createInstance(
+                min = 1,
+                max = 180,
+                default = viewModel.checkNoticesInterval.value!!.toInt(),
+                titleId = R.string.pref_generals_notices_intervals_dialog_title,
+                messageId = R.string.pref_generals_checking_notices_intervals_desc
+            ) { value ->
+                viewModel.checkNoticesInterval.value = value.toLong()
+            }
+            dialog.showAllowingStateLoss(childFragmentManager)
         }
 
         // アプリ内アップデート通知の対象を選択
         view.button_app_update_notice_mode.setOnClickListener {
-            val currentValue = viewModel.appUpdateNoticeMode.value ?: AppUpdateNoticeMode.FIX
-            val currentIdx = AppUpdateNoticeMode.values().indexOf(currentValue)
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
-                .setTitle(R.string.pref_generals_app_update_notice_mode_desc)
-                .setSingleChoiceItems(AppUpdateNoticeMode.values().map { getString(it.textId) }.toTypedArray(), currentIdx)
-                .setNegativeButton(R.string.dialog_cancel)
-                .show(childFragmentManager, DIALOG_APP_UPDATE_NOTICE_MODE)
+            viewModel.openAppUpdateNoticeModeSelectionDialog(childFragmentManager)
         }
 
         return view
-    }
-
-    override fun onCompleteNumberPicker(value: Int, dialog: NumberPickerDialogFragment) {
-        viewModel.checkNoticesInterval.value = value.toLong()
-    }
-
-    override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
-        when (dialog.tag) {
-            DIALOG_APP_UPDATE_NOTICE_MODE -> {
-                viewModel.appUpdateNoticeMode.value = AppUpdateNoticeMode.values()[which]
-            }
-        }
-        dialog.dismissAllowingStateLoss()
     }
 }

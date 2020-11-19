@@ -22,6 +22,6 @@ enum class EntryReadActionType(
     REMOVE(R.string.entry_read_action_remove);
 
     companion object {
-        fun fromInt(int: Int) = values().getOrNull(int) ?: SILENT_BOOKMARK
+        fun fromOrdinal(int: Int) = values().getOrElse(int) { SILENT_BOOKMARK }
     }
 }

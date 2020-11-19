@@ -3,8 +3,6 @@ package com.suihan74.satena.dialogs
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
@@ -40,7 +38,7 @@ class UserTagDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = LayoutInflater.from(context)
+        val inflater = localLayoutInflater()
         val binding = DataBindingUtil.inflate<FragmentDialogUserTagBinding>(
             inflater,
             R.layout.fragment_dialog_user_tag,
@@ -51,7 +49,7 @@ class UserTagDialogFragment : DialogFragment() {
             it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: activity
         }
 
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(viewModel.titleId)
             .setView(binding.root)
             .setPositiveButton(R.string.dialog_register, null)

@@ -17,12 +17,10 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.fragment_preferences_bookmarks.view.*
 
-class PreferencesBookmarksFragment :
-    PreferencesFragmentBase(),
-    AlertDialogFragment.Listener
-{
+class PreferencesBookmarksFragment : PreferencesFragmentBase() {
     companion object {
         fun createInstance() = PreferencesBookmarksFragment()
 
@@ -53,15 +51,17 @@ class PreferencesBookmarksFragment :
 
         // 最初に表示するタブ
         view.button_initial_tab.setOnClickListener {
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_bookmarks_initial_tab_desc)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(
-                    BookmarksTabType.values().map {
-                        requireContext().getString(it.textId)
-                    },
+                    BookmarksTabType.values().map { it.textId },
                     viewModel.initialTabPosition.value!!
-                )
+                ) { _, which ->
+                    viewModel.initialTabPosition.value = which
+                }
+                .dismissOnClickItem(true)
+                .create()
                 .showAllowingStateLoss(childFragmentManager, DIALOG_INITIAL_TAB)
         }
 
@@ -69,13 +69,25 @@ class PreferencesBookmarksFragment :
         val initializeTapActionSelector = { viewId: Int, selectedActionLiveData: LiveData<TapEntryAction>, descId: Int, tag: String ->
             view.findViewById<Button>(viewId).apply {
                 setOnClickListener {
-                    AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+                    AlertDialogFragment.Builder()
                         .setTitle(descId)
                         .setNegativeButton(R.string.dialog_cancel)
                         .setSingleChoiceItems(
-                            TapEntryAction.values().map { getString(it.titleId) },
+                            TapEntryAction.values().map { it.titleId },
                             selectedActionLiveData.value!!.ordinal
-                        )
+                        ) { _, which ->
+                            when (tag) {
+                                DIALOG_LINK_SINGLE_TAP_ACTION -> {
+                                    viewModel.linkSingleTapAction.value = TapEntryAction.fromOrdinal(which)
+                                }
+
+                                DIALOG_LINK_LONG_TAP_ACTION -> {
+                                    viewModel.linkLongTapAction.value = TapEntryAction.fromOrdinal(which)
+                                }
+                            }
+                        }
+                        .dismissOnClickItem(true)
+                        .create()
                         .showAllowingStateLoss(childFragmentManager, tag)
                 }
             }
@@ -96,23 +108,6 @@ class PreferencesBookmarksFragment :
         )
 
         return view
-    }
-
-    override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
-        when (dialog.tag) {
-            DIALOG_INITIAL_TAB -> {
-                viewModel.initialTabPosition.value = which
-            }
-
-            DIALOG_LINK_SINGLE_TAP_ACTION -> {
-                viewModel.linkSingleTapAction.value = TapEntryAction.fromOrdinal(which)
-            }
-
-            DIALOG_LINK_LONG_TAP_ACTION -> {
-                viewModel.linkLongTapAction.value = TapEntryAction.fromOrdinal(which)
-            }
-        }
-        dialog.dismiss()
     }
 }
 

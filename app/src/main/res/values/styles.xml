@@ -46,7 +46,7 @@
     </style>
 
     <!-- Light Theme -->
-    <style name="AppTheme.Light" parent="AppTheme">
+    <style name="AppTheme.Light">
         <item name="panelBackground">@color/panelBackground</item>
         <item name="tabBackground">@color/tabBackground</item>
         <item name="textColor">@color/textColor</item>
@@ -60,10 +60,14 @@
         <item name="bookmarkCountColor">@color/bookmarkUsersCountText</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Light</item>
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
     </style>
 
     <!-- Dark Theme -->
-    <style name="AppTheme.Dark" parent="AppTheme">
+    <style name="AppTheme.Dark">
         <item name="panelBackground">@color/panelBackgroundDark</item>
         <item name="tabBackground">@color/tabBackgroundDark</item>
         <item name="textColor">@color/textColorDark</item>
@@ -77,6 +81,10 @@
         <item name="bookmarkCountColor">@color/bookmarkUsersCountTextDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
     <!-- スプラッシュ画面のテーマ -->
@@ -122,7 +130,7 @@
     </style>
 
     <!-- Light Theme -->
-    <style name="AppDialogTheme.Light" parent="AppDialogTheme">
+    <style name="AppDialogTheme.Light">
         <item name="panelBackground">@color/panelBackground</item>
         <item name="tabBackground">@color/tabBackground</item>
         <item name="textColor">@color/textColor</item>
@@ -132,10 +140,14 @@
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
         <item name="entryCommentBackground">@color/entryCommentBackground</item>
         <item name="tagTextColor">@color/tagColor</item>
+
+        <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
     </style>
 
     <!-- Dark Theme -->
-    <style name="AppDialogTheme.Dark" parent="AppDialogTheme">
+    <style name="AppDialogTheme.Dark">
         <item name="panelBackground">@color/panelBackgroundDark</item>
         <item name="tabBackground">@color/tabBackgroundDark</item>
         <item name="textColor">@color/textColorDark</item>
@@ -145,6 +157,10 @@
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
+
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
     <!-- ログイン画面のEditText -->
@@ -166,12 +182,8 @@
         <item name="android:textColorHighlight">@color/colorPrimary</item>
     </style>
 
-
     <!-- AlertDialog -->
     <style name="AlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="background">@color/panelBackground</item>
-        <item name="textColor">@color/textColor</item>
-
         <item name="colorAccent">@color/colorPrimary</item>
         <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/ButtonBarButtonStyle</item>
@@ -185,11 +197,45 @@
         <item name="tabSelectedTextColor">@color/colorPrimary</item>
         <item name="tabTextColor">@color/disabledColor</item>
         <item name="tabIndicatorColor">@color/colorPrimary</item>
+
+        <!-- for NumberPicker -->
+        <item name="colorControlNormal">@color/colorPrimary</item>
+    </style>
+
+    <!-- Light -->
+    <style name="AlertDialogStyle.Light">
+        <item name="colorBackgroundFloating">@color/dialogBackground</item>
+        <item name="android:textColor">@color/textColor</item>
+        <item name="textColor">@color/textColor</item>
+        <item name="android:textColorPrimary">@color/textColor</item>
+        <item name="android:textColorSecondary">@color/textColor</item>
+        <item name="textColorAlertDialogListItem">@color/textColor</item>
         <item name="tabBackground">@color/tabBackground</item>
+
+        <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="android:textColorHint">@color/textColorHint</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
+    </style>
+
+    <!-- Dark -->
+    <style name="AlertDialogStyle.Dark">
+        <item name="colorBackgroundFloating">@color/dialogBackgroundDark</item>
+        <item name="android:textColor">@color/textColorDark</item>
+        <item name="textColor">@color/textColorDark</item>
+        <item name="android:textColorPrimary">@color/textColorDark</item>
+        <item name="android:textColorSecondary">@color/textColorDark</item>
+        <item name="textColorAlertDialogListItem">@color/textColorDark</item>
+        <item name="tabBackground">@color/tabBackgroundDark</item>
+
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
     <style name="AlertDialogTitleStyle" parent="TextAppearance.AppCompat.Title">
-        <item name="android:textColor">@color/textColor</item>
+        <item name="android:textColor">?textColor</item>
     </style>
 
     <style name="ButtonBarButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
@@ -218,12 +264,34 @@
         <item name="backgroundTint">@color/colorPrimaryText</item>
     </style>
 
-    <style name="SpinnerStyle.Light" parent="SpinnerStyle">
+    <style name="SpinnerStyle.Light">
         <item name="android:popupBackground">@color/panelBackground</item>
     </style>
 
-    <style name="SpinnerStyle.Dark" parent="Widget.AppCompat.Spinner">
+    <style name="SpinnerStyle.Dark">
         <item name="android:popupBackground">@color/panelBackgroundDark</item>
+    </style>
+
+    <!-- TextView -->
+    <style name="TextViewStyle" parent="Widget.AppCompat.TextView"/>
+    <style name="TextViewStyle.Light">
+        <item name="android:textColor">@color/textColor</item>
+        <item name="textColor">@color/textColor</item>
+    </style>
+    <style name="TextViewStyle.Dark">
+        <item name="android:textColor">@color/textColorDark</item>
+        <item name="textColor">@color/textColorDark</item>
+    </style>
+
+    <!-- EditText -->
+    <style name="EditTextStyle" parent="Widget.AppCompat.EditText"/>
+    <style name="EditTextStyle.Light">
+        <item name="android:textColor">@color/textColor</item>
+        <item name="android:textColorHint">@color/textColor</item>
+    </style>
+    <style name="EditTextStyle.Dark">
+        <item name="android:textColor">@color/textColorDark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
     </style>
 
     <!-- Button -->
@@ -251,7 +319,7 @@
         <item name="textColor">@color/colorPrimaryText</item>
     </style>
 
-    <style name="SearchViewStyle.Toolbar" parent="SearchViewStyle">
+    <style name="SearchViewStyle.Toolbar">
         <item name="textColor">@color/colorPrimaryText</item>
         <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.Toolbar</item>
     </style>
@@ -263,9 +331,15 @@
         <item name="android:textCursorDrawable">@null</item>
     </style>
 
-    <!-- IgnoreTarget @ IgnoredEntryDialog -->
-    <style name="IgnoreTargetCheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+    <!-- CheckBox -->
+    <style name="CheckBoxStyle" parent="Widget.AppCompat.CompoundButton.CheckBox"/>
+    <style name="CheckBoxStyle.Light">
         <item name="colorControlNormal">@color/textColor</item>
+        <item name="android:textColor">@color/textColor</item>
+    </style>
+    <style name="CheckBoxStyle.Dark">
+        <item name="colorControlNormal">@color/textColorDark</item>
+        <item name="android:textColor">@color/textColorDark</item>
     </style>
 
     <!-- RecyclerView -->
@@ -275,7 +349,7 @@
         <item name="android:scrollbars">vertical</item>
     </style>
 
-    <style name="RecyclerView.Linear" parent="RecyclerView">
+    <style name="RecyclerView.Linear">
         <item name="layoutManager">androidx.recyclerview.widget.LinearLayoutManager</item>
     </style>
 
@@ -291,24 +365,22 @@
     </style>
 
     <!-- スタースパン色 -->
-    <style name="StarSpan.Yellow" parent="@android:style/TextAppearance">
+    <style name="StarSpan" parent="@android:style/TextAppearance">
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="StarSpan.Yellow">
         <item name="android:textColor">@color/starYellow</item>
-        <item name="android:textSize">14sp</item>
     </style>
-    <style name="StarSpan.Red" parent="@android:style/TextAppearance">
+    <style name="StarSpan.Red">
         <item name="android:textColor">@color/starRed</item>
-        <item name="android:textSize">14sp</item>
     </style>
-    <style name="StarSpan.Green" parent="@android:style/TextAppearance">
+    <style name="StarSpan.Green">
         <item name="android:textColor">@color/starGreen</item>
-        <item name="android:textSize">14sp</item>
     </style>
-    <style name="StarSpan.Blue" parent="@android:style/TextAppearance">
+    <style name="StarSpan.Blue">
         <item name="android:textColor">@color/starBlue</item>
-        <item name="android:textSize">14sp</item>
     </style>
-    <style name="StarSpan.Purple" parent="@android:style/TextAppearance">
+    <style name="StarSpan.Purple">
         <item name="android:textColor">@color/starPurple</item>
-        <item name="android:textSize">14sp</item>
     </style>
 </resources>

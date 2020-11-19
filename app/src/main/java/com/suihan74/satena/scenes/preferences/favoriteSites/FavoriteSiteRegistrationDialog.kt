@@ -5,9 +5,7 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.webkit.URLUtil
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
@@ -16,6 +14,8 @@ import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogFavoriteSiteRegistrationBinding
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.OnSuccess
@@ -72,8 +72,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val context = requireContext()
-        val inflater = LayoutInflater.from(context)
+        val inflater = localLayoutInflater()
         val binding = DataBindingUtil.inflate<DialogFavoriteSiteRegistrationBinding>(
             inflater,
             R.layout.dialog_favorite_site_registration,
@@ -84,7 +83,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
             it.vm = viewModel
         }
 
-        return AlertDialog.Builder(context, R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(viewModel.mode.titleId)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setPositiveButton(R.string.dialog_register, null)

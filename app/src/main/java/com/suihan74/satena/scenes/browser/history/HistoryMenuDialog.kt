@@ -3,14 +3,14 @@ package com.suihan74.satena.scenes.browser.history
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.browser.History
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
@@ -36,9 +36,8 @@ class HistoryMenuDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         // カスタムタイトルを生成
-        val inflater = LayoutInflater.from(context)
         val titleViewBinding = DataBindingUtil.inflate<DialogTitleEntry2Binding>(
-            inflater,
+            localLayoutInflater(),
             R.layout.dialog_title_entry2,
             null,
             false
@@ -51,7 +50,7 @@ class HistoryMenuDialog : DialogFragment() {
             it.faviconUrl = page.faviconUrl
         }
 
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setCustomTitle(titleViewBinding.root)
             .setItems(viewModel.labels) { _, which ->
                 viewModel.invokeAction(which)

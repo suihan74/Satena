@@ -158,15 +158,19 @@ class BookmarkPostActivity :
 
     /** Activityの外側をタップして閉じる際に、結果を渡しておく */
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (event?.action == MotionEvent.ACTION_DOWN && isOutOfBounds(event)) {
-            hideSoftInputMethod()
-            setCancelResult()
+        if (isOutOfBounds(event)) {
+            if (!bookmarkPostViewModel.closeOnTouchOutside) return false
+            if (event?.action == MotionEvent.ACTION_DOWN) {
+                hideSoftInputMethod()
+                setCancelResult()
+            }
         }
         return super.onTouchEvent(event)
     }
 
     /** Activityの外側をタップしたかを判別する */
-    private fun isOutOfBounds(event: MotionEvent): Boolean {
+    private fun isOutOfBounds(event: MotionEvent?): Boolean {
+        if (event == null) return false
         val x = event.x.toInt()
         val y = event.y.toInt()
         val dialogBounds = Rect()

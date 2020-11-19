@@ -13,34 +13,19 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesEntriesBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.NumberPickerDialogFragment
+import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.android.synthetic.main.fragment_preferences_entries.view.*
 
-class PreferencesEntriesFragment :
-    PreferencesFragmentBase(),
-    AlertDialogFragment.Listener,
-    NumberPickerDialogFragment.Listener
-{
+class PreferencesEntriesFragment : PreferencesFragmentBase() {
     companion object {
         fun createInstance() = PreferencesEntriesFragment()
-
-        private const val DIALOG_BOTTOM_BAR_ITEM_SETTER = "DIALOG_BOTTOM_BAR_ITEM_SETTER"
-        private const val DIALOG_SINGLE_TAP_ACTION = "DIALOG_SINGLE_TAP_ACTION"
-        private const val DIALOG_MULTIPLE_TAP_ACTION = "DIALOG_MULTIPLE_TAP_ACTION"
-        private const val DIALOG_LONG_TAP_ACTION = "DIALOG_LONG_TAP_ACTION"
-        private const val DIALOG_MULTIPLE_TAP_DURATION = "DIALOG_MULTIPLE_TAP_DURATION"
-        private const val DIALOG_HOME_CATEGORY = "DIALOG_HOME_CATEGORY"
-        private const val DIALOG_HOME_TAB = "DIALOG_HOME_TAB"
-        private const val DIALOG_HISTORY_MAX_SIZE_PICKER = "DIALOG_HISTORY_MAX_SIZE_PICKER"
-        private const val DIALOG_ENTRY_READ_ACTION_TYPE = "DIALOG_ENTRY_READ_ACTION_TYPE"
-        private const val DIALOG_CATEGORIES_MODE = "DIALOG_CATEGORIES_MODE"
-        private const val DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT = "DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT"
     }
 
     val viewModel by lazy {
@@ -63,52 +48,66 @@ class PreferencesEntriesFragment :
         }
         val view = binding.root
 
-        val tapActions = TapEntryAction.values().map { getString(it.titleId) }.toTypedArray()
+        val tapActions = TapEntryAction.values().map { it.titleId }
 
         // ボトムバーメニュー項目を編集するダイアログを表示する
         view.bottom_bar_item_setter.setOnMenuItemClickListener { args ->
             viewModel.showBottomBarItemSetterDialog(
                 args,
-                childFragmentManager,
-                DIALOG_BOTTOM_BAR_ITEM_SETTER
+                childFragmentManager
             )
         }
 
         // シングルタップ時の動作
         view.preferences_entries_single_tap_action.setOnClickListener {
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_single_tap_action_desc)
                 .setNegativeButton(R.string.dialog_cancel)
-                .setSingleChoiceItems(tapActions, viewModel.singleTapAction.value!!.ordinal)
-                .showAllowingStateLoss(childFragmentManager, DIALOG_SINGLE_TAP_ACTION)
+                .setSingleChoiceItems(tapActions, viewModel.singleTapAction.value!!.ordinal) { _, which ->
+                    viewModel.singleTapAction.value = TapEntryAction.fromOrdinal(which)
+                }
+                .dismissOnClickItem(true)
+                .create()
+                .showAllowingStateLoss(childFragmentManager)
         }
 
         // 複数回タップ時の動作
         view.preferences_entries_multiple_tap_action.setOnClickListener {
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_multiple_tap_action_desc)
                 .setNegativeButton(R.string.dialog_cancel)
-                .setSingleChoiceItems(tapActions, viewModel.multipleTapAction.value!!.ordinal)
-                .showAllowingStateLoss(childFragmentManager, DIALOG_MULTIPLE_TAP_ACTION)
+                .setSingleChoiceItems(tapActions, viewModel.multipleTapAction.value!!.ordinal) { _, which ->
+                    viewModel.multipleTapAction.value = TapEntryAction.fromOrdinal(which)
+                }
+                .dismissOnClickItem(true)
+                .create()
+                .showAllowingStateLoss(childFragmentManager)
         }
 
         // ロングタップ時の動作
         view.preferences_entries_long_tap_action.setOnClickListener {
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_long_tap_action_desc)
                 .setNegativeButton(R.string.dialog_cancel)
-                .setSingleChoiceItems(tapActions, viewModel.longTapAction.value!!.ordinal)
-                .showAllowingStateLoss(childFragmentManager, DIALOG_LONG_TAP_ACTION)
+                .setSingleChoiceItems(tapActions, viewModel.longTapAction.value!!.ordinal) { _, which ->
+                    viewModel.longTapAction.value = TapEntryAction.fromOrdinal(which)
+                }
+                .dismissOnClickItem(true)
+                .create()
+                .showAllowingStateLoss(childFragmentManager)
         }
 
         view.preferences_entries_multiple_tap_duration.setOnClickListener {
-            NumberPickerDialogFragment.Builder(R.style.AlertDialogStyle)
-                .setTitle(R.string.pref_entries_multiple_tap_duration_desc)
-                .setMessage(R.string.pref_entries_multiple_tap_duration_dialog_message)
-                .setMinValue(0)
-                .setMaxValue(500)
-                .setDefaultValue(viewModel.multipleTapDuration.value!!.toInt())
-                .showAllowingStateLoss(childFragmentManager, DIALOG_MULTIPLE_TAP_DURATION)
+            val dialog = NumberPickerDialog.createInstance(
+                min = 0,
+                max = 500,
+                default = viewModel.multipleTapDuration.value!!.toInt(),
+                titleId = R.string.pref_entries_multiple_tap_duration_desc,
+                messageId = R.string.pref_entries_multiple_tap_duration_dialog_message
+            ) { value ->
+                viewModel.multipleTapDuration.value = value.toLong()
+            }
+            dialog.showAllowingStateLoss(childFragmentManager)
         }
 
         // ホームカテゴリ
@@ -118,122 +117,101 @@ class PreferencesEntriesFragment :
                 else Category.valuesWithoutSignedIn()
             ).filter { it.willBeHome }
 
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_home_category_desc)
                 .setNegativeButton(R.string.dialog_cancel)
-                .setAdditionalData("categories", categories)
                 .setSingleChoiceItems(
-                    categories.map { getString(it.textId) },
+                    categories.map { it.textId },
                     categories.indexOfFirst { it.id == viewModel.homeCategory.value!!.id }
-                )
-                .showAllowingStateLoss(childFragmentManager, DIALOG_HOME_CATEGORY)
+                ) { _, which ->
+                    viewModel.homeCategory.value = categories[which]
+                }
+                .dismissOnClickItem(true)
+                .create()
+                .showAllowingStateLoss(childFragmentManager)
         }
 
         // 最初に表示するタブ
         view.preferences_entries_initial_tab.setOnClickListener {
             val items = getTabTitleIds(viewModel.homeCategory.value!!)
 
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_initial_tab_desc)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(
-                    items.map { getString(it) },
-                    viewModel.initialTab.value!!)
-                .showAllowingStateLoss(childFragmentManager, DIALOG_HOME_TAB)
+                    items,
+                    viewModel.initialTab.value!!
+                ) { _, which ->
+                    viewModel.initialTab.value = which
+                }
+                .dismissOnClickItem(true)
+                .create()
+                .showAllowingStateLoss(childFragmentManager)
         }
 
         // ブクマ閲覧履歴の最大保存数
         view.preferences_entries_history_max_size.setOnClickListener {
-            NumberPickerDialogFragment.Builder(R.style.AlertDialogStyle)
-                .setTitle(R.string.pref_entries_history_max_size_dialog_title)
-                .setMessage(R.string.pref_entries_history_max_size_dialog_msg)
-                .setMinValue(1)
-                .setMaxValue(100)
-                .setDefaultValue(viewModel.historyMaxSize.value!!)
-                .showAllowingStateLoss(childFragmentManager, DIALOG_HISTORY_MAX_SIZE_PICKER)
+            val dialog = NumberPickerDialog.createInstance(
+                min = 1,
+                max = 100,
+                default = viewModel.historyMaxSize.value!!,
+                titleId = R.string.pref_entries_history_max_size_dialog_title,
+                messageId = R.string.pref_entries_history_max_size_dialog_msg
+            ) { value ->
+                viewModel.multipleTapDuration.value = value.toLong()
+            }
+            dialog.showAllowingStateLoss(childFragmentManager)
         }
 
         // 「あとで読む」エントリを「読んだ」したときの挙動
         view.preferences_entries_read_action_type.setOnClickListener {
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_read_action_type_desc)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(
-                    EntryReadActionType.values().map { getString(it.textId) }.toTypedArray(),
-                    viewModel.entryReadActionType.value!!.ordinal)
-                .showAllowingStateLoss(childFragmentManager, DIALOG_ENTRY_READ_ACTION_TYPE)
+                    EntryReadActionType.values().map { it.textId },
+                    viewModel.entryReadActionType.value!!.ordinal
+                ) { _, which ->
+                    viewModel.entryReadActionType.value = EntryReadActionType.fromOrdinal(which)
+                }
+                .dismissOnClickItem(true)
+                .create()
+                .showAllowingStateLoss(childFragmentManager)
         }
 
         // カテゴリリストの表示形式
         view.preferences_entries_categories_mode.setOnClickListener {
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_categories_mode_desc)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(
-                    CategoriesMode.values().map { getString(it.textId) }.toTypedArray(),
-                    viewModel.categoriesMode.value!!.ordinal)
-                .show(childFragmentManager, DIALOG_CATEGORIES_MODE)
+                    CategoriesMode.values().map { it.textId },
+                    viewModel.categoriesMode.value!!.ordinal
+                ) { _, which ->
+                    viewModel.categoriesMode.value = CategoriesMode.fromOrdinal(which)
+                }
+                .dismissOnClickItem(true)
+                .create()
+                .showAllowingStateLoss(childFragmentManager)
         }
 
         // ボトムバーの追加項目の配置方法
         view.extra_bottom_items_alignment_button.setOnClickListener {
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_extra_bottom_items_alignment_desc)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(
-                    ExtraBottomItemsAlignment.values().map { getString(it.textId) }.toTypedArray(),
+                    ExtraBottomItemsAlignment.values().map { it.textId },
                     viewModel.extraBottomItemsAlignment.value!!.ordinal
-                )
-                .show(childFragmentManager, DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT)
+                ) { _, which ->
+                    viewModel.extraBottomItemsAlignment.value = ExtraBottomItemsAlignment.fromOrdinal(which)
+                }
+                .dismissOnClickItem(true)
+                .create()
+                .showAllowingStateLoss(childFragmentManager)
         }
 
         return view
-    }
-
-    /** ダイアログ項目の選択 */
-    override fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {
-        when (dialog.tag) {
-            DIALOG_SINGLE_TAP_ACTION ->
-                viewModel.singleTapAction.value = TapEntryAction.fromOrdinal(which)
-
-            DIALOG_MULTIPLE_TAP_ACTION ->
-                viewModel.multipleTapAction.value = TapEntryAction.fromOrdinal(which)
-
-            DIALOG_LONG_TAP_ACTION ->
-                viewModel.longTapAction.value = TapEntryAction.fromOrdinal(which)
-
-            DIALOG_HOME_CATEGORY -> {
-                val categories = dialog.getAdditionalData<Array<Category>>("categories")!!
-                val cat = categories[which]
-                viewModel.homeCategory.value = cat
-            }
-
-            DIALOG_HOME_TAB ->
-                viewModel.initialTab.value = which
-
-            DIALOG_ENTRY_READ_ACTION_TYPE ->
-                viewModel.entryReadActionType.value = EntryReadActionType.fromInt(which)
-
-            DIALOG_CATEGORIES_MODE ->
-                viewModel.categoriesMode.value = CategoriesMode.fromInt(which)
-
-            DIALOG_ADDITIONAL_BOTTOM_ITEMS_ALIGNMENT ->
-                viewModel.extraBottomItemsAlignment.value = ExtraBottomItemsAlignment.values()[which]
-        }
-        dialog.dismiss()
-    }
-
-    /** NumberPickerの処理完了 */
-    override fun onCompleteNumberPicker(value: Int, dialog: NumberPickerDialogFragment) {
-        when (dialog.tag) {
-            DIALOG_MULTIPLE_TAP_DURATION -> {
-                viewModel.multipleTapDuration.value = value.toLong()
-            }
-
-            DIALOG_HISTORY_MAX_SIZE_PICKER -> {
-                viewModel.historyMaxSize.value = value
-            }
-        }
     }
 }
 

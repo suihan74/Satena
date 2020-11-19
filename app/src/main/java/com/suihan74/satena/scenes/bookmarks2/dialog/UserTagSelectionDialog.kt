@@ -4,11 +4,11 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.SuspendListener
@@ -46,7 +46,7 @@ class UserTagSelectionDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(R.string.user_tags_dialog_title)
             .setMultiChoiceItems(viewModel.tagNames, viewModel.checks) { _, which, isChecked ->
                 viewModel.checks[which] = isChecked
