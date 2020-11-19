@@ -235,36 +235,33 @@ class EntryMenuActionsImplForEntries(
         fragmentManager: FragmentManager,
         coroutineScope: CoroutineScope
     ) {
-        IgnoredEntryDialogFragment.createInstance(
-                url = entry.url,
-                title = entry.title,
-                positiveAction = { dialog, ignoredEntry ->
-                    coroutineScope.launch(Dispatchers.Main) {
-        try {
-            withContext(Dispatchers.IO) {
-                repository.addIgnoredEntry(ignoredEntry)
-            }
+        val dialog = IgnoredEntryDialogFragment.createInstance(
+            url = entry.url,
+            title = entry.title
+        ) { dialog, ignoredEntry ->
+            coroutineScope.launch(Dispatchers.Main) {
+                try {
+                    repository.addIgnoredEntry(ignoredEntry)
 
-            activity.alsoAs<EntriesActivity> { a ->
-                a.refreshLists()
-            }
+                    activity.alsoAs<EntriesActivity> { a ->
+                        a.refreshLists()
+                    }
 
-            activity.showToast(
-                    R.string.msg_ignored_entry_dialog_succeeded,
-                    ignoredEntry.query
-            )
+                    activity.showToast(
+                        R.string.msg_ignored_entry_dialog_succeeded,
+                        ignoredEntry.query
+                    )
 
-            dialog.dismiss()
-        }
-        catch (e: Throwable) {
-            activity.showToast(R.string.msg_ignored_entry_dialog_failed)
-        }
+                    dialog.dismiss()
                 }
-        false
+                catch (e: Throwable) {
+                    activity.showToast(R.string.msg_ignored_entry_dialog_failed)
+                }
             }
-        ).run {
-            showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
+            false
         }
+
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
     }
 
     override fun readLaterEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {

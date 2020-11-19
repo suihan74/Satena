@@ -7,10 +7,11 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.view.WindowManager
+import androidx.annotation.MainThread
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
@@ -18,71 +19,10 @@ import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.provideViewModel
 import kotlinx.android.synthetic.main.fragment_dialog_ignored_entry.view.*
 
-enum class IgnoredEntryDialogTab(
-    val textId: Int
-) {
-    URL(R.string.ignored_entry_dialog_tab_url),
-    TEXT(R.string.ignored_entry_dialog_tab_text)
-    ;
-
-    companion object {
-        fun fromInt(i: Int) = values()[i]
-    }
-}
-
-class IgnoredEntryDialogViewModel : ViewModel() {
-    val editingUrl by lazy { MutableLiveData<String>() }
-    val editingText by lazy { MutableLiveData<String>() }
-    val selectedTab by lazy { MutableLiveData<IgnoredEntryDialogTab>() }
-    val ignoreTarget by lazy { MutableLiveData<IgnoreTarget>() }
-
-    init {
-        ignoreTarget.value = IgnoreTarget.ENTRY
-    }
-
-    fun createIgnoredEntry(id: Int) = IgnoredEntry(
-        type = when (selectedTab.value) {
-            IgnoredEntryDialogTab.URL -> IgnoredEntryType.URL
-            IgnoredEntryDialogTab.TEXT -> IgnoredEntryType.TEXT
-            else -> throw RuntimeException("invalid tab")
-        },
-        query = text,
-        target = ignoreTarget.value!!,
-        id = id
-    )
-
-    fun selectTab(ignoredEntryType: IgnoredEntryType) {
-        selectedTab.postValue(
-            when(ignoredEntryType) {
-                IgnoredEntryType.URL -> IgnoredEntryDialogTab.URL
-                IgnoredEntryType.TEXT -> IgnoredEntryDialogTab.TEXT
-            }
-        )
-    }
-
-    var text: String
-        get() = when (selectedTab.value) {
-            IgnoredEntryDialogTab.URL -> editingUrl.value!!
-            IgnoredEntryDialogTab.TEXT -> editingText.value!!
-            else -> throw NullPointerException()
-        }
-        set(value) = when (selectedTab.value) {
-            IgnoredEntryDialogTab.URL -> editingUrl.postValue(value)
-            IgnoredEntryDialogTab.TEXT -> editingText.postValue(value)
-            else -> Unit
-        }
-
-    var positiveAction : ((IgnoredEntryDialogFragment, IgnoredEntry)->Boolean)? = null
-}
-
 class IgnoredEntryDialogFragment : DialogFragment() {
-    var positiveAction : ((IgnoredEntryDialogFragment, IgnoredEntry)->Boolean)? = null
-
-    private lateinit var model: IgnoredEntryDialogViewModel
-    private var isEditMode: Boolean = false
-
     companion object {
         private const val ARG_EDITING_URL = "ARG_EDITING_URL"
         private const val ARG_EDITING_TEXT = "ARG_EDITING_TEXT"
@@ -103,8 +43,10 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             putString(ARG_EDITING_URL, editingUrl)
             putString(ARG_EDITING_TEXT, title)
             putBoolean(ARG_EDIT_MODE, false)
-
-            it.positiveAction = positiveAction
+        }.also {
+            it.lifecycleScope.launchWhenCreated {
+                it.viewModel.positiveAction = positiveAction
+            }
         }
 
         fun createInstance(
@@ -116,23 +58,22 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             putObject(ARG_MODIFYING_ENTRY, ignoredEntry)
             putEnum(ARG_INITIAL_TARGET, ignoredEntry.target) { it.int }
             putBoolean(ARG_EDIT_MODE, true)
-
-            it.positiveAction = positiveAction
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        isEditMode = arguments?.getBoolean(ARG_EDIT_MODE) ?: false
-        model = ViewModelProvider(this)[IgnoredEntryDialogViewModel::class.java].apply {
-            if (savedInstanceState == null) {
-                editingUrl.value = arguments?.getString(ARG_EDITING_URL) ?: ""
-                editingText.value = arguments?.getString(ARG_EDITING_TEXT) ?: ""
-                ignoreTarget.value = arguments?.getEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.int } ?: IgnoreTarget.ENTRY
-                positiveAction = positiveAction ?: this@IgnoredEntryDialogFragment.positiveAction
+        }.also {
+            it.lifecycleScope.launchWhenCreated {
+                it.viewModel.positiveAction = positiveAction
             }
         }
     }
+
+    // ------ //
+
+    private val viewModel by lazy {
+        provideViewModel(this) {
+            IgnoredEntryDialogViewModel(requireArguments())
+        }
+    }
+
+    // ------ //
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = localLayoutInflater()
@@ -140,23 +81,20 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
         // 最初に表示するタブを選択
         val modifyingEntry = requireArguments().getObject<IgnoredEntry>(ARG_MODIFYING_ENTRY)?.also {
-            model.selectTab(it.type)
+            viewModel.selectTab(it.type)
         } ?: let {
-            model.selectedTab.postValue(
-                if (isEditMode) model.selectedTab.value
-                else IgnoredEntryDialogTab.URL
-            )
+            viewModel.selectedTab.value = viewModel.selectedTab.value ?: IgnoredEntryDialogTab.URL
             null
         }
 
         val queryText = content.query_text.apply {
-            setText(model.editingUrl.value)
+            setText(viewModel.editingUrl.value)
             setHorizontallyScrolling(false)
             maxLines = Int.MAX_VALUE
 
             addTextChangedListener(object : TextWatcher {
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    model.text = s.toString()
+                    viewModel.text = s.toString()
                 }
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                 override fun afterTextChanged(s: Editable?) {}
@@ -167,16 +105,16 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
         // タブが切り替わったときの表示内容更新
         // ここで他のフラグメントのようにthisではなくviewLifecycleOwner使うと落ちる
-        model.selectedTab.observe(this) { tab ->
+        viewModel.selectedTab.observe(this) { tab ->
             queryText.setHint(tab.textId)
             when (tab) {
                 IgnoredEntryDialogTab.URL -> {
-                    queryText.setText(model.editingUrl.value)
+                    queryText.setText(viewModel.editingUrl.value)
                     descText.setText(R.string.ignored_entry_dialog_desc_url)
                     hideIgnoreTargetArea(content)
                 }
                 IgnoredEntryDialogTab.TEXT -> {
-                    queryText.setText(model.editingText.value)
+                    queryText.setText(viewModel.editingText.value)
                     descText.setText(R.string.ignored_entry_dialog_desc_text)
                     showIgnoreTargetArea(content)
                 }
@@ -191,10 +129,10 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         }
 
         content.tab_layout.apply {
-            visibility = (!isEditMode).toVisibility()
+            visibility = (!viewModel.editMode).toVisibility()
 
-            if (model.selectedTab.value != null) {
-                val idx = if (model.selectedTab.value == IgnoredEntryDialogTab.URL) 0 else 1
+            if (viewModel.selectedTab.value != null) {
+                val idx = if (viewModel.selectedTab.value == IgnoredEntryDialogTab.URL) 0 else 1
                 getTabAt(idx)?.select()
             }
 
@@ -202,14 +140,14 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 override fun onTabReselected(tab: TabLayout.Tab?) {}
                 override fun onTabUnselected(tab: TabLayout.Tab?) {}
                 override fun onTabSelected(tab: TabLayout.Tab?) {
-                    model.selectedTab.value = IgnoredEntryDialogTab.fromInt(tab!!.position)
+                    viewModel.selectedTab.value = IgnoredEntryDialogTab.fromInt(tab!!.position)
                 }
             })
         }
 
-        when (model.selectedTab.value) {
+        when (viewModel.selectedTab.value) {
             IgnoredEntryDialogTab.TEXT -> {
-                setIgnoreTarget(content, model.ignoreTarget.value!!)
+                setIgnoreTarget(content, viewModel.ignoreTarget.value!!)
                 showIgnoreTargetArea(content)
             }
             else -> hideIgnoreTargetArea(content)
@@ -218,7 +156,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         // 非表示対象を複数チェックボックスを使用して設定する
         val initialIgnoreTarget = modifyingEntry?.target ?: IgnoreTarget.ENTRY
         val onCheckedChange = {
-            model.ignoreTarget.postValue(getIgnoreTarget(content))
+            viewModel.ignoreTarget.value = getIgnoreTarget(content)
         }
         content.target_entry_checkbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
         content.target_bookmark_checkbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
@@ -251,8 +189,8 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                             return@setOnClickListener
                         }
 
-                        val ignoredEntry = model.createIgnoredEntry(modifyingEntry?.id ?: 0)
-                        if (model.positiveAction?.invoke(this@IgnoredEntryDialogFragment, ignoredEntry) != false) {
+                        val ignoredEntry = viewModel.createIgnoredEntry(modifyingEntry?.id ?: 0)
+                        if (viewModel.positiveAction?.invoke(this@IgnoredEntryDialogFragment, ignoredEntry) != false) {
                             dismiss()
                         }
                     }
@@ -286,5 +224,81 @@ class IgnoredEntryDialogFragment : DialogFragment() {
     private fun setIgnoreTarget(root: View, target: IgnoreTarget) {
         root.target_entry_checkbox.isChecked = target.contains(IgnoreTarget.ENTRY)
         root.target_bookmark_checkbox.isChecked = target.contains(IgnoreTarget.BOOKMARK)
+    }
+
+    // ------ //
+
+    enum class IgnoredEntryDialogTab(
+        val textId: Int
+    ) {
+        URL(R.string.ignored_entry_dialog_tab_url),
+        TEXT(R.string.ignored_entry_dialog_tab_text)
+        ;
+
+        companion object {
+            fun fromInt(i: Int) = values()[i]
+        }
+    }
+
+    // ------ //
+
+    class IgnoredEntryDialogViewModel(
+        args: Bundle
+    ) : ViewModel() {
+        /** 編集モードである */
+        val editMode: Boolean = args.getBoolean(ARG_EDIT_MODE)
+
+        val editingUrl by lazy {
+            MutableLiveData<String>(args.getString(ARG_EDITING_URL).orEmpty())
+        }
+
+        val editingText by lazy {
+            MutableLiveData<String>(args.getString(ARG_EDITING_TEXT).orEmpty())
+        }
+
+        val selectedTab by lazy {
+            MutableLiveData<IgnoredEntryDialogTab>()
+        }
+
+        val ignoreTarget by lazy {
+            MutableLiveData(args.getEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.int } ?: IgnoreTarget.ENTRY)
+        }
+
+        init {
+            ignoreTarget.value = IgnoreTarget.ENTRY
+        }
+
+        fun createIgnoredEntry(id: Int) = IgnoredEntry(
+            type = when (selectedTab.value) {
+                IgnoredEntryDialogTab.URL -> IgnoredEntryType.URL
+                IgnoredEntryDialogTab.TEXT -> IgnoredEntryType.TEXT
+                else -> throw RuntimeException("invalid tab")
+            },
+            query = text,
+            target = ignoreTarget.value!!,
+            id = id
+        )
+
+        @MainThread
+        fun selectTab(ignoredEntryType: IgnoredEntryType) {
+            selectedTab.value = when(ignoredEntryType) {
+                IgnoredEntryType.URL -> IgnoredEntryDialogTab.URL
+                IgnoredEntryType.TEXT -> IgnoredEntryDialogTab.TEXT
+            }
+        }
+
+        var text: String
+            get() = when (selectedTab.value) {
+                IgnoredEntryDialogTab.URL -> editingUrl.value!!
+                IgnoredEntryDialogTab.TEXT -> editingText.value!!
+                else -> throw NullPointerException()
+            }
+            set(value) = when (selectedTab.value) {
+                IgnoredEntryDialogTab.URL -> editingUrl.value = value
+                IgnoredEntryDialogTab.TEXT -> editingText.value = value
+                else -> Unit
+            }
+
+        var positiveAction : ((IgnoredEntryDialogFragment, IgnoredEntry)->Boolean)? = null
     }
 }

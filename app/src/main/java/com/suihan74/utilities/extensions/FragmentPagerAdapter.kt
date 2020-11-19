@@ -11,8 +11,11 @@ inline fun <reified T : Fragment> FragmentPagerAdapter.map(
     crossinline action: (T)->Unit
 ) {
     repeat (count) { i ->
-        instantiateItem(container, i).alsoAs<T> { instance ->
-            action(instance)
+        // TODO: 画面回転後など死んだはずのやつを参照しているっぽい
+        runCatching {
+            instantiateItem(container, i).alsoAs<T> { instance ->
+                action(instance)
+            }
         }
     }
 }
