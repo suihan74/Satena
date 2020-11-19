@@ -110,3 +110,6 @@ inline fun <reified T> Bundle.getObject(key: String) : T? {
     }
 }
 
+// ------ //
+
+fun Bundle.getIntOrNull(key: String) : Int? = get(key) as? Int
