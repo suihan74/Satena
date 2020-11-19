@@ -13,10 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
-import com.suihan74.satena.models.DialogThemeSetting
-import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
 
@@ -160,14 +157,7 @@ class AlertDialogFragment : DialogFragment() {
         // ------ //
 
         fun createDialog(fragment: AlertDialogFragment) : AlertDialog {
-            val themeId = themeId ?: let {
-                val context = fragment.requireContext()
-                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-                val dialogThemeSetting = DialogThemeSetting.fromId(prefs.getInt(PreferenceKey.DIALOG_THEME))
-                dialogThemeSetting.themeId
-            }
-
-            val builder = AlertDialog.Builder(fragment.requireContext(), themeId)
+            val builder = fragment.createBuilder(fragment.requireContext(), themeId)
 
             titleId.onNot(0) {
                 builder.setTitle(it)

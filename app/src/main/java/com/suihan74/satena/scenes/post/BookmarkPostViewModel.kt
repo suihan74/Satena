@@ -37,6 +37,9 @@ class BookmarkPostViewModel(
         if (repository.isThemeDark) R.style.AppDialogTheme_Dark
         else R.style.AppDialogTheme_Light
 
+    val closeOnTouchOutside : Boolean =
+        repository.closeOnTouchOutside
+
     val entry = repository.entry
 
     val private = MutableLiveData<Boolean>(false)

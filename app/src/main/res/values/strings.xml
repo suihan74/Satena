@@ -164,7 +164,7 @@
     <string name="pref_accounts_service_name_mastodon">Mastodon</string>
     <string name="pref_accounts_sign_in">ログイン</string>
     <!-- generals -->
-    <string name="pref_generals_theme_desc">アプリテーマ</string>
+    <string name="pref_generals_theme_desc">アプリのテーマ</string>
     <string name="pref_generals_theme_dark">Dark</string>
     <string name="pref_generals_theme_light">Light</string>
 
@@ -172,6 +172,8 @@
     <string name="pref_generals_dialog_theme_dark">Dark</string>
     <string name="pref_generals_dialog_theme_light">Light</string>
     <string name="pref_generals_dialog_theme_app">アプリテーマにあわせる</string>
+
+    <string name="pref_generals_close_dialog_touch_outside_desc">ダイアログの外側をタッチしたら閉じる</string>
 
     <string name="pref_generals_drawer_gravity_desc">ドロワの位置</string>
     <string name="pref_generals_drawer_gravity_right">右側</string>

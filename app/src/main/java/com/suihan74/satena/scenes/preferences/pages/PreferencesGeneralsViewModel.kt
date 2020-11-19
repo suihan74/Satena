@@ -26,6 +26,11 @@ class PreferencesGeneralsViewModel(
         { i -> DialogThemeSetting.fromId(i) }
     )
 
+    /** ダイアログの外側をタッチしたら閉じる */
+    val closeDialogOnTouchOutside = createLiveData<Boolean>(
+        PreferenceKey.CLOSE_DIALOG_ON_TOUCH_OUTSIDE
+    )
+
     /** ドロワーの位置 */
     val drawerGravity = createLiveData<Int>(
         PreferenceKey.DRAWER_GRAVITY

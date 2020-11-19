@@ -11,31 +11,51 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.SafeSharedPreferences
 
 /**
+ * ダイアログに対して行う必要がある追加のデフォルト設定を施すための`AlertDialog.Builder`
+ */
+class DialogFragmentContentBuilder(context: Context, @StyleRes themeId: Int)
+    : AlertDialog.Builder(context, themeId)
+{
+    /** ダイアログ外側をタッチで閉じる */
+    var canceledOnTouchOutside : Boolean =
+        SafeSharedPreferences.create<PreferenceKey>(context)
+            .getBoolean(PreferenceKey.CLOSE_DIALOG_ON_TOUCH_OUTSIDE)
+
+    override fun create(): AlertDialog {
+        return super.create().also { dialog ->
+            dialog.setCanceledOnTouchOutside(canceledOnTouchOutside)
+        }
+    }
+}
+
+/**
  * テーマ設定を反映したダイアログを作成する
  */
 fun DialogFragment.createBuilder(
     context: Context,
-    @StyleRes styleId: Int? = null
-) : AlertDialog.Builder =
-    AlertDialog.Builder(context, styleId ?: let {
+    @StyleRes themeId: Int? = null
+) = DialogFragmentContentBuilder(
+    context,
+    themeId ?: let {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val dialogThemeSetting = DialogThemeSetting.fromId(
             prefs.getInt(PreferenceKey.DIALOG_THEME)
         )
         dialogThemeSetting.themeId
-    })
+    }
+)
 
 /**
  * テーマ設定を反映した`AlertDialog.Builder`を作成する
  */
-fun DialogFragment.createBuilder() : AlertDialog.Builder =
+fun DialogFragment.createBuilder() : DialogFragmentContentBuilder =
     createBuilder(requireContext())
 
 /**
  * ダイアログ用のテーマを適用した`Context`を取得する
  */
-fun DialogFragment.themeWrappedContext(@StyleRes styleId: Int? = null) : Context =
-    ContextThemeWrapper(requireContext(), styleId ?: let {
+fun DialogFragment.themeWrappedContext(@StyleRes themeId: Int? = null) : Context =
+    ContextThemeWrapper(requireContext(), themeId ?: let {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val dialogThemeSetting = DialogThemeSetting.fromId(
             prefs.getInt(PreferenceKey.DIALOG_THEME)
@@ -51,5 +71,5 @@ fun DialogFragment.themeWrappedContext(@StyleRes styleId: Int? = null) : Context
 /**
  * テーマ設定を反映したView作成用の`LayoutInflater`を取得する
  */
-fun DialogFragment.localLayoutInflater(@StyleRes styleId: Int? = null) : LayoutInflater =
-    LayoutInflater.from(themeWrappedContext(styleId))
+fun DialogFragment.localLayoutInflater(@StyleRes themeId: Int? = null) : LayoutInflater =
+    LayoutInflater.from(themeWrappedContext(themeId))

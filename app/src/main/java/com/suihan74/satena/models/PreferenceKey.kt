@@ -48,6 +48,9 @@ enum class PreferenceKey(
     /** ダイアログのテーマ設定 */
     DIALOG_THEME(typeInfo<Int>(), DialogThemeSetting.APP.id),
 
+    /** ダイアログの外側をタッチしたら閉じる */
+    CLOSE_DIALOG_ON_TOUCH_OUTSIDE(typeInfo<Boolean>(), true),
+
     /** ドロワーの位置 */
     DRAWER_GRAVITY(typeInfo<Int>(), Gravity.RIGHT),
 

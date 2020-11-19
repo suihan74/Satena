@@ -55,6 +55,20 @@
                     android:layout_height="wrap_content"/>
 
             <TextView
+                    android:text="@string/pref_generals_close_dialog_touch_outside_desc"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <ToggleButton
+                    android:id="@+id/toggle_close_dialog_on_touch_outside"
+                    style="@style/PreferencesToggleButtonStyle"
+                    android:checked="@={vm.closeDialogOnTouchOutside}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
                     android:text="@string/pref_generals_drawer_gravity_desc"
                     android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
