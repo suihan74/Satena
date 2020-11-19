@@ -412,7 +412,7 @@ class AlertDialogFragment : DialogFragment() {
                 }
 
                 String::class -> {
-                    setItemsWithLabels(labels as List<String>, listener)
+                    setSingleChoiceItemsWithLabels(labels as List<String>, checkedItem, listener)
                 }
             }
             return this
@@ -430,7 +430,7 @@ class AlertDialogFragment : DialogFragment() {
             return this
         }
 
-        fun setItemsWithLabels(
+        fun setSingleChoiceItemsWithLabels(
             labels: List<CharSequence>,
             checkedItem: Int,
             listener: ((dialog: AlertDialogFragment, which: Int)->Unit)? = null
