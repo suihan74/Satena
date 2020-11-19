@@ -143,13 +143,15 @@ class PreferencesBrowserViewModel(
     fun openSearchEngineSelectionDialog(fragmentManager: FragmentManager) {
         val presets = SearchEngineSetting.Presets.values()
         val labels = presets.map { it.setting.title }
+        val checkedItem = presets.indexOfFirst { it.setting == searchEngine.value }
 
         val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.pref_browser_dialog_title_search_engine)
             .setNegativeButton(R.string.dialog_cancel)
-            .setItems(labels) { _, which ->
+            .setSingleChoiceItems(labels, checkedItem) { _, which ->
                 searchEngine.value = presets[which].setting
             }
+            .dismissOnClickItem(true)
             .create()
         dialog.showAllowingStateLoss(fragmentManager)
     }
