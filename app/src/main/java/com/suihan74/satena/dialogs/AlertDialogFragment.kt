@@ -1,252 +1,446 @@
+@file:Suppress("unused")
+
 package com.suihan74.satena.dialogs
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
-import android.util.Log
+import android.view.View
+import android.widget.AdapterView
+import androidx.annotation.StringRes
+import androidx.annotation.StyleRes
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
-import com.suihan74.utilities.OnError
-import com.suihan74.utilities.extensions.getObject
-import com.suihan74.utilities.extensions.putObject
-import com.suihan74.utilities.showAllowingStateLoss
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
+import com.suihan74.satena.models.DialogThemeSetting
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.provideViewModel
 
 /**
- * 画面復元で落ちないようにしたAlertDialog
- * 独自Viewを表示するDialogFragmentを作成する場合もこのAlertDialogFragmentを継承すると実装が楽
+ * 汎用的なダイアログフラグメント
+ *
+ * `AlertDialog`を`DialogFragment`で包んで作成し，扱うデータを`lifecycle`内で持続させる
  */
-open class AlertDialogFragment : DialogFragment() {
+class AlertDialogFragment : DialogFragment() {
     companion object {
-        private const val KEY_BASE = "AlertDialogFragment."
-        const val THEME_RES_ID = KEY_BASE + "THEME_RES_ID"
-        const val POSITIVE_BUTTON_TEXT_ID = KEY_BASE + "POSITIVE_BUTTON_TEXT_ID"
-        const val NEGATIVE_BUTTON_TEXT_ID = KEY_BASE + "NEGATIVE_BUTTON_TEXT_ID"
-        const val NEUTRAL_BUTTON_TEXT_ID = KEY_BASE + "NEUTRAL_BUTTON_TEXT_ID"
-        const val TITLE_ID = KEY_BASE + "TITLE_ID"
-        const val TITLE = KEY_BASE + "TITLE"
-        const val MESSAGE_ID = KEY_BASE + "MESSAGE_ID"
-        const val MESSAGE = KEY_BASE + "MESSAGE"
-        const val ICON_ID = KEY_BASE + "ICON_ID"
-        const val ITEMS = KEY_BASE + "ITEMS"
-        const val SINGLE_ITEMS_SELECTED = KEY_BASE + "SINGLE_ITEMS_SELECTED"
-        const val MULTI_ITEMS_STATES = KEY_BASE + "MULTI_ITEMS_STATES"
+        private fun createInstance() = AlertDialogFragment().withArguments()
+
+        private const val ARG_THEME_ID = "ARG_THEME_ID"
+        private const val ARG_TITLE_ID = "ARG_TITLE_ID"
+        private const val ARG_TITLE = "ARG_TITLE"
+        private const val ARG_MESSAGE_ID = "ARG_MESSAGE_ID"
+        private const val ARG_MESSAGE = "ARG_MESSAGE"
+        private const val ARG_POSITIVE_BUTTON_TEXT_ID = "ARG_POSITIVE_BUTTON_TEXT_ID"
+        private const val ARG_NEGATIVE_BUTTON_TEXT_ID = "ARG_NEGATIVE_BUTTON_TEXT_ID"
+        private const val ARG_NEUTRAL_BUTTON_TEXT_ID = "ARG_NEUTRAL_BUTTON_TEXT_ID"
+        private const val ARG_ITEM_LABEL_IDS = "ARG_ITEM_LABEL_IDS"
+        private const val ARG_ITEM_LABELS = "ARG_ITEM_LABELS"
+        private const val ARG_ITEMS_MODE = "ARG_ITEMS_MODE"
+        private const val ARG_SINGLE_CHECKED_ITEM = "ARG_SINGLE_CHECKED_ITEM"
+        private const val ARG_MULTI_CHECKED_ITEMS = "ARG_MULTI_CHECKED_ITEMS"
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-        if (singleChoiceItemPosition != null) {
-            outState.putInt(SINGLE_ITEMS_SELECTED, singleChoiceItemPosition!!)
-        }
-
-        if (multiChoiceItemsCurrentStates != null) {
-            outState.putBooleanArray(MULTI_ITEMS_STATES, multiChoiceItemsCurrentStates!!)
+    private val viewModel: DialogViewModel by lazy {
+        provideViewModel(this) {
+            DialogViewModel(requireArguments())
         }
     }
-
-    var items: Array<out String>? = null
-        private set
-
-    var singleChoiceItemPosition: Int? = null
-        private set
-
-    var multiChoiceItemsCurrentStates: BooleanArray? = null
-        private set
-
-    var multiChoiceItemsInitialStates: BooleanArray? = null
-        private set
-
-    inline fun <reified T> getAdditionalData(key: String) : T? =
-        arguments?.getObject<T>(key)
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = createBuilder(requireArguments(), savedInstanceState)
-        return builder.create()
+        return viewModel.createDialog(this)
     }
 
-    protected fun createBuilder(arguments: Bundle, savedInstanceState: Bundle?) : AlertDialog.Builder {
-        val themeResId =
-            if (arguments.containsKey(THEME_RES_ID)) arguments.getInt(THEME_RES_ID)
-            else null
+    // ------ //
 
-        val listener = parentFragment as? Listener ?: activity as? Listener
+    /** singleChoiceItemsで選択されている項目 */
+    val checkedItem : Int
+        get() = viewModel.checkedItem
 
-        return createBuilder(requireContext(), themeResId).apply {
-            arguments.getInt(TITLE_ID).let {
-                if (it != 0) setTitle(it)
-            }
-            arguments.getCharSequence(TITLE)?.let {
-                setTitle(it)
-            }
-            arguments.getInt(MESSAGE_ID).let {
-                if (it != 0) setMessage(it)
-            }
-            arguments.getCharSequence(MESSAGE)?.let {
-                setMessage(it)
-            }
-            arguments.getInt(ICON_ID).let {
-                if (it != 0) setIcon(it)
-            }
-            arguments.getStringArray(ITEMS)?.let { items ->
-                this@AlertDialogFragment.items = items
+    /** multiChoiceItemsでの各項目の選択状態 */
+    val checkedItems : BooleanArray
+        get() = viewModel.checkedItems
 
-                val singleSelected = arguments.getInt(SINGLE_ITEMS_SELECTED, -1)
-                val multiSelected = arguments.getBooleanArray(MULTI_ITEMS_STATES)
+    // ------ //
 
-                when {
-                    singleSelected >= 0 -> {
-                        val savedSelected =
-                            savedInstanceState?.getInt(SINGLE_ITEMS_SELECTED, -1) ?: -1
-                        val selected = if (savedSelected >= 0) savedSelected else singleSelected
-                        setSingleChoiceItems(items, selected) { _, which ->
-                            listener?.onSingleChoiceItem(this@AlertDialogFragment, which)
-                        }
+    fun setDismissOnClickButton(flag: Boolean) = lifecycleScope.launchWhenStarted {
+        viewModel.dismissOnClickButton = flag
+    }
+
+    fun setDismissOnClickItem(flag: Boolean) = lifecycleScope.launchWhenStarted {
+        viewModel.dismissOnClickItem = flag
+    }
+
+    fun setOnClickPositiveButton(listener: Listener<AlertDialogFragment>?) = lifecycleScope.launchWhenStarted {
+        viewModel.onClickPositiveButton = listener
+    }
+
+    fun setOnClickNegativeButton(listener: Listener<AlertDialogFragment>?) = lifecycleScope.launchWhenStarted {
+        viewModel.onClickNegativeButton = listener
+    }
+
+    fun setOnClickNeutralButton(listener: Listener<AlertDialogFragment>?) = lifecycleScope.launchWhenStarted {
+        viewModel.onClickNeutralButton = listener
+    }
+
+    fun setOnClickItem(listener: ((AlertDialogFragment, Int)->Unit)?) = lifecycleScope.launchWhenStarted {
+        viewModel.onClickItem = listener
+    }
+
+    // ------ //
+
+    class DialogViewModel(args: Bundle) : ViewModel() {
+        @StyleRes
+        val themeId: Int? = args.getIntOrNull(ARG_THEME_ID)
+
+        @StringRes
+        val titleId : Int = args.getInt(ARG_TITLE_ID, 0)
+
+        val title : CharSequence? = args.getCharSequence(ARG_TITLE)
+
+        @StringRes
+        val messageId : Int = args.getInt(ARG_MESSAGE_ID, 0)
+
+        val message : CharSequence? = args.getCharSequence(ARG_MESSAGE)
+
+        @StringRes
+        val positiveTextId : Int = args.getInt(ARG_POSITIVE_BUTTON_TEXT_ID, 0)
+
+        @StringRes
+        val negativeTextId : Int = args.getInt(ARG_NEGATIVE_BUTTON_TEXT_ID, 0)
+
+        @StringRes
+        val neutralTextId : Int = args.getInt(ARG_NEUTRAL_BUTTON_TEXT_ID, 0)
+
+        /**
+         *  各項目ラベル文字列リソースID
+         *
+         * itemLabelsより優先される
+         */
+        val itemLabelIds : IntArray? = args.getIntArray(ARG_ITEM_LABEL_IDS)
+
+        /** 各項目ラベル文字列 */
+        val itemLabels : Array<out CharSequence>? = args.getCharSequenceArray(ARG_ITEM_LABELS)
+
+        /**
+         * 項目の表示モード
+         */
+        val itemsMode : ItemsMode = args.getEnum(ARG_ITEMS_MODE, ItemsMode.SINGLE_CLICK)
+
+        /** singleChoiceItemsの選択項目位置 */
+        var checkedItem : Int = args.getInt(ARG_SINGLE_CHECKED_ITEM, 0)
+            private set
+
+        /** multiChoiceItemsの選択項目位置 */
+        val checkedItems : BooleanArray by lazy {
+            args.getBooleanArray(ARG_MULTI_CHECKED_ITEMS) ?: BooleanArray(0)
+        }
+
+        /** ボタンクリック処理後に自動でダイアログを閉じる */
+        var dismissOnClickButton : Boolean = true
+
+        /** 項目クリック処理後に自動でダイアログを閉じる (null: choiceItems時にはfalse, Items時にはtrue) */
+        var dismissOnClickItem : Boolean? = null
+
+        /** ポジティブボタンのクリック時処理 */
+        var onClickPositiveButton : Listener<AlertDialogFragment>? = null
+
+        /** ネガティブボタンのクリック時処理 */
+        var onClickNegativeButton : Listener<AlertDialogFragment>? = null
+
+        /** ニュートラルボタンのクリック時処理 */
+        var onClickNeutralButton : Listener<AlertDialogFragment>? = null
+
+        /** リスト項目のクリック時処理 */
+        var onClickItem : ((AlertDialogFragment, Int)->Unit)? = null
+
+        // ------ //
+
+        fun createDialog(fragment: AlertDialogFragment) : AlertDialog {
+            val themeId = themeId ?: let {
+                val context = fragment.requireContext()
+                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                val dialogThemeSetting = DialogThemeSetting.fromId(prefs.getInt(PreferenceKey.DIALOG_THEME))
+                dialogThemeSetting.themeId
+            }
+
+            val builder = AlertDialog.Builder(fragment.requireContext(), themeId)
+
+            titleId.onNot(0) {
+                builder.setTitle(it)
+            }
+
+            title?.let {
+                builder.setTitle(it)
+            }
+
+            messageId.onNot(0) {
+                builder.setMessage(it)
+            }
+
+            message?.let {
+                builder.setMessage(it)
+            }
+
+            positiveTextId.onNot(0) {
+                builder.setPositiveButton(it, null)
+            }
+
+            negativeTextId.onNot(0) {
+                builder.setNegativeButton(it, null)
+            }
+
+            neutralTextId.onNot(0) {
+                builder.setNeutralButton(it, null)
+            }
+
+            // 項目の初期化
+            initializeItems(fragment, builder)
+
+            val dialog = builder.show()
+
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
+                onClickPositiveButton?.invoke(fragment)
+                if (dismissOnClickButton) {
+                    fragment.dismiss()
+                }
+            }
+
+            dialog.getButton(DialogInterface.BUTTON_NEGATIVE)?.setOnClickListener {
+                onClickNegativeButton?.invoke(fragment)
+                if (dismissOnClickButton) {
+                    fragment.dismiss()
+                }
+            }
+
+            dialog.getButton(DialogInterface.BUTTON_NEUTRAL)?.setOnClickListener {
+                onClickNeutralButton?.invoke(fragment)
+                if (dismissOnClickButton) {
+                    fragment.dismiss()
+                }
+            }
+
+            dialog.listView?.setOnItemClickListener { adapterView, view, i, l ->
+                onClickItem?.invoke(fragment, i)
+                if (false != dismissOnClickItem) {
+                    fragment.dismiss()
+                }
+            }
+
+            dialog.listView?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    adapterView: AdapterView<*>?,
+                    viwe: View?,
+                    i: Int,
+                    l: Long
+                ) {
+                    checkedItem = i
+                    onClickItem?.invoke(fragment, i)
+                    if (true == dismissOnClickItem) {
+                        fragment.dismiss()
                     }
+                }
+                override fun onNothingSelected(p0: AdapterView<*>?) {}
+            }
 
-                    multiSelected != null -> {
-                        val states = savedInstanceState?.getBooleanArray(MULTI_ITEMS_STATES)
-                            ?: multiSelected.clone()
-                        multiChoiceItemsCurrentStates = states
-                        multiChoiceItemsInitialStates = multiSelected.clone()
+            return dialog
+        }
 
-                        setMultiChoiceItems(items, states) { _, which, s ->
-                            multiChoiceItemsCurrentStates?.set(which, s)
-                            listener?.onMultiChoiceItem(this@AlertDialogFragment, which, s)
-                        }
-                    }
+        private fun initializeItems(
+            fragment: AlertDialogFragment,
+            builder: AlertDialog.Builder
+        ) {
+            val labels =
+                itemLabelIds?.map { fragment.getText(it) }?.toTypedArray() ?: itemLabels.orEmpty()
 
-                    else ->
-                        setItems(items) { _, which ->
-                            listener?.onSelectItem(
-                                this@AlertDialogFragment,
-                                which
-                            )
-                        }
-                }
+            when (itemsMode) {
+                ItemsMode.SINGLE_CLICK -> initializeSingleClickItems(builder, labels)
+                ItemsMode.SINGLE_CHOICE -> initializeSingleChoiceItems(builder, labels)
+                ItemsMode.MULTI_CHOICE -> initializeMultiChoiceItems(builder, labels)
             }
-            arguments.getInt(POSITIVE_BUTTON_TEXT_ID).let {
-                if (it != 0) setPositiveButton(it) { _, _ ->
-                    listener?.onClickPositiveButton(this@AlertDialogFragment)
-                }
-            }
-            arguments.getInt(NEGATIVE_BUTTON_TEXT_ID).let {
-                if (it != 0) setNegativeButton(it) { _, _ ->
-                    listener?.onClickNegativeButton(this@AlertDialogFragment)
-                }
-            }
-            arguments.getInt(NEUTRAL_BUTTON_TEXT_ID).let {
-                if (it != 0) setNeutralButton(it) { _, _ ->
-                    listener?.onClickNeutralButton(this@AlertDialogFragment)
-                }
-            }
+        }
+
+        private fun initializeSingleClickItems(
+            builder: AlertDialog.Builder,
+            labels: Array<out CharSequence>
+        ) {
+            builder.setItems(labels, null)
+        }
+
+        private fun initializeSingleChoiceItems(
+            builder: AlertDialog.Builder,
+            labels: Array<out CharSequence>
+        ) {
+            builder.setSingleChoiceItems(labels, checkedItem, null)
+        }
+
+        private fun initializeMultiChoiceItems(
+            builder: AlertDialog.Builder,
+            labels: Array<out CharSequence>
+        ) {
+            builder.setMultiChoiceItems(labels, checkedItems, null)
         }
     }
 
-    open class Builder(themeResId: Int?) {
-        protected val arguments = Bundle().apply {
-            if (themeResId != null) {
-                putInt(THEME_RES_ID, themeResId)
-            }
-        }
+    // ------ //
 
-        open fun create() =
-            AlertDialogFragment().apply {
-                this.arguments = this@Builder.arguments
-            }
-
-        fun show(
-            fragmentManager: FragmentManager,
-            tag: String? = null
-        ) {
-            val dialog = create()
-            dialog.show(fragmentManager, tag)
-        }
-
-        fun showAllowingStateLoss(
-            fragmentManager: FragmentManager,
-            tag: String? = null,
-            onError: OnError? = { Log.e("AlertDialogoBuilder", Log.getStackTraceString(it)) }
-        ) {
-            val dialog = create()
-            dialog.showAllowingStateLoss(fragmentManager, tag, onError)
-        }
-
-        fun setPositiveButton(textId: Int) = this.apply {
-            arguments.putInt(POSITIVE_BUTTON_TEXT_ID, textId)
-        }
-
-        fun setNegativeButton(textId: Int) = this.apply {
-            arguments.putInt(NEGATIVE_BUTTON_TEXT_ID, textId)
-        }
-
-        fun setNeutralButton(textId: Int) = this.apply {
-            arguments.putInt(NEUTRAL_BUTTON_TEXT_ID, textId)
-        }
-
-        fun setTitle(title: CharSequence) = this.apply {
-            arguments.remove(TITLE_ID)
-            arguments.putCharSequence(TITLE, title)
-        }
-
-        fun setTitle(titleId: Int) = this.apply {
-            arguments.remove(TITLE)
-            arguments.putInt(TITLE_ID, titleId)
-        }
-
-        fun setMessage(messageId: Int) = this.apply {
-            arguments.remove(MESSAGE)
-            arguments.putInt(MESSAGE_ID, messageId)
-        }
-
-        fun setMessage(message: CharSequence) = this.apply {
-            arguments.remove(MESSAGE_ID)
-            arguments.putCharSequence(MESSAGE, message)
-        }
-
-        fun setIcon(iconId: Int) = this.apply {
-            arguments.putInt(ICON_ID, iconId)
-        }
-
-        fun setItems(items: Array<out String>) = this.apply {
-            arguments.putStringArray(ITEMS, items)
-        }
-
-        fun setItems(items: Collection<String>) =
-            setItems(items.toTypedArray())
-
-        fun setSingleChoiceItems(items: Array<out String>, selectedPosition: Int) = this.apply {
-            arguments.run {
-                remove(MULTI_ITEMS_STATES)
-                putStringArray(ITEMS, items)
-                putInt(SINGLE_ITEMS_SELECTED, selectedPosition)
-            }
-        }
-
-        fun setSingleChoiceItems(items: Collection<String>, selectedPosition: Int) =
-            setSingleChoiceItems(items.toTypedArray(), selectedPosition)
-
-        fun setMultiChoiceItems(items: Array<out String>, booleanArray: BooleanArray) = this.apply {
-            arguments.run {
-                remove(SINGLE_ITEMS_SELECTED)
-                putStringArray(ITEMS, items)
-                putBooleanArray(MULTI_ITEMS_STATES, booleanArray)
-            }
-        }
-
-        fun setMultiChoiceItems(items: Collection<String>, booleanArray: BooleanArray) =
-            setMultiChoiceItems(items.toTypedArray(), booleanArray)
-
-        fun setAdditionalData(key: String, obj: Any?) = this.apply {
-            arguments.putObject(key, obj)
-        }
+    /** 項目の表示モード */
+    enum class ItemsMode {
+        /** 単純に項目を列挙しクリックされたら処理を実行する */
+        SINGLE_CLICK,
+        /** 項目の中からひとつを選択する */
+        SINGLE_CHOICE,
+        /** 項目の中から複数を選択する */
+        MULTI_CHOICE
     }
 
-    interface Listener {
-        fun onClickPositiveButton(dialog: AlertDialogFragment) {}
-        fun onClickNegativeButton(dialog: AlertDialogFragment) {}
-        fun onClickNeutralButton(dialog: AlertDialogFragment) {}
-        fun onSelectItem(dialog: AlertDialogFragment, which: Int) {}
-        fun onSingleChoiceItem(dialog: AlertDialogFragment, which: Int) {}
-        fun onMultiChoiceItem(dialog: AlertDialogFragment, which: Int, selected: Boolean) {}
+    // ------ //
+
+    class Builder(
+        private val styleId: Int? = null
+    ) {
+        private val dialog = AlertDialogFragment.createInstance()
+        private val args = dialog.requireArguments().also {
+            if (styleId != null) {
+                it.putInt(ARG_THEME_ID, styleId)
+            }
+        }
+
+        fun create() = dialog
+
+        fun setTitle(@StringRes titleId: Int) : Builder {
+            args.putInt(ARG_TITLE_ID, titleId)
+            return this
+        }
+
+        fun setMessage(@StringRes messageId: Int) : Builder {
+            args.putInt(ARG_MESSAGE_ID, messageId)
+            return this
+        }
+
+        fun setTitle(title: CharSequence) : Builder {
+            args.putCharSequence(ARG_TITLE, title)
+            return this
+        }
+
+        fun setMessage(message: CharSequence) : Builder {
+            args.putCharSequence(ARG_MESSAGE, message)
+            return this
+        }
+
+        fun setPositiveButton(@StringRes textId: Int, listener: Listener<AlertDialogFragment>? = null) : Builder {
+            args.putInt(ARG_POSITIVE_BUTTON_TEXT_ID, textId)
+            dialog.setOnClickPositiveButton(listener)
+            return this
+        }
+
+        fun setNegativeButton(@StringRes textId: Int, listener: Listener<AlertDialogFragment>? = null) : Builder {
+            args.putInt(ARG_NEGATIVE_BUTTON_TEXT_ID, textId)
+            dialog.setOnClickNegativeButton(listener)
+            return this
+        }
+
+        fun setNeutralButton(@StringRes textId: Int, listener: Listener<AlertDialogFragment>? = null) : Builder {
+            args.putInt(ARG_NEUTRAL_BUTTON_TEXT_ID, textId)
+            dialog.setOnClickNeutralButton(listener)
+            return this
+        }
+
+        fun dismissOnClickButton(flag: Boolean) : Builder {
+            dialog.setDismissOnClickButton(flag)
+            return this
+        }
+
+        fun dismissOnClickItem(flag: Boolean) : Builder {
+            dialog.setDismissOnClickItem(flag)
+            return this
+        }
+
+        // ------ //
+
+        @Suppress("unchecked_cast")
+        inline fun <reified T> setItems(
+            labels: List<T>,
+            noinline listener: ((dialog: AlertDialogFragment, which: Int)->Unit)? = null
+        ) : Builder {
+            when (T::class) {
+                Int::class -> {
+                    setItemsWithLabelIds(labels as List<Int>, listener)
+                }
+
+                String::class -> {
+                    setItemsWithLabels(labels as List<String>, listener)
+                }
+            }
+            return this
+        }
+
+        fun setItemsWithLabelIds(
+            labelIds: List<Int>,
+            listener: ((dialog: AlertDialogFragment, which: Int)->Unit)? = null
+        ) : Builder {
+            args.putEnum(ARG_ITEMS_MODE, ItemsMode.SINGLE_CLICK)
+            args.putIntArray(ARG_ITEM_LABEL_IDS, labelIds.toIntArray())
+            dialog.setOnClickItem(listener)
+            return this
+        }
+
+        fun setItemsWithLabels(
+            labels: List<CharSequence>,
+            listener: ((dialog: AlertDialogFragment, which: Int)->Unit)? = null
+        ) : Builder {
+            args.putEnum(ARG_ITEMS_MODE, ItemsMode.SINGLE_CLICK)
+            args.putCharSequenceArray(ARG_ITEM_LABELS, labels.toTypedArray())
+            dialog.setOnClickItem(listener)
+            return this
+        }
+
+        // ------ //
+
+        @Suppress("unchecked_cast")
+        inline fun <reified T> setSingleChoiceItems(
+            labels: List<T>,
+            checkedItem: Int,
+            noinline listener: ((dialog: AlertDialogFragment, which: Int)->Unit)? = null
+        ) : Builder {
+            when (T::class) {
+                Int::class -> {
+                    setSingleChoiceItemsWithLabelIds(labels as List<Int>, checkedItem, listener)
+                }
+
+                String::class -> {
+                    setItemsWithLabels(labels as List<String>, listener)
+                }
+            }
+            return this
+        }
+
+        fun setSingleChoiceItemsWithLabelIds(
+            labelIds: List<Int>,
+            checkedItem: Int,
+            listener: ((dialog: AlertDialogFragment, which: Int)->Unit)? = null
+        ) : Builder {
+            args.putEnum(ARG_ITEMS_MODE, ItemsMode.SINGLE_CHOICE)
+            args.putIntArray(ARG_ITEM_LABEL_IDS, labelIds.toIntArray())
+            args.putInt(ARG_SINGLE_CHECKED_ITEM, checkedItem)
+            dialog.setOnClickItem(listener)
+            return this
+        }
+
+        fun setItemsWithLabels(
+            labels: List<CharSequence>,
+            checkedItem: Int,
+            listener: ((dialog: AlertDialogFragment, which: Int)->Unit)? = null
+        ) : Builder {
+            args.putEnum(ARG_ITEMS_MODE, ItemsMode.SINGLE_CHOICE)
+            args.putCharSequenceArray(ARG_ITEM_LABELS, labels.toTypedArray())
+            args.putInt(ARG_SINGLE_CHECKED_ITEM, checkedItem)
+            dialog.setOnClickItem(listener)
+            return this
+        }
     }
 }
+

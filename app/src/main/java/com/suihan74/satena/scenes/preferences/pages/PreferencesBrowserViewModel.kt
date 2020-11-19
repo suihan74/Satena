@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.SearchEngineSetting
@@ -113,7 +113,7 @@ class PreferencesBrowserViewModel(
         val labels = items.map { it.textId }
         val checkedItem = webViewTheme.value?.ordinal ?: 0
 
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.pref_browser_theme_desc)
             .setNegativeButton(R.string.dialog_cancel)
             .setSingleChoiceItems(labels, checkedItem) { _, which ->
@@ -128,7 +128,7 @@ class PreferencesBrowserViewModel(
     /** ブラウザモードを選択する */
     fun openBrowserModeSelectionDialog(fragmentManager: FragmentManager) {
         val labels = BrowserMode.values().map { it.textId }
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.pref_browser_mode_desc)
             .setNegativeButton(R.string.dialog_cancel)
             .setItems(labels) { _, which ->
@@ -144,7 +144,7 @@ class PreferencesBrowserViewModel(
         val presets = SearchEngineSetting.Presets.values()
         val labels = presets.map { it.setting.title }
 
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.pref_browser_dialog_title_search_engine)
             .setNegativeButton(R.string.dialog_cancel)
             .setItems(labels) { _, which ->
@@ -158,7 +158,7 @@ class PreferencesBrowserViewModel(
 
     /** キャッシュを削除する */
     fun openClearCacheDialog(fragmentManager: FragmentManager) {
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(R.string.pref_browser_clear_cache_dialog_message)
             .setNegativeButton(R.string.dialog_cancel)
@@ -172,7 +172,7 @@ class PreferencesBrowserViewModel(
 
     /** クッキーを削除する */
     fun openClearCookieDialog(fragmentManager: FragmentManager) {
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(R.string.pref_browser_clear_cookie_dialog_message)
             .setNegativeButton(R.string.dialog_cancel)
@@ -188,7 +188,7 @@ class PreferencesBrowserViewModel(
 
     /** 閲覧履歴を削除する */
     fun openClearHistoryDialog(fragmentManager: FragmentManager) {
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(R.string.pref_browser_clear_history_dialog_message)
             .setNegativeButton(R.string.dialog_cancel)

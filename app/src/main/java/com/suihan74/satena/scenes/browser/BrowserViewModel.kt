@@ -21,7 +21,7 @@ import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
@@ -395,7 +395,7 @@ class BrowserViewModel(
      * テキストリンクに対するメニューを表示する
      */
     private fun openTextLinkMenuDialog(url: String, activity: BrowserActivity) {
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(Uri.decode(url))
             .setItems(listOf(
                 R.string.browser_link_menu_open_link,
@@ -418,7 +418,7 @@ class BrowserViewModel(
      * 画像に対するメニューを表示する
      */
     private fun openImageMenuDialog(url: String, activity: BrowserActivity) {
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(Uri.decode(url))
             .setItems(listOf(
                 R.string.browser_link_menu_open_image,
@@ -441,7 +441,7 @@ class BrowserViewModel(
      * 画像リンクに対するメニューを表示する
      */
     private fun openImageLinkMenuDialog(linkUrl: String, imageUrl: String, activity: BrowserActivity) {
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(Uri.decode(linkUrl))
             .setItems(listOf(
                 R.string.browser_link_menu_open_link,
@@ -808,7 +808,7 @@ class BrowserViewModel(
         fragmentManager: FragmentManager
     ) {
         val context = SatenaApplication.instance
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(context.getString(R.string.browser_unfavorite_confirm_msg, site.title))
             .setNegativeButton(R.string.dialog_cancel)

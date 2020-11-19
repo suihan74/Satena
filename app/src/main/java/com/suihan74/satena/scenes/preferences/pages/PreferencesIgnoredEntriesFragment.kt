@@ -9,7 +9,7 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
@@ -84,7 +84,7 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
             }
 
             override fun onItemLongClicked(entry: IgnoredEntry): Boolean {
-                AlertDialogFragment2.Builder()
+                AlertDialogFragment.Builder()
                     .setTitle("${entry.type.name} ${entry.query}")
                     .setNegativeButton(R.string.dialog_cancel)
                     .setItems(mDialogMenuItems!!.map { it.first }) { _, which ->

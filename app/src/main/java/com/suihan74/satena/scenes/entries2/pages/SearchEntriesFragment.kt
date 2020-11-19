@@ -13,7 +13,7 @@ import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
@@ -118,7 +118,7 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         // 検索タイプ選択メニューの設定
         menu.findItem(R.id.search_type)?.let { item ->
             item.setOnMenuItemClickListener {
-                AlertDialogFragment2.Builder()
+                AlertDialogFragment.Builder()
                     .setTitle(R.string.desc_search_type)
                     .setNegativeButton(R.string.dialog_cancel)
                     .setItems(SearchType.values().map { it.textId }) { _, which ->

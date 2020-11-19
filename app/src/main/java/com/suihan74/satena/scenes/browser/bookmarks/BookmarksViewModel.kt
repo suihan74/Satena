@@ -16,7 +16,7 @@ import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
@@ -104,7 +104,7 @@ class BookmarksViewModel(
         }
 
         if (repository.useConfirmPostingStarDialog) {
-            val dialog = AlertDialogFragment2.Builder()
+            val dialog = AlertDialogFragment.Builder()
                 .setTitle(R.string.confirm_dialog_title_simple)
                 .setMessage(context.getString(R.string.msg_post_star_dialog, color.name))
                 .setNegativeButton(R.string.dialog_cancel) { it.dismiss() }
@@ -434,7 +434,7 @@ class BookmarksViewModel(
         bookmark: Bookmark,
         fragmentManager: FragmentManager
     ) {
-        AlertDialogFragment2.Builder()
+        AlertDialogFragment.Builder()
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(R.string.msg_confirm_bookmark_deletion)
             .setNegativeButton(R.string.dialog_cancel)

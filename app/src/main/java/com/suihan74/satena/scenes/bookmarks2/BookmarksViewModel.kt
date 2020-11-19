@@ -12,7 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUsers
@@ -800,7 +800,7 @@ class BookmarksViewModel(
         context: Context,
         fragmentManager: FragmentManager
     ) {
-        AlertDialogFragment2.Builder()
+        AlertDialogFragment.Builder()
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(R.string.msg_confirm_bookmark_deletion)
             .setNegativeButton(R.string.dialog_cancel)

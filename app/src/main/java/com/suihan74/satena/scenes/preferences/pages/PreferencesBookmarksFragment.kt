@@ -10,7 +10,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesBookmarksBinding
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
@@ -51,7 +51,7 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
 
         // 最初に表示するタブ
         view.button_initial_tab.setOnClickListener {
-            AlertDialogFragment2.Builder()
+            AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_bookmarks_initial_tab_desc)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(
@@ -69,7 +69,7 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
         val initializeTapActionSelector = { viewId: Int, selectedActionLiveData: LiveData<TapEntryAction>, descId: Int, tag: String ->
             view.findViewById<Button>(viewId).apply {
                 setOnClickListener {
-                    AlertDialogFragment2.Builder()
+                    AlertDialogFragment.Builder()
                         .setTitle(descId)
                         .setNegativeButton(R.string.dialog_cancel)
                         .setSingleChoiceItems(

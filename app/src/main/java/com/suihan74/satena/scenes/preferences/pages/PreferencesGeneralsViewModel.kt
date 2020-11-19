@@ -2,7 +2,7 @@ package com.suihan74.satena.scenes.preferences.pages
 
 import androidx.fragment.app.FragmentManager
 import com.suihan74.satena.R
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.AppUpdateNoticeMode
 import com.suihan74.satena.models.DialogThemeSetting
 import com.suihan74.satena.models.PreferenceKey
@@ -80,7 +80,7 @@ class PreferencesGeneralsViewModel(
         val labelIds = DialogThemeSetting.values().map { it.titleId }
         val checkedItem = DialogThemeSetting.values().indexOf(dialogTheme.value)
 
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.pref_generals_dialog_theme_desc)
             .setNegativeButton(R.string.dialog_cancel)
             .setSingleChoiceItems(
@@ -98,7 +98,7 @@ class PreferencesGeneralsViewModel(
     fun openAppUpdateNoticeModeSelectionDialog(fragmentManager: FragmentManager) {
         val currentValue = appUpdateNoticeMode.value ?: AppUpdateNoticeMode.FIX
         val currentIdx = AppUpdateNoticeMode.values().indexOf(currentValue)
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.pref_generals_app_update_notice_mode_desc)
             .setSingleChoiceItems(
                 AppUpdateNoticeMode.values().map { it.textId },
