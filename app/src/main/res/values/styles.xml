@@ -214,6 +214,7 @@
 
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="android:textColorHint">@color/textColorHint</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
     </style>
 
@@ -229,6 +230,7 @@
 
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
