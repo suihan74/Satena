@@ -41,18 +41,7 @@ class BookmarkMenuDialog : DialogFragment() {
 
     private val viewModel: DialogViewModel by lazy {
         provideViewModel(this) {
-            val args = requireArguments()
-            val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
-            val ignored = args.getBoolean(ARG_IGNORED, false)
-            val userSignedIn = args.getString(ARG_USER_SIGNED_IN)
-            val starsEntry = args.getObject<StarsEntry>(ARG_STARS_ENTRY)
-
-            DialogViewModel(
-                bookmark,
-                ignored,
-                userSignedIn,
-                starsEntry
-            )
+            DialogViewModel(requireArguments())
         }
     }
 
@@ -105,12 +94,14 @@ class BookmarkMenuDialog : DialogFragment() {
 
     // ------ //
 
-    class DialogViewModel(
-        val bookmark : Bookmark,
-        val ignored : Boolean,
-        val userSignedIn : String?,
-        val starsEntry : StarsEntry?
-    ) : ViewModel() {
+    class DialogViewModel(args: Bundle) : ViewModel() {
+        val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
+
+        val ignored = args.getBoolean(ARG_IGNORED, false)
+
+        val userSignedIn = args.getString(ARG_USER_SIGNED_IN)
+
+        val starsEntry = args.getObject<StarsEntry>(ARG_STARS_ENTRY)
 
         /** サインイン状態 */
         val signedIn : Boolean =

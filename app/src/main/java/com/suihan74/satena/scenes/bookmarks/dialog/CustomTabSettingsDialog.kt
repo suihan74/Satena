@@ -4,11 +4,11 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.provideViewModel
@@ -40,7 +40,7 @@ class CustomTabSettingsDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = requireContext()
-        return AlertDialog.Builder(context, R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(R.string.custom_bookmarks_tab_pref_dialog_title)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setPositiveButton(R.string.dialog_ok) { _, _ ->
