@@ -204,7 +204,7 @@
 
     <!-- Light -->
     <style name="AlertDialogStyle.Light">
-        <item name="colorBackgroundFloating">@color/panelBackground</item>
+        <item name="colorBackgroundFloating">@color/dialogBackground</item>
         <item name="android:textColor">@color/textColor</item>
         <item name="textColor">@color/textColor</item>
         <item name="android:textColorPrimary">@color/textColor</item>
@@ -219,7 +219,7 @@
 
     <!-- Dark -->
     <style name="AlertDialogStyle.Dark">
-        <item name="colorBackgroundFloating">@color/panelBackgroundDark</item>
+        <item name="colorBackgroundFloating">@color/dialogBackgroundDark</item>
         <item name="android:textColor">@color/textColorDark</item>
         <item name="textColor">@color/textColorDark</item>
         <item name="android:textColorPrimary">@color/textColorDark</item>

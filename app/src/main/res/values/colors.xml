@@ -12,6 +12,10 @@
     <color name="panelBackground">#EEE</color>
     <color name="panelBackgroundDark">#3F3F40</color>
 
+    <!-- ダイアログ背景 -->
+    <color name="dialogBackground">#EEE</color>
+    <color name="dialogBackgroundDark">#414143</color>
+
     <!-- クリック防止ビュー -->
     <color name="clickGuard">#a0000000</color>
 
