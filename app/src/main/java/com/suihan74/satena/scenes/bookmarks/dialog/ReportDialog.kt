@@ -3,12 +3,10 @@ package com.suihan74.satena.scenes.bookmarks.dialog
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
@@ -17,6 +15,8 @@ import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.ReportCategory
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogReportBinding
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.utilities.SuspendSwitcher
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
@@ -54,7 +54,7 @@ class ReportDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = LayoutInflater.from(context)
+        val inflater = localLayoutInflater()
         val binding = DataBindingUtil.inflate<FragmentDialogReportBinding>(
             inflater,
             R.layout.fragment_dialog_report,
@@ -66,7 +66,7 @@ class ReportDialog : DialogFragment() {
             initialize(it)
         }
 
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(R.string.report_bookmark_dialog_title)
             .setView(binding.root)
             .setPositiveButton(R.string.report_dialog_ok, null)

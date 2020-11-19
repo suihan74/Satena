@@ -3,8 +3,6 @@ package com.suihan74.satena.scenes.entries2.dialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
@@ -13,6 +11,8 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.Listener
@@ -44,8 +44,7 @@ class EntryMenuDialog2 : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val context = requireContext()
-        val inflater = LayoutInflater.from(context)
+        val inflater = localLayoutInflater()
 
         val entry = viewModel.entry
 
@@ -61,7 +60,7 @@ class EntryMenuDialog2 : DialogFragment() {
             it.faviconUrl = entry.faviconUrl
         }
 
-        return AlertDialog.Builder(context, R.style.AlertDialogStyle)
+        return createBuilder()
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setItems(viewModel.labels) { _, which ->

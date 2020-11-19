@@ -17,7 +17,6 @@
         <EditText
                 android:id="@+id/tag_name"
                 android:text="@={vm.tagName}"
-                android:textColor="@color/textColor"
                 android:inputType="textNoSuggestions"
                 android:importantForAutofill="no"
                 android:singleLine="true"

@@ -2,11 +2,11 @@ package com.suihan74.satena.scenes.entries2.dialog
 
 import android.app.Dialog
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
@@ -34,7 +34,7 @@ class FavoriteSitesSelectionDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(R.string.desc_favorite_sites_settings)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setPositiveButton(R.string.dialog_ok) { _, _ ->

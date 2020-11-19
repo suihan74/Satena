@@ -45,11 +45,17 @@ enum class PreferenceKey(
     /** ダークテーマを使用 */
     DARK_THEME(typeInfo<Boolean>(), false),
 
+    /** ダイアログのテーマ設定 */
+    DIALOG_THEME(typeInfo<Int>(), DialogThemeSetting.APP.id),
+
+    /** ダイアログの外側をタッチしたら閉じる */
+    CLOSE_DIALOG_ON_TOUCH_OUTSIDE(typeInfo<Boolean>(), true),
+
     /** ドロワーの位置 */
     DRAWER_GRAVITY(typeInfo<Int>(), Gravity.RIGHT),
 
     /** アプリ内アップデート通知 */
-    APP_UPDATE_NOTICE_MODE(typeInfo<Int>(), AppUpdateNoticeMode.FIX.int),
+    APP_UPDATE_NOTICE_MODE(typeInfo<Int>(), AppUpdateNoticeMode.FIX.id),
 
     /** 一度無視したアップデートを再度通知する */
     NOTICE_IGNORED_APP_UPDATE(typeInfo<Boolean>(), false),

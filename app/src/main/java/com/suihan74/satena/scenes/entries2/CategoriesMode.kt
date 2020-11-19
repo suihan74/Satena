@@ -12,6 +12,6 @@ enum class CategoriesMode(
     GRID(R.string.pref_categories_mode_grid);
 
     companion object {
-        fun fromInt(int: Int) = values().getOrNull(int) ?: LIST
+        fun fromOrdinal(int: Int) = values().getOrElse(int) { LIST }
     }
 }

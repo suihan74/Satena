@@ -8,7 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
-import com.suihan74.satena.dialogs.AlertDialogFragment2
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.utilities.extensions.showToast
@@ -86,7 +86,7 @@ class PreferencesIgnoredUsersViewModel(
             R.string.pref_ignored_users_unignore to { unIgnoreUser(activity, user) }
         )
 
-        val dialog = AlertDialogFragment2.Builder()
+        val dialog = AlertDialogFragment.Builder()
             .setTitle("id:$user")
             .setNegativeButton(R.string.dialog_cancel)
             .setItems(items.map { it.first }) { _, which ->

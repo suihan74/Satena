@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.bookmarks.dialog
 
 import android.app.Dialog
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -10,6 +9,7 @@ import androidx.lifecycle.whenStarted
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.*
 
@@ -43,7 +43,7 @@ class PostStarDialog : DialogFragment() {
 
         val message = getString(R.string.msg_post_star_dialog, starColor.name)
 
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(R.string.confirm_dialog_title_simple)
             .setIcon(R.drawable.ic_baseline_help)
             .setMessage(message)

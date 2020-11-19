@@ -3,7 +3,7 @@ package com.suihan74.satena.scenes.preferences.bottomBar
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
+import android.text.style.ImageSpan
 import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
 import androidx.fragment.app.DialogFragment
@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.themeWrappedContext
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.*
@@ -34,7 +36,7 @@ class BottomBarItemSelectionDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val context = requireContext()
+        val context = themeWrappedContext()
         val args = requireArguments()
         val existedItems = args.getObject<List<UserBottomItem>>(ARG_EXISTED_ITEMS)!!
         val targetItem = args.getEnum<UserBottomItem>(ARG_TARGET_ITEMS)
@@ -51,7 +53,7 @@ class BottomBarItemSelectionDialog : DialogFragment() {
         // 現在設定されているアイテム位置
         val checkedPosition = items.indexOf(targetItem)
 
-        val dialogBuilder = AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        val dialogBuilder = createBuilder()
             .setTitle(R.string.dialog_title_bottom_bar_item_selection)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setSingleChoiceItems(itemLabels, checkedPosition) { _, which ->
@@ -90,7 +92,7 @@ class BottomBarItemSelectionDialog : DialogFragment() {
                 context = context,
                 resId = item.iconId,
                 sizePx = context.sp2px(18),
-                color = ContextCompat.getColor(context, R.color.textColor)
+                color = context.getThemeColor(R.attr.textColor)
             )
             append("\u2002") // for margin
             append(getString(item.textId))

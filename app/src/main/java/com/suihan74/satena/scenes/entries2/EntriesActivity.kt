@@ -45,7 +45,7 @@ import com.suihan74.utilities.views.CustomBottomAppBar
 import com.suihan74.utilities.views.bindMenuItemsGravity
 import kotlinx.android.synthetic.main.activity_entries2.*
 
-class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
+class EntriesActivity : AppCompatActivity() {
     companion object {
         /** String: アクティビティ生成時にCategory.Siteに遷移、表示するURL */
         const val EXTRA_SITE_URL = "EntriesActivity.EXTRA_SITE_URL"
@@ -476,16 +476,20 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
     /** アクティビティ終了時確認 */
     override fun finish() {
         if (viewModel.isTerminationDialogEnabled && supportFragmentManager.backStackEntryCount <= 1) {
-            AlertDialogFragment.Builder(R.style.AlertDialogStyle)
+            val dialog = AlertDialogFragment.Builder()
                 .setTitle(R.string.confirm_dialog_title_simple)
                 .setMessage(R.string.app_termination_dialog_msg)
                 .setNegativeButton(R.string.dialog_cancel)
-                .setPositiveButton(R.string.dialog_ok)
-                .showAllowingStateLoss(supportFragmentManager, DIALOG_TERMINATION) { e ->
-                    Log.e("TerminationDialog", Log.getStackTraceString(e))
-                    showToast(R.string.msg_termination_dialog_error)
+                .setPositiveButton(R.string.dialog_ok) {
                     finishImpl()
                 }
+                .create()
+
+            dialog.showAllowingStateLoss(supportFragmentManager, DIALOG_TERMINATION) { e ->
+                Log.e("TerminationDialog", Log.getStackTraceString(e))
+                showToast(R.string.msg_termination_dialog_error)
+                finishImpl()
+            }
         }
         else {
             finishImpl()
@@ -754,14 +758,6 @@ class EntriesActivity : AppCompatActivity(), AlertDialogFragment.Listener {
         )
 
         entries_menu_button.setImageResource(R.drawable.ic_baseline_menu_white)
-    }
-
-    // --- Listener ---
-
-    override fun onClickPositiveButton(dialog: AlertDialogFragment) {
-        when (dialog.tag) {
-            DIALOG_TERMINATION -> finishImpl()
-        }
     }
 }
 

@@ -10,7 +10,6 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:textSize="18sp"
-            android:textColor="?attr/textColor"
             drawableLeft="@{iconUrl}"
             android:drawablePadding="4dp"
             android:text="@{`id:` + userName}"

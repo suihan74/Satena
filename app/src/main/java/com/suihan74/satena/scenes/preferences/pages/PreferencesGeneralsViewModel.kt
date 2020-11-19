@@ -1,17 +1,34 @@
 package com.suihan74.satena.scenes.preferences.pages
 
+import androidx.fragment.app.FragmentManager
+import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.AppUpdateNoticeMode
+import com.suihan74.satena.models.DialogThemeSetting
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.showAllowingStateLoss
 
 class PreferencesGeneralsViewModel(
     prefs: SafeSharedPreferences<PreferenceKey>
 ) : PreferencesViewModel<PreferenceKey>(prefs) {
 
-    /** テーマ(ダークテーマか否か) */
+    /** アプリのテーマ(ダークテーマか否か) */
     val darkTheme = createLiveData<Boolean>(
         PreferenceKey.DARK_THEME
+    )
+
+    /** ダイアログのテーマ */
+    val dialogTheme = createLiveDataEnum(
+        PreferenceKey.DIALOG_THEME,
+        { it.id },
+        { i -> DialogThemeSetting.fromId(i) }
+    )
+
+    /** ダイアログの外側をタッチしたら閉じる */
+    val closeDialogOnTouchOutside = createLiveData<Boolean>(
+        PreferenceKey.CLOSE_DIALOG_ON_TOUCH_OUTSIDE
     )
 
     /** ドロワーの位置 */
@@ -22,8 +39,8 @@ class PreferencesGeneralsViewModel(
     /** アプリ内アップデート通知を使用する */
     val appUpdateNoticeMode = createLiveDataEnum(
         PreferenceKey.APP_UPDATE_NOTICE_MODE,
-        { m -> m.int },
-        { i -> AppUpdateNoticeMode.fromInt(i) }
+        { m -> m.id },
+        { i -> AppUpdateNoticeMode.fromId(i) }
     )
 
     /** 一度無視したアップデートを再度通知する */
@@ -60,4 +77,43 @@ class PreferencesGeneralsViewModel(
     val displayReleaseNotes = createLiveData<Boolean>(
         PreferenceKey.SHOW_RELEASE_NOTES_AFTER_UPDATE
     )
+
+    // ------ //
+
+    /** ダイアログのテーマを選択するダイアログを開く */
+    fun openDialogThemeSelectionDialog(fragmentManager: FragmentManager) {
+        val labelIds = DialogThemeSetting.values().map { it.titleId }
+        val checkedItem = DialogThemeSetting.values().indexOf(dialogTheme.value)
+
+        val dialog = AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_generals_dialog_theme_desc)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setSingleChoiceItems(
+                labelIds,
+                checkedItem
+            ) { _, which ->
+                dialogTheme.value = DialogThemeSetting.fromOrdinal(which)
+            }
+            .dismissOnClickItem(true)
+            .create()
+        dialog.showAllowingStateLoss(fragmentManager)
+    }
+
+    /** 新バージョン通知対象を選択するダイアログを開く */
+    fun openAppUpdateNoticeModeSelectionDialog(fragmentManager: FragmentManager) {
+        val currentValue = appUpdateNoticeMode.value ?: AppUpdateNoticeMode.FIX
+        val currentIdx = AppUpdateNoticeMode.values().indexOf(currentValue)
+        val dialog = AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_generals_app_update_notice_mode_desc)
+            .setSingleChoiceItems(
+                AppUpdateNoticeMode.values().map { it.textId },
+                currentIdx
+            ) { _, which ->
+                appUpdateNoticeMode.value = AppUpdateNoticeMode.fromOrdinal(which)
+            }
+            .dismissOnClickItem(true)
+            .setNegativeButton(R.string.dialog_cancel)
+            .create()
+        dialog.showAllowingStateLoss(fragmentManager)
+    }
 }

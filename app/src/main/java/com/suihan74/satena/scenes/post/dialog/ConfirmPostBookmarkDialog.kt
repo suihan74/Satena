@@ -2,12 +2,12 @@ package com.suihan74.satena.scenes.post.dialog
 
 import android.app.Dialog
 import android.os.Bundle
-import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.withArguments
@@ -43,12 +43,12 @@ class ConfirmPostBookmarkDialog : DialogFragment() {
     // ------ //
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = LayoutInflater.from(context)
+        val inflater = localLayoutInflater()
         val titleView = inflater.inflate(R.layout.dialog_title_bookmark, null).apply {
             setCustomTitle(viewModel.user, viewModel.comment)
         }
 
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setCustomTitle(titleView)
             .setMessage(R.string.confirm_post_bookmark)
             .setPositiveButton(R.string.dialog_ok) { _, _ ->

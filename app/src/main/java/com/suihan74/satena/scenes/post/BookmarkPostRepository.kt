@@ -54,6 +54,10 @@ class BookmarkPostRepository(
 
     // ------ //
 
+    /** 外側タッチで閉じる */
+    val closeOnTouchOutside =
+        prefs.getBoolean(PreferenceKey.CLOSE_DIALOG_ON_TOUCH_OUTSIDE)
+
     /** 確認ダイアログを使用する */
     val useConfirmDialog =
         prefs.getBoolean(PreferenceKey.USING_POST_BOOKMARK_DIALOG)

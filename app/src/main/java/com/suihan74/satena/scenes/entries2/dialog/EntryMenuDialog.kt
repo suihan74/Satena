@@ -7,9 +7,7 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
@@ -23,6 +21,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
@@ -251,9 +251,8 @@ class EntryMenuDialog : DialogFragment() {
         // urlが渡された場合、表示用にオフラインで一時的な内容を作成する
 
         // カスタムタイトルを生成
-        val inflater = LayoutInflater.from(context)
         val titleViewBinding = DataBindingUtil.inflate<DialogTitleEntry2Binding>(
-            inflater,
+            localLayoutInflater(),
             R.layout.dialog_title_entry2,
             null,
             false
@@ -268,7 +267,7 @@ class EntryMenuDialog : DialogFragment() {
         val activeItems = MenuItem.values().filter { it.predicate?.invoke(entry, viewModel) != false }
         val activeItemLabels = activeItems.map { getString(it.titleId) }.toTypedArray()
 
-        return AlertDialog.Builder(context, R.style.AlertDialogStyle)
+        return createBuilder()
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setItems(activeItemLabels) { _, which ->
@@ -546,7 +545,7 @@ class EntryMenuDialog : DialogFragment() {
             val context = args.context
             try {
                 val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-                val action = EntryReadActionType.fromInt(prefs.getInt(PreferenceKey.ENTRY_READ_ACTION_TYPE))
+                val action = EntryReadActionType.fromOrdinal(prefs.getInt(PreferenceKey.ENTRY_READ_ACTION_TYPE))
 
                 val entry = args.entry!!
                 val bookmarkResult = when(action) {

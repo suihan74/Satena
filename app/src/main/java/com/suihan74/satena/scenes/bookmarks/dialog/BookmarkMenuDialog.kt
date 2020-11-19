@@ -3,8 +3,6 @@ package com.suihan74.satena.scenes.bookmarks.dialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -12,6 +10,8 @@ import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
@@ -58,19 +58,18 @@ class BookmarkMenuDialog : DialogFragment() {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val context = requireContext()
-
-        val titleView = LayoutInflater.from(context).inflate(
+        val inflater = localLayoutInflater()
+        val titleView = inflater.inflate(
             R.layout.dialog_title_bookmark,
             null
         ).also {
             it.setCustomTitle(viewModel.bookmark)
         }
 
-        return AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
+        return createBuilder()
             .setCustomTitle(titleView)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setItems(viewModel.createLabels(context)) { _, which ->
+            .setItems(viewModel.createLabels(requireContext())) { _, which ->
                 viewModel.invokeAction(which)
             }
             .create()

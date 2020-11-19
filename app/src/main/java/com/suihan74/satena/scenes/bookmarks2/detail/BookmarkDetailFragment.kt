@@ -27,7 +27,6 @@ import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.dialog.PostStarDialog
 import com.suihan74.satena.scenes.bookmarks.repository.StarExhaustedException
@@ -41,10 +40,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class BookmarkDetailFragment :
-    Fragment(),
-    AlertDialogFragment.Listener
-{
+class BookmarkDetailFragment : Fragment() {
     private val activityViewModel: BookmarksViewModel
         get() = (requireActivity() as BookmarksActivity).viewModel
 

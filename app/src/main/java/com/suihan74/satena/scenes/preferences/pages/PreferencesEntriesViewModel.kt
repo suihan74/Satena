@@ -43,7 +43,7 @@ class PreferencesEntriesViewModel(
     val extraBottomItemsAlignment = createLiveDataEnum(
         PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT,
         { it.id },
-        { ExtraBottomItemsAlignment.fromInt(it) }
+        { ExtraBottomItemsAlignment.fromId(it) }
     )
 
     /** エントリ項目シングルタップの挙動 */

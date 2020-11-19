@@ -28,7 +28,6 @@
         <EditText
                 android:id="@+id/edit_text"
                 android:text="@={vm.pattern}"
-                android:textColor="@color/textColor"
                 android:hint="@string/browser_url_blocking_pattern_hint"
 
                 android:importantForAutofill="no"

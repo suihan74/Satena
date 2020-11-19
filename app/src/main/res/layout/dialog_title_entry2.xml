@@ -16,14 +16,13 @@
 
         <TextView
                 android:id="@+id/title_text_view"
-                android:text="@{title}"
-                android:textColor="@color/textColor"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:maxLines="3"
-                android:ellipsize="end"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:text="@{title}"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
         <LinearLayout
                 android:layout_below="@id/title_text_view"
@@ -43,7 +42,6 @@
                     android:id="@+id/domain_text_view"
                     url="@{url}"
                     rootUrl="@{rootUrl}"
-                    android:textColor="@color/textColor"
                     android:textSize="14sp"
                     android:layout_marginStart="4dp"
                     android:layout_gravity="center_vertical"
