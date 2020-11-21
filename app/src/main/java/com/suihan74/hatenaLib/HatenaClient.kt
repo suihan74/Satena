@@ -951,6 +951,33 @@ object HatenaClient : BaseClient(), CoroutineScope {
         return@async getDigestBookmarksAsync(url, limit).await()
     }
 
+    /**
+     * ユーザーをお気に入りに追加する
+     */
+    suspend fun follow(user: String) = withContext(Dispatchers.IO) {
+        require (signedIn()) { "need to sign-in to follow an user" }
+        val userSignedIn = account!!.name
+        val url = "$B_BASE_URL/$userSignedIn/api.follow.json"
+        val params = mapOf(
+            "username" to user,
+            "rks" to account!!.rks
+        )
+        post(url, params)
+    }
+
+    /**
+     * ユーザーのお気に入りを解除する
+     */
+    suspend fun unfollow(user: String) = withContext(Dispatchers.IO) {
+        require (signedIn()) { "need to sign-in to unfollow an user" }
+        val userSignedIn = account!!.name
+        val url = "$B_BASE_URL/$userSignedIn/api.unfollow.json"
+        val params = mapOf(
+            "username" to user,
+            "rks" to account!!.rks
+        )
+        post(url, params)
+    }
 
     /**
      * お気に入りユーザーの一覧を取得する
