@@ -122,7 +122,7 @@ class EntriesRepository(
 
     /** ホームカテゴリ */
     val homeCategory : Category
-        get() = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
+        get() = Category.fromId(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
 
     /** 表示できるカテゴリのリスト */
     val categories : Array<Category>
@@ -142,15 +142,15 @@ class EntriesRepository(
 
     /** エントリ項目クリック時の挙動 */
     val entryClickedAction : TapEntryAction
-        get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
+        get() = TapEntryAction.fromId(prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
 
     /** エントリ項目複数回クリック時の挙動 */
     val entryMultipleClickedAction : TapEntryAction
-        get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION))
+        get() = TapEntryAction.fromId(prefs.getInt(PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION))
 
     /** エントリ項目長押し時の挙動 */
     val entryLongClickedAction : TapEntryAction
-        get() = TapEntryAction.fromInt(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
+        get() = TapEntryAction.fromId(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
 
     /** エントリ項目クリック回数判定時間 */
     val entryMultipleClickDuration: Long
@@ -250,7 +250,7 @@ class EntriesRepository(
 
     /** はてなの通常のエントリーリストを取得する */
     private suspend fun loadHatenaEntries(tabPosition: Int, category: com.suihan74.hatenaLib.Category, offset: Int?) : List<Entry> {
-        val entriesType = EntriesType.fromInt(tabPosition)
+        val entriesType = EntriesType.fromId(tabPosition)
         return client.getEntriesAsync(
             entriesType = entriesType,
             category = category,
@@ -496,7 +496,7 @@ class EntriesRepository(
     private suspend fun searchEntries(tabPosition: Int, offset: Int?, params: LoadEntryParameter) : List<Entry> {
         val query = params.get<String>(LoadEntryParameter.SEARCH_QUERY)!!
         val searchType = params.get<SearchType>(LoadEntryParameter.SEARCH_TYPE)!!
-        val entriesType = EntriesType.fromInt(tabPosition)
+        val entriesType = EntriesType.fromId(tabPosition)
 
         return client.searchEntriesAsync(
             query = query,
@@ -508,7 +508,7 @@ class EntriesRepository(
 
     /** 最新のエントリーリストを読み込む(Issue指定) */
     private suspend fun loadEntries(issue: Issue, tabPosition: Int, offset: Int? = null) : List<Entry> {
-        val entriesType = EntriesType.fromInt(tabPosition)
+        val entriesType = EntriesType.fromId(tabPosition)
         return client.getEntriesAsync(
             entriesType = entriesType,
             issue = issue,
@@ -518,7 +518,7 @@ class EntriesRepository(
 
     /** 指定したサイトのエントリーリストを読み込む */
     private suspend fun loadSiteEntries(url: String, tabPosition: Int, page: Int? = null) : List<Entry> {
-        val entriesType = EntriesType.fromInt(tabPosition)
+        val entriesType = EntriesType.fromId(tabPosition)
         return client.getEntriesAsync(
             url = url,
             entriesType = entriesType,
@@ -536,7 +536,7 @@ class EntriesRepository(
 
     /** お気に入りサイトのエントリリストを読み込む */
     private suspend fun loadFavoriteSitesEntries(tabPosition: Int, page: Int? = null) : List<Entry> {
-        val entriesType = EntriesType.fromInt(tabPosition)
+        val entriesType = EntriesType.fromId(tabPosition)
         val sites = favoriteSites.value ?: emptyList()
 
         val tasks = sites

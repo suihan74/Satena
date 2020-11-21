@@ -89,7 +89,7 @@ class BookmarksFragment : Fragment() {
                     prefs.edit {
                         put(key, idx)
                     }
-                    context.showToast(R.string.msg_bookmarks_initial_tab_changed, getString(BookmarksTabType.fromInt(idx).textId))
+                    context.showToast(R.string.msg_bookmarks_initial_tab_changed, getString(BookmarksTabType.fromOrdinal(idx).textId))
                 }
                 return@setOnTabLongClickListener true
             }

@@ -19,7 +19,7 @@ class DetailTabAdapter(
         ;
 
         companion object {
-            fun fromInt(i: Int) = values()[i]
+            fun fromOrdinal(idx: Int) = values().getOrElse(idx) { STARS_TO_USER }
         }
     }
 

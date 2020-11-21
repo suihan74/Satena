@@ -257,7 +257,7 @@ object PreferenceKeyMigration {
      */
     private fun migrateFromVersion2(context: Context) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val homeCategory = Category.fromInt(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
+        val homeCategory = Category.fromId(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
         val initialTab = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
 
         prefs.edit {

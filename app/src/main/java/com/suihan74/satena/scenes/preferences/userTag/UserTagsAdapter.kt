@@ -41,7 +41,7 @@ open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder =
-        when (RecyclerType.fromInt(viewType)) {
+        when (RecyclerType.fromId(viewType)) {
             RecyclerType.BODY -> {
                 val inflate = LayoutInflater.from(parent.context).inflate(R.layout.listview_item_user_tags, parent, false)
                 ViewHolder(inflate).apply {
@@ -69,7 +69,7 @@ open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (RecyclerType.fromInt(holder.itemViewType)) {
+        when (RecyclerType.fromId(holder.itemViewType)) {
             RecyclerType.BODY -> {
                 (holder as ViewHolder).tag = states[position].body!!
             }
@@ -80,7 +80,7 @@ open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemCount(): Int = states.size
 
-    override fun getItemViewType(position: Int): Int = states[position].type.int
+    override fun getItemViewType(position: Int): Int = states[position].type.id
 
     open fun onItemClicked(tag: TagAndUsers) {}
     open fun onItemLongClicked(tag: TagAndUsers) : Boolean = true

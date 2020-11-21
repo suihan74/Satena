@@ -35,7 +35,7 @@ class InformationAdapter : ListAdapter<RecyclerState<InformationItem>, RecyclerV
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            RecyclerType.BODY.int -> {
+            RecyclerType.BODY.id -> {
                 val binding = DataBindingUtil.inflate<ListviewItemMaintenanceEntries2Binding>(
                     inflater,
                     R.layout.listview_item_maintenance_entries_2, parent, false
@@ -44,7 +44,7 @@ class InformationAdapter : ListAdapter<RecyclerState<InformationItem>, RecyclerV
                 ViewHolder(binding)
             }
 
-            RecyclerType.FOOTER.int -> FooterViewHolder(
+            RecyclerType.FOOTER.id -> FooterViewHolder(
                 inflater.inflate(R.layout.footer_recycler_view, parent, false)
             )
 
@@ -54,7 +54,7 @@ class InformationAdapter : ListAdapter<RecyclerState<InformationItem>, RecyclerV
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder.itemViewType) {
-            RecyclerType.BODY.int -> {
+            RecyclerType.BODY.id -> {
                 holder as ViewHolder
                 val item = currentList[position].body
 
@@ -76,7 +76,7 @@ class InformationAdapter : ListAdapter<RecyclerState<InformationItem>, RecyclerV
     }
 
     override fun getItemViewType(position: Int) =
-        currentList[position].type.int
+        currentList[position].type.id
 
     /** このメソッドを使ってセットする */
     fun submitInformation(items: List<MaintenanceEntry>?, commitCallback: (()->Any?)? = null) {

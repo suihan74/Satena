@@ -33,11 +33,11 @@ open class StarsAdapter : ListAdapter<RecyclerState<StarWithBookmark>, RecyclerV
     open fun onItemLongClicked(item: StarWithBookmark) = false
 
     override fun getItemCount() = currentList.size
-    override fun getItemViewType(position: Int) = currentList[position].type.int
+    override fun getItemViewType(position: Int) = currentList[position].type.id
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         LayoutInflater.from(parent.context).let { inflater ->
-            when (RecyclerType.fromInt(viewType)) {
+            when (RecyclerType.fromId(viewType)) {
                 RecyclerType.BODY ->
                     ViewHolder(inflater.inflate(R.layout.listview_item_stars, parent, false)).apply {
                         itemView.setOnClickListener {
@@ -60,7 +60,7 @@ open class StarsAdapter : ListAdapter<RecyclerState<StarWithBookmark>, RecyclerV
         }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) =
-        when (RecyclerType.fromInt(holder.itemViewType)) {
+        when (RecyclerType.fromId(holder.itemViewType)) {
             RecyclerType.BODY ->
                 (holder as ViewHolder).body = currentList[position].body!!
 

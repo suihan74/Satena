@@ -43,7 +43,7 @@ open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder =
-        when (RecyclerType.fromInt(viewType)) {
+        when (RecyclerType.fromId(viewType)) {
             RecyclerType.BODY -> {
                 val inflate = LayoutInflater.from(parent.context).inflate(R.layout.listview_item_ignored_entries, parent, false)
                 ViewHolder(
@@ -66,7 +66,7 @@ open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (RecyclerType.fromInt(holder.itemViewType)) {
+        when (RecyclerType.fromId(holder.itemViewType)) {
             RecyclerType.BODY -> {
                 (holder as ViewHolder).entry = states[position].body!!
             }
@@ -77,7 +77,7 @@ open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     override fun getItemCount(): Int = states.size
 
-    override fun getItemViewType(position: Int): Int = states[position].type.int
+    override fun getItemViewType(position: Int): Int = states[position].type.id
 
     open fun onItemClicked(entry: IgnoredEntry) {}
     open fun onItemLongClicked(entry: IgnoredEntry) : Boolean = true

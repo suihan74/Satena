@@ -3,7 +3,7 @@ package com.suihan74.hatenaLib
 import com.google.gson.annotations.SerializedName
 
 enum class Category (
-    val int: Int,
+    val id: Int,
     val code: String
 ) {
     All(0, "315767106563433873"),
@@ -22,7 +22,7 @@ enum class Category (
     private constructor() : this(0, "")
 
     companion object {
-        fun fromInt(i: Int) : Category = values().firstOrNull { it.int == i } ?: All
+        fun fromId(id: Int) = values().firstOrNull { it.id == id } ?: All
     }
 }
 

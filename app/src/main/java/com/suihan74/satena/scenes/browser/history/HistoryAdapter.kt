@@ -80,7 +80,7 @@ class HistoryAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return when (RecyclerType.fromInt(viewType)) {
+        return when (RecyclerType.fromId(viewType)) {
             // 日付ごとの区切りを表示する
             RecyclerType.SECTION -> {
                 val inflater = LayoutInflater.from(parent.context)

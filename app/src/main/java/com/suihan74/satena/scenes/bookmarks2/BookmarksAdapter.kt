@@ -141,7 +141,7 @@ class BookmarksAdapter(
     override fun getItemCount() = currentList.size
 
     override fun getItemViewType(position: Int) =
-        currentList[position].type.int
+        currentList[position].type.id
 
     /**
      * 指定ブクマの位置を取得する
@@ -162,7 +162,7 @@ class BookmarksAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         LayoutInflater.from(parent.context).let { inflater ->
-            when (RecyclerType.fromInt(viewType)) {
+            when (RecyclerType.fromId(viewType)) {
                 RecyclerType.BODY ->
                     ViewHolder(
                         inflater.inflate(R.layout.listview_item_bookmarks, parent, false),
@@ -188,7 +188,7 @@ class BookmarksAdapter(
         }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) =
-        when (RecyclerType.fromInt(holder.itemViewType)) {
+        when (RecyclerType.fromId(holder.itemViewType)) {
             RecyclerType.BODY -> {
                 (holder as ViewHolder).run {
                     val entity = currentList[position].body!!

@@ -72,19 +72,19 @@ enum class PreferencesTabMode(
     DUMMY_TAIL(11);
 
     companion object {
-        fun fromInt(i: Int) = values().firstOrNull { it.int == i } ?: INFORMATION
+        fun fromId(i: Int) = values().firstOrNull { it.int == i } ?: INFORMATION
     }
 }
 
 class PreferencesTabAdapter(fm : FragmentManager) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
     override fun getItem(position: Int): Fragment =
-        PreferencesTabMode.fromInt(position).fragmentGenerator.invoke()
+        PreferencesTabMode.fromId(position).fragmentGenerator.invoke()
 
     fun getPageTitleId(fixedPosition: Int) =
-        PreferencesTabMode.fromInt(fixedPosition + 1).titleId
+        PreferencesTabMode.fromId(fixedPosition + 1).titleId
 
     fun getIconId(fixedPosition: Int) =
-        PreferencesTabMode.fromInt(fixedPosition + 1).iconId
+        PreferencesTabMode.fromId(fixedPosition + 1).iconId
 
     fun getIndexFromIconId(iconId : Int) =
         PreferencesTabMode.values().firstOrNull { iconId == getIconId(it.int - 1) }?.int ?: 0

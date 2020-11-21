@@ -132,12 +132,12 @@ class BookmarksRepository(
 
     /** リンクをシングルタップしたときの処理 */
     val linkSingleTapAction : TapEntryAction by lazy {
-        TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
+        TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
     }
 
     /** リンクをロングタップしたときの処理 */
     val linkLongTapAction : TapEntryAction by lazy {
-        TapEntryAction.fromInt(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
+        TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
     }
 
     private val entryLock by lazy { Any() }

@@ -37,7 +37,7 @@ class NoticesAdapter : ListAdapter<RecyclerState<Notice>, RecyclerView.ViewHolde
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            RecyclerType.BODY.int -> {
+            RecyclerType.BODY.id -> {
                 val binding = DataBindingUtil.inflate<ListviewItemNotices2Binding>(
                     inflater,
                     R.layout.listview_item_notices2, parent, false
@@ -45,7 +45,7 @@ class NoticesAdapter : ListAdapter<RecyclerState<Notice>, RecyclerView.ViewHolde
                 ViewHolder(binding)
             }
 
-            RecyclerType.FOOTER.int -> FooterViewHolder(
+            RecyclerType.FOOTER.id -> FooterViewHolder(
                 inflater.inflate(R.layout.footer_recycler_view, parent, false)
             )
 
@@ -55,7 +55,7 @@ class NoticesAdapter : ListAdapter<RecyclerState<Notice>, RecyclerView.ViewHolde
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder.itemViewType) {
-            RecyclerType.BODY.int -> {
+            RecyclerType.BODY.id -> {
                 holder as ViewHolder
                 val notice = currentList[position].body
 
@@ -77,7 +77,7 @@ class NoticesAdapter : ListAdapter<RecyclerState<Notice>, RecyclerView.ViewHolde
     }
 
     override fun getItemViewType(position: Int) =
-        currentList[position].type.int
+        currentList[position].type.id
 
     /** エントリはこのメソッドを使ってセットする */
     fun submitNotices(items: List<Notice>?, commitCallback: (()->Any?)? = null) {

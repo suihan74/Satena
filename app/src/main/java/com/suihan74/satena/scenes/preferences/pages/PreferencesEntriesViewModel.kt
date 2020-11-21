@@ -50,21 +50,21 @@ class PreferencesEntriesViewModel(
     val singleTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_SINGLE_TAP_ACTION,
         { it.id },
-        { TapEntryAction.fromInt(it) }
+        { TapEntryAction.fromId(it) }
     )
 
     /** エントリ項目複数回タップの挙動 */
     val multipleTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION,
         { it.id },
-        { TapEntryAction.fromInt(it) }
+        { TapEntryAction.fromId(it) }
     )
 
     /** エントリ項目ロングタップの挙動 */
     val longTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_LONG_TAP_ACTION,
         { it.id },
-        { TapEntryAction.fromInt(it) }
+        { TapEntryAction.fromId(it) }
     )
 
     /** エントリ項目タップ回数判定時間 */
@@ -76,7 +76,7 @@ class PreferencesEntriesViewModel(
     val homeCategory = createLiveDataEnum<Category>(
         PreferenceKey.ENTRIES_HOME_CATEGORY,
         { it.id },
-        { Category.fromInt(it) }
+        { Category.fromId(it) }
     )
 
     /** 最初に表示するタブ */

@@ -115,6 +115,6 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
 @BindingAdapter("bookmarksTabType")
 fun Button.setBookmarksTabTypeText(ordinal: Int?) {
     if (ordinal == null) return
-    val tab = BookmarksTabType.fromInt(ordinal)
+    val tab = BookmarksTabType.fromOrdinal(ordinal)
     setText(tab.textId)
 }

@@ -17,7 +17,14 @@ data class MigrationData(
 ) {
     enum class DataType {
         PREFERENCE,
-        DATABASE
+        DATABASE;
+
+        companion object {
+            /**
+             * @throws IndexOutOfBoundsException
+             */
+            fun fromOrdinal(idx: Int) = values()[idx]
+        }
     }
 
     override fun hashCode() =
@@ -47,7 +54,7 @@ data class MigrationData(
 
     companion object {
         fun read(stream: InputStream) : MigrationData = stream.run {
-            val type = DataType.values()[readInt()]
+            val type = DataType.fromOrdinal(readInt())
             val keyName = readString()
             val dataVersion = readInt()
             val fileName = readString()
