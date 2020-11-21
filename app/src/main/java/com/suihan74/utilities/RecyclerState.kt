@@ -8,15 +8,14 @@ import kotlinx.android.synthetic.main.footer_recycler_view_loadable.view.*
 
 // RecyclerViewでヘッダ・フッタ・セクションを使用するために必要なものたち
 
-enum class RecyclerType(val int: Int) {
+enum class RecyclerType(val id: Int) {
     HEADER(0),
     FOOTER(1),
     SECTION(2),
     BODY(3);
 
     companion object {
-        fun fromInt(i: Int) : RecyclerType =
-            values().firstOrNull { it.int == i } ?: BODY
+        fun fromId(id: Int) = values().firstOrNull { it.id == id } ?: BODY
     }
 }
 

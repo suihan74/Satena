@@ -9,6 +9,6 @@ enum class BookmarksTabType(val textId: Int) {
     CUSTOM(R.string.bookmarks_tab_custom);
 
     companion object {
-        fun fromInt(i: Int) = values().getOrNull(i) ?: POPULAR
+        fun fromOrdinal(idx: Int) = values().getOrElse(idx) { POPULAR }
     }
 }

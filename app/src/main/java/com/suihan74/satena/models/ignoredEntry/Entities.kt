@@ -41,27 +41,30 @@ data class IgnoredEntry (
 
 enum class IgnoredEntryType {
     TEXT,
-    URL
+    URL;
+
+    companion object {
+        fun fromOrdinal(idx: Int) = values().getOrElse(idx) { TEXT }
+    }
 }
 
-enum class IgnoreTarget(val int: Int) {
+enum class IgnoreTarget(val id: Int) {
     NONE(0),
     ENTRY(1),
     BOOKMARK(2),
     ALL(3);
 
     companion object {
-        fun fromInt(i: Int) = values().first { it.int == i }
+        fun fromId(i: Int) = values().first { it.id == i }
     }
 
-    infix fun or(other: IgnoreTarget) = fromInt(int or other.int)
-    infix fun contains(other: IgnoreTarget) : Boolean = 0 != (int and other.int)
+    infix fun or(other: IgnoreTarget) = fromId(id or other.id)
+    infix fun contains(other: IgnoreTarget) : Boolean = 0 != (id and other.id)
 }
 
 class IgnoredEntryTypeConverter {
     @TypeConverter
-    fun fromInt(value: Int?) =
-        if (value == null) null else IgnoredEntryType.values()[value]
+    fun fromInt(value: Int?) = value?.let { IgnoredEntryType.fromOrdinal(it) }
 
     @TypeConverter
     fun toInt(value: IgnoredEntryType?) = value?.ordinal
@@ -69,9 +72,8 @@ class IgnoredEntryTypeConverter {
 
 class IgnoreTargetConverter {
     @TypeConverter
-    fun fromInt(value: Int?) =
-        if (value == null) null else IgnoreTarget.fromInt(value)
+    fun fromInt(value: Int?) = value?.let { IgnoreTarget.fromId(it) }
 
     @TypeConverter
-    fun toInt(value: IgnoreTarget?) = value?.int
+    fun toInt(value: IgnoreTarget?) = value?.id
 }

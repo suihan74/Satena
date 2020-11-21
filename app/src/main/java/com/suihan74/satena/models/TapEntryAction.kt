@@ -18,7 +18,7 @@ enum class TapEntryAction(
     SHOW_MENU(3, R.string.entry_action_show_menu);
 
     companion object {
-        fun fromInt(id : Int) = values().firstOrNull { id == it.id } ?: SHOW_COMMENTS
+        fun fromId(id : Int) = values().firstOrNull { id == it.id } ?: SHOW_COMMENTS
         fun fromOrdinal(pos : Int) = values().getOrElse(pos) { SHOW_COMMENTS }
     }
 }

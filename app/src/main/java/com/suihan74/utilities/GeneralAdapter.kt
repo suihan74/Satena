@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
-import com.suihan74.utilities.RecyclerType
 
 abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
     private val lifecycleOwner : LifecycleOwner,
@@ -47,12 +46,12 @@ abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
         )
     }
 
-    override fun getItemViewType(position: Int) = currentList[position].type.int
+    override fun getItemViewType(position: Int) = currentList[position].type.id
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            RecyclerType.BODY.int -> {
+            RecyclerType.BODY.id -> {
                 val binding = DataBindingUtil.inflate<BindingT>(
                     inflater,
                     itemLayoutId, parent, false
@@ -72,7 +71,7 @@ abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
                 }
             }
 
-            RecyclerType.FOOTER.int -> FooterViewHolder(
+            RecyclerType.FOOTER.id -> FooterViewHolder(
                 inflater.inflate(R.layout.footer_recycler_view, parent, false)
             )
 
@@ -82,7 +81,7 @@ abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder.itemViewType) {
-            RecyclerType.BODY.int -> {
+            RecyclerType.BODY.id -> {
                 holder as ViewHolder<BindingT>
                 bind(currentList[position].body, holder.binding)
             }

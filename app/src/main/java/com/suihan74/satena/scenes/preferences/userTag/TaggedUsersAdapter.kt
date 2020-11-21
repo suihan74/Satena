@@ -43,7 +43,7 @@ open class TaggedUsersAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder =
-        when (RecyclerType.fromInt(viewType)) {
+        when (RecyclerType.fromId(viewType)) {
             RecyclerType.BODY -> {
                 val inflate = LayoutInflater.from(parent.context).inflate(R.layout.listview_item_ignored_users, parent, false)
                 ViewHolder(inflate)
@@ -72,7 +72,7 @@ open class TaggedUsersAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
         }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (RecyclerType.fromInt(holder.itemViewType)) {
+        when (RecyclerType.fromId(holder.itemViewType)) {
             RecyclerType.BODY -> {
                 (holder as ViewHolder).user = states[position].body!!
             }
@@ -83,7 +83,7 @@ open class TaggedUsersAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() 
 
     override fun getItemCount(): Int = states.size
 
-    override fun getItemViewType(position: Int): Int = states[position].type.int
+    override fun getItemViewType(position: Int): Int = states[position].type.id
 
     open fun onItemClicked(user: User) {}
     open fun onItemLongClicked(user: User) : Boolean = true

@@ -81,7 +81,7 @@ class EntriesAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            RecyclerType.BODY.int -> {
+            RecyclerType.BODY.id -> {
                 val binding = DataBindingUtil.inflate<ListviewItemEntries2Binding>(
                     inflater,
                     R.layout.listview_item_entries2, parent, false
@@ -91,7 +91,7 @@ class EntriesAdapter(
                 ViewHolder(binding)
             }
 
-            RecyclerType.FOOTER.int -> LoadableFooterViewHolder(
+            RecyclerType.FOOTER.id -> LoadableFooterViewHolder(
                 inflater.inflate(R.layout.footer_recycler_view_loadable, parent, false)
             ).also {
                 this.footer = it
@@ -103,7 +103,7 @@ class EntriesAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder.itemViewType) {
-            RecyclerType.BODY.int -> {
+            RecyclerType.BODY.id -> {
                 holder as ViewHolder
                 val entry = currentList[position].body
 
@@ -156,7 +156,7 @@ class EntriesAdapter(
     }
 
     override fun getItemViewType(position: Int) =
-        currentList[position].type.int
+        currentList[position].type.id
 
     /** リストをクリアする */
     fun clearEntries(commitCallback: (() -> Any?)? = null) {

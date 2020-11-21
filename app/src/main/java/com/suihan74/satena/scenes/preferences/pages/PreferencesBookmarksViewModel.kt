@@ -58,14 +58,14 @@ class PreferencesBookmarksViewModel(
     val linkSingleTapAction = createLiveDataEnum(
         PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION,
         { it.id },
-        { TapEntryAction.fromInt(it) }
+        { TapEntryAction.fromId(it) }
     )
 
     /** リンク部分をロングタップしたときの動作 */
     val linkLongTapAction = createLiveDataEnum(
         PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION,
         { it.id },
-        { TapEntryAction.fromInt(it) }
+        { TapEntryAction.fromId(it) }
     )
 
     /** タブ長押しで初期タブを変更する */

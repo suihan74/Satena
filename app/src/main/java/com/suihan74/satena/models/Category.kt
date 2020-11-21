@@ -167,7 +167,7 @@ enum class Category(
     ;
 
     companion object {
-        fun fromInt(i: Int) : Category = values().firstOrNull { it.id == i } ?: All
+        fun fromId(id: Int) : Category = values().firstOrNull { it.id == id } ?: All
         fun valuesWithSignedIn() = values().filter { it.displayInList }.toTypedArray()
         fun valuesWithoutSignedIn() = values().filterNot { !it.displayInList || it.requireSignedIn }.toTypedArray()
     }

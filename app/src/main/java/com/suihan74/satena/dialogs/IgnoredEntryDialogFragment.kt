@@ -56,7 +56,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             putString(ARG_EDITING_URL, ignoredEntry.query)
             putString(ARG_EDITING_TEXT, ignoredEntry.query)
             putObject(ARG_MODIFYING_ENTRY, ignoredEntry)
-            putEnum(ARG_INITIAL_TARGET, ignoredEntry.target) { it.int }
+            putEnum(ARG_INITIAL_TARGET, ignoredEntry.target) { it.id }
             putBoolean(ARG_EDIT_MODE, true)
         }.also {
             it.lifecycleScope.launchWhenCreated {
@@ -140,7 +140,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 override fun onTabReselected(tab: TabLayout.Tab?) {}
                 override fun onTabUnselected(tab: TabLayout.Tab?) {}
                 override fun onTabSelected(tab: TabLayout.Tab?) {
-                    viewModel.selectedTab.value = IgnoredEntryDialogTab.fromInt(tab!!.position)
+                    viewModel.selectedTab.value = IgnoredEntryDialogTab.fromOrdinal(tab!!.position)
                 }
             })
         }
@@ -236,7 +236,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         ;
 
         companion object {
-            fun fromInt(i: Int) = values()[i]
+            fun fromOrdinal(idx: Int) = values().getOrElse(idx) { URL }
         }
     }
 
@@ -261,7 +261,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         }
 
         val ignoreTarget by lazy {
-            MutableLiveData(args.getEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.int } ?: IgnoreTarget.ENTRY)
+            MutableLiveData(args.getEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.id } ?: IgnoreTarget.ENTRY)
         }
 
         init {

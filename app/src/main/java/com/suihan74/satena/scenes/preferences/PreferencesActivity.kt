@@ -124,7 +124,7 @@ class PreferencesActivity : ActivityBase() {
                         }
                     }
 
-                    val tab = PreferencesTabMode.fromInt(jumpPosition)
+                    val tab = PreferencesTabMode.fromId(jumpPosition)
                     viewModel.currentTab.value = tab
 
                     mTabAdapter.findFragment(pager, tab.int).alsoAs<TabItem> { fragment ->

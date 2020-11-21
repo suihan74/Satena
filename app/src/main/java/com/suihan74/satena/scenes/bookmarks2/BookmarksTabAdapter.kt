@@ -7,10 +7,10 @@ open class BookmarksTabAdapter (
 ) : FragmentPagerAdapter(bookmarksFragment.childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     override fun getItem(position: Int) =
-        BookmarksTabFragment.createInstance(BookmarksTabType.fromInt(position))
+        BookmarksTabFragment.createInstance(BookmarksTabType.fromOrdinal(position))
 
     override fun getPageTitle(position: Int): CharSequence? =
-        bookmarksFragment.getString(BookmarksTabType.fromInt(position).textId)
+        bookmarksFragment.getString(BookmarksTabType.fromOrdinal(position).textId)
 
     override fun getCount() = BookmarksTabType.values().size
 }

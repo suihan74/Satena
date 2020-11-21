@@ -12,8 +12,8 @@ interface IgnoredEntryDao {
         where target = :bookmarkInt or target = :allInt
     """)
     suspend fun getEntriesForBookmarks(
-        bookmarkInt: Int = IgnoreTarget.BOOKMARK.int,
-        allInt: Int = IgnoreTarget.ALL.int
+        bookmarkInt: Int = IgnoreTarget.BOOKMARK.id,
+        allInt: Int = IgnoreTarget.ALL.id
     ) : List<IgnoredEntry>
 
     @Query("""
@@ -21,8 +21,8 @@ interface IgnoredEntryDao {
         where target = :entryInt or target = :allInt
     """)
     suspend fun getEntriesForEntries(
-        entryInt: Int = IgnoreTarget.ENTRY.int,
-        allInt: Int = IgnoreTarget.ALL.int
+        entryInt: Int = IgnoreTarget.ENTRY.id,
+        allInt: Int = IgnoreTarget.ALL.id
     ) : List<IgnoredEntry>
 
     @Query("""

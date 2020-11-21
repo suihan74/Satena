@@ -133,7 +133,7 @@ class ReportDialog : DialogFragment() {
                     position: Int,
                     id: Long
                 ) {
-                    viewModel.category.value = ReportCategory.fromInt(position)
+                    viewModel.category.value = ReportCategory.fromOrdinal(position)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {

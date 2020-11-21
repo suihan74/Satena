@@ -33,6 +33,6 @@ enum class ReportCategory(
     private constructor() : this("", "")
 
     companion object {
-        fun fromInt(int: Int) = values()[int]
+        fun fromOrdinal(int: Int) = values().getOrElse(int) { SPAM }
     }
 }

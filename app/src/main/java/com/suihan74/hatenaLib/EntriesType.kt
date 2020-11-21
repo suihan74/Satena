@@ -4,7 +4,7 @@ import androidx.annotation.StringRes
 import com.suihan74.satena.R
 
 
-enum class EntriesType(val int: Int) {
+enum class EntriesType(val id: Int) {
     Hot(0),
     Recent(1);
 
@@ -12,8 +12,8 @@ enum class EntriesType(val int: Int) {
     private constructor() : this(0)
 
     companion object {
-        fun fromInt(i: Int) = values().firstOrNull { it.int == i } ?: Hot
-        fun fromOrdinal(i: Int) = values().getOrElse(i) { Hot }
+        fun fromId(id: Int) = values().firstOrNull { it.id == id } ?: Hot
+        fun fromOrdinal(idx: Int) = values().getOrElse(idx) { Hot }
     }
 }
 

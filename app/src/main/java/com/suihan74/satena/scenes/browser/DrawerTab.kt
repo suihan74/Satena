@@ -41,7 +41,7 @@ enum class DrawerTab(
     );
 
     companion object {
-        fun fromOrdinal(idx: Int) = values()[idx]
+        fun fromOrdinal(idx: Int) = values().getOrElse(idx) { BOOKMARKS }
         fun fromId(id: Int) = values().first { it.id == id }
     }
 }
