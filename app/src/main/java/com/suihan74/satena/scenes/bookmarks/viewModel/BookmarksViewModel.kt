@@ -158,7 +158,7 @@ class BookmarksViewModel(
      */
     fun initializeListeners(activity: AppCompatActivity) {
         onLinkClicked = { url ->
-            val action = TapEntryAction.fromInt(repository.prefs.getInt(
+            val action = TapEntryAction.fromId(repository.prefs.getInt(
                 PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION
             ))
             invokeLinkAction(activity, action) {
@@ -167,7 +167,7 @@ class BookmarksViewModel(
         }
 
         onLinkLongClicked = { url ->
-            val action = TapEntryAction.fromInt(repository.prefs.getInt(
+            val action = TapEntryAction.fromId(repository.prefs.getInt(
                 PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION
             ))
             invokeLinkAction(activity, action) {
@@ -176,7 +176,7 @@ class BookmarksViewModel(
         }
 
         onEntryIdClicked = { eid ->
-            val action = TapEntryAction.fromInt(repository.prefs.getInt(
+            val action = TapEntryAction.fromId(repository.prefs.getInt(
                 PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION
             ))
             invokeLinkAction(activity, action) {
@@ -185,7 +185,7 @@ class BookmarksViewModel(
         }
 
         onEntryIdLongClicked = { eid ->
-            val action = TapEntryAction.fromInt(repository.prefs.getInt(
+            val action = TapEntryAction.fromId(repository.prefs.getInt(
                 PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION
             ))
             invokeLinkAction(activity, action) {
@@ -338,7 +338,7 @@ class BookmarksViewModel(
         }
 
         if (repository.useConfirmPostingStarDialog) {
-            val dialog = AlertDialogFragment2.Builder()
+            val dialog = AlertDialogFragment.Builder()
                 .setTitle(R.string.confirm_dialog_title_simple)
                 .setMessage(context.getString(R.string.msg_post_star_dialog, color.name))
                 .setNegativeButton(R.string.dialog_cancel) { it.dismiss() }
