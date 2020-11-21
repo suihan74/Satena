@@ -240,6 +240,8 @@ class EntriesRepository(
 
             Category.Memorial15th -> loadHistoricalEntries(tabPosition, params)
 
+            Category.Followings -> loadFollowingsEntries(offset)
+
             Category.FavoriteSites -> {
                 val page = params?.get<Int>(LoadEntryParameter.PAGE) ?: 0
                 loadFavoriteSitesEntries(tabPosition, page)
@@ -533,6 +535,12 @@ class EntriesRepository(
             client.getUserHistoricalEntriesAsync(2005 + tabPosition, 30).await()
         else
             client.getHistoricalEntriesAsync(2005 + tabPosition).await()
+
+    /** お気に入りユーザーのエントリリストを読み込む */
+    private suspend fun loadFollowingsEntries(offset: Int? = null) : List<Entry> {
+        val bookmarks = client.getFollowingBookmarksAsync(offset = offset).await()
+        return bookmarks.map { it.toEntry() }
+    }
 
     /** お気に入りサイトのエントリリストを読み込む */
     private suspend fun loadFavoriteSitesEntries(tabPosition: Int, page: Int? = null) : List<Entry> {
