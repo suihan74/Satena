@@ -24,7 +24,7 @@ class Entry (
     faviconUrl : String?,
 
     @SerializedName("image", alternate = ["image_url"])
-    val imageUrl : String = "https://b.st-hatena.com/images/v4/public/common/noimage.png",
+    val imageUrl : String = DEFAULT_IMAGE_URL,
 
     val ampUrl : String? = null,
 
@@ -38,6 +38,9 @@ class Entry (
     @JsonAdapter(TimestampDeserializer::class)
     val date: LocalDateTime? = null
 ) {
+    companion object {
+        const val DEFAULT_IMAGE_URL = "https://b.st-hatena.com/images/v4/public/common/noimage.png"
+    }
 
     // for Gson
     internal constructor() : this(0, "", "", 0, "", null, null)
@@ -122,4 +125,35 @@ internal data class EntriesWithIssue(
 ) {
     // for Gson
     private constructor() : this(Issue(), emptyList())
+}
+
+/**
+ * お気に入りユーザー情報に含まれるエントリ
+ */
+data class FollowingEntry(
+    @SerializedName("entry_id")
+    val id : Long,
+
+    val title : String,
+
+    val content : String,
+
+    @SerializedName("total_bookmarks")
+    val count : Int,
+
+    val url : String,
+
+    val ampUrl : String?,
+
+    val faviconUrl: String,
+
+    val imageUrl : String?,
+
+    @SerializedName("created_at")
+    @JsonAdapter(TimestampDeserializer::class)
+    val timestamp: LocalDateTime
+
+    // val bookmarkByVisitor
+) {
+    internal constructor() : this(0, "", "", 0, "", null, "", null, LocalDateTime.MIN)
 }

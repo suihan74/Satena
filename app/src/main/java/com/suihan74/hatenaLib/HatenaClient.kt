@@ -989,9 +989,19 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * お気に入りユーザーの最近のブクマを取得する
      */
-    fun getFollowingBookmarksAsync(includeAmpUrls: Boolean = true) : Deferred<List<BookmarkPage>> = async {
+    fun getFollowingBookmarksAsync(
+        includeAmpUrls: Boolean = true,
+        limit: Int? = null,
+        offset: Int? = null
+    ) : Deferred<List<FollowingBookmark>> = async {
         require (signedIn()) { "need to sign-in to get bookmarks of followings" }
-        val url = "$B_BASE_URL/api/internal/cambridge/user/my/feed/following/bookmarks?${cacheAvoidance()}&include_amp_urls=${includeAmpUrls.int}"
+        val url = buildString {
+            append("$B_BASE_URL/api/internal/cambridge/user/my/feed/following/bookmarks?")
+            append(cacheAvoidance())
+            append("&include_amp_urls=${includeAmpUrls.int}")
+            limit?.let { append("&limit=$it") }
+            offset?.let { append("&of=$it") }
+        }
         val response = getJson<FollowingBookmarksResponse>(url)
         return@async response.bookmarks
     }
