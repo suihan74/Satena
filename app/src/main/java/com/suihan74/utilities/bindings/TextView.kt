@@ -21,6 +21,22 @@ import com.suihan74.utilities.extensions.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
+/**
+ * 画面の向きごとに最大表示行数を設定する
+ */
+@BindingAdapter("maxLinesPortrait", "maxLinesLandscape")
+fun TextView.setMaxLinesWithScreenRotation(
+    maxLinesPortrait: Int,
+    maxLinesLandscape: Int
+) {
+    val displayMetrics = this.context.resources.displayMetrics
+    this.maxLines =
+        if (displayMetrics.widthPixels > displayMetrics.heightPixels) maxLinesLandscape
+        else maxLinesPortrait
+}
+
+//////////////////////////////////////////////////
+
 /** フォントサイズを指定(sp), バインディング用 */
 @BindingAdapter("textSizeSp")
 fun TextView.textSizeSp(size: Float) {
