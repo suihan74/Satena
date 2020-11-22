@@ -13,7 +13,7 @@ import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
 
-@SharedPreferencesKey(fileName = "default", version = 4, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 5, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -73,7 +73,7 @@ enum class PreferenceKey(
     BACKGROUND_CHECKING_NOTICES(typeInfo<Boolean>(), true),
 
     /** 通知監視インターバル(分) */
-    BACKGROUND_CHECKING_NOTICES_INTERVALS(typeInfo<Long>(), 3L),
+    BACKGROUND_CHECKING_NOTICES_INTERVALS(typeInfo<Long>(), 15L),
 
     /** 最後に通知を確認した時刻 */
     NOTICES_LAST_SEEN(typeInfo<LocalDateTime>(), null),
@@ -213,20 +213,17 @@ enum class PreferenceKey(
 @Suppress("deprecation")
 object PreferenceKeyMigration {
     fun check(context: Context) {
-        when (SafeSharedPreferences.version<PreferenceKey>(context)) {
-            1 -> {
-                migrateFromVersion1(context)
-                migrateFromVersion2(context)
-                migrateFromVersion3(context)
-            }
+        while (true) {
+            when (SafeSharedPreferences.version<PreferenceKey>(context)) {
+                1 -> migrateFromVersion1(context)
 
-            2 -> {
-                migrateFromVersion2(context)
-                migrateFromVersion3(context)
-            }
+                2 -> migrateFromVersion2(context)
 
-            3 -> {
-                migrateFromVersion3(context)
+                3 -> migrateFromVersion3(context)
+
+                4 -> migrateFromVersion4(context)
+
+                else -> break
             }
         }
     }
@@ -291,6 +288,23 @@ object PreferenceKeyMigration {
 
         prefs.edit {
             putInt(PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION, TapEntryAction.NOTHING.id)
+        }
+    }
+
+    /**
+     * v4 -> v5
+     *
+     * 新着通知確認の常駐方法を変更した影響で
+     * 通知確認間隔の最小値を15分に制限した
+     */
+    private fun migrateFromVersion4(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val key = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS
+
+        if (prefs.getLong(key) < 15L) {
+            prefs.edit {
+                putLong(key, 15L)
+            }
         }
     }
 }
