@@ -21,6 +21,7 @@ import com.suihan74.satena.models.PreferenceKeyMigration
 import com.suihan74.satena.models.migrate
 import com.suihan74.satena.notices.NotificationWorker
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.checkRunningByTag
 import com.suihan74.utilities.extensions.showToast
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -199,15 +200,11 @@ class SatenaApplication : Application() {
                 .build()
 
         WorkManager.getInstance(this).let { manager ->
-            val existedResult = runCatching {
-                val workInfo = manager.getWorkInfosByTag(WORKER_TAG_CHECKING_NOTICES)
-                workInfo.get().isEmpty()
-            }
+            val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
 
-            manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
-            manager.enqueue(workRequest)
-
-            if (!existedResult.getOrDefault(false)) {
+            if (!existed) {
+                manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
+                manager.enqueue(workRequest)
                 showToast(R.string.msg_start_checking_notifications)
             }
         }
@@ -218,14 +215,10 @@ class SatenaApplication : Application() {
     /** 通知確認を明示的に終了 */
     fun stopCheckingNotificationsWorker() {
         WorkManager.getInstance(this).let { manager ->
-            val existedResult = runCatching {
-                val workInfo = manager.getWorkInfosByTag(WORKER_TAG_CHECKING_NOTICES)
-                workInfo.get().isEmpty()
-            }
-
+            val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
             manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
 
-            if (existedResult.getOrDefault(false)) {
+            if (existed) {
                 showToast(R.string.msg_stop_checking_notifications)
             }
         }
