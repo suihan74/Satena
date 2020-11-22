@@ -2,24 +2,28 @@ package com.suihan74.satena
 
 import android.app.Application
 import android.content.Context
-import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.satena.models.AppDatabase
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.PreferenceKeyMigration
 import com.suihan74.satena.models.migrate
+import com.suihan74.satena.notices.NotificationWorker
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.ServiceUtility
 import com.suihan74.utilities.extensions.showToast
-import com.suihan74.utilities.lock
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class SatenaApplication : Application() {
     companion object {
@@ -27,6 +31,7 @@ class SatenaApplication : Application() {
             private set
 
         const val APP_DATABASE_FILE_NAME = "satena_db"
+        const val WORKER_TAG_CHECKING_NOTICES = "WORKER_TAG_CHECKING_NOTICES"
     }
 
     var isFirstLaunch : Boolean = false
@@ -121,8 +126,8 @@ class SatenaApplication : Application() {
         // 接続状態を監視
         registerNetworkCallback()
 
-        // 通知サービスを開始
-        startNotificationService()
+        // バックグラウンドでの通知確認を開始
+        startCheckingNotificationsWorker()
     }
 
     override fun onTerminate() {
@@ -172,27 +177,59 @@ class SatenaApplication : Application() {
         PreferenceKeyMigration.check(applicationContext)
     }
 
-    /** 通知サービスを開始 */
-    fun startNotificationService() {
-        lock(this) {
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(applicationContext)
-            val signedIn = prefs.contains(PreferenceKey.HATENA_USER_NAME)
-            val isBackgroundCheckingNoticeEnabled = prefs.getBoolean(PreferenceKey.BACKGROUND_CHECKING_NOTICES)
+    /** 通知確認をバックグラウンドで開始 */
+    fun startCheckingNotificationsWorker() {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val signedIn = prefs.contains(PreferenceKey.HATENA_USER_NAME)
+        val enabled = prefs.getBoolean(PreferenceKey.BACKGROUND_CHECKING_NOTICES)
+        val interval = prefs.getLong(PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS)
 
-            if (signedIn && isBackgroundCheckingNoticeEnabled && !NotificationService.running) {
-                val intent = Intent(this, NotificationService::class.java)
-                ServiceUtility.start(this, intent)
+        if (!signedIn || !enabled) {
+            return
+        }
 
-                showToast("常駐してはてなの通知をおしらせします")
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val workRequest =
+            PeriodicWorkRequestBuilder<NotificationWorker>(interval, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .addTag(WORKER_TAG_CHECKING_NOTICES)
+                .build()
+
+        WorkManager.getInstance(this).let { manager ->
+            val existedResult = runCatching {
+                val workInfo = manager.getWorkInfosByTag(WORKER_TAG_CHECKING_NOTICES)
+                workInfo.get().isEmpty()
+            }
+
+            manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
+            manager.enqueue(workRequest)
+
+            if (!existedResult.getOrDefault(false)) {
+                showToast(R.string.msg_start_checking_notifications)
             }
         }
+
+        Log.i("WorkManager", "start checking notifications")
     }
 
-    /** 通知サービスを明示的に終了 */
-    fun stopNotificationService() {
-        lock(this) {
-            val intent = Intent(this, NotificationService::class.java)
-            applicationContext.stopService(intent)
+    /** 通知確認を明示的に終了 */
+    fun stopCheckingNotificationsWorker() {
+        WorkManager.getInstance(this).let { manager ->
+            val existedResult = runCatching {
+                val workInfo = manager.getWorkInfosByTag(WORKER_TAG_CHECKING_NOTICES)
+                workInfo.get().isEmpty()
+            }
+
+            manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
+
+            if (existedResult.getOrDefault(false)) {
+                showToast(R.string.msg_stop_checking_notifications)
+            }
         }
+
+        Log.i("WorkManager", "stop checking notifications")
     }
 }

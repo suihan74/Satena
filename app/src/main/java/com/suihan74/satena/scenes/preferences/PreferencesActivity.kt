@@ -184,10 +184,10 @@ class PreferencesActivity : ActivityBase() {
         // 通知サービス開始
         val isNoticeServiceEnabled = prefs.getBoolean(PreferenceKey.BACKGROUND_CHECKING_NOTICES)
         if (isNoticeServiceEnabled) {
-            SatenaApplication.instance.startNotificationService()
+            SatenaApplication.instance.startCheckingNotificationsWorker()
         }
         else {
-            SatenaApplication.instance.stopNotificationService()
+            SatenaApplication.instance.stopCheckingNotificationsWorker()
         }
     }
 

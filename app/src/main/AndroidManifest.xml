@@ -18,9 +18,6 @@
             android:usesCleartextTraffic="true">  <!-- 暗号化されていないHTTP通信を許可 -->
         <!-- android:theme="@style/Theme.AppCompat.Light.NoActionBar" -->
 
-        <!-- Services -->
-        <service android:name=".NotificationService" />
-
         <!-- Receivers -->
         <receiver android:name=".BrowserToolbarManager"/>
 
