@@ -104,20 +104,21 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
 
         // バックグラウンドで通知を確認する
         viewModel.checkNotices.observe(viewLifecycleOwner) {
-            if (it) SatenaApplication.instance.startNotificationService()
-            else SatenaApplication.instance.stopNotificationService()
+            if (it) SatenaApplication.instance.startCheckingNotificationsWorker()
+            else SatenaApplication.instance.stopCheckingNotificationsWorker()
         }
 
         // 通知確認の間隔
         view.button_checking_notices_interval.setOnClickListener {
             val dialog = NumberPickerDialog.createInstance(
-                min = 1,
+                min = 15,
                 max = 180,
                 default = viewModel.checkNoticesInterval.value!!.toInt(),
-                titleId = R.string.pref_generals_notices_intervals_dialog_title,
-                messageId = R.string.pref_generals_checking_notices_intervals_desc
+                titleId = R.string.pref_generals_checking_notices_intervals_desc,
+                messageId = R.string.pref_generals_notices_intervals_dialog_msg
             ) { value ->
                 viewModel.checkNoticesInterval.value = value.toLong()
+                SatenaApplication.instance.startCheckingNotificationsWorker(forceRestart = true)
             }
             dialog.showAllowingStateLoss(childFragmentManager)
         }

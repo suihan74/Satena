@@ -187,7 +187,7 @@
     <string name="pref_generals_ignore_notices_from_spam_desc">スパムと思われるスター通知を行わない</string>
     <string name="pref_generals_show_release_notes_after_update_desc">アプリ更新後の初回起動時に更新履歴を表示する</string>
     <string name="pref_generals_notices_intervals_dialog_title">通知確認間隔を設定</string>
-    <string name="pref_generals_notices_intervals_dialog_msg">1分～180分で指定できます</string>
+    <string name="pref_generals_notices_intervals_dialog_msg">%d分～%d分で指定できます</string>
     <string name="minutes">分</string>
     <!-- entries -->
     <string name="pref_entries_layout_mode_desc">ボトムバーを使用する</string>
@@ -435,6 +435,14 @@
     <string name="msg_retry_sign_in_succeeded">id:%sでサインインしました</string>
 
     <!-- 通知 -->
+    <string name="notification_channel_name">通知</string>
+    <string name="notice_title">通知</string>
+    <string name="notice_action_open_entry">エントリを開く</string>
+    <string name="notice_action_open_bookmark">ブクマを見る</string>
+    <string name="notice_action_open_notices">通知一覧</string>
+    <string name="msg_start_checking_notifications">常駐して新着通知を確認します</string>
+    <string name="msg_stop_checking_notifications">通知確認の常駐を終了しました</string>
+
     <string name="menu_notice_report">%sを通報</string>
     <string name="menu_notice_remove">通知を削除</string>
 
