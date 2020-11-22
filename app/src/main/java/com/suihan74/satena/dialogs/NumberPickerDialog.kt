@@ -80,7 +80,7 @@ class NumberPickerDialog : DialogFragment() {
 
         return createBuilder().let { builder ->
             viewModel.titleId?.let { builder.setTitle(it) }
-            viewModel.messageId?.let { builder.setMessage(it) }
+            viewModel.messageId?.let { builder.setMessage(requireContext().getString(it, viewModel.min, viewModel.max)) }
             builder.setView(numberPicker)
             builder.setNegativeButton(R.string.dialog_cancel, null)
             builder.setPositiveButton(R.string.dialog_ok) { _, _ ->
