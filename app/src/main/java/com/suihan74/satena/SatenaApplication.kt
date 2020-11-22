@@ -5,8 +5,10 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -120,6 +122,9 @@ class SatenaApplication : Application() {
             }
         }
         else {
+            // 旧バージョンで使用していた通知チャンネルを削除する
+            deleteOldNotificationChannel(prefs)
+
             // 設定ファイルのバージョン移行が必要ならする
             updatePreferencesVersion()
         }
@@ -224,5 +229,22 @@ class SatenaApplication : Application() {
         }
 
         Log.i("WorkManager", "stop checking notifications")
+    }
+
+    // ------ //
+
+    /** v1.5.11まで使用していた常駐通知チャンネルを削除する */
+    private fun deleteOldNotificationChannel(prefs: SafeSharedPreferences<PreferenceKey>) {
+        if (prefs.version >= 5) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+
+        val serviceChannelId = "satena_notification_service"
+        val manager = NotificationManagerCompat.from(this)
+        if (manager.getNotificationChannel(serviceChannelId) != null) {
+            manager.deleteNotificationChannel(serviceChannelId)
+        }
+        if (manager.getNotificationChannelGroup(serviceChannelId) != null) {
+            manager.deleteNotificationChannelGroup(serviceChannelId)
+        }
     }
 }

@@ -294,7 +294,8 @@ object PreferenceKeyMigration {
     /**
      * v4 -> v5
      *
-     * 通知確認間隔の最小値を15分に制限
+     * 新着通知確認の常駐方法を変更した影響で
+     * 通知確認間隔の最小値を15分に制限した
      */
     private fun migrateFromVersion4(context: Context) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
