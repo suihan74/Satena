@@ -10,9 +10,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
+ * はてな内でのユーザー関係を扱うリポジトリ
+ *
+ * 非表示ユーザー，お気に入りユーザー，ユーザーの通報など
+ *
  * 他のリポジトリに組み込む際はIgnoredUsersRepositoryに移譲する
  */
-interface IgnoredUsersRepositoryInterface {
+interface UserRelationRepositoryInterface {
     /** はてなで設定した非表示ユーザー */
     val ignoredUsersCache : List<String>
 
@@ -22,16 +26,26 @@ interface IgnoredUsersRepositoryInterface {
     /** リストを初期化する */
     suspend fun loadIgnoredUsers()
 
-    /** ユーザーを非表示にする */
-    @Throws(FetchIgnoredUsersFailureException::class)
+    /**
+     * ユーザーを非表示にする
+     *
+     * @throws FetchIgnoredUsersFailureException
+     */
     suspend fun ignoreUser(user: String)
 
-    /** ユーザーの非表示を解除する */
-    @Throws(FetchIgnoredUsersFailureException::class)
+    /**
+     * ユーザーの非表示を解除する
+     *
+     * @throws FetchIgnoredUsersFailureException
+     */
     suspend fun unIgnoreUser(user: String)
 
-    /** ブコメを通報する */
-    @Throws(TaskFailureException::class, FetchIgnoredUsersFailureException::class)
+    /**
+     *  ブコメを通報する
+     *
+     * @throws TaskFailureException
+     * @throws FetchIgnoredUsersFailureException
+     */
     suspend fun reportBookmark(
         entry: Entry,
         bookmark: Bookmark,
@@ -43,9 +57,9 @@ interface IgnoredUsersRepositoryInterface {
 /**
  * 非表示ユーザー情報を扱うリポジトリ
  */
-class IgnoredUsersRepository(
+class UserRelationRepository(
     private val accountLoader: AccountLoader
-) : IgnoredUsersRepositoryInterface {
+) : UserRelationRepositoryInterface {
 
     private val _ignoredUsersCache by lazy { ArrayList<String>() }
 
@@ -72,7 +86,11 @@ class IgnoredUsersRepository(
         }
     }
 
-    @Throws(FetchIgnoredUsersFailureException::class)
+    /**
+     * ユーザーを非表示にする
+     *
+     * @throws FetchIgnoredUsersFailureException
+     */
     override suspend fun ignoreUser(user: String) = withContext(Dispatchers.Default) {
         val result = runCatching {
             val client = signIn()
@@ -92,7 +110,11 @@ class IgnoredUsersRepository(
         }
     }
 
-    @Throws(FetchIgnoredUsersFailureException::class)
+    /**
+     * ユーザーの非表示を解除する
+     *
+     * @throws FetchIgnoredUsersFailureException
+     */
     override suspend fun unIgnoreUser(user: String) = withContext(Dispatchers.Default) {
         val result = runCatching {
             val client = signIn()
@@ -112,8 +134,12 @@ class IgnoredUsersRepository(
         }
     }
 
-    /** ブコメを通報する */
-    @Throws(TaskFailureException::class, FetchIgnoredUsersFailureException::class)
+    /**
+     *  ブコメを通報する
+     *
+     * @throws TaskFailureException
+     * @throws FetchIgnoredUsersFailureException
+     */
     override suspend fun reportBookmark(
         entry: Entry,
         bookmark: Bookmark,
@@ -134,8 +160,11 @@ class IgnoredUsersRepository(
         }
     }
 
-    /** 必要ならサインインし直す */
-    @Throws(AccountLoader.HatenaSignInException::class)
+    /**
+     * 必要ならサインインし直す
+     *
+     * @throws AccountLoader.HatenaSignInException
+     */
     private suspend fun signIn() : HatenaClient {
         accountLoader.signInHatenaAsync(reSignIn = false).await()
         return accountLoader.client

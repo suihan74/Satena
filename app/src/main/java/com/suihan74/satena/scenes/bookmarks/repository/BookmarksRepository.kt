@@ -14,8 +14,8 @@ import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepositoryForBookmarks
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepositoryInterface
+import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
+import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepositoryInterface
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.getObjectExtra
@@ -31,8 +31,8 @@ class BookmarksRepository(
     private val ignoredEntryDao : IgnoredEntryDao,
     private val userTagDao: UserTagDao
 ) :
-        // ユーザー非表示
-        IgnoredUsersRepositoryInterface by IgnoredUsersRepository(accountLoader),
+        // ユーザー関係
+        UserRelationRepositoryInterface by UserRelationRepository(accountLoader),
         // NGワード
         IgnoredEntriesRepositoryForBookmarks by IgnoredEntriesRepository(ignoredEntryDao),
         // ユーザータグ
