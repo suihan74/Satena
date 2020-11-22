@@ -44,10 +44,6 @@ class SatenaApplication : Application() {
 
     val networkReceiver = NetworkReceiver(this)
 
-    init {
-        instance = this
-    }
-
     /** アプリのバージョン番号 */
     val versionCode: Long by lazy {
         val packageInfo = packageManager.getPackageInfo(packageName, 0)
@@ -96,6 +92,8 @@ class SatenaApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        instance = this
 
         // initialize the timezone information
         AndroidThreeTen.init(applicationContext)
