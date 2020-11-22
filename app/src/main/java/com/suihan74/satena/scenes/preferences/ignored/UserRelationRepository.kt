@@ -41,6 +41,27 @@ interface UserRelationRepositoryInterface {
     suspend fun unIgnoreUser(user: String)
 
     /**
+     * ユーザーをお気に入りにする
+     *
+     * @throws TaskFailureException
+     */
+    suspend fun followUser(user: String)
+
+    /**
+     * ユーザーのお気に入りを解除する
+     *
+     * @throws TaskFailureException
+     */
+    suspend fun unFollowUser(user: String)
+
+    /**
+     * お気に入りユーザーリストを取得する
+     *
+     * @throws TaskFailureException
+     */
+    suspend fun getFollowers() : List<String>
+
+    /**
      *  ブコメを通報する
      *
      * @throws TaskFailureException
@@ -55,7 +76,9 @@ interface UserRelationRepositoryInterface {
 }
 
 /**
- * 非表示ユーザー情報を扱うリポジトリ
+ * はてな内でのユーザー関係を扱うリポジトリ
+ *
+ * 非表示ユーザー，お気に入りユーザー，ユーザーの通報など
  */
 class UserRelationRepository(
     private val accountLoader: AccountLoader
@@ -131,6 +154,59 @@ class UserRelationRepository(
                 message = e?.message,
                 cause = e
             )
+        }
+    }
+
+    /**
+     * ユーザーをお気に入りにする
+     *
+     * @throws TaskFailureException
+     */
+    override suspend fun followUser(user: String) {
+        val result = runCatching {
+            val client = signIn()
+            client.follow(user)
+        }
+
+        if (result.isFailure) {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+    }
+
+    /**
+     * ユーザーのお気に入りを解除する
+     *
+     * @throws TaskFailureException
+     */
+    override suspend fun unFollowUser(user: String) {
+        val result = runCatching {
+            val client = signIn()
+            client.unfollow(user)
+        }
+
+        if (result.isFailure) {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+    }
+
+    /**
+     * お気に入りユーザーリストを取得する
+     *
+     * @throws TaskFailureException
+     */
+    override suspend fun getFollowers() : List<String> {
+        val result = runCatching {
+            val client = signIn()
+            if (client.signedIn()) {
+                client.getFollowersAsync().await()
+            }
+            else {
+                emptyList()
+            }
+        }
+
+        return result.getOrElse {
+            throw TaskFailureException(cause = result.exceptionOrNull())
         }
     }
 
