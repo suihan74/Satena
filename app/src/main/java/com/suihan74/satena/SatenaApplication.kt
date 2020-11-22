@@ -179,7 +179,7 @@ class SatenaApplication : Application() {
     }
 
     /** 通知確認をバックグラウンドで開始 */
-    fun startCheckingNotificationsWorker() {
+    fun startCheckingNotificationsWorker(forceRestart: Boolean = false) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         val signedIn = prefs.contains(PreferenceKey.HATENA_USER_NAME)
         val enabled = prefs.getBoolean(PreferenceKey.BACKGROUND_CHECKING_NOTICES)
@@ -202,7 +202,7 @@ class SatenaApplication : Application() {
         WorkManager.getInstance(this).let { manager ->
             val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
 
-            if (!existed) {
+            if (forceRestart || !existed) {
                 manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
                 manager.enqueue(workRequest)
                 showToast(R.string.msg_start_checking_notifications)

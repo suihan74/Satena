@@ -118,6 +118,7 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
                 messageId = R.string.pref_generals_notices_intervals_dialog_msg
             ) { value ->
                 viewModel.checkNoticesInterval.value = value.toLong()
+                SatenaApplication.instance.startCheckingNotificationsWorker(forceRestart = true)
             }
             dialog.showAllowingStateLoss(childFragmentManager)
         }
