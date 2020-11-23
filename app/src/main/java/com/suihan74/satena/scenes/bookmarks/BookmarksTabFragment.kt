@@ -84,7 +84,8 @@ abstract class BookmarksTabFragment :
                 bookmarksViewModel.openBookmarkMenuDialog(
                     requireActivity(),
                     bookmark,
-                    childFragmentManager
+                    childFragmentManager,
+                    lifecycleScope
                 )
             }
 

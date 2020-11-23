@@ -1,14 +1,10 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
-import android.app.Activity
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
-import com.suihan74.satena.scenes.bookmarks.detail.tabs.StarRelationsAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import kotlinx.coroutines.Dispatchers
@@ -141,42 +137,5 @@ class BookmarkDetailViewModel(
             // TODO
             else -> throw NotImplementedError()
         }
-    }
-
-    // ------ //
-
-    /**
-     * スター項目をクリックしたときの挙動
-     *
-     * コメントがあるならその詳細ページを開く
-     */
-    fun onClickStarRelation(activity: BookmarksActivity, item: StarRelationsAdapter.Item?) {
-        if (item == null) return
-
-        val bookmark = item.bookmark
-        if (bookmark == null) {
-            val user = item.user
-            activity.contentsViewModel.openEmptyBookmarkDetail(
-                activity,
-                user
-            )
-        }
-        else {
-            activity.contentsViewModel.openBookmarkDetail(
-                activity,
-                bookmark
-            )
-        }
-    }
-
-    /**
-     * スター項目に対するメニューを開く
-     */
-    fun openStarRelationMenuDialog(
-        activity: Activity,
-        user: String,
-        bookmark: Bookmark?,
-        fragmentManager: FragmentManager
-    ) {
     }
 }

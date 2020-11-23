@@ -8,6 +8,7 @@ import android.transition.TransitionSet
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarkDetail3Binding
@@ -102,7 +103,8 @@ class BookmarkDetailFragment : Fragment() {
             bookmarksViewModel.openBookmarkMenuDialog(
                 requireActivity(),
                 bookmark,
-                childFragmentManager
+                childFragmentManager,
+                lifecycleScope
             )
         }
 

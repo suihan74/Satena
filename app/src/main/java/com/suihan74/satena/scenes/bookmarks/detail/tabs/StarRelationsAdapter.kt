@@ -33,7 +33,8 @@ class StarRelationsAdapter(
                     comment = bookmark?.comment.orEmpty(),
                     bookmark = bookmark,
                     star = it.star,
-                    ignored = ignoredUsers.contains(it.sender)
+                    ignored = ignoredUsers.contains(it.sender),
+                    relation = it
                 )
             }
 
@@ -45,7 +46,8 @@ class StarRelationsAdapter(
                     comment = bookmark.comment,
                     bookmark = bookmark,
                     star = it.star,
-                    ignored = ignoredUsers.contains(it.receiver)
+                    ignored = ignoredUsers.contains(it.receiver),
+                    relation = it
                 )
             }
 
@@ -68,7 +70,8 @@ class StarRelationsAdapter(
         val comment : String,
         val bookmark : Bookmark?,
         val star : Star,
-        val ignored : Boolean
+        val ignored : Boolean,
+        val relation : StarRelation
     )
 
     // ------ //

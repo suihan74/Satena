@@ -91,7 +91,8 @@ class BookmarksFragment :
                 viewModel.openBookmarkMenuDialog(
                     requireActivity(),
                     bookmark,
-                    childFragmentManager
+                    childFragmentManager,
+                    lifecycleScope
                 )
             }
 
