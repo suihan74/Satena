@@ -103,9 +103,15 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
         }
 
         // バックグラウンドで通知を確認する
+        var called = false // TODO: 応急
         viewModel.checkNotices.observe(viewLifecycleOwner) {
-            if (it) SatenaApplication.instance.startCheckingNotificationsWorker()
-            else SatenaApplication.instance.stopCheckingNotificationsWorker()
+            if (!called) {
+                called = true
+                return@observe
+            }
+            val context = requireContext()
+            if (it) SatenaApplication.instance.startCheckingNotificationsWorker(context)
+            else SatenaApplication.instance.stopCheckingNotificationsWorker(context)
         }
 
         // 通知確認の間隔
@@ -118,7 +124,7 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
                 messageId = R.string.pref_generals_notices_intervals_dialog_msg
             ) { value ->
                 viewModel.checkNoticesInterval.value = value.toLong()
-                SatenaApplication.instance.startCheckingNotificationsWorker(forceRestart = true)
+                SatenaApplication.instance.startCheckingNotificationsWorker(requireContext(), forceReplace = true)
             }
             dialog.showAllowingStateLoss(childFragmentManager)
         }
