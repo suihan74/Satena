@@ -7,44 +7,39 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentBookmarks2Binding
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.setOnTabLongClickListener
 import com.suihan74.utilities.extensions.showToast
-import kotlinx.android.synthetic.main.fragment_bookmarks2.view.*
-
-class BookmarksFragmentViewModel : ViewModel() {
-    /** 選択されたタブのポジション */
-    val selectedTab by lazy {
-        MutableLiveData<Int>()
-    }
-
-    /** 選択されたタブがもつViewModel */
-    val selectedTabViewModel by lazy {
-        MutableLiveData<BookmarksTabViewModel>()
-    }
-}
+import com.suihan74.utilities.provideViewModel
 
 class BookmarksFragment : Fragment() {
-    /** BookmarksFragmentの状態管理用ViewModel */
-    val viewModel: BookmarksFragmentViewModel by lazy {
-        ViewModelProvider(requireActivity())[BookmarksActivity.VIEW_MODEL_CONTENT_FRAGMENT, BookmarksFragmentViewModel::class.java]
-    }
-
     companion object {
         fun createInstance() = BookmarksFragment()
     }
+
+    // ------ //
+
+    /** BookmarksFragmentの状態管理用ViewModel */
+    val viewModel: BookmarksFragmentViewModel by lazy {
+        provideViewModel(requireActivity(), BookmarksActivity.VIEW_MODEL_CONTENT_FRAGMENT) {
+            BookmarksFragmentViewModel()
+        }
+    }
+
+    // ------ //
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_bookmarks2, container, false)
+    ): View {
+        val binding = FragmentBookmarks2Binding.inflate(inflater, container, false)
 
         val selectedTab =
             viewModel.selectedTab.value
@@ -54,13 +49,13 @@ class BookmarksFragment : Fragment() {
 
         // TabFragment表示部分
         val tabAdapter = BookmarksTabAdapter(this)
-        val viewPager = view.tab_pager.apply {
+        val viewPager = binding.tabPager.apply {
             adapter = tabAdapter
             currentItem = selectedTab
         }
 
         // Tabセレクタ
-        view.tab_layout.apply {
+        binding.tabLayout.apply {
             setupWithViewPager(viewPager)
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 /** タブを切替え */
@@ -95,11 +90,27 @@ class BookmarksFragment : Fragment() {
             }
         }
 
-        return view
+        return binding.root
     }
 
     /** 明示的にFABを再表示する */
     fun showFloatingActionButtons() {
-        (activity as? BookmarksActivity)?.showButtons()
+        activity.alsoAs<BookmarksActivity> {
+            it.showButtons()
+        }
+    }
+
+    // ------ //
+
+    class BookmarksFragmentViewModel : ViewModel() {
+        /** 選択されたタブのポジション */
+        val selectedTab by lazy {
+            MutableLiveData<Int>()
+        }
+
+        /** 選択されたタブがもつViewModel */
+        val selectedTabViewModel by lazy {
+            MutableLiveData<BookmarksTabViewModel>()
+        }
     }
 }

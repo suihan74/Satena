@@ -15,6 +15,7 @@ import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.databinding.FragmentPreferencesInformationBinding
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
@@ -23,7 +24,6 @@ import com.suihan74.satena.scenes.tools.RestartActivity
 import com.suihan74.utilities.extensions.setHtml
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.android.synthetic.main.fragment_preferences_information.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
@@ -41,29 +41,29 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_preferences_information, container, false)
         val activity = requireActivity() as PreferencesActivity
+        val binding = FragmentPreferencesInformationBinding.inflate(inflater, container, false)
 
         // アプリバージョン
-        root.app_version.text = String.format(
+        binding.appVersion.text = String.format(
             "version: %s",
             SatenaApplication.instance.versionName
         )
 
         // コピーライト
-        root.copyright.run {
+        binding.copyright.run {
             setHtml(getString(R.string.copyright))
             movementMethod = LinkMovementMethod.getInstance()
         }
 
         // 更新履歴ダイアログ
-        root.show_release_notes_button.setOnClickListener {
+        binding.showReleaseNotesButton.setOnClickListener {
             val dialog = ReleaseNotesDialogFragment.createInstance()
             dialog.showAllowingStateLoss(parentFragmentManager, DIALOG_RELEASE_NOTES)
         }
 
         // ライセンス表示アクティビティ
-        root.show_licenses_button.setOnClickListener {
+        binding.showLicensesButton.setOnClickListener {
             val intent = Intent(activity, OssLicensesMenuActivity::class.java).apply {
                 putExtra("title", "Licenses")
             }
@@ -71,7 +71,7 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
         }
 
         // ファイルに設定を出力
-        root.save_settings_button.setOnClickListener {
+        binding.saveSettingsButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/octet-stream"
@@ -81,7 +81,7 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
         }
 
         // ファイルから設定を復元
-        root.load_settings_button.setOnClickListener {
+        binding.loadSettingsButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/octet-stream"
@@ -89,7 +89,7 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
             startActivityForResult(intent, READ_REQUEST_CODE)
         }
 
-        return root
+        return binding.root
     }
 
     private fun savePreferencesToFile(targetUri: Uri) {

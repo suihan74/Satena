@@ -1,12 +1,11 @@
 package com.suihan74.satena.scenes.preferences.userTag
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FooterRecyclerViewBinding
+import com.suihan74.satena.databinding.ListviewItemUserTagsBinding
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.utilities.FooterViewHolder
 import com.suihan74.utilities.RecyclerState
@@ -40,11 +39,17 @@ open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         result.dispatchUpdatesTo(this)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder =
-        when (RecyclerType.fromId(viewType)) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return when (RecyclerType.fromId(viewType)) {
             RecyclerType.BODY -> {
-                val inflate = LayoutInflater.from(parent.context).inflate(R.layout.listview_item_user_tags, parent, false)
-                ViewHolder(inflate).apply {
+                ViewHolder(
+                    ListviewItemUserTagsBinding.inflate(
+                        inflater,
+                        parent,
+                        false
+                    )
+                ).apply {
                     itemView.setOnClickListener {
                         val tag = this.tag
                         if (tag != null) {
@@ -62,11 +67,9 @@ open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 }
             }
 
-            else -> {
-                val inflate = LayoutInflater.from(parent.context).inflate(R.layout.footer_recycler_view, parent, false)
-                FooterViewHolder(inflate)
-            }
+            else -> FooterViewHolder(FooterRecyclerViewBinding.inflate(inflater, parent, false))
         }
+    }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (RecyclerType.fromId(holder.itemViewType)) {
@@ -85,17 +88,14 @@ open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     open fun onItemClicked(tag: TagAndUsers) {}
     open fun onItemLongClicked(tag: TagAndUsers) : Boolean = true
 
-    class ViewHolder(root: View) : RecyclerView.ViewHolder(root) {
-        private val mName = root.findViewById<TextView>(R.id.tag_name)
-        private val mCounter = root.findViewById<TextView>(R.id.users_count)
-
+    class ViewHolder(val binding: ListviewItemUserTagsBinding) : RecyclerView.ViewHolder(binding.root) {
         var tag : TagAndUsers? = null
             internal set(value) {
                 field = value
                 if (value == null) { return }
 
-                mName.text = value.userTag.name
-                mCounter.text = String.format("%d users", value.users.size)
+                binding.tagName.text = value.userTag.name
+                binding.usersCount.text = String.format("%d users", value.users.size)
             }
     }
 }

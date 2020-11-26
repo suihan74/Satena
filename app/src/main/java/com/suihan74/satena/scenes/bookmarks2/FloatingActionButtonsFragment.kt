@@ -11,29 +11,42 @@ import androidx.activity.addCallback
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.observe
-import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentBookmarksFabsBinding
 import com.suihan74.satena.scenes.bookmarks2.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.android.synthetic.main.fragment_bookmarks_fabs.view.*
 
 class FloatingActionButtonsFragment :
     Fragment(),
     CustomTabSettingsDialog.Listener
 {
+    companion object {
+        fun createInstance() = FloatingActionButtonsFragment()
+    }
+
+    // ------ //
+
     /** BookmarksActivityのViewModel */
     private val activityViewModel: BookmarksViewModel
         get() = (requireActivity() as BookmarksActivity).viewModel
 
     /** BookmarksFragmentの状態管理用ViewModel */
-    private val fragmentViewModel: BookmarksFragmentViewModel
+    private val fragmentViewModel: BookmarksFragment.BookmarksFragmentViewModel
         get() = (requireActivity() as BookmarksActivity).bookmarksFragment.viewModel
 
     /** 現在表示中のタブのViewModel */
     private val tabViewModel
         get() = fragmentViewModel.selectedTabViewModel.value
+
+    // ------ //
+
+    private var _binding : FragmentBookmarksFabsBinding? = null
+    private val binding
+        get() = _binding!!
+
+    // ------ //
 
     /** ブクマ投稿ダイアログを開くボタンを複数回押されてもダイアログが複数出ないようにする */
     private var bookmarkButtonClicked = false
@@ -44,39 +57,42 @@ class FloatingActionButtonsFragment :
 
     private val DIALOG_CUSTOM_TAB_SETTINGS by lazy { "DIALOG_CUSTOM_TAB_SETTINGS" }
 
-    companion object {
-        fun createInstance() = FloatingActionButtonsFragment()
-    }
+    // ------ //
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_bookmarks_fabs, container, false)
+    ): View {
+        val binding = FragmentBookmarksFabsBinding.inflate(
+            inflater,
+            container,
+            false
+        )
+        this._binding = binding
 
         // FAB初期化
-        initFABs(view)
+        initFABs(binding)
 
         // 「カスタム」タブでは設定ボタンを表示する
         fragmentViewModel.selectedTab.observe(viewLifecycleOwner) {
             if (it == BookmarksTabType.CUSTOM.ordinal) {
-                view.custom_settings_button.show()
+                binding.customSettingsButton.show()
             }
             else {
-                view.custom_settings_button.hide()
+                binding.customSettingsButton.hide()
             }
         }
 
         // タブのブクマリストにサインインしているユーザーのブクマが存在するかを監視する
         fragmentViewModel.selectedTabViewModel.observe(viewLifecycleOwner) { vm ->
             vm.signedUserBookmark.observe(viewLifecycleOwner) { bookmark ->
-                if (view.bookmarks_scroll_top_button.isShown) {
+                if (binding.bookmarksScrollTopButton.isShown) {
                     if (bookmark == null) {
-                        view.bookmarks_open_my_bookmark_button.hide()
+                        binding.bookmarksOpenMyBookmarkButton.hide()
                     }
                     else {
-                        view.bookmarks_open_my_bookmark_button.show()
+                        binding.bookmarksOpenMyBookmarkButton.show()
                     }
                 }
             }
@@ -84,14 +100,19 @@ class FloatingActionButtonsFragment :
 
         activityViewModel.signedIn.observe(viewLifecycleOwner) {
             if (it) {
-                view.bookmark_button.show()
+                binding.bookmarkButton.show()
             }
             else {
-                view.bookmark_button.hide()
+                binding.bookmarkButton.hide()
             }
         }
 
-        return view
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onResume() {
@@ -99,37 +120,35 @@ class FloatingActionButtonsFragment :
         bookmarkButtonClicked = false
         // 戻るボタンを監視
         onBackPressedCallbackForKeyword = requireActivity().onBackPressedDispatcher.addCallback(this, false) {
-            requireView().let { view ->
-                if (view.bookmarks_search_text.visibility == View.VISIBLE) {
-                    view.bookmarks_search_text.visibility = View.GONE
+            binding.bookmarksSearchText.let {
+                if (it.visibility == View.VISIBLE) {
+                    it.visibility = View.GONE
                     activityViewModel.filteringWord.postValue(null)
                 }
             }
             isEnabled = false
         }
         onBackPressedCallbackForScroll = requireActivity().onBackPressedDispatcher.addCallback(this, false) {
-            requireView().let { view ->
-                view.bookmarks_scroll_top_button.hide()
-                view.bookmarks_scroll_bottom_button.hide()
-                view.bookmarks_open_my_bookmark_button.hide()
-            }
+            binding.bookmarksScrollTopButton.hide()
+            binding.bookmarksScrollBottomButton.hide()
+            binding.bookmarksOpenMyBookmarkButton.hide()
             isEnabled = false
         }
     }
 
     /** 画面下部メニューを初期化 */
-    private fun initFABs(view: View) {
+    private fun initFABs(binding: FragmentBookmarksFabsBinding) {
         val scrollFABs = arrayOf(
-            view.bookmarks_scroll_top_button,
-            view.bookmarks_open_my_bookmark_button,
-            view.bookmarks_scroll_bottom_button
+            binding.bookmarksScrollTopButton,
+            binding.bookmarksOpenMyBookmarkButton,
+            binding.bookmarksScrollBottomButton
         )
 
-        view.bookmarks_scroll_top_button.setOnClickListener {
+        binding.bookmarksScrollTopButton.setOnClickListener {
             tabViewModel?.scrollToTop()
         }
 
-        view.bookmarks_open_my_bookmark_button.setOnClickListener {
+        binding.bookmarksOpenMyBookmarkButton.setOnClickListener {
             // 自分のブコメの詳細画面に遷移
             tabViewModel?.signedUserBookmark?.value?.let { target ->
                 activity.alsoAs<BookmarksActivity> { activity ->
@@ -140,20 +159,20 @@ class FloatingActionButtonsFragment :
             onBackPressedCallbackForScroll.isEnabled = false
         }
 
-        view.bookmarks_scroll_bottom_button.setOnClickListener {
+        binding.bookmarksScrollBottomButton.setOnClickListener {
             tabViewModel?.scrollToBottom()
         }
 
         // 初期状態を設定
         scrollFABs.forEach { it.hide() }
         if (fragmentViewModel.selectedTab.value != BookmarksTabType.CUSTOM.ordinal) {
-            view.custom_settings_button.hide()
+            binding.customSettingsButton.hide()
         }
-        view.bookmarks_search_text.visibility = (!activityViewModel.filteringWord.value.isNullOrBlank()).toVisibility(View.GONE)
+        binding.bookmarksSearchText.visibility = (!activityViewModel.filteringWord.value.isNullOrBlank()).toVisibility(View.GONE)
 
         // ブクマ投稿ボタン
-        view.bookmark_button.hide()
-        view.bookmark_button.setOnClickListener {
+        binding.bookmarkButton.hide()
+        binding.bookmarkButton.setOnClickListener {
             if (bookmarkButtonClicked) return@setOnClickListener
             bookmarkButtonClicked = true
 
@@ -165,16 +184,16 @@ class FloatingActionButtonsFragment :
         }
 
         // スクロールメニュー
-        view.bookmarks_scroll_menu_button.setOnClickListener {
-            view.bookmarks_scroll_top_button.isShown.let {
+        binding.bookmarksScrollMenuButton.setOnClickListener {
+            binding.bookmarksScrollTopButton.isShown.let {
                 if (it) {
                     scrollFABs.forEach { fab -> fab.hide() }
                 }
                 else {
-                    view.bookmarks_scroll_top_button.show()
-                    view.bookmarks_scroll_bottom_button.show()
+                    binding.bookmarksScrollTopButton.show()
+                    binding.bookmarksScrollBottomButton.show()
                     if (tabViewModel?.signedUserBookmark?.value != null) {
-                        view.bookmarks_open_my_bookmark_button.show()
+                        binding.bookmarksOpenMyBookmarkButton.show()
                     }
                 }
                 onBackPressedCallbackForScroll.isEnabled = !it
@@ -182,26 +201,28 @@ class FloatingActionButtonsFragment :
         }
 
         // キーワード抽出モードON/OFF切り替えボタン
-        view.search_button.setOnClickListener {
-            (view.bookmarks_search_text.visibility != View.VISIBLE).let { isOn ->
-                view.bookmarks_search_text.visibility = isOn.toVisibility(View.GONE)
+        binding.searchButton.setOnClickListener {
+            binding.bookmarksSearchText.let { bookmarksSearchText ->
+                (bookmarksSearchText.visibility != View.VISIBLE).let { isOn ->
+                    bookmarksSearchText.visibility = isOn.toVisibility(View.GONE)
 
-                // IMEのON/OFF + 非表示にしたらフィルタリングを解除する
-                val activity = requireActivity()
-                if (isOn) {
-                    activity.showSoftInputMethod(view.bookmarks_search_text)
-                    activityViewModel.filteringWord.postValue(view.bookmarks_search_text.text.toString())
+                    // IMEのON/OFF + 非表示にしたらフィルタリングを解除する
+                    val activity = requireActivity()
+                    if (isOn) {
+                        activity.showSoftInputMethod(bookmarksSearchText)
+                        activityViewModel.filteringWord.postValue(bookmarksSearchText.text.toString())
+                    }
+                    else {
+                        activity.hideSoftInputMethod()
+                        activityViewModel.filteringWord.postValue(null)
+                    }
+                    onBackPressedCallbackForKeyword.isEnabled = isOn
                 }
-                else {
-                    activity.hideSoftInputMethod()
-                    activityViewModel.filteringWord.postValue(null)
-                }
-                onBackPressedCallbackForKeyword.isEnabled = isOn
             }
         }
 
         // 検索キーワード入力ボックス
-        view.bookmarks_search_text.apply {
+        binding.bookmarksSearchText.apply {
             setText(activityViewModel.filteringWord.value)
             addTextChangedListener {
                 activityViewModel.filteringWord.postValue(it.toString())
@@ -220,7 +241,7 @@ class FloatingActionButtonsFragment :
         }
 
         // カスタムタブ設定ボタン
-        view.custom_settings_button.setOnClickListener {
+        binding.customSettingsButton.setOnClickListener {
             val dialog = CustomTabSettingsDialog.createInstance()
             dialog.showAllowingStateLoss(childFragmentManager, DIALOG_CUSTOM_TAB_SETTINGS)
         }

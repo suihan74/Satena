@@ -21,10 +21,9 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.setOnTabLongClickListener
 import com.suihan74.utilities.extensions.showToast
-import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 abstract class MultipleTabsEntriesFragment : EntriesFragment() {
-    private var binding : FragmentEntries2Binding? = null
+    protected var binding : FragmentEntries2Binding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,17 +43,15 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
         }
         this.binding = binding
 
-        val view = binding.root
-
         // タブ設定
-        view.entries_tab_pager.adapter = EntriesTabAdapter(view.entries_tab_pager, this)
+        binding.entriesTabPager.adapter = EntriesTabAdapter(binding.entriesTabPager, this)
 
         // タブ初期選択
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val initialTabPosition = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
-        view.entries_tab_pager.setCurrentItem(initialTabPosition, false)
+        binding.entriesTabPager.setCurrentItem(initialTabPosition, false)
 
-        return view
+        return binding.root
     }
 
     private val entriesTabPager : ViewPager?

@@ -20,6 +20,7 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.databinding.ActivityBookmarks2Binding
 import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
 import com.suihan74.satena.scenes.post.BookmarkEditData
@@ -32,7 +33,6 @@ import com.suihan74.utilities.extensions.findFragmentByTag
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
-import kotlinx.android.synthetic.main.activity_bookmarks2.*
 
 class BookmarksActivity : AppCompatActivity() {
     companion object {
@@ -70,6 +70,8 @@ class BookmarksActivity : AppCompatActivity() {
         }
     }
 
+    // ------ //
+
     /** ViewModel */
     val viewModel: BookmarksViewModel by lazy {
         provideViewModel(this, VIEW_MODEL_ACTIVITY) {
@@ -100,17 +102,25 @@ class BookmarksActivity : AppCompatActivity() {
 
     lateinit var onBackPressedCallback: OnBackPressedCallback
 
+    // ------ //
+
+    private lateinit var binding : ActivityBookmarks2Binding
+
+    // ------ //
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(viewModel.themeId)
-        setContentView(R.layout.activity_bookmarks2)
+
+        binding = ActivityBookmarks2Binding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val firstLaunching = !viewModel.repository.isInitialized
 
-        progress_bar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
 
         viewModel.toolbarTitle.observe(this, Observer {
-            toolbar.title = it
+            binding.toolbar.title = it
         })
 
         val onSuccess: OnSuccess<Entry> = {
@@ -139,13 +149,13 @@ class BookmarksActivity : AppCompatActivity() {
                 else -> showToast(R.string.msg_update_bookmarks_failed)
             }
             Log.e("BookmarksActivity", Log.getStackTraceString(e))
-            progress_bar.visibility = View.INVISIBLE
+            binding.progressBar.visibility = View.INVISIBLE
         }
 
         viewModel.onCreate(intent, onSuccess, onError)
 
         // スクロールでツールバーを隠す
-        toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
+        binding.toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
             scrollFlags =
                 if (viewModel.hideToolbarByScrolling)
                     AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
@@ -154,7 +164,7 @@ class BookmarksActivity : AppCompatActivity() {
         }
 
         // スクロールでボタンを隠す
-        buttons_layout.updateLayoutParams<CoordinatorLayout.LayoutParams> {
+        binding.buttonsLayout.updateLayoutParams<CoordinatorLayout.LayoutParams> {
             behavior =
                 if (viewModel.hideButtonsByScrolling)
                     HideBottomViewOnScrollBehavior<View>(this@BookmarksActivity, null)
@@ -179,19 +189,19 @@ class BookmarksActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        appbar_layout.setExpanded(true, false)
+        binding.appbarLayout.setExpanded(true, false)
 
         // ドロワを配置
-        entry_information_layout.updateLayoutParams<DrawerLayout.LayoutParams> {
+        binding.entryInformationLayout.updateLayoutParams<DrawerLayout.LayoutParams> {
             gravity = viewModel.drawerGravity
         }
     }
 
     fun showButtons() {
-        val behavior = (buttons_layout.layoutParams as? CoordinatorLayout.LayoutParams)
+        val behavior = (binding.buttonsLayout.layoutParams as? CoordinatorLayout.LayoutParams)
             ?.behavior as? HideBottomViewOnScrollBehavior
             ?: return
-        behavior.slideUp(buttons_layout)
+        behavior.slideUp(binding.buttonsLayout)
     }
 
     /** entryロード完了後に画面を初期化 */
@@ -209,7 +219,7 @@ class BookmarksActivity : AppCompatActivity() {
 
                 is NotFoundException -> {
                     showToast(R.string.msg_no_bookmarks)
-                    toolbar.subtitle = getString(R.string.toolbar_subtitle_bookmarks, 0, 0)
+                    binding.toolbar.subtitle = getString(R.string.toolbar_subtitle_bookmarks, 0, 0)
                 }
 
                 is FetchIgnoredUsersFailureException -> {
@@ -242,7 +252,7 @@ class BookmarksActivity : AppCompatActivity() {
                 }
             }
 
-            progress_bar.visibility = View.INVISIBLE
+            binding.progressBar.visibility = View.INVISIBLE
 
             // 画面回転を解放する
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -256,13 +266,13 @@ class BookmarksActivity : AppCompatActivity() {
         )
 
         // Toolbar
-        toolbar.apply {
+        binding.toolbar.apply {
             if (!firstLaunching) {
                 val bookmarksEntry = viewModel.bookmarksEntry.value
                 val entireBookmarksCount = bookmarksEntry?.bookmarks?.size ?: 0
                 val commentsCount = bookmarksEntry?.bookmarks?.count { it.comment.isNotBlank() } ?: 0
 
-                toolbar.subtitle = getString(
+                binding.toolbar.subtitle = getString(
                     R.string.toolbar_subtitle_bookmarks,
                     entireBookmarksCount,
                     commentsCount
@@ -272,7 +282,7 @@ class BookmarksActivity : AppCompatActivity() {
 
         // Drawerの開閉を監視する
 
-        drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
+        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
                 hideSoftInputMethod()
                 findFragmentByTag<EntryInformationFragment>(FRAGMENT_INFORMATION)
@@ -286,7 +296,7 @@ class BookmarksActivity : AppCompatActivity() {
         // Observers
         viewModel.bookmarksEntry.observe(this) {
             if (it == null) return@observe
-            toolbar.subtitle = getString(
+            binding.toolbar.subtitle = getString(
                 R.string.toolbar_subtitle_bookmarks,
                 it.bookmarks.size,
                 it.bookmarks.count { b -> b.comment.isNotBlank() }
@@ -335,8 +345,8 @@ class BookmarksActivity : AppCompatActivity() {
 
     /** エントリ情報ドロワを閉じる */
     fun closeDrawer() : Boolean =
-        if (drawer_layout.isDrawerOpen(entry_information_layout)) {
-            drawer_layout.closeDrawer(entry_information_layout)
+        if (binding.drawerLayout.isDrawerOpen(binding.entryInformationLayout)) {
+            binding.drawerLayout.closeDrawer(binding.entryInformationLayout)
             true
         }
         else false

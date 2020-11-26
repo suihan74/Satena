@@ -17,7 +17,6 @@ import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.android.synthetic.main.fragment_entries_tab2.*
 
 class NoticesTabFragment : EntriesTabFragmentBase() {
     companion object {
@@ -74,10 +73,15 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
     override fun onResume() {
         super.onResume()
 
-        entries_list.adapter.alsoAs<NoticesAdapter> { adapter ->
+        binding?.entriesList?.adapter.alsoAs<NoticesAdapter> { adapter ->
             adapter.onResume()
         }
     }

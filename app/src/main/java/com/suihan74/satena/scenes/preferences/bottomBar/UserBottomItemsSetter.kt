@@ -16,7 +16,6 @@ import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.views.bindMenuItemsGravity
-import kotlinx.android.synthetic.main.view_user_bottom_items_setter.view.*
 
 class UserBottomItemsSetter : CoordinatorLayout {
     object BindingAdapters {
@@ -41,6 +40,8 @@ class UserBottomItemsSetter : CoordinatorLayout {
         }
     }
 
+    // ------ //
+
     companion object {
         /** 表示できるボタン数の最大値を取得する */
         fun getButtonsLimit(context: Context) : Int {
@@ -57,6 +58,8 @@ class UserBottomItemsSetter : CoordinatorLayout {
             return (screenWidthPx - rightMargin) / buttonWidthPx - numReserved
         }
     }
+
+    // ------ //
 
     constructor(context: Context) : this(context, null, 0)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -103,7 +106,7 @@ class UserBottomItemsSetter : CoordinatorLayout {
     private fun inflateButtons() {
         val items = items.take(maxButtonsNum)
 
-        val bottomAppBar = this.bottom_app_bar
+        val bottomAppBar = binding.bottomAppBar
         val tint = ColorStateList.valueOf(context.getThemeColor(R.attr.textColor))
         bottomAppBar.menu.clear()
 

@@ -1,13 +1,11 @@
 package com.suihan74.satena.scenes.browser.keyword
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.Keyword
-import com.suihan74.satena.R
+import com.suihan74.satena.databinding.ListviewItemHatenaKeywordBinding
 import com.suihan74.utilities.extensions.makeSpannedFromHtml
-import kotlinx.android.synthetic.main.listview_item_hatena_keyword.view.*
 
 /** キーワードの解説項目を表示するアダプタ */
 class HatenaKeywordAdapter(
@@ -18,9 +16,12 @@ class HatenaKeywordAdapter(
     override fun getItemCount(): Int = items.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val view = inflater.inflate(R.layout.listview_item_hatena_keyword, parent, false)
-        return ViewHolder(view)
+        val binding = ListviewItemHatenaKeywordBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -31,11 +32,11 @@ class HatenaKeywordAdapter(
     // ------ //
 
     class ViewHolder(
-        private val view: View
-    ): RecyclerView.ViewHolder(view) {
+        private val binding: ListviewItemHatenaKeywordBinding
+    ): RecyclerView.ViewHolder(binding.root) {
         fun setData(data: Keyword) {
-            view.title.text = data.category
-            view.body.text = makeSpannedFromHtml(data.bodyHtml)
+            binding.title.text = data.category
+            binding.body.text = makeSpannedFromHtml(data.bodyHtml)
         }
     }
 }
