@@ -21,9 +21,6 @@ import com.suihan74.satena.scenes.entries2.initialize
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.activity_entries2.*
-import kotlinx.android.synthetic.main.fragment_entries2.view.*
-
 
 class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
     companion object {
@@ -152,7 +149,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             else {
                 isIconified = false
                 // 画面遷移や回転ごとにキーボードを表示しないようにする
-                requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+                requireActivity().hideSoftInputMethod(fragment.binding?.contentLayout)
                 clearFocus()
             }
             viewModel.isSearchViewExpanded = !isIconified
@@ -165,7 +162,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
 
             if (!query.isNullOrBlank()) {
                 // 画面遷移や回転ごとにキーボードを表示しないようにする
-                requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+                requireActivity().hideSoftInputMethod(fragment.binding?.contentLayout)
                 clearFocus()
             }
             viewModel.isSearchViewExpanded = false
@@ -187,7 +184,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 setSubTitle(viewModel)
                 reloadLists()
-                requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+                requireActivity().hideSoftInputMethod(fragment.binding?.contentLayout)
                 return true
             }
         })
@@ -273,7 +270,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
 
     /** 検索情報をサブタイトルに表示する */
     private fun setSubTitle(viewModel: MyBookmarksViewModel) {
-        val toolbar = requireActivity().toolbar
+        val toolbar = (requireActivity() as EntriesActivity).toolbar
         val tag = viewModel.tag.value
         val query = viewModel.searchQuery.value
         val isQueryBlank = query.isNullOrBlank()

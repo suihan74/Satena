@@ -18,7 +18,6 @@ import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.activity_entries2.*
 
 class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
     companion object {
@@ -46,9 +45,11 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
         val root = super.onCreateView(inflater, container, savedInstanceState)
 
         // ツールバーを更新
-        activity?.toolbar?.also {
-            it.title = getString(category.textId)
-            it.subtitle = viewModel.issue.value?.name
+        activity.alsoAs<EntriesActivity> { activity ->
+            activity.toolbar.also {
+                it.title = getString(category.textId)
+                it.subtitle = viewModel.issue.value?.name
+            }
         }
 
         return root
@@ -125,7 +126,7 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
 
         // Issue選択時にサブタイトルを表示する
         viewModel.issue.observe(viewLifecycleOwner) {
-            val toolbar = requireActivity().toolbar
+            val toolbar = (requireActivity() as EntriesActivity).toolbar
             toolbar.subtitle = it?.name
 
             clearIssueCallback?.isEnabled = it != null

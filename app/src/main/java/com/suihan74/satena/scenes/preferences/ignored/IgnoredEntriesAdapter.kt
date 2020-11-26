@@ -1,12 +1,11 @@
 package com.suihan74.satena.scenes.preferences.ignored
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FooterRecyclerViewBinding
+import com.suihan74.satena.databinding.ListviewItemIgnoredEntriesBinding
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.utilities.FooterViewHolder
 import com.suihan74.utilities.RecyclerState
@@ -42,12 +41,16 @@ open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>
         result.dispatchUpdatesTo(this)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder =
-        when (RecyclerType.fromId(viewType)) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return when (RecyclerType.fromId(viewType)) {
             RecyclerType.BODY -> {
-                val inflate = LayoutInflater.from(parent.context).inflate(R.layout.listview_item_ignored_entries, parent, false)
                 ViewHolder(
-                    inflate
+                    ListviewItemIgnoredEntriesBinding.inflate(
+                        inflater,
+                        parent,
+                        false
+                    )
                 ).apply {
                     itemView.setOnClickListener {
                         onItemClicked(this.entry!!)
@@ -59,11 +62,9 @@ open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>
                 }
             }
 
-            else -> {
-                val inflate = LayoutInflater.from(parent.context).inflate(R.layout.footer_recycler_view, parent, false)
-                FooterViewHolder(inflate)
-            }
+            else -> FooterViewHolder(FooterRecyclerViewBinding.inflate(inflater, parent, false))
         }
+    }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (RecyclerType.fromId(holder.itemViewType)) {
@@ -82,17 +83,14 @@ open class IgnoredEntriesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>
     open fun onItemClicked(entry: IgnoredEntry) {}
     open fun onItemLongClicked(entry: IgnoredEntry) : Boolean = true
 
-    class ViewHolder(root: View) : RecyclerView.ViewHolder(root) {
-        private val mMode = root.findViewById<TextView>(R.id.mode_text)
-        private val mQuery = root.findViewById<TextView>(R.id.query_text)
-
+    class ViewHolder(val binding: ListviewItemIgnoredEntriesBinding) : RecyclerView.ViewHolder(binding.root) {
         var entry : IgnoredEntry? = null
             internal set(value) {
                 field = value
                 if (value == null) { return }
 
-                mMode.text = String.format("[%s]", value.type.name)
-                mQuery.text = value.query
+                binding.modeText.text = String.format("[%s]", value.type.name)
+                binding.queryText.text = value.query
             }
     }
 }

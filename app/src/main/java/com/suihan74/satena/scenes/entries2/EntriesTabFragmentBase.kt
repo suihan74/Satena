@@ -27,8 +27,6 @@ import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.fragment_entries_tab2.*
-import kotlinx.android.synthetic.main.fragment_entries_tab2.view.*
 
 abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     companion object {
@@ -109,9 +107,14 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             }
         }
 
-        return binding.root.also { view ->
-            initializeRecyclerView(view.entries_list, view.swipe_layout)
-        }
+        initializeRecyclerView(binding.entriesList, binding.swipeLayout)
+
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 
     override fun onResume() {
@@ -124,14 +127,14 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             viewModel.reloadLists(onError = onErrorRefreshEntries)
         }
 
-        view?.entries_list?.adapter.alsoAs<EntriesAdapter> {
+        binding?.entriesList?.adapter.alsoAs<EntriesAdapter> {
             it.onResume()
         }
     }
 
     /** エントリ項目用のリスナを設定する */
     private fun setEntriesAdapterListeners() {
-        val adapter = entries_list.adapter as? EntriesAdapter ?: return
+        val adapter = binding?.entriesList?.adapter as? EntriesAdapter ?: return
 
         adapter.multipleClickDuration = activityViewModel.entryMultipleClickDuration
 
@@ -160,7 +163,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     /** エントリリストを再取得する */
     fun reload() {
-        view?.entries_list?.adapter.alsoAs<EntriesAdapter> {
+        binding?.entriesList?.adapter.alsoAs<EntriesAdapter> {
             it.clearEntries {
                 viewModel.reloadLists(onError = onErrorRefreshEntries)
             }

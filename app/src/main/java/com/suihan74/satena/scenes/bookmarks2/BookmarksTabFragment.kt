@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.NotFoundException
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentBookmarksTabBinding
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.satena.scenes.bookmarks2.tab.CustomTabViewModel
@@ -18,13 +19,19 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.fragment_bookmarks_tab.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class BookmarksTabFragment :
-    Fragment()
-{
+class BookmarksTabFragment : Fragment() {
+    companion object {
+        fun createInstance(tabType: BookmarksTabType) = BookmarksTabFragment().withArguments {
+            putEnum(ARG_TAB_TYPE, tabType)
+        }
+        private const val ARG_TAB_TYPE = "ARG_TAB_TYPE"
+    }
+
+    // ------ //
+
     /** BookmarksActivityのViewModel */
     private val activityViewModel: BookmarksViewModel by lazy {
         bookmarksActivity.viewModel
@@ -39,7 +46,7 @@ class BookmarksTabFragment :
         }
     }
 
-    private val bookmarksFragmentViewModel: BookmarksFragmentViewModel
+    private val bookmarksFragmentViewModel: BookmarksFragment.BookmarksFragmentViewModel
         get() = bookmarksFragment.viewModel
 
     /** このフラグメントが配置されているBookmarksActivity */
@@ -49,19 +56,14 @@ class BookmarksTabFragment :
     private val bookmarksFragment
         get() = requireParentFragment() as BookmarksFragment
 
-    companion object {
-        fun createInstance(tabType: BookmarksTabType) = BookmarksTabFragment().withArguments {
-            putEnum(ARG_TAB_TYPE, tabType)
-        }
-        private const val ARG_TAB_TYPE = "ARG_TAB_TYPE"
-    }
+    // ------ //
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_bookmarks_tab, container, false)
+    ): View {
+        val binding = FragmentBookmarksTabBinding.inflate(inflater, container, false)
 
         val bookmarksAdapter = BookmarksAdapter(viewModel.displayStates).apply {
             setOnItemClickedListener { bookmark ->
@@ -86,7 +88,7 @@ class BookmarksTabFragment :
 
             setOnAdditionalLoadingListener {
                 // 完了していないロードがある場合は実行しない
-                if (view.bookmarks_swipe_layout.isRefreshing || !startLoading()) {
+                if (binding.bookmarksSwipeLayout.isRefreshing || !startLoading()) {
                     return@setOnAdditionalLoadingListener
                 }
 
@@ -116,7 +118,7 @@ class BookmarksTabFragment :
         // スクロールで追加分をロード
         val scrollingUpdater = RecyclerViewScrollingUpdater {
             // "引っ張って更新"中には実行しない
-            if (view.bookmarks_swipe_layout.isRefreshing) {
+            if (binding.bookmarksSwipeLayout.isRefreshing) {
                 loadCompleted()
                 return@RecyclerViewScrollingUpdater
             }
@@ -137,14 +139,14 @@ class BookmarksTabFragment :
         scrollingUpdater.isEnabled = false
 
         // recycler view
-        view.bookmarks_list.apply {
+        binding.bookmarksList.apply {
             setDivider(R.drawable.recycler_view_item_divider)
             adapter = bookmarksAdapter
             addOnScrollListener(scrollingUpdater)
         }
 
         // 引っ張って更新
-        view.bookmarks_swipe_layout.apply swipeLayout@ {
+        binding.bookmarksSwipeLayout.apply swipeLayout@ {
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
@@ -163,16 +165,16 @@ class BookmarksTabFragment :
 
         // スクロール処理
         viewModel.setOnScrollToTopListener {
-            view?.bookmarks_list?.scrollToPosition(0)
+            binding.bookmarksList.scrollToPosition(0)
         }
         viewModel.setOnScrollToBottomListener {
             val size = bookmarksAdapter.itemCount
-            view?.bookmarks_list?.scrollToPosition(size - 1)
+            binding.bookmarksList.scrollToPosition(size - 1)
         }
         viewModel.setOnScrollToBookmarkListener { b ->
             val position = bookmarksAdapter.getPosition(b)
             if (position >= 0) {
-                view?.bookmarks_list?.scrollToPosition(position)
+                binding.bookmarksList.scrollToPosition(position)
             }
         }
 
@@ -196,7 +198,7 @@ class BookmarksTabFragment :
             ) { newStates ->
                 // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
                 if (!initializedList && savedInstanceState == null) {
-                    view.bookmarks_list.adapter = bookmarksAdapter
+                    binding.bookmarksList.adapter = bookmarksAdapter
                     initializedList = true
                 }
                 scrollingUpdater.isEnabled = true
@@ -241,7 +243,7 @@ class BookmarksTabFragment :
 
         // ------ //
 
-        return view
+        return binding.root
     }
 
     override fun onResume() {

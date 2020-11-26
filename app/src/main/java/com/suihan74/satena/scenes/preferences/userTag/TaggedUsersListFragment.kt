@@ -11,11 +11,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentTaggedUsersListBinding
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.DrawableCompat
 import com.suihan74.utilities.bindings.setDivider
-import kotlinx.android.synthetic.main.fragment_tagged_users_list.view.*
 
 class TaggedUsersListFragment : Fragment() {
     private val userTagsFragment : PreferencesUserTagsFragment
@@ -35,8 +35,16 @@ class TaggedUsersListFragment : Fragment() {
             .addTransition(Slide(Gravity.END))
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_tagged_users_list, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentTaggedUsersListBinding.inflate(
+            inflater,
+            container,
+            false
+        )
 
         val taggedUsersAdapter = object : TaggedUsersAdapter() {
             override fun onItemClicked(user: User) {
@@ -49,7 +57,7 @@ class TaggedUsersListFragment : Fragment() {
             }
         }
 
-        root.users_list?.apply {
+        binding.usersList.apply {
             setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(context)
             adapter = taggedUsersAdapter
@@ -57,8 +65,8 @@ class TaggedUsersListFragment : Fragment() {
 
         viewModel.currentTag.observe(viewLifecycleOwner) {
             if (it == null) return@observe
-            root.tag_name.text = it.userTag.name
-            root.users_count.text = String.format("%d users", it.users.size)
+            binding.tagName.text = it.userTag.name
+            binding.usersCount.text = String.format("%d users", it.users.size)
             taggedUsersAdapter.setItems(it.users)
         }
 
@@ -68,7 +76,7 @@ class TaggedUsersListFragment : Fragment() {
             remove()
         }
 
-        return root
+        return binding.root
     }
 
 

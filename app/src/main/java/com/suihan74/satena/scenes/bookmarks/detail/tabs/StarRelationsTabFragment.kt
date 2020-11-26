@@ -18,7 +18,6 @@ import com.suihan74.satena.scenes.bookmarks.detail.DetailTabAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.*
-import kotlinx.android.synthetic.main.fragment_star_relations_tab.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -50,13 +49,15 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
         requireArguments().getEnum<DetailTabAdapter.TabType>(ARG_TAB_TYPE)!!
     }
 
+    private var binding : FragmentStarRelationsTabBinding? = null
+
     // ------ //
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentStarRelationsTabBinding>(
             inflater,
             R.layout.fragment_star_relations_tab,
@@ -67,6 +68,7 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
             it.tabType = tabType
             it.lifecycleOwner = viewLifecycleOwner
         }
+        this.binding = binding
 
         binding.swipeLayout.run {
             val context = requireContext()
@@ -92,8 +94,13 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
         return binding.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
     override fun scrollToTop() {
-        requireView().recycler_view.scrollToPosition(0)
+        binding?.recyclerView?.scrollToPosition(0)
     }
 
     // ------ //

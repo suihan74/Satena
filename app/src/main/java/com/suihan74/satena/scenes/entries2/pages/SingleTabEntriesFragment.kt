@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentEntries2SingleBinding
 import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 
@@ -32,7 +33,7 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-        val root = inflater.inflate(R.layout.fragment_entries2_single, container, false)
+        val binding = FragmentEntries2SingleBinding.inflate(inflater, container, false)
 
         if (savedInstanceState == null) {
             val fragment = generateContentFragment(viewModelKey)
@@ -41,7 +42,7 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
                 .commitAllowingStateLoss()
         }
 
-        return root
+        return binding.root
     }
 
     override fun refreshLists() {

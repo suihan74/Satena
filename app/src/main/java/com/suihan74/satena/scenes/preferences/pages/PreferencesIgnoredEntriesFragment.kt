@@ -9,6 +9,7 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.databinding.FragmentPreferencesIgnoredEntriesBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
@@ -20,10 +21,13 @@ import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.android.synthetic.main.fragment_preferences_ignored_entries.view.*
 
 class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
-    private lateinit var mIgnoredEntriesAdapter : IgnoredEntriesAdapter
+    companion object {
+        fun createInstance() = PreferencesIgnoredEntriesFragment()
+    }
+
+    // ------ //
 
     private val viewModel: IgnoredEntryViewModel by lazy {
         provideViewModel(this) {
@@ -35,7 +39,7 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
         }
     }
 
-    private var mDialogMenuItems: Array<Pair<String, (entry: IgnoredEntry)->Unit>>? = null
+    // ------ //
 
     /** メニューダイアログ用のタグ */
     private val DIALOG_MENU by lazy { "DIALOG_MENU" }
@@ -43,23 +47,16 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
     /** 非表示エントリ追加ダイアログ用のタグ */
     private val DIALOG_IGNORE_ENTRY by lazy { "DIALOG_IGNORE_ENTRY" }
 
-    companion object {
-        fun createInstance() = PreferencesIgnoredEntriesFragment()
-    }
+    // ------ //
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_preferences_ignored_entries, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentPreferencesIgnoredEntriesBinding.inflate(inflater, container, false)
 
-        mDialogMenuItems = arrayOf(
-            getString(R.string.pref_ignored_entries_menu_edit) to { entry ->
-                mIgnoredEntriesAdapter.onItemClicked(entry)
-            },
-            getString(R.string.pref_ignored_entries_menu_remove) to { entry ->
-                viewModel.delete(entry)
-            }
-        )
-
-        mIgnoredEntriesAdapter = object : IgnoredEntriesAdapter() {
+        val ignoredEntriesAdapter = object : IgnoredEntriesAdapter() {
             override fun onItemClicked(entry: IgnoredEntry) {
                 val dialog = IgnoredEntryDialogFragment.createInstance(entry) { dialog, modified ->
                     if (entry.query != modified.query && viewModel.entries.value?.contains(modified) == true) {
@@ -84,11 +81,16 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
             }
 
             override fun onItemLongClicked(entry: IgnoredEntry): Boolean {
+                val items = arrayOf(
+                    getString(R.string.pref_ignored_entries_menu_edit) to { onItemClicked(entry) },
+                    getString(R.string.pref_ignored_entries_menu_remove) to { viewModel.delete(entry) }
+                )
+
                 AlertDialogFragment.Builder()
                     .setTitle("${entry.type.name} ${entry.query}")
                     .setNegativeButton(R.string.dialog_cancel)
-                    .setItems(mDialogMenuItems!!.map { it.first }) { _, which ->
-                        mDialogMenuItems!![which].second.invoke(entry)
+                    .setItems(items.map { it.first }) { _, which ->
+                        items[which].second.invoke()
                     }
                     .create()
                     .showAllowingStateLoss(childFragmentManager, DIALOG_MENU)
@@ -97,13 +99,13 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
             }
         }
 
-        root.ignored_entries_list.apply {
+        binding.ignoredEntriesList.apply {
             setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(context)
-            adapter = mIgnoredEntriesAdapter
+            adapter = ignoredEntriesAdapter
         }
 
-        root.add_button.setOnClickListener {
+        binding.addButton.setOnClickListener {
             val dialog = IgnoredEntryDialogFragment.createInstance { dialog, ignoredEntry ->
                 if (viewModel.entries.value?.contains(ignoredEntry) == true) {
                     context?.showToast(R.string.msg_ignored_entry_dialog_already_existed)
@@ -127,9 +129,9 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
         }
 
         viewModel.entries.observe(viewLifecycleOwner) {
-            mIgnoredEntriesAdapter.setItem(it)
+            ignoredEntriesAdapter.setItem(it)
         }
 
-        return root
+        return binding.root
     }
 }

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
+import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
@@ -30,7 +31,6 @@ import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.hideSoftInputMethod
-import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -96,38 +96,46 @@ class BrowserActivity :
 
     // ------ //
 
+    private lateinit var binding : ActivityBrowserBinding
+
+    val webView : WebView
+        get() = binding.webview
+
+    // ------ //
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setTheme(viewModel.themeId)
 
-        DataBindingUtil.setContentView<ActivityBrowserBinding>(
+        val binding = DataBindingUtil.setContentView<ActivityBrowserBinding>(
             this,
             R.layout.activity_browser
         ).apply {
             vm = viewModel
             lifecycleOwner = this@BrowserActivity
         }
+        this.binding = binding
 
         // ドロワの設定
         initializeDrawer(savedInstanceState != null)
 
         // WebViewの設定
-        viewModel.initializeWebView(webview, this)
+        viewModel.initializeWebView(binding.webview, this)
 
         // ツールバーの設定
         initializeToolbar()
 
         // スワイプしてページを更新する
-        swipe_layout.let {
-            it.setProgressBackgroundColorSchemeColor(getThemeColor(R.attr.swipeRefreshBackground))
-            it.setColorSchemeColors(getThemeColor(R.attr.colorPrimary))
-            it.setOnRefreshListener {
+        binding.swipeLayout.let { swipeLayout ->
+            swipeLayout.setProgressBackgroundColorSchemeColor(getThemeColor(R.attr.swipeRefreshBackground))
+            swipeLayout.setColorSchemeColors(getThemeColor(R.attr.colorPrimary))
+            swipeLayout.setOnRefreshListener {
                 viewModel.setOnPageFinishedListener {
-                    swipe_layout.isRefreshing = false
+                    swipeLayout.isRefreshing = false
                     viewModel.setOnPageFinishedListener(null)
                 }
-                webview.reload()
+                binding.webview.reload()
             }
         }
     }
@@ -137,12 +145,16 @@ class BrowserActivity :
             onBackPressedDispatcher.onBackPressed()
         }
         else {
+            val drawerLayout = binding.drawerLayout
+            val drawerArea = binding.drawerArea
+            val webView = binding.webview
+
             when {
-                drawer_layout.isDrawerOpen(drawer_area) -> {
-                    drawer_layout.closeDrawer(drawer_area)
+                drawerLayout.isDrawerOpen(drawerArea) -> {
+                    drawerLayout.closeDrawer(drawerArea)
                 }
 
-                webview.canGoBack() -> webview.goBack()
+                webView.canGoBack() -> webView.goBack()
 
                 else -> super.onBackPressed()
             }
@@ -152,7 +164,7 @@ class BrowserActivity :
     override fun onResume() {
         super.onResume()
 
-        drawer_area.updateLayoutParams<DrawerLayout.LayoutParams> {
+        binding.drawerArea.updateLayoutParams<DrawerLayout.LayoutParams> {
             gravity = viewModel.drawerGravity
         }
     }
@@ -168,8 +180,10 @@ class BrowserActivity :
     override fun finish() {
         // リソースの読み込み、スクリプトの実行をすべて中断させる
         // https://developer.android.com/reference/android/webkit/WebView.html#clearView()
-        webview.stopLoading()
-        webview.loadUrl("about:blank")
+        binding.webview.run {
+            stopLoading()
+            loadUrl("about:blank")
+        }
 
         super.finish()
     }
@@ -196,14 +210,14 @@ class BrowserActivity :
     /** ドロワを開いて設定タブを表示する */
     @MainThread
     fun showPreferencesFragment() {
-        drawer_view_pager.currentItem = DrawerTab.SETTINGS.ordinal
+        binding.drawerViewPager.currentItem = DrawerTab.SETTINGS.ordinal
         openDrawer()
     }
 
     /** ドロワを開く */
     @MainThread
     override fun openDrawer() {
-        drawer_layout.openDrawer(drawer_area)
+        binding.drawerLayout.openDrawer(binding.drawerArea)
     }
 
     /**
@@ -213,7 +227,7 @@ class BrowserActivity :
      */
     @MainThread
     override fun closeDrawer() {
-        drawer_layout.closeDrawer(drawer_area)
+        binding.drawerLayout.closeDrawer(binding.drawerArea)
     }
 
     /**
@@ -234,12 +248,18 @@ class BrowserActivity :
      */
     @MainThread
     fun initializeDrawer(onRestored : Boolean) {
-        drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
+        val drawerLayout = binding.drawerLayout
+        val drawerTabLayout = binding.drawerTabLayout
+        val drawerViewPager = binding.drawerViewPager
+        val mainArea = binding.mainArea
+        val drawerArea = binding.drawerArea
+
+        drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
                 viewModel.drawerOpened.value = true
-                drawer_view_pager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
-                    val position = drawer_tab_layout.selectedTabPosition
-                    adapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                drawerViewPager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
+                    val position = drawerTabLayout.selectedTabPosition
+                    adapter.findFragment(drawerViewPager, position)?.alsoAs<TabItem> { fragment ->
                         fragment.onTabSelected()
                     }
                 }
@@ -247,9 +267,9 @@ class BrowserActivity :
             override fun onDrawerClosed(drawerView: View) {
                 viewModel.drawerOpened.value = false
                 // 閉じたことをドロワタブに通知する
-                drawer_view_pager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
-                    val position = drawer_tab_layout.selectedTabPosition
-                    adapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                drawerViewPager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
+                    val position = drawerTabLayout.selectedTabPosition
+                    adapter.findFragment(drawerViewPager, position)?.alsoAs<TabItem> { fragment ->
                         fragment.onTabUnselected()
                     }
                 }
@@ -257,13 +277,13 @@ class BrowserActivity :
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {
                 // ドロワ開閉でIMEを閉じる
-                hideSoftInputMethod(main_area)
+                hideSoftInputMethod(mainArea)
             }
         })
 
         val drawerTabAdapter = DrawerTabAdapter(supportFragmentManager)
-        drawerTabAdapter.setup(this, drawer_tab_layout, drawer_view_pager)
-        drawer_tab_layout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        drawerTabAdapter.setup(this, drawerTabLayout, drawerViewPager)
+        drawerTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             @SuppressLint("RtlHardcoded")
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 // ドロワ内のタブ切り替え操作と干渉するため
@@ -273,22 +293,22 @@ class BrowserActivity :
                     Gravity.RIGHT -> tab?.position == 0
                     else -> true // not implemented gravity
                 }
-                drawer_layout.setCloseSwipeEnabled(closerEnabled, drawer_area)
+                drawerLayout.setCloseSwipeEnabled(closerEnabled, drawerArea)
 
                 val position = tab?.position ?: return
-                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                drawerTabAdapter.findFragment(drawerViewPager, position)?.alsoAs<TabItem> { fragment ->
                     fragment.onTabSelected()
                 }
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {
                 val position = tab?.position ?: return
-                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                drawerTabAdapter.findFragment(drawerViewPager, position)?.alsoAs<TabItem> { fragment ->
                     fragment.onTabUnselected()
                 }
             }
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 val position = tab?.position ?: return
-                drawerTabAdapter.findFragment(drawer_view_pager, position)?.alsoAs<TabItem> { fragment ->
+                drawerTabAdapter.findFragment(drawerViewPager, position)?.alsoAs<TabItem> { fragment ->
                     fragment.onTabReselected()
                 }
             }
@@ -298,7 +318,7 @@ class BrowserActivity :
         if (onRestored && viewModel.drawerOpened.value == true) {
             lifecycleScope.launchWhenResumed {
                 withContext(Dispatchers.Main) {
-                    drawer_layout.openDrawer(drawer_area, false)
+                    drawerLayout.openDrawer(drawerArea, false)
                 }
             }
         }
@@ -313,7 +333,7 @@ class BrowserActivity :
         val toolbar = BrowserToolbar(this).also { toolbar ->
             // 入力状態になったらwebview部分にクリック防止ビューを被せる
             toolbar.setOnFocusChangeListener { b ->
-                click_guard.setVisibility(b)
+                binding.clickGuard.setVisibility(b)
             }
 
             // お気に入りに追加
@@ -328,24 +348,27 @@ class BrowserActivity :
         }
 
         viewModel.useBottomAppBar.observe(this) {
+            val appbarLayout = binding.appbarLayout
+            val bottomAppBar = binding.bottomAppBar
+
             // 使わない方のツールバーをクリアしておく
             val another =
-                if (it) appbar_layout
-                else bottom_app_bar
+                if (it) appbarLayout
+                else bottomAppBar
             another.removeAllViews()
 
             val appBar =
-                if (it) bottom_app_bar
-                else appbar_layout
+                if (it) bottomAppBar
+                else appbarLayout
 
             val toolbarBinding = toolbar.inflate(viewModel, this, appBar, true)
             setSupportActionBar(toolbarBinding.toolbar)
         }
 
         // クリック防止ビュー
-        click_guard.setOnTouchListener { _, motionEvent ->
+        binding.clickGuard.setOnTouchListener { _, motionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_UP) {
-                hideSoftInputMethod(main_area)
+                hideSoftInputMethod(binding.mainArea)
                 true
             }
             else false

@@ -10,15 +10,14 @@ import com.google.gson.Gson
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.ActivityMastodonAuthenticationBinding
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.extensions.showToast
-
 import com.sys1yagi.mastodon4j.MastodonClient
 import com.sys1yagi.mastodon4j.api.Scope
 import com.sys1yagi.mastodon4j.api.entity.auth.AppRegistration
 import com.sys1yagi.mastodon4j.api.method.Apps
-import kotlinx.android.synthetic.main.activity_mastodon_authentication.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,8 +25,8 @@ import okhttp3.OkHttpClient
 import org.chromium.customtabsclient.shared.CustomTabsHelper
 
 class MastodonAuthenticationActivity : ActivityBase() {
-    override val progressBackgroundId: Int? = R.id.click_guard
-    override val progressBarId: Int? = R.id.progress_bar
+    override val progressBackgroundId = R.id.click_guard
+    override val progressBarId = R.id.progress_bar
 
     companion object {
         private var mAppRegistration : AppRegistration? = null
@@ -35,13 +34,15 @@ class MastodonAuthenticationActivity : ActivityBase() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_mastodon_authentication)
 
-        auth_button.setOnClickListener {
+        val binding = ActivityMastodonAuthenticationBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.authButton.setOnClickListener {
             showProgressBar()
             launch(Dispatchers.Main) {
                 try {
-                    startAuthorizeMastodon(instance_name.text.toString())
+                    startAuthorizeMastodon(binding.instanceName.text.toString())
                 }
                 catch (e: Throwable) {
                     Log.w("FailedToSignIn", e)

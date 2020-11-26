@@ -27,6 +27,7 @@ import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.NetworkReceiver
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.databinding.FragmentBookmarkDetailBinding
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.dialog.PostStarDialog
 import com.suihan74.satena.scenes.bookmarks.repository.StarExhaustedException
@@ -35,12 +36,25 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
-import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class BookmarkDetailFragment : Fragment() {
+    companion object {
+        fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().withArguments {
+            putObject(ARG_BOOKMARK, bookmark)
+        }
+
+        // argument keys
+        private const val ARG_BOOKMARK = "ARG_BOOKMARK"
+
+        // dialog tags
+        private const val DIALOG_CONFIRM_POST_STAR = "DIALOG_CONFIRM_POST_STAR"
+    }
+
+    // ------ //
+
     private val activityViewModel: BookmarksViewModel
         get() = (requireActivity() as BookmarksActivity).viewModel
 
@@ -86,17 +100,14 @@ class BookmarkDetailFragment : Fragment() {
     val bookmark
         get() = viewModel.bookmark
 
-    companion object {
-        fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().withArguments {
-            putObject(ARG_BOOKMARK, bookmark)
-        }
+    // ------ //
 
-        // argument keys
-        private const val ARG_BOOKMARK = "ARG_BOOKMARK"
+    private var _binding : FragmentBookmarkDetailBinding? = null
+    private val binding
+        get() = _binding!!
 
-        // dialog tags
-        private const val DIALOG_CONFIRM_POST_STAR = "DIALOG_CONFIRM_POST_STAR"
-    }
+    // ------ //
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,11 +122,11 @@ class BookmarkDetailFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_bookmark_detail, container, false)
+    ): View {
+        this._binding = FragmentBookmarkDetailBinding.inflate(inflater, container, false)
 
         // 対象ブクマ表示部初期化
-        initializeBookmarkArea(view)
+        initializeBookmarkArea(binding)
 
         // タブの設定
         val tabAdapter = DetailTabAdapter(this).apply {
@@ -123,10 +134,10 @@ class BookmarkDetailFragment : Fragment() {
                 // アイコンを設定
                 val context = requireContext()
                 repeat(count) { i ->
-                    view.tab_layout.getTabAt(i)?.let { tab ->
+                    binding.tabLayout.getTabAt(i)?.let { tab ->
                         tab.icon = ContextCompat.getDrawable(context, getPageTitleIcon(i))?.also {
                             val color = context.getThemeColor(
-                                if (i == view.tab_layout.selectedTabPosition) R.attr.tabSelectedTextColor
+                                if (i == binding.tabLayout.selectedTabPosition) R.attr.tabSelectedTextColor
                                 else R.attr.tabTextColor
                             )
                             DrawableCompat.setColorFilter(it, color)
@@ -136,9 +147,9 @@ class BookmarkDetailFragment : Fragment() {
             }
         }
 
-        view.tab_pager.adapter = tabAdapter
-        view.tab_layout.apply {
-            setupWithViewPager(view.tab_pager)
+        binding.tabPager.adapter = tabAdapter
+        binding.tabLayout.apply {
+            setupWithViewPager(binding.tabPager)
 
             addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -150,7 +161,9 @@ class BookmarkDetailFragment : Fragment() {
                     DrawableCompat.setColorFilter(icon, requireContext().getThemeColor(R.attr.tabTextColor))
                 }
                 override fun onTabReselected(tab: TabLayout.Tab?) {
-                    (tabAdapter.findFragment(view.tab_pager, tab!!.position) as? ScrollableToTop)?.scrollToTop()
+                    tabAdapter.findFragment(binding.tabPager, tab!!.position).alsoAs<ScrollableToTop> {
+                        it.scrollToTop()
+                    }
                 }
             })
 
@@ -158,7 +171,7 @@ class BookmarkDetailFragment : Fragment() {
         }
 
         // スター付与ボタンの表示状態を切り替える
-        view.show_stars_button.run {
+        binding.showStarsButton.run {
             setOnClickListener {
                 if (!viewModel.userStars.loaded) {
                     // 所持スターがロードされていない場合、再度ロード処理
@@ -170,11 +183,11 @@ class BookmarkDetailFragment : Fragment() {
         }
 
         // スター付与ボタン各色
-        view.yellow_star_button.setOnClickListener { postStar(StarColor.Yellow) }
-        view.red_star_button.setOnClickListener { postStar(StarColor.Red) }
-        view.green_star_button.setOnClickListener { postStar(StarColor.Green) }
-        view.blue_star_button.setOnClickListener { postStar(StarColor.Blue) }
-        view.purple_star_button.setOnClickListener { postStar(StarColor.Purple) }
+        binding.yellowStarButton.setOnClickListener { postStar(StarColor.Yellow) }
+        binding.redStarButton.setOnClickListener { postStar(StarColor.Red) }
+        binding.greenStarButton.setOnClickListener { postStar(StarColor.Green) }
+        binding.blueStarButton.setOnClickListener { postStar(StarColor.Blue) }
+        binding.purpleStarButton.setOnClickListener { postStar(StarColor.Purple) }
 
         // 非表示ユーザーリストが更新されたら各リストを更新する
         activityViewModel.ignoredUsers.observe(viewLifecycleOwner) {
@@ -196,24 +209,24 @@ class BookmarkDetailFragment : Fragment() {
         // サインイン状態でブコメがあればスターを付けられるようにする
         activityViewModel.signedIn.observe(viewLifecycleOwner) {
             if (it && bookmark.comment.isNotBlank()) {
-                view.show_stars_button.show()
+                binding.showStarsButton.show()
             }
             else {
-                view.show_stars_button.hide()
+                binding.showStarsButton.hide()
             }
         }
 
         // 所持スター情報を監視
         viewModel.userStars.observe(viewLifecycleOwner) {
-            view.red_stars_count.text = it.red.toString()
-            view.green_stars_count.text = it.green.toString()
-            view.blue_stars_count.text = it.blue.toString()
-            view.purple_stars_count.text = it.purple.toString()
+            binding.redStarsCount.text = it.red.toString()
+            binding.greenStarsCount.text = it.green.toString()
+            binding.blueStarsCount.text = it.blue.toString()
+            binding.purpleStarsCount.text = it.purple.toString()
         }
 
         // コメント引用を監視
         viewModel.quote.observe(viewLifecycleOwner) { comment ->
-            view.quote_text_view.run {
+            binding.quoteTextView.run {
                 text = getString(R.string.bookmark_detail_quote_comment, comment)
                 visibility = (!comment.isNullOrBlank()).toVisibility()
             }
@@ -221,26 +234,26 @@ class BookmarkDetailFragment : Fragment() {
 
         // タブタイトルに各タブのアイテム数を表示する
         viewModel.starsToUser.observe(viewLifecycleOwner) {
-            val idx = getTabIndex<StarsToUserFragment>(view, tabAdapter) ?: return@observe
-            val tab = view.tab_layout.getTabAt(idx)
+            val idx = getTabIndex<StarsToUserFragment>(tabAdapter) ?: return@observe
+            val tab = binding.tabLayout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it?.totalStarsCount ?: 0, tabAdapter.getPageTitle(idx))
         }
 
         viewModel.starsFromUser.observe(viewLifecycleOwner) {
-            val idx = getTabIndex<StarsFromUserFragment>(view, tabAdapter) ?: return@observe
-            val tab = view.tab_layout.getTabAt(idx)
+            val idx = getTabIndex<StarsFromUserFragment>(tabAdapter) ?: return@observe
+            val tab = binding.tabLayout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it.sumBy { s -> s.star?.count ?: 0 }, tabAdapter.getPageTitle(idx))
         }
 
         viewModel.mentionsToUser.observe(viewLifecycleOwner) {
-            val idx = getTabIndex<MentionToUserFragment>(view, tabAdapter) ?: return@observe
-            val tab = view.tab_layout.getTabAt(idx)
+            val idx = getTabIndex<MentionToUserFragment>(tabAdapter) ?: return@observe
+            val tab = binding.tabLayout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it.size, tabAdapter.getPageTitle(idx))
         }
 
         viewModel.mentionsFromUser.observe(viewLifecycleOwner) {
-            val idx = getTabIndex<MentionFromUserFragment>(view, tabAdapter) ?: return@observe
-            val tab = view.tab_layout.getTabAt(idx)
+            val idx = getTabIndex<MentionFromUserFragment>(tabAdapter) ?: return@observe
+            val tab = binding.tabLayout.getTabAt(idx)
             tab?.text = String.format("(%d) %s", it.size, tabAdapter.getPageTitle(idx))
         }
 
@@ -268,7 +281,7 @@ class BookmarkDetailFragment : Fragment() {
             }
         }
 
-        return view
+        return binding.root
     }
 
     override fun onResume() {
@@ -284,16 +297,16 @@ class BookmarkDetailFragment : Fragment() {
         }
     }
 
-    private inline fun <reified T> getTabIndex(view: View, tabAdapter: DetailTabAdapter) =
+    private inline fun <reified T> getTabIndex(tabAdapter: DetailTabAdapter) =
         (0 until tabAdapter.count).firstOrNull { i ->
-            tabAdapter.findFragment(view.tab_pager, i) is T
+            tabAdapter.findFragment(binding.tabPager, i) is T
         }
 
     /** 対象ブクマ表示部を初期化 */
-    private fun initializeBookmarkArea(view: View) {
+    private fun initializeBookmarkArea(binding: FragmentBookmarkDetailBinding) {
         val bookmark = viewModel.bookmark
         val analyzedComment = BookmarkCommentDecorator.convert(bookmark.comment)
-        view.comment.run {
+        binding.comment.run {
             text = analyzedComment.comment
 
             visibility = analyzedComment.comment.isNotBlank().toVisibility()
@@ -342,16 +355,16 @@ class BookmarkDetailFragment : Fragment() {
 
         Glide.with(requireContext())
             .load(bookmark.userIconUrl)
-            .into(view.user_icon)
+            .into(binding.userIcon)
 
         // タグ部分
-        view.tags_layout.apply {
+        binding.tagsLayout.apply {
             if (bookmark.tags.isNullOrEmpty()) {
                 visibility = View.GONE
             }
             else {
                 visibility = View.VISIBLE
-                view.tags.apply {
+                binding.tags.apply {
                     text = BookmarkCommentDecorator.makeClickableTagsText(bookmark.tags) { tag ->
                         val intent = Intent(context, EntriesActivity::class.java).apply {
                             putExtra(EntriesActivity.EXTRA_SEARCH_TAG, tag)
@@ -364,24 +377,24 @@ class BookmarkDetailFragment : Fragment() {
         }
 
         // メニューボタン
-        view.menu_button.setOnClickListener {
+        binding.menuButton.setOnClickListener {
             activityViewModel.openBookmarkMenuDialog(bookmarksActivity, viewModel.bookmark)
         }
 
         // 非表示ユーザーマーク
         activityViewModel.ignoredUsers.observe(viewLifecycleOwner) {
-            view.ignored_user_mark.visibility = it.contains(bookmark.user).toVisibility()
+            binding.ignoredUserMark.visibility = it.contains(bookmark.user).toVisibility()
         }
 
         // ユーザータグ情報の変更を監視
         activityViewModel.taggedUsers.observe(viewLifecycleOwner) {
-            initializeUserNameAndUserTags(view)
+            initializeUserNameAndUserTags(binding)
         }
     }
 
     /** ユーザー名・ユーザータグ表示を初期化 */
-    private fun initializeUserNameAndUserTags(view: View) {
-        view.user_name.run {
+    private fun initializeUserNameAndUserTags(binding: FragmentBookmarkDetailBinding) {
+        binding.userName.run {
             val bookmark = viewModel.bookmark
             val user = bookmark.user
             val tags = activityViewModel.taggedUsers.value?.firstOrNull { it.user.name == user }?.tags?.sortedBy { it.id }
@@ -558,7 +571,7 @@ class BookmarkDetailFragment : Fragment() {
             R.dimen.yellow_star_position
         )
 
-        requireView().show_stars_button.setImageResource(R.drawable.ic_baseline_close)
+        binding.showStarsButton.setImageResource(R.drawable.ic_baseline_close)
     }
 
     private fun closeStarMenu() {
@@ -568,6 +581,6 @@ class BookmarkDetailFragment : Fragment() {
         hideStarButton(R.id.green_star_layout, R.id.green_stars_count)
         hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
 
-        requireView().show_stars_button.setImageResource(R.drawable.ic_add_star_filled)
+        binding.showStarsButton.setImageResource(R.drawable.ic_add_star_filled)
     }
 }

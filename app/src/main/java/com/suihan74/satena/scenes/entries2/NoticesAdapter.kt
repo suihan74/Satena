@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FooterRecyclerViewBinding
 import com.suihan74.satena.databinding.ListviewItemNotices2Binding
 import com.suihan74.utilities.*
 
@@ -46,7 +47,7 @@ class NoticesAdapter : ListAdapter<RecyclerState<Notice>, RecyclerView.ViewHolde
             }
 
             RecyclerType.FOOTER.id -> FooterViewHolder(
-                inflater.inflate(R.layout.footer_recycler_view, parent, false)
+                FooterRecyclerViewBinding.inflate(inflater, parent, false)
             )
 
             else -> throw NotImplementedError()

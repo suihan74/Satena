@@ -21,7 +21,6 @@ import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
-import kotlinx.android.synthetic.main.activity_bookmarks.*
 import kotlinx.coroutines.launch
 
 /**
@@ -91,10 +90,14 @@ class BookmarksActivity :
 
     // ------ //
 
+    private lateinit var binding : ActivityBookmarksBinding
+
+    // ------ //
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding = DataBindingUtil.setContentView<ActivityBookmarksBinding>(
+        binding = DataBindingUtil.setContentView<ActivityBookmarksBinding>(
             this.also { it.setTheme(contentsViewModel.themeId) },
             R.layout.activity_bookmarks
         ).also {
@@ -130,18 +133,18 @@ class BookmarksActivity :
             .replace(R.id.entry_information_layout, EntryInformationFragment.createInstance())
             .commitAllowingStateLoss()
 
-        drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
+        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {}
             override fun onDrawerClosed(drawerView: View) {}
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {
                 // ドロワ開閉でIMEを閉じる
-                hideSoftInputMethod(main_area)
+                hideSoftInputMethod(binding.mainArea)
             }
         })
 
         // ドロワの位置を設定
-        entry_information_layout.updateLayoutParams<DrawerLayout.LayoutParams> {
+        binding.entryInformationLayout.updateLayoutParams<DrawerLayout.LayoutParams> {
             gravity = contentsViewModel.drawerGravity
         }
     }
@@ -153,8 +156,8 @@ class BookmarksActivity :
 
     /** 戻るボタンの制御 */
     override fun onBackPressed() {
-        if (drawer_layout.isDrawerOpen(entry_information_layout)) {
-            drawer_layout.closeDrawer(entry_information_layout)
+        if (binding.drawerLayout.isDrawerOpen(binding.entryInformationLayout)) {
+            binding.drawerLayout.closeDrawer(binding.entryInformationLayout)
         }
         else if (onBackPressedDispatcher.hasEnabledCallbacks()) {
             onBackPressedDispatcher.onBackPressed()
@@ -169,12 +172,12 @@ class BookmarksActivity :
 
     @MainThread
     override fun openDrawer() {
-        drawer_layout.openDrawer(entry_information_layout)
+        binding.drawerLayout.openDrawer(binding.entryInformationLayout)
     }
 
     @MainThread
     override fun closeDrawer() {
-        drawer_layout.closeDrawer(entry_information_layout)
+        binding.drawerLayout.closeDrawer(binding.entryInformationLayout)
     }
 
     // ------ //

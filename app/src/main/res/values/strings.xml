@@ -443,6 +443,7 @@
     <string name="notice_action_open_notices">通知一覧</string>
     <string name="msg_start_checking_notifications">常駐して新着通知を確認します</string>
     <string name="msg_stop_checking_notifications">通知確認の常駐を終了しました</string>
+    <string name="msg_start_checking_notifications_failed">通知確認の常駐に失敗しました</string>
 
     <string name="menu_notice_report">%sを通報</string>
     <string name="menu_notice_remove">通知を削除</string>

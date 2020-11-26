@@ -12,10 +12,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.work.Constraints
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.satena.models.AppDatabase
 import com.suihan74.satena.models.PreferenceKey
@@ -23,7 +20,6 @@ import com.suihan74.satena.models.PreferenceKeyMigration
 import com.suihan74.satena.models.migrate
 import com.suihan74.satena.notices.NotificationWorker
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.extensions.checkRunningByTag
 import com.suihan74.utilities.extensions.showToast
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -43,10 +39,6 @@ class SatenaApplication : Application() {
         private set
 
     val networkReceiver = NetworkReceiver(this)
-
-    init {
-        instance = this
-    }
 
     /** アプリのバージョン番号 */
     val versionCode: Long by lazy {
@@ -97,6 +89,8 @@ class SatenaApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        instance = this
+
         // initialize the timezone information
         AndroidThreeTen.init(applicationContext)
 
@@ -133,7 +127,7 @@ class SatenaApplication : Application() {
         registerNetworkCallback()
 
         // バックグラウンドでの通知確認を開始
-        startCheckingNotificationsWorker()
+        startCheckingNotificationsWorker(applicationContext)
     }
 
     override fun onTerminate() {
@@ -184,67 +178,82 @@ class SatenaApplication : Application() {
     }
 
     /** 通知確認をバックグラウンドで開始 */
-    fun startCheckingNotificationsWorker(forceRestart: Boolean = false) {
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-        val signedIn = prefs.contains(PreferenceKey.HATENA_USER_NAME)
-        val enabled = prefs.getBoolean(PreferenceKey.BACKGROUND_CHECKING_NOTICES)
-        val interval = prefs.getLong(PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS)
+    fun startCheckingNotificationsWorker(context: Context, forceReplace: Boolean = false) {
+        val result = runCatching {
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val signedIn = prefs.contains(PreferenceKey.HATENA_USER_NAME)
+            val enabled = prefs.getBoolean(PreferenceKey.BACKGROUND_CHECKING_NOTICES)
+            val interval = prefs.getLong(PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS)
 
-        if (!signedIn || !enabled) {
-            return
-        }
+            if (!signedIn || !enabled) {
+                return
+            }
 
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-        val workRequest =
-            PeriodicWorkRequestBuilder<NotificationWorker>(interval, TimeUnit.MINUTES)
-                .setConstraints(constraints)
-                .addTag(WORKER_TAG_CHECKING_NOTICES)
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-        WorkManager.getInstance(this).let { manager ->
-            val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
+            val workRequest =
+                PeriodicWorkRequestBuilder<NotificationWorker>(interval, TimeUnit.MINUTES)
+                    .setConstraints(constraints)
+                    .addTag(WORKER_TAG_CHECKING_NOTICES)
+                    .build()
 
-            if (forceRestart || !existed) {
-                manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
-                manager.enqueue(workRequest)
-                showToast(R.string.msg_start_checking_notifications)
+            WorkManager.getInstance(context).let { manager ->
+//                val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
+
+                manager.enqueueUniquePeriodicWork(
+                    WORKER_TAG_CHECKING_NOTICES,
+                    if (forceReplace) ExistingPeriodicWorkPolicy.REPLACE
+                    else ExistingPeriodicWorkPolicy.KEEP,
+                    workRequest
+                )
+
+//                if (!existed) {
+                    showToast(R.string.msg_start_checking_notifications)
+//                }
             }
+
+            Log.i("WorkManager", "start checking notifications")
         }
 
-        Log.i("WorkManager", "start checking notifications")
+        if (result.isFailure) {
+            showToast(R.string.msg_start_checking_notifications_failed)
+            Log.e("WorkManager", "checking notifications failure")
+        }
     }
 
     /** 通知確認を明示的に終了 */
-    fun stopCheckingNotificationsWorker() {
-        WorkManager.getInstance(this).let { manager ->
-            val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
-            manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
+    fun stopCheckingNotificationsWorker(context: Context) {
+        runCatching {
+            WorkManager.getInstance(context).let { manager ->
+//                val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
+                manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
 
-            if (existed) {
-                showToast(R.string.msg_stop_checking_notifications)
+//                if (existed) {
+                    showToast(R.string.msg_stop_checking_notifications)
+//                }
             }
+            Log.i("WorkManager", "stop checking notifications")
         }
-
-        Log.i("WorkManager", "stop checking notifications")
     }
 
     // ------ //
 
     /** v1.5.11まで使用していた常駐通知チャンネルを削除する */
     private fun deleteOldNotificationChannel(prefs: SafeSharedPreferences<PreferenceKey>) {
-        if (prefs.version >= 5) return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        runCatching {
+            if (prefs.version >= 5) return
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
-        val serviceChannelId = "satena_notification_service"
-        val manager = NotificationManagerCompat.from(this)
-        if (manager.getNotificationChannel(serviceChannelId) != null) {
-            manager.deleteNotificationChannel(serviceChannelId)
-        }
-        if (manager.getNotificationChannelGroup(serviceChannelId) != null) {
-            manager.deleteNotificationChannelGroup(serviceChannelId)
+            val serviceChannelId = "satena_notification_service"
+            val manager = NotificationManagerCompat.from(this)
+            if (manager.getNotificationChannel(serviceChannelId) != null) {
+                manager.deleteNotificationChannel(serviceChannelId)
+            }
+            if (manager.getNotificationChannelGroup(serviceChannelId) != null) {
+                manager.deleteNotificationChannelGroup(serviceChannelId)
+            }
         }
     }
 }

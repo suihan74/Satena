@@ -21,12 +21,13 @@ import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.android.synthetic.main.fragment_preferences_entries.view.*
 
 class PreferencesEntriesFragment : PreferencesFragmentBase() {
     companion object {
         fun createInstance() = PreferencesEntriesFragment()
     }
+
+    // ------ //
 
     val viewModel by lazy {
         provideViewModel(this) {
@@ -36,7 +37,13 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    // ------ //
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentPreferencesEntriesBinding>(
             inflater,
             R.layout.fragment_preferences_entries,
@@ -46,12 +53,11 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
             vm = viewModel
             lifecycleOwner = viewLifecycleOwner
         }
-        val view = binding.root
 
         val tapActions = TapEntryAction.values().map { it.titleId }
 
         // ボトムバーメニュー項目を編集するダイアログを表示する
-        view.bottom_bar_item_setter.setOnMenuItemClickListener { args ->
+        binding.bottomBarItemSetter.setOnMenuItemClickListener { args ->
             viewModel.showBottomBarItemSetterDialog(
                 args,
                 childFragmentManager
@@ -59,7 +65,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         }
 
         // シングルタップ時の動作
-        view.preferences_entries_single_tap_action.setOnClickListener {
+        binding.preferencesEntriesSingleTapAction.setOnClickListener {
             AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_single_tap_action_desc)
                 .setNegativeButton(R.string.dialog_cancel)
@@ -72,7 +78,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         }
 
         // 複数回タップ時の動作
-        view.preferences_entries_multiple_tap_action.setOnClickListener {
+        binding.preferencesEntriesMultipleTapAction.setOnClickListener {
             AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_multiple_tap_action_desc)
                 .setNegativeButton(R.string.dialog_cancel)
@@ -85,7 +91,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         }
 
         // ロングタップ時の動作
-        view.preferences_entries_long_tap_action.setOnClickListener {
+        binding.preferencesEntriesLongTapAction.setOnClickListener {
             AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_long_tap_action_desc)
                 .setNegativeButton(R.string.dialog_cancel)
@@ -97,7 +103,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
                 .showAllowingStateLoss(childFragmentManager)
         }
 
-        view.preferences_entries_multiple_tap_duration.setOnClickListener {
+        binding.preferencesEntriesMultipleTapDuration.setOnClickListener {
             val dialog = NumberPickerDialog.createInstance(
                 min = 0,
                 max = 500,
@@ -111,7 +117,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         }
 
         // ホームカテゴリ
-        view.preferences_home_category.setOnClickListener {
+        binding.preferencesHomeCategory.setOnClickListener {
             val categories = (
                 if (HatenaClient.signedIn()) Category.valuesWithSignedIn()
                 else Category.valuesWithoutSignedIn()
@@ -132,7 +138,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         }
 
         // 最初に表示するタブ
-        view.preferences_entries_initial_tab.setOnClickListener {
+        binding.preferencesEntriesInitialTab.setOnClickListener {
             val items = getTabTitleIds(viewModel.homeCategory.value!!)
 
             AlertDialogFragment.Builder()
@@ -150,7 +156,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         }
 
         // ブクマ閲覧履歴の最大保存数
-        view.preferences_entries_history_max_size.setOnClickListener {
+        binding.preferencesEntriesHistoryMaxSize.setOnClickListener {
             val dialog = NumberPickerDialog.createInstance(
                 min = 1,
                 max = 100,
@@ -164,7 +170,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         }
 
         // 「あとで読む」エントリを「読んだ」したときの挙動
-        view.preferences_entries_read_action_type.setOnClickListener {
+        binding.preferencesEntriesReadActionType.setOnClickListener {
             AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_read_action_type_desc)
                 .setNegativeButton(R.string.dialog_cancel)
@@ -180,7 +186,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         }
 
         // カテゴリリストの表示形式
-        view.preferences_entries_categories_mode.setOnClickListener {
+        binding.preferencesEntriesCategoriesMode.setOnClickListener {
             AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_entries_categories_mode_desc)
                 .setNegativeButton(R.string.dialog_cancel)
@@ -196,7 +202,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         }
 
         // ボトムバーの追加項目の配置方法
-        view.extra_bottom_items_alignment_button.setOnClickListener {
+        binding.extraBottomItemsAlignmentButton.setOnClickListener {
             AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_extra_bottom_items_alignment_desc)
                 .setNegativeButton(R.string.dialog_cancel)
@@ -211,7 +217,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
                 .showAllowingStateLoss(childFragmentManager)
         }
 
-        return view
+        return binding.root
     }
 }
 
