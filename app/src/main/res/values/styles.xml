@@ -58,6 +58,8 @@
         <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackground</item>
         <item name="tagTextColor">@color/tagColor</item>
         <item name="bookmarkCountColor">@color/bookmarkUsersCountText</item>
+        <!-- オプションメニュー背景色 -->
+        <item name="colorSurface">@color/panelBackground</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Light</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
@@ -79,6 +81,8 @@
         <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackgroundDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
         <item name="bookmarkCountColor">@color/bookmarkUsersCountTextDark</item>
+        <!-- オプションメニュー背景色 -->
+        <item name="colorSurface">@color/panelBackgroundDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
