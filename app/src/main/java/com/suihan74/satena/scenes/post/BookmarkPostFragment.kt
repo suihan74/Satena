@@ -60,7 +60,7 @@ class BookmarkPostFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentBookmarkPostBinding>(
             inflater,
             R.layout.fragment_bookmark_post,
@@ -115,12 +115,14 @@ class BookmarkPostFragment : Fragment() {
         setupTagsList(binding)
 
         // 初回だけロード完了後にIMEを開く
-        viewModel.nowLoading.observe(viewLifecycleOwner, scopedObserver {
-            if (it == false) {
-                requireActivity().showSoftInputMethod(binding.comment)
-            }
-            viewModel.nowLoading.removeObserver(this)
-        })
+        if (bookmarkPostActivity != null) {
+            viewModel.nowLoading.observe(viewLifecycleOwner, scopedObserver {
+                if (it == false) {
+                    requireActivity().showSoftInputMethod(binding.comment)
+                }
+                viewModel.nowLoading.removeObserver(this)
+            })
+        }
 
         return binding.root
     }
