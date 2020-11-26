@@ -13,9 +13,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentDialogReleaseNotesBinding
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.withArguments
-import kotlinx.android.synthetic.main.fragment_dialog_release_notes.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,19 +41,23 @@ class ReleaseNotesDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val activity = requireActivity()
-        val inflater = localLayoutInflater()
-        val view = inflater.inflate(R.layout.fragment_dialog_release_notes, null)
+        val binding = FragmentDialogReleaseNotesBinding.inflate(
+            localLayoutInflater(),
+            null,
+            false
+        )
+
         val titleColor = ContextCompat.getColor(activity, R.color.colorPrimary)
 
         val lastVersionName = arguments?.getString(ARG_LAST_VERSION_NAME)
         val currentVersionName = arguments?.getString(ARG_CURRENT_VERSION_NAME)
 
         if (lastVersionName != null && currentVersionName != null) {
-            view.message.text = requireContext().getString(R.string.release_notes_dialog_update_message, lastVersionName, currentVersionName)
-            view.message.visibility = View.VISIBLE
+            binding.message.text = requireContext().getString(R.string.release_notes_dialog_update_message, lastVersionName, currentVersionName)
+            binding.message.visibility = View.VISIBLE
         }
         else {
-            view.message.visibility = View.GONE
+            binding.message.visibility = View.GONE
         }
 
         // 履歴の読み込み
@@ -87,7 +91,7 @@ class ReleaseNotesDialogFragment : DialogFragment() {
                     }
 
                     withContext(Dispatchers.Main) {
-                        view.text_view.text = builder
+                        binding.textView.text = builder
                     }
                 }
             }
@@ -99,7 +103,7 @@ class ReleaseNotesDialogFragment : DialogFragment() {
         return createBuilder()
             .setTitle(R.string.release_notes_dialog_title)
             .setNegativeButton(R.string.dialog_close, null)
-            .setView(view)
+            .setView(binding.root)
             .create()
     }
 

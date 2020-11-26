@@ -8,24 +8,41 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentUserTagsListBinding
 import com.suihan74.satena.models.userTag.TagAndUsers
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
 import com.suihan74.utilities.bindings.setDivider
-import kotlinx.android.synthetic.main.fragment_user_tags_list.view.*
 
 class UserTagsListFragment : Fragment() {
+    companion object {
+        fun createInstance() = UserTagsListFragment()
+    }
+
+    // ------ //
+
     private val userTagsFragment: PreferencesUserTagsFragment
         get() = requireParentFragment() as PreferencesUserTagsFragment
 
     private val viewModel: UserTagViewModel
         get() = userTagsFragment.viewModel
 
-    companion object {
-        fun createInstance() = UserTagsListFragment()
-    }
+    // ------ //
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_user_tags_list, container, false)
+    private var binding : FragmentUserTagsListBinding? = null
+
+    // ------ //
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentUserTagsListBinding.inflate(
+            inflater,
+            container,
+            false
+        )
+        this.binding = binding
 
         val userTagsAdapter = object : UserTagsAdapter() {
             override fun onItemClicked(tag: TagAndUsers) {
@@ -39,7 +56,7 @@ class UserTagsListFragment : Fragment() {
             }
         }
 
-        root.user_tags_list?.apply {
+        binding.userTagsList.apply {
             setDivider(R.drawable.recycler_view_item_divider)
             layoutManager = LinearLayoutManager(context)
             adapter = userTagsAdapter
@@ -50,6 +67,11 @@ class UserTagsListFragment : Fragment() {
             userTagsAdapter.setItems(tags)
         }
 
-        return root
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 }

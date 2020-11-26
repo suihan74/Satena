@@ -7,10 +7,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemBrowserHistoryBinding
+import com.suihan74.satena.databinding.ListviewSectionHistoryBinding
 import com.suihan74.satena.models.browser.History
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.alsoAs
-import kotlinx.android.synthetic.main.listview_section_history.view.*
 import org.threeten.bp.LocalDate
 
 class HistoryAdapter(
@@ -83,9 +83,12 @@ class HistoryAdapter(
         return when (RecyclerType.fromId(viewType)) {
             // 日付ごとの区切りを表示する
             RecyclerType.SECTION -> {
-                val inflater = LayoutInflater.from(parent.context)
-                val view = inflater.inflate(R.layout.listview_section_history, parent, false)
-                SectionViewHolder(view)
+                val binding = ListviewSectionHistoryBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+                SectionViewHolder(binding)
             }
 
             else -> super.onCreateViewHolder(parent, viewType)
@@ -97,11 +100,13 @@ class HistoryAdapter(
         when (item.type) {
             RecyclerType.SECTION -> {
                 holder.alsoAs<SectionViewHolder> { vh ->
-                    val date = item.extra as? LocalDate
-                    vh.itemView.text_view?.text = date?.format(viewModel.dateFormatter) ?: ""
-                    vh.itemView.clear_button?.setOnClickListener {
-                        if (date != null) {
-                            onClearByDate?.invoke(date)
+                    vh.binding.alsoAs<ListviewSectionHistoryBinding> { binding ->
+                        val date = item.extra as? LocalDate
+                        binding.textView.text = date?.format(viewModel.dateFormatter) ?: ""
+                        binding.clearButton.setOnClickListener {
+                            if (date != null) {
+                                onClearByDate?.invoke(date)
+                            }
                         }
                     }
                 }

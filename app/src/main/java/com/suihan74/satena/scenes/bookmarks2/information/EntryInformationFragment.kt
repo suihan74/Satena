@@ -21,7 +21,6 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.makeSpannedFromHtml
-import kotlinx.android.synthetic.main.fragment_entry_information.view.*
 
 class EntryInformationFragment : Fragment() {
     private val activityViewModel: BookmarksViewModel
@@ -36,7 +35,11 @@ class EntryInformationFragment : Fragment() {
         fun createInstance() = EntryInformationFragment()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentEntryInformationBinding>(
             inflater,
             R.layout.fragment_entry_information,
@@ -46,10 +49,9 @@ class EntryInformationFragment : Fragment() {
             it.vm = activityViewModel
             it.lifecycleOwner = viewLifecycleOwner
         }
-        val view = binding.root
 
         activityViewModel.entry.observe(viewLifecycleOwner) { entry ->
-            view.page_url.apply {
+            binding.pageUrl.apply {
                 text = makeSpannedFromHtml("<u>${Uri.decode(entry.url)}</u>")
 
                 setOnClickListener {
@@ -70,7 +72,7 @@ class EntryInformationFragment : Fragment() {
             }
 
             // -1階
-            view.to_lower_floor_button.apply {
+            binding.toLowerFloorButton.apply {
                 setVisibility(HatenaClient.isUrlCommentPages(entry.url), View.INVISIBLE)
 
                 setOnClickListener {
@@ -80,7 +82,7 @@ class EntryInformationFragment : Fragment() {
             }
 
             // +1階 (今見ているページのコメントページに移動)
-            view.to_upper_floor_button.apply {
+            binding.toUpperFloorButton.apply {
                 setVisibility(entry.count > 0, View.INVISIBLE)
 
                 setOnClickListener {
@@ -102,7 +104,7 @@ class EntryInformationFragment : Fragment() {
             }
         }
 
-        view.tags_list.apply {
+        binding.tagsList.apply {
             layoutManager = ChipsLayoutManager.newBuilder(requireContext())
                 .setMaxViewsInRow(4)
                 .setRowStrategy(ChipsLayoutManager.STRATEGY_DEFAULT)
@@ -118,7 +120,7 @@ class EntryInformationFragment : Fragment() {
             )
         }
 
-        return view
+        return binding.root
     }
 
     /** このFragmentを表示しているDrawerLayoutがオープンされたときに呼ぶ */

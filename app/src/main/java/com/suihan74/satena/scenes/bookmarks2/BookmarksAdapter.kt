@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.annotation.SuppressLint
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
@@ -18,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FooterRecyclerViewLoadableBinding
+import com.suihan74.satena.databinding.ListviewItemBookmarksBinding
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.UserAndTags
 import com.suihan74.utilities.*
@@ -25,7 +28,6 @@ import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.appendStarSpan
 import com.suihan74.utilities.extensions.toVisibility
-import kotlinx.android.synthetic.main.listview_item_bookmarks.view.*
 import kotlinx.coroutines.*
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -165,16 +167,24 @@ class BookmarksAdapter(
             when (RecyclerType.fromId(viewType)) {
                 RecyclerType.BODY ->
                     ViewHolder(
-                        inflater.inflate(R.layout.listview_item_bookmarks, parent, false),
+                        ListviewItemBookmarksBinding.inflate(
+                            inflater,
+                            parent,
+                            false
+                        ),
                         this
                     )
 
                 RecyclerType.FOOTER -> loadableFooter ?:
                     LoadableFooterViewHolder(
-                        inflater.inflate(R.layout.footer_recycler_view_loadable, parent, false)
+                        FooterRecyclerViewLoadableBinding.inflate(
+                            inflater,
+                            parent,
+                            false
+                        )
                     ).also {
                         loadableFooter = it.also { footer ->
-                            footer.additionalLoadingTextView?.let { textView ->
+                            footer.additionalLoadingTextView.let { textView ->
                                 textView.setOnClickListener {
                                     onAdditionalLoading?.invoke(Unit)
                                 }
@@ -312,9 +322,9 @@ class BookmarksAdapter(
 
     /** ブクマリストアイテム */
     class ViewHolder(
-        private val view: View,
+        private val binding: ListviewItemBookmarksBinding,
         private val bookmarksAdapter: BookmarksAdapter
-    ) : RecyclerView.ViewHolder(view) {
+    ) : RecyclerView.ViewHolder(binding.root) {
         var bookmark: Entity? = null
             set(value) {
                 field = value
@@ -323,18 +333,21 @@ class BookmarksAdapter(
                 }
             }
 
+        @SuppressLint("ClickableViewAccessibility")
         private fun init(entity: Entity) {
             val bookmark = entity.bookmark
             val userTags = entity.userTags
 
-            Glide.with(view.context).run {
-                clear(view.bookmark_user_icon)
-                load(bookmark.userIconUrl)
-                    .into(view.bookmark_user_icon)
-            }
-            view.bookmark_user_name.text = bookmark.user
+            val context = binding.root.context
 
-            view.bookmark_comment.apply {
+            Glide.with(context).run {
+                clear(binding.bookmarkUserIcon)
+                load(bookmark.userIconUrl)
+                    .into(binding.bookmarkUserIcon)
+            }
+            binding.bookmarkUserName.text = bookmark.user
+
+            binding.bookmarkComment.apply {
                 text = entity.analyzedComment.comment
                 //visibility = (text.isNotEmpty()).toVisibility(View.GONE)
 
@@ -368,10 +381,10 @@ class BookmarksAdapter(
                 }
             }
 
-            view.ignored_user_mark.visibility = entity.isIgnored.toVisibility(View.GONE)
+            binding.ignoredUserMark.visibility = entity.isIgnored.toVisibility(View.GONE)
 
             // タグ
-            view.bookmark_tags?.also { tagsTextView ->
+            binding.bookmarkTags.also { tagsTextView ->
                 if (bookmark.tags.isEmpty()) {
                     tagsTextView.visibility = View.GONE
                 }
@@ -404,27 +417,31 @@ class BookmarksAdapter(
                     val blueStarCount = stars.filter { it.color == StarColor.Blue }.sumBy { it.count }
                     val purpleStarCount = stars.filter { it.color == StarColor.Purple }.sumBy { it.count }
 
-                    builder.appendStarSpan(purpleStarCount, view.context, R.style.StarSpan_Purple)
-                    builder.appendStarSpan(blueStarCount, view.context, R.style.StarSpan_Blue)
-                    builder.appendStarSpan(redStarCount, view.context, R.style.StarSpan_Red)
-                    builder.appendStarSpan(greenStarCount, view.context, R.style.StarSpan_Green)
-                    builder.appendStarSpan(yellowStarCount, view.context, R.style.StarSpan_Yellow)
+                    builder.appendStarSpan(purpleStarCount, context, R.style.StarSpan_Purple)
+                    builder.appendStarSpan(blueStarCount, context, R.style.StarSpan_Blue)
+                    builder.appendStarSpan(redStarCount, context, R.style.StarSpan_Red)
+                    builder.appendStarSpan(greenStarCount, context, R.style.StarSpan_Green)
+                    builder.appendStarSpan(yellowStarCount, context, R.style.StarSpan_Yellow)
                 }
             }
 
             // タイムスタンプ部分テキストを設定
-            view.bookmark_timestamp.text = builder
+            binding.bookmarkTimestamp.text = builder
 
             // スターを付けるボタンを設定
-            bookmarksAdapter.addStarButtonBinder?.invoke(view.add_star_button, bookmark)
+            bookmarksAdapter.addStarButtonBinder?.invoke(binding.addStarButton, bookmark)
 
             // ユーザータグ
             if (userTags.isNullOrEmpty()) {
-                view.user_tags.visibility = View.GONE
+                binding.userTags.visibility = View.GONE
             }
             else {
-                view.user_tags.let { textView ->
-                    val icon = ResourcesCompat.getDrawable(textView.resources, R.drawable.ic_user_tag, null)?.apply {
+                binding.userTags.let { textView ->
+                    val icon = ResourcesCompat.getDrawable(
+                        textView.resources,
+                        R.drawable.ic_user_tag,
+                        null
+                    )?.apply {
                         val size = textView.textSize.toInt()
                         setBounds(0, 0, size, size)
                         setTint(textView.currentTextColor)
@@ -437,7 +454,7 @@ class BookmarksAdapter(
             }
 
             // 言及先リスト
-            view.bookmark_mentions.apply {
+            binding.bookmarkMentions.apply {
                 val mentions = entity.mentions
                 if (mentions.isEmpty()) {
                     visibility = View.GONE

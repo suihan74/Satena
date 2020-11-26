@@ -12,44 +12,23 @@ import androidx.lifecycle.LiveData
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.hatenaLib.UserColorStarsCount
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.PopupAddStarBinding
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.dp2px
 import com.suihan74.utilities.extensions.sp2px
-import kotlinx.android.synthetic.main.popup_add_star.view.*
 
 class AddStarPopupMenu(context: Context) : PopupWindow() {
-    init {
-        val view = LayoutInflater.from(context).inflate(
-            R.layout.popup_add_star,
-            null
-        ).apply {
-            add_blue_star.setOnClickListener {
-                onClickButton(StarColor.Blue, colorStars.blue)
-            }
-
-            add_red_star.setOnClickListener {
-                onClickButton(StarColor.Red, colorStars.red)
-            }
-
-            add_green_star.setOnClickListener {
-                onClickButton(StarColor.Green, colorStars.green)
-            }
-
-            add_yellow_star.setOnClickListener {
-                onClickButton(StarColor.Yellow, 1)
-            }
-        }
-
-        contentView = view
-        width = context.dp2px(18 * 4 + 24 * 2 + 24 * 3)
-        height = context.dp2px(18 * 2 + 18) + context.sp2px(13.5f)
-        isFocusable = true
-        isTouchable = true
-        elevation = context.dp2px(8).toFloat()
-    }
+    /** ViewBinding */
+    private val binding : PopupAddStarBinding = PopupAddStarBinding.inflate(
+        LayoutInflater.from(context),
+        null,
+        false
+    )
 
     /** ユーザーが所持しているカラースター */
     private var colorStars: UserColorStarsCount = UserColorStarsCount(0, 0, 0, 0)
+
+    // ------ //
 
     /** スターをつけるボタンをクリックしたときの挙動 */
     private var onClickAddStarListener : Listener<StarColor>? = null
@@ -67,6 +46,35 @@ class AddStarPopupMenu(context: Context) : PopupWindow() {
         onClickPurchaseStarsListener = listener
     }
 
+    // ------ //
+
+    init {
+        binding.addBlueStar.setOnClickListener {
+            onClickButton(StarColor.Blue, colorStars.blue)
+        }
+
+        binding.addRedStar.setOnClickListener {
+            onClickButton(StarColor.Red, colorStars.red)
+        }
+
+        binding.addGreenStar.setOnClickListener {
+            onClickButton(StarColor.Green, colorStars.green)
+        }
+
+        binding.addYellowStar.setOnClickListener {
+            onClickButton(StarColor.Yellow, 1)
+        }
+
+        contentView = binding.root
+        width = context.dp2px(18 * 4 + 24 * 2 + 24 * 3)
+        height = context.dp2px(18 * 2 + 18) + context.sp2px(13.5f)
+        isFocusable = true
+        isTouchable = true
+        elevation = context.dp2px(8).toFloat()
+    }
+
+    // ------ //
+
     /** ユーザーが所持しているスター数を監視する */
     fun observeUserStars(
         lifecycleOwner: LifecycleOwner,
@@ -74,9 +82,9 @@ class AddStarPopupMenu(context: Context) : PopupWindow() {
     ) {
         liveData?.observe(lifecycleOwner) {
             colorStars = it ?: UserColorStarsCount(0, 0, 0, 0)
-            initializeView(contentView.add_blue_star, contentView.stars_count_blue, colorStars.blue)
-            initializeView(contentView.add_red_star, contentView.stars_count_red, colorStars.red)
-            initializeView(contentView.add_green_star, contentView.stars_count_green, colorStars.green)
+            initializeView(binding.addBlueStar, binding.starsCountBlue, colorStars.blue)
+            initializeView(binding.addRedStar, binding.starsCountRed, colorStars.red)
+            initializeView(binding.addGreenStar, binding.starsCountGreen, colorStars.green)
         }
     }
 

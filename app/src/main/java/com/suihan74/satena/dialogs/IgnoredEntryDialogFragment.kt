@@ -15,12 +15,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentDialogIgnoredEntryBinding
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.fragment_dialog_ignored_entry.view.*
 
 class IgnoredEntryDialogFragment : DialogFragment() {
     companion object {
@@ -76,8 +76,11 @@ class IgnoredEntryDialogFragment : DialogFragment() {
     // ------ //
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = localLayoutInflater()
-        val content = inflater.inflate(R.layout.fragment_dialog_ignored_entry, null)
+        val binding = FragmentDialogIgnoredEntryBinding.inflate(
+            localLayoutInflater(),
+            null,
+            false
+        )
 
         // 最初に表示するタブを選択
         val modifyingEntry = requireArguments().getObject<IgnoredEntry>(ARG_MODIFYING_ENTRY)?.also {
@@ -87,7 +90,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             null
         }
 
-        val queryText = content.query_text.apply {
+        val queryText = binding.queryText.apply {
             setText(viewModel.editingUrl.value)
             setHorizontallyScrolling(false)
             maxLines = Int.MAX_VALUE
@@ -101,7 +104,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             })
         }
 
-        val descText = content.desc_text
+        val descText = binding.descText
 
         // タブが切り替わったときの表示内容更新
         // ここで他のフラグメントのようにthisではなくviewLifecycleOwner使うと落ちる
@@ -111,12 +114,12 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 IgnoredEntryDialogTab.URL -> {
                     queryText.setText(viewModel.editingUrl.value)
                     descText.setText(R.string.ignored_entry_dialog_desc_url)
-                    hideIgnoreTargetArea(content)
+                    hideIgnoreTargetArea(binding)
                 }
                 IgnoredEntryDialogTab.TEXT -> {
                     queryText.setText(viewModel.editingText.value)
                     descText.setText(R.string.ignored_entry_dialog_desc_text)
-                    showIgnoreTargetArea(content)
+                    showIgnoreTargetArea(binding)
                 }
                 null -> {}
             }
@@ -128,7 +131,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             }
         }
 
-        content.tab_layout.apply {
+        binding.tabLayout.apply {
             visibility = (!viewModel.editMode).toVisibility()
 
             if (viewModel.selectedTab.value != null) {
@@ -147,26 +150,26 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
         when (viewModel.selectedTab.value) {
             IgnoredEntryDialogTab.TEXT -> {
-                setIgnoreTarget(content, viewModel.ignoreTarget.value!!)
-                showIgnoreTargetArea(content)
+                setIgnoreTarget(binding, viewModel.ignoreTarget.value!!)
+                showIgnoreTargetArea(binding)
             }
-            else -> hideIgnoreTargetArea(content)
+            else -> hideIgnoreTargetArea(binding)
         }
 
         // 非表示対象を複数チェックボックスを使用して設定する
         val initialIgnoreTarget = modifyingEntry?.target ?: IgnoreTarget.ENTRY
         val onCheckedChange = {
-            viewModel.ignoreTarget.value = getIgnoreTarget(content)
+            viewModel.ignoreTarget.value = getIgnoreTarget(binding)
         }
-        content.target_entry_checkbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
-        content.target_bookmark_checkbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
-        setIgnoreTarget(content, initialIgnoreTarget)
+        binding.targetEntryCheckbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
+        binding.targetBookmarkCheckbox.setOnCheckedChangeListener { _, _ -> onCheckedChange() }
+        setIgnoreTarget(binding, initialIgnoreTarget)
 
         return createBuilder()
             .setTitle(R.string.ignored_entry_dialog_title)
             .setPositiveButton(R.string.dialog_register, null)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setView(content)
+            .setView(binding.root)
             .show()
             .apply {
                 // IME表示を維持するための設定
@@ -198,32 +201,32 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             }
     }
 
-    private fun showIgnoreTargetArea(root: View) {
-        root.apply {
-            target_desc_text.visibility = View.VISIBLE
-            target_entry_checkbox.visibility = View.VISIBLE
-            target_bookmark_checkbox.visibility = View.VISIBLE
+    private fun switchIgnoredTargetAreaVisibility(binding: FragmentDialogIgnoredEntryBinding, visibility: Int) {
+        binding.apply {
+            targetDescText.visibility = visibility
+            targetEntryCheckbox.visibility = visibility
+            targetBookmarkCheckbox.visibility = visibility
         }
     }
 
-    private fun hideIgnoreTargetArea(root: View) {
-        root.apply {
-            target_desc_text.visibility = View.GONE
-            target_entry_checkbox.visibility = View.GONE
-            target_bookmark_checkbox.visibility = View.GONE
-        }
+    private fun showIgnoreTargetArea(binding: FragmentDialogIgnoredEntryBinding) {
+        switchIgnoredTargetAreaVisibility(binding, View.VISIBLE)
     }
 
-    private fun getIgnoreTarget(root: View) : IgnoreTarget {
-        val entry = if (root.target_entry_checkbox.isChecked) IgnoreTarget.ENTRY else IgnoreTarget.NONE
-        val bookmark = if (root.target_bookmark_checkbox.isChecked) IgnoreTarget.BOOKMARK else IgnoreTarget.NONE
+    private fun hideIgnoreTargetArea(binding: FragmentDialogIgnoredEntryBinding) {
+        switchIgnoredTargetAreaVisibility(binding, View.GONE)
+    }
+
+    private fun getIgnoreTarget(binding: FragmentDialogIgnoredEntryBinding) : IgnoreTarget {
+        val entry = if (binding.targetEntryCheckbox.isChecked) IgnoreTarget.ENTRY else IgnoreTarget.NONE
+        val bookmark = if (binding.targetBookmarkCheckbox.isChecked) IgnoreTarget.BOOKMARK else IgnoreTarget.NONE
 
         return entry or bookmark
     }
 
-    private fun setIgnoreTarget(root: View, target: IgnoreTarget) {
-        root.target_entry_checkbox.isChecked = target.contains(IgnoreTarget.ENTRY)
-        root.target_bookmark_checkbox.isChecked = target.contains(IgnoreTarget.BOOKMARK)
+    private fun setIgnoreTarget(binding: FragmentDialogIgnoredEntryBinding, target: IgnoreTarget) {
+        binding.targetEntryCheckbox.isChecked = target.contains(IgnoreTarget.ENTRY)
+        binding.targetBookmarkCheckbox.isChecked = target.contains(IgnoreTarget.BOOKMARK)
     }
 
     // ------ //

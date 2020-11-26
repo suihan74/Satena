@@ -18,7 +18,6 @@ import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.fragment_bookmark_detail.view.*
 
 /**
  * 選択したひとつのブクマ情報を表示する画面
@@ -79,7 +78,7 @@ class BookmarkDetailFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentBookmarkDetail3Binding>(
             inflater,
             R.layout.fragment_bookmark_detail3,
@@ -135,8 +134,8 @@ class BookmarkDetailFragment : Fragment() {
 
         viewModel.starsMenuOpened.observe(viewLifecycleOwner) {
             when (it) {
-                true -> openStarMenu()
-                false -> closeStarMenu()
+                true -> openStarMenu(binding)
+                false -> closeStarMenu(binding)
             }
         }
 
@@ -237,7 +236,7 @@ class BookmarkDetailFragment : Fragment() {
             .duration = 100
     }
 
-    private fun openStarMenu() {
+    private fun openStarMenu(binding: FragmentBookmarkDetail3Binding) {
         showStarButton(
             R.id.purple_star_layout,
             R.id.purple_stars_count,
@@ -264,16 +263,16 @@ class BookmarkDetailFragment : Fragment() {
             R.dimen.yellow_star_position
         )
 
-        requireView().show_stars_button.setImageResource(R.drawable.ic_baseline_close)
+        binding.showStarsButton.setImageResource(R.drawable.ic_baseline_close)
     }
 
-    private fun closeStarMenu() {
+    private fun closeStarMenu(binding: FragmentBookmarkDetail3Binding) {
         hideStarButton(R.id.purple_star_layout, R.id.purple_stars_count)
         hideStarButton(R.id.blue_star_layout, R.id.blue_stars_count)
         hideStarButton(R.id.red_star_layout, R.id.red_stars_count)
         hideStarButton(R.id.green_star_layout, R.id.green_stars_count)
         hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
 
-        requireView().show_stars_button.setImageResource(R.drawable.ic_add_star_filled)
+        binding.showStarsButton.setImageResource(R.drawable.ic_add_star_filled)
     }
 }

@@ -18,7 +18,6 @@ import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.android.synthetic.main.fragment_preferences_bookmarks.view.*
 
 class PreferencesBookmarksFragment : PreferencesFragmentBase() {
     companion object {
@@ -30,6 +29,8 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
         private const val DIALOG_LINK_LONG_TAP_ACTION = "DIALOG_LINK_LONG_TAP_ACTION"
     }
 
+    // ------ //
+
     private val viewModel: PreferencesBookmarksViewModel by lazy {
         provideViewModel(this) {
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
@@ -37,7 +38,13 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    // ------ //
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentPreferencesBookmarksBinding>(
             inflater,
             R.layout.fragment_preferences_bookmarks,
@@ -47,10 +54,9 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
             vm = viewModel
             lifecycleOwner = viewLifecycleOwner
         }
-        val view = binding.root
 
         // 最初に表示するタブ
-        view.button_initial_tab.setOnClickListener {
+        binding.buttonInitialTab.setOnClickListener {
             AlertDialogFragment.Builder()
                 .setTitle(R.string.pref_bookmarks_initial_tab_desc)
                 .setNegativeButton(R.string.dialog_cancel)
@@ -65,49 +71,52 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
                 .showAllowingStateLoss(childFragmentManager, DIALOG_INITIAL_TAB)
         }
 
-        // タップアクションの設定項目を初期化する処理
-        val initializeTapActionSelector = { viewId: Int, selectedActionLiveData: LiveData<TapEntryAction>, descId: Int, tag: String ->
-            view.findViewById<Button>(viewId).apply {
-                setOnClickListener {
-                    AlertDialogFragment.Builder()
-                        .setTitle(descId)
-                        .setNegativeButton(R.string.dialog_cancel)
-                        .setSingleChoiceItems(
-                            TapEntryAction.values().map { it.titleId },
-                            selectedActionLiveData.value!!.ordinal
-                        ) { _, which ->
-                            when (tag) {
-                                DIALOG_LINK_SINGLE_TAP_ACTION -> {
-                                    viewModel.linkSingleTapAction.value = TapEntryAction.fromOrdinal(which)
-                                }
-
-                                DIALOG_LINK_LONG_TAP_ACTION -> {
-                                    viewModel.linkLongTapAction.value = TapEntryAction.fromOrdinal(which)
-                                }
-                            }
-                        }
-                        .dismissOnClickItem(true)
-                        .create()
-                        .showAllowingStateLoss(childFragmentManager, tag)
-                }
-            }
-        }
-
         initializeTapActionSelector(
-            R.id.button_link_single_tap_action,
+            binding.buttonLinkSingleTapAction,
             viewModel.linkSingleTapAction,
             R.string.pref_bookmark_link_single_tap_action_desc,
             DIALOG_LINK_SINGLE_TAP_ACTION
         )
 
         initializeTapActionSelector(
-            R.id.button_link_long_tap_action,
+            binding.buttonLinkLongTapAction,
             viewModel.linkLongTapAction,
             R.string.pref_bookmark_link_long_tap_action_desc,
             DIALOG_LINK_LONG_TAP_ACTION
         )
 
-        return view
+        return binding.root
+    }
+
+    /** タップアクションの設定項目を初期化する処理 */
+    private fun initializeTapActionSelector(
+        button: Button,
+        selectedActionLiveData: LiveData<TapEntryAction>,
+        descId: Int,
+        tag: String
+    ) {
+        button.setOnClickListener {
+            AlertDialogFragment.Builder()
+                .setTitle(descId)
+                .setNegativeButton(R.string.dialog_cancel)
+                .setSingleChoiceItems(
+                    TapEntryAction.values().map { it.titleId },
+                    selectedActionLiveData.value!!.ordinal
+                ) { _, which ->
+                    when (tag) {
+                        DIALOG_LINK_SINGLE_TAP_ACTION -> {
+                            viewModel.linkSingleTapAction.value = TapEntryAction.fromOrdinal(which)
+                        }
+
+                        DIALOG_LINK_LONG_TAP_ACTION -> {
+                            viewModel.linkLongTapAction.value = TapEntryAction.fromOrdinal(which)
+                        }
+                    }
+                }
+                .dismissOnClickItem(true)
+                .create()
+                .showAllowingStateLoss(childFragmentManager, tag)
+        }
     }
 }
 

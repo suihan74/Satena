@@ -7,11 +7,12 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.activity_entries2.*
 
 class SiteEntriesFragment : MultipleTabsEntriesFragment() {
     companion object {
@@ -48,9 +49,10 @@ class SiteEntriesFragment : MultipleTabsEntriesFragment() {
         viewModel.siteUrl.value = arguments.getString(ARG_SITE_URL)
 
         // Category.SiteではサイトURLをタイトルに表示する
-        val toolbar = requireActivity().toolbar
-        viewModel.siteUrl.observe(viewLifecycleOwner) {
-            toolbar.title = title
+        activity.alsoAs<EntriesActivity> { activity ->
+            viewModel.siteUrl.observe(viewLifecycleOwner) {
+                activity.toolbar.title = title
+            }
         }
 
         return root

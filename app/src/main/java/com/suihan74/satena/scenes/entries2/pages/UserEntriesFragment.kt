@@ -19,7 +19,6 @@ import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.activity_entries2.*
 
 class UserEntriesFragment : SingleTabEntriesFragment() {
     companion object {
@@ -63,7 +62,9 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
         // ユーザーIDをタイトルに表示する
         viewModel.user.observe(viewLifecycleOwner) {
-            activity?.toolbar?.title = title
+            activity.alsoAs<EntriesActivity> {
+                it.toolbar.title = title
+            }
         }
 
         return root
@@ -138,8 +139,9 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
         // タグ選択時にサブタイトルを表示する
         viewModel.tag.observe(viewLifecycleOwner) {
-            val toolbar = requireActivity().toolbar
-            toolbar.subtitle = subtitle
+            activity.alsoAs<EntriesActivity> { activity ->
+                activity.toolbar.subtitle = subtitle
+            }
 
             clearTagCallback?.isEnabled = it != null
 

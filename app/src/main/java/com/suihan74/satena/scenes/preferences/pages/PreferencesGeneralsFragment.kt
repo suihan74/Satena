@@ -23,7 +23,6 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.android.synthetic.main.fragment_preferences_generals.view.*
 
 class PreferencesGeneralsFragment : PreferencesFragmentBase() {
     companion object {
@@ -64,7 +63,7 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentPreferencesGeneralsBinding>(
             inflater,
             R.layout.fragment_preferences_generals,
@@ -74,7 +73,6 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
             vm = viewModel
             lifecycleOwner = viewLifecycleOwner
         }
-        val view = binding.root
 
         // ダークテーマか否か
         val initialTheme = viewModel.darkTheme.value
@@ -103,13 +101,19 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
         }
 
         // バックグラウンドで通知を確認する
+        var called = false // TODO: 応急
         viewModel.checkNotices.observe(viewLifecycleOwner) {
-            if (it) SatenaApplication.instance.startCheckingNotificationsWorker()
-            else SatenaApplication.instance.stopCheckingNotificationsWorker()
+            if (!called) {
+                called = true
+                return@observe
+            }
+            val context = requireContext()
+            if (it) SatenaApplication.instance.startCheckingNotificationsWorker(context)
+            else SatenaApplication.instance.stopCheckingNotificationsWorker(context)
         }
 
         // 通知確認の間隔
-        view.button_checking_notices_interval.setOnClickListener {
+        binding.buttonCheckingNoticesInterval.setOnClickListener {
             val dialog = NumberPickerDialog.createInstance(
                 min = 15,
                 max = 180,
@@ -118,16 +122,16 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
                 messageId = R.string.pref_generals_notices_intervals_dialog_msg
             ) { value ->
                 viewModel.checkNoticesInterval.value = value.toLong()
-                SatenaApplication.instance.startCheckingNotificationsWorker(forceRestart = true)
+                SatenaApplication.instance.startCheckingNotificationsWorker(requireContext(), forceReplace = true)
             }
             dialog.showAllowingStateLoss(childFragmentManager)
         }
 
         // アプリ内アップデート通知の対象を選択
-        view.button_app_update_notice_mode.setOnClickListener {
+        binding.buttonAppUpdateNoticeMode.setOnClickListener {
             viewModel.openAppUpdateNoticeModeSelectionDialog(childFragmentManager)
         }
 
-        return view
+        return binding.root
     }
 }

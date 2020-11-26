@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.entries2
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.Uri
@@ -11,6 +12,7 @@ import android.view.View
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
@@ -43,7 +45,6 @@ import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.views.CustomBottomAppBar
 import com.suihan74.utilities.views.bindMenuItemsGravity
-import kotlinx.android.synthetic.main.activity_entries2.*
 
 class EntriesActivity : AppCompatActivity() {
     companion object {
@@ -68,6 +69,7 @@ class EntriesActivity : AppCompatActivity() {
 
     private val REQUEST_CODE_UPDATE by lazy { hashCode() and 0x0000ffff }
 
+    // ------ //
 
     /** Entry画面全体で使用するViewModel */
     val viewModel : EntriesViewModel by lazy {
@@ -86,9 +88,18 @@ class EntriesActivity : AppCompatActivity() {
         }
     }
 
+    // ------ //
+
+    private lateinit var binding: ActivityEntries2Binding
+
+    val toolbar : Toolbar
+        get() = binding.toolbar
+
+    // ------ //
+
     /** ドロワーの開閉状態 */
     private val isDrawerOpened : Boolean
-        get() = drawer_layout.isDrawerOpen(drawer_area)
+        get() = binding.drawerLayout.isDrawerOpen(binding.drawerArea)
 
     /** FABメニューの開閉状態 */
     private var isFABMenuOpened : Boolean = false
@@ -103,7 +114,7 @@ class EntriesActivity : AppCompatActivity() {
      */
     val bottomSearchView : SearchView?
         get() =
-            if (viewModel.isBottomLayoutMode) bottom_search_view
+            if (viewModel.isBottomLayoutMode) binding.bottomSearchView
             else null
 
     /**
@@ -118,6 +129,7 @@ class EntriesActivity : AppCompatActivity() {
         onBottomMenuItemClickListener = listener
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -141,7 +153,7 @@ class EntriesActivity : AppCompatActivity() {
         )
 
         // データバインディング
-        DataBindingUtil.setContentView<ActivityEntries2Binding>(
+        binding = DataBindingUtil.setContentView<ActivityEntries2Binding>(
             this,
             R.layout.activity_entries2
         ).apply {
@@ -150,15 +162,15 @@ class EntriesActivity : AppCompatActivity() {
         }
 
         // カテゴリリスト初期化
-        categories_list.adapter = CategoriesAdapter().apply {
+        binding.categoriesList.adapter = CategoriesAdapter().apply {
             setOnItemClickedListener { category ->
-                drawer_layout.closeDrawers()
+                binding.drawerLayout.closeDrawers()
                 showCategory(category)
             }
         }
 
         // カテゴリリストのドロワ表示状態切り替えを監視する
-        drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
+        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
                 // IMEを明示的に閉じないと被ってしまう
                 hideSoftInputMethod()
@@ -171,7 +183,7 @@ class EntriesActivity : AppCompatActivity() {
         // --- Event listeners ---
 
         // FABメニュー表示ボタン
-        entries_menu_button.setOnClickListener {
+        binding.entriesMenuButton.setOnClickListener {
             if (isFABMenuOpened) {
                 closeFABMenu()
             }
@@ -181,19 +193,19 @@ class EntriesActivity : AppCompatActivity() {
         }
 
         // 通知リスト画面表示ボタン
-        entries_menu_notices_button.setOnClickListener {
+        binding.entriesMenuNoticesButton.setOnClickListener {
             closeFABMenu()
             showCategory(Category.Notices)
         }
 
         // カテゴリリスト表示ボタン
-        entries_menu_categories_button.setOnClickListener {
+        binding.entriesMenuCategoriesButton.setOnClickListener {
             closeFABMenu()
-            drawer_layout.openDrawer(drawer_area)
+            binding.drawerLayout.openDrawer(binding.drawerArea)
         }
 
         // サインイン/マイブックマークボタン
-        entries_menu_my_bookmarks_button.setOnClickListener {
+        binding.entriesMenuMyBookmarksButton.setOnClickListener {
             closeFABMenu()
             if (viewModel.signedIn.value == true) {
                 // マイブックマークを表示
@@ -207,14 +219,14 @@ class EntriesActivity : AppCompatActivity() {
         }
 
         // 設定画面表示ボタン
-        entries_menu_preferences_button.setOnClickListener {
+        binding.entriesMenuPreferencesButton.setOnClickListener {
             closeFABMenu()
             val intent = Intent(this, PreferencesActivity::class.java)
             startActivity(intent)
         }
 
         // メニューを表示している間の黒背景
-        entries_menu_background_guard_full.setOnTouchListener { _, event ->
+        binding.entriesMenuBackgroundGuardFull.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_UP -> {
                     closeFABMenu()
@@ -229,12 +241,12 @@ class EntriesActivity : AppCompatActivity() {
 
         viewModel.signedIn.observe(this) {
             if (it) {
-                entries_menu_notices_button.show()
+                binding.entriesMenuNoticesButton.show()
             }
             else {
-                entries_menu_notices_button.hide()
+                binding.entriesMenuNoticesButton.hide()
             }
-            entries_menu_notices_desc.visibility = it.toVisibility()
+            binding.entriesMenuNoticesDesc.visibility = it.toVisibility()
         }
 
         // 通信状態の変更を監視
@@ -315,35 +327,40 @@ class EntriesActivity : AppCompatActivity() {
         super.onResume()
 
         // アプリ内アップデートを使用する
-        viewModel.startAppUpdate(this, snack_bar_area, REQUEST_CODE_UPDATE)
+        viewModel.startAppUpdate(this, binding.snackBarArea, REQUEST_CODE_UPDATE)
 
         // レイアウトモード反映
-        bottom_app_bar.visibility = viewModel.isBottomLayoutMode.toVisibility(View.INVISIBLE)
-        // 下部バー利用中の場合、設定によってはスクロールで隠す
-        bottom_app_bar.hideOnScroll =
-            viewModel.isBottomLayoutMode && viewModel.hideBottomAppBarByScroll
-
-        // ツールバーを隠す設定を反映
-        toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
-            scrollFlags =
-                if (viewModel.hideToolbarByScroll) AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
-                else 0
+        binding.bottomAppBar.let {
+            it.visibility = viewModel.isBottomLayoutMode.toVisibility(View.INVISIBLE)
+            // 下部バー利用中の場合、設定によってはスクロールで隠す
+            it.hideOnScroll = viewModel.isBottomLayoutMode && viewModel.hideBottomAppBarByScroll
         }
 
-        // アクションバー設定
-        setSupportActionBar(toolbar)
-
-        // カテゴリリストの表示形式を適用
-        val categoriesAdapter = categories_list.adapter as? CategoriesAdapter
-        when (viewModel.categoriesMode) {
-            CategoriesMode.LIST -> {
-                categories_list.layoutManager = LinearLayoutManager(this)
-                categoriesAdapter?.updateLayout(R.layout.listview_item_categories)
+        // ツールバーを隠す設定を反映
+        binding.toolbar.let {
+            it.updateLayoutParams<AppBarLayout.LayoutParams> {
+                scrollFlags =
+                    if (viewModel.hideToolbarByScroll) AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
+                    else 0
             }
 
-            CategoriesMode.GRID -> {
-                categories_list.layoutManager = GridLayoutManager(this, 4)
-                categoriesAdapter?.updateLayout(R.layout.listview_item_categories_grid)
+            // アクションバー設定
+            setSupportActionBar(it)
+        }
+
+        // カテゴリリストの表示形式を適用
+        binding.categoriesList.let {
+            val categoriesAdapter = it.adapter as? CategoriesAdapter
+            when (viewModel.categoriesMode) {
+                CategoriesMode.LIST -> {
+                    it.layoutManager = LinearLayoutManager(this)
+                    categoriesAdapter?.updateLayout(R.layout.listview_item_categories)
+                }
+
+                CategoriesMode.GRID -> {
+                    it.layoutManager = GridLayoutManager(this, 4)
+                    categoriesAdapter?.updateLayout(R.layout.listview_item_categories_grid)
+                }
             }
         }
 
@@ -351,7 +368,7 @@ class EntriesActivity : AppCompatActivity() {
         showAppBar()
 
         // ドロワを配置
-        drawer_area.updateLayoutParams<DrawerLayout.LayoutParams> {
+        binding.drawerArea.updateLayoutParams<DrawerLayout.LayoutParams> {
             gravity = viewModel.drawerGravity
         }
     }
@@ -371,7 +388,7 @@ class EntriesActivity : AppCompatActivity() {
     /** 戻るボタンの挙動 */
     override fun onBackPressed() {
         when {
-            isDrawerOpened -> drawer_layout.closeDrawer(drawer_area)
+            isDrawerOpened -> binding.drawerLayout.closeDrawer(binding.drawerArea)
 
             isFABMenuOpened -> closeFABMenu()
 
@@ -449,9 +466,9 @@ class EntriesActivity : AppCompatActivity() {
 
     /** AppBarを強制的に表示する */
     fun showAppBar() {
-        appbar_layout.setExpanded(true, true)
+        binding.appbarLayout.setExpanded(true, true)
         if (viewModel.isBottomLayoutMode) {
-            bottom_app_bar.performShow()
+            binding.bottomAppBar.performShow()
         }
     }
 
@@ -521,7 +538,7 @@ class EntriesActivity : AppCompatActivity() {
     }
 
     /** タブを初期化して渡す */
-    fun initializeTabLayout() : TabLayout? = top_tab_layout?.also {
+    fun initializeTabLayout() : TabLayout = binding.topTabLayout.also {
         clearTabLayoutState(it)
     }
 
@@ -529,7 +546,7 @@ class EntriesActivity : AppCompatActivity() {
     private fun clearBottomAppBarState(bottomAppBar: BottomAppBar) {
         bottomAppBar.menu.clear()
         bottomAppBar.setOnMenuItemClickListener(null)
-        bottom_search_view.visibility = View.GONE
+        binding.bottomSearchView.visibility = View.GONE
         bottomAppBar.alsoAs<CustomBottomAppBar> {
             it.bindMenuItemsGravity(viewModel.bottomBarItemsGravity)
         }
@@ -567,7 +584,7 @@ class EntriesActivity : AppCompatActivity() {
 
     /** ボトムバーを使用する設定なら取得する(使用しない設定ならnullが返る) */
     fun initializeBottomAppBar() : BottomAppBar? =
-        if (viewModel.isBottomLayoutMode) bottom_app_bar?.also { clearBottomAppBarState(it) }
+        if (viewModel.isBottomLayoutMode) binding.bottomAppBar.also { clearBottomAppBarState(it) }
         else null
 
     /** (基本の)ボトムバーアイテムを選択した際の処理 */
@@ -609,7 +626,7 @@ class EntriesActivity : AppCompatActivity() {
         }
 
         UserBottomItem.CATEGORIES -> {
-            drawer_layout.openDrawer(drawer_area)
+            binding.drawerLayout.openDrawer(binding.drawerArea)
         }
     }
 
@@ -631,12 +648,14 @@ class EntriesActivity : AppCompatActivity() {
 
         when (alignment) {
             ExtraBottomItemsAlignment.RIGHT ->
-                bottom_app_bar.inflateMenu(menuId)
+                binding.bottomAppBar.inflateMenu(menuId)
 
             ExtraBottomItemsAlignment.LEFT -> {
-                bottom_app_bar.menu.clear()
-                bottom_app_bar.inflateMenu(menuId)
-                inflateBasicBottomItems(bottom_app_bar)
+                binding.bottomAppBar.let {
+                    it.menu.clear()
+                    it.inflateMenu(menuId)
+                    inflateBasicBottomItems(it)
+                }
             }
 
             else -> throw NotImplementedError()
@@ -698,36 +717,36 @@ class EntriesActivity : AppCompatActivity() {
         isFABMenuOpened = true
 
         if (viewModel.isFABMenuBackgroundActive) {
-            drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-            entries_menu_background_guard_full.visibility = View.VISIBLE
+            binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            binding.entriesMenuBackgroundGuardFull.visibility = View.VISIBLE
         }
 
-        entries_menu_background_guard.visibility = View.VISIBLE
+        binding.entriesMenuBackgroundGuard.visibility = View.VISIBLE
 
         if (viewModel.signedIn.value == true) {
             openFABMenuAnimation(
-                entries_menu_notices_button,
-                entries_menu_notices_desc,
+                binding.entriesMenuNoticesButton,
+                binding.entriesMenuNoticesDesc,
                 R.dimen.dp_238
             )
         }
         openFABMenuAnimation(
-            entries_menu_categories_button,
-            entries_menu_categories_desc,
+            binding.entriesMenuCategoriesButton,
+            binding.entriesMenuCategoriesDesc,
             R.dimen.dp_180
         )
         openFABMenuAnimation(
-            entries_menu_my_bookmarks_button,
-            entries_menu_my_bookmarks_desc,
+            binding.entriesMenuMyBookmarksButton,
+            binding.entriesMenuMyBookmarksDesc,
             R.dimen.dp_122
         )
         openFABMenuAnimation(
-            entries_menu_preferences_button,//entries_menu_settings_layout,
-            entries_menu_preferences_desc,
+            binding.entriesMenuPreferencesButton,
+            binding.entriesMenuPreferencesDesc,
             R.dimen.dp_64
         )
 
-        entries_menu_button.setImageResource(R.drawable.ic_baseline_close)
+        binding.entriesMenuButton.setImageResource(R.drawable.ic_baseline_close)
     }
 
     /** FABメニューを閉じる */
@@ -735,29 +754,29 @@ class EntriesActivity : AppCompatActivity() {
         if (!isFABMenuOpened) return
 
         isFABMenuOpened = false
-        entries_menu_background_guard_full.visibility = View.GONE
-        drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+        binding.entriesMenuBackgroundGuardFull.visibility = View.GONE
+        binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
 
-        entries_menu_background_guard.visibility = View.GONE
+        binding.entriesMenuBackgroundGuard.visibility = View.GONE
 
         closeFABMenuAnimation(
-            entries_menu_notices_button,
-            entries_menu_notices_desc
+            binding.entriesMenuNoticesButton,
+            binding.entriesMenuNoticesDesc,
         )
         closeFABMenuAnimation(
-            entries_menu_categories_button,
-            entries_menu_categories_desc
+            binding.entriesMenuCategoriesButton,
+            binding.entriesMenuCategoriesDesc,
         )
         closeFABMenuAnimation(
-            entries_menu_my_bookmarks_button,
-            entries_menu_my_bookmarks_desc
+            binding.entriesMenuMyBookmarksButton,
+            binding.entriesMenuMyBookmarksDesc,
         )
         closeFABMenuAnimation(
-            entries_menu_preferences_button,//entries_menu_settings_layout,
-            entries_menu_preferences_desc
+            binding.entriesMenuPreferencesButton,
+            binding.entriesMenuPreferencesDesc
         )
 
-        entries_menu_button.setImageResource(R.drawable.ic_baseline_menu_white)
+        binding.entriesMenuButton.setImageResource(R.drawable.ic_baseline_menu_white)
     }
 }
 

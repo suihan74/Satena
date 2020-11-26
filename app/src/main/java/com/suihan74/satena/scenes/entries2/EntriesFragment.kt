@@ -16,7 +16,6 @@ import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.extensions.toVisibility
-import kotlinx.android.synthetic.main.activity_entries2.*
 import java.util.*
 
 abstract class EntriesFragment : Fragment() {
@@ -139,10 +138,8 @@ abstract class EntriesFragment : Fragment() {
 
         val bottomAppBar = activity.initializeBottomAppBar()
 
-        if (tabLayout != null) {
-            tabLayout.visibility =
-                updateActivityAppBar(activity, tabLayout, bottomAppBar).toVisibility(defaultInvisible = View.GONE)
-        }
+        tabLayout.visibility =
+            updateActivityAppBar(activity, tabLayout, bottomAppBar).toVisibility(defaultInvisible = View.GONE)
     }
 
     /**
