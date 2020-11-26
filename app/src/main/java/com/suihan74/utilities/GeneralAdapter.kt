@@ -9,7 +9,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FooterRecyclerViewBinding
 
 abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
     private val lifecycleOwner : LifecycleOwner,
@@ -72,7 +72,7 @@ abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
             }
 
             RecyclerType.FOOTER.id -> FooterViewHolder(
-                inflater.inflate(R.layout.footer_recycler_view, parent, false)
+                FooterRecyclerViewBinding.inflate(inflater, parent, false)
             )
 
             else -> throw NotImplementedError()

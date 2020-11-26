@@ -9,12 +9,11 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.databinding.ActivityHatenaAuthenticationBinding
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.extensions.showToast
-
-import kotlinx.android.synthetic.main.activity_hatena_authentication.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,12 +26,13 @@ class HatenaAuthenticationActivity : ActivityBase() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_hatena_authentication)
+        val binding = ActivityHatenaAuthenticationBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // ログイン
-        auth_button.setOnClickListener {
-            val name = user_name.text.toString()
-            val password = password.text.toString()
+        binding.authButton.setOnClickListener {
+            val name = binding.userName.text.toString()
+            val password = binding.password.text.toString()
 
             if (name.isBlank() || password.length < 5) {
                 showToast(R.string.msg_hatena_sign_in_info_is_blank)
@@ -45,7 +45,7 @@ class HatenaAuthenticationActivity : ActivityBase() {
         }
 
         // 新規登録
-        sign_up_text_view.apply {
+        binding.signUpTextView.apply {
             movementMethod = LinkMovementMethod.getInstance()
             setLinkTextColor(ContextCompat.getColor(this@HatenaAuthenticationActivity, R.color.colorPrimary))
         }

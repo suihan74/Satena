@@ -29,7 +29,6 @@ import com.suihan74.utilities.bindings.setIconId
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.fragment_browser_bookmarks.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -43,6 +42,8 @@ class BookmarksFragment :
     }
 
     private val FRAGMENT_BOOKMARK_POST = "FRAGMENT_BOOKMARK_POST"
+
+    // ------ //
 
     private val browserActivity : BrowserActivity
         get() = requireActivity() as BrowserActivity
@@ -59,13 +60,19 @@ class BookmarksFragment :
         }
     }
 
+    // ------ //
+
+    private var binding : FragmentBrowserBookmarksBinding? = null
+
+    // ------ //
+
     private var onBackPressedCallback: OnBackPressedCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentBrowserBookmarksBinding>(
             inflater,
             R.layout.fragment_browser_bookmarks,
@@ -75,6 +82,7 @@ class BookmarksFragment :
             vm = viewModel
             lifecycleOwner = viewLifecycleOwner
         }
+        this.binding = binding
 
         val scrollingUpdater = RecyclerViewScrollingUpdater {
             lifecycleScope.launch(Dispatchers.Main) {
@@ -202,6 +210,11 @@ class BookmarksFragment :
         return binding.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
     /** 投稿エリアの表示状態を切り替える */
     private fun switchPostLayout(binding: FragmentBrowserBookmarksBinding, opened: Boolean) {
         // 戻るボタンの割り込みを再設定する
@@ -230,7 +243,7 @@ class BookmarksFragment :
     // ------ //
 
     override fun scrollToTop() {
-        recycler_view?.scrollToPosition(0)
+        binding?.recyclerView?.scrollToPosition(0)
     }
 
     // ------ //

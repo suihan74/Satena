@@ -4,7 +4,8 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.footer_recycler_view_loadable.view.*
+import androidx.viewbinding.ViewBinding
+import com.suihan74.satena.databinding.FooterRecyclerViewLoadableBinding
 
 // RecyclerViewでヘッダ・フッタ・セクションを使用するために必要なものたち
 
@@ -44,29 +45,31 @@ class RecyclerState<T>(
     }
 }
 
-open class HeaderViewHolder(view : View) : RecyclerView.ViewHolder(view)
-open class FooterViewHolder(view : View) : RecyclerView.ViewHolder(view)
-open class SectionViewHolder(view : View) : RecyclerView.ViewHolder(view)
+open class HeaderViewHolder(val binding: ViewBinding) : RecyclerView.ViewHolder(binding.root)
+open class FooterViewHolder(val binding : ViewBinding) : RecyclerView.ViewHolder(binding.root)
+open class SectionViewHolder(val binding : ViewBinding) : RecyclerView.ViewHolder(binding.root)
 
 open class LoadableFooterViewHolder(
-    private val view : View
-) : RecyclerView.ViewHolder(view) {
+    private val binding : FooterRecyclerViewLoadableBinding
+) : RecyclerView.ViewHolder(binding.root) {
 
     /** 「追加更新する」ボタン */
-    val additionalLoadingTextView : TextView?
-        get() = view.footer_text
+    val additionalLoadingTextView : TextView by lazy {
+        binding.footerText
+    }
 
     /** 更新中表示 */
-    val progressBar: ProgressBar?
-        get() = view.footer_progress_bar
+    val progressBar: ProgressBar by lazy {
+        binding.footerProgressBar
+    }
 
     fun showProgressBar() {
-        additionalLoadingTextView?.visibility = View.GONE
-        view.footer_progress_bar.visibility = View.VISIBLE
+        additionalLoadingTextView.visibility = View.GONE
+        progressBar.visibility = View.VISIBLE
     }
 
     fun hideProgressBar(nextLoadable: Boolean) {
 //        additionalLoadingTextView?.visibility = nextLoadable.toVisibility()
-        view.footer_progress_bar.visibility = View.INVISIBLE
+        progressBar.visibility = View.INVISIBLE
     }
 }

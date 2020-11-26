@@ -12,12 +12,12 @@ import androidx.lifecycle.*
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentDialogTaggedUserBinding
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SuspendSwitcher
 import com.suihan74.utilities.extensions.showSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.lock
-import kotlinx.android.synthetic.main.fragment_dialog_tagged_user.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
@@ -29,15 +29,22 @@ class TagUserDialogFragment : DialogFragment() {
         fun createInstance() = TagUserDialogFragment()
     }
 
+    // ------ //
+
     private val viewModel by lazy {
         ViewModelProvider(this)[DialogViewModel::class.java]
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = localLayoutInflater()
-        val content = inflater.inflate(R.layout.fragment_dialog_tagged_user, null)
+    // ------ //
 
-        content.user_name.apply {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val binding = FragmentDialogTaggedUserBinding.inflate(
+            localLayoutInflater(),
+            null,
+            false
+        )
+
+        binding.userName.apply {
             setText(viewModel.userName)
             addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {}
@@ -54,18 +61,18 @@ class TagUserDialogFragment : DialogFragment() {
             val context = requireContext()
             if (it == null) {
                 GlideApp.with(context)
-                    .clear(content.user_icon)
+                    .clear(binding.userIcon)
             }
             else {
                 GlideApp.with(context)
                     .load(Uri.parse(it))
-                    .into(content.user_icon)
+                    .into(binding.userIcon)
             }
         })
 
         return createBuilder()
             .setTitle(R.string.pref_user_tags_add_user_dialog_title)
-            .setView(content)
+            .setView(binding.root)
             .setPositiveButton(R.string.dialog_register, null)
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
@@ -76,7 +83,7 @@ class TagUserDialogFragment : DialogFragment() {
                     setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
                 }
                 requireActivity().showSoftInputMethod(
-                    content.user_name,
+                    binding.userName,
                     WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
                 )
 

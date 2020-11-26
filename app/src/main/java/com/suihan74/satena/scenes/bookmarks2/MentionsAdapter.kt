@@ -1,17 +1,16 @@
 package com.suihan74.satena.scenes.bookmarks2
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.ListviewItemCommentBinding
 import com.suihan74.utilities.extensions.appendStarText
 import com.suihan74.utilities.extensions.setHtml
 import com.suihan74.utilities.extensions.toVisibility
-import kotlinx.android.synthetic.main.listview_item_comment.view.*
 import org.threeten.bp.format.DateTimeFormatter
 
 open class MentionsAdapter (
@@ -24,31 +23,36 @@ open class MentionsAdapter (
     override fun getItemCount(): Int = comments.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val inflate = LayoutInflater.from(parent.context).inflate(R.layout.listview_item_comment, parent, false)
-        val holder = ViewHolder(inflate)
+        val binding = ListviewItemCommentBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
 
-        holder.itemView.setOnClickListener {
-            onItemClicked(holder.value!!)
+        return ViewHolder(binding).apply {
+            itemView.setOnClickListener {
+                onItemClicked(value!!)
+            }
+
+            itemView.setOnLongClickListener {
+                onItemLongClicked(value!!)
+            }
         }
-
-        holder.itemView.setOnLongClickListener {
-            onItemLongClicked(holder.value!!)
-        }
-
-        return holder
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         (holder as ViewHolder).value = comments[position]
     }
 
-    class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+    class ViewHolder(val binding: ListviewItemCommentBinding) : RecyclerView.ViewHolder(binding.root) {
         var value : Bookmark? = null
             internal set(value) {
                 field = value
                 value ?: return
 
-                view.user_name.text = value.user
+                val context = binding.root.context
+
+                binding.userName.text = value.user
 
                 val commentBuilder = StringBuilder(value.comment)
                 value.starCount?.let {
@@ -59,25 +63,25 @@ open class MentionsAdapter (
                     val purpleStarCount = it.firstOrNull { s -> s.color == StarColor.Purple }?.count ?: 0
 
                     commentBuilder.append(" ")
-                    commentBuilder.appendStarText(purpleStarCount, view.context, R.color.starPurple)
-                    commentBuilder.appendStarText(blueStarCount, view.context, R.color.starBlue)
-                    commentBuilder.appendStarText(redStarCount, view.context, R.color.starRed)
-                    commentBuilder.appendStarText(greenStarCount, view.context, R.color.starGreen)
-                    commentBuilder.appendStarText(yellowStarCount, view.context, R.color.starYellow)
+                    commentBuilder.appendStarText(purpleStarCount, context, R.color.starPurple)
+                    commentBuilder.appendStarText(blueStarCount, context, R.color.starBlue)
+                    commentBuilder.appendStarText(redStarCount, context, R.color.starRed)
+                    commentBuilder.appendStarText(greenStarCount, context, R.color.starGreen)
+                    commentBuilder.appendStarText(yellowStarCount, context, R.color.starYellow)
                 }
-                view.comment.apply {
+                binding.comment.apply {
                     setHtml(commentBuilder.toString())
                     visibility = value.comment.isNotBlank().toVisibility()
                 }
 
-                view.timestamp.text = value.timestamp.format(
+                binding.timestamp.text = value.timestamp.format(
                     DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
                 )
 
-                Glide.with(view).run {
-                    clear(view.icon)
+                Glide.with(context).run {
+                    clear(binding.icon)
                     load(value.userIconUrl)
-                    .into(view.icon)
+                    .into(binding.icon)
                 }
             }
     }

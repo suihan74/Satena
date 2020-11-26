@@ -34,7 +34,6 @@ import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.android.synthetic.main.activity_browser.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -527,13 +526,13 @@ class BrowserViewModel(
 
         R.id.adblock -> {
             useUrlBlocking.value = useUrlBlocking.value != true
-            activity.webview.reload()
+            activity.webView.reload()
             true
         }
 
         R.id.javascript -> {
             javaScriptEnabled.value = javaScriptEnabled.value != true
-            activity.webview.reload()
+            activity.webView.reload()
             true
         }
 

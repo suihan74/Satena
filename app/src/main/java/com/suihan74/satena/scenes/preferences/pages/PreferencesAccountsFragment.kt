@@ -6,12 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FragmentPreferencesAccountsBinding
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.authentication.MastodonAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.MastodonClientHolder
-import kotlinx.android.synthetic.main.fragment_preferences_accounts.view.*
 
 class PreferencesAccountsFragment : PreferencesFragmentBase() {
     companion object {
@@ -19,22 +18,35 @@ class PreferencesAccountsFragment : PreferencesFragmentBase() {
             PreferencesAccountsFragment()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_preferences_accounts, container, false)
+    // ------ //
 
-        view.preferences_accounts_hatena_sign_in_button
+    private var _binding : FragmentPreferencesAccountsBinding? = null
+    private val binding
+        get() = _binding!!
+
+    // ------ //
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentPreferencesAccountsBinding.inflate(inflater, container, false)
+
+        binding.preferencesAccountsHatenaSignInButton
             .setOnClickListener {
                 val intent = Intent(context, HatenaAuthenticationActivity::class.java)
                 startActivity(intent)
             }
 
-        view.preferences_accounts_mastodon_sign_in_button
+        binding.preferencesAccountsMastodonSignInButton
             .setOnClickListener {
                 val intent = Intent(context, MastodonAuthenticationActivity::class.java)
                 startActivity(intent)
             }
 
-        return view
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onResume() {
@@ -42,7 +54,7 @@ class PreferencesAccountsFragment : PreferencesFragmentBase() {
 
         // TODO: サインイン状態でもアカウントが取得されない場合がある
 
-        view?.preferences_accounts_hatena_name?.apply {
+        binding.preferencesAccountsHatenaName.apply {
             if (HatenaClient.signedIn()) {
                 text = HatenaClient.account?.name ?: ""
                 visibility = View.VISIBLE
@@ -52,7 +64,7 @@ class PreferencesAccountsFragment : PreferencesFragmentBase() {
             }
         }
 
-        view?.preferences_accounts_mastodon_name?.apply {
+        binding.preferencesAccountsMastodonName.apply {
             if (MastodonClientHolder.signedIn()) {
                 val userName = MastodonClientHolder.account?.userName
                 val instanceName = MastodonClientHolder.client?.getInstanceName()

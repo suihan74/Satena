@@ -1,18 +1,22 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.ListviewItemCategoriesBinding
+import com.suihan74.satena.databinding.ListviewItemCategoriesGridBinding
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.ItemClickedListener
 import com.suihan74.utilities.extensions.alsoAs
-import kotlinx.android.synthetic.main.listview_item_categories.view.*
 
 class CategoriesAdapter :
     ListAdapter<Category, CategoriesAdapter.ViewHolder>(DiffCallback())
@@ -50,8 +54,25 @@ class CategoriesAdapter :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val inflate = LayoutInflater.from(parent.context).inflate(itemLayoutId, parent, false)
-        val holder = ViewHolder(inflate)
+        val inflater = LayoutInflater.from(parent.context)
+        val binding = when (itemLayoutId) {
+            R.layout.listview_item_categories ->
+                ListviewItemCategoriesBinding.inflate(
+                    inflater,
+                    parent,
+                    false
+                )
+
+            R.layout.listview_item_categories_grid ->
+                ListviewItemCategoriesGridBinding.inflate(
+                    inflater,
+                    parent,
+                    false
+                )
+
+            else -> throw IllegalArgumentException()
+        }
+        val holder = ViewHolder(binding)
 
         holder.itemView.setOnClickListener {
             val position = holder.adapterPosition
@@ -77,22 +98,43 @@ class CategoriesAdapter :
         }
     }
 
+    private interface Binder {
+        val categoryText : TextView
+        val categoryIcon : ImageView
+    }
+
+    private class BinderForLinear(val binding: ListviewItemCategoriesBinding) : Binder {
+        override val categoryText = binding.categoryText
+        override val categoryIcon = binding.categoryIcon
+    }
+
+    private class BinderForGrid(val binding: ListviewItemCategoriesGridBinding) : Binder {
+        override val categoryText = binding.categoryText
+        override val categoryIcon = binding.categoryIcon
+    }
+
     /** ViewHolder for Items */
-    inner class ViewHolder(val view : View) : RecyclerView.ViewHolder(view) {
+    inner class ViewHolder(val binding : ViewBinding) : RecyclerView.ViewHolder(binding.root) {
+        private val binder : Binder = when(binding) {
+            is ListviewItemCategoriesBinding -> BinderForLinear(binding)
+            is ListviewItemCategoriesGridBinding -> BinderForGrid(binding)
+            else -> throw IllegalArgumentException()
+        }
+
         var category : Category? = null
             internal set(value) {
                 field = value
 
                 if (value != null) {
-                    val context = view.context
+                    val context = binding.root.context
 
-                    view.category_text.text = context.getString(value.textId)
+                    binder.categoryText.text = context.getString(value.textId)
 
-                    val drawable = context.getDrawable(value.iconId)
+                    val drawable = ContextCompat.getDrawable(context, value.iconId)
 
-                    GlideApp.with(view)
+                    GlideApp.with(context)
                         .load(drawable)
-                        .into(view.category_icon)
+                        .into(binder.categoryIcon)
                 }
             }
     }

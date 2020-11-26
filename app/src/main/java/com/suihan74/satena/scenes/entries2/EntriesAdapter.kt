@@ -10,9 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.FooterRecyclerViewLoadableBinding
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
 import com.suihan74.utilities.*
-import kotlinx.android.synthetic.main.listview_item_entries2.view.*
 import kotlinx.coroutines.*
 
 class EntriesAdapter(
@@ -92,7 +92,7 @@ class EntriesAdapter(
             }
 
             RecyclerType.FOOTER.id -> LoadableFooterViewHolder(
-                inflater.inflate(R.layout.footer_recycler_view_loadable, parent, false)
+                FooterRecyclerViewLoadableBinding.inflate(inflater, parent, false)
             ).also {
                 this.footer = it
             }
@@ -213,7 +213,7 @@ class EntriesAdapter(
             }
 
         init {
-            binding.root.comments_list.adapter = CommentsAdapter().apply {
+            binding.commentsList.adapter = CommentsAdapter().apply {
                 setOnItemClickedListener listener@ { comment ->
                     if (!itemClicked) {
                         itemClicked = true

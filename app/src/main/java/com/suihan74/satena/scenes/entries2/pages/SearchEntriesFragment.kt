@@ -21,13 +21,8 @@ import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.android.synthetic.main.activity_entries2.*
-import kotlinx.android.synthetic.main.fragment_entries2.view.*
 
 class SearchEntriesFragment : MultipleTabsEntriesFragment() {
-    private val searchViewModel : SearchEntriesViewModel
-        get() = viewModel as SearchEntriesViewModel
-
     companion object {
         fun createInstance() = SearchEntriesFragment().withArguments {
             putEnum(ARG_CATEGORY, Category.Search)
@@ -47,6 +42,13 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         /** 検索タイプを選択するためのダイアログ */
         private const val DIALOG_SEARCH_TYPE = "DIALOG_SEARCH_TYPE"
     }
+
+    // ------ //
+
+    private val searchViewModel : SearchEntriesViewModel
+        get() = viewModel as SearchEntriesViewModel
+
+    // ------ //
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,
@@ -83,8 +85,9 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         }
 
         if (!searchViewModel.searchQuery.value.isNullOrBlank()) {
-            val toolbar = requireActivity().toolbar
-            toolbar.subtitle = searchViewModel.searchQuery.value
+            activity.alsoAs<EntriesActivity> {
+                it.toolbar.subtitle = searchViewModel.searchQuery.value
+            }
         }
 
         return result
@@ -147,7 +150,9 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
                 }
                 val text = getString(it.textId)
                 item.title = text
-                requireActivity().toolbar.title = text + getString(R.string.category_search)
+                activity.alsoAs<EntriesActivity> { activity ->
+                    activity.toolbar.title = text + getString(R.string.category_search)
+                }
             }
         }
     }
@@ -180,12 +185,13 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
             }
             // 検索ボタン押下時にロードを行う
             override fun onQueryTextSubmit(query: String?): Boolean {
-                val toolbar = requireActivity().toolbar
-                toolbar.subtitle = viewModel.searchQuery.value
+                activity.alsoAs<EntriesActivity> { activity ->
+                    activity.toolbar.subtitle = viewModel.searchQuery.value
+                }
 
                 reloadLists()
 
-                requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+                requireActivity().hideSoftInputMethod(fragment.binding?.contentLayout)
                 return true
             }
         })
@@ -199,7 +205,7 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         }
         else {
             // 初回遷移時などの未入力状態以外の場合は自動的にキーボードを表示しないようにする
-            requireActivity().hideSoftInputMethod(fragment.view?.contentLayout)
+            requireActivity().hideSoftInputMethod(fragment.binding?.contentLayout)
             clearFocus()
         }
 

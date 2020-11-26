@@ -6,14 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.databinding.FragmentPreferencesUserTagsBinding
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersListFragment
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagViewModel
 import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.provideViewModel
-import kotlinx.android.synthetic.main.fragment_preferences_user_tags.view.*
-
 
 class PreferencesUserTagsFragment : PreferencesFragmentBase()
 {
@@ -31,28 +30,28 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(
-            R.layout.fragment_preferences_user_tags,
+        val binding = FragmentPreferencesUserTagsBinding.inflate(
+            inflater,
             container,
             false
         )
 
         viewModel.init(
-            onFinally = { initializeViews(root) }
+            onFinally = { initializeViews(binding) }
         )
 
-        return root
+        return binding.root
     }
 
     /** ビューの初期化 */
-    private fun initializeViews(root: View) {
+    private fun initializeViews(binding: FragmentPreferencesUserTagsBinding) {
         // タグ一覧を表示
         showUserTagsList()
         if (viewModel.currentTag.value != null) {
             showTaggedUsersList()
         }
 
-        root.add_button.setOnClickListener {
+        binding.addButton.setOnClickListener {
             val userTagsList = getCurrentFragment<UserTagsListFragment>()
             if (userTagsList != null) {
                 showNewUserTagDialog()
