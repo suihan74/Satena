@@ -300,10 +300,15 @@ object PreferenceKeyMigration {
     private fun migrateFromVersion4(context: Context) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val key = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS
-        val oldValue = prefs.getLong(key)
 
         prefs.edit {
-            if (oldValue < 15L) {
+            val result = runCatching {
+                if (prefs.getLong(key) < 15L) {
+                    putLong(key, 15L)
+                }
+            }
+
+            if (result.isFailure) {
                 putLong(key, 15L)
             }
         }

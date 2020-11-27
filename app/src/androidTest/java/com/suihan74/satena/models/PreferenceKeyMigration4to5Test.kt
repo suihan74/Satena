@@ -136,4 +136,32 @@ class PreferenceKeyMigration4to5Test {
 
         assertEquals(expected, prefs.getLong(key))
     }
+
+    @Test
+    fun 設定がない() {
+        // チェック
+        PreferenceKeyMigration.check(context)
+
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val key = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS
+
+        assertEquals(15L, prefs.getLong(key))
+    }
+
+    @Test
+    fun 不正な設定を修正() {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val key = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS
+        val rawPrefs = prefs.rawPrefs
+
+        rawPrefs.edit {
+            putInt("!VERSION", 4)
+            putString(key.name, "hoge")
+        }
+
+        // チェック
+        PreferenceKeyMigration.check(context)
+
+        assertEquals(15L, prefs.getLong(key))
+    }
 }
