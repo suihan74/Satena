@@ -244,7 +244,6 @@ class BrowserActivity :
     fun openBottomSheet() {
         if (viewModel.drawerOpened.value != true) {
             setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED)
-            binding.clickGuard.visibility = View.VISIBLE
             viewModel.bottomSheetOpened.value = true
         }
     }
@@ -253,7 +252,6 @@ class BrowserActivity :
     @MainThread
     fun closeBottomSheet() {
         setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN)
-        binding.clickGuard.visibility = View.GONE
         viewModel.bottomSheetOpened.value = false
     }
 
@@ -405,6 +403,7 @@ class BrowserActivity :
     /**
      * ボトムシートを設定する
      */
+    @SuppressLint("ClickableViewAccessibility")
     @MainThread
     fun initializeBottomSheet() {
         // 「戻る/進む」履歴を表示する
@@ -450,6 +449,13 @@ class BrowserActivity :
             if (it) openBottomSheet()
             else closeBottomSheet()
         })
+
+        // クリック防止ビュー
+        binding.bottomSheetClickGuard.setOnTouchListener { _, motionEvent ->
+            if (motionEvent.action != MotionEvent.ACTION_UP) return@setOnTouchListener false
+            closeBottomSheet()
+            return@setOnTouchListener true
+        }
     }
 
     /**
@@ -496,14 +502,7 @@ class BrowserActivity :
         // クリック防止ビュー
         binding.clickGuard.setOnTouchListener { _, motionEvent ->
             if (motionEvent.action != MotionEvent.ACTION_UP) return@setOnTouchListener false
-
-            if (bottomSheetOpened) {
-                closeBottomSheet()
-            }
-            else {
-                hideSoftInputMethod(binding.mainArea)
-            }
-
+            hideSoftInputMethod(binding.mainArea)
             return@setOnTouchListener true
         }
     }

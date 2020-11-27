@@ -91,6 +91,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
+                <View
+                        android:id="@+id/bottom_sheet_click_guard"
+                        android:visibility="@{vm.bottomSheetOpened}"
+                        android:background="@color/clickGuard"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+
                 <com.google.android.material.card.MaterialCardView
                         android:id="@+id/bottom_sheet_layout"
                         android:background="?panelBackground"
