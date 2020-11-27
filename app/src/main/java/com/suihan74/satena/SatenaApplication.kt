@@ -7,7 +7,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.room.Room
@@ -38,7 +37,8 @@ class SatenaApplication : Application() {
     lateinit var appDatabase: AppDatabase
         private set
 
-    val networkReceiver = NetworkReceiver(this)
+    lateinit var networkReceiver : NetworkReceiver
+        private set
 
     /** アプリのバージョン番号 */
     val versionCode: Long by lazy {
@@ -100,6 +100,9 @@ class SatenaApplication : Application() {
         // DBを準備する
         initializeDataBase()
 
+        // ネットワーク接続状態の監視者
+        networkReceiver = NetworkReceiver(this)
+
         // テーマの設定
         val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
         setTheme(
@@ -136,7 +139,6 @@ class SatenaApplication : Application() {
     }
 
     /** ネットワークの接続状態を監視する */
-    @RequiresApi(23)
     private fun registerNetworkCallback() {
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -146,7 +148,6 @@ class SatenaApplication : Application() {
         cm.registerNetworkCallback(request, networkReceiver.networkCallback)
     }
 
-    @RequiresApi(23)
     private fun unregisterNetworkCallback() {
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         cm.unregisterNetworkCallback(networkReceiver.networkCallback)
