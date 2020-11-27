@@ -27,6 +27,7 @@ class PreferenceKeyMigration4to5Test {
         // チェック
         PreferenceKeyMigration.check(context)
 
+        assertEquals(5, prefs.version)
         assertEquals(15L, prefs.getLong(key))
     }
 
@@ -45,6 +46,7 @@ class PreferenceKeyMigration4to5Test {
         // チェック
         PreferenceKeyMigration.check(context)
 
+        assertEquals(5, prefs.version)
         assertEquals(15L, prefs.getLong(key))
     }
 
@@ -63,6 +65,7 @@ class PreferenceKeyMigration4to5Test {
         // チェック
         PreferenceKeyMigration.check(context)
 
+        assertEquals(5, prefs.version)
         assertEquals(15L, prefs.getLong(key))
     }
 
@@ -80,6 +83,7 @@ class PreferenceKeyMigration4to5Test {
         // チェック
         PreferenceKeyMigration.check(context)
 
+        assertEquals(5, prefs.version)
         assertEquals(15L, prefs.getLong(key))
     }
 
@@ -98,6 +102,7 @@ class PreferenceKeyMigration4to5Test {
         // チェック
         PreferenceKeyMigration.check(context)
 
+        assertEquals(5, prefs.version)
         assertEquals(expected, prefs.getLong(key))
     }
 
@@ -116,6 +121,7 @@ class PreferenceKeyMigration4to5Test {
         // チェック
         PreferenceKeyMigration.check(context)
 
+        assertEquals(5, prefs.version)
         assertEquals(expected, prefs.getLong(key))
     }
 
@@ -134,6 +140,7 @@ class PreferenceKeyMigration4to5Test {
         // チェック
         PreferenceKeyMigration.check(context)
 
+        assertEquals(5, prefs.version)
         assertEquals(expected, prefs.getLong(key))
     }
 
@@ -145,6 +152,7 @@ class PreferenceKeyMigration4to5Test {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         val key = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS
 
+        assertEquals(5, prefs.version)
         assertEquals(15L, prefs.getLong(key))
     }
 
@@ -162,6 +170,7 @@ class PreferenceKeyMigration4to5Test {
         // チェック
         PreferenceKeyMigration.check(context)
 
+        assertEquals(5, prefs.version)
         assertEquals(15L, prefs.getLong(key))
     }
 }
