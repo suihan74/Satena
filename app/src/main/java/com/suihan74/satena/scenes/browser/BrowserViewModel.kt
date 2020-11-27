@@ -23,6 +23,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.FavoriteSite
+import com.suihan74.satena.models.browser.HistoryPage
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
@@ -37,6 +38,7 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDateTime
 import java.io.File
 import kotlin.math.absoluteValue
 
@@ -114,6 +116,12 @@ class BrowserViewModel(
         SingleUpdateMutableLiveData("")
     }
 
+    /** 「戻る/進む」の履歴 */
+    val backStack by lazy {
+        _backStack
+    }
+    private val _backStack = MutableLiveData<List<HistoryPage>>()
+
     /** 現在表示中のページで読み込んだすべてのURL */
     val resourceUrls : List<ResourceUrl>
         get() = browserRepo.resourceUrls
@@ -132,6 +140,9 @@ class BrowserViewModel(
 
     /** ドロワの開閉状態 */
     val drawerOpened = MutableLiveData<Boolean>()
+
+    /** ボトムシートの開閉状態 */
+    val bottomSheetOpened = MutableLiveData<Boolean>()
 
     // ------ //
 
@@ -739,16 +750,27 @@ class BrowserViewModel(
     }
 
     /** ページ読み込み完了時の処理 */
+    @MainThread
     fun onPageFinished(view: WebView?, url: String) {
         val title = view?.title ?: url
         this.title.value = title
         browserRepo.resourceUrls.addUnique(ResourceUrl(url, false))
 
+        val faviconUrl = Uri.parse(url).faviconUrl
+
         // 通常のwebページだけを履歴に追加する
         if (privateBrowsingEnabled.value != true && URLUtil.isNetworkUrl(url)) {
             viewModelScope.launch {
-                historyRepo.insertHistory(url, title)
+                historyRepo.insertHistory(url, title, faviconUrl)
             }
+        }
+
+        // 「戻る/進む」履歴に追加する
+        val histories = _backStack.value.orEmpty()
+        if (histories.none { it.url == url }) {
+            _backStack.value = histories.plus(
+                HistoryPage(url, title, faviconUrl, LocalDateTime.now())
+            )
         }
 
         onPageFinishedListener?.invoke(url)

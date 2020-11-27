@@ -118,11 +118,13 @@ class BrowserActivity :
         }
         this.binding = binding
 
+        val restored = savedInstanceState != null
+
         // ドロワの設定
-        initializeDrawer(savedInstanceState != null)
+        initializeDrawer(restored)
 
         // ボトムシートの設定
-        initializeBottomSheet()
+        initializeBottomSheet(restored)
 
         // WebViewの設定
         viewModel.initializeWebView(binding.webview, this)
@@ -314,6 +316,7 @@ class BrowserActivity :
     fun openUrl(url: String) {
         viewModel.goAddress(url)
         closeDrawer()
+        closeBottomSheet()
     }
 
     // ------ //
@@ -401,7 +404,15 @@ class BrowserActivity :
      * ボトムシートを設定する
      */
     @MainThread
-    fun initializeBottomSheet() {
+    fun initializeBottomSheet(onRestored: Boolean) {
+        // 「戻る/進む」履歴を表示する
+        binding.bottomSheetBackStack.adapter = BackStackAdapter(viewModel, this).also { adapter ->
+            adapter.setOnClickItemListener { binding ->
+                val url = binding.item?.url ?: return@setOnClickItemListener
+                openUrl(url)
+            }
+        }
+
         val behavior = BottomSheetBehavior.from(binding.bottomSheetLayout)
 
         behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
@@ -412,19 +423,25 @@ class BrowserActivity :
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 val drawerLayout = binding.drawerLayout
 
-                drawerLayout.setDrawerLockMode(
-                    when (newState) {
-                        BottomSheetBehavior.STATE_COLLAPSED,
-                        BottomSheetBehavior.STATE_HIDDEN -> {
-                            closeBottomSheet()
-                            DrawerLayout.LOCK_MODE_UNLOCKED
-                        }
-
-                        else -> DrawerLayout.LOCK_MODE_LOCKED_CLOSED
+                when (newState) {
+                    BottomSheetBehavior.STATE_COLLAPSED,
+                    BottomSheetBehavior.STATE_HIDDEN -> {
+                        viewModel.bottomSheetOpened.value = false
+                        closeBottomSheet()
+                        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
                     }
-                )
+
+                    else -> {
+                        viewModel.bottomSheetOpened.value = true
+                        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+                    }
+                }
             }
         })
+
+        if (onRestored && viewModel.bottomSheetOpened.value == true) {
+            openBottomSheet()
+        }
     }
 
     /**
