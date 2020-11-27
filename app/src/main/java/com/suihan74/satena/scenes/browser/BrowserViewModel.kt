@@ -22,12 +22,14 @@ import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.getEntryRootUrl
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.models.browser.HistoryPage
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteRegistrationDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.Listener
@@ -898,5 +900,36 @@ class BrowserViewModel(
         }
 
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_BLOCK_URL)
+    }
+
+    /** 「戻る/進む」履歴項目のメニューダイアログを開く */
+    fun openBackStackItemMenuDialog(
+        activity: BrowserActivity,
+        page: HistoryPage,
+        fragmentManager: FragmentManager
+    ) {
+        val dialog = BackStackItemMenuDialog.createInstance(page)
+        dialog.setOnOpenListener {
+            goAddress(page.url)
+        }
+
+        dialog.setOnOpenBookmarksListener {
+            val intent = Intent(activity, BookmarksActivity::class.java).also {
+                it.putExtra(BookmarksActivity.EXTRA_ENTRY_URL, page.url)
+            }
+            activity.startActivity(intent)
+        }
+
+        dialog.setOnOpenEntriesListener {
+            viewModelScope.launch(Dispatchers.Main) {
+                val intent = Intent(activity, EntriesActivity::class.java).also {
+                    val rootUrl = getEntryRootUrl(page.url)
+                    it.putExtra(EntriesActivity.EXTRA_SITE_URL, rootUrl)
+                }
+                activity.startActivity(intent)
+            }
+        }
+
+        dialog.showAllowingStateLoss(fragmentManager)
     }
 }

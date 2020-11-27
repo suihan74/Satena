@@ -413,6 +413,11 @@ class BrowserActivity :
                 val url = binding.item?.url ?: return@setOnClickItemListener
                 viewModel.goAddress(url)
             }
+
+            adapter.setOnLongLickItemListener { binding ->
+                val item = binding.item ?: return@setOnLongLickItemListener
+                viewModel.openBackStackItemMenuDialog(this, item, supportFragmentManager)
+            }
         }
 
         val behavior = BottomSheetBehavior.from(binding.bottomSheetLayout)
