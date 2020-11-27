@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.browser
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.webkit.WebView
 import androidx.annotation.MainThread
@@ -146,6 +145,7 @@ class BrowserActivity :
         }
     }
 
+    /** 戻る処理を制御する */
     override fun onBackPressed() {
         when {
             onBackPressedDispatcher.hasEnabledCallbacks() -> {
@@ -173,10 +173,10 @@ class BrowserActivity :
         }
     }
 
+    /** 戻るボタン長押しで「戻る/進む」履歴リストを表示する */
     override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
-                Log.i("keyLongPress", "BACK button has been long pressed")
                 switchBottomSheetState()
                 true
             }
@@ -244,7 +244,7 @@ class BrowserActivity :
     /** ボトムシートを開く */
     @MainThread
     fun openBottomSheet() {
-        if (!drawerOpened) {
+        if (viewModel.drawerOpened.value != true) {
             setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED)
             binding.clickGuard.visibility = View.VISIBLE
         }

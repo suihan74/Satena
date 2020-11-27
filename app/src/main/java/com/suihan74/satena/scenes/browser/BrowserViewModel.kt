@@ -122,6 +122,14 @@ class BrowserViewModel(
     }
     private val _backStack = MutableLiveData<List<HistoryPage>>()
 
+    /**
+     * ひとつ前に表示していたURL
+     *
+     * `backStack`の更新時に使用する
+     */
+    var previousUrl : String? = null
+        private set
+
     /** 現在表示中のページで読み込んだすべてのURL */
     val resourceUrls : List<ResourceUrl>
         get() = browserRepo.resourceUrls
@@ -752,6 +760,7 @@ class BrowserViewModel(
     /** ページ読み込み完了時の処理 */
     @MainThread
     fun onPageFinished(view: WebView?, url: String) {
+        // TODO: タイトルがひとつ前のページから更新されていない場合がある
         val title = view?.title ?: url
         this.title.value = title
         browserRepo.resourceUrls.addUnique(ResourceUrl(url, false))
@@ -766,19 +775,35 @@ class BrowserViewModel(
         }
 
         // 「戻る/進む」履歴に追加する
-        val histories = _backStack.value.orEmpty()
-        if (histories.none { it.url == url }) {
-            _backStack.value = histories.plus(
-                HistoryPage(url, title, faviconUrl, LocalDateTime.now())
-            )
+        updateBackStack(url, title, faviconUrl)
+
+        runCatching {
+            onPageFinishedListener?.invoke(url)
         }
 
-        onPageFinishedListener?.invoke(url)
+        previousUrl = url
     }
 
     /** リソースを追加 */
     fun addResource(url: String, blocked: Boolean) = viewModelScope.launch(Dispatchers.IO) {
         browserRepo.resourceUrls.addUnique(ResourceUrl(url, blocked))
+    }
+
+    /** 「戻る/進む」履歴を更新する */
+    private fun updateBackStack(url: String, title: String, faviconUrl: String) {
+        val histories = _backStack.value.orEmpty()
+        if (histories.any { it.url == url }) return
+
+        val previousPagePosition = histories.indexOfFirst { it.url == previousUrl }
+        val poppedHistories =
+            if (previousPagePosition >= 0 && previousPagePosition + 1 < histories.size) {
+                histories.take(previousPagePosition + 1)
+            }
+            else histories
+
+        _backStack.value = poppedHistories.plus(
+            HistoryPage(url, title, faviconUrl, LocalDateTime.now())
+        )
     }
 
     // ------ //
