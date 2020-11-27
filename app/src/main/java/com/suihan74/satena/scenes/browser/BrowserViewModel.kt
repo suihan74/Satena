@@ -147,10 +147,10 @@ class BrowserViewModel(
     val isUrlFavorite = MutableLiveData<Boolean>(false)
 
     /** ドロワの開閉状態 */
-    val drawerOpened = MutableLiveData<Boolean>()
+    val drawerOpened = SingleUpdateMutableLiveData<Boolean>()
 
     /** ボトムシートの開閉状態 */
-    val bottomSheetOpened = MutableLiveData<Boolean>()
+    val bottomSheetOpened = SingleUpdateMutableLiveData<Boolean>()
 
     // ------ //
 
@@ -733,21 +733,26 @@ class BrowserViewModel(
     @MainThread
     fun goAddress(moveToUrl: String? = null) : Boolean {
         val addr = moveToUrl ?: addressText.value
-        return when {
-            addr.isNullOrBlank() -> false
+        if (addr.isNullOrBlank()) {
+            return false
+        }
 
+        drawerOpened.value = false
+        bottomSheetOpened.value = false
+
+        when {
             // アドレスが渡されたら直接遷移する
             URLUtil.isValidUrl(addr) -> {
                 url.value = addr
-                true
             }
 
             // それ以外は入力内容をキーワードとして検索を行う
             else -> {
                 url.value = browserRepo.getSearchUrl(addr)
-                true
             }
         }
+
+        return true
     }
 
     /** ページ読み込み開始時の処理 */

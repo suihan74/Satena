@@ -117,13 +117,11 @@ class BrowserActivity :
         }
         this.binding = binding
 
-        val restored = savedInstanceState != null
-
         // ドロワの設定
-        initializeDrawer(restored)
+        initializeDrawer()
 
         // ボトムシートの設定
-        initializeBottomSheet(restored)
+        initializeBottomSheet()
 
         // WebViewの設定
         viewModel.initializeWebView(binding.webview, this)
@@ -247,6 +245,7 @@ class BrowserActivity :
         if (viewModel.drawerOpened.value != true) {
             setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED)
             binding.clickGuard.visibility = View.VISIBLE
+            viewModel.bottomSheetOpened.value = true
         }
     }
 
@@ -255,6 +254,7 @@ class BrowserActivity :
     fun closeBottomSheet() {
         setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN)
         binding.clickGuard.visibility = View.GONE
+        viewModel.bottomSheetOpened.value = false
     }
 
     /** ボトムシートの状態を設定する */
@@ -288,7 +288,10 @@ class BrowserActivity :
     /** ドロワを開く */
     @MainThread
     override fun openDrawer() {
-        binding.drawerLayout.openDrawer(binding.drawerArea)
+        lifecycleScope.launchWhenResumed {
+            binding.drawerLayout.openDrawer(binding.drawerArea)
+            viewModel.drawerOpened.value = true
+        }
     }
 
     /**
@@ -298,7 +301,10 @@ class BrowserActivity :
      */
     @MainThread
     override fun closeDrawer() {
-        binding.drawerLayout.closeDrawer(binding.drawerArea)
+        lifecycleScope.launchWhenResumed {
+            binding.drawerLayout.closeDrawer(binding.drawerArea)
+            viewModel.drawerOpened.value = false
+        }
     }
 
     /** ドロワが開かれている */
@@ -315,8 +321,6 @@ class BrowserActivity :
     @MainThread
     fun openUrl(url: String) {
         viewModel.goAddress(url)
-        closeDrawer()
-        closeBottomSheet()
     }
 
     // ------ //
@@ -325,7 +329,7 @@ class BrowserActivity :
      * ドロワの挙動を設定する
      */
     @MainThread
-    fun initializeDrawer(onRestored : Boolean) {
+    fun initializeDrawer() {
         val drawerLayout = binding.drawerLayout
         val drawerTabLayout = binding.drawerTabLayout
         val drawerViewPager = binding.drawerViewPager
@@ -392,24 +396,22 @@ class BrowserActivity :
             }
         })
 
-        // 復元時に展開中のドロワを再度開く
-        if (onRestored && viewModel.drawerOpened.value == true) {
-            lifecycleScope.launchWhenResumed {
-                drawerLayout.openDrawer(drawerArea, false)
-            }
-        }
+        viewModel.drawerOpened.observe(this, {
+            if (it) openDrawer()
+            else closeDrawer()
+        })
     }
 
     /**
      * ボトムシートを設定する
      */
     @MainThread
-    fun initializeBottomSheet(onRestored: Boolean) {
+    fun initializeBottomSheet() {
         // 「戻る/進む」履歴を表示する
         binding.bottomSheetBackStack.adapter = BackStackAdapter(viewModel, this).also { adapter ->
             adapter.setOnClickItemListener { binding ->
                 val url = binding.item?.url ?: return@setOnClickItemListener
-                openUrl(url)
+                viewModel.goAddress(url)
             }
         }
 
@@ -439,9 +441,10 @@ class BrowserActivity :
             }
         })
 
-        if (onRestored && viewModel.bottomSheetOpened.value == true) {
-            openBottomSheet()
-        }
+        viewModel.bottomSheetOpened.observe(this, {
+            if (it) openBottomSheet()
+            else closeBottomSheet()
+        })
     }
 
     /**
