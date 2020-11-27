@@ -513,6 +513,7 @@ class BrowserViewModel(
     // BrowserActivityに依存する処理をここに丸投げする
 
     /** 状態変化をオプションメニュー項目に通知する */
+    @MainThread
     fun bindOptionsMenu(owner: LifecycleOwner, context: Context, menu: Menu) {
         val textOn = "ON"
         val textOff = "OFF"
@@ -529,7 +530,13 @@ class BrowserViewModel(
     }
 
     /** オプションメニューの処理 */
+    @MainThread
     fun onOptionsItemSelected(item: MenuItem, activity: BrowserActivity): Boolean = when (item.itemId) {
+        R.id.back_stack -> {
+            bottomSheetOpened.value = true
+            true
+        }
+
         R.id.bookmarks -> {
             openBookmarksActivity(url.value!!, activity)
             true
