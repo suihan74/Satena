@@ -15,7 +15,7 @@ class ViewModel(
     /** バージョン名 */
     val appVersion : String by lazy { SatenaApplication.instance.versionName }
 
-    suspend fun start(activity: SplashActivity) {
+    suspend fun start(activity: SplashActivity) = withContext(Dispatchers.Main) {
         val intent = repository.createIntent(activity) { e -> when (e) {
             is AccountLoader.HatenaSignInException ->
                 activity.showToast(R.string.msg_hatena_sign_in_failed)
@@ -24,13 +24,11 @@ class ViewModel(
                 activity.showToast(R.string.msg_auth_mastodon_failed)
         } }
 
-        withContext(Dispatchers.Main) {
-            activity.startActivity(
-                intent, ActivityOptionsCompat.makeCustomAnimation(
-                    activity,
-                    android.R.anim.fade_in, android.R.anim.fade_out
-                ).toBundle()
-            )
-        }
+        activity.startActivity(
+            intent, ActivityOptionsCompat.makeCustomAnimation(
+                activity,
+                android.R.anim.fade_in, android.R.anim.fade_out
+            ).toBundle()
+        )
     }
 }

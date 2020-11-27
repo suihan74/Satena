@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.room.Room
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -21,19 +22,21 @@ class UserTagDaoTest {
 
     @Before
     fun データ初期化() {
-        db.userTagDao().run {
-            insertTag("test")
-            insertTag("abc012")
-            insertTag("テスト")
+        runBlocking {
+            db.userTagDao().run {
+                insertTag("test")
+                insertTag("abc012")
+                insertTag("テスト")
 
-            insertUser("suihan")
-            insertUser("suihan74")
-            insertUser("すいはん")
+                insertUser("suihan")
+                insertUser("suihan74")
+                insertUser("すいはん")
+            }
         }
     }
 
     @Test
-    fun タグ存在確認() {
+    fun タグ存在確認() = runBlocking {
         dao.run {
             assertNotEquals(null, findTag("test"))
             assertNotEquals(null, findTag("abc012"))
@@ -42,7 +45,7 @@ class UserTagDaoTest {
     }
 
     @Test
-    fun 存在しないタグのfind結果はnull() {
+    fun 存在しないタグのfind結果はnull() = runBlocking {
         dao.run {
             assertEquals(null, findTag("テスト0"))
             assertEquals(null, findTag("a"))
@@ -53,7 +56,7 @@ class UserTagDaoTest {
     }
 
     @Test
-    fun ユーザー存在確認() {
+    fun ユーザー存在確認() = runBlocking {
         dao.run {
             assertNotEquals(null, findUser("suihan"))
             assertNotEquals(null, findUser("suihan74"))
@@ -62,7 +65,7 @@ class UserTagDaoTest {
     }
 
     @Test
-    fun 存在しないユーザーのfind結果はnull() {
+    fun 存在しないユーザーのfind結果はnull() = runBlocking {
         dao.run {
             assertEquals(null, findUser("すいは0"))
             assertEquals(null, findUser("a"))
@@ -73,7 +76,7 @@ class UserTagDaoTest {
     }
 
     @Test
-    fun タグ名変更() {
+    fun タグ名変更() = runBlocking {
         val prevName = "変更前"
         val modifiedName = "変更後"
 
@@ -90,7 +93,7 @@ class UserTagDaoTest {
     }
 
     @Test
-    fun 既存のタグ名に変更しようとする() {
+    fun 既存のタグ名に変更しようとする() = runBlocking {
         val prevName = "変更前"
         dao.insertTag(prevName)
 
@@ -109,7 +112,7 @@ class UserTagDaoTest {
     }
 
     @Test
-    fun ユーザーをタグ付け() {
+    fun ユーザーをタグ付け() = runBlocking {
         val user = dao.findUser("suihan")!!
         val tag1 = dao.findTag("test")!!
         val tag2 = dao.findTag("テスト")!!
@@ -129,7 +132,7 @@ class UserTagDaoTest {
     }
 
     @Test
-    fun まだ使われているタグを削除() {
+    fun まだ使われているタグを削除() = runBlocking {
         dao.insertTag("削除する")
         val user = dao.findUser("suihan")!!
         val tag = dao.findTag("削除する")!!

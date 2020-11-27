@@ -35,7 +35,7 @@ class HatenaClientTest {
         runBlocking {
             val entries = HatenaClient.getHistoricalEntriesAsync(2018).await()
             assertNotSame(0, entries.size)
-            assert(entries.any { it.count == 0 })
+            assert(entries.none { it.count == 0 })
         }
     }
 
