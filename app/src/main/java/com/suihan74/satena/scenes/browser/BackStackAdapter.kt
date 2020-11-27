@@ -66,13 +66,14 @@ class BackStackAdapter(
             }
         }
 
+        /** 現在表示中ページの「戻る/進む」履歴項目背景色を装飾する */
         @JvmStatic
         @BindingAdapter("currentUrl", "itemUrl")
         fun setBackStackItemBackground(view: View, currentUrl: String?, itemUrl: String?) {
             val context = view.context
             view.setBackgroundColor(
                 if (currentUrl == itemUrl) {
-                    context.getThemeColor(R.attr.dividerColor)
+                    context.getThemeColor(R.attr.browserBackStackCurrentPageBackground)
                 }
                 else {
                     context.getColor(android.R.color.transparent)

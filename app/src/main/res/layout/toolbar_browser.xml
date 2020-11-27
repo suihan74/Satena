@@ -43,7 +43,7 @@
 
                     android:background="@android:color/transparent"
                     android:textColor="@color/colorPrimaryText"
-                    android:textColorHint="@color/BrowserAddressBarHintColor"
+                    android:textColorHint="@color/browserAddressBarHintColor"
                     android:textCursorDrawable="@drawable/searchview_cursor"
                     android:textColorHighlight="@color/searchViewHighlight"
 

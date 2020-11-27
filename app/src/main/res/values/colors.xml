@@ -96,5 +96,9 @@
     <color name="maintenanceResolved">#19BD3F</color>
 
     <!-- 内部ブラウザ -->
-    <color name="BrowserAddressBarHintColor">#aaffffff</color>
+    <!-- アドレスバーのヒント文字色 -->
+    <color name="browserAddressBarHintColor">#aaffffff</color>
+    <!-- ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
+    <color name="browserBackStackCurrentPageBackground">#B5D7F3</color>
+    <color name="browserBackStackCurrentPageBackgroundDark">#3E3E68</color>
 </resources>
