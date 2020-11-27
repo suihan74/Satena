@@ -243,7 +243,8 @@ class BrowserActivity :
     @MainThread
     fun openBottomSheet() {
         if (viewModel.drawerOpened.value != true) {
-            setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED)
+            val behavior = BottomSheetBehavior.from(binding.bottomSheetLayout)
+            behavior.state = BottomSheetBehavior.STATE_EXPANDED
             viewModel.bottomSheetOpened.value = true
         }
     }
@@ -251,18 +252,9 @@ class BrowserActivity :
     /** ボトムシートを閉じる */
     @MainThread
     fun closeBottomSheet() {
-        setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN)
-        viewModel.bottomSheetOpened.value = false
-    }
-
-    /** ボトムシートの状態を設定する */
-    @MainThread
-    fun setBottomSheetState(
-        @BottomSheetBehavior.State
-        state: Int
-    ) {
         val behavior = BottomSheetBehavior.from(binding.bottomSheetLayout)
-        behavior.state = state
+        behavior.state = BottomSheetBehavior.STATE_HIDDEN
+        viewModel.bottomSheetOpened.value = false
     }
 
     /** ボトムシートが開かれているか */
