@@ -85,6 +85,7 @@ class StarRelationsAdapter(
 
         override fun areModelContentsTheSame(oldItem: Item?, newItem: Item?): Boolean {
             return oldItem?.comment == newItem?.comment
+                    && oldItem?.ignored == newItem?.ignored
                     && oldItem?.star?.color == newItem?.star?.color
                     && oldItem?.star?.count == newItem?.star?.count
                     && oldItem?.star?.quote == newItem?.star?.quote
