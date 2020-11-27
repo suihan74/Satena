@@ -18,6 +18,7 @@ import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
+import org.threeten.bp.LocalDateTime
 
 class BookmarkMenuDialog : DialogFragment() {
     companion object {
@@ -140,6 +141,9 @@ class BookmarkMenuDialog : DialogFragment() {
         @OptIn(ExperimentalStdlibApi::class)
         val items by lazy {
             buildList {
+                // TODO: ダミーの判定方法は変えた方がいいかもしれない
+                val dummyBookmark = bookmark.timestamp == LocalDateTime.MIN
+
                 add(R.string.bookmark_show_user_entries to { onShowEntries?.invoke(bookmark.user) })
                 if (signedIn) {
                     if (ignored) {
@@ -149,7 +153,7 @@ class BookmarkMenuDialog : DialogFragment() {
                         add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark.user) })
                     }
 
-                    if (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty()) {
+                    if (!dummyBookmark && (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty())) {
                         add(R.string.bookmark_report to { onReportBookmark?.invoke(bookmark) })
                     }
                 }
@@ -159,7 +163,7 @@ class BookmarkMenuDialog : DialogFragment() {
                     add(R.string.bookmark_delete_star to { onDeleteStar?.invoke(bookmark to userStars) })
                 }
 
-                if (userSignedIn == bookmark.user) {
+                if (userSignedIn == bookmark.user && !dummyBookmark) {
                     add(R.string.bookmark_delete to { onDeleteBookmark?.invoke(bookmark) })
                 }
             }

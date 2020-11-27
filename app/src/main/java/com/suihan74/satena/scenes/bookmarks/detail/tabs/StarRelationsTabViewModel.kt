@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.bookmarks.detail.tabs
 import android.app.Activity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
+import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.detail.DetailTabAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
@@ -49,7 +50,7 @@ class StarRelationsTabViewModel(
         fragmentManager: FragmentManager,
         coroutineScope: CoroutineScope
     ) = coroutineScope.launch(Dispatchers.Main) {
-        val bookmark = item.bookmark ?: return@launch
+        val bookmark = item.bookmark ?: Bookmark(user = item.user, comment = "")
         val userSignedIn = repository.userSignedIn
         val entry = repository.entry.value ?: return@launch
 
