@@ -86,6 +86,24 @@
 
             </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
+            <androidx.coordinatorlayout.widget.CoordinatorLayout
+                    android:elevation="24dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                <RelativeLayout
+                        android:id="@+id/bottom_sheet_layout"
+                        android:background="?panelBackground"
+                        app:behavior_peekHeight="0dp"
+                        app:behavior_hideable="true"
+                        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+                        android:layout_width="match_parent"
+                        android:layout_height="400dp">
+
+                </RelativeLayout>
+
+            </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     <RelativeLayout

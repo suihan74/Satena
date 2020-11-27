@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.browser
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.webkit.WebView
 import androidx.annotation.MainThread
@@ -12,6 +13,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -33,7 +35,6 @@ import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class BrowserActivity :
     AppCompatActivity(),
@@ -120,6 +121,9 @@ class BrowserActivity :
         // ドロワの設定
         initializeDrawer(savedInstanceState != null)
 
+        // ボトムシートの設定
+        initializeBottomSheet()
+
         // WebViewの設定
         viewModel.initializeWebView(binding.webview, this)
 
@@ -141,23 +145,40 @@ class BrowserActivity :
     }
 
     override fun onBackPressed() {
-        if (onBackPressedDispatcher.hasEnabledCallbacks()) {
-            onBackPressedDispatcher.onBackPressed()
-        }
-        else {
-            val drawerLayout = binding.drawerLayout
-            val drawerArea = binding.drawerArea
-            val webView = binding.webview
-
-            when {
-                drawerLayout.isDrawerOpen(drawerArea) -> {
-                    drawerLayout.closeDrawer(drawerArea)
-                }
-
-                webView.canGoBack() -> webView.goBack()
-
-                else -> super.onBackPressed()
+        when {
+            onBackPressedDispatcher.hasEnabledCallbacks() -> {
+                // タブの戻るボタン割り込み
+                onBackPressedDispatcher.onBackPressed()
             }
+
+            bottomSheetOpened -> {
+                // ボトムシートを閉じる
+                closeBottomSheet()
+            }
+
+            drawerOpened -> {
+                // ドロワを閉じる
+                closeDrawer()
+            }
+
+            webView.canGoBack() -> {
+                // ページを戻る
+                webView.goBack()
+            }
+
+            // Activityを終了する
+            else -> super.onBackPressed()
+        }
+    }
+
+    override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
+        return when (keyCode) {
+            KeyEvent.KEYCODE_BACK -> {
+                Log.i("keyLongPress", "BACK button has been long pressed")
+                switchBottomSheetState()
+                true
+            }
+            else -> super.onKeyLongPress(keyCode, event)
         }
     }
 
@@ -207,6 +228,54 @@ class BrowserActivity :
 
     // ------ //
 
+    /** ボトムシートの表示状態を切り替える */
+    @MainThread
+    fun switchBottomSheetState() {
+        if (bottomSheetOpened) {
+            closeBottomSheet()
+        }
+        else {
+            openBottomSheet()
+        }
+    }
+
+    /** ボトムシートを開く */
+    @MainThread
+    fun openBottomSheet() {
+        if (!drawerOpened) {
+            setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED)
+            binding.clickGuard.visibility = View.VISIBLE
+        }
+    }
+
+    /** ボトムシートを閉じる */
+    @MainThread
+    fun closeBottomSheet() {
+        setBottomSheetState(BottomSheetBehavior.STATE_HIDDEN)
+        binding.clickGuard.visibility = View.GONE
+    }
+
+    /** ボトムシートの状態を設定する */
+    @MainThread
+    fun setBottomSheetState(
+        @BottomSheetBehavior.State
+        state: Int
+    ) {
+        val behavior = BottomSheetBehavior.from(binding.bottomSheetLayout)
+        behavior.state = state
+    }
+
+    /** ボトムシートが開かれているか */
+    val bottomSheetOpened : Boolean
+        get() = when (BottomSheetBehavior.from(binding.bottomSheetLayout).state) {
+            BottomSheetBehavior.STATE_COLLAPSED,
+            BottomSheetBehavior.STATE_HIDDEN -> false
+
+            else -> true
+        }
+
+    // ------ //
+
     /** ドロワを開いて設定タブを表示する */
     @MainThread
     fun showPreferencesFragment() {
@@ -229,6 +298,12 @@ class BrowserActivity :
     override fun closeDrawer() {
         binding.drawerLayout.closeDrawer(binding.drawerArea)
     }
+
+    /** ドロワが開かれている */
+    val drawerOpened : Boolean
+        get() = binding.drawerLayout.isDrawerOpen(binding.drawerArea)
+
+    // ------ //
 
     /**
      * URLを開く
@@ -317,11 +392,39 @@ class BrowserActivity :
         // 復元時に展開中のドロワを再度開く
         if (onRestored && viewModel.drawerOpened.value == true) {
             lifecycleScope.launchWhenResumed {
-                withContext(Dispatchers.Main) {
-                    drawerLayout.openDrawer(drawerArea, false)
-                }
+                drawerLayout.openDrawer(drawerArea, false)
             }
         }
+    }
+
+    /**
+     * ボトムシートを設定する
+     */
+    @MainThread
+    fun initializeBottomSheet() {
+        val behavior = BottomSheetBehavior.from(binding.bottomSheetLayout)
+
+        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            }
+
+            // ボトムシート表示状態ではドロワを表示できないようにする
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                val drawerLayout = binding.drawerLayout
+
+                drawerLayout.setDrawerLockMode(
+                    when (newState) {
+                        BottomSheetBehavior.STATE_COLLAPSED,
+                        BottomSheetBehavior.STATE_HIDDEN -> {
+                            closeBottomSheet()
+                            DrawerLayout.LOCK_MODE_UNLOCKED
+                        }
+
+                        else -> DrawerLayout.LOCK_MODE_LOCKED_CLOSED
+                    }
+                )
+            }
+        })
     }
 
     /**
@@ -367,11 +470,16 @@ class BrowserActivity :
 
         // クリック防止ビュー
         binding.clickGuard.setOnTouchListener { _, motionEvent ->
-            if (motionEvent.action == MotionEvent.ACTION_UP) {
-                hideSoftInputMethod(binding.mainArea)
-                true
+            if (motionEvent.action != MotionEvent.ACTION_UP) return@setOnTouchListener false
+
+            if (bottomSheetOpened) {
+                closeBottomSheet()
             }
-            else false
+            else {
+                hideSoftInputMethod(binding.mainArea)
+            }
+
+            return@setOnTouchListener true
         }
     }
 }
