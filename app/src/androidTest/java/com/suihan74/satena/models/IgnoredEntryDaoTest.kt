@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -24,36 +25,40 @@ class IgnoredEntryDaoTest {
 
     @Before
     fun データ初期化() {
-        dao.run {
-            clearAllEntries()
-            insert(IgnoredEntry(IgnoredEntryType.URL, "www.google.co.jp"))
-            insert(IgnoredEntry(IgnoredEntryType.URL, "twitter.com"))
-            insert(IgnoredEntry(IgnoredEntryType.TEXT, "HOGE"))
-            insert(IgnoredEntry(IgnoredEntryType.TEXT, "ハゲ", IgnoreTarget.ENTRY))
+        runBlocking {
+            dao.run {
+                clearAllEntries()
+                insert(IgnoredEntry(IgnoredEntryType.URL, "www.google.co.jp"))
+                insert(IgnoredEntry(IgnoredEntryType.URL, "twitter.com"))
+                insert(IgnoredEntry(IgnoredEntryType.TEXT, "HOGE"))
+                insert(IgnoredEntry(IgnoredEntryType.TEXT, "ハゲ", IgnoreTarget.ENTRY))
+            }
+            Log.i("initialized", "データ初期化")
         }
-        Log.i("initialized", "データ初期化")
     }
 
     @Test
-    fun find動作確認() {
+    fun find動作確認() = runBlocking {
         val google = dao.find(IgnoredEntryType.URL, "www.google.co.jp")
         assertNotEquals(null, google)
     }
 
     @Test
     fun typeとqueryが重複する項目をinsertすると例外送出() {
-        try {
-            val entry = IgnoredEntry(IgnoredEntryType.URL, "twitter.com")
-            dao.insert(entry)
-            fail("重複している項目がinsert成功してしまった")
-        }
-        catch (e: Exception) {
-            Log.i("ok", "想定通りの例外送出")
+        runBlocking {
+            try {
+                val entry = IgnoredEntry(IgnoredEntryType.URL, "twitter.com")
+                dao.insert(entry)
+                fail("重複している項目がinsert成功してしまった")
+            }
+            catch (e: Exception) {
+                Log.i("ok", "想定通りの例外送出")
+            }
         }
     }
 
     @Test
-    fun データタイプが異なるがクエリは同一なアイテムは作成可能() {
+    fun データタイプが異なるがクエリは同一なアイテムは作成可能() = runBlocking {
         try {
             val entry = IgnoredEntry(IgnoredEntryType.TEXT, "twitter.com")
             dao.insert(entry)
@@ -64,7 +69,7 @@ class IgnoredEntryDaoTest {
     }
 
     @Test
-    fun 存在しない項目をdelete() {
+    fun 存在しない項目をdelete() = runBlocking {
         try {
             dao.delete(IgnoredEntry(IgnoredEntryType.URL, "invalid.com"))
         }
@@ -74,7 +79,7 @@ class IgnoredEntryDaoTest {
     }
 
     @Test
-    fun 項目のdelete() {
+    fun 項目のdelete() = runBlocking {
         val prevSize = dao.getAllEntries().size
         val entry = IgnoredEntry(IgnoredEntryType.URL, "twitter.com")
         dao.delete(entry)
@@ -83,7 +88,7 @@ class IgnoredEntryDaoTest {
     }
 
     @Test
-    fun converterが動いているか確認() {
+    fun converterが動いているか確認() = runBlocking {
         assertEquals(IgnoreTarget.ENTRY, dao.find(IgnoredEntryType.TEXT, "ハゲ")?.target)
     }
 }
