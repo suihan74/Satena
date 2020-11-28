@@ -12,6 +12,7 @@ import com.suihan74.satena.databinding.ListviewItemStarRelataionsBinding
 import com.suihan74.satena.scenes.bookmarks.detail.DetailTabAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import com.suihan74.utilities.GeneralAdapter
+import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.extensions.setHtml
 
 class StarRelationsAdapter(
@@ -81,6 +82,15 @@ class StarRelationsAdapter(
         }
 
         setItems(items, callback)
+    }
+
+    override fun setItems(items: List<Item>?, callback: Runnable?) {
+        submitList(
+            items?.let {
+                RecyclerState.makeStatesWithFooter(it)
+            },
+            callback
+        )
     }
 
     override fun bind(model: Item?, binding: ListviewItemStarRelataionsBinding) {
