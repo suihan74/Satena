@@ -141,6 +141,13 @@ class BookmarksRepository(
 
     // ------ //
 
+    /** スター付与ポップアップを使用する */
+    val useAddStarPopupMenu : Boolean by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU)
+    }
+
+    // ------ //
+
     /**
      * URLを渡して必要な初期化を行う
      */
