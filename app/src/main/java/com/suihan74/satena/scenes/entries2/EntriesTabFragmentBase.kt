@@ -19,7 +19,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.alsoAs

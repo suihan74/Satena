@@ -19,8 +19,7 @@ import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.utilities.*
-import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.*
 import kotlinx.coroutines.launch
 
 /**
@@ -146,6 +145,17 @@ class BookmarksActivity :
         // ドロワの位置を設定
         binding.entryInformationLayout.updateLayoutParams<DrawerLayout.LayoutParams> {
             gravity = contentsViewModel.drawerGravity
+        }
+
+        // ユーザー名が与えられている場合，そのユーザーのブクマ詳細画面を開く
+        intent.getStringExtra(EXTRA_TARGET_USER).onNotNull { user ->
+            bookmarksViewModel.bookmarksEntry.observe(this, scopedObserver { bEntry ->
+                bookmarksViewModel.bookmarksEntry.removeObserver(this)
+                val bookmark = bEntry?.bookmarks?.firstOrNull { it.user == user }
+                if (bookmark != null) {
+                    contentsViewModel.openBookmarkDetail(this@BookmarksActivity, bookmark)
+                }
+            })
         }
     }
 

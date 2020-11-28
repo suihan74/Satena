@@ -13,7 +13,7 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
