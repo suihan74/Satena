@@ -419,7 +419,9 @@ class BookmarksViewModel(
 
     // ------ //
 
-    private val bookmarkMenuActions = BookmarkMenuActionsImpl(repository)
+    private val bookmarkMenuActions by lazy {
+        BookmarkMenuActionsImpl(repository)
+    }
 
     /** ブクマ項目に対する操作メニューを表示 */
     fun openBookmarkMenuDialog(

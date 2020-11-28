@@ -89,6 +89,22 @@ abstract class BookmarksTabFragment :
                 )
             }
 
+            adapter.setOnLinkClickedListener { url ->
+                bookmarksViewModel.onLinkClicked?.invoke(url)
+            }
+
+            adapter.setOnLinkLongClickedListener { url ->
+                bookmarksViewModel.onLinkLongClicked?.invoke(url)
+            }
+
+            adapter.setOnEntryIdClickedListener { id ->
+                bookmarksViewModel.onEntryIdClicked?.invoke(id)
+            }
+
+            adapter.setOnEntryIdLongClickedListener { id ->
+                bookmarksViewModel.onEntryIdLongClicked?.invoke(id)
+            }
+
             // スターをつけるボタンの設定
             bookmarksViewModel.setAddStarButtonBinder(
                 requireActivity(),

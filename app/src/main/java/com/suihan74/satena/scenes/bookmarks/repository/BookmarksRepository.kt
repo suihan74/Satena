@@ -9,6 +9,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
@@ -59,7 +60,7 @@ class BookmarksRepository(
     }
 
     /** はてなアクセス用クライアント */
-    private val client = accountLoader.client
+    val client = accountLoader.client
 
     /** サインイン状態 */
     val signedIn by lazy {
@@ -194,6 +195,18 @@ class BookmarksRepository(
         PreferenceLiveData(prefs, PreferenceKey.CUSTOM_BOOKMARKS_IS_MUTED_USERS_ACTIVE) { p, key ->
             p.getBoolean(key)
         }
+    }
+
+    // ------ //
+
+    /** リンクをクリックしたときの処理 */
+    val linkSingleTapEntryAction by lazy {
+        TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
+    }
+
+    /** リンクを長押ししたときの処理 */
+    val linkLongTapEntryAction by lazy {
+        TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
     }
 
     // ------ //

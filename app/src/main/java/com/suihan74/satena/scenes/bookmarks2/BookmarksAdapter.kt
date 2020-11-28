@@ -94,6 +94,9 @@ class BookmarksAdapter(
     /** コメント中のEntryIdをタップしたときの処理 */
     private var onEntryIdClicked: Listener<Long>? = null
 
+    /** コメント中のEntryIdをロングタップしたときの処理 */
+    private var onEntryIdLongClicked: Listener<Long>? = null
+
     /** フッターの追加ロードをタップしたときの処理 */
     private var onAdditionalLoading: Listener<Unit>? = null
 
@@ -122,6 +125,11 @@ class BookmarksAdapter(
     fun setOnEntryIdClickedListener(listener: Listener<Long>?) {
         onEntryIdClicked = listener
     }
+    /** コメント中のEntryIdをタップしたときの処理 */
+    fun setOnEntryIdLongClickedListener(listener: Listener<Long>?) {
+        onEntryIdLongClicked = listener
+    }
+
 
     /** フッターの追加ロードをタップしたときの処理 */
     fun setOnAdditionalLoadingListener(listener: Listener<Unit>?) {
@@ -368,6 +376,13 @@ class BookmarksAdapter(
                     override fun onLongPressed(link: String) {
                         if (link.startsWith("http")) {
                             bookmarksAdapter.onLinkLongClicked?.invoke(link)
+                        }
+                        else {
+                            entity.analyzedComment.entryIds
+                                .firstOrNull { link.contains(it.toString()) }
+                                ?.let { eid ->
+                                    bookmarksAdapter.onEntryIdLongClicked?.invoke(eid)
+                                }
                         }
                     }
                 }
