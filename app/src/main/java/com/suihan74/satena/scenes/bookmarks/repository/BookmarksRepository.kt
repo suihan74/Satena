@@ -841,13 +841,13 @@ class BookmarksRepository(
 
     /** 指定ブクマに言及しているブクマを取得する */
     fun getMentionsTo(bookmark: Bookmark) : List<Bookmark> {
-        val idCallStr = "id:${bookmark.user}"
-        return bookmarksEntry.value?.bookmarks?.filter { it.comment.contains(idCallStr) }.orEmpty()
+        val mentionRegex = Regex("""(id\s*:|>)\s*\Q${bookmark.user}\E""")
+        return bookmarksEntry.value?.bookmarks?.filter { it.comment.contains(mentionRegex) }.orEmpty()
     }
 
     /** 指定ブクマが言及しているブクマを取得する */
     fun getMentionsFrom(bookmark: Bookmark) : List<Bookmark> {
-        val mentionRegex = Regex("""(id:|>)([A-Za-z0-9_])+""")
+        val mentionRegex = Regex("""(id\s*:|>)\s*([A-Za-z0-9_]+)""")
         val matches = mentionRegex.findAll(bookmark.comment)
         val ids = matches.map { it.groupValues[2] }
         return bookmarksEntry.value?.bookmarks?.filter { ids.contains(it.user) }.orEmpty()
