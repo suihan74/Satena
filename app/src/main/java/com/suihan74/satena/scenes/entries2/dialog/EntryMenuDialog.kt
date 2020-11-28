@@ -25,7 +25,7 @@ import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.post.BookmarkPostActivity

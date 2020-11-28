@@ -5,13 +5,16 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LifecycleOwner
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks.detail.tabs.StarRelationsTabFragment
 import com.suihan74.utilities.IconFragmentPagerAdapter
 
 class DetailTabAdapter(
+    val viewModel : BookmarkDetailViewModel,
     val bookmark : Bookmark,
+    lifecycleOwner : LifecycleOwner,
     fragmentManager : FragmentManager
 ) : IconFragmentPagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
@@ -40,6 +43,24 @@ class DetailTabAdapter(
 
     // ------ //
 
+    init {
+        viewModel.mentionsToUser.observe(lifecycleOwner, {
+            if (!it.isNullOrEmpty() && !tabs.contains(TabType.MENTION_TO_USER)) {
+                tabs = tabs.plus(TabType.MENTION_TO_USER)
+                notifyDataSetChanged()
+            }
+        })
+
+        viewModel.mentionsFromUser.observe(lifecycleOwner, {
+            if (!it.isNullOrEmpty() && !tabs.contains(TabType.MENTION_FROM_USER)) {
+                tabs = tabs.plus(TabType.MENTION_FROM_USER)
+                notifyDataSetChanged()
+            }
+        })
+    }
+
+    // ------ //
+
     enum class TabType(
         @DrawableRes val iconId: Int,
         @StringRes val titleId: Int,
@@ -64,14 +85,14 @@ class DetailTabAdapter(
             R.drawable.ic_baseline_chat_bubble,
             R.string.bookmark_detail_tab_mentions_to,
             R.string.bookmark_detail_tab_tooltip_mentions_to,
-            { Fragment() }
+            { StarRelationsTabFragment.createInstance(MENTION_TO_USER) }
         ),
 
         MENTION_FROM_USER(
             R.drawable.ic_baseline_chat_bubble,
             R.string.bookmark_detail_tab_mentions_from,
             R.string.bookmark_detail_tab_tooltip_mentions_from,
-            { Fragment() }
+            { StarRelationsTabFragment.createInstance(MENTION_FROM_USER) }
         )
         ;
 

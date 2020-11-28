@@ -12,6 +12,7 @@ import com.suihan74.satena.databinding.ListviewItemStarRelataionsBinding
 import com.suihan74.satena.scenes.bookmarks.detail.DetailTabAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import com.suihan74.utilities.GeneralAdapter
+import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.extensions.setHtml
 
 class StarRelationsAdapter(
@@ -33,7 +34,8 @@ class StarRelationsAdapter(
                     comment = bookmark?.comment.orEmpty(),
                     bookmark = bookmark,
                     star = it.star,
-                    ignored = ignoredUsers.contains(it.sender)
+                    ignored = ignoredUsers.contains(it.sender),
+                    relation = it
                 )
             }
 
@@ -45,15 +47,50 @@ class StarRelationsAdapter(
                     comment = bookmark.comment,
                     bookmark = bookmark,
                     star = it.star,
-                    ignored = ignoredUsers.contains(it.receiver)
+                    ignored = ignoredUsers.contains(it.receiver),
+                    relation = it
                 )
             }
 
-            // TODO
-            else -> throw NotImplementedError()
+            DetailTabAdapter.TabType.MENTION_TO_USER -> starRelations.map {
+                val bookmark = it.senderBookmark
+                val user = it.sender
+                Item(
+                    user = user,
+                    userIconUrl = HatenaClient.getUserIconUrl(user),
+                    comment = bookmark?.comment.orEmpty(),
+                    bookmark = bookmark,
+                    star = null,
+                    ignored = ignoredUsers.contains(user),
+                    relation = it
+                )
+            }
+
+            DetailTabAdapter.TabType.MENTION_FROM_USER -> starRelations.map {
+                val bookmark = it.receiverBookmark
+                val user = it.receiver
+                Item(
+                    user = user,
+                    userIconUrl = HatenaClient.getUserIconUrl(user),
+                    comment = bookmark.comment,
+                    bookmark = bookmark,
+                    star = null,
+                    ignored = ignoredUsers.contains(user),
+                    relation = it
+                )
+            }
         }
 
         setItems(items, callback)
+    }
+
+    override fun setItems(items: List<Item>?, callback: Runnable?) {
+        submitList(
+            items?.let {
+                RecyclerState.makeStatesWithFooter(it)
+            },
+            callback
+        )
     }
 
     override fun bind(model: Item?, binding: ListviewItemStarRelataionsBinding) {
@@ -67,8 +104,9 @@ class StarRelationsAdapter(
         val userIconUrl : String,
         val comment : String,
         val bookmark : Bookmark?,
-        val star : Star,
-        val ignored : Boolean
+        val star : Star?,
+        val ignored : Boolean,
+        val relation : StarRelation
     )
 
     // ------ //
@@ -82,6 +120,7 @@ class StarRelationsAdapter(
 
         override fun areModelContentsTheSame(oldItem: Item?, newItem: Item?): Boolean {
             return oldItem?.comment == newItem?.comment
+                    && oldItem?.ignored == newItem?.ignored
                     && oldItem?.star?.color == newItem?.star?.color
                     && oldItem?.star?.count == newItem?.star?.count
                     && oldItem?.star?.quote == newItem?.star?.quote

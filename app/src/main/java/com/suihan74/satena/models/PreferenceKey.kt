@@ -2,7 +2,7 @@ package com.suihan74.satena.models
 
 import android.content.Context
 import android.view.Gravity
-import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
+import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment

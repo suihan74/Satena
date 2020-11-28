@@ -1,18 +1,15 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
-import android.app.Activity
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
-import com.suihan74.satena.scenes.bookmarks.detail.tabs.StarRelationsAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BookmarkDetailViewModel(
     val repository : BookmarksRepository,
@@ -84,20 +81,24 @@ class BookmarkDetailViewModel(
      * ブクマに言及している他のブクマ
      */
     val mentionsToUser by lazy {
-        MutableLiveData<List<Bookmark>>()
+        MutableLiveData<List<StarRelation>>()
     }
 
     /**
      * ブクマが言及している他のブクマ
      */
     val mentionsFromUser by lazy {
-        MutableLiveData<List<Bookmark>>()
+        MutableLiveData<List<StarRelation>>()
     }
 
     // ------ //
 
     init {
         this._bookmark.value = bookmark
+        viewModelScope.launch {
+            updateList(DetailTabAdapter.TabType.MENTION_TO_USER)
+            updateList(DetailTabAdapter.TabType.MENTION_FROM_USER)
+        }
     }
 
     // ------ //
@@ -113,13 +114,17 @@ class BookmarkDetailViewModel(
 
             DetailTabAdapter.TabType.STARS_FROM_USER -> starsFromUser
 
-            // TODO
-            else -> throw NotImplementedError()
+            DetailTabAdapter.TabType.MENTION_TO_USER -> mentionsToUser
+
+            DetailTabAdapter.TabType.MENTION_FROM_USER -> mentionsFromUser
         }
     }
 
     /** タブに対応するリストを更新する */
-    suspend fun updateList(tabType: DetailTabAdapter.TabType, forceUpdate: Boolean) {
+    suspend fun updateList(
+        tabType: DetailTabAdapter.TabType,
+        forceUpdate: Boolean = false
+    ) = withContext(Dispatchers.Default) {
         val bookmark = bookmark.value!!
         when (tabType) {
             DetailTabAdapter.TabType.STARS_TO_USER -> {
@@ -138,45 +143,35 @@ class BookmarkDetailViewModel(
                 }
             }
 
-            // TODO
-            else -> throw NotImplementedError()
+            DetailTabAdapter.TabType.MENTION_TO_USER -> {
+                if (forceUpdate || mentionsToUser.value == null) {
+                    val bookmarks = repository.getMentionsTo(bookmark)
+                    val relations = bookmarks.map {
+                        StarRelation(
+                            sender = it.user,
+                            receiver = bookmark.user,
+                            senderBookmark = it,
+                            receiverBookmark = bookmark
+                        )
+                    }
+                    mentionsToUser.postValue(relations)
+                }
+            }
+
+            DetailTabAdapter.TabType.MENTION_FROM_USER -> {
+                if (forceUpdate || mentionsFromUser.value == null) {
+                    val bookmarks = repository.getMentionsFrom(bookmark)
+                    val relations = bookmarks.map {
+                        StarRelation(
+                            sender = bookmark.user,
+                            receiver = it.user,
+                            senderBookmark = bookmark,
+                            receiverBookmark = it
+                        )
+                    }
+                    mentionsFromUser.postValue(relations)
+                }
+            }
         }
-    }
-
-    // ------ //
-
-    /**
-     * スター項目をクリックしたときの挙動
-     *
-     * コメントがあるならその詳細ページを開く
-     */
-    fun onClickStarRelation(activity: BookmarksActivity, item: StarRelationsAdapter.Item?) {
-        if (item == null) return
-
-        val bookmark = item.bookmark
-        if (bookmark == null) {
-            val user = item.user
-            activity.contentsViewModel.openEmptyBookmarkDetail(
-                activity,
-                user
-            )
-        }
-        else {
-            activity.contentsViewModel.openBookmarkDetail(
-                activity,
-                bookmark
-            )
-        }
-    }
-
-    /**
-     * スター項目に対するメニューを開く
-     */
-    fun openStarRelationMenuDialog(
-        activity: Activity,
-        user: String,
-        bookmark: Bookmark?,
-        fragmentManager: FragmentManager
-    ) {
     }
 }
