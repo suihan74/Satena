@@ -51,8 +51,33 @@ class StarRelationsAdapter(
                 )
             }
 
-            // TODO
-            else -> throw NotImplementedError()
+            DetailTabAdapter.TabType.MENTION_TO_USER -> starRelations.map {
+                val bookmark = it.senderBookmark
+                val user = it.sender
+                Item(
+                    user = user,
+                    userIconUrl = HatenaClient.getUserIconUrl(user),
+                    comment = bookmark?.comment.orEmpty(),
+                    bookmark = bookmark,
+                    star = null,
+                    ignored = ignoredUsers.contains(user),
+                    relation = it
+                )
+            }
+
+            DetailTabAdapter.TabType.MENTION_FROM_USER -> starRelations.map {
+                val bookmark = it.receiverBookmark
+                val user = it.receiver
+                Item(
+                    user = user,
+                    userIconUrl = HatenaClient.getUserIconUrl(user),
+                    comment = bookmark.comment,
+                    bookmark = bookmark,
+                    star = null,
+                    ignored = ignoredUsers.contains(user),
+                    relation = it
+                )
+            }
         }
 
         setItems(items, callback)
@@ -69,7 +94,7 @@ class StarRelationsAdapter(
         val userIconUrl : String,
         val comment : String,
         val bookmark : Bookmark?,
-        val star : Star,
+        val star : Star?,
         val ignored : Boolean,
         val relation : StarRelation
     )
