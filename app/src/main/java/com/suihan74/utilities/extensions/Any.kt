@@ -49,6 +49,16 @@ inline fun <T> T.onNot(
 
 // ------ //
 
+/** nullではないときだけactionを実行する */
+inline fun <T> T.onNotNull(crossinline action: (T)->Unit) : T {
+    if (this != null) {
+        action.invoke(this)
+    }
+    return this
+}
+
+// ------ //
+
 /** 与えられた型のときだけ実行するlet */
 @Suppress("UNCHECKED_CAST")
 @OptIn(kotlin.contracts.ExperimentalContracts::class)

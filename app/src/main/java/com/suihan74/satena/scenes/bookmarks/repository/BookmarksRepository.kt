@@ -9,6 +9,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
@@ -59,7 +60,7 @@ class BookmarksRepository(
     }
 
     /** はてなアクセス用クライアント */
-    private val client = accountLoader.client
+    val client = accountLoader.client
 
     /** サインイン状態 */
     val signedIn by lazy {
@@ -194,6 +195,23 @@ class BookmarksRepository(
         PreferenceLiveData(prefs, PreferenceKey.CUSTOM_BOOKMARKS_IS_MUTED_USERS_ACTIVE) { p, key ->
             p.getBoolean(key)
         }
+    }
+
+    // ------ //
+
+    /** スター付与ポップアップを使用する */
+    val useAddStarPopupMenu : Boolean by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU)
+    }
+
+    /** リンクをクリックしたときの処理 */
+    val linkSingleTapEntryAction by lazy {
+        TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
+    }
+
+    /** リンクを長押ししたときの処理 */
+    val linkLongTapEntryAction by lazy {
+        TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
     }
 
     // ------ //
@@ -841,13 +859,13 @@ class BookmarksRepository(
 
     /** 指定ブクマに言及しているブクマを取得する */
     fun getMentionsTo(bookmark: Bookmark) : List<Bookmark> {
-        val idCallStr = "id:${bookmark.user}"
-        return bookmarksEntry.value?.bookmarks?.filter { it.comment.contains(idCallStr) }.orEmpty()
+        val mentionRegex = Regex("""(id\s*:|>)\s*\Q${bookmark.user}\E""")
+        return bookmarksEntry.value?.bookmarks?.filter { it.comment.contains(mentionRegex) }.orEmpty()
     }
 
     /** 指定ブクマが言及しているブクマを取得する */
     fun getMentionsFrom(bookmark: Bookmark) : List<Bookmark> {
-        val mentionRegex = Regex("""(id:|>)([A-Za-z0-9_])+""")
+        val mentionRegex = Regex("""(id\s*:|>)\s*([A-Za-z0-9_]+)""")
         val matches = mentionRegex.findAll(bookmark.comment)
         val ids = matches.map { it.groupValues[2] }
         return bookmarksEntry.value?.bookmarks?.filter { ids.contains(it.user) }.orEmpty()

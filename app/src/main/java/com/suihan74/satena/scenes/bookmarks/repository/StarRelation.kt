@@ -22,5 +22,5 @@ data class StarRelation (
     val receiverBookmark : Bookmark,
 
     /** つけられたスター */
-    val star: Star
+    val star: Star? = null
 )

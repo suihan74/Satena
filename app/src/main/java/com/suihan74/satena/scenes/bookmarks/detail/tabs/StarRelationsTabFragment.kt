@@ -18,6 +18,7 @@ import com.suihan74.satena.scenes.bookmarks.detail.DetailTabAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -27,7 +28,9 @@ import kotlinx.coroutines.launch
 class StarRelationsTabFragment : Fragment(), ScrollableToTop {
 
     companion object {
-        fun createInstance(tabType: DetailTabAdapter.TabType) = StarRelationsTabFragment().withArguments {
+        fun createInstance(
+            tabType: DetailTabAdapter.TabType
+        ) = StarRelationsTabFragment().withArguments {
             putEnum(ARG_TAB_TYPE, tabType)
         }
 
@@ -42,12 +45,20 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
     private val bookmarkDetailFragment : BookmarkDetailFragment
         get() = parentFragment as BookmarkDetailFragment
 
-    private val viewModel : BookmarkDetailViewModel
+    private val bookmarkDetailViewModel : BookmarkDetailViewModel
         get() = bookmarkDetailFragment.viewModel
 
-    val tabType: DetailTabAdapter.TabType by lazy {
-        requireArguments().getEnum<DetailTabAdapter.TabType>(ARG_TAB_TYPE)!!
+    val viewModel by lazy {
+        provideViewModel(this) {
+            StarRelationsTabViewModel(
+                tabType = requireArguments().getEnum<DetailTabAdapter.TabType>(ARG_TAB_TYPE)!!,
+                repository = bookmarkDetailViewModel.repository
+            )
+        }
     }
+
+    val tabType: DetailTabAdapter.TabType
+        get() = viewModel.tabType
 
     private var binding : FragmentStarRelationsTabBinding? = null
 
@@ -64,7 +75,7 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
             container,
             false
         ).also {
-            it.vm = viewModel
+            it.vm = bookmarkDetailViewModel
             it.tabType = tabType
             it.lifecycleOwner = viewLifecycleOwner
         }
@@ -76,7 +87,7 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
             setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
             setOnRefreshListener {
                 lifecycleScope.launch(Dispatchers.Main) {
-                    viewModel.updateList(tabType, forceUpdate = true)
+                    bookmarkDetailViewModel.updateList(tabType, forceUpdate = true)
                     isRefreshing = false
                 }
             }
@@ -84,10 +95,18 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
 
         binding.recyclerView.adapter = StarRelationsAdapter(tabType, viewLifecycleOwner).also { adapter ->
             adapter.setOnClickItemListener {
-                viewModel.onClickStarRelation(bookmarksActivity, it.item)
+                val item = it.item ?: return@setOnClickItemListener
+                viewModel.onClickItem(bookmarksActivity, item)
             }
 
             adapter.setOnLongLickItemListener {
+                val item = it.item ?: return@setOnLongLickItemListener
+                viewModel.openStarRelationMenuDialog(
+                    bookmarksActivity,
+                    item,
+                    childFragmentManager,
+                    lifecycleScope
+                )
             }
         }
 

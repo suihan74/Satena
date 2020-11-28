@@ -25,8 +25,8 @@ import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.getEntryRootUrl
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.models.browser.HistoryPage
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
 import com.suihan74.satena.scenes.entries2.EntriesActivity
