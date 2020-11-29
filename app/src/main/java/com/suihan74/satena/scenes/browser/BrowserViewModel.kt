@@ -22,11 +22,14 @@ import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.getEntryRootUrl
 import com.suihan74.satena.models.FavoriteSite
+import com.suihan74.satena.models.browser.HistoryPage
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
+import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteRegistrationDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.Listener
@@ -37,6 +40,7 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDateTime
 import java.io.File
 import kotlin.math.absoluteValue
 
@@ -114,6 +118,20 @@ class BrowserViewModel(
         SingleUpdateMutableLiveData("")
     }
 
+    /** 「戻る/進む」の履歴 */
+    val backStack by lazy {
+        _backStack
+    }
+    private val _backStack = MutableLiveData<List<HistoryPage>>()
+
+    /**
+     * ひとつ前に表示していたURL
+     *
+     * `backStack`の更新時に使用する
+     */
+    var previousUrl : String? = null
+        private set
+
     /** 現在表示中のページで読み込んだすべてのURL */
     val resourceUrls : List<ResourceUrl>
         get() = browserRepo.resourceUrls
@@ -131,7 +149,10 @@ class BrowserViewModel(
     val isUrlFavorite = MutableLiveData<Boolean>(false)
 
     /** ドロワの開閉状態 */
-    val drawerOpened = MutableLiveData<Boolean>()
+    val drawerOpened = SingleUpdateMutableLiveData<Boolean>()
+
+    /** ボトムシートの開閉状態 */
+    val bottomSheetOpened = SingleUpdateMutableLiveData<Boolean>()
 
     // ------ //
 
@@ -492,6 +513,7 @@ class BrowserViewModel(
     // BrowserActivityに依存する処理をここに丸投げする
 
     /** 状態変化をオプションメニュー項目に通知する */
+    @MainThread
     fun bindOptionsMenu(owner: LifecycleOwner, context: Context, menu: Menu) {
         val textOn = "ON"
         val textOff = "OFF"
@@ -508,7 +530,13 @@ class BrowserViewModel(
     }
 
     /** オプションメニューの処理 */
+    @MainThread
     fun onOptionsItemSelected(item: MenuItem, activity: BrowserActivity): Boolean = when (item.itemId) {
+        R.id.back_stack -> {
+            bottomSheetOpened.value = true
+            true
+        }
+
         R.id.bookmarks -> {
             openBookmarksActivity(url.value!!, activity)
             true
@@ -714,21 +742,26 @@ class BrowserViewModel(
     @MainThread
     fun goAddress(moveToUrl: String? = null) : Boolean {
         val addr = moveToUrl ?: addressText.value
-        return when {
-            addr.isNullOrBlank() -> false
+        if (addr.isNullOrBlank()) {
+            return false
+        }
 
+        drawerOpened.value = false
+        bottomSheetOpened.value = false
+
+        when {
             // アドレスが渡されたら直接遷移する
             URLUtil.isValidUrl(addr) -> {
                 url.value = addr
-                true
             }
 
             // それ以外は入力内容をキーワードとして検索を行う
             else -> {
                 url.value = browserRepo.getSearchUrl(addr)
-                true
             }
         }
+
+        return true
     }
 
     /** ページ読み込み開始時の処理 */
@@ -739,24 +772,52 @@ class BrowserViewModel(
     }
 
     /** ページ読み込み完了時の処理 */
+    @MainThread
     fun onPageFinished(view: WebView?, url: String) {
+        // TODO: タイトルがひとつ前のページから更新されていない場合がある
         val title = view?.title ?: url
         this.title.value = title
         browserRepo.resourceUrls.addUnique(ResourceUrl(url, false))
 
+        val faviconUrl = Uri.parse(url).faviconUrl
+
         // 通常のwebページだけを履歴に追加する
         if (privateBrowsingEnabled.value != true && URLUtil.isNetworkUrl(url)) {
             viewModelScope.launch {
-                historyRepo.insertHistory(url, title)
+                historyRepo.insertHistory(url, title, faviconUrl)
             }
         }
 
-        onPageFinishedListener?.invoke(url)
+        // 「戻る/進む」履歴に追加する
+        updateBackStack(url, title, faviconUrl)
+
+        runCatching {
+            onPageFinishedListener?.invoke(url)
+        }
+
+        previousUrl = url
     }
 
     /** リソースを追加 */
     fun addResource(url: String, blocked: Boolean) = viewModelScope.launch(Dispatchers.IO) {
         browserRepo.resourceUrls.addUnique(ResourceUrl(url, blocked))
+    }
+
+    /** 「戻る/進む」履歴を更新する */
+    private fun updateBackStack(url: String, title: String, faviconUrl: String) {
+        val histories = _backStack.value.orEmpty()
+        if (histories.any { it.url == url }) return
+
+        val previousPagePosition = histories.indexOfFirst { it.url == previousUrl }
+        val poppedHistories =
+            if (previousPagePosition >= 0 && previousPagePosition + 1 < histories.size) {
+                histories.take(previousPagePosition + 1)
+            }
+            else histories
+
+        _backStack.value = poppedHistories.plus(
+            HistoryPage(url, title, faviconUrl, LocalDateTime.now())
+        )
     }
 
     // ------ //
@@ -846,5 +907,36 @@ class BrowserViewModel(
         }
 
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_BLOCK_URL)
+    }
+
+    /** 「戻る/進む」履歴項目のメニューダイアログを開く */
+    fun openBackStackItemMenuDialog(
+        activity: BrowserActivity,
+        page: HistoryPage,
+        fragmentManager: FragmentManager
+    ) {
+        val dialog = BackStackItemMenuDialog.createInstance(page)
+        dialog.setOnOpenListener {
+            goAddress(page.url)
+        }
+
+        dialog.setOnOpenBookmarksListener {
+            val intent = Intent(activity, BookmarksActivity::class.java).also {
+                it.putExtra(BookmarksActivity.EXTRA_ENTRY_URL, page.url)
+            }
+            activity.startActivity(intent)
+        }
+
+        dialog.setOnOpenEntriesListener {
+            viewModelScope.launch(Dispatchers.Main) {
+                val intent = Intent(activity, EntriesActivity::class.java).also {
+                    val rootUrl = getEntryRootUrl(page.url)
+                    it.putExtra(EntriesActivity.EXTRA_SITE_URL, rootUrl)
+                }
+                activity.startActivity(intent)
+            }
+        }
+
+        dialog.showAllowingStateLoss(fragmentManager)
     }
 }

@@ -521,8 +521,12 @@
     <string name="browser_open_post_bookmark_frame">ブクマエディタを開く</string>
     <string name="browser_close_post_bookmark_frame">ブクマエディタを閉じる</string>
 
+    <string name="browser_menu_back_stack">戻る/進む</string>
     <string name="browser_menu_bookmarks">ブクマ画面を表示</string>
     <string name="browser_menu_share">共有</string>
+    <string name="browser_menu_add_blocking">ブロック設定を追加</string>
+    <string name="browser_menu_adblock">AdBlock</string>
+    <string name="browser_menu_javascript">Javascript</string>
     <string name="browser_menu_settings">設定</string>
     <string name="browser_menu_exit">終了</string>
 

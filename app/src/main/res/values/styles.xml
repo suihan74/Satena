@@ -66,6 +66,9 @@
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
+
+        <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
+        <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackground</item>
     </style>
 
     <!-- Dark Theme -->
@@ -89,6 +92,9 @@
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+
+        <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
+        <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundDark</item>
     </style>
 
     <!-- スプラッシュ画面のテーマ -->
@@ -386,5 +392,15 @@
     </style>
     <style name="StarSpan.Purple">
         <item name="android:textColor">@color/starPurple</item>
+    </style>
+
+    <!-- ボトムシートの角を丸める -->
+    <style name="ShapeAppearanceOverlay.RoundedCorner">
+        <item name="cornerFamilyTopLeft">rounded</item>
+        <item name="cornerFamilyTopRight">rounded</item>
+        <item name="cornerSizeTopLeft">12dp</item>
+        <item name="cornerSizeTopRight">12dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
     </style>
 </resources>
