@@ -54,7 +54,7 @@
                     style="@style/MarqueeTextView"
                     android:ellipsize="end"
                     marqueeEnabled="@{true}"
-                    android:text="@{item.url}"
+                    encodedUrl="@{item.url}"
                     android:textColor="?attr/tagTextColor"
                     android:textSize="13sp"
                     android:layout_below="@id/title"

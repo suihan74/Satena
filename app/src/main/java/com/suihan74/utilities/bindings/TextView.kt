@@ -29,6 +29,14 @@ fun TextView.textSizeSp(size: Float) {
 
 //////////////////////////////////////////////////
 
+/** エンコードされたURLをデコードして表示する */
+@BindingAdapter("encodedUrl")
+fun TextView.setUrlWithDecoding(encodedUrl: String?) {
+    text = encodedUrl?.let { Uri.decode(it) } ?: ""
+}
+
+//////////////////////////////////////////////////
+
 class TextViewWithDrawable @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
