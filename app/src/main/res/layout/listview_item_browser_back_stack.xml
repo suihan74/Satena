@@ -38,7 +38,7 @@
             <com.suihan74.utilities.views.MarqueeTextView
                     android:id="@+id/title"
                     style="@style/MarqueeTextView"
-                    android:ellipsize="end"
+                    android:ellipsize="marquee"
                     android:text="@{item.title}"
                     marqueeEnabled="@{true}"
                     android:contentDescription="@null"
@@ -52,7 +52,7 @@
             <com.suihan74.utilities.views.MarqueeTextView
                     android:id="@+id/url"
                     style="@style/MarqueeTextView"
-                    android:ellipsize="end"
+                    android:ellipsize="marquee"
                     marqueeEnabled="@{true}"
                     encodedUrl="@{item.url}"
                     android:textColor="?attr/tagTextColor"
