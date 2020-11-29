@@ -21,6 +21,22 @@ import com.suihan74.utilities.extensions.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
+/**
+ * 画面の向きごとに最大表示行数を設定する
+ */
+@BindingAdapter("maxLinesPortrait", "maxLinesLandscape")
+fun TextView.setMaxLinesWithScreenRotation(
+    maxLinesPortrait: Int,
+    maxLinesLandscape: Int
+) {
+    val displayMetrics = this.context.resources.displayMetrics
+    this.maxLines =
+        if (displayMetrics.widthPixels > displayMetrics.heightPixels) maxLinesLandscape
+        else maxLinesPortrait
+}
+
+//////////////////////////////////////////////////
+
 /** フォントサイズを指定(sp), バインディング用 */
 @BindingAdapter("textSizeSp")
 fun TextView.textSizeSp(size: Float) {
@@ -33,6 +49,18 @@ fun TextView.textSizeSp(size: Float) {
 @BindingAdapter("encodedUrl")
 fun TextView.setUrlWithDecoding(encodedUrl: String?) {
     text = encodedUrl?.let { Uri.decode(it) } ?: ""
+}
+
+//////////////////////////////////////////////////
+
+/**
+ * 数値をテキストとしてセットする
+ *
+ * 数値を直接渡す際にリソースIDとして認識されないようにするために使用
+ */
+@BindingAdapter("numText")
+fun TextView.setNumberText(value: Number?) {
+    this.text = value?.toString().orEmpty()
 }
 
 //////////////////////////////////////////////////
