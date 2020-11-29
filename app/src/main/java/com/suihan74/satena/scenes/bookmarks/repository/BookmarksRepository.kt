@@ -199,6 +199,11 @@ class BookmarksRepository(
 
     // ------ //
 
+    /** スター付与ポップアップを使用する */
+    val useAddStarPopupMenu : Boolean by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU)
+    }
+
     /** リンクをクリックしたときの処理 */
     val linkSingleTapEntryAction by lazy {
         TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))

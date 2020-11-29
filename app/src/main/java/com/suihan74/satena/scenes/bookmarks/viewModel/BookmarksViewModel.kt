@@ -452,7 +452,19 @@ class BookmarksViewModel(
         fragmentManager: FragmentManager,
         coroutineScope: CoroutineScope = viewModelScope
     ) {
-        adapter.setAddStarButtonBinder { button, bookmark ->
+        adapter.setAddStarButtonBinder adapter@ { button, bookmark ->
+            val useAddStarPopupMenu = repository.useAddStarPopupMenu
+            val user = repository.userSignedIn
+            if (user == null || !useAddStarPopupMenu) {
+                // ボタンを使用しない
+                button.setVisibility(false)
+                return@adapter
+            }
+            else {
+                button.setVisibility(true)
+                TooltipCompat.setTooltipText(button, activity.getString(R.string.add_star_popup_desc))
+            }
+
             button.setOnClickListener {
                 openAddStarPopup(activity, lifecycleOwner, button) { color ->
                     postStarToBookmark(
@@ -463,15 +475,6 @@ class BookmarksViewModel(
                         fragmentManager
                     )
                 }
-            }
-
-            val user = repository.userSignedIn
-            if (user == null) {
-                button.setVisibility(false)
-            }
-            else {
-                button.setVisibility(true)
-                TooltipCompat.setTooltipText(button, activity.getString(R.string.add_star_popup_desc))
             }
 
             coroutineScope.launch(Dispatchers.Main) {
