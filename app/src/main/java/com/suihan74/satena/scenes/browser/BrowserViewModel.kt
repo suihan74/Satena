@@ -281,8 +281,7 @@ class BrowserViewModel(
         }
 
         // スタートページに遷移
-        val startPage = initialUrl ?: browserRepo.startPage.value!!
-        url.value = startPage
+        url.value = url.value ?: initialUrl ?: browserRepo.startPage.value!!
     }
 
     /**
