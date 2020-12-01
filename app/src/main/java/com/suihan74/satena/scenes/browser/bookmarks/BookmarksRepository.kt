@@ -7,11 +7,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepositoryForBookmarks
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepositoryInterface
 import com.suihan74.utilities.AccountLoader
@@ -31,18 +29,17 @@ import kotlinx.coroutines.withContext
 class BookmarksRepository(
     val accountLoader: AccountLoader,
     val prefs : SafeSharedPreferences<PreferenceKey>,
-    private val ignoredEntryDao : IgnoredEntryDao,
+    val ignoredEntriesRepo : IgnoredEntriesRepository,
     private val userTagDao: UserTagDao
 ) :
         // ユーザー非表示
         IgnoredUsersRepositoryInterface by IgnoredUsersRepository(accountLoader),
-        // NGワード
-        IgnoredEntriesRepositoryForBookmarks by IgnoredEntriesRepository(ignoredEntryDao),
         // ユーザータグ
         UserTagsRepositoryInterface by UserTagsRepository(userTagDao),
         // スター
         StarRepositoryInterface by StarRepository(accountLoader, prefs)
 {
+
     companion object {
         // 内部的な設定
 
@@ -168,7 +165,7 @@ class BookmarksRepository(
 
         try {
             val loadingIgnoresTasks = listOf(
-                async { loadIgnoredWordsForBookmarks() },
+                async { ignoredEntriesRepo.loadIgnoredWordsForBookmarks() },
                 async { loadIgnoredUsers() }
             )
             loadingIgnoresTasks.awaitAll()
@@ -270,7 +267,7 @@ class BookmarksRepository(
     /** ブクマが非表示対象かを判別する */
     fun checkIgnored(bookmark: Bookmark) : Boolean {
         if (ignoredUsersCache.any { bookmark.user == it }) return true
-        return ignoredWordsForBookmarks.any { w ->
+        return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
             bookmark.commentRaw.contains(w)
                     || bookmark.user.contains(w)
                     || bookmark.tags.any { t -> t.contains(w) }
@@ -280,7 +277,7 @@ class BookmarksRepository(
     /** ブクマが非表示対象かを判別する */
     fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean {
         if (ignoredUsersCache.any { bookmark.user == it }) return true
-        return ignoredWordsForBookmarks.any { w ->
+        return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
             bookmark.comment.contains(w)
                     || bookmark.user.contains(w)
                     || bookmark.tags.any { t -> t.contains(w) }

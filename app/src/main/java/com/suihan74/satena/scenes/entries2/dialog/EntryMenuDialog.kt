@@ -12,7 +12,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -36,7 +35,6 @@ import com.suihan74.utilities.extensions.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 // TODO: リスナの扱い方を刷新する
 
@@ -232,7 +230,7 @@ class EntryMenuDialog : DialogFragment() {
                     HatenaClient,
                     MastodonClientHolder
                 ),
-                ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
+                ignoredEntriesRepo = SatenaApplication.instance.ignoredEntriesRepository
             )
 
         val url = arguments.getString(ARG_ENTRY_URL)
@@ -476,26 +474,7 @@ class EntryMenuDialog : DialogFragment() {
             val siteUrl = entry?.url ?: url ?: return
             val dialog = IgnoredEntryDialogFragment.createInstance(
                 url = siteUrl,
-                title = entry?.title ?: "",
-                positiveAction = { dialog, ignoredEntry ->
-                    activity?.lifecycleScope?.launch(Dispatchers.Main) {
-                        try {
-                            withContext(Dispatchers.IO) {
-                                val dao = SatenaApplication.instance.ignoredEntryDao
-                                dao.insert(ignoredEntry)
-                            }
-
-                            context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
-                            onCompleted?.invoke(ignoredEntry)
-
-                            dialog.dismiss()
-                        }
-                        catch (e: Throwable) {
-                            context.showToast(R.string.msg_ignored_entry_dialog_failed)
-                        }
-                    }
-                    false
-                }
+                title = entry?.title ?: ""
             )
             dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
         }

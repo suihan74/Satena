@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.view.WindowManager
 import androidx.annotation.MainThread
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
@@ -14,12 +13,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentDialogIgnoredEntryBinding
 import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
+import com.suihan74.utilities.Listener
+import com.suihan74.utilities.exceptions.AlreadyExistedException
+import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.lazyProvideViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class IgnoredEntryDialogFragment : DialogFragment() {
     companion object {
@@ -32,7 +38,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         fun createInstance(
             url: String = "",
             title: String = "",
-            positiveAction: ((IgnoredEntryDialogFragment, IgnoredEntry)->Boolean)? = null
+            onCompleted: Listener<IgnoredEntry>? = null
         ) = IgnoredEntryDialogFragment().withArguments {
             val editingUrl =
                 Regex("""^https?://""").find(url)?.let { r ->
@@ -44,13 +50,13 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             putBoolean(ARG_EDIT_MODE, false)
         }.also {
             it.lifecycleScope.launchWhenCreated {
-                it.viewModel.positiveAction = positiveAction
+                it.viewModel.onCompleted = onCompleted
             }
         }
 
         fun createInstance(
             ignoredEntry: IgnoredEntry,
-            positiveAction: ((IgnoredEntryDialogFragment, IgnoredEntry) -> Boolean)? = null
+            onCompleted: Listener<IgnoredEntry>? = null
         ) = IgnoredEntryDialogFragment().withArguments {
             putString(ARG_EDITING_URL, ignoredEntry.query)
             putString(ARG_EDITING_TEXT, ignoredEntry.query)
@@ -59,7 +65,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             putBoolean(ARG_EDIT_MODE, true)
         }.also {
             it.lifecycleScope.launchWhenCreated {
-                it.viewModel.positiveAction = positiveAction
+                it.viewModel.onCompleted = onCompleted
             }
         }
     }
@@ -67,7 +73,10 @@ class IgnoredEntryDialogFragment : DialogFragment() {
     // ------ //
 
     private val viewModel by lazyProvideViewModel {
-        IgnoredEntryDialogViewModel(requireArguments())
+        IgnoredEntryDialogViewModel(
+            SatenaApplication.instance.ignoredEntriesRepository,
+            requireArguments()
+        )
     }
 
     // ------ //
@@ -170,11 +179,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             .show()
             .apply {
                 // IME表示を維持するための設定
-                window?.run {
-                    clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-                    setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
-                }
-                requireActivity().showSoftInputMethod(queryText, WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+                showSoftInputMethod(requireActivity(), queryText)
 
                 getButton(DialogInterface.BUTTON_POSITIVE).let {
                     // (主にキーボード操作の場合)クエリテキストエディタ上でENTER押したらOKボタンにフォーカス移動する
@@ -189,9 +194,37 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                             return@setOnClickListener
                         }
 
-                        val ignoredEntry = viewModel.createIgnoredEntry(modifyingEntry?.id ?: 0)
-                        if (viewModel.positiveAction?.invoke(this@IgnoredEntryDialogFragment, ignoredEntry) != false) {
-                            dismiss()
+                        lifecycleScope.launch(Dispatchers.Main) {
+                            val result = runCatching {
+                                viewModel.register(modifyingEntry)
+                            }
+
+                            val app = SatenaApplication.instance
+                            val ignoredEntry = result.getOrNull()
+
+                            if (ignoredEntry != null) {
+                                app.showToast(
+                                    R.string.msg_ignored_entry_dialog_succeeded,
+                                    ignoredEntry.query
+                                )
+
+                                viewModel.onCompleted?.invoke(ignoredEntry)
+
+                                runCatching {
+                                    dismiss()
+                                }
+                            }
+                            else {
+                                when (result.exceptionOrNull()) {
+                                    is AlreadyExistedException -> {
+                                        app.showToast(R.string.msg_ignored_entry_dialog_already_existed)
+                                    }
+
+                                    else -> {
+                                        app.showToast(R.string.msg_ignored_entry_dialog_failed)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -243,6 +276,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
     // ------ //
 
     class IgnoredEntryDialogViewModel(
+        private val repository: IgnoredEntriesRepository,
         args: Bundle
     ) : ViewModel() {
         /** 編集モードである */
@@ -299,6 +333,35 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 else -> Unit
             }
 
-        var positiveAction : ((IgnoredEntryDialogFragment, IgnoredEntry)->Boolean)? = null
+        var onCompleted : Listener<IgnoredEntry>? = null
+
+        /**
+         * 登録処理
+         *
+         * @throws AlreadyExistedException
+         * @throws TaskFailureException
+         */
+        suspend fun register(modifyingEntry: IgnoredEntry?) : IgnoredEntry {
+            val ignoredEntry = createIgnoredEntry(modifyingEntry?.id ?: 0)
+            val modifyMode = modifyingEntry != null
+
+            val result = runCatching {
+                if (modifyMode) {
+                    repository.updateIgnoredEntry(ignoredEntry)
+                }
+                else {
+                    repository.addIgnoredEntry(ignoredEntry)
+                }
+            }
+
+            if (result.isFailure) {
+                throw when (val e = result.exceptionOrNull()) {
+                    is AlreadyExistedException -> e
+                    else -> TaskFailureException(cause = result.exceptionOrNull())
+                }
+            }
+
+            return ignoredEntry
+        }
     }
 }

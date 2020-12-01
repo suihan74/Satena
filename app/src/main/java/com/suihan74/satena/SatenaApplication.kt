@@ -18,8 +18,11 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.PreferenceKeyMigration
 import com.suihan74.satena.models.migrate
 import com.suihan74.satena.notices.NotificationWorker
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.showToast
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -32,6 +35,8 @@ class SatenaApplication : Application() {
         const val WORKER_TAG_CHECKING_NOTICES = "WORKER_TAG_CHECKING_NOTICES"
     }
 
+    // ------ //
+
     var isFirstLaunch : Boolean = false
 
     lateinit var appDatabase: AppDatabase
@@ -39,6 +44,8 @@ class SatenaApplication : Application() {
 
     lateinit var networkReceiver : NetworkReceiver
         private set
+
+    // ------ //
 
     /** アプリのバージョン番号 */
     val versionCode: Long by lazy {
@@ -86,6 +93,13 @@ class SatenaApplication : Application() {
     fun getDevelopVersion(versionCode: Long) : Long =
         versionCode / 1000
 
+    // ------ //
+
+    lateinit var ignoredEntriesRepository : IgnoredEntriesRepository
+        private set
+
+    // ------ //
+
     override fun onCreate() {
         super.onCreate()
 
@@ -124,6 +138,13 @@ class SatenaApplication : Application() {
 
             // 設定ファイルのバージョン移行が必要ならする
             updatePreferencesVersion()
+        }
+
+        // グローバルなリポジトリを初期化する
+        ignoredEntriesRepository = IgnoredEntriesRepository(ignoredEntryDao).also {
+            GlobalScope.launch {
+                it.loadAllIgnoredEntries()
+            }
         }
 
         // 接続状態を監視

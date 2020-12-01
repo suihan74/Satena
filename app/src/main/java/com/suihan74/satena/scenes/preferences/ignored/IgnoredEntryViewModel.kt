@@ -9,11 +9,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class IgnoredEntryViewModel(
-    private val repository: IgnoredEntriesRepository
+    val repository: IgnoredEntriesRepository
 ) : ViewModel() {
 
     val entries by lazy {
-        repository.ignoreEntries
+        repository.ignoredEntries
     }
 
     // ------ //

@@ -24,7 +24,6 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /** エントリ項目に対する操作 */
 interface EntryMenuActions {
@@ -189,6 +188,20 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
             activity.showToast(R.string.msg_show_page_in_browser_failed)
         }
     }
+
+    override fun openIgnoreEntryDialog(
+        activity: Activity,
+        entry: Entry,
+        fragmentManager: FragmentManager,
+        coroutineScope: CoroutineScope
+    ) {
+        val dialog = IgnoredEntryDialogFragment.createInstance(
+            url = entry.url,
+            title = entry.title
+        )
+
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
+    }
 }
 
 // ------ //
@@ -227,41 +240,6 @@ class EntryMenuActionsImplForEntries(
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)
             }
         }
-    }
-
-    override fun openIgnoreEntryDialog(
-        activity: Activity,
-        entry: Entry,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) {
-        val dialog = IgnoredEntryDialogFragment.createInstance(
-            url = entry.url,
-            title = entry.title
-        ) { dialog, ignoredEntry ->
-            coroutineScope.launch(Dispatchers.Main) {
-                try {
-                    repository.addIgnoredEntry(ignoredEntry)
-
-                    activity.alsoAs<EntriesActivity> { a ->
-                        a.refreshLists()
-                    }
-
-                    activity.showToast(
-                        R.string.msg_ignored_entry_dialog_succeeded,
-                        ignoredEntry.query
-                    )
-
-                    dialog.dismiss()
-                }
-                catch (e: Throwable) {
-                    activity.showToast(R.string.msg_ignored_entry_dialog_failed)
-                }
-            }
-            false
-        }
-
-        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
     }
 
     override fun readLaterEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
@@ -382,45 +360,6 @@ class EntryMenuActionsImplForBookmarks(
             if (result.isSuccess) {
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)
             }
-        }
-    }
-
-    override fun openIgnoreEntryDialog(
-        activity: Activity,
-        entry: Entry,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) {
-        IgnoredEntryDialogFragment.createInstance(
-            url = entry.url,
-            title = entry.title,
-            positiveAction = { dialog, ignoredEntry ->
-                coroutineScope.launch(Dispatchers.Main) {
-                    try {
-                        withContext(Dispatchers.IO) {
-// TODO:
-//                            repository.addIgnoredEntry(ignoredEntry)
-                        }
-
-                        activity.alsoAs<EntriesActivity> { a ->
-                            a.refreshLists()
-                        }
-
-                        activity.showToast(
-                            R.string.msg_ignored_entry_dialog_succeeded,
-                            ignoredEntry.query
-                        )
-
-                        dialog.dismiss()
-                    }
-                    catch (e: Throwable) {
-                        activity.showToast(R.string.msg_ignored_entry_dialog_failed)
-                    }
-                }
-                false
-            }
-        ).run {
-            showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
         }
     }
 
