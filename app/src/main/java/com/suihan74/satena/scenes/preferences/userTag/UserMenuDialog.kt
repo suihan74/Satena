@@ -44,7 +44,7 @@ class UserMenuDialog : DialogFragment() {
             .apply {
                 // アイテムを選択した瞬間にダイアログを閉じないようにする
                 // 自動で閉じてしまうと、処理完了前にコルーチンがキャンセルされてしまう可能性が高くなる
-                listView.setOnItemClickListener { adapterView, view, i, l ->
+                listView.setOnItemClickListener { _, _, i, _ ->
                     lifecycleScope.launch(Dispatchers.Main) {
                         viewModel.invokeListener(i)
                         dismiss()

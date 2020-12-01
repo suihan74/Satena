@@ -387,7 +387,7 @@ class EntryMenuDialog : DialogFragment() {
                 showEntries(args.context, args.entry, args.url)
 
             MenuItem.IGNORE_SITE ->
-                ignoreSite(args.context, args.entry, args.url, args.listeners?.onIgnoredEntry)
+                ignoreSite(args.entry, args.url)
 
             MenuItem.READ_LATER ->
                 readLater(args)
@@ -397,8 +397,6 @@ class EntryMenuDialog : DialogFragment() {
 
             MenuItem.REMOVE_BOOKMARK ->
                 removeBookmark(args.context, args.entry, args.url, args.listeners?.onDeletedBookmark)
-
-            else -> throw NotImplementedError()
         }
 
         /** ブックマーク画面に遷移 */
@@ -469,7 +467,7 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** サイトを非表示に設定する */
-        private fun ignoreSite(context: Context, entry: Entry?, url: String?, onCompleted: OnSuccess<IgnoredEntry>?) {
+        private fun ignoreSite(entry: Entry?, url: String?) {
             val fragmentManager = fragmentManager ?: return
             val siteUrl = entry?.url ?: url ?: return
             val dialog = IgnoredEntryDialogFragment.createInstance(

@@ -81,7 +81,7 @@ class BookmarkPostFragment : Fragment() {
             // 注: XML側に書くと表示部分の縦幅が一行分だけになる
             comment.maxLines = Int.MAX_VALUE
 
-            comment.setOnFocusChangeListener { view, b ->
+            comment.setOnFocusChangeListener { _, b ->
                 if (!b) {
                     activity?.hideSoftInputMethod(binding.bookmarkPostLayout)
                 }

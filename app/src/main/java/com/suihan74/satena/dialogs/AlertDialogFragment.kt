@@ -211,7 +211,7 @@ class AlertDialogFragment : DialogFragment() {
                 }
             }
 
-            dialog.listView?.setOnItemClickListener { adapterView, view, i, l ->
+            dialog.listView?.setOnItemClickListener { _, _, i, _ ->
                 onClickItem?.invoke(fragment, i)
                 if (false != dismissOnClickItem) {
                     fragment.dismiss()
