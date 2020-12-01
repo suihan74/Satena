@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.models.userTag.Tag
@@ -45,18 +44,20 @@ class TagMenuDialog : DialogFragment() {
                 // 自動で閉じてしまうと、処理完了前にコルーチンがキャンセルされてしまう可能性が高くなる
                 listView.setOnItemClickListener { _, _, i, _ ->
                     lifecycleScope.launch(Dispatchers.Main) {
-                        viewModel.invokeListener(i)
-                        dismiss()
+                        runCatching {
+                            viewModel.invokeListener(i, this@TagMenuDialog)
+                            dismiss()
+                        }
                     }
                 }
             }
     }
 
-    suspend fun setOnEditListener(listener: SuspendListener<Tag>?) = whenStarted {
+    fun setOnEditListener(listener: SuspendListener<Pair<Tag, TagMenuDialog>>?) = lifecycleScope.launchWhenCreated {
         viewModel.onEdit = listener
     }
 
-    suspend fun setOnDeleteListener(listener: SuspendListener<Tag>?) = whenStarted {
+    fun setOnDeleteListener(listener: SuspendListener<Pair<Tag, TagMenuDialog>>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDelete = listener
     }
 
@@ -72,16 +73,16 @@ class TagMenuDialog : DialogFragment() {
             R.string.pref_user_tags_tag_menu_remove to { onDelete }
         )
 
-        var onEdit: SuspendListener<Tag>? = null
+        var onEdit: SuspendListener<Pair<Tag, TagMenuDialog>>? = null
 
-        var onDelete: SuspendListener<Tag>? = null
+        var onDelete: SuspendListener<Pair<Tag, TagMenuDialog>>? = null
 
         // itemsの場合クリックしてすぐダイアログが閉じるせいで
         // viewModelScopeやlifecycleScopeを使っていると
         // 途中でキャンセルされる可能性がある
-        suspend fun invokeListener(which: Int) {
+        suspend fun invokeListener(which: Int, dialogFragment: TagMenuDialog) {
             val listener = items[which].second()
-            listener?.invoke(targetTag)
+            listener?.invoke(targetTag to dialogFragment)
         }
     }
 }
