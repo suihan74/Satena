@@ -15,6 +15,7 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
@@ -354,7 +355,8 @@ class EntryMenuActionsImplForEntries(
 
 /** ブクマ画面用の実装 */
 class EntryMenuActionsImplForBookmarks(
-    private val favoriteSitesRepo: FavoriteSitesRepositoryForEntries
+    private val favoriteSitesRepo: FavoriteSitesRepositoryForEntries,
+    private val ignoredEntriesRepo : IgnoredEntriesRepository
 ) : EntryMenuActionsImplBasic() {
 
     override fun showEntries(activity: Activity, entry: Entry) {
@@ -392,37 +394,34 @@ class EntryMenuActionsImplForBookmarks(
         fragmentManager: FragmentManager,
         coroutineScope: CoroutineScope
     ) {
-        IgnoredEntryDialogFragment.createInstance(
+        val dialog = IgnoredEntryDialogFragment.createInstance(
             url = entry.url,
             title = entry.title,
-            positiveAction = { dialog, ignoredEntry ->
-                coroutineScope.launch(Dispatchers.Main) {
-                    try {
-                        withContext(Dispatchers.IO) {
-// TODO:
-//                            repository.addIgnoredEntry(ignoredEntry)
-                        }
-
-                        activity.alsoAs<EntriesActivity> { a ->
-                            a.refreshLists()
-                        }
-
-                        activity.showToast(
-                            R.string.msg_ignored_entry_dialog_succeeded,
-                            ignoredEntry.query
-                        )
-
-                        dialog.dismiss()
+        ) { dialog, ignoredEntry ->
+            coroutineScope.launch(Dispatchers.Main) {
+                try {
+                    withContext(Dispatchers.IO) {
+                        ignoredEntriesRepo.addIgnoredEntry(ignoredEntry)
                     }
-                    catch (e: Throwable) {
-                        activity.showToast(R.string.msg_ignored_entry_dialog_failed)
+
+                    activity.alsoAs<EntriesActivity> { a ->
+                        a.refreshLists()
                     }
+
+                    activity.showToast(
+                        R.string.msg_ignored_entry_dialog_succeeded,
+                        ignoredEntry.query
+                    )
+
+                    dialog.dismiss()
                 }
-                false
+                catch (e: Throwable) {
+                    activity.showToast(R.string.msg_ignored_entry_dialog_failed)
+                }
             }
-        ).run {
-            showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
+            false
         }
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
     }
 
     override fun readLaterEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
