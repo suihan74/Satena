@@ -19,7 +19,7 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryViewModel
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.extensions.showToast
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
 
 class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
@@ -29,14 +29,12 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
 
     // ------ //
 
-    private val viewModel: IgnoredEntryViewModel by lazy {
-        provideViewModel(this) {
-            IgnoredEntryViewModel(
-                IgnoredEntriesRepository(
-                    SatenaApplication.instance.ignoredEntryDao
-                )
+    private val viewModel: IgnoredEntryViewModel by lazyProvideViewModel {
+        IgnoredEntryViewModel(
+            IgnoredEntriesRepository(
+                SatenaApplication.instance.ignoredEntryDao
             )
-        }
+        )
     }
 
     // ------ //

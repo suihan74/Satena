@@ -16,7 +16,7 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
 
 class PreferencesBookmarksFragment : PreferencesFragmentBase() {
@@ -31,11 +31,10 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
 
     // ------ //
 
-    private val viewModel: PreferencesBookmarksViewModel by lazy {
-        provideViewModel(this) {
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-            PreferencesBookmarksViewModel(prefs)
-        }
+    private val viewModel by lazyProvideViewModel {
+        PreferencesBookmarksViewModel(
+            SafeSharedPreferences.create<PreferenceKey>(context)
+        )
     }
 
     // ------ //

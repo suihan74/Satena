@@ -12,7 +12,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.observe
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogIgnoredEntryBinding
@@ -20,7 +19,7 @@ import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.utilities.extensions.*
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class IgnoredEntryDialogFragment : DialogFragment() {
     companion object {
@@ -67,10 +66,8 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
     // ------ //
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            IgnoredEntryDialogViewModel(requireArguments())
-        }
+    private val viewModel by lazyProvideViewModel {
+        IgnoredEntryDialogViewModel(requireArguments())
     }
 
     // ------ //

@@ -73,28 +73,26 @@ class BookmarksActivity : AppCompatActivity() {
     // ------ //
 
     /** ViewModel */
-    val viewModel: BookmarksViewModel by lazy {
-        provideViewModel(this, VIEW_MODEL_ACTIVITY) {
-            val bookmarksRepository = BookmarksRepository(
-                client = HatenaClient,
-                accountLoader = AccountLoader(
-                    applicationContext,
-                    HatenaClient,
-                    MastodonClientHolder
-                ),
-                prefs = SafeSharedPreferences.create(this)
+    val viewModel: BookmarksViewModel by lazyProvideViewModel(VIEW_MODEL_ACTIVITY) {
+        val bookmarksRepository = BookmarksRepository(
+            client = HatenaClient,
+            accountLoader = AccountLoader(
+                applicationContext,
+                HatenaClient,
+                MastodonClientHolder
+            ),
+            prefs = SafeSharedPreferences.create(this)
+        )
+
+        val userTagRepository = UserTagRepository(
+            SatenaApplication.instance.userTagDao
+        )
+
+        val ignoredEntriesRepository = IgnoredEntriesRepository(
+                SatenaApplication.instance.ignoredEntryDao
             )
 
-            val userTagRepository = UserTagRepository(
-                SatenaApplication.instance.userTagDao
-            )
-
-            val ignoredEntriesRepository = IgnoredEntriesRepository(
-                    SatenaApplication.instance.ignoredEntryDao
-                )
-
-            BookmarksViewModel(bookmarksRepository, userTagRepository, ignoredEntriesRepository)
-        }
+        BookmarksViewModel(bookmarksRepository, userTagRepository, ignoredEntriesRepository)
     }
 
     val bookmarksFragment

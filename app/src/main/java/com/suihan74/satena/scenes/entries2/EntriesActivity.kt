@@ -72,20 +72,18 @@ class EntriesActivity : AppCompatActivity() {
     // ------ //
 
     /** Entry画面全体で使用するViewModel */
-    val viewModel : EntriesViewModel by lazy {
-        provideViewModel(this) {
-            val repository = EntriesRepository(
-                context = this,
-                client = HatenaClient,
-                accountLoader = AccountLoader(
-                    this,
-                    HatenaClient,
-                    MastodonClientHolder
-                ),
-                ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
-            )
-            EntriesViewModel(repository)
-        }
+    val viewModel by lazyProvideViewModel {
+        val repository = EntriesRepository(
+            context = this,
+            client = HatenaClient,
+            accountLoader = AccountLoader(
+                this,
+                HatenaClient,
+                MastodonClientHolder
+            ),
+            ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
+        )
+        EntriesViewModel(repository)
     }
 
     // ------ //

@@ -58,13 +58,11 @@ class BookmarkDetailFragment : Fragment() {
     private val activityViewModel: BookmarksViewModel
         get() = (requireActivity() as BookmarksActivity).viewModel
 
-    val viewModel: BookmarkDetailViewModel by lazy {
-        provideViewModel(this) {
-            val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-            BookmarkDetailViewModel(activityViewModel.repository, prefs, bookmark).also {
-                initializeViewModel(it)
-            }
+    val viewModel: BookmarkDetailViewModel by lazyProvideViewModel {
+        val bookmark = requireArguments().getObject<Bookmark>(ARG_BOOKMARK)!!
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        BookmarkDetailViewModel(activityViewModel.repository, prefs, bookmark).also {
+            initializeViewModel(it)
         }
     }
 

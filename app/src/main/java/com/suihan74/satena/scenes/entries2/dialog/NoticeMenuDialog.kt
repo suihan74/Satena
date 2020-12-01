@@ -20,11 +20,8 @@ import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.utilities.Listener
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
-import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.showAllowingStateLoss
 
 class NoticeMenuDialog : DialogFragment() {
     companion object {
@@ -41,10 +38,8 @@ class NoticeMenuDialog : DialogFragment() {
 
     // ------ //
 
-    val viewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel(requireArguments())
-        }
+    val viewModel by lazyProvideViewModel {
+        DialogViewModel(requireArguments())
     }
 
     // ------ //

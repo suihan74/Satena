@@ -13,7 +13,7 @@ import com.suihan74.utilities.SuspendListener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -26,13 +26,11 @@ class UserMenuDialog : DialogFragment() {
         private const val ARG_TARGET_USER = "ARG_TARGET_USER"
     }
 
-    private val viewModel : DialogViewModel by lazy {
-        provideViewModel(this) {
-            val args = requireArguments()
-            DialogViewModel(
-                args.getObject<User>(ARG_TARGET_USER)!!
-            )
-        }
+    private val viewModel by lazyProvideViewModel {
+        val args = requireArguments()
+        DialogViewModel(
+            args.getObject<User>(ARG_TARGET_USER)!!
+        )
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

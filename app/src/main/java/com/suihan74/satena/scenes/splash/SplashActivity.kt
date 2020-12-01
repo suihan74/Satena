@@ -9,17 +9,15 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ActivitySplashBinding
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.launch
 
 class SplashActivity : AppCompatActivity() {
-    private val viewModel : ViewModel by lazy {
-        provideViewModel(this) {
-            val repository = Repository(
-                AccountLoader(this, HatenaClient, MastodonClientHolder)
-            )
-            ViewModel(repository)
-        }
+    private val viewModel by lazyProvideViewModel {
+        val repository = Repository(
+            AccountLoader(this, HatenaClient, MastodonClientHolder)
+        )
+        ViewModel(repository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

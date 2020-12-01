@@ -12,7 +12,7 @@ import com.suihan74.satena.R
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getIntOrNull
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 /**
  * 数値設定用ダイアログ
@@ -59,10 +59,8 @@ class NumberPickerDialog : DialogFragment() {
 
     // ------ //
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel(requireArguments())
-        }
+    private val viewModel by lazyProvideViewModel {
+        DialogViewModel(requireArguments())
     }
 
     // ------ //

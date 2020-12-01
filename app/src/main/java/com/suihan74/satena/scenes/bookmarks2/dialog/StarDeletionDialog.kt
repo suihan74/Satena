@@ -13,7 +13,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.*
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class StarDeletionDialog : DialogFragment() {
     companion object {
@@ -25,12 +25,10 @@ class StarDeletionDialog : DialogFragment() {
         private const val ARG_STARS = "ARG_STARS"
     }
 
-    private val viewModel: DialogViewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel(
-                requireArguments().getObject(ARG_STARS)!!
-            )
-        }
+    private val viewModel: DialogViewModel by lazyProvideViewModel {
+        DialogViewModel(
+            requireArguments().getObject(ARG_STARS)!!
+        )
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

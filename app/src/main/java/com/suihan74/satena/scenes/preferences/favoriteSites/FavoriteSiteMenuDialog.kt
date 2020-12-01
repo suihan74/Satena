@@ -16,7 +16,7 @@ import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class FavoriteSiteMenuDialog : DialogFragment() {
     companion object {
@@ -27,18 +27,15 @@ class FavoriteSiteMenuDialog : DialogFragment() {
         private const val ARG_TARGET_SITE = "ARG_TARGET_SITE"
     }
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            val targetSite = requireArguments().getObject<FavoriteSite>(ARG_TARGET_SITE)!!
-            DialogViewModel(requireContext(), targetSite)
-        }
+    private val viewModel by lazyProvideViewModel {
+        val targetSite = requireArguments().getObject<FavoriteSite>(ARG_TARGET_SITE)!!
+        DialogViewModel(requireContext(), targetSite)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         // カスタムタイトルを生成
-        val inflater = localLayoutInflater()
         val titleViewBinding = DataBindingUtil.inflate<DialogTitleEntry2Binding>(
-            inflater,
+            localLayoutInflater(),
             R.layout.dialog_title_entry2,
             null,
             false

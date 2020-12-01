@@ -21,7 +21,7 @@ import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.putObjectExtra
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
 
 class PreferencesGeneralsFragment : PreferencesFragmentBase() {
@@ -50,11 +50,9 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
 
     // ------ //
 
-    private val viewModel: PreferencesGeneralsViewModel by lazy {
-        provideViewModel(this) {
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-            PreferencesGeneralsViewModel(prefs)
-        }
+    private val viewModel by lazyProvideViewModel {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        PreferencesGeneralsViewModel(prefs)
     }
 
     // ------ //

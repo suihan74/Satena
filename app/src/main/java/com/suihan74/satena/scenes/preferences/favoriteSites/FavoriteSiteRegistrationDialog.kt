@@ -24,7 +24,7 @@ import com.suihan74.utilities.exceptions.DuplicateException
 import com.suihan74.utilities.exceptions.EmptyException
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.*
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -61,14 +61,12 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
         private const val ARG_TARGET_SITE = "ARG_TARGET_SITE"
     }
 
-    private val viewModel by lazy {
+    private val viewModel by lazyProvideViewModel {
         val args = requireArguments()
         val mode = args.getEnum<Mode>(ARG_MODE)!!
         val site = args.getObject<FavoriteSite>(ARG_TARGET_SITE)
 
-        provideViewModel(this) {
-            DialogViewModel(mode, site)
-        }
+        DialogViewModel(mode, site)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

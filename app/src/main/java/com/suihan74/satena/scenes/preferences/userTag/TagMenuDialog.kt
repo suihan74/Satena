@@ -13,7 +13,7 @@ import com.suihan74.utilities.SuspendListener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -26,12 +26,10 @@ class TagMenuDialog : DialogFragment() {
         private const val ARG_TARGET_TAG = "ARG_TARGET_TAG"
     }
 
-    private val viewModel : DialogViewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel(
-                requireArguments().getObject<Tag>(ARG_TARGET_TAG)!!
-            )
-        }
+    private val viewModel : DialogViewModel by lazyProvideViewModel {
+        DialogViewModel(
+            requireArguments().getObject<Tag>(ARG_TARGET_TAG)!!
+        )
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

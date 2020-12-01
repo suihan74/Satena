@@ -28,7 +28,7 @@ import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.bindings.setIconId
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.getThemeColor
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -54,10 +54,8 @@ class BookmarksFragment :
     private val bookmarkPostViewModel : BookmarkPostViewModel
         get() = browserActivity.bookmarkPostViewModel
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            BookmarksViewModel(activityViewModel.bookmarksRepo)
-        }
+    private val viewModel by lazyProvideViewModel {
+        BookmarksViewModel(activityViewModel.bookmarksRepo)
     }
 
     // ------ //

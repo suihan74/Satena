@@ -46,51 +46,47 @@ class BrowserActivity :
 
     // ------ //
 
-    val viewModel : BrowserViewModel by lazy {
-        provideViewModel(this) {
-            val initialUrl = intent.getStringExtra(EXTRA_URL)
+    val viewModel : BrowserViewModel by lazyProvideViewModel {
+        val initialUrl = intent.getStringExtra(EXTRA_URL)
 
-            val app = SatenaApplication.instance
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val app = SatenaApplication.instance
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
 
-            val browserRepo = BrowserRepository(
-                HatenaClient,
-                prefs,
-                SafeSharedPreferences.create<BrowserSettingsKey>(this)
-            )
+        val browserRepo = BrowserRepository(
+            HatenaClient,
+            prefs,
+            SafeSharedPreferences.create<BrowserSettingsKey>(this)
+        )
 
-            val bookmarksRepo = BookmarksRepository(
-                AccountLoader(this, HatenaClient, MastodonClientHolder),
-                prefs,
-                app.ignoredEntryDao,
-                app.userTagDao
-            )
+        val bookmarksRepo = BookmarksRepository(
+            AccountLoader(this, HatenaClient, MastodonClientHolder),
+            prefs,
+            app.ignoredEntryDao,
+            app.userTagDao
+        )
 
-            val favoriteSitesRepo = FavoriteSitesRepository(
-                SafeSharedPreferences.create<FavoriteSitesKey>(this)
-            )
+        val favoriteSitesRepo = FavoriteSitesRepository(
+            SafeSharedPreferences.create<FavoriteSitesKey>(this)
+        )
 
-            val historyRepo = HistoryRepository(app.browserDao)
+        val historyRepo = HistoryRepository(app.browserDao)
 
-            BrowserViewModel(
-                browserRepo,
-                bookmarksRepo,
-                favoriteSitesRepo,
-                historyRepo,
-                initialUrl
-            )
-        }
+        BrowserViewModel(
+            browserRepo,
+            bookmarksRepo,
+            favoriteSitesRepo,
+            historyRepo,
+            initialUrl
+        )
     }
 
     /** ブクマ投稿用のViewModel */
-    override val bookmarkPostViewModel: BookmarkPostViewModel by lazy {
-        provideViewModel(this) {
-            val repository = BookmarkPostRepository(
-                viewModel.bookmarksRepo.accountLoader,
-                viewModel.bookmarksRepo.prefs
-            )
-            BookmarkPostViewModel(repository)
-        }
+    override val bookmarkPostViewModel by lazyProvideViewModel {
+        val repository = BookmarkPostRepository(
+            viewModel.bookmarksRepo.accountLoader,
+            viewModel.bookmarksRepo.prefs
+        )
+        BookmarkPostViewModel(repository)
     }
 
     // ------ //

@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.*
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 /**
  * 汎用的なダイアログフラグメント
@@ -41,10 +41,8 @@ class AlertDialogFragment : DialogFragment() {
         private const val ARG_MULTI_CHECKED_ITEMS = "ARG_MULTI_CHECKED_ITEMS"
     }
 
-    private val viewModel: DialogViewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel(requireArguments())
-        }
+    private val viewModel: DialogViewModel by lazyProvideViewModel {
+        DialogViewModel(requireArguments())
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

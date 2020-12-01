@@ -205,11 +205,9 @@ class EntryMenuDialog : DialogFragment() {
     }
 
     /** 永続化するデータ */
-    private val viewModel : DialogViewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel().apply {
-                listeners = listeners ?: this@EntryMenuDialog.listeners
-            }
+    private val viewModel by lazyProvideViewModel {
+        DialogViewModel().apply {
+            listeners = listeners ?: this@EntryMenuDialog.listeners
         }
     }
 

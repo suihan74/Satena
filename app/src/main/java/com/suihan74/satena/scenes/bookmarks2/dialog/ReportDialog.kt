@@ -21,7 +21,7 @@ import com.suihan74.utilities.SuspendSwitcher
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -42,15 +42,13 @@ class ReportDialog : DialogFragment() {
         private const val ARG_COMMENT = "ARG_COMMENT"
     }
 
-    private val viewModel: DialogViewModel by lazy {
-        provideViewModel(this) {
-            val args = requireArguments()
-            val user = args.getString(ARG_USER)!!
-            val userIconUrl = args.getString(ARG_USER_ICON_URL)!!
-            val comment = args.getString(ARG_COMMENT) ?: ""
+    private val viewModel: DialogViewModel by lazyProvideViewModel {
+        val args = requireArguments()
+        val user = args.getString(ARG_USER)!!
+        val userIconUrl = args.getString(ARG_USER_ICON_URL)!!
+        val comment = args.getString(ARG_COMMENT) ?: ""
 
-            DialogViewModel(user, userIconUrl, comment)
-        }
+        DialogViewModel(user, userIconUrl, comment)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

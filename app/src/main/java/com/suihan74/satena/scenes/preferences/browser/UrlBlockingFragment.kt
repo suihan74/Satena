@@ -20,7 +20,7 @@ import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.pages.PreferencesBrowserFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.letAs
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 /** URLブロック設定を編集する */
 class UrlBlockingFragment : Fragment() {
@@ -28,20 +28,18 @@ class UrlBlockingFragment : Fragment() {
         fun createInstance() = UrlBlockingFragment()
     }
 
-    val viewModel by lazy {
-        provideViewModel(this) {
-            val context = requireContext()
-            val repository =
-                parentFragment.letAs<PreferencesBrowserFragment, BrowserRepository> {
-                    it.viewModel.browserRepo
-                } ?: BrowserRepository(
-                    client = HatenaClient,
-                    prefs = SafeSharedPreferences.create(context),
-                    browserSettings =  SafeSharedPreferences.create(context)
-                )
+    val viewModel by lazyProvideViewModel {
+        val context = requireContext()
+        val repository =
+            parentFragment.letAs<PreferencesBrowserFragment, BrowserRepository> {
+                it.viewModel.browserRepo
+            } ?: BrowserRepository(
+                client = HatenaClient,
+                prefs = SafeSharedPreferences.create(context),
+                browserSettings =  SafeSharedPreferences.create(context)
+            )
 
-            UrlBlockingViewModel(repository)
-        }
+        UrlBlockingViewModel(repository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -20,7 +20,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class EntryMenuDialog2 : DialogFragment() {
     companion object {
@@ -33,14 +33,12 @@ class EntryMenuDialog2 : DialogFragment() {
 
     // ------ //
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            val entry = requireArguments().getObject<Entry>(ARG_ENTRY)!!
-            val favoriteSitesRepo = FavoriteSitesRepository(
-                SafeSharedPreferences.create(requireContext())
-            )
-            DialogViewModel(requireContext(), entry, favoriteSitesRepo)
-        }
+    private val viewModel by lazyProvideViewModel {
+        val entry = requireArguments().getObject<Entry>(ARG_ENTRY)!!
+        val favoriteSitesRepo = FavoriteSitesRepository(
+            SafeSharedPreferences.create(requireContext())
+        )
+        DialogViewModel(requireContext(), entry, favoriteSitesRepo)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

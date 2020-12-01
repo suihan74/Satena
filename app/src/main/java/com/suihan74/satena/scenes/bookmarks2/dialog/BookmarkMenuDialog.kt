@@ -17,7 +17,7 @@ import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class BookmarkMenuDialog : DialogFragment() {
     companion object {
@@ -39,21 +39,19 @@ class BookmarkMenuDialog : DialogFragment() {
         private const val ARG_USER_SIGNED_IN = "ARG_USER_SIGNED_IN"
     }
 
-    private val viewModel: DialogViewModel by lazy {
-        provideViewModel(this) {
-            val args = requireArguments()
-            val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
-            val ignored = args.getBoolean(ARG_IGNORED, false)
-            val userSignedIn = args.getString(ARG_USER_SIGNED_IN)
-            val starsEntry = args.getObject<StarsEntry>(ARG_STARS_ENTRY)
+    private val viewModel by lazyProvideViewModel {
+        val args = requireArguments()
+        val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
+        val ignored = args.getBoolean(ARG_IGNORED, false)
+        val userSignedIn = args.getString(ARG_USER_SIGNED_IN)
+        val starsEntry = args.getObject<StarsEntry>(ARG_STARS_ENTRY)
 
-            DialogViewModel(
-                bookmark,
-                ignored,
-                userSignedIn,
-                starsEntry
-            )
-        }
+        DialogViewModel(
+            bookmark,
+            ignored,
+            userSignedIn,
+            starsEntry
+        )
     }
 
     @OptIn(ExperimentalStdlibApi::class)
