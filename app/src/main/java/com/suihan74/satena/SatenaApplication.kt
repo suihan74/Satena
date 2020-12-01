@@ -95,8 +95,10 @@ class SatenaApplication : Application() {
 
     // ------ //
 
+    /** 非表示URL/TEXT情報を扱うリポジトリ */
     lateinit var ignoredEntriesRepository : IgnoredEntriesRepository
         private set
+    // 基本的にどの画面を開いても使用するリポジトリであるため、SatenaApplicationのインスタンスに保持する
 
     // ------ //
 
