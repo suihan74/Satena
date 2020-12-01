@@ -32,14 +32,14 @@ enum class BrowserSettingsKey (
     /** スタートページ */
     START_PAGE_URL(typeInfo<String>(), "https://www.hatena.ne.jp/"),
 
-    /** ドロワが開かれるまでブクマ情報を取得しない */
-    BOOKMARKS_LAZY_LOADING(typeInfo<Boolean>(), true),
-
     /** セーフブラウジングを有効にする */
     PRIVATE_BROWSING_ENABLED(typeInfo<Boolean>(), false),
 
     /** JavaScriptを有効にする */
     JAVASCRIPT_ENABLED(typeInfo<Boolean>(), true),
+
+    /** 「戻る/進む」歴歴でマーキーを使用する */
+    USE_MARQUEE_ON_BACK_STACK_ITEMS(typeInfo<Boolean>(), false),
 
     /** ブロックURL設定を使用する */
     USE_URL_BLOCKING(typeInfo<Boolean>(), true),

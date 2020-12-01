@@ -124,6 +124,10 @@ class BrowserViewModel(
     }
     private val _backStack = MutableLiveData<List<HistoryPage>>()
 
+    /** 「戻る/進む」履歴項目でマーキーを使用する */
+    val useMarqueeOnBackStackItems : LiveData<Boolean> =
+        browserRepo.useMarqueeOnBackStackItems
+
     /**
      * ひとつ前に表示していたURL
      *

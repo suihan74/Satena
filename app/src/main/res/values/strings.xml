@@ -298,6 +298,7 @@
     <string name="pref_browser_open_url_blocking_button_text">編集</string>
     <string name="pref_browser_search_engine_desc">アドレスバーで使用する検索エンジン</string>
     <string name="pref_browser_dialog_title_search_engine">検索エンジン</string>
+    <string name="pref_browser_use_marquee_on_back_stack_items_desc">「戻る/進む」履歴項目のテキストが長い場合マーキーを使用する</string>
 
     <string name="pref_browser_clear_cache_desc">キャッシュを削除する</string>
     <string name="pref_browser_clear_cache_dialog_message">キャッシュを削除するとストレージ使用量を削減できる一方、一時的に通信量が増えてウェブページの読み込みが遅くなります。削除しますか？</string>
