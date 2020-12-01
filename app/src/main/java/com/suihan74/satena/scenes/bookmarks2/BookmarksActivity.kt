@@ -177,7 +177,7 @@ class BookmarksActivity : AppCompatActivity() {
             }
 
             if (state == NetworkReceiver.State.CONNECTED) {
-                viewModel.init(supportFragmentManager, true)
+                viewModel.init(true)
             }
         }
     }
@@ -254,7 +254,6 @@ class BookmarksActivity : AppCompatActivity() {
         }
 
         viewModel.init(
-            fragmentManager = supportFragmentManager,
             loading = firstLaunching,
             onError = onError,
             onFinally = onFinally

@@ -193,19 +193,21 @@ class BookmarksViewModel(
             repository.userSignedIn
         )
 
-        dialog.setOnShowEntries { showEntries(activity, it) }
+        dialog.setOnShowEntries { user, _ -> showEntries(activity, user) }
 
-        dialog.setOnIgnoreUser { ignoreUser(it) }
+        dialog.setOnIgnoreUser { user, _ -> ignoreUser(user) }
 
-        dialog.setOnUnignoreUser { unIgnoreUser(it) }
+        dialog.setOnUnignoreUser { user, _ -> unIgnoreUser(user) }
 
-        dialog.setOnReportBookmark { reportBookmark(it, fragmentManager) }
+        dialog.setOnReportBookmark { b, f -> reportBookmark(b, f.parentFragmentManager) }
 
-        dialog.setOnSetUserTag { openUserTagSelectionDialog(it, fragmentManager) }
+        dialog.setOnSetUserTag { user, f -> openUserTagSelectionDialog(user, f.parentFragmentManager) }
 
-        dialog.setOnDeleteStar { openDeleteStarDialog(it.first, it.second, fragmentManager) }
+        dialog.setOnDeleteStar { (b, stars), f -> openDeleteStarDialog(b, stars, f.parentFragmentManager) }
 
-        dialog.setOnDeleteBookmark { openConfirmBookmarkDeletionDialog(activity, it, fragmentManager) }
+        dialog.setOnDeleteBookmark { b, f ->
+            openConfirmBookmarkDeletionDialog(f.requireActivity(), b, f.parentFragmentManager)
+        }
 
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
     }
