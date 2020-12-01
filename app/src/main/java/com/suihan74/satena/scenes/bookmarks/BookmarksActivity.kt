@@ -166,14 +166,16 @@ class BookmarksActivity :
 
     /** 戻るボタンの制御 */
     override fun onBackPressed() {
-        if (binding.drawerLayout.isDrawerOpen(binding.entryInformationLayout)) {
-            binding.drawerLayout.closeDrawer(binding.entryInformationLayout)
-        }
-        else if (onBackPressedDispatcher.hasEnabledCallbacks()) {
-            onBackPressedDispatcher.onBackPressed()
-        }
-        else {
-            super.onBackPressed()
+        when {
+            drawerOpened -> {
+                closeDrawer()
+            }
+
+            onBackPressedDispatcher.hasEnabledCallbacks() -> {
+                onBackPressedDispatcher.onBackPressed()
+            }
+
+            else -> super.onBackPressed()
         }
     }
 
@@ -189,6 +191,9 @@ class BookmarksActivity :
     override fun closeDrawer() {
         binding.drawerLayout.closeDrawer(binding.entryInformationLayout)
     }
+
+    private val drawerOpened : Boolean
+        get() = binding.drawerLayout.isDrawerOpen(binding.entryInformationLayout)
 
     // ------ //
     // implement BookmarkDetailOpenable
