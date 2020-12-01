@@ -16,7 +16,7 @@ import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.setButtonsEnabled
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -36,13 +36,11 @@ class UserTagSelectionDialog : DialogFragment() {
         private const val ARG_INITIAL_CHECKED_IDS = "ARG_INITIAL_CHECKED_IDS"
     }
 
-    private val viewModel: DialogViewModel by lazy {
-        provideViewModel(this) {
-            val args = requireArguments()
-            val user = args.getString(ARG_USER)!!
-            val initialCheckedTagIds = args.getIntArray(ARG_INITIAL_CHECKED_IDS) ?: IntArray(0)
-            DialogViewModel(user, initialCheckedTagIds)
-        }
+    private val viewModel: DialogViewModel by lazyProvideViewModel {
+        val args = requireArguments()
+        val user = args.getString(ARG_USER)!!
+        val initialCheckedTagIds = args.getIntArray(ARG_INITIAL_CHECKED_IDS) ?: IntArray(0)
+        DialogViewModel(user, initialCheckedTagIds)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

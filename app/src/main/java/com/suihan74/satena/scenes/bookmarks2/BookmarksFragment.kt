@@ -27,6 +27,7 @@ class BookmarksFragment : Fragment() {
 
     /** BookmarksFragmentの状態管理用ViewModel */
     val viewModel: BookmarksFragmentViewModel by lazy {
+        // lazyProvideViewModelではFragment生成時にActivityにアタッチされていないため不正になる
         provideViewModel(requireActivity(), BookmarksActivity.VIEW_MODEL_CONTENT_FRAGMENT) {
             BookmarksFragmentViewModel()
         }

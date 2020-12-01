@@ -16,7 +16,7 @@ import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class HistoryMenuDialog : DialogFragment() {
     companion object {
@@ -27,11 +27,9 @@ class HistoryMenuDialog : DialogFragment() {
         private const val ARG_TARGET_SITE = "ARG_TARGET_SITE"
     }
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            val targetSite = requireArguments().getObject<History>(ARG_TARGET_SITE)!!
-            DialogViewModel(requireContext(), targetSite)
-        }
+    private val viewModel by lazyProvideViewModel {
+        val targetSite = requireArguments().getObject<History>(ARG_TARGET_SITE)!!
+        DialogViewModel(requireContext(), targetSite)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

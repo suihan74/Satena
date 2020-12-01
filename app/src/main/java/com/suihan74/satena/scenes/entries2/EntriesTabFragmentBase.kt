@@ -48,8 +48,8 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         get() = entriesActivity.viewModel
 
     /** タブの表示内容に関するViewModel */
-    protected val viewModel : EntriesTabFragmentViewModel by lazy {
-        provideViewModel(this) {
+    protected val viewModel by lazy {
+        provideViewModel(this) { // abstract classであるためコンストラクタでthis参照させないようにする
             val arguments = requireArguments()
             val category = arguments.getEnum<Category>(ARG_CATEGORY)!!
             val tabPosition = arguments.getInt(ARG_TAB_POSITION, 0)

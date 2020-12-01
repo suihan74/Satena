@@ -13,7 +13,7 @@ import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.utilities.SuspendSwitcher
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.*
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -28,13 +28,11 @@ class UserTagDialogFragment : DialogFragment() {
         private const val ARG_EDITING_USER_TAG = "ARG_EDITING_USER_TAG"
     }
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            val args = requireArguments()
-            val editingUserTag = args.getObject<Tag>(ARG_EDITING_USER_TAG)
+    private val viewModel by lazyProvideViewModel {
+        val args = requireArguments()
+        val editingUserTag = args.getObject<Tag>(ARG_EDITING_USER_TAG)
 
-            DialogViewModel(editingUserTag)
-        }
+        DialogViewModel(editingUserTag)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

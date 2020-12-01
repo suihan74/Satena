@@ -12,16 +12,14 @@ import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersListFragment
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagViewModel
 import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class PreferencesUserTagsFragment : PreferencesFragmentBase()
 {
-    val viewModel: UserTagViewModel by lazy {
-        provideViewModel(this) {
-            UserTagViewModel(
-                UserTagRepository(SatenaApplication.instance.userTagDao)
-            )
-        }
+    val viewModel by lazyProvideViewModel {
+        UserTagViewModel(
+            UserTagRepository(SatenaApplication.instance.userTagDao)
+        )
     }
 
     companion object {

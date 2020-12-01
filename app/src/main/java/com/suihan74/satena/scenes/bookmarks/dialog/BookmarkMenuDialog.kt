@@ -17,7 +17,7 @@ import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import org.threeten.bp.LocalDateTime
 
 class BookmarkMenuDialog : DialogFragment() {
@@ -40,10 +40,8 @@ class BookmarkMenuDialog : DialogFragment() {
         private const val ARG_USER_SIGNED_IN = "ARG_USER_SIGNED_IN"
     }
 
-    private val viewModel: DialogViewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel(requireArguments())
-        }
+    private val viewModel by lazyProvideViewModel {
+        DialogViewModel(requireArguments())
     }
 
     @OptIn(ExperimentalStdlibApi::class)
