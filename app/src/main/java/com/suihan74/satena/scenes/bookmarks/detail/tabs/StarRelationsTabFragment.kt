@@ -18,7 +18,7 @@ import com.suihan74.satena.scenes.bookmarks.detail.DetailTabAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.*
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -48,13 +48,11 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
     private val bookmarkDetailViewModel : BookmarkDetailViewModel
         get() = bookmarkDetailFragment.viewModel
 
-    val viewModel by lazy {
-        provideViewModel(this) {
-            StarRelationsTabViewModel(
-                tabType = requireArguments().getEnum<DetailTabAdapter.TabType>(ARG_TAB_TYPE)!!,
-                repository = bookmarkDetailViewModel.repository
-            )
-        }
+    val viewModel by lazyProvideViewModel {
+        StarRelationsTabViewModel(
+            tabType = requireArguments().getEnum<DetailTabAdapter.TabType>(ARG_TAB_TYPE)!!,
+            repository = bookmarkDetailViewModel.repository
+        )
     }
 
     val tabType: DetailTabAdapter.TabType

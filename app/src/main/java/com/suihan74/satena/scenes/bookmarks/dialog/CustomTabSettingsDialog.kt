@@ -11,7 +11,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 /**
  * 「カスタム」タブの表示対象を設定するダイアログ
@@ -30,10 +30,8 @@ class CustomTabSettingsDialog : DialogFragment() {
 
     // ------ //
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel()
-        }
+    private val viewModel by lazyProvideViewModel {
+        DialogViewModel()
     }
 
     // ------ //
