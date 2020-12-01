@@ -15,9 +15,9 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.scenes.bookmarks.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
-import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntryMenuActionsImplForBookmarks
