@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
@@ -15,6 +16,7 @@ import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesAdapter
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntryViewModel
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.lazyProvideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
@@ -50,22 +52,27 @@ class PreferencesIgnoredEntriesFragment : PreferencesFragmentBase() {
         val binding = FragmentPreferencesIgnoredEntriesBinding.inflate(inflater, container, false)
 
         val ignoredEntriesAdapter = object : IgnoredEntriesAdapter() {
-            override fun onItemClicked(entry: IgnoredEntry) {
+            private fun openIgnoredEntryDialog(entry: IgnoredEntry, fragmentManager: FragmentManager) {
                 val dialog = IgnoredEntryDialogFragment.createInstance(entry)
-                dialog.showAllowingStateLoss(childFragmentManager, DIALOG_IGNORE_ENTRY)
+                dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_ENTRY)
+            }
+
+            override fun onItemClicked(entry: IgnoredEntry) {
+                openIgnoredEntryDialog(entry, childFragmentManager)
             }
 
             override fun onItemLongClicked(entry: IgnoredEntry): Boolean {
-                val items = arrayOf(
-                    getString(R.string.pref_ignored_entries_menu_edit) to { onItemClicked(entry) },
+                val items = arrayOf<Pair<String, Listener<AlertDialogFragment>>>(
+                    // 画面回転対策でfragmentManagerを明示的に渡している
+                    getString(R.string.pref_ignored_entries_menu_edit) to { f -> openIgnoredEntryDialog(entry, f.parentFragmentManager) },
                     getString(R.string.pref_ignored_entries_menu_remove) to { viewModel.delete(entry) }
                 )
 
                 AlertDialogFragment.Builder()
                     .setTitle("${entry.type.name} ${entry.query}")
                     .setNegativeButton(R.string.dialog_cancel)
-                    .setItems(items.map { it.first }) { _, which ->
-                        items[which].second.invoke()
+                    .setItems(items.map { it.first }) { f, which ->
+                        items[which].second.invoke(f)
                     }
                     .create()
                     .showAllowingStateLoss(childFragmentManager, DIALOG_MENU)

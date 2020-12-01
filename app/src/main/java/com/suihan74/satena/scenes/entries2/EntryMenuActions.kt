@@ -67,34 +67,34 @@ interface EntryMenuActions {
         coroutineScope: CoroutineScope
     ) {
         EntryMenuDialog2.createInstance(entry).run {
-            setShowCommentsListener {
+            setShowCommentsListener { entry, _ ->
                 showComments(activity, entry)
             }
-            setShowPageListener {
+            setShowPageListener { entry, _ ->
                 showPage(activity, entry)
             }
-            setSharePageListener {
+            setSharePageListener { entry, _ ->
                 sharePage(activity, entry)
             }
-            setShowEntriesListener {
+            setShowEntriesListener { entry, _ ->
                 showEntries(activity, entry)
             }
-            setFavoriteEntryListener {
+            setFavoriteEntryListener { entry, _ ->
                 favoriteEntry(activity, entry, coroutineScope)
             }
-            setUnfavoriteEntryListener {
+            setUnfavoriteEntryListener { entry, _ ->
                 unfavoriteEntry(activity, entry, coroutineScope)
             }
-            setIgnoreEntryListener {
-                openIgnoreEntryDialog(activity, entry, fragmentManager, coroutineScope)
+            setIgnoreEntryListener { entry, menuDialog ->
+                openIgnoreEntryDialog(activity, entry, menuDialog.parentFragmentManager, coroutineScope)
             }
-            setReadLaterListener {
+            setReadLaterListener { entry, _ ->
                 readLaterEntry(activity, entry, coroutineScope)
             }
-            setReadListener {
+            setReadListener { entry, _ ->
                 readEntry(activity, entry, coroutineScope)
             }
-            setDeleteBookmarkListener {
+            setDeleteBookmarkListener { entry, _ ->
                 deleteEntryBookmark(activity, entry, coroutineScope)
             }
 

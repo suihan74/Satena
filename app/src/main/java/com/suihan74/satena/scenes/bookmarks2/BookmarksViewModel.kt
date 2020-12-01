@@ -758,8 +758,8 @@ class BookmarksViewModel(
             initialCheckedIds
         )
 
-        dialog.setOnAddNewTagListener {
-            openUserTagDialog(user, fragmentManager, DIALOG_NEW_USER_TAG)
+        dialog.setOnAddNewTagListener { f ->
+            openUserTagDialog(user, f.parentFragmentManager, DIALOG_NEW_USER_TAG)
         }
 
         dialog.setOnActivateTagsListener { (user, activeTags) ->

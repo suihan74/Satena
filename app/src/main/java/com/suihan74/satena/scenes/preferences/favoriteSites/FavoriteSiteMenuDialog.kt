@@ -12,11 +12,12 @@ import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.lazyProvideViewModel
+
+typealias FavoriteSiteMenuListener = (site: FavoriteSite, f: FavoriteSiteMenuDialog)->Unit
 
 class FavoriteSiteMenuDialog : DialogFragment() {
     companion object {
@@ -50,7 +51,7 @@ class FavoriteSiteMenuDialog : DialogFragment() {
         return createBuilder()
             .setCustomTitle(titleViewBinding.root)
             .setItems(viewModel.labels) { _, which ->
-                viewModel.invokeAction(which)
+                viewModel.invokeAction(which, this)
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .create()
@@ -58,19 +59,19 @@ class FavoriteSiteMenuDialog : DialogFragment() {
 
     // ------ //
 
-    fun setOnOpenListener(listener: Listener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+    fun setOnOpenListener(listener: FavoriteSiteMenuListener?) = lifecycleScope.launchWhenCreated {
         viewModel.onOpen = listener
     }
 
-    fun setOnModifyListener(listener: Listener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+    fun setOnModifyListener(listener: FavoriteSiteMenuListener?) = lifecycleScope.launchWhenCreated {
         viewModel.onModify = listener
     }
 
-    fun setOnOpenEntriesListener(listener: Listener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+    fun setOnOpenEntriesListener(listener: FavoriteSiteMenuListener?) = lifecycleScope.launchWhenCreated {
         viewModel.onOpenEntries = listener
     }
 
-    fun setOnDeleteListener(listener: Listener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+    fun setOnDeleteListener(listener: FavoriteSiteMenuListener?) = lifecycleScope.launchWhenCreated {
         viewModel.onDelete = listener
     }
 
@@ -81,30 +82,30 @@ class FavoriteSiteMenuDialog : DialogFragment() {
         val targetSite: FavoriteSite
     ) : ViewModel() {
         /** メニュー項目と対応するイベント */
-        val menuItems = listOf(
-            R.string.dialog_favorite_sites_open to { onOpen?.invoke(targetSite) },
-            R.string.dialog_favorite_sites_open_entries to { onOpenEntries?.invoke(targetSite) },
-            R.string.dialog_favorite_sites_modify to { onModify?.invoke(targetSite) },
-            R.string.dialog_favorite_sites_delete to { onDelete?.invoke(targetSite) }
+        val menuItems = listOf<Pair<Int, (FavoriteSiteMenuDialog)->Unit>>(
+            R.string.dialog_favorite_sites_open to { onOpen?.invoke(targetSite, it) },
+            R.string.dialog_favorite_sites_open_entries to { onOpenEntries?.invoke(targetSite, it) },
+            R.string.dialog_favorite_sites_modify to { onModify?.invoke(targetSite, it) },
+            R.string.dialog_favorite_sites_delete to { onDelete?.invoke(targetSite, it) }
         )
 
         /** メニュー表示項目 */
         val labels = menuItems.map { context.getString(it.first) }.toTypedArray()
 
         /** 対象アイテムを内部ブラウザで開く */
-        var onOpen: Listener<FavoriteSite>? = null
+        var onOpen: FavoriteSiteMenuListener? = null
 
         /** 対象アイテムを編集する */
-        var onModify: Listener<FavoriteSite>? = null
+        var onModify: FavoriteSiteMenuListener? = null
 
         /** 対象サイトのエントリ一覧を開く */
-        var onOpenEntries: Listener<FavoriteSite>? = null
+        var onOpenEntries: FavoriteSiteMenuListener? = null
 
         /** 対象アイテムを削除 */
-        var onDelete: Listener<FavoriteSite>? = null
+        var onDelete: FavoriteSiteMenuListener? = null
 
-        fun invokeAction(which: Int) {
-            menuItems[which].second.invoke()
+        fun invokeAction(which: Int, dialogFragment: FavoriteSiteMenuDialog) {
+            menuItems[which].second.invoke(dialogFragment)
         }
     }
 }

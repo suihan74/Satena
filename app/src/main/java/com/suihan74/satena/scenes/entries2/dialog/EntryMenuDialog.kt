@@ -218,7 +218,6 @@ class EntryMenuDialog : DialogFragment() {
         val arguments = requireArguments()
 
         viewModel.activity = activity
-        viewModel.fragmentManager = parentFragmentManager
 
         viewModel.repository =
             if (activity is EntriesActivity) activity.viewModel.repository
@@ -280,7 +279,7 @@ class EntryMenuDialog : DialogFragment() {
 
     private fun action(item: MenuItem, args: MenuItemArguments) = GlobalScope.launch(Dispatchers.Main) {
         // ダイアログのスコープを使用すると、ダイアログ表示を伴わないアクションが実行されないので注意
-        viewModel.action(item, args)
+        viewModel.action(item, args, parentFragmentManager)
     }
 
     // ------ //
@@ -360,14 +359,12 @@ class EntryMenuDialog : DialogFragment() {
     class DialogViewModel : androidx.lifecycle.ViewModel() {
         var activity: FragmentActivity? = null
 
-        var fragmentManager: FragmentManager? = null
-
         var listeners : EntryMenuDialogListeners? = null
 
         var repository: EntriesRepository? = null
 
         /** メニュー項目ごとの処理 */
-        suspend fun action(item: MenuItem, args: MenuItemArguments) = when (item) {
+        suspend fun action(item: MenuItem, args: MenuItemArguments, fragmentManager: FragmentManager) = when (item) {
             MenuItem.SHOW_COMMENTS ->
                 showBookmarks(args.context, args.entry, args.url)
 
@@ -387,7 +384,7 @@ class EntryMenuDialog : DialogFragment() {
                 showEntries(args.context, args.entry, args.url)
 
             MenuItem.IGNORE_SITE ->
-                ignoreSite(args.entry, args.url)
+                ignoreSite(args.entry, args.url, fragmentManager)
 
             MenuItem.READ_LATER ->
                 readLater(args)
@@ -467,8 +464,7 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** サイトを非表示に設定する */
-        private fun ignoreSite(entry: Entry?, url: String?) {
-            val fragmentManager = fragmentManager ?: return
+        private fun ignoreSite(entry: Entry?, url: String?, fragmentManager: FragmentManager) {
             val siteUrl = entry?.url ?: url ?: return
             val dialog = IgnoredEntryDialogFragment.createInstance(
                 url = siteUrl,

@@ -332,8 +332,8 @@ class BookmarksViewModel(
                 }
             }
 
-            dialog.setOnAddNewTagListener {
-                openUserTagCreationDialog(user, fragmentManager)
+            dialog.setOnAddNewTagListener { f ->
+                openUserTagCreationDialog(user, f.parentFragmentManager)
             }
 
             dialog.setOnCompleteListener {
