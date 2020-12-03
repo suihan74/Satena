@@ -12,7 +12,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
@@ -25,7 +24,6 @@ import com.suihan74.satena.scenes.entries2.EntryMenuActionsImplForBookmarks
 import com.suihan74.satena.scenes.post.BookmarkEditData
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SafeSharedPreferences
@@ -211,8 +209,7 @@ class BookmarksViewModel(
             FavoriteSitesRepository(
                 SafeSharedPreferences.create(activity),
                 HatenaClient
-            ),
-            IgnoredEntriesRepository(SatenaApplication.instance.ignoredEntryDao)
+            )
         )
 
         activity.lifecycleScope.launch(Dispatchers.Main) {
@@ -429,21 +426,17 @@ class BookmarksViewModel(
     }
 
     /** ブクマ項目に対する操作メニューを表示 */
-    fun openBookmarkMenuDialog(
-        activity: Activity,
+    suspend fun openBookmarkMenuDialog(
         bookmark: Bookmark,
         fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) = coroutineScope.launch(Dispatchers.Main) {
-        val entry = entry.value ?: return@launch
+    ) {
+        val entry = entry.value ?: return
         val starsEntry = repository.getStarsEntry(bookmark)
         bookmarkMenuActions.openBookmarkMenuDialog(
-            activity,
             entry,
             bookmark,
             starsEntry?.value,
-            fragmentManager,
-            coroutineScope
+            fragmentManager
         )
     }
 
@@ -485,7 +478,7 @@ class BookmarksViewModel(
             coroutineScope.launch(Dispatchers.Main) {
                 val liveData = repository.getStarsEntry(bookmark)
                 val userStarred = liveData?.value?.allStars?.any { it.user == user } ?: false
-                if (user != null && userStarred) {
+                if (userStarred) {
                     button.setImageResource(R.drawable.ic_add_star_filled)
 
                     button.setOnLongClickListener {

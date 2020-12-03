@@ -60,7 +60,7 @@ class BookmarksActivity :
         val repository = BookmarksRepository(
             AccountLoader(this, HatenaClient, MastodonClientHolder),
             SafeSharedPreferences.create(this),
-            app.ignoredEntryDao,
+            app.ignoredEntriesRepository,
             app.userTagDao
         ).also { repo ->
             lifecycleScope.launch {

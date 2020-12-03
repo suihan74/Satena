@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks.detail.tabs
 
-import android.app.Activity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import com.suihan74.hatenaLib.Bookmark
@@ -8,9 +7,6 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.detail.DetailTabAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarkMenuActionsImpl
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class StarRelationsTabViewModel(
     val tabType: DetailTabAdapter.TabType,
@@ -44,15 +40,13 @@ class StarRelationsTabViewModel(
     /**
      * スター項目に対するメニューを開く
      */
-    fun openStarRelationMenuDialog(
-        activity: Activity,
+    suspend fun openStarRelationMenuDialog(
         item: StarRelationsAdapter.Item,
         fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) = coroutineScope.launch(Dispatchers.Main) {
+    ) {
         val bookmark = item.bookmark ?: Bookmark(user = item.user, comment = "")
         val userSignedIn = repository.userSignedIn
-        val entry = repository.entry.value ?: return@launch
+        val entry = repository.entry.value ?: return
 
         // 詳細表示中のブクマに自分がつけたスターを取り消すため，
         // 自分の項目では詳細表示中ブクマのスターを取得する
@@ -63,12 +57,10 @@ class StarRelationsTabViewModel(
             else repository.getStarsEntry(bookmark)
 
         bookmarkMenuActions.openBookmarkMenuDialog(
-            activity,
             entry,
             bookmark,
             starsEntry?.value,
-            fragmentManager,
-            coroutineScope
+            fragmentManager
         )
     }
 }

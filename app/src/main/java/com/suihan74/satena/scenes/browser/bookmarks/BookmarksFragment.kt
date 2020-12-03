@@ -94,12 +94,9 @@ class BookmarksFragment :
 
         val bookmarksAdapter = BookmarksAdapter().also { adapter ->
             adapter.setOnItemLongClickedListener { bookmark ->
-                viewModel.openBookmarkMenuDialog(
-                    requireActivity(),
-                    bookmark,
-                    childFragmentManager,
-                    lifecycleScope
-                )
+                lifecycleScope.launch {
+                    viewModel.openBookmarkMenuDialog(bookmark, childFragmentManager)
+                }
             }
 
             adapter.setOnLinkClickedListener { url ->

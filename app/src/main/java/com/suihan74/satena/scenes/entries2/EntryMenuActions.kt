@@ -15,7 +15,6 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
@@ -68,35 +67,35 @@ interface EntryMenuActions {
         coroutineScope: CoroutineScope
     ) {
         EntryMenuDialog2.createInstance(entry).run {
-            setShowCommentsListener { entry, _ ->
-                showComments(activity, entry)
+            setShowCommentsListener { entry, menuDialog ->
+                showComments(menuDialog.requireActivity(), entry)
             }
-            setShowPageListener { entry, _ ->
-                showPage(activity, entry)
+            setShowPageListener { entry, menuDialog ->
+                showPage(menuDialog.requireActivity(), entry)
             }
-            setSharePageListener { entry, _ ->
-                sharePage(activity, entry)
+            setSharePageListener { entry, menuDialog ->
+                sharePage(menuDialog.requireActivity(), entry)
             }
-            setShowEntriesListener { entry, _ ->
-                showEntries(activity, entry)
+            setShowEntriesListener { entry, menuDialog ->
+                showEntries(menuDialog.requireActivity(), entry)
             }
-            setFavoriteEntryListener { entry, _ ->
-                favoriteEntry(activity, entry, coroutineScope)
+            setFavoriteEntryListener { entry, menuDialog ->
+                favoriteEntry(menuDialog.requireActivity(), entry, coroutineScope)
             }
-            setUnfavoriteEntryListener { entry, _ ->
-                unfavoriteEntry(activity, entry, coroutineScope)
+            setUnfavoriteEntryListener { entry, menuDialog ->
+                unfavoriteEntry(menuDialog.requireActivity(), entry, coroutineScope)
             }
             setIgnoreEntryListener { entry, menuDialog ->
-                openIgnoreEntryDialog(activity, entry, menuDialog.parentFragmentManager, coroutineScope)
+                openIgnoreEntryDialog(menuDialog.requireActivity(), entry, menuDialog.parentFragmentManager, coroutineScope)
             }
-            setReadLaterListener { entry, _ ->
-                readLaterEntry(activity, entry, coroutineScope)
+            setReadLaterListener { entry, menuDialog ->
+                readLaterEntry(menuDialog.requireActivity(), entry, coroutineScope)
             }
-            setReadListener { entry, _ ->
-                readEntry(activity, entry, coroutineScope)
+            setReadListener { entry, menuDialog ->
+                readEntry(menuDialog.requireActivity(), entry, coroutineScope)
             }
-            setDeleteBookmarkListener { entry, _ ->
-                deleteEntryBookmark(activity, entry, coroutineScope)
+            setDeleteBookmarkListener { entry, menuDialog ->
+                deleteEntryBookmark(menuDialog.requireActivity(), entry, coroutineScope)
             }
 
             showAllowingStateLoss(fragmentManager, DIALOG_ENTRY_MENU)
@@ -333,15 +332,13 @@ class EntryMenuActionsImplForEntries(
 
 /** ブクマ画面用の実装 */
 class EntryMenuActionsImplForBookmarks(
-    private val favoriteSitesRepo: FavoriteSitesRepositoryForEntries,
-    private val ignoredEntriesRepo : IgnoredEntriesRepository
+    private val favoriteSitesRepo: FavoriteSitesRepositoryForEntries
 ) : EntryMenuActionsImplBasic() {
 
     override fun showEntries(activity: Activity, entry: Entry) {
-        val intent = Intent(activity, EntriesActivity::class.java).also {
-            it.putExtra(EntriesActivity.EXTRA_SITE_URL, entry.rootUrl)
+        activity.alsoAs<EntriesActivity> { a ->
+            a.showSiteEntries(entry.rootUrl)
         }
-        activity.startActivity(intent)
     }
 
     override fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
@@ -364,42 +361,6 @@ class EntryMenuActionsImplForBookmarks(
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)
             }
         }
-    }
-
-    override fun openIgnoreEntryDialog(
-        activity: Activity,
-        entry: Entry,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) {
-        val dialog = IgnoredEntryDialogFragment.createInstance(
-            url = entry.url,
-            title = entry.title,
-        ) { dialog, ignoredEntry ->
-            coroutineScope.launch(Dispatchers.Main) {
-                try {
-                    withContext(Dispatchers.IO) {
-                        ignoredEntriesRepo.addIgnoredEntry(ignoredEntry)
-                    }
-
-                    activity.alsoAs<EntriesActivity> { a ->
-                        a.refreshLists()
-                    }
-
-                    activity.showToast(
-                        R.string.msg_ignored_entry_dialog_succeeded,
-                        ignoredEntry.query
-                    )
-
-                    dialog.dismiss()
-                }
-                catch (e: Throwable) {
-                    activity.showToast(R.string.msg_ignored_entry_dialog_failed)
-                }
-            }
-            false
-        }
-        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
     }
 
     override fun readLaterEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
