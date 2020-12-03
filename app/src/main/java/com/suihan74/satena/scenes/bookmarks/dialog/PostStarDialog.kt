@@ -4,7 +4,8 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
@@ -54,7 +55,9 @@ class PostStarDialog : DialogFragment() {
             .create()
     }
 
-    suspend fun setOnPostStar(listener: Listener<Triple<Bookmark, StarColor, String>>?) = whenStarted {
+    fun setOnPostStar(
+        listener: Listener<Triple<Bookmark, StarColor, String>>?
+    ) = lifecycleScope.launchWhenCreated {
         viewModel.onPostStar = listener
     }
 

@@ -31,7 +31,7 @@ class Star(
         var result = user.hashCode()
         result = 31 * result + quote.hashCode()
         result = 31 * result + count
-        result = 31 * result + (color.hashCode() ?: 0)
+        result = 31 * result + (color.hashCode())
         return result
     }
 }

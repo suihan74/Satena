@@ -43,7 +43,7 @@ class AccountLoader(
 
         // クッキーを使用してログイン状態復元を試行
         val userRkEncryptedStr = prefs.getString(PreferenceKey.HATENA_RK)
-        if (userRkEncryptedStr?.isNotEmpty() == true) {
+        if (userRkEncryptedStr.isNullOrEmpty().not()) {
             val userRkEncryptedData = serializer.deserialize(userRkEncryptedStr!!)
             val rk = CryptUtility.decrypt(userRkEncryptedData, key)
 

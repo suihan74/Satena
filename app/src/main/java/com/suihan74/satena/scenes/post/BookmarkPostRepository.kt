@@ -258,7 +258,7 @@ class BookmarkPostRepository(
         }
 
         val result = runCatching {
-            val account = accountLoader.signInHatenaAsync(reSignIn = false).await()
+            accountLoader.signInHatenaAsync(reSignIn = false).await()
                 ?: throw AccountLoader.HatenaSignInException()
 
             accountLoader.client.postBookmarkAsync(

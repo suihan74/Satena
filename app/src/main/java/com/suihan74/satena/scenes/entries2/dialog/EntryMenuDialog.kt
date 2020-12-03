@@ -12,7 +12,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -36,7 +35,6 @@ import com.suihan74.utilities.extensions.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 // TODO: リスナの扱い方を刷新する
 
@@ -220,7 +218,6 @@ class EntryMenuDialog : DialogFragment() {
         val arguments = requireArguments()
 
         viewModel.activity = activity
-        viewModel.fragmentManager = parentFragmentManager
 
         viewModel.repository =
             if (activity is EntriesActivity) activity.viewModel.repository
@@ -232,7 +229,7 @@ class EntryMenuDialog : DialogFragment() {
                     HatenaClient,
                     MastodonClientHolder
                 ),
-                ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
+                ignoredEntriesRepo = SatenaApplication.instance.ignoredEntriesRepository
             )
 
         val url = arguments.getString(ARG_ENTRY_URL)
@@ -282,7 +279,7 @@ class EntryMenuDialog : DialogFragment() {
 
     private fun action(item: MenuItem, args: MenuItemArguments) = GlobalScope.launch(Dispatchers.Main) {
         // ダイアログのスコープを使用すると、ダイアログ表示を伴わないアクションが実行されないので注意
-        viewModel.action(item, args)
+        viewModel.action(item, args, parentFragmentManager)
     }
 
     // ------ //
@@ -362,14 +359,12 @@ class EntryMenuDialog : DialogFragment() {
     class DialogViewModel : androidx.lifecycle.ViewModel() {
         var activity: FragmentActivity? = null
 
-        var fragmentManager: FragmentManager? = null
-
         var listeners : EntryMenuDialogListeners? = null
 
         var repository: EntriesRepository? = null
 
         /** メニュー項目ごとの処理 */
-        suspend fun action(item: MenuItem, args: MenuItemArguments) = when (item) {
+        suspend fun action(item: MenuItem, args: MenuItemArguments, fragmentManager: FragmentManager) = when (item) {
             MenuItem.SHOW_COMMENTS ->
                 showBookmarks(args.context, args.entry, args.url)
 
@@ -389,7 +384,7 @@ class EntryMenuDialog : DialogFragment() {
                 showEntries(args.context, args.entry, args.url)
 
             MenuItem.IGNORE_SITE ->
-                ignoreSite(args.context, args.entry, args.url, args.listeners?.onIgnoredEntry)
+                ignoreSite(args.entry, args.url, fragmentManager)
 
             MenuItem.READ_LATER ->
                 readLater(args)
@@ -399,8 +394,6 @@ class EntryMenuDialog : DialogFragment() {
 
             MenuItem.REMOVE_BOOKMARK ->
                 removeBookmark(args.context, args.entry, args.url, args.listeners?.onDeletedBookmark)
-
-            else -> throw NotImplementedError()
         }
 
         /** ブックマーク画面に遷移 */
@@ -471,31 +464,11 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** サイトを非表示に設定する */
-        private fun ignoreSite(context: Context, entry: Entry?, url: String?, onCompleted: OnSuccess<IgnoredEntry>?) {
-            val fragmentManager = fragmentManager ?: return
+        private fun ignoreSite(entry: Entry?, url: String?, fragmentManager: FragmentManager) {
             val siteUrl = entry?.url ?: url ?: return
             val dialog = IgnoredEntryDialogFragment.createInstance(
                 url = siteUrl,
-                title = entry?.title ?: "",
-                positiveAction = { dialog, ignoredEntry ->
-                    activity?.lifecycleScope?.launch(Dispatchers.Main) {
-                        try {
-                            withContext(Dispatchers.IO) {
-                                val dao = SatenaApplication.instance.ignoredEntryDao
-                                dao.insert(ignoredEntry)
-                            }
-
-                            context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
-                            onCompleted?.invoke(ignoredEntry)
-
-                            dialog.dismiss()
-                        }
-                        catch (e: Throwable) {
-                            context.showToast(R.string.msg_ignored_entry_dialog_failed)
-                        }
-                    }
-                    false
-                }
+                title = entry?.title ?: ""
             )
             dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
         }

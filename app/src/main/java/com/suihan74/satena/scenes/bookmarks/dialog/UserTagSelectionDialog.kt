@@ -51,7 +51,7 @@ class UserTagSelectionDialog : DialogFragment() {
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .setNeutralButton(R.string.user_tags_dialog_new_tag) { _, _ ->
-                viewModel.onAddNewTag?.invoke(Unit)
+                viewModel.onAddNewTag?.invoke(this)
             }
             .setPositiveButton(R.string.dialog_ok, null)
             .show()
@@ -84,7 +84,7 @@ class UserTagSelectionDialog : DialogFragment() {
     }
 
     fun setOnAddNewTagListener(
-        l: Listener<Unit>?
+        l: Listener<UserTagSelectionDialog>?
     ) = lifecycleScope.launchWhenCreated {
         viewModel.onAddNewTag = l
     }
@@ -142,7 +142,7 @@ class UserTagSelectionDialog : DialogFragment() {
         // --- //
 
         /** 新規タグ作成 */
-        var onAddNewTag: Listener<Unit>? = null
+        var onAddNewTag: Listener<UserTagSelectionDialog>? = null
 
         /** タグを有効化する */
         var onActivateTags: SuspendListener<ActivateUserTagsArguments>? = null

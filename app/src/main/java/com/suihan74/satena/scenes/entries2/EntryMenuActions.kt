@@ -25,7 +25,6 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /** エントリ項目に対する操作 */
 interface EntryMenuActions {
@@ -69,34 +68,34 @@ interface EntryMenuActions {
         coroutineScope: CoroutineScope
     ) {
         EntryMenuDialog2.createInstance(entry).run {
-            setShowCommentsListener {
+            setShowCommentsListener { entry, _ ->
                 showComments(activity, entry)
             }
-            setShowPageListener {
+            setShowPageListener { entry, _ ->
                 showPage(activity, entry)
             }
-            setSharePageListener {
+            setSharePageListener { entry, _ ->
                 sharePage(activity, entry)
             }
-            setShowEntriesListener {
+            setShowEntriesListener { entry, _ ->
                 showEntries(activity, entry)
             }
-            setFavoriteEntryListener {
+            setFavoriteEntryListener { entry, _ ->
                 favoriteEntry(activity, entry, coroutineScope)
             }
-            setUnfavoriteEntryListener {
+            setUnfavoriteEntryListener { entry, _ ->
                 unfavoriteEntry(activity, entry, coroutineScope)
             }
-            setIgnoreEntryListener {
-                openIgnoreEntryDialog(activity, entry, fragmentManager, coroutineScope)
+            setIgnoreEntryListener { entry, menuDialog ->
+                openIgnoreEntryDialog(activity, entry, menuDialog.parentFragmentManager, coroutineScope)
             }
-            setReadLaterListener {
+            setReadLaterListener { entry, _ ->
                 readLaterEntry(activity, entry, coroutineScope)
             }
-            setReadListener {
+            setReadListener { entry, _ ->
                 readEntry(activity, entry, coroutineScope)
             }
-            setDeleteBookmarkListener {
+            setDeleteBookmarkListener { entry, _ ->
                 deleteEntryBookmark(activity, entry, coroutineScope)
             }
 
@@ -190,6 +189,20 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
             activity.showToast(R.string.msg_show_page_in_browser_failed)
         }
     }
+
+    override fun openIgnoreEntryDialog(
+        activity: Activity,
+        entry: Entry,
+        fragmentManager: FragmentManager,
+        coroutineScope: CoroutineScope
+    ) {
+        val dialog = IgnoredEntryDialogFragment.createInstance(
+            url = entry.url,
+            title = entry.title
+        )
+
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
+    }
 }
 
 // ------ //
@@ -228,41 +241,6 @@ class EntryMenuActionsImplForEntries(
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)
             }
         }
-    }
-
-    override fun openIgnoreEntryDialog(
-        activity: Activity,
-        entry: Entry,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) {
-        val dialog = IgnoredEntryDialogFragment.createInstance(
-            url = entry.url,
-            title = entry.title
-        ) { dialog, ignoredEntry ->
-            coroutineScope.launch(Dispatchers.Main) {
-                try {
-                    repository.addIgnoredEntry(ignoredEntry)
-
-                    activity.alsoAs<EntriesActivity> { a ->
-                        a.refreshLists()
-                    }
-
-                    activity.showToast(
-                        R.string.msg_ignored_entry_dialog_succeeded,
-                        ignoredEntry.query
-                    )
-
-                    dialog.dismiss()
-                }
-                catch (e: Throwable) {
-                    activity.showToast(R.string.msg_ignored_entry_dialog_failed)
-                }
-            }
-            false
-        }
-
-        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
     }
 
     override fun readLaterEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {

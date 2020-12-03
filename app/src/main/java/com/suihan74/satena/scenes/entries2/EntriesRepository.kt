@@ -15,11 +15,9 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepositoryForEntries
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.checkFromSpam
@@ -87,9 +85,8 @@ class EntriesRepository(
     private val context: Context,
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
-    ignoredEntryDao: IgnoredEntryDao
+    val ignoredEntriesRepo: IgnoredEntriesRepository
 ) :
-        IgnoredEntriesRepositoryForEntries by IgnoredEntriesRepository(ignoredEntryDao),
         FavoriteSitesRepositoryForEntries by FavoriteSitesRepository(SafeSharedPreferences.create(context), client)
 {
     /** アプリ内アップデート */
@@ -190,10 +187,7 @@ class EntriesRepository(
             accountLoader.signInAccounts(forceUpdate)
             signedInLiveData.post(client.signedIn())
             categoriesLiveData.post(client.signedIn())
-        }
-
-        runCatching {
-            loadIgnoredEntriesForEntries()
+            ignoredEntriesRepo.loadIgnoredEntriesForEntries()
         }
     }
 
@@ -611,9 +605,8 @@ class EntriesRepository(
 
     /** エントリをフィルタリングする */
     suspend fun filterEntries(entries: List<Entry>) : List<Entry> = withContext(Dispatchers.IO) {
-//        val ignoredEntries = ignoredEntryDao.getAllEntries()
         return@withContext entries.filterNot { entry ->
-            ignoredEntriesForEntries.any { it.isMatched(entry) }
+            ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.isMatched(entry) } == true
         }
     }
 

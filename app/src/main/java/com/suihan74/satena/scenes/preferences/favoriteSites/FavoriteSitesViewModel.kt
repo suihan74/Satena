@@ -41,15 +41,15 @@ class FavoriteSitesViewModel(
     ) {
         val dialog = FavoriteSiteMenuDialog.createInstance(targetSite)
 
-        dialog.setOnOpenListener { site ->
-            openInBrowser(site, activity)
+        dialog.setOnOpenListener { site, f ->
+            openInBrowser(site, f.requireActivity())
         }
 
-        dialog.setOnModifyListener { site ->
-            openItemModificationDialog(site, fragmentManager)
+        dialog.setOnModifyListener { site, f ->
+            openItemModificationDialog(site, f.parentFragmentManager)
         }
 
-        dialog.setOnOpenEntriesListener { site ->
+        dialog.setOnOpenEntriesListener { site, _ ->
             viewModelScope.launch {
                 val rootUrl = getEntryRootUrl(site.url)
                 val intent = Intent(activity, EntriesActivity::class.java).apply {
@@ -59,7 +59,7 @@ class FavoriteSitesViewModel(
             }
         }
 
-        dialog.setOnDeleteListener { site ->
+        dialog.setOnDeleteListener { site, _ ->
             val result = runCatching {
                 favoriteSitesRepo.unfavoritePage(site)
             }

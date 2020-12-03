@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks2
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -232,13 +233,10 @@ class BookmarksViewModel(
 
     /** 初期化 */
     fun init(
-        fragmentManager: FragmentManager?,
         loading: Boolean,
         onError: OnError? = null,
         onFinally: OnFinally? = null
     ) = viewModelScope.launch {
-        this@BookmarksViewModel.fragmentManager = fragmentManager
-
         try {
             ignoredEntryRepository.loadIgnoredWordsForBookmarks()
             signIn()
@@ -522,11 +520,10 @@ class BookmarksViewModel(
     fun postStarDialog(
         bookmark: Bookmark,
         color: StarColor,
-        quote: String = ""
+        quote: String = "",
+        fragmentManager: FragmentManager
     ) = viewModelScope.launch(Dispatchers.Main) {
         if (repository.usePostStarDialog) {
-            val fragmentManager = fragmentManager ?: return@launch
-
             val dialog = PostStarDialog.createInstance(bookmark, color, quote)
             dialog.show(fragmentManager, DIALOG_POST_STAR)
 
@@ -575,11 +572,10 @@ class BookmarksViewModel(
     fun deleteStarDialog(
         bookmark: Bookmark,
         stars: List<Star>,
+        fragmentManager: FragmentManager,
         onSuccess: OnSuccess<Unit>? = null,
         onError: OnError? = null,
     ) {
-        val fragmentManager = fragmentManager ?: return
-
         val dialog = StarDeletionDialog.createInstance(stars)
 
         dialog.setOnDeleteStars { selectedStars ->
@@ -643,9 +639,6 @@ class BookmarksViewModel(
         bookmark: Bookmark,
         starTarget: Bookmark = bookmark
     ) {
-        this@BookmarksViewModel.fragmentManager = activity.supportFragmentManager
-        val fragmentManager = activity.supportFragmentManager
-
         val starsEntry = repository.getStarsEntryTo(starTarget.user)
         val ignored = repository.ignoredUsers.contains(bookmark.user)
         val userSignedIn = repository.userSignedIn
@@ -656,19 +649,27 @@ class BookmarksViewModel(
             ignored,
             userSignedIn
         ).run {
-            setOnShowEntries { onShowEntries(activity, it) }
-            setOnIgnoreUser { onIgnoreUser(it, true) }
-            setOnUnignoreUser { onIgnoreUser(it, false) }
-            setOnReportBookmark { onReportBookmark(it) }
-            setOnSetUserTag { onSetUserTag(it) }
-            setOnDeleteStar { onDeleteStar(starTarget) }
-            setOnDeleteBookmark { openConfirmBookmarkDeletionDialog(activity, fragmentManager) }
+            setOnShowEntries { user, f -> onShowEntries(f.requireActivity(), user) }
 
-            showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
+            setOnIgnoreUser { user, _ -> onIgnoreUser(user, true) }
+
+            setOnUnignoreUser { user, _ -> onIgnoreUser(user, false) }
+
+            setOnReportBookmark { b, f -> onReportBookmark(b, f.parentFragmentManager) }
+
+            setOnSetUserTag { user, f -> onSetUserTag(user, f.parentFragmentManager) }
+
+            setOnDeleteStar { _, f -> onDeleteStar(starTarget, f.parentFragmentManager) }
+
+            setOnDeleteBookmark { _, f ->
+                openConfirmBookmarkDeletionDialog(f.requireActivity(), f.parentFragmentManager)
+            }
+
+            showAllowingStateLoss(activity.supportFragmentManager, DIALOG_BOOKMARK_MENU)
         }
     }
 
-    private fun onShowEntries(activity: BookmarksActivity, user: String) {
+    private fun onShowEntries(activity: Activity, user: String) {
         val intent = Intent(activity, EntriesActivity::class.java).apply {
             putExtra(EntriesActivity.EXTRA_USER, user)
         }
@@ -698,8 +699,7 @@ class BookmarksViewModel(
         )
     }
 
-    private fun onReportBookmark(bookmark: Bookmark) {
-        val fragmentManager = fragmentManager ?: return
+    private fun onReportBookmark(bookmark: Bookmark, fragmentManager: FragmentManager) {
         ReportDialog.createInstance(
             user = bookmark.user,
             userIconUrl = bookmark.userIconUrl,
@@ -743,9 +743,7 @@ class BookmarksViewModel(
     }
 
     /** ユーザーにつけるユーザータグを選択するダイアログを開く */
-    private fun onSetUserTag(user: String) {
-        val fragmentManager = fragmentManager ?: return
-
+    private fun onSetUserTag(user: String, fragmentManager: FragmentManager) {
         val allUserTags = getUserTags()
         val tags = allUserTags.map { it.userTag }
         val initialCheckedIds = allUserTags.mapNotNull { t ->
@@ -758,8 +756,8 @@ class BookmarksViewModel(
             initialCheckedIds
         )
 
-        dialog.setOnAddNewTagListener {
-            openUserTagDialog(user, fragmentManager, DIALOG_NEW_USER_TAG)
+        dialog.setOnAddNewTagListener { f ->
+            openUserTagDialog(user, f.parentFragmentManager, DIALOG_NEW_USER_TAG)
         }
 
         dialog.setOnActivateTagsListener { (user, activeTags) ->
@@ -781,12 +779,13 @@ class BookmarksViewModel(
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_SELECT_USER_TAG)
     }
 
-    private fun onDeleteStar(bookmark: Bookmark) {
+    private fun onDeleteStar(bookmark: Bookmark, fragmentManager: FragmentManager) {
         val userSignedIn = repository.userSignedIn ?: return
         val stars = repository.getStarsEntryTo(bookmark.user)?.allStars?.filter { it.user == userSignedIn } ?: return
         deleteStarDialog(
             bookmark,
             stars,
+            fragmentManager,
             onSuccess = { SatenaApplication.instance.showToast(R.string.msg_delete_star_succeeded) },
             onError = { e ->
                 SatenaApplication.instance.showToast(R.string.msg_delete_star_failed)
