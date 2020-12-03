@@ -92,6 +92,12 @@ class BrowserRepository(
             p.getBoolean(key)
         }
 
+    /** 「戻る/進む」履歴項目でマーキーを使用する */
+    val useMarqueeOnBackStackItems =
+        createBrowserSettingsLiveData(BrowserSettingsKey.USE_MARQUEE_ON_BACK_STACK_ITEMS) { p, key ->
+            p.getBoolean(key)
+        }
+
     /** URLブロックを使用する */
     val useUrlBlocking =
         createBrowserSettingsLiveData(BrowserSettingsKey.USE_URL_BLOCKING) { p, key ->

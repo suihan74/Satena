@@ -5,13 +5,14 @@ import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.lazyProvideViewModel
 
 class PostStarDialog : DialogFragment() {
     companion object {
@@ -30,8 +31,8 @@ class PostStarDialog : DialogFragment() {
         private const val ARG_QUOTE = "ARG_QUOTE"
     }
 
-    private val viewModel: DialogViewModel by lazy {
-        ViewModelProvider(this)[DialogViewModel::class.java]
+    private val viewModel by lazyProvideViewModel {
+        DialogViewModel()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -54,7 +55,9 @@ class PostStarDialog : DialogFragment() {
             .create()
     }
 
-    suspend fun setOnPostStar(listener: Listener<Triple<Bookmark, StarColor, String>>?) = whenStarted {
+    fun setOnPostStar(
+        listener: Listener<Triple<Bookmark, StarColor, String>>?
+    ) = lifecycleScope.launchWhenCreated {
         viewModel.onPostStar = listener
     }
 

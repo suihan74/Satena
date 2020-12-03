@@ -24,7 +24,6 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /** エントリ項目に対する操作 */
 interface EntryMenuActions {
@@ -68,35 +67,35 @@ interface EntryMenuActions {
         coroutineScope: CoroutineScope
     ) {
         EntryMenuDialog2.createInstance(entry).run {
-            setShowCommentsListener {
-                showComments(activity, entry)
+            setShowCommentsListener { entry, menuDialog ->
+                showComments(menuDialog.requireActivity(), entry)
             }
-            setShowPageListener {
-                showPage(activity, entry)
+            setShowPageListener { entry, menuDialog ->
+                showPage(menuDialog.requireActivity(), entry)
             }
-            setSharePageListener {
-                sharePage(activity, entry)
+            setSharePageListener { entry, menuDialog ->
+                sharePage(menuDialog.requireActivity(), entry)
             }
-            setShowEntriesListener {
-                showEntries(activity, entry)
+            setShowEntriesListener { entry, menuDialog ->
+                showEntries(menuDialog.requireActivity(), entry)
             }
-            setFavoriteEntryListener {
-                favoriteEntry(activity, entry, coroutineScope)
+            setFavoriteEntryListener { entry, menuDialog ->
+                favoriteEntry(menuDialog.requireActivity(), entry, coroutineScope)
             }
-            setUnfavoriteEntryListener {
-                unfavoriteEntry(activity, entry, coroutineScope)
+            setUnfavoriteEntryListener { entry, menuDialog ->
+                unfavoriteEntry(menuDialog.requireActivity(), entry, coroutineScope)
             }
-            setIgnoreEntryListener {
-                openIgnoreEntryDialog(activity, entry, fragmentManager, coroutineScope)
+            setIgnoreEntryListener { entry, menuDialog ->
+                openIgnoreEntryDialog(menuDialog.requireActivity(), entry, menuDialog.parentFragmentManager, coroutineScope)
             }
-            setReadLaterListener {
-                readLaterEntry(activity, entry, coroutineScope)
+            setReadLaterListener { entry, menuDialog ->
+                readLaterEntry(menuDialog.requireActivity(), entry, coroutineScope)
             }
-            setReadListener {
-                readEntry(activity, entry, coroutineScope)
+            setReadListener { entry, menuDialog ->
+                readEntry(menuDialog.requireActivity(), entry, coroutineScope)
             }
-            setDeleteBookmarkListener {
-                deleteEntryBookmark(activity, entry, coroutineScope)
+            setDeleteBookmarkListener { entry, menuDialog ->
+                deleteEntryBookmark(menuDialog.requireActivity(), entry, coroutineScope)
             }
 
             showAllowingStateLoss(fragmentManager, DIALOG_ENTRY_MENU)
@@ -189,6 +188,20 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
             activity.showToast(R.string.msg_show_page_in_browser_failed)
         }
     }
+
+    override fun openIgnoreEntryDialog(
+        activity: Activity,
+        entry: Entry,
+        fragmentManager: FragmentManager,
+        coroutineScope: CoroutineScope
+    ) {
+        val dialog = IgnoredEntryDialogFragment.createInstance(
+            url = entry.url,
+            title = entry.title
+        )
+
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
+    }
 }
 
 // ------ //
@@ -227,41 +240,6 @@ class EntryMenuActionsImplForEntries(
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)
             }
         }
-    }
-
-    override fun openIgnoreEntryDialog(
-        activity: Activity,
-        entry: Entry,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) {
-        val dialog = IgnoredEntryDialogFragment.createInstance(
-            url = entry.url,
-            title = entry.title
-        ) { dialog, ignoredEntry ->
-            coroutineScope.launch(Dispatchers.Main) {
-                try {
-                    repository.addIgnoredEntry(ignoredEntry)
-
-                    activity.alsoAs<EntriesActivity> { a ->
-                        a.refreshLists()
-                    }
-
-                    activity.showToast(
-                        R.string.msg_ignored_entry_dialog_succeeded,
-                        ignoredEntry.query
-                    )
-
-                    dialog.dismiss()
-                }
-                catch (e: Throwable) {
-                    activity.showToast(R.string.msg_ignored_entry_dialog_failed)
-                }
-            }
-            false
-        }
-
-        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
     }
 
     override fun readLaterEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
@@ -358,10 +336,9 @@ class EntryMenuActionsImplForBookmarks(
 ) : EntryMenuActionsImplBasic() {
 
     override fun showEntries(activity: Activity, entry: Entry) {
-        val intent = Intent(activity, EntriesActivity::class.java).also {
-            it.putExtra(EntriesActivity.EXTRA_SITE_URL, entry.rootUrl)
+        activity.alsoAs<EntriesActivity> { a ->
+            a.showSiteEntries(entry.rootUrl)
         }
-        activity.startActivity(intent)
     }
 
     override fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
@@ -383,45 +360,6 @@ class EntryMenuActionsImplForBookmarks(
             if (result.isSuccess) {
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)
             }
-        }
-    }
-
-    override fun openIgnoreEntryDialog(
-        activity: Activity,
-        entry: Entry,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) {
-        IgnoredEntryDialogFragment.createInstance(
-            url = entry.url,
-            title = entry.title,
-            positiveAction = { dialog, ignoredEntry ->
-                coroutineScope.launch(Dispatchers.Main) {
-                    try {
-                        withContext(Dispatchers.IO) {
-// TODO:
-//                            repository.addIgnoredEntry(ignoredEntry)
-                        }
-
-                        activity.alsoAs<EntriesActivity> { a ->
-                            a.refreshLists()
-                        }
-
-                        activity.showToast(
-                            R.string.msg_ignored_entry_dialog_succeeded,
-                            ignoredEntry.query
-                        )
-
-                        dialog.dismiss()
-                    }
-                    catch (e: Throwable) {
-                        activity.showToast(R.string.msg_ignored_entry_dialog_failed)
-                    }
-                }
-                false
-            }
-        ).run {
-            showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
         }
     }
 

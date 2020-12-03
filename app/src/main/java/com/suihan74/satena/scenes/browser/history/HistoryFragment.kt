@@ -15,12 +15,9 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserHistoryBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
-import com.suihan74.utilities.RecyclerViewScrollingUpdater
-import com.suihan74.utilities.ScrollableToTop
-import com.suihan74.utilities.TabItem
+import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showSoftInputMethod
-import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -39,10 +36,8 @@ class HistoryFragment :
     private val activityViewModel : BrowserViewModel
         get() = browserActivity.viewModel
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            HistoryViewModel(activityViewModel.historyRepo)
-        }
+    private val viewModel by lazyProvideViewModel {
+        HistoryViewModel(activityViewModel.historyRepo)
     }
 
     private var binding: FragmentBrowserHistoryBinding? = null

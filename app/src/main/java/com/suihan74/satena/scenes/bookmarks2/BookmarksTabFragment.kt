@@ -105,6 +105,7 @@ class BookmarksTabFragment : Fragment() {
                 viewModel.initializeAddStarButton(
                     requireContext(),
                     viewLifecycleOwner,
+                    childFragmentManager,
                     button,
                     bookmark
                 )

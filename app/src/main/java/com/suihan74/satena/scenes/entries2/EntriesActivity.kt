@@ -16,6 +16,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Observer
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -72,20 +73,18 @@ class EntriesActivity : AppCompatActivity() {
     // ------ //
 
     /** Entry画面全体で使用するViewModel */
-    val viewModel : EntriesViewModel by lazy {
-        provideViewModel(this) {
-            val repository = EntriesRepository(
-                context = this,
-                client = HatenaClient,
-                accountLoader = AccountLoader(
-                    this,
-                    HatenaClient,
-                    MastodonClientHolder
-                ),
-                ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
-            )
-            EntriesViewModel(repository)
-        }
+    val viewModel by lazyProvideViewModel {
+        val repository = EntriesRepository(
+            context = this,
+            client = HatenaClient,
+            accountLoader = AccountLoader(
+                this,
+                HatenaClient,
+                MastodonClientHolder
+            ),
+            ignoredEntriesRepo = SatenaApplication.instance.ignoredEntriesRepository
+        )
+        EntriesViewModel(repository)
     }
 
     // ------ //
@@ -270,6 +269,13 @@ class EntriesActivity : AppCompatActivity() {
                 )
             }
         }
+
+        // 非表示エントリ情報が更新されたらリストを更新する
+        viewModel.repository.ignoredEntriesRepo.ignoredEntriesForEntries.observe(this, Observer {
+            runCatching {
+                refreshLists()
+            }
+        })
     }
 
     /** 最初に表示するコンテンツの用意 */

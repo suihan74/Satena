@@ -18,6 +18,7 @@ import com.suihan74.utilities.ScrollableToBottom
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
+import kotlinx.coroutines.launch
 
 abstract class BookmarksTabFragment :
     Fragment(),
@@ -81,12 +82,9 @@ abstract class BookmarksTabFragment :
 
             adapter.setOnItemLongClickedListener { bookmark ->
                 // メニューを開く
-                bookmarksViewModel.openBookmarkMenuDialog(
-                    requireActivity(),
-                    bookmark,
-                    childFragmentManager,
-                    lifecycleScope
-                )
+                lifecycleScope.launch {
+                    bookmarksViewModel.openBookmarkMenuDialog(bookmark, childFragmentManager)
+                }
             }
 
             adapter.setOnLinkClickedListener { url ->

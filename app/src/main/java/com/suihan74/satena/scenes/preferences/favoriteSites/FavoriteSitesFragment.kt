@@ -16,7 +16,7 @@ import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesActionsImplForB
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ScrollableToTop
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 /** お気に入りサイトを表示するタブ */
 class FavoriteSitesFragment :
@@ -36,20 +36,18 @@ class FavoriteSitesFragment :
     private val preferencesActivity : PreferencesActivity?
         get() = requireActivity() as? PreferencesActivity
 
-    val viewModel by lazy {
-        provideViewModel(this) {
-            val repository = browserViewModel?.favoriteSitesRepo ?:
-                FavoriteSitesRepository(
-                    SafeSharedPreferences.create(requireContext()),
-                    HatenaClient
-                )
+    val viewModel by lazyProvideViewModel {
+        val repository = browserViewModel?.favoriteSitesRepo ?:
+            FavoriteSitesRepository(
+                SafeSharedPreferences.create(requireContext()),
+                HatenaClient
+            )
 
-            val actionsImpl =
-                if (browserActivity != null) FavoriteSitesActionsImplForBrowser()
-                else FavoriteSitesActionsImplForPreferences()
+        val actionsImpl =
+            if (browserActivity != null) FavoriteSitesActionsImplForBrowser()
+            else FavoriteSitesActionsImplForPreferences()
 
-            FavoriteSitesViewModel(repository, actionsImpl)
-        }
+        FavoriteSitesViewModel(repository, actionsImpl)
     }
 
     private var binding : FragmentBrowserFavoritesBinding? = null

@@ -26,7 +26,7 @@ import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class PreferencesBrowserFragment :
     Fragment(),
@@ -50,25 +50,24 @@ class PreferencesBrowserFragment :
 
     private var onBackPressedCallback : OnBackPressedCallback? = null
 
-    val viewModel: PreferencesBrowserViewModel by lazy {
+    val viewModel: PreferencesBrowserViewModel by lazyProvideViewModel {
+        val context = requireContext()
+
         // ブラウザから直接開かれている場合はリポジトリを共有して変更をすぐに反映させる
-        provideViewModel(this) {
-            val context = requireContext()
-            val browserRepo = browserViewModel?.browserRepo ?:
-                BrowserRepository(
-                    HatenaClient,
-                    SafeSharedPreferences.create<PreferenceKey>(context),
-                    SafeSharedPreferences.create<BrowserSettingsKey>(context)
-                )
+        val browserRepo = browserViewModel?.browserRepo ?:
+            BrowserRepository(
+                HatenaClient,
+                SafeSharedPreferences.create<PreferenceKey>(context),
+                SafeSharedPreferences.create<BrowserSettingsKey>(context)
+            )
 
-            val historyRepo = browserViewModel?.historyRepo ?:
-                HistoryRepository(SatenaApplication.instance.browserDao)
+        val historyRepo = browserViewModel?.historyRepo ?:
+            HistoryRepository(SatenaApplication.instance.browserDao)
 
-            PreferencesBrowserViewModel(
-                browserRepo,
-                historyRepo,
-                isPreferencesActivity = preferencesActivity != null)
-        }
+        PreferencesBrowserViewModel(
+            browserRepo,
+            historyRepo,
+            isPreferencesActivity = preferencesActivity != null)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

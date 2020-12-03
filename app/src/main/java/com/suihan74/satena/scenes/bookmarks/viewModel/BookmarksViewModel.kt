@@ -205,10 +205,12 @@ class BookmarksViewModel(
         actionType: TapEntryAction,
         entryLoader: suspend ()->Entry
     ) {
-        val handler = EntryMenuActionsImplForBookmarks(FavoriteSitesRepository(
-            SafeSharedPreferences.create(activity),
-            HatenaClient
-        ))
+        val handler = EntryMenuActionsImplForBookmarks(
+            FavoriteSitesRepository(
+                SafeSharedPreferences.create(activity),
+                HatenaClient
+            )
+        )
 
         activity.lifecycleScope.launch(Dispatchers.Main) {
             val result = runCatching {
@@ -424,21 +426,17 @@ class BookmarksViewModel(
     }
 
     /** ブクマ項目に対する操作メニューを表示 */
-    fun openBookmarkMenuDialog(
-        activity: Activity,
+    suspend fun openBookmarkMenuDialog(
         bookmark: Bookmark,
         fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) = coroutineScope.launch(Dispatchers.Main) {
-        val entry = entry.value ?: return@launch
+    ) {
+        val entry = entry.value ?: return
         val starsEntry = repository.getStarsEntry(bookmark)
         bookmarkMenuActions.openBookmarkMenuDialog(
-            activity,
             entry,
             bookmark,
             starsEntry?.value,
-            fragmentManager,
-            coroutineScope
+            fragmentManager
         )
     }
 
@@ -480,14 +478,19 @@ class BookmarksViewModel(
             coroutineScope.launch(Dispatchers.Main) {
                 val liveData = repository.getStarsEntry(bookmark)
                 val userStarred = liveData?.value?.allStars?.any { it.user == user } ?: false
-                if (user != null && userStarred) {
+                if (userStarred) {
                     button.setImageResource(R.drawable.ic_add_star_filled)
 
                     button.setOnLongClickListener {
                         coroutineScope.launch(Dispatchers.Main) {
                             repository.getUserStars(bookmark, user)?.let { stars ->
                                 val entry = entry.value ?: return@let
-                                bookmarkMenuActions.openDeleteStarDialog(entry, bookmark, stars, fragmentManager, coroutineScope)
+                                bookmarkMenuActions.openDeleteStarDialog(
+                                    entry,
+                                    bookmark,
+                                    stars,
+                                    fragmentManager
+                                )
                             }
                         }
                         true

@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.models.userTag.Tag
@@ -13,7 +12,7 @@ import com.suihan74.utilities.SuspendListener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -26,12 +25,10 @@ class TagMenuDialog : DialogFragment() {
         private const val ARG_TARGET_TAG = "ARG_TARGET_TAG"
     }
 
-    private val viewModel : DialogViewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel(
-                requireArguments().getObject<Tag>(ARG_TARGET_TAG)!!
-            )
-        }
+    private val viewModel : DialogViewModel by lazyProvideViewModel {
+        DialogViewModel(
+            requireArguments().getObject<Tag>(ARG_TARGET_TAG)!!
+        )
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -45,20 +42,22 @@ class TagMenuDialog : DialogFragment() {
             .apply {
                 // アイテムを選択した瞬間にダイアログを閉じないようにする
                 // 自動で閉じてしまうと、処理完了前にコルーチンがキャンセルされてしまう可能性が高くなる
-                listView.setOnItemClickListener { adapterView, view, i, l ->
+                listView.setOnItemClickListener { _, _, i, _ ->
                     lifecycleScope.launch(Dispatchers.Main) {
-                        viewModel.invokeListener(i)
-                        dismiss()
+                        runCatching {
+                            viewModel.invokeListener(i, this@TagMenuDialog)
+                            dismiss()
+                        }
                     }
                 }
             }
     }
 
-    suspend fun setOnEditListener(listener: SuspendListener<Tag>?) = whenStarted {
+    fun setOnEditListener(listener: SuspendListener<Pair<Tag, TagMenuDialog>>?) = lifecycleScope.launchWhenCreated {
         viewModel.onEdit = listener
     }
 
-    suspend fun setOnDeleteListener(listener: SuspendListener<Tag>?) = whenStarted {
+    fun setOnDeleteListener(listener: SuspendListener<Pair<Tag, TagMenuDialog>>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDelete = listener
     }
 
@@ -74,16 +73,16 @@ class TagMenuDialog : DialogFragment() {
             R.string.pref_user_tags_tag_menu_remove to { onDelete }
         )
 
-        var onEdit: SuspendListener<Tag>? = null
+        var onEdit: SuspendListener<Pair<Tag, TagMenuDialog>>? = null
 
-        var onDelete: SuspendListener<Tag>? = null
+        var onDelete: SuspendListener<Pair<Tag, TagMenuDialog>>? = null
 
         // itemsの場合クリックしてすぐダイアログが閉じるせいで
         // viewModelScopeやlifecycleScopeを使っていると
         // 途中でキャンセルされる可能性がある
-        suspend fun invokeListener(which: Int) {
+        suspend fun invokeListener(which: Int, dialogFragment: TagMenuDialog) {
             val listener = items[which].second()
-            listener?.invoke(targetTag)
+            listener?.invoke(targetTag to dialogFragment)
         }
     }
 }

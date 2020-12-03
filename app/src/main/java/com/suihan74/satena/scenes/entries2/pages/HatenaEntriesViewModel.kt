@@ -19,5 +19,5 @@ class HatenaEntriesViewModel(
     }
 
     override val tabCount: Int = 2
-    override fun getTabTitle(context: Context, position: Int) = context.getString(tabTitles[position]) ?: ""
+    override fun getTabTitle(context: Context, position: Int) = context.getString(tabTitles[position])
 }

@@ -19,7 +19,7 @@ import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.*
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class UrlBlockingDialog : DialogFragment() {
     companion object {
@@ -30,11 +30,9 @@ class UrlBlockingDialog : DialogFragment() {
         private const val ARG_URLS = "ARG_URLS"
     }
 
-    private val viewModel : DialogViewModel by lazy {
-        provideViewModel(this) {
-            val urls = requireArguments().getObject<List<ResourceUrl>>(ARG_URLS)
-            DialogViewModel(urls)
-        }
+    private val viewModel by lazyProvideViewModel {
+        val urls = requireArguments().getObject<List<ResourceUrl>>(ARG_URLS)
+        DialogViewModel(urls)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

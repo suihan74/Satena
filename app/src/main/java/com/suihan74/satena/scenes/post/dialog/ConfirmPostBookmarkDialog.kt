@@ -6,12 +6,13 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.DialogTitleBookmarkBinding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class ConfirmPostBookmarkDialog : DialogFragment() {
     companion object {
@@ -30,26 +31,27 @@ class ConfirmPostBookmarkDialog : DialogFragment() {
         private const val ARG_COMMENT = "ARG_COMMENT"
     }
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            val args = requireArguments()
-            val user = args.getString(ARG_USER)!!
-            val comment = args.getString(ARG_COMMENT)!!
+    private val viewModel by lazyProvideViewModel {
+        val args = requireArguments()
+        val user = args.getString(ARG_USER)!!
+        val comment = args.getString(ARG_COMMENT)!!
 
-            DialogViewModel(user, comment)
-        }
+        DialogViewModel(user, comment)
     }
 
     // ------ //
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = localLayoutInflater()
-        val titleView = inflater.inflate(R.layout.dialog_title_bookmark, null).apply {
-            setCustomTitle(viewModel.user, viewModel.comment)
+        val binding = DialogTitleBookmarkBinding.inflate(
+            localLayoutInflater(),
+            null,
+            false
+        ).apply {
+            root.setCustomTitle(viewModel.user, viewModel.comment)
         }
 
         return createBuilder()
-            .setCustomTitle(titleView)
+            .setCustomTitle(binding.root)
             .setMessage(R.string.confirm_post_bookmark)
             .setPositiveButton(R.string.dialog_ok) { _, _ ->
                 viewModel.onApprovedToPost?.invoke(Unit)

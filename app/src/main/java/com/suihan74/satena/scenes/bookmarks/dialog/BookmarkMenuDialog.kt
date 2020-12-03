@@ -13,11 +13,11 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.dialogs.setCustomTitle
-import com.suihan74.utilities.Listener
+import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import org.threeten.bp.LocalDateTime
 
 class BookmarkMenuDialog : DialogFragment() {
@@ -40,10 +40,8 @@ class BookmarkMenuDialog : DialogFragment() {
         private const val ARG_USER_SIGNED_IN = "ARG_USER_SIGNED_IN"
     }
 
-    private val viewModel: DialogViewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel(requireArguments())
-        }
+    private val viewModel by lazyProvideViewModel {
+        DialogViewModel(requireArguments())
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -60,36 +58,36 @@ class BookmarkMenuDialog : DialogFragment() {
             .setCustomTitle(titleView)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setItems(viewModel.createLabels(requireContext())) { _, which ->
-                viewModel.invokeAction(which)
+                viewModel.invokeAction(which, this)
             }
             .create()
     }
 
-    fun setOnShowEntries(listener: Listener<String>?) = lifecycleScope.launchWhenCreated {
+    fun setOnShowEntries(listener: DialogListener<String>?) = lifecycleScope.launchWhenCreated {
         viewModel.onShowEntries = listener
     }
 
-    fun setOnIgnoreUser(listener: Listener<String>?) = lifecycleScope.launchWhenCreated {
+    fun setOnIgnoreUser(listener: DialogListener<String>?) = lifecycleScope.launchWhenCreated {
         viewModel.onIgnoreUser = listener
     }
 
-    fun setOnUnignoreUser(listener: Listener<String>?) = lifecycleScope.launchWhenCreated {
+    fun setOnUnignoreUser(listener: DialogListener<String>?) = lifecycleScope.launchWhenCreated {
         viewModel.onUnignoreUser = listener
     }
 
-    fun setOnReportBookmark(listener: Listener<Bookmark>?) = lifecycleScope.launchWhenCreated {
+    fun setOnReportBookmark(listener: DialogListener<Bookmark>?) = lifecycleScope.launchWhenCreated {
         viewModel.onReportBookmark = listener
     }
 
-    fun setOnSetUserTag(listener: Listener<String>?) = lifecycleScope.launchWhenCreated {
+    fun setOnSetUserTag(listener: DialogListener<String>?) = lifecycleScope.launchWhenCreated {
         viewModel.onSetUserTag = listener
     }
 
-    fun setOnDeleteStar(listener: Listener<Pair<Bookmark, List<Star>>>?) = lifecycleScope.launchWhenCreated {
+    fun setOnDeleteStar(listener: DialogListener<Pair<Bookmark, List<Star>>>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDeleteStar = listener
     }
 
-    fun setOnDeleteBookmark(listener: Listener<Bookmark>?) = lifecycleScope.launchWhenCreated {
+    fun setOnDeleteBookmark(listener: DialogListener<Bookmark>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDeleteBookmark = listener
     }
 
@@ -115,56 +113,56 @@ class BookmarkMenuDialog : DialogFragment() {
         // ------ //
 
         /** ユーザーが最近ブクマしたエントリ一覧を表示する */
-        var onShowEntries: Listener<String>? = null
+        var onShowEntries: DialogListener<String>? = null
 
         /** ユーザーを非表示にする */
-        var onIgnoreUser: Listener<String>? = null
+        var onIgnoreUser: DialogListener<String>? = null
 
         /** ユーザーの非表示を解除する */
-        var onUnignoreUser: Listener<String>? = null
+        var onUnignoreUser: DialogListener<String>? = null
 
         /** ブクマを通報する */
-        var onReportBookmark: Listener<Bookmark>? = null
+        var onReportBookmark: DialogListener<Bookmark>? = null
 
         /** ユーザータグをつける */
-        var onSetUserTag: Listener<String>? = null
+        var onSetUserTag: DialogListener<String>? = null
 
         /** スターを取り消す */
-        var onDeleteStar: Listener<Pair<Bookmark, List<Star>>>? = null
+        var onDeleteStar: DialogListener<Pair<Bookmark, List<Star>>>? = null
 
         /** (自分のブクマを)削除する */
-        var onDeleteBookmark: Listener<Bookmark>? = null
+        var onDeleteBookmark: DialogListener<Bookmark>? = null
 
         // ------ //
 
         /** メニュー項目 */
         @OptIn(ExperimentalStdlibApi::class)
         val items by lazy {
-            buildList {
                 // TODO: ダミーの判定方法は変えた方がいいかもしれない
                 val dummyBookmark = bookmark.timestamp == LocalDateTime.MIN
 
-                add(R.string.bookmark_show_user_entries to { onShowEntries?.invoke(bookmark.user) })
+            buildList<Pair<Int, (BookmarkMenuDialog)->Unit>> {
+                add(R.string.bookmark_show_user_entries to { onShowEntries?.invoke(bookmark.user, it) })
                 if (signedIn) {
                     if (ignored) {
-                        add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user) })
+                        add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) })
                     }
                     else {
-                        add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark.user) })
+                        add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark.user, it) })
                     }
 
                     if (!dummyBookmark && (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty())) {
-                        add(R.string.bookmark_report to { onReportBookmark?.invoke(bookmark) })
+                        add(R.string.bookmark_report to { onReportBookmark?.invoke(bookmark, it) })
                     }
                 }
-                add(R.string.bookmark_user_tags to { onSetUserTag?.invoke(bookmark.user) })
+                add(R.string.bookmark_user_tags to { onSetUserTag?.invoke(bookmark.user, it) })
 
                 if (userStars.isNotEmpty()) {
-                    add(R.string.bookmark_delete_star to { onDeleteStar?.invoke(bookmark to userStars) })
+                    add(R.string.bookmark_delete_star to { onDeleteStar?.invoke(bookmark to userStars, it) })
                 }
 
                 if (userSignedIn == bookmark.user && !dummyBookmark) {
-                    add(R.string.bookmark_delete to { onDeleteBookmark?.invoke(bookmark) })
+                    add(R.string.bookmark_delete to { onDeleteBookmark?.invoke(bookmark, it) })
                 }
             }
         }
@@ -174,8 +172,8 @@ class BookmarkMenuDialog : DialogFragment() {
             items.map { context.getString(it.first) }.toTypedArray()
 
         /** メニューアクションを実行 */
-        fun invokeAction(which: Int) {
-            items.getOrNull(which)?.second?.invoke()
+        fun invokeAction(which: Int, dialogFragment: BookmarkMenuDialog) {
+            items.getOrNull(which)?.second?.invoke(dialogFragment)
         }
     }
 }

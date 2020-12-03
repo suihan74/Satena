@@ -19,7 +19,7 @@ import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
 
 class PreferencesEntriesFragment : PreferencesFragmentBase() {
@@ -29,12 +29,10 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
 
     // ------ //
 
-    val viewModel by lazy {
-        provideViewModel(this) {
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-            val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
-            PreferencesEntriesViewModel(prefs, historyPrefs)
-        }
+    val viewModel by lazyProvideViewModel {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
+        PreferencesEntriesViewModel(prefs, historyPrefs)
     }
 
     // ------ //

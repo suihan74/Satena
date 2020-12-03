@@ -16,7 +16,7 @@ import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.setButtonsEnabled
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -36,13 +36,11 @@ class UserTagSelectionDialog : DialogFragment() {
         private const val ARG_INITIAL_CHECKED_IDS = "ARG_INITIAL_CHECKED_IDS"
     }
 
-    private val viewModel: DialogViewModel by lazy {
-        provideViewModel(this) {
-            val args = requireArguments()
-            val user = args.getString(ARG_USER)!!
-            val initialCheckedTagIds = args.getIntArray(ARG_INITIAL_CHECKED_IDS) ?: IntArray(0)
-            DialogViewModel(user, initialCheckedTagIds)
-        }
+    private val viewModel: DialogViewModel by lazyProvideViewModel {
+        val args = requireArguments()
+        val user = args.getString(ARG_USER)!!
+        val initialCheckedTagIds = args.getIntArray(ARG_INITIAL_CHECKED_IDS) ?: IntArray(0)
+        DialogViewModel(user, initialCheckedTagIds)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -53,7 +51,7 @@ class UserTagSelectionDialog : DialogFragment() {
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .setNeutralButton(R.string.user_tags_dialog_new_tag) { _, _ ->
-                viewModel.onAddNewTag?.invoke(Unit)
+                viewModel.onAddNewTag?.invoke(this)
             }
             .setPositiveButton(R.string.dialog_ok, null)
             .show()
@@ -86,7 +84,7 @@ class UserTagSelectionDialog : DialogFragment() {
     }
 
     fun setOnAddNewTagListener(
-        l: Listener<Unit>?
+        l: Listener<UserTagSelectionDialog>?
     ) = lifecycleScope.launchWhenCreated {
         viewModel.onAddNewTag = l
     }
@@ -144,7 +142,7 @@ class UserTagSelectionDialog : DialogFragment() {
         // --- //
 
         /** 新規タグ作成 */
-        var onAddNewTag: Listener<Unit>? = null
+        var onAddNewTag: Listener<UserTagSelectionDialog>? = null
 
         /** タグを有効化する */
         var onActivateTags: SuspendListener<ActivateUserTagsArguments>? = null
