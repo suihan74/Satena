@@ -485,7 +485,12 @@ class BookmarksViewModel(
                         coroutineScope.launch(Dispatchers.Main) {
                             repository.getUserStars(bookmark, user)?.let { stars ->
                                 val entry = entry.value ?: return@let
-                                bookmarkMenuActions.openDeleteStarDialog(entry, bookmark, stars, fragmentManager, coroutineScope)
+                                bookmarkMenuActions.openDeleteStarDialog(
+                                    entry,
+                                    bookmark,
+                                    stars,
+                                    fragmentManager
+                                )
                             }
                         }
                         true

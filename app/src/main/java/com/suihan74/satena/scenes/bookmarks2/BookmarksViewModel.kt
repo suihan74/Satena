@@ -578,7 +578,7 @@ class BookmarksViewModel(
     ) {
         val dialog = StarDeletionDialog.createInstance(stars)
 
-        dialog.setOnDeleteStars { selectedStars ->
+        dialog.setOnDeleteStars { selectedStars, _ ->
             viewModelScope.launch {
                 selectedStars.forEach { star ->
                     try {
@@ -612,13 +612,11 @@ class BookmarksViewModel(
     }
 
     /** ブクマを通報 */
-    suspend fun reportBookmark(
-        report: Report,
-    ) : Boolean = withContext(Dispatchers.Main) {
+    suspend fun reportBookmark(report: Report) : Boolean {
         val result = runCatching {
             repository.reportBookmark(report)
         }
-        return@withContext result.getOrDefault(false)
+        return result.getOrDefault(false)
     }
 
     /** ユーザーのブクマを取得 */

@@ -7,11 +7,12 @@ import android.text.style.AbsoluteSizeSpan
 import androidx.appcompat.app.AlertDialog
 import androidx.core.text.buildSpannedString
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Star
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.createBuilder
-import com.suihan74.utilities.Listener
+import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.lazyProvideViewModel
 
@@ -59,7 +60,7 @@ class StarDeletionDialog : DialogFragment() {
                         requireContext().showToast(R.string.msg_no_deleting_star_selected)
                     }
                     else {
-                        viewModel.onDeleteStars?.invoke(viewModel.selectedStars)
+                        viewModel.onDeleteStars?.invoke(viewModel.selectedStars, this@StarDeletionDialog)
                         dismiss()
                     }
                 }
@@ -67,7 +68,7 @@ class StarDeletionDialog : DialogFragment() {
     }
 
     /** 削除するスターが決定したときの処理をセットする */
-    fun setOnDeleteStars(listener: Listener<List<Star>>?) = lifecycleScope.launchWhenCreated {
+    fun setOnDeleteStars(listener: DialogListener<List<Star>>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDeleteStars = listener
     }
 
@@ -76,10 +77,10 @@ class StarDeletionDialog : DialogFragment() {
     class DialogViewModel(
         /** 候補のスターリスト */
         val stars: List<Star>
-    ) : androidx.lifecycle.ViewModel() {
+    ) : ViewModel() {
 
         /** 削除するスターが決定したときの処理 */
-        var onDeleteStars: Listener<List<Star>>? = null
+        var onDeleteStars: DialogListener<List<Star>>? = null
 
         val checkedArray = BooleanArray(stars.size) { idx -> idx == 0 }
 

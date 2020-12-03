@@ -77,8 +77,7 @@ class BookmarkMenuActionsImpl(
                 entry,
                 b,
                 stars,
-                f.parentFragmentManager,
-                f.requireActivity().lifecycleScope
+                f.parentFragmentManager
             )
         }
 
@@ -212,8 +211,8 @@ class BookmarkMenuActionsImpl(
             }
         }
 
-        dialog.setOnAddNewTagListener {
-            openUserTagCreationDialog(user, fragmentManager)
+        dialog.setOnAddNewTagListener { f ->
+            openUserTagCreationDialog(user, f.parentFragmentManager)
         }
 
         dialog.setOnCompleteListener {
@@ -277,13 +276,13 @@ class BookmarkMenuActionsImpl(
         entry: Entry,
         bookmark: Bookmark,
         stars: List<Star>,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
+        fragmentManager: FragmentManager
     ) {
         val dialog = StarDeletionDialog.createInstance(stars)
 
-        dialog.setOnDeleteStars { selectedStars ->
-            coroutineScope.launch(Dispatchers.Main) {
+        dialog.setOnDeleteStars { selectedStars, f ->
+            val activity = f.requireActivity()
+            activity.lifecycleScope.launch(Dispatchers.Main) {
                 val completed = selectedStars.all { star ->
                     val result = runCatching {
                         repository.deleteStar(entry, bookmark, star, updateCacheImmediately = false)
@@ -291,12 +290,11 @@ class BookmarkMenuActionsImpl(
                     result.isSuccess
                 }
 
-                val context = SatenaApplication.instance
                 if (completed) {
-                    context.showToast(R.string.msg_delete_star_succeeded)
+                    activity.showToast(R.string.msg_delete_star_succeeded)
                 }
                 else {
-                    context.showToast(R.string.msg_delete_star_failed)
+                    activity.showToast(R.string.msg_delete_star_failed)
                 }
 
                 // スター表示の更新
