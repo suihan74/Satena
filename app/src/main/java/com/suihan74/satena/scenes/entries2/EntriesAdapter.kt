@@ -112,6 +112,7 @@ class EntriesAdapter(
 
                     // 複数回クリックを雑に検出する
                     var clickCount = 0
+                    val clickGuardRefreshDelay = 400L
                     fun considerMultipleClick(entry: Entry?) {
                         if (clickCount++ == 0) {
                             val duration = multipleClickDuration
@@ -129,6 +130,8 @@ class EntriesAdapter(
                                             onItemClicked?.invoke(entry)
                                         }
                                     }
+                                    delay(clickGuardRefreshDelay)
+                                    itemClicked = false
                                 }
                             }
                         }
@@ -139,6 +142,10 @@ class EntriesAdapter(
                             if (entry != null && !itemClicked) {
                                 itemClicked = true
                                 onItemClicked?.invoke(entry)
+                                coroutineScope.launch {
+                                    delay(clickGuardRefreshDelay)
+                                    itemClicked = false
+                                }
                             }
                         }
                         else {
