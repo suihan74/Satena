@@ -90,7 +90,7 @@ interface EntryMenuActions {
             }
             setIgnoreEntryListener { entry, f ->
                 val a = f.requireActivity()
-                openIgnoreEntryDialog(a, entry, f.parentFragmentManager, a.lifecycleScope)
+                openIgnoreEntryDialog(a, entry, a.supportFragmentManager, a.lifecycleScope)
             }
             setReadLaterListener { entry, f ->
                 val a = f.requireActivity()
