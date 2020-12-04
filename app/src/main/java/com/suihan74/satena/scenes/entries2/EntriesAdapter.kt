@@ -112,7 +112,7 @@ class EntriesAdapter(
 
                     // 複数回クリックを雑に検出する
                     var clickCount = 0
-                    val clickGuardRefreshDelay = 400L
+                    val clickGuardRefreshDelay = 800L
                     fun considerMultipleClick(entry: Entry?) {
                         if (clickCount++ == 0) {
                             val duration = multipleClickDuration
