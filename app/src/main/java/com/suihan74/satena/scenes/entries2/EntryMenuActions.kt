@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
@@ -66,40 +67,45 @@ interface EntryMenuActions {
         fragmentManager: FragmentManager,
         coroutineScope: CoroutineScope
     ) {
-        EntryMenuDialog2.createInstance(entry).run {
-            setShowCommentsListener { entry, _ ->
-                showComments(activity, entry)
+        val dialog = EntryMenuDialog2.createInstance(entry).apply {
+            setShowCommentsListener { entry, f ->
+                showComments(f.requireActivity(), entry)
             }
-            setShowPageListener { entry, _ ->
-                showPage(activity, entry)
+            setShowPageListener { entry, f->
+                showPage(f.requireActivity(), entry)
             }
-            setSharePageListener { entry, _ ->
-                sharePage(activity, entry)
+            setSharePageListener { entry, f ->
+                sharePage(f.requireActivity(), entry)
             }
-            setShowEntriesListener { entry, _ ->
-                showEntries(activity, entry)
+            setShowEntriesListener { entry, f ->
+                showEntries(f.requireActivity(), entry)
             }
-            setFavoriteEntryListener { entry, _ ->
-                favoriteEntry(activity, entry, coroutineScope)
+            setFavoriteEntryListener { entry, f ->
+                val a = f.requireActivity()
+                favoriteEntry(a, entry, a.lifecycleScope)
             }
-            setUnfavoriteEntryListener { entry, _ ->
-                unfavoriteEntry(activity, entry, coroutineScope)
+            setUnfavoriteEntryListener { entry, f ->
+                val a = f.requireActivity()
+                unfavoriteEntry(a, entry, a.lifecycleScope)
             }
-            setIgnoreEntryListener { entry, menuDialog ->
-                openIgnoreEntryDialog(activity, entry, menuDialog.parentFragmentManager, coroutineScope)
+            setIgnoreEntryListener { entry, f ->
+                val a = f.requireActivity()
+                openIgnoreEntryDialog(a, entry, f.parentFragmentManager, a.lifecycleScope)
             }
-            setReadLaterListener { entry, _ ->
-                readLaterEntry(activity, entry, coroutineScope)
+            setReadLaterListener { entry, f ->
+                val a = f.requireActivity()
+                readLaterEntry(a, entry, a.lifecycleScope)
             }
-            setReadListener { entry, _ ->
-                readEntry(activity, entry, coroutineScope)
+            setReadListener { entry, f ->
+                val a = f.requireActivity()
+                readEntry(a, entry, a.lifecycleScope)
             }
-            setDeleteBookmarkListener { entry, _ ->
-                deleteEntryBookmark(activity, entry, coroutineScope)
+            setDeleteBookmarkListener { entry, f ->
+                val a = f.requireActivity()
+                deleteEntryBookmark(a, entry, lifecycleScope)
             }
-
-            showAllowingStateLoss(fragmentManager, DIALOG_ENTRY_MENU)
         }
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_ENTRY_MENU)
     }
 
     // ------ //
