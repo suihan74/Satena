@@ -177,7 +177,6 @@ class BookmarksViewModel(
 
     /** ブクマ項目に対する操作メニューを表示 */
     fun openBookmarkMenuDialog(
-        activity: Activity,
         bookmark: Bookmark,
         fragmentManager: FragmentManager
     ) = viewModelScope.launch(Dispatchers.Main) {
@@ -193,7 +192,7 @@ class BookmarksViewModel(
             repository.userSignedIn
         )
 
-        dialog.setOnShowEntries { user, _ -> showEntries(activity, user) }
+        dialog.setOnShowEntries { user, f -> showEntries(f.requireActivity(), user) }
 
         dialog.setOnIgnoreUser { user, _ -> ignoreUser(user) }
 
