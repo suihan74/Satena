@@ -206,6 +206,7 @@ class BookmarksViewModel(
         entryLoader: suspend ()->Entry
     ) {
         val handler = EntryMenuActionsImplForBookmarks(
+            repository,
             FavoriteSitesRepository(
                 SafeSharedPreferences.create(activity),
                 HatenaClient

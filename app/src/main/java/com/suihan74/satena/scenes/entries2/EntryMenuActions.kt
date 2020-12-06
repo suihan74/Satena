@@ -13,6 +13,7 @@ import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
@@ -273,40 +274,40 @@ class EntryMenuActionsImplForEntries(
                 repository.readEntry(entry)
             }
 
-            if (result.isSuccess) {
-                val (action, bookmarkResult) = result.getOrNull()!!
-                        when (action) {
-                    EntryReadActionType.REMOVE -> {
-                        activity.alsoAs<EntriesActivity> { a ->
-                            a.removeBookmark(entry)
-                        }
-                        activity.showToast(R.string.msg_remove_bookmark_succeeded)
-                    }
-
-                    EntryReadActionType.DIALOG -> {
-                        // ブクマ編集ダイアログに遷移する
-                        // あとで戻ってきたときに画面を更新する --> Activity#onActivityResult
-                        val intent = Intent(activity, BookmarkPostActivity::class.java).also {
-                            it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
-                        }
-                        activity.startActivityForResult(
-                            intent,
-                            BookmarkPostActivity.REQUEST_CODE
-                        )
-                    }
-
-                    else -> {
-                        if (bookmarkResult != null) {
-                            activity.alsoAs<EntriesActivity> { a ->
-                                a.updateBookmark(entry, bookmarkResult)
-                            }
-                        }
-                        activity.showToast(R.string.msg_post_bookmark_succeeded)
-                    }
-                }
-            }
-            else {
+            if (result.isFailure) {
                 activity.showToast(R.string.msg_post_bookmark_failed)
+                return@launch
+            }
+
+            val (action, bookmarkResult) = result.getOrNull()!!
+            when (action) {
+                EntryReadActionType.REMOVE -> {
+                    activity.alsoAs<EntriesActivity> { a ->
+                        a.removeBookmark(entry)
+                    }
+                    activity.showToast(R.string.msg_remove_bookmark_succeeded)
+                }
+
+                EntryReadActionType.DIALOG -> {
+                    // ブクマ編集ダイアログに遷移する
+                    // あとで戻ってきたときに画面を更新する --> Activity#onActivityResult
+                    val intent = Intent(activity, BookmarkPostActivity::class.java).also {
+                        it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
+                    }
+                    activity.startActivityForResult(
+                        intent,
+                        BookmarkPostActivity.REQUEST_CODE
+                    )
+                }
+
+                else -> {
+                    if (bookmarkResult != null) {
+                        activity.alsoAs<EntriesActivity> { a ->
+                            a.updateBookmark(entry, bookmarkResult)
+                        }
+                    }
+                    activity.showToast(R.string.msg_post_bookmark_succeeded)
+                }
             }
         }
     }
@@ -338,6 +339,7 @@ class EntryMenuActionsImplForEntries(
 
 /** ブクマ画面用の実装 */
 class EntryMenuActionsImplForBookmarks(
+    private val bookmarksRepo: BookmarksRepository,
     private val favoriteSitesRepo: FavoriteSitesRepositoryForEntries
 ) : EntryMenuActionsImplBasic() {
 
@@ -373,7 +375,7 @@ class EntryMenuActionsImplForBookmarks(
         coroutineScope.launch(Dispatchers.Main) {
             val result = runCatching {
 //TODO:
-//                repository.readLaterEntry(entry)
+//                bookmarksRepository.readLaterEntry(entry)
             }
 /*
             if (result.isSuccess) {
@@ -443,13 +445,10 @@ class EntryMenuActionsImplForBookmarks(
     ) {
         coroutineScope.launch(Dispatchers.Main) {
             val result = runCatching {
-                // TODO:
-//                repository.deleteBookmark(entry)
+                bookmarksRepo.deleteBookmark(entry)
             }
+
             if (result.isSuccess) {
-                activity.alsoAs<EntriesActivity> { a ->
-                    a.removeBookmark(entry)
-                }
                 activity.showToast(R.string.msg_remove_bookmark_succeeded)
             }
             else {
