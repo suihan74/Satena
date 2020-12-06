@@ -11,23 +11,23 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntryMenuActionsImplBasic
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
-import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.extensions.showToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-/** ブクマ画面用の実装 */
+/** ブコメに含まれるリンク文字列に対する処理 */
 class EntryMenuActionsImplForBookmarks(
     private val bookmarksRepo: BookmarksRepository,
     private val favoriteSitesRepo: FavoriteSitesRepositoryForEntries
 ) : EntryMenuActionsImplBasic() {
 
     override fun showEntries(activity: Activity, entry: Entry) {
-        activity.alsoAs<EntriesActivity> { a ->
-            a.showSiteEntries(entry.rootUrl)
+        val intent = Intent(activity, EntriesActivity::class.java).also {
+            it.putExtra(EntriesActivity.EXTRA_SITE_URL, entry.rootUrl)
         }
+        activity.startActivity(intent)
     }
 
     override fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {

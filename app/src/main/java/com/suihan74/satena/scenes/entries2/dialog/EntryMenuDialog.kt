@@ -37,7 +37,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 // TODO: リスナの扱い方を刷新する
-
+@Deprecated("replace with EntryMenuDialog2")
 class EntryMenuDialogListeners {
     /** ミュート完了時の処理 */
     var onIgnoredEntry : OnSuccess<IgnoredEntry>? = null
@@ -50,6 +50,7 @@ class EntryMenuDialogListeners {
 }
 
 /** エントリメニューダイアログ */
+@Deprecated("replace with EntryMenuDialog2")
 class EntryMenuDialog : DialogFragment() {
     companion object {
         fun createInstance(entry: Entry) = EntryMenuDialog().withArguments {
