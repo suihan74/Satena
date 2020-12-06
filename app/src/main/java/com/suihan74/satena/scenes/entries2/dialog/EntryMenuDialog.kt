@@ -158,7 +158,7 @@ class EntryMenuDialog : DialogFragment() {
                         entry = entry,
                         listeners = listeners
                     )
-                    instance.action(menuItem, args)
+                    instance.action(menuItem, args, fragmentManager)
 
                     fragmentManager.beginTransaction()
                         .remove(instance)
@@ -184,7 +184,7 @@ class EntryMenuDialog : DialogFragment() {
                         context = context,
                         url = url
                     )
-                    instance.action(menuItem, args)
+                    instance.action(menuItem, args, fragmentManager)
 
                     fragmentManager.beginTransaction()
                         .remove(instance)
@@ -265,21 +265,31 @@ class EntryMenuDialog : DialogFragment() {
         return createBuilder()
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setItems(activeItemLabels) { _, which ->
-                val args = MenuItemArguments(
-                    context = activity,
-                    entry = entry,
-                    url = url,
-                    listeners = viewModel.listeners
-                )
-                action(activeItems[which], args)
+            .setItems(activeItemLabels, null)
+            .show().also {
+                it.listView.setOnItemClickListener { _, _, i, _ ->
+                    val args = MenuItemArguments(
+                        context = activity,
+                        entry = entry,
+                        url = url,
+                        listeners = viewModel.listeners
+                    )
+
+                    action(activeItems[i], args, parentFragmentManager)
+                    dismissAllowingStateLoss()
+                }
             }
-            .create()
     }
 
-    private fun action(item: MenuItem, args: MenuItemArguments) = GlobalScope.launch(Dispatchers.Main) {
+    private fun action(
+        item: MenuItem,
+        args: MenuItemArguments,
+        fragmentManager: FragmentManager
+    ) = GlobalScope.launch(Dispatchers.Main) {
         // ダイアログのスコープを使用すると、ダイアログ表示を伴わないアクションが実行されないので注意
-        viewModel.action(item, args, parentFragmentManager)
+        runCatching {
+            viewModel.action(item, args, fragmentManager)
+        }
     }
 
     // ------ //
