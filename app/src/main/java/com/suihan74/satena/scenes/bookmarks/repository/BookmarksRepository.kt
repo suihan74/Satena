@@ -10,7 +10,6 @@ import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
-import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
@@ -69,25 +68,44 @@ class BookmarksRepository(
     val userSignedIn : String?
         get() = client.account?.name
 
-    /** アカウントが必要な操作前にサインインする */
+    /**
+     * アカウントが必要な操作前にサインインする
+     *
+     * @throws SignInFailureException サインイン失敗
+     */
     suspend fun signIn() : Account? = withContext(Dispatchers.Default) {
         val result = runCatching {
             accountLoader.signInAccounts(reSignIn = false)
         }
 
-        val account =
-            if (result.isSuccess) client.account
-            else null
+        if (result.isFailure) {
+            throw SignInFailureException(cause = result.exceptionOrNull())
+        }
 
+        val account = client.account
         val signedIn = account != null
 
         this@BookmarksRepository.signedIn.postValue(signedIn)
 
         if (signedIn) {
-            loadUserColorStarsCount()
+            runCatching {
+                loadUserColorStarsCount()
+            }
         }
 
         return@withContext account
+    }
+
+    /**
+     * サインインが必要な処理
+     *
+     * @throws SignInFailureException サインインされていない
+     */
+    suspend fun requireSignIn() {
+        signIn()
+        if (client.account == null) {
+            throw SignInStarFailureException()
+        }
     }
 
     // ------ //
@@ -808,17 +826,36 @@ class BookmarksRepository(
     // ------ //
 
     /**
+     * エントリのブクマを削除する
+     *
+     * @throws SignInFailureException
+     * @throws TaskFailureException
+     */
+    suspend fun deleteBookmark(entry: Entry) = withContext(Dispatchers.Default) {
+        val url = entry.url
+
+        requireSignIn()
+
+        val result = runCatching {
+            client.deleteBookmarkAsync(url).await()
+        }
+
+        if (result.isFailure) {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+    }
+
+    /**
      * ブクマを削除する
      *
+     * @throws SignInFailureException
      * @throws TaskFailureException
      */
     suspend fun deleteBookmark(bookmark: Bookmark) = withContext(Dispatchers.Default) {
         val url = entry.value?.url ?: throw TaskFailureException("invalid entry")
         val user = bookmark.user
 
-        if (user != userSignedIn) {
-            throw TaskFailureException("it's not the signed-in user's bookmark")
-        }
+        requireSignIn()
 
         val result = runCatching {
             client.deleteBookmarkAsync(url).await()
