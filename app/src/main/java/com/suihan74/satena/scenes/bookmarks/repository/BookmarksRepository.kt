@@ -8,6 +8,7 @@ import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.userTag.UserTagDao
@@ -888,6 +889,56 @@ class BookmarksRepository(
             bookmarksRecentCache.filterNot { it.user == user }
 
         refreshBookmarks()
+    }
+
+    // ------ //
+
+    /**
+     * (リンクを)あとで読む
+     *
+     * @throws TaskFailureException
+     */
+    suspend fun readLater(entry: Entry) {
+        requireSignIn()
+        val result = runCatching {
+            client.postBookmarkAsync(entry.url, readLater = true).await()
+        }
+
+        if (result.isFailure) {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+    }
+
+    /**
+     * (リンクを)読んだ
+     */
+    suspend fun read(entry: Entry) : Pair<EntryReadActionType, BookmarkResult?> {
+        requireSignIn()
+        val action = EntryReadActionType.fromOrdinal(prefs.getInt(PreferenceKey.ENTRY_READ_ACTION_TYPE))
+
+        return action to when (action) {
+            EntryReadActionType.REMOVE -> {
+                deleteBookmark(entry)
+                null
+            }
+
+            EntryReadActionType.DIALOG -> null
+
+            else -> {
+                val comment = when (action) {
+                    EntryReadActionType.SILENT_BOOKMARK -> ""
+                    EntryReadActionType.READ_TAG -> "[読んだ]"
+                    EntryReadActionType.BOILERPLATE -> prefs.getString(PreferenceKey.ENTRY_READ_ACTION_BOILERPLATE) ?: ""
+                    else -> ""
+                }
+
+                client.postBookmarkAsync(
+                    url = entry.url,
+                    readLater = false,
+                    comment = comment
+                ).await()
+            }
+        }
     }
 
     // ------ //
