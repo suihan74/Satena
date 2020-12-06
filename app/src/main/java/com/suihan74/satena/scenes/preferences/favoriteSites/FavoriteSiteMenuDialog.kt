@@ -12,12 +12,11 @@ import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.FavoriteSite
+import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.lazyProvideViewModel
-
-typealias FavoriteSiteMenuListener = (site: FavoriteSite, f: FavoriteSiteMenuDialog)->Unit
 
 class FavoriteSiteMenuDialog : DialogFragment() {
     companion object {
@@ -59,19 +58,19 @@ class FavoriteSiteMenuDialog : DialogFragment() {
 
     // ------ //
 
-    fun setOnOpenListener(listener: FavoriteSiteMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setOnOpenListener(listener: DialogListener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
         viewModel.onOpen = listener
     }
 
-    fun setOnModifyListener(listener: FavoriteSiteMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setOnModifyListener(listener: DialogListener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
         viewModel.onModify = listener
     }
 
-    fun setOnOpenEntriesListener(listener: FavoriteSiteMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setOnOpenEntriesListener(listener: DialogListener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
         viewModel.onOpenEntries = listener
     }
 
-    fun setOnDeleteListener(listener: FavoriteSiteMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setOnDeleteListener(listener: DialogListener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDelete = listener
     }
 
@@ -93,16 +92,16 @@ class FavoriteSiteMenuDialog : DialogFragment() {
         val labels = menuItems.map { context.getString(it.first) }.toTypedArray()
 
         /** 対象アイテムを内部ブラウザで開く */
-        var onOpen: FavoriteSiteMenuListener? = null
+        var onOpen: DialogListener<FavoriteSite>? = null
 
         /** 対象アイテムを編集する */
-        var onModify: FavoriteSiteMenuListener? = null
+        var onModify: DialogListener<FavoriteSite>? = null
 
         /** 対象サイトのエントリ一覧を開く */
-        var onOpenEntries: FavoriteSiteMenuListener? = null
+        var onOpenEntries: DialogListener<FavoriteSite>? = null
 
         /** 対象アイテムを削除 */
-        var onDelete: FavoriteSiteMenuListener? = null
+        var onDelete: DialogListener<FavoriteSite>? = null
 
         fun invokeAction(which: Int, dialogFragment: FavoriteSiteMenuDialog) {
             menuItems[which].second.invoke(dialogFragment)

@@ -15,13 +15,12 @@ import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
+import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.lazyProvideViewModel
-
-typealias EntryMenuListener = (Entry, EntryMenuDialog2)->Unit
 
 class EntryMenuDialog2 : DialogFragment() {
     companion object {
@@ -70,43 +69,43 @@ class EntryMenuDialog2 : DialogFragment() {
 
     // ------ //
 
-    fun setShowCommentsListener(l : EntryMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setShowCommentsListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.showComments = l
     }
 
-    fun setShowPageListener(l : EntryMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setShowPageListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.showPage = l
     }
 
-    fun setSharePageListener(l : EntryMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setSharePageListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.sharePage= l
     }
 
-    fun setShowEntriesListener(l : EntryMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setShowEntriesListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.showEntries = l
     }
 
-    fun setFavoriteEntryListener(l : EntryMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setFavoriteEntryListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.favorite = l
     }
 
-    fun setUnfavoriteEntryListener(l : EntryMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setUnfavoriteEntryListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.unfavorite = l
     }
 
-    fun setIgnoreEntryListener(l : EntryMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setIgnoreEntryListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.ignore = l
     }
 
-    fun setReadLaterListener(l : EntryMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setReadLaterListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.readLater = l
     }
 
-    fun setReadListener(l : EntryMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setReadListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.read = l
     }
 
-    fun setDeleteBookmarkListener(l : EntryMenuListener?) = lifecycleScope.launchWhenCreated {
+    fun setDeleteBookmarkListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.deleteBookmark = l
     }
 
@@ -131,34 +130,34 @@ class EntryMenuDialog2 : DialogFragment() {
         // ------ //
 
         /** ブクマ一覧画面を開く */
-        var showComments : EntryMenuListener? = null
+        var showComments : DialogListener<Entry>? = null
 
         /** ページを内部ブラウザで開く */
-        var showPage : EntryMenuListener? = null
+        var showPage : DialogListener<Entry>? = null
 
         /** ページを外部ブラウザで開く(ページを共有する) */
-        var sharePage : EntryMenuListener? = null
+        var sharePage : DialogListener<Entry>? = null
 
         /** このサイトのエントリ一覧を開く */
-        var showEntries : EntryMenuListener? = null
+        var showEntries : DialogListener<Entry>? = null
 
         /** お気に入りに追加 */
-        var favorite : EntryMenuListener? = null
+        var favorite : DialogListener<Entry>? = null
 
         /** お気に入りから除外 */
-        var unfavorite : EntryMenuListener? = null
+        var unfavorite : DialogListener<Entry>? = null
 
         /** 非表示設定を追加 */
-        var ignore : EntryMenuListener? = null
+        var ignore : DialogListener<Entry>? = null
 
         /** あとで読む */
-        var readLater : EntryMenuListener? = null
+        var readLater : DialogListener<Entry>? = null
 
         /** (あとで)読んだ */
-        var read : EntryMenuListener? = null
+        var read : DialogListener<Entry>? = null
 
         /** ブクマを削除する */
-        var deleteBookmark : EntryMenuListener? = null
+        var deleteBookmark : DialogListener<Entry>? = null
 
         // ------ //
 
