@@ -321,6 +321,8 @@
     <string name="pref_browser_theme_dark">対応サイトでは暗くする</string>
     <string name="pref_browser_theme_force_dark">全サイトで強制的に暗くする</string>
 
+    <string name="pref_url_blocking_back_button_desc">ブラウザ設定画面に戻る</string>
+
     <!-- お気に入りサイト -->
     <string name="dialog_favorite_sites_open">開く</string>
     <string name="dialog_favorite_sites_open_entries">このサイトのエントリを探す</string>

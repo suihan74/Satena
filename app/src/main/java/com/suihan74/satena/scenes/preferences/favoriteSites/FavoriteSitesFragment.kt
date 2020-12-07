@@ -56,7 +56,7 @@ class FavoriteSitesFragment :
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentBrowserFavoritesBinding>(
             inflater,
             R.layout.fragment_browser_favorites,
