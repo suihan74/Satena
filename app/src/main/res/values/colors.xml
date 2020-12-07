@@ -19,6 +19,11 @@
     <!-- クリック防止ビュー -->
     <color name="clickGuard">#a0000000</color>
 
+    <!-- SnackBar -->
+    <color name="snackBarBackgroundColor">#282829</color>
+    <color name="snackBarTextColor">#dfdfdf</color>
+    <color name="snackBarActionTextColor">@color/colorPrimary</color>
+
     <!-- TextView / EditText -->
     <color name="colorControlNormal">#999</color>
     <color name="textCursorDrawable">#777</color>

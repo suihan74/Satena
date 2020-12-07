@@ -43,6 +43,11 @@
 
         <!-- for NumberPicker -->
         <item name="colorControlNormal">@color/colorPrimary</item>
+
+        <!-- SnackBar -->
+        <item name="snackBarBackgroundColor">@color/snackBarBackgroundColor</item>
+        <item name="snackBarTextColor">@color/snackBarTextColor</item>
+        <item name="snackBarActionTextColor">@color/snackBarActionTextColor</item>
     </style>
 
     <!-- Light Theme -->
