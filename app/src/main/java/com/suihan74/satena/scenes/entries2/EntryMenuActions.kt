@@ -226,7 +226,7 @@ class EntryMenuActionsImplForEntries(
     override fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
             val result = runCatching {
-                repository.favoriteEntrySite(entry)
+                repository.favoriteSitesRepo.favoriteEntrySite(entry)
             }
             if (result.isSuccess) {
                 context.showToast(R.string.msg_favorite_site_registration_succeeded)
@@ -240,7 +240,7 @@ class EntryMenuActionsImplForEntries(
     override fun unfavoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
             val result = runCatching {
-                repository.unfavoriteEntrySite(entry)
+                repository.favoriteSitesRepo.unfavoriteEntrySite(entry)
             }
             if (result.isSuccess) {
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)

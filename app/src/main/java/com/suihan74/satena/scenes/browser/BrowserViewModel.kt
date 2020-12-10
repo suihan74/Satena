@@ -285,7 +285,7 @@ class BrowserViewModel(
         }
 
         // スタートページに遷移
-        url.value = url.value ?: initialUrl ?: browserRepo.startPage.value!!
+        goAddress(url.value ?: initialUrl ?: browserRepo.startPage.value!!)
     }
 
     /**

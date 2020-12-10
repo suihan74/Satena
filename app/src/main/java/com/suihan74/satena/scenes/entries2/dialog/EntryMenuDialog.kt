@@ -571,7 +571,7 @@ class EntryMenuDialog : DialogFragment() {
             val context = args.context
 
             try {
-                repository?.favoriteEntrySite(entry)
+                repository!!.favoriteSitesRepo.favoriteEntrySite(entry)
                 context.showToast("お気に入りに追加しました")
             }
             catch (e: NotFoundException) {
@@ -591,7 +591,7 @@ class EntryMenuDialog : DialogFragment() {
             val context = args.context
 
             try {
-                repository?.unfavoriteEntrySite(entry)
+                repository!!.favoriteSitesRepo.unfavoriteEntrySite(entry)
                 context.showToast("お気に入りから除外しました")
             }
             catch (e: Throwable) {

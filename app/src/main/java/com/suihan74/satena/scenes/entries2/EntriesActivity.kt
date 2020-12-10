@@ -6,9 +6,12 @@ import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -38,6 +41,7 @@ import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
+import com.suihan74.satena.scenes.entries2.dialog.BrowserShortcutDialog
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
@@ -573,7 +577,31 @@ class EntriesActivity : AppCompatActivity() {
                     if (item.requireSignedIn && viewModel.signedIn.value != true) null
                     else item.toMenuItem(bottomAppBar.menu, tint)
                 }
-                result.getOrNull()
+                result.getOrNull()?.also { menuItem ->
+                    if (item == UserBottomItem.INNER_BROWSER) {
+                        menuItem.actionView = ImageButton(this).apply {
+                            setImageResource(item.iconId)
+                            imageTintList = ColorStateList.valueOf(getThemeColor(R.attr.textColor))
+                            with (TypedValue()) {
+                                theme.resolveAttribute(
+                                    R.attr.actionBarItemBackground,
+                                    this,
+                                    true
+                                )
+                                setBackgroundResource(resourceId)
+                            }
+                            setOnClickListener {
+                                onBottomMenuItemClickListener?.invoke(item)
+                            }
+                            setOnLongClickListener {
+                                val dialog = BrowserShortcutDialog.createInstance()
+                                dialog.showAllowingStateLoss(supportFragmentManager)
+                                true
+                            }
+                            layoutParams = ViewGroup.LayoutParams(dp2px(48), dp2px(48))
+                        }
+                    }
+                }
             }
 
         bottomAppBar.setOnMenuItemClickListener { clicked ->

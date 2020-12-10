@@ -32,7 +32,7 @@ class FavoriteSitesFragment : MultipleTabsEntriesFragment() {
         repository: EntriesRepository,
         category: Category
     ) = provideViewModel(owner, viewModelKey) {
-        FavoriteSitesViewModel(repository)
+        FavoriteSitesViewModel(repository.favoriteSitesRepo)
     }
 
     override fun updateActivityAppBar(

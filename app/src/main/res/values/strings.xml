@@ -323,6 +323,10 @@
 
     <string name="pref_url_blocking_back_button_desc">ブラウザ設定画面に戻る</string>
 
+    <!-- エントリ画面からブラウザを開く際のショートカット選択ダイアログ -->
+    <string name="dialog_browser_shortcut_title">アプリ内ブラウザを開く</string>
+    <string name="msg_dialog_browser_shortcut_empty_search_query">クエリを入力してください</string>
+
     <!-- お気に入りサイト -->
     <string name="dialog_favorite_sites_open">開く</string>
     <string name="dialog_favorite_sites_open_entries">このサイトのエントリを探す</string>

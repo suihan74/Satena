@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.entries2.dialog.BrowserShortcutDialog.DialogViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/title"
+                android:text="@string/dialog_browser_shortcut_title"
+                android:textSize="16sp"
+                android:textColor="?textColor"
+                app:layout_constraintTop_toTopOf="@id/open_button"
+                app:layout_constraintBottom_toBottomOf="@id/open_button"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginHorizontal="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/open_button"
+                android:text="@string/dialog_open"
+                android:textColor="?colorPrimary"
+                android:background="?actionBarItemBackground"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/title"
+                android:layout_marginStart="16dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"/>
+
+        <EditText
+                android:id="@+id/search_text"
+                style="?editTextStyle"
+                android:text="@={vm.searchQuery}"
+                android:hint="@string/browser_address_bar_hint"
+
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:singleLine="true"
+                android:imeOptions="actionSearch"
+                android:nextFocusRight="@id/search_button"
+                android:nextFocusDown="@id/search_button"
+
+                app:layout_constraintTop_toBottomOf="@id/open_button"
+                app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintEnd_toStartOf="@id/search_button"
+                android:layout_marginEnd="8dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <ImageButton
+                android:id="@+id/search_button"
+                android:src="@drawable/ic_baseline_search"
+                android:tint="?colorPrimary"
+                android:background="?actionBarItemBackground"
+                android:contentDescription="@null"
+                app:layout_constraintTop_toTopOf="@id/search_text"
+                app:layout_constraintBottom_toBottomOf="@id/search_text"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ImageButton
+                android:id="@+id/open_favorite_sites_button"
+                android:src="@drawable/ic_baseline_arrow_downward"
+                android:tint="?textColor"
+                android:background="?actionBarItemBackground"
+                android:contentDescription="@null"
+                app:layout_constraintTop_toBottomOf="@id/search_text"
+                app:layout_constraintStart_toStartOf="@id/title"
+                android:onClick="@{()-> vm.toggleFavoriteSitesVisibility()}"
+                android:layout_marginTop="6dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/favorite_sites_header"
+                android:text="@string/category_favorite_sites"
+                android:textSize="16sp"
+                android:textColor="?textColor"
+                android:background="?selectableItemBackground"
+                app:layout_constraintTop_toTopOf="@id/open_favorite_sites_button"
+                app:layout_constraintBottom_toBottomOf="@id/open_favorite_sites_button"
+                app:layout_constraintStart_toEndOf="@id/open_favorite_sites_button"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:onClick="@{()-> vm.toggleFavoriteSitesVisibility()}"
+                android:layout_marginStart="6dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/favorite_sites_list"
+                app:layout_constraintTop_toBottomOf="@id/favorite_sites_header"
+                style="@style/RecyclerView.Linear"
+                divider="@{@drawable/recycler_view_item_divider}"
+                items="@{vm.favoriteSites}"
+                android:visibility="@{vm.areFavoriteSitesVisible}"
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

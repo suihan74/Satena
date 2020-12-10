@@ -8,16 +8,16 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
-import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel
 import com.suihan74.satena.scenes.entries2.dialog.FavoriteSitesSelectionDialog
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class FavoriteSitesViewModel(
-    private val repository: EntriesRepository
+    private val repository: FavoriteSitesRepository
 ) : EntriesFragmentViewModel() {
     private val tabTitles = arrayOf(
         R.string.entries_tab_hot,
