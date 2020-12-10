@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.transition.Slide
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -150,6 +152,11 @@ class BrowserShortcutDialog : BottomSheetDialogFragment() {
                     if (it) R.drawable.ic_baseline_keyboard_arrow_up
                     else R.drawable.ic_baseline_keyboard_arrow_down
             }
+        }
+
+        /** お気に入りサイトリストの表示状態を変更するときの遷移アニメーション */
+        val favoriteSitesListTransition = Slide(Gravity.BOTTOM).also {
+            it.duration = 200
         }
 
         // ------ //
