@@ -9,6 +9,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            tools:background="?attr/panelBackground"
             android:paddingTop="16dp"
             android:paddingBottom="8dp"
             android:layout_width="match_parent"
@@ -44,6 +46,7 @@
                 style="?editTextStyle"
                 android:text="@={vm.searchQuery}"
                 android:hint="@string/browser_address_bar_hint"
+                android:textColorHint="?textColorHint"
 
                 android:importantForAutofill="no"
                 android:inputType="text"
@@ -72,31 +75,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
-        <ImageButton
-                android:id="@+id/open_favorite_sites_button"
-                android:src="@drawable/ic_baseline_arrow_downward"
-                android:tint="?textColor"
-                android:background="?actionBarItemBackground"
-                android:contentDescription="@null"
-                app:layout_constraintTop_toBottomOf="@id/search_text"
-                app:layout_constraintStart_toStartOf="@id/title"
-                android:onClick="@{()-> vm.toggleFavoriteSitesVisibility()}"
-                android:layout_marginTop="6dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        <TextView
+        <com.suihan74.utilities.bindings.TextViewWithDrawable
                 android:id="@+id/favorite_sites_header"
                 android:text="@string/category_favorite_sites"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textColor="?textColor"
                 android:background="?selectableItemBackground"
-                app:layout_constraintTop_toTopOf="@id/open_favorite_sites_button"
-                app:layout_constraintBottom_toBottomOf="@id/open_favorite_sites_button"
-                app:layout_constraintStart_toEndOf="@id/open_favorite_sites_button"
-                app:layout_constraintEnd_toEndOf="parent"
                 android:onClick="@{()-> vm.toggleFavoriteSitesVisibility()}"
-                android:layout_marginStart="6dp"
+                drawableStart="@{vm.favoriteSitesListStateArrow}"
+
+                app:layout_constraintTop_toBottomOf="@id/search_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingVertical="8dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
 
@@ -107,7 +101,6 @@
                 divider="@{@drawable/recycler_view_item_divider}"
                 items="@{vm.favoriteSites}"
                 android:visibility="@{vm.areFavoriteSitesVisible}"
-                android:layout_marginTop="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 

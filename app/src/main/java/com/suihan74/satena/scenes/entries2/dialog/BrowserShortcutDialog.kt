@@ -143,6 +143,15 @@ class BrowserShortcutDialog : BottomSheetDialogFragment() {
         val areFavoriteSitesVisible by lazy { _areFavoriteSitesVisible }
         private val _areFavoriteSitesVisible = MutableLiveData<Boolean>(false)
 
+        /** お気に入りサイトリストの表示状態を示すアロー */
+        val favoriteSitesListStateArrow = MutableLiveData<Int>().also { arrowLiveData ->
+            _areFavoriteSitesVisible.observeForever {
+                arrowLiveData.value =
+                    if (it) R.drawable.ic_baseline_keyboard_arrow_up
+                    else R.drawable.ic_baseline_keyboard_arrow_down
+            }
+        }
+
         // ------ //
 
         /**
