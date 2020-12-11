@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.webkit.URLUtil
 import android.widget.RemoteViews
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
@@ -138,9 +139,14 @@ fun Context.startInnerBrowser(url: String? = null) {
     val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
     when (BrowserMode.fromId(prefs.getInt(PreferenceKey.BROWSER_MODE))) {
         BrowserMode.CUSTOM_TABS_INTENT -> {
-            val startUrl = url ?: let {
-                val browserSettings = SafeSharedPreferences.create<BrowserSettingsKey>(this)
-                browserSettings.get(BrowserSettingsKey.START_PAGE_URL)
+            val startUrl = with(
+                url ?: let {
+                    val browserSettings = SafeSharedPreferences.create<BrowserSettingsKey>(this)
+                    browserSettings.get(BrowserSettingsKey.START_PAGE_URL)
+                }
+            ) {
+                if (URLUtil.isValidUrl(this)) this
+                else "https://www.google.com/search?q=${Uri.encode(this)}"
             }
 
             startInnerBrowser(

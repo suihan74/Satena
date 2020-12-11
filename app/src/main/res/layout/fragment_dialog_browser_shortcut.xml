@@ -69,6 +69,7 @@
                 android:src="@drawable/ic_baseline_search"
                 android:tint="?colorPrimary"
                 android:background="?actionBarItemBackground"
+                tooltipText="@{@string/search_button_tooltip}"
                 android:contentDescription="@null"
                 app:layout_constraintTop_toTopOf="@id/search_text"
                 app:layout_constraintBottom_toBottomOf="@id/search_text"

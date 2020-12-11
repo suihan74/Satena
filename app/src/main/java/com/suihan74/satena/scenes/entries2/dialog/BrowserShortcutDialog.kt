@@ -20,12 +20,12 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentDialogBrowserShortcutBinding
 import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteMenuDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteRegistrationDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
+import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.exceptions.EmptyException
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
@@ -153,8 +153,7 @@ class BrowserShortcutDialog : BottomSheetDialogFragment() {
          * ブラウザを開いて初期ページに遷移する
          */
         fun openBrowser(activity: Activity) {
-            val intent = Intent(activity, BrowserActivity::class.java)
-            activity.startActivity(intent)
+            activity.startInnerBrowser()
         }
 
         /**
@@ -163,14 +162,11 @@ class BrowserShortcutDialog : BottomSheetDialogFragment() {
          * @throws EmptyException
          */
         fun openBrowserWithQuery(activity: Activity, query: String? = null) {
-            val intent = Intent(activity, BrowserActivity::class.java).also {
-                val q = query ?: searchQuery.value
-                if (q.isNullOrBlank()) {
-                    throw EmptyException()
-                }
-                it.putExtra(BrowserActivity.EXTRA_URL, q)
+            val q = query ?: searchQuery.value
+            if (q.isNullOrBlank()) {
+                throw EmptyException()
             }
-            activity.startActivity(intent)
+            activity.startInnerBrowser(q)
         }
 
         /**

@@ -27,9 +27,10 @@
     <string name="dialog_open">開く</string>
     <string name="dialog_close">閉じる</string>
 
+    <!-- 未分類の汎用 -->
     <string name="invalid_url_error">無効なURLです</string>
-
     <string name="scroll_to_top">一番上までスクロール</string>
+    <string name="search_button_tooltip">検索</string>
 
     <!-- ログイン画面 -->
     <string name="cancel">キャンセル</string>
