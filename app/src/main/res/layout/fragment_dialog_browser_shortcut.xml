@@ -12,7 +12,7 @@
             xmlns:tools="http://schemas.android.com/tools"
             tools:background="?attr/panelBackground"
             android:id="@+id/main_layout"
-            android:paddingTop="16dp"
+            android:paddingTop="14dp"
             android:paddingBottom="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -25,22 +25,22 @@
                 app:layout_constraintTop_toTopOf="@id/open_button"
                 app:layout_constraintBottom_toBottomOf="@id/open_button"
                 app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginHorizontal="8dp"
+                android:layout_marginHorizontal="@dimen/browser_shortcut_horizontal_padding"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
-        <TextView
+        <ImageButton
                 android:id="@+id/open_button"
-                android:text="@string/dialog_open"
-                android:textColor="?colorPrimary"
+                android:src="@drawable/ic_baseline_open_in_new"
+                android:tint="?textColor"
                 android:background="?actionBarItemBackground"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toEndOf="@id/title"
-                android:layout_marginStart="16dp"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="4dp"
+                tooltipText="@{@string/dialog_browser_shortcut_open_start_page}"
+                android:contentDescription="@null"
+                app:layout_constraintBaseline_toBaselineOf="@id/title"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="@dimen/browser_shortcut_horizontal_padding"
                 android:layout_width="wrap_content"
-                android:layout_height="0dp"/>
+                android:layout_height="wrap_content"/>
 
         <EditText
                 android:id="@+id/search_text"
@@ -60,6 +60,7 @@
                 app:layout_constraintStart_toStartOf="@id/title"
                 app:layout_constraintEnd_toStartOf="@id/search_button"
                 android:layout_marginEnd="8dp"
+                android:layout_marginTop="6dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
 
@@ -71,8 +72,7 @@
                 android:contentDescription="@null"
                 app:layout_constraintTop_toTopOf="@id/search_text"
                 app:layout_constraintBottom_toBottomOf="@id/search_text"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="8dp"
+                app:layout_constraintEnd_toEndOf="@id/open_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -89,8 +89,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
 
-                android:paddingStart="6dp"
-                android:paddingEnd="6dp"
+                android:paddingHorizontal="@dimen/browser_shortcut_horizontal_padding"
                 android:paddingVertical="8dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>

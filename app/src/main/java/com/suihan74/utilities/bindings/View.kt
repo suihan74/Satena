@@ -2,6 +2,7 @@ package com.suihan74.utilities.bindings
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.TooltipCompat
 import androidx.databinding.BindingAdapter
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
@@ -49,10 +50,24 @@ fun View.setVisibilityWithTransition(
 
 // ------ //
 
-/**
- * boolean値によってalpha値を操作する
- */
-@BindingAdapter(value = ["android:alpha", "disableAlpha"], requireAll = false)
-fun View.setAlphaByAvailability(isEnabled: Boolean?, disableAlpha: Float?) {
-    alpha = if (isEnabled == true) 1.0f else disableAlpha ?: 0.5f
+object ViewBindingAdapters {
+    /**
+     * boolean値によってalpha値を操作する
+     */
+    @JvmStatic
+    @BindingAdapter(value = ["android:alpha", "disableAlpha"], requireAll = false)
+    fun setAlphaByAvailability(view: View, isEnabled: Boolean?, disableAlpha: Float?) {
+        view.alpha =
+            if (isEnabled == true) 1.0f
+            else disableAlpha ?: 0.5f
+    }
+
+    /**
+     * ツールチップテキストを設定する(バージョンによる制限を回避させる)
+     */
+    @JvmStatic
+    @BindingAdapter(value = ["tooltipText"])
+    fun setTooltipText(view: View, text: CharSequence?) {
+        TooltipCompat.setTooltipText(view, text)
+    }
 }
