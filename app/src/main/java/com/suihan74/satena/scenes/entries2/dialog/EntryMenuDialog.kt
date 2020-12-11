@@ -216,6 +216,7 @@ class EntryMenuDialog : DialogFragment() {
         val context = requireContext()
         val activity = requireActivity()
         val arguments = requireArguments()
+        val app = SatenaApplication.instance
 
         viewModel.activity = activity
 
@@ -229,7 +230,8 @@ class EntryMenuDialog : DialogFragment() {
                     HatenaClient,
                     MastodonClientHolder
                 ),
-                ignoredEntriesRepo = SatenaApplication.instance.ignoredEntriesRepository
+                ignoredEntriesRepo = app.ignoredEntriesRepository,
+                favoriteSitesRepo = app.favoriteSitesRepository
             )
 
         val url = arguments.getString(ARG_ENTRY_URL)

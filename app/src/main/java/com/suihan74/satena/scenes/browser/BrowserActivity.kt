@@ -19,14 +19,12 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityBrowserBinding
 import com.suihan74.satena.models.BrowserSettingsKey
-import com.suihan74.satena.models.FavoriteSitesKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.post.BookmarkPostRepository
 import com.suihan74.satena.scenes.post.BookmarkPostViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner
-import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
@@ -65,16 +63,12 @@ class BrowserActivity :
             app.userTagDao
         )
 
-        val favoriteSitesRepo = FavoriteSitesRepository(
-            SafeSharedPreferences.create<FavoriteSitesKey>(this)
-        )
-
         val historyRepo = HistoryRepository(app.browserDao)
 
         BrowserViewModel(
             browserRepo,
             bookmarksRepo,
-            favoriteSitesRepo,
+            app.favoriteSitesRepository,
             historyRepo,
             initialUrl
         )

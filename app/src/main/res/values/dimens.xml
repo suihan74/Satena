@@ -24,4 +24,7 @@
 
     <!-- アローアイコンを差し替えたSpinnerの背景用 -->
     <item name="highlight_alpha_material_colored_for_custom_spinner" format="float" type="dimen">0.10</item>
+
+    <!-- BrowserShortcutDialogの左右パディング -->
+    <dimen name="browser_shortcut_horizontal_padding">12dp</dimen>
 </resources>

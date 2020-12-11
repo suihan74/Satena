@@ -30,7 +30,6 @@ class FavoriteSitesViewModel(
 
     /** 表示するサイトを選択するダイアログを開く */
     fun showSitesSelectionDialog(
-        context: Context,
         fragmentManager: FragmentManager,
         tag: String? = null
     ) = viewModelScope.launch(Dispatchers.Main) {

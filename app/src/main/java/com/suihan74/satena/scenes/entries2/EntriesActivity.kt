@@ -6,11 +6,7 @@ import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.util.TypedValue
-import android.view.Gravity
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageButton
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
@@ -27,7 +23,6 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
-import com.google.android.play.core.appupdate.AppUpdateManager
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -78,6 +73,7 @@ class EntriesActivity : AppCompatActivity() {
 
     /** Entry画面全体で使用するViewModel */
     val viewModel by lazyProvideViewModel {
+        val app = SatenaApplication.instance
         val repository = EntriesRepository(
             context = this,
             client = HatenaClient,
@@ -86,7 +82,8 @@ class EntriesActivity : AppCompatActivity() {
                 HatenaClient,
                 MastodonClientHolder
             ),
-            ignoredEntriesRepo = SatenaApplication.instance.ignoredEntriesRepository
+            ignoredEntriesRepo = app.ignoredEntriesRepository,
+            favoriteSitesRepo = app.favoriteSitesRepository
         )
         EntriesViewModel(repository)
     }
@@ -106,9 +103,6 @@ class EntriesActivity : AppCompatActivity() {
 
     /** FABメニューの開閉状態 */
     private var isFABMenuOpened : Boolean = false
-
-    /** アップデートを確認する */
-    private var appUpdateManager : AppUpdateManager? = null
 
     /**
      * ボトムバーのSearchView
@@ -578,29 +572,7 @@ class EntriesActivity : AppCompatActivity() {
                     else item.toMenuItem(bottomAppBar.menu, tint)
                 }
                 result.getOrNull()?.also { menuItem ->
-                    if (item == UserBottomItem.INNER_BROWSER) {
-                        menuItem.actionView = ImageButton(this).apply {
-                            setImageResource(item.iconId)
-                            imageTintList = ColorStateList.valueOf(getThemeColor(R.attr.textColor))
-                            with (TypedValue()) {
-                                theme.resolveAttribute(
-                                    R.attr.actionBarItemBackground,
-                                    this,
-                                    true
-                                )
-                                setBackgroundResource(resourceId)
-                            }
-                            setOnClickListener {
-                                onBottomMenuItemClickListener?.invoke(item)
-                            }
-                            setOnLongClickListener {
-                                val dialog = BrowserShortcutDialog.createInstance()
-                                dialog.showAllowingStateLoss(supportFragmentManager)
-                                true
-                            }
-                            layoutParams = ViewGroup.LayoutParams(dp2px(48), dp2px(48))
-                        }
-                    }
+                    initializeBottomMenuItemActionView(item, menuItem)
                 }
             }
 
@@ -614,6 +586,31 @@ class EntriesActivity : AppCompatActivity() {
         }
 
         setOnBottomMenuItemClickListener(::onBasicBottomMenuItemClicked)
+    }
+
+    /**
+     * ボトムメニュー項目をロングタップ可能にするための置換処理
+     */
+    private fun initializeBottomMenuItemActionView(item: UserBottomItem, menuItem: MenuItem) {
+        if (!item.longClickable) return
+
+        menuItem.actionView = ImageButton(this).apply {
+            setImageResource(item.iconId)
+            imageTintList = ColorStateList.valueOf(getThemeColor(R.attr.textColor))
+            background = getThemeDrawable(R.attr.actionBarItemBackground)
+
+            setOnClickListener {
+                onBottomMenuItemClickListener?.invoke(item)
+            }
+
+            setOnLongClickListener {
+                onBasicBottomMenuItemLongClicked(item)
+                true
+            }
+
+            val entireSize = dp2px(48)
+            layoutParams = ViewGroup.LayoutParams(entireSize, entireSize)
+        }
     }
 
     /** ボトムバーを使用する設定なら取得する(使用しない設定ならnullが返る) */
@@ -662,6 +659,20 @@ class EntriesActivity : AppCompatActivity() {
         UserBottomItem.CATEGORIES -> {
             binding.drawerLayout.openDrawer(binding.drawerArea)
         }
+    }
+
+    /**
+     * ボトムバーアイテムをロングタップしたときの処理
+     *
+     * `UserBottomItem#longClickable`が`true`に設定されてるアイテムのみ呼ばれる
+     */
+    private fun onBasicBottomMenuItemLongClicked(item: UserBottomItem) = when (item) {
+        UserBottomItem.INNER_BROWSER -> {
+            val dialog = BrowserShortcutDialog.createInstance()
+            dialog.showAllowingStateLoss(supportFragmentManager)
+        }
+
+        else -> {}
     }
 
     /** ボトムバーにメニューアイテムを追加する */

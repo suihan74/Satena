@@ -13,11 +13,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.work.*
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.AppDatabase
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.PreferenceKeyMigration
 import com.suihan74.satena.models.migrate
 import com.suihan74.satena.notices.NotificationWorker
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.showToast
@@ -94,11 +96,29 @@ class SatenaApplication : Application() {
         versionCode / 1000
 
     // ------ //
+    // 基本的にどの画面を開いても使用するリポジトリはSatenaApplicationのインスタンスが保持する
 
     /** 非表示URL/TEXT情報を扱うリポジトリ */
     lateinit var ignoredEntriesRepository : IgnoredEntriesRepository
         private set
-    // 基本的にどの画面を開いても使用するリポジトリであるため、SatenaApplicationのインスタンスに保持する
+
+    /** お気に入りサイトを扱うリポジトリ */
+    lateinit var favoriteSitesRepository : FavoriteSitesRepository
+
+    // ------ //
+
+    /** ユーザータグDBへのアクセスオブジェクトを取得 */
+    val userTagDao
+        get() = appDatabase.userTagDao()
+
+    /** 非表示エントリDBへのアクセスオブジェクトを取得 */
+    private val ignoredEntryDao
+        get() = appDatabase.ignoredEntryDao()
+    // 全処理をignoredEntriesRepositoryを介してアクセスするようにしたので、外部には非公開に変更
+
+    /** 内部ブラウザ用DB */
+    val browserDao
+        get() = appDatabase.browserDao()
 
     // ------ //
 
@@ -143,11 +163,7 @@ class SatenaApplication : Application() {
         }
 
         // グローバルなリポジトリを初期化する
-        ignoredEntriesRepository = IgnoredEntriesRepository(ignoredEntryDao).also {
-            GlobalScope.launch {
-                it.loadAllIgnoredEntries()
-            }
-        }
+        initializeRepositories()
 
         // 接続状態を監視
         registerNetworkCallback()
@@ -159,6 +175,20 @@ class SatenaApplication : Application() {
     override fun onTerminate() {
         unregisterNetworkCallback()
         super.onTerminate()
+    }
+
+    /** 各種グローバルリポジトリを生成 */
+    private fun initializeRepositories() {
+        ignoredEntriesRepository = IgnoredEntriesRepository(ignoredEntryDao).also {
+            GlobalScope.launch {
+                it.loadAllIgnoredEntries()
+            }
+        }
+
+        favoriteSitesRepository = FavoriteSitesRepository(
+            SafeSharedPreferences.create(this),
+            HatenaClient
+        )
     }
 
     /** ネットワークの接続状態を監視する */
@@ -183,18 +213,6 @@ class SatenaApplication : Application() {
             .migrate()
             .build()
     }
-
-    /** ユーザータグDBへのアクセスオブジェクトを取得 */
-    val userTagDao
-        get() = appDatabase.userTagDao()
-
-    /** 非表示エントリDBへのアクセスオブジェクトを取得 */
-    val ignoredEntryDao
-        get() = appDatabase.ignoredEntryDao()
-
-    /** 内部ブラウザ用DB */
-    val browserDao
-        get() = appDatabase.browserDao()
 
     /** 各種設定のバージョン移行が必要か確認 */
     fun updatePreferencesVersion() {

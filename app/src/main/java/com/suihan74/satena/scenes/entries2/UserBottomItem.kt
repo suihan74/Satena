@@ -14,7 +14,8 @@ enum class UserBottomItem(
     @IntRange(from=0, to=9) val id: Int,
     @DrawableRes val iconId: Int,
     @StringRes val textId: Int,
-    val requireSignedIn: Boolean = false
+    val requireSignedIn: Boolean = false,
+    val longClickable: Boolean = false
 ) {
     SCROLL_TO_TOP(0,
         R.drawable.ic_vertical_align_top,
@@ -35,7 +36,8 @@ enum class UserBottomItem(
 
     INNER_BROWSER(9,
         R.drawable.ic_world,
-        R.string.inner_browser
+        R.string.inner_browser,
+        longClickable = true
     ),
 
     SEARCH(3,
