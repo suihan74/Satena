@@ -22,7 +22,10 @@ import com.suihan74.satena.notices.NotificationWorker
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.checkRunningByTag
 import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.whenFalse
+import com.suihan74.utilities.extensions.whenTrue
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
@@ -242,7 +245,9 @@ class SatenaApplication : Application() {
                     .build()
 
             WorkManager.getInstance(context).let { manager ->
-//                val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
+                manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES).whenFalse {
+                    showToast(R.string.msg_start_checking_notifications)
+                }
 
                 manager.enqueueUniquePeriodicWork(
                     WORKER_TAG_CHECKING_NOTICES,
@@ -250,10 +255,6 @@ class SatenaApplication : Application() {
                     else ExistingPeriodicWorkPolicy.KEEP,
                     workRequest
                 )
-
-//                if (!existed) {
-                    showToast(R.string.msg_start_checking_notifications)
-//                }
             }
 
             Log.i("WorkManager", "start checking notifications")
@@ -269,12 +270,10 @@ class SatenaApplication : Application() {
     fun stopCheckingNotificationsWorker(context: Context) {
         runCatching {
             WorkManager.getInstance(context).let { manager ->
-//                val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
-                manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
-
-//                if (existed) {
+                manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES).whenTrue {
                     showToast(R.string.msg_stop_checking_notifications)
-//                }
+                }
+                manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
             }
             Log.i("WorkManager", "stop checking notifications")
         }
