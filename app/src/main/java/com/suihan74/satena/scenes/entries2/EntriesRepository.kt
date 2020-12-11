@@ -84,13 +84,9 @@ class EntriesRepository(
     private val context: Context,
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
-    val ignoredEntriesRepo: IgnoredEntriesRepository
+    val ignoredEntriesRepo: IgnoredEntriesRepository,
+    val favoriteSitesRepo: FavoriteSitesRepository
 ) {
-    val favoriteSitesRepo = FavoriteSitesRepository(
-        SafeSharedPreferences.create(context),
-        client
-    )
-
     /** アプリ内アップデート */
     private var appUpdateManager: AppUpdateManager? = null
 

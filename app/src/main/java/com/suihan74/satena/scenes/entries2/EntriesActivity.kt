@@ -23,7 +23,6 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
-import com.google.android.play.core.appupdate.AppUpdateManager
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -74,6 +73,7 @@ class EntriesActivity : AppCompatActivity() {
 
     /** Entry画面全体で使用するViewModel */
     val viewModel by lazyProvideViewModel {
+        val app = SatenaApplication.instance
         val repository = EntriesRepository(
             context = this,
             client = HatenaClient,
@@ -82,7 +82,8 @@ class EntriesActivity : AppCompatActivity() {
                 HatenaClient,
                 MastodonClientHolder
             ),
-            ignoredEntriesRepo = SatenaApplication.instance.ignoredEntriesRepository
+            ignoredEntriesRepo = app.ignoredEntriesRepository,
+            favoriteSitesRepo = app.favoriteSitesRepository
         )
         EntriesViewModel(repository)
     }
@@ -102,9 +103,6 @@ class EntriesActivity : AppCompatActivity() {
 
     /** FABメニューの開閉状態 */
     private var isFABMenuOpened : Boolean = false
-
-    /** アップデートを確認する */
-    private var appUpdateManager : AppUpdateManager? = null
 
     /**
      * ボトムバーのSearchView

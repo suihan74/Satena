@@ -7,14 +7,13 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentBrowserFavoritesBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesActionsImplForBrowser
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.lazyProvideViewModel
 
@@ -37,17 +36,14 @@ class FavoriteSitesFragment :
         get() = requireActivity() as? PreferencesActivity
 
     val viewModel by lazyProvideViewModel {
-        val repository = browserViewModel?.favoriteSitesRepo ?:
-            FavoriteSitesRepository(
-                SafeSharedPreferences.create(requireContext()),
-                HatenaClient
-            )
-
         val actionsImpl =
             if (browserActivity != null) FavoriteSitesActionsImplForBrowser()
             else FavoriteSitesActionsImplForPreferences()
 
-        FavoriteSitesViewModel(repository, actionsImpl)
+        FavoriteSitesViewModel(
+            SatenaApplication.instance.favoriteSitesRepository,
+            actionsImpl
+        )
     }
 
     private var binding : FragmentBrowserFavoritesBinding? = null

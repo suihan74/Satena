@@ -15,7 +15,7 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
-import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
@@ -338,7 +338,7 @@ class EntryMenuActionsImplForEntries(
 
 /** ブクマ画面用の実装 */
 class EntryMenuActionsImplForBookmarks(
-    private val favoriteSitesRepo: FavoriteSitesRepositoryForEntries
+    private val favoriteSitesRepo: FavoriteSitesRepository
 ) : EntryMenuActionsImplBasic() {
 
     override fun showEntries(activity: Activity, entry: Entry) {

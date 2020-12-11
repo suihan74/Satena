@@ -16,8 +16,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.transition.Slide
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentDialogBrowserShortcutBinding
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.browser.BrowserActivity
@@ -26,7 +26,6 @@ import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteMenuDial
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteRegistrationDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
-import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.EmptyException
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showToast
@@ -44,18 +43,7 @@ class BrowserShortcutDialog : BottomSheetDialogFragment() {
     // ------ //
 
     val viewModel by lazyProvideViewModel {
-        val favoriteSitesRepo = when (val activity = requireActivity()) {
-            is EntriesActivity ->
-                activity.viewModel.repository.favoriteSitesRepo
-
-            else ->
-                FavoriteSitesRepository(
-                    SafeSharedPreferences.create(requireContext()),
-                    HatenaClient
-                )
-        }
-
-        DialogViewModel(favoriteSitesRepo)
+        DialogViewModel(SatenaApplication.instance.favoriteSitesRepository)
     }
 
     // ------ //

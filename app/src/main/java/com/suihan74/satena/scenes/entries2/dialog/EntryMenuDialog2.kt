@@ -10,13 +10,13 @@ import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.DialogListener
-import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
@@ -35,10 +35,11 @@ class EntryMenuDialog2 : DialogFragment() {
 
     private val viewModel by lazyProvideViewModel {
         val entry = requireArguments().getObject<Entry>(ARG_ENTRY)!!
-        val favoriteSitesRepo = FavoriteSitesRepository(
-            SafeSharedPreferences.create(requireContext())
+        DialogViewModel(
+            requireContext(),
+            entry,
+            SatenaApplication.instance.favoriteSitesRepository
         )
-        DialogViewModel(requireContext(), entry, favoriteSitesRepo)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
