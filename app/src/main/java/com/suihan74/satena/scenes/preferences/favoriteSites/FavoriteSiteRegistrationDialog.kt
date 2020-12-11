@@ -201,13 +201,15 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
 
         // ------ //
 
-        @Throws(
-            InvalidUrlException::class,
-            EmptyException::class,
-            DuplicateException::class,
-            NullPointerException::class,  // 重複チェッカーが登録されていない場合
-            Throwable::class,             // onRegister, onModify内のエラー
-        )
+        /**
+         * 登録処理を実行する
+         *
+         * @throws InvalidUrlException URLが不正・入力されていない
+         * @throws EmptyException タイトルが入力されていない
+         * @throws DuplicateException 他の項目と重複している
+         * @throws NullPointerException 重複確認処理が登録されていない場合
+         * @throws Throwable onRegister, onModify内で起きたエラー
+         */
         suspend fun invokePositiveAction() : FavoriteSite {
             val site = FavoriteSite(
                 url = url.value!!,

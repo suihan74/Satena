@@ -72,7 +72,6 @@ class FavoriteSitesFragment : MultipleTabsEntriesFragment() {
             menuItem.setOnMenuItemClickListener {
                 viewModel.alsoAs<FavoriteSitesViewModel> { vm ->
                     vm.showSitesSelectionDialog(
-                        requireContext(),
                         childFragmentManager,
                         DIALOG_FAVORITE_SITES_SELECTION
                     )
