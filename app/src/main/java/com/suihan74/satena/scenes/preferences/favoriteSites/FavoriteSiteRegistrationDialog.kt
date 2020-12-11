@@ -31,9 +31,7 @@ import kotlinx.coroutines.withContext
 
 class FavoriteSiteRegistrationDialog : DialogFragment() {
     /** 処理の実行モード */
-    enum class Mode(
-        val titleId: Int
-    ) {
+    enum class Mode (val titleId: Int) {
         /** 追加 */
         ADD(R.string.dialog_title_favorite_site_registration),
         /** 修正 */
@@ -61,6 +59,8 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
         private const val ARG_TARGET_SITE = "ARG_TARGET_SITE"
     }
 
+    // ------ //
+
     private val viewModel by lazyProvideViewModel {
         val args = requireArguments()
         val mode = args.getEnum<Mode>(ARG_MODE)!!
@@ -68,6 +68,8 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
 
         DialogViewModel(mode, site)
     }
+
+    // ------ //
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = localLayoutInflater()
@@ -161,6 +163,8 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
     /**
      *  重複確認処理をセットする
      *
+     *  TODO: 外部から渡す必要をなくす
+     *
      *  @return true:既に登録されている false:登録可能
      */
     fun setDuplicationChecker(switcher: Switcher<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
@@ -176,7 +180,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
 
     class DialogViewModel(
         val mode: Mode,
-        val targetSite: FavoriteSite?
+        private val targetSite: FavoriteSite?
     ) : ViewModel() {
 
         val url by lazy {
@@ -215,7 +219,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                 url = url.value!!,
                 title = title.value!!,
                 faviconUrl = faviconUrl.value!!,
-                isEnabled = false
+                isEnabled = targetSite?.isEnabled ?: false
             )
 
             if (!URLUtil.isValidUrl(site.url)
