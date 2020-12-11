@@ -10,7 +10,7 @@ import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntryMenuActionsImplBasic
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
-import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.extensions.showToast
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 /** ブコメに含まれるリンク文字列に対する処理 */
 class EntryMenuActionsImplForBookmarks(
     private val bookmarksRepo: BookmarksRepository,
-    private val favoriteSitesRepo: FavoriteSitesRepositoryForEntries
+    private val favoriteSitesRepo: FavoriteSitesRepository
 ) : EntryMenuActionsImplBasic() {
 
     override fun showEntries(activity: Activity, entry: Entry) {

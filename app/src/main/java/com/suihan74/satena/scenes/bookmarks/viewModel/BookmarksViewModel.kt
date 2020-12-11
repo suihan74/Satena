@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
@@ -23,10 +24,8 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.post.BookmarkEditData
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
-import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.OnFinally
-import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.showToast
@@ -207,10 +206,7 @@ class BookmarksViewModel(
     ) {
         val handler = EntryMenuActionsImplForBookmarks(
             repository,
-            FavoriteSitesRepository(
-                SafeSharedPreferences.create(activity),
-                HatenaClient
-            )
+            SatenaApplication.instance.favoriteSitesRepository
         )
 
         activity.lifecycleScope.launch(Dispatchers.Main) {
