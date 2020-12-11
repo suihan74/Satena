@@ -12,7 +12,7 @@
             xmlns:tools="http://schemas.android.com/tools"
             tools:background="?attr/panelBackground"
             android:id="@+id/main_layout"
-            android:paddingTop="14dp"
+            android:paddingTop="22dp"
             android:paddingBottom="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -20,7 +20,7 @@
         <TextView
                 android:id="@+id/title"
                 android:text="@string/dialog_browser_shortcut_title"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textColor="?textColor"
                 app:layout_constraintTop_toTopOf="@id/open_button"
                 app:layout_constraintBottom_toBottomOf="@id/open_button"
@@ -60,7 +60,7 @@
                 app:layout_constraintStart_toStartOf="@id/title"
                 app:layout_constraintEnd_toStartOf="@id/search_button"
                 android:layout_marginEnd="8dp"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="14dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
 
@@ -90,7 +90,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
 
                 android:paddingHorizontal="@dimen/browser_shortcut_horizontal_padding"
-                android:paddingVertical="8dp"
+                android:paddingVertical="10dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
 
