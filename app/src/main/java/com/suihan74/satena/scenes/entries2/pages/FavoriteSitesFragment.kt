@@ -32,7 +32,7 @@ class FavoriteSitesFragment : MultipleTabsEntriesFragment() {
         repository: EntriesRepository,
         category: Category
     ) = provideViewModel(owner, viewModelKey) {
-        FavoriteSitesViewModel(repository)
+        FavoriteSitesViewModel(repository.favoriteSitesRepo)
     }
 
     override fun updateActivityAppBar(
@@ -72,7 +72,6 @@ class FavoriteSitesFragment : MultipleTabsEntriesFragment() {
             menuItem.setOnMenuItemClickListener {
                 viewModel.alsoAs<FavoriteSitesViewModel> { vm ->
                     vm.showSitesSelectionDialog(
-                        requireContext(),
                         childFragmentManager,
                         DIALOG_FAVORITE_SITES_SELECTION
                     )

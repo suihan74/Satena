@@ -16,7 +16,6 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
-import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
@@ -85,10 +84,9 @@ class EntriesRepository(
     private val context: Context,
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
-    val ignoredEntriesRepo: IgnoredEntriesRepository
-) :
-        FavoriteSitesRepositoryForEntries by FavoriteSitesRepository(SafeSharedPreferences.create(context), client)
-{
+    val ignoredEntriesRepo: IgnoredEntriesRepository,
+    val favoriteSitesRepo: FavoriteSitesRepository
+) {
     /** アプリ内アップデート */
     private var appUpdateManager: AppUpdateManager? = null
 
@@ -531,7 +529,7 @@ class EntriesRepository(
     /** お気に入りサイトのエントリリストを読み込む */
     private suspend fun loadFavoriteSitesEntries(tabPosition: Int, page: Int? = null) : List<Entry> {
         val entriesType = EntriesType.fromId(tabPosition)
-        val sites = favoriteSites.value ?: emptyList()
+        val sites = favoriteSitesRepo.favoriteSites.value ?: emptyList()
 
         val tasks = sites
             .filter { it.isEnabled }

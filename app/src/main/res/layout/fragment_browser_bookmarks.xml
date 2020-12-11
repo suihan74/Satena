@@ -15,7 +15,9 @@
                 android:id="@+id/swipe_layout"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toTopOf="@id/bookmark_post_frame_layout"
-                android:layout_width="match_parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="0dp"
                 android:layout_height="0dp">
 
             <androidx.recyclerview.widget.RecyclerView
@@ -38,10 +40,12 @@
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
                 android:id="@+id/bottom_area"
-                app:layout_constraintBottom_toTopOf="@id/bookmark_post_frame_layout"
                 android:visibility="@{vm.signedIn}"
                 android:elevation="8dp"
-                android:layout_width="match_parent"
+                app:layout_constraintBottom_toTopOf="@id/bookmark_post_frame_layout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="0dp"
                 android:layout_height="64dp">
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -66,10 +70,12 @@
         <FrameLayout
                 android:id="@+id/bookmark_post_frame_layout"
                 android:background="?attr/tabBackground"
-                app:layout_constraintBottom_toBottomOf="parent"
                 android:visibility="gone"
                 android:elevation="8dp"
-                android:layout_width="match_parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -217,6 +217,7 @@ class EntryMenuDialog : DialogFragment() {
         val context = requireContext()
         val activity = requireActivity()
         val arguments = requireArguments()
+        val app = SatenaApplication.instance
 
         viewModel.activity = activity
 
@@ -230,7 +231,8 @@ class EntryMenuDialog : DialogFragment() {
                     HatenaClient,
                     MastodonClientHolder
                 ),
-                ignoredEntriesRepo = SatenaApplication.instance.ignoredEntriesRepository
+                ignoredEntriesRepo = app.ignoredEntriesRepository,
+                favoriteSitesRepo = app.favoriteSitesRepository
             )
 
         val url = arguments.getString(ARG_ENTRY_URL)
@@ -572,7 +574,7 @@ class EntryMenuDialog : DialogFragment() {
             val context = args.context
 
             try {
-                repository?.favoriteEntrySite(entry)
+                repository!!.favoriteSitesRepo.favoriteEntrySite(entry)
                 context.showToast("お気に入りに追加しました")
             }
             catch (e: NotFoundException) {
@@ -592,7 +594,7 @@ class EntryMenuDialog : DialogFragment() {
             val context = args.context
 
             try {
-                repository?.unfavoriteEntrySite(entry)
+                repository!!.favoriteSitesRepo.unfavoriteEntrySite(entry)
                 context.showToast("お気に入りから除外しました")
             }
             catch (e: Throwable) {

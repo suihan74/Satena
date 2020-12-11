@@ -27,9 +27,10 @@
     <string name="dialog_open">開く</string>
     <string name="dialog_close">閉じる</string>
 
+    <!-- 未分類の汎用 -->
     <string name="invalid_url_error">無効なURLです</string>
-
     <string name="scroll_to_top">一番上までスクロール</string>
+    <string name="search_button_tooltip">検索</string>
 
     <!-- ログイン画面 -->
     <string name="cancel">キャンセル</string>
@@ -321,6 +322,8 @@
     <string name="pref_browser_theme_dark">対応サイトでは暗くする</string>
     <string name="pref_browser_theme_force_dark">全サイトで強制的に暗くする</string>
 
+    <string name="pref_url_blocking_back_button_desc">ブラウザ設定画面に戻る</string>
+
     <!-- お気に入りサイト -->
     <string name="dialog_favorite_sites_open">開く</string>
     <string name="dialog_favorite_sites_open_entries">このサイトのエントリを探す</string>
@@ -564,4 +567,9 @@
     <string name="msg_add_url_blocking_succeeded">URLブロック設定を追加しました</string>
     <string name="msg_url_blocked">既にブロックされています</string>
     <string name="msg_empty_url_blocking_pattern">パターンを入力してください</string>
+
+    <!-- エントリ画面からブラウザを開く際のショートカット選択ダイアログ -->
+    <string name="dialog_browser_shortcut_title">アプリ内ブラウザを開く</string>
+    <string name="dialog_browser_shortcut_open_start_page">スタートページを開く</string>
+    <string name="msg_dialog_browser_shortcut_empty_search_query">クエリを入力してください</string>
 </resources>

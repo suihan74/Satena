@@ -1,12 +1,22 @@
 package com.suihan74.utilities.bindings
 
 import android.view.View
+import android.view.ViewGroup
+import androidx.appcompat.widget.TooltipCompat
 import androidx.databinding.BindingAdapter
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import com.google.android.material.appbar.AppBarLayout
 import com.suihan74.utilities.extensions.toVisibility
 
-@BindingAdapter(value = ["android:visibility", "disabledDefaultVisibility"], requireAll = false)
-fun View.setVisibility(isVisible: Boolean?, disabledDefault: Int? = View.GONE) {
+@BindingAdapter(
+    value = ["android:visibility", "disabledDefaultVisibility"],
+    requireAll = false
+)
+fun View.setVisibility(
+    isVisible: Boolean?,
+    disabledDefault: Int? = View.GONE
+) {
     // こちらのアダプタの方が優先して呼ばれてしまうので、
     // ここで明示的にAppBarLayout用のアダプタを呼ぶ
     if (this is AppBarLayout) {
@@ -19,12 +29,47 @@ fun View.setVisibility(isVisible: Boolean?, disabledDefault: Int? = View.GONE) {
     visibility = isVisible.toVisibility(disabledDefault ?: View.GONE)
 }
 
-/**
- * boolean値によってalpha値を操作する
- */
-@BindingAdapter(value = ["android:alpha", "disableAlpha"], requireAll = false)
-fun View.setAlphaByAvailability(isEnabled: Boolean?, disableAlpha: Float?) {
-    alpha = if (isEnabled == true) 1.0f else disableAlpha ?: 0.5f
+@BindingAdapter(
+    value = ["android:visibility", "disabledDefaultVisibility", "transition", "container"],
+    requireAll = false
+)
+fun View.setVisibilityWithTransition(
+    isVisible: Boolean?,
+    disabledDefault: Int? = View.GONE,
+    transition: Transition? = null,
+    container: ViewGroup? = null
+) {
+    if (transition != null && container != null) {
+        TransitionManager.beginDelayedTransition(
+            container,
+            transition
+        )
+    }
+    setVisibility(isVisible, disabledDefault)
+}
+
+// ------ //
+
+object ViewBindingAdapters {
+    /**
+     * boolean値によってalpha値を操作する
+     */
+    @JvmStatic
+    @BindingAdapter(value = ["android:alpha", "disableAlpha"], requireAll = false)
+    fun setAlphaByAvailability(view: View, isEnabled: Boolean?, disableAlpha: Float?) {
+        view.alpha =
+            if (isEnabled == true) 1.0f
+            else disableAlpha ?: 0.5f
+    }
+
+    /**
+     * ツールチップテキストを設定する(バージョンによる制限を回避させる)
+     */
+    @JvmStatic
+    @BindingAdapter(value = ["tooltipText"])
+    fun setTooltipText(view: View, text: CharSequence?) {
+        TooltipCompat.setTooltipText(view, text)
+    }
 }
 
 /**
