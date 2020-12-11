@@ -12,7 +12,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -36,10 +35,9 @@ import com.suihan74.utilities.extensions.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 // TODO: リスナの扱い方を刷新する
-
+@Deprecated("replace with EntryMenuDialog2")
 class EntryMenuDialogListeners {
     /** ミュート完了時の処理 */
     var onIgnoredEntry : OnSuccess<IgnoredEntry>? = null
@@ -52,6 +50,7 @@ class EntryMenuDialogListeners {
 }
 
 /** エントリメニューダイアログ */
+@Deprecated("replace with EntryMenuDialog2")
 class EntryMenuDialog : DialogFragment() {
     companion object {
         fun createInstance(entry: Entry) = EntryMenuDialog().withArguments {
@@ -160,7 +159,7 @@ class EntryMenuDialog : DialogFragment() {
                         entry = entry,
                         listeners = listeners
                     )
-                    instance.action(menuItem, args)
+                    instance.action(menuItem, args, fragmentManager)
 
                     fragmentManager.beginTransaction()
                         .remove(instance)
@@ -186,7 +185,7 @@ class EntryMenuDialog : DialogFragment() {
                         context = context,
                         url = url
                     )
-                    instance.action(menuItem, args)
+                    instance.action(menuItem, args, fragmentManager)
 
                     fragmentManager.beginTransaction()
                         .remove(instance)
@@ -205,11 +204,9 @@ class EntryMenuDialog : DialogFragment() {
     }
 
     /** 永続化するデータ */
-    private val viewModel : DialogViewModel by lazy {
-        provideViewModel(this) {
-            DialogViewModel().apply {
-                listeners = listeners ?: this@EntryMenuDialog.listeners
-            }
+    private val viewModel by lazyProvideViewModel {
+        DialogViewModel().apply {
+            listeners = listeners ?: this@EntryMenuDialog.listeners
         }
     }
 
@@ -220,9 +217,9 @@ class EntryMenuDialog : DialogFragment() {
         val context = requireContext()
         val activity = requireActivity()
         val arguments = requireArguments()
+        val app = SatenaApplication.instance
 
         viewModel.activity = activity
-        viewModel.fragmentManager = parentFragmentManager
 
         viewModel.repository =
             if (activity is EntriesActivity) activity.viewModel.repository
@@ -234,7 +231,8 @@ class EntryMenuDialog : DialogFragment() {
                     HatenaClient,
                     MastodonClientHolder
                 ),
-                ignoredEntryDao = SatenaApplication.instance.ignoredEntryDao
+                ignoredEntriesRepo = app.ignoredEntriesRepository,
+                favoriteSitesRepo = app.favoriteSitesRepository
             )
 
         val url = arguments.getString(ARG_ENTRY_URL)
@@ -270,21 +268,31 @@ class EntryMenuDialog : DialogFragment() {
         return createBuilder()
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setItems(activeItemLabels) { _, which ->
-                val args = MenuItemArguments(
-                    context = activity,
-                    entry = entry,
-                    url = url,
-                    listeners = viewModel.listeners
-                )
-                action(activeItems[which], args)
+            .setItems(activeItemLabels, null)
+            .show().also {
+                it.listView.setOnItemClickListener { _, _, i, _ ->
+                    val args = MenuItemArguments(
+                        context = activity,
+                        entry = entry,
+                        url = url,
+                        listeners = viewModel.listeners
+                    )
+
+                    action(activeItems[i], args, parentFragmentManager)
+                    dismissAllowingStateLoss()
+                }
             }
-            .create()
     }
 
-    private fun action(item: MenuItem, args: MenuItemArguments) = GlobalScope.launch(Dispatchers.Main) {
+    private fun action(
+        item: MenuItem,
+        args: MenuItemArguments,
+        fragmentManager: FragmentManager
+    ) = GlobalScope.launch(Dispatchers.Main) {
         // ダイアログのスコープを使用すると、ダイアログ表示を伴わないアクションが実行されないので注意
-        viewModel.action(item, args)
+        runCatching {
+            viewModel.action(item, args, fragmentManager)
+        }
     }
 
     // ------ //
@@ -364,14 +372,12 @@ class EntryMenuDialog : DialogFragment() {
     class DialogViewModel : androidx.lifecycle.ViewModel() {
         var activity: FragmentActivity? = null
 
-        var fragmentManager: FragmentManager? = null
-
         var listeners : EntryMenuDialogListeners? = null
 
         var repository: EntriesRepository? = null
 
         /** メニュー項目ごとの処理 */
-        suspend fun action(item: MenuItem, args: MenuItemArguments) = when (item) {
+        suspend fun action(item: MenuItem, args: MenuItemArguments, fragmentManager: FragmentManager) = when (item) {
             MenuItem.SHOW_COMMENTS ->
                 showBookmarks(args.context, args.entry, args.url)
 
@@ -391,7 +397,7 @@ class EntryMenuDialog : DialogFragment() {
                 showEntries(args.context, args.entry, args.url)
 
             MenuItem.IGNORE_SITE ->
-                ignoreSite(args.context, args.entry, args.url, args.listeners?.onIgnoredEntry)
+                ignoreSite(args.entry, args.url, fragmentManager)
 
             MenuItem.READ_LATER ->
                 readLater(args)
@@ -401,8 +407,6 @@ class EntryMenuDialog : DialogFragment() {
 
             MenuItem.REMOVE_BOOKMARK ->
                 removeBookmark(args.context, args.entry, args.url, args.listeners?.onDeletedBookmark)
-
-            else -> throw NotImplementedError()
         }
 
         /** ブックマーク画面に遷移 */
@@ -473,31 +477,11 @@ class EntryMenuDialog : DialogFragment() {
         }
 
         /** サイトを非表示に設定する */
-        private fun ignoreSite(context: Context, entry: Entry?, url: String?, onCompleted: OnSuccess<IgnoredEntry>?) {
-            val fragmentManager = fragmentManager ?: return
+        private fun ignoreSite(entry: Entry?, url: String?, fragmentManager: FragmentManager) {
             val siteUrl = entry?.url ?: url ?: return
             val dialog = IgnoredEntryDialogFragment.createInstance(
                 url = siteUrl,
-                title = entry?.title ?: "",
-                positiveAction = { dialog, ignoredEntry ->
-                    activity?.lifecycleScope?.launch(Dispatchers.Main) {
-                        try {
-                            withContext(Dispatchers.IO) {
-                                val dao = SatenaApplication.instance.ignoredEntryDao
-                                dao.insert(ignoredEntry)
-                            }
-
-                            context.showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
-                            onCompleted?.invoke(ignoredEntry)
-
-                            dialog.dismiss()
-                        }
-                        catch (e: Throwable) {
-                            context.showToast(R.string.msg_ignored_entry_dialog_failed)
-                        }
-                    }
-                    false
-                }
+                title = entry?.title ?: ""
             )
             dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
         }
@@ -590,7 +574,7 @@ class EntryMenuDialog : DialogFragment() {
             val context = args.context
 
             try {
-                repository?.favoriteEntrySite(entry)
+                repository!!.favoriteSitesRepo.favoriteEntrySite(entry)
                 context.showToast("お気に入りに追加しました")
             }
             catch (e: NotFoundException) {
@@ -610,7 +594,7 @@ class EntryMenuDialog : DialogFragment() {
             val context = args.context
 
             try {
-                repository?.unfavoriteEntrySite(entry)
+                repository!!.favoriteSitesRepo.unfavoriteEntrySite(entry)
                 context.showToast("お気に入りから除外しました")
             }
             catch (e: Throwable) {

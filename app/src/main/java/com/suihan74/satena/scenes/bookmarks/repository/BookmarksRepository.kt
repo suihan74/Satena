@@ -8,13 +8,12 @@ import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
-import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepositoryForBookmarks
 import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
 import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepositoryInterface
 import com.suihan74.utilities.*
@@ -29,18 +28,17 @@ import kotlinx.coroutines.*
 class BookmarksRepository(
     val accountLoader: AccountLoader,
     val prefs : SafeSharedPreferences<PreferenceKey>,
-    private val ignoredEntryDao : IgnoredEntryDao,
+    val ignoredEntriesRepo : IgnoredEntriesRepository,
     private val userTagDao: UserTagDao
 ) :
         // ユーザー関係
         UserRelationRepositoryInterface by UserRelationRepository(accountLoader),
-        // NGワード
-        IgnoredEntriesRepositoryForBookmarks by IgnoredEntriesRepository(ignoredEntryDao),
         // ユーザータグ
         UserTagsRepositoryInterface by UserTagsRepository(userTagDao),
         // スター
         StarRepositoryInterface by StarRepository(accountLoader, prefs)
 {
+
     companion object {
         // Intentからエントリ情報を引き出すためのキー
 
@@ -71,25 +69,44 @@ class BookmarksRepository(
     val userSignedIn : String?
         get() = client.account?.name
 
-    /** アカウントが必要な操作前にサインインする */
+    /**
+     * アカウントが必要な操作前にサインインする
+     *
+     * @throws SignInFailureException サインイン失敗
+     */
     suspend fun signIn() : Account? = withContext(Dispatchers.Default) {
         val result = runCatching {
             accountLoader.signInAccounts(reSignIn = false)
         }
 
-        val account =
-            if (result.isSuccess) client.account
-            else null
+        if (result.isFailure) {
+            throw SignInFailureException(cause = result.exceptionOrNull())
+        }
 
+        val account = client.account
         val signedIn = account != null
 
         this@BookmarksRepository.signedIn.postValue(signedIn)
 
         if (signedIn) {
-            loadUserColorStarsCount()
+            runCatching {
+                loadUserColorStarsCount()
+            }
         }
 
         return@withContext account
+    }
+
+    /**
+     * サインインが必要な処理
+     *
+     * @throws SignInFailureException サインインされていない
+     */
+    suspend fun requireSignIn() {
+        signIn()
+        if (client.account == null) {
+            throw SignInStarFailureException()
+        }
     }
 
     // ------ //
@@ -236,7 +253,7 @@ class BookmarksRepository(
 
         try {
             val loadingIgnoresTasks = listOf(
-                async { loadIgnoredWordsForBookmarks() },
+                async { ignoredEntriesRepo.loadIgnoredWordsForBookmarks() },
                 async { loadIgnoredUsers() }
             )
             loadingIgnoresTasks.awaitAll()
@@ -415,7 +432,7 @@ class BookmarksRepository(
     /** ブクマが非表示対象かを判別する */
     fun checkIgnored(bookmark: Bookmark) : Boolean {
         if (ignoredUsersCache.any { bookmark.user == it }) return true
-        return ignoredWordsForBookmarks.any { w ->
+        return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
             bookmark.commentRaw.contains(w)
                     || bookmark.user.contains(w)
                     || bookmark.tags.any { t -> t.contains(w) }
@@ -425,7 +442,7 @@ class BookmarksRepository(
     /** ブクマが非表示対象かを判別する */
     fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean {
         if (ignoredUsersCache.any { bookmark.user == it }) return true
-        return ignoredWordsForBookmarks.any { w ->
+        return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
             bookmark.comment.contains(w)
                     || bookmark.user.contains(w)
                     || bookmark.tags.any { t -> t.contains(w) }
@@ -810,17 +827,36 @@ class BookmarksRepository(
     // ------ //
 
     /**
+     * エントリのブクマを削除する
+     *
+     * @throws SignInFailureException
+     * @throws TaskFailureException
+     */
+    suspend fun deleteBookmark(entry: Entry) = withContext(Dispatchers.Default) {
+        val url = entry.url
+
+        requireSignIn()
+
+        val result = runCatching {
+            client.deleteBookmarkAsync(url).await()
+        }
+
+        if (result.isFailure) {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+    }
+
+    /**
      * ブクマを削除する
      *
+     * @throws SignInFailureException
      * @throws TaskFailureException
      */
     suspend fun deleteBookmark(bookmark: Bookmark) = withContext(Dispatchers.Default) {
         val url = entry.value?.url ?: throw TaskFailureException("invalid entry")
         val user = bookmark.user
 
-        if (user != userSignedIn) {
-            throw TaskFailureException("it's not the signed-in user's bookmark")
-        }
+        requireSignIn()
 
         val result = runCatching {
             client.deleteBookmarkAsync(url).await()
@@ -853,6 +889,56 @@ class BookmarksRepository(
             bookmarksRecentCache.filterNot { it.user == user }
 
         refreshBookmarks()
+    }
+
+    // ------ //
+
+    /**
+     * (リンクを)あとで読む
+     *
+     * @throws TaskFailureException
+     */
+    suspend fun readLater(entry: Entry) {
+        requireSignIn()
+        val result = runCatching {
+            client.postBookmarkAsync(entry.url, readLater = true).await()
+        }
+
+        if (result.isFailure) {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+    }
+
+    /**
+     * (リンクを)読んだ
+     */
+    suspend fun read(entry: Entry) : Pair<EntryReadActionType, BookmarkResult?> {
+        requireSignIn()
+        val action = EntryReadActionType.fromOrdinal(prefs.getInt(PreferenceKey.ENTRY_READ_ACTION_TYPE))
+
+        return action to when (action) {
+            EntryReadActionType.REMOVE -> {
+                deleteBookmark(entry)
+                null
+            }
+
+            EntryReadActionType.DIALOG -> null
+
+            else -> {
+                val comment = when (action) {
+                    EntryReadActionType.SILENT_BOOKMARK -> ""
+                    EntryReadActionType.READ_TAG -> "[読んだ]"
+                    EntryReadActionType.BOILERPLATE -> prefs.getString(PreferenceKey.ENTRY_READ_ACTION_BOILERPLATE) ?: ""
+                    else -> ""
+                }
+
+                client.postBookmarkAsync(
+                    url = entry.url,
+                    readLater = false,
+                    comment = comment
+                ).await()
+            }
+        }
     }
 
     // ------ //

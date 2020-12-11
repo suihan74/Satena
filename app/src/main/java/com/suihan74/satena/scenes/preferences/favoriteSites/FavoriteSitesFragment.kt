@@ -7,16 +7,15 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentBrowserFavoritesBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesActionsImplForBrowser
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ScrollableToTop
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 /** お気に入りサイトを表示するタブ */
 class FavoriteSitesFragment :
@@ -36,20 +35,15 @@ class FavoriteSitesFragment :
     private val preferencesActivity : PreferencesActivity?
         get() = requireActivity() as? PreferencesActivity
 
-    val viewModel by lazy {
-        provideViewModel(this) {
-            val repository = browserViewModel?.favoriteSitesRepo ?:
-                FavoriteSitesRepository(
-                    SafeSharedPreferences.create(requireContext()),
-                    HatenaClient
-                )
+    val viewModel by lazyProvideViewModel {
+        val actionsImpl =
+            if (browserActivity != null) FavoriteSitesActionsImplForBrowser()
+            else FavoriteSitesActionsImplForPreferences()
 
-            val actionsImpl =
-                if (browserActivity != null) FavoriteSitesActionsImplForBrowser()
-                else FavoriteSitesActionsImplForPreferences()
-
-            FavoriteSitesViewModel(repository, actionsImpl)
-        }
+        FavoriteSitesViewModel(
+            SatenaApplication.instance.favoriteSitesRepository,
+            actionsImpl
+        )
     }
 
     private var binding : FragmentBrowserFavoritesBinding? = null
@@ -58,7 +52,7 @@ class FavoriteSitesFragment :
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentBrowserFavoritesBinding>(
             inflater,
             R.layout.fragment_browser_favorites,

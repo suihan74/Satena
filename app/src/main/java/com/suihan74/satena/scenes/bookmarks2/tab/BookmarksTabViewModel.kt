@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import androidx.appcompat.widget.TooltipCompat
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,7 +15,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.bookmarks2.AddStarPopupMenu
+import com.suihan74.satena.scenes.bookmarks.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
@@ -128,6 +129,7 @@ abstract class BookmarksTabViewModel(
     fun initializeAddStarButton(
         context: Context,
         lifecycleOwner: LifecycleOwner,
+        fragmentManager: FragmentManager,
         addStarButton: ImageButton,
         bookmark: Bookmark
     ) {
@@ -148,6 +150,7 @@ abstract class BookmarksTabViewModel(
                     activityViewModel.deleteStarDialog(
                         bookmark,
                         userStars,
+                        fragmentManager,
                         onSuccess = { context.showToast(R.string.msg_delete_star_succeeded) },
                         onError = { e ->
                             context.showToast(R.string.msg_delete_star_failed)
@@ -171,7 +174,7 @@ abstract class BookmarksTabViewModel(
                     )
 
                     setOnClickAddStarListener { color ->
-                        activityViewModel.postStarDialog(bookmark, color, "")
+                        activityViewModel.postStarDialog(bookmark, color, "", fragmentManager)
                         dismiss()
                     }
 

@@ -19,7 +19,7 @@ import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.extensions.showToast
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 /**
  * ブクマ投稿用のモーダルウィンドウ
@@ -57,19 +57,17 @@ class BookmarkPostActivity :
 
     // ------ //
 
-    override val bookmarkPostViewModel by lazy {
-        provideViewModel(this, VIEW_MODEL_BOOKMARK_POST) {
-            val repository = BookmarkPostRepository(
-                AccountLoader(
-                    context = this,
-                    client = HatenaClient,
-                    mastodonClientHolder = MastodonClientHolder
-                ),
-                SafeSharedPreferences.create(this)
-            )
+    override val bookmarkPostViewModel by lazyProvideViewModel(VIEW_MODEL_BOOKMARK_POST) {
+        val repository = BookmarkPostRepository(
+            AccountLoader(
+                context = this,
+                client = HatenaClient,
+                mastodonClientHolder = MastodonClientHolder
+            ),
+            SafeSharedPreferences.create(this)
+        )
 
-            BookmarkPostViewModel(repository)
-        }
+        BookmarkPostViewModel(repository)
     }
 
     // ------ //

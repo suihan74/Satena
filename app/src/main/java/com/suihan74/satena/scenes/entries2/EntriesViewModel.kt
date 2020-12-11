@@ -14,6 +14,7 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.OnSuccess
+import com.suihan74.utilities.extensions.getThemeColor
 import kotlinx.coroutines.launch
 
 class EntriesViewModel(
@@ -154,18 +155,30 @@ class EntriesViewModel(
         info: AppUpdateInfo,
         requestCode: Int
     ) {
-        if (info.isImmediateUpdateAllowed) {
-            Snackbar.make(
-                snackBarAnchorView,
-                R.string.app_update_notice,
-                Snackbar.LENGTH_INDEFINITE
-            ).apply {
-                setAction(R.string.app_update_ok) {
-                    resumeAppUpdate(activity, info, requestCode)
-                }
-                show()
+        if (!info.isImmediateUpdateAllowed) return
+
+        val snackBar = Snackbar.make(
+            snackBarAnchorView,
+            R.string.app_update_notice,
+            Snackbar.LENGTH_INDEFINITE
+        ).also {
+            it.setAction(R.string.app_update_ok) {
+                resumeAppUpdate(activity, info, requestCode)
             }
+
+            // 明示的に背景色と文字色を設定する
+            it.view.setBackgroundColor(
+                activity.getThemeColor(R.attr.snackBarBackgroundColor)
+            )
+            it.setActionTextColor(
+                activity.getThemeColor(R.attr.snackBarActionTextColor)
+            )
+            it.setTextColor(
+                activity.getThemeColor(R.attr.snackBarTextColor)
+            )
         }
+
+        snackBar.show()
     }
 
     /** アプリのアップデートを開始する */

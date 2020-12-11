@@ -111,7 +111,7 @@ class UserBottomItemsSetter : CoordinatorLayout {
         bottomAppBar.menu.clear()
 
         // 項目を編集する
-        items.forEachIndexed { i, item ->
+        items.forEach { item ->
             item.toMenuItem(bottomAppBar.menu, tint).apply {
                 setOnMenuItemClickListener {
                     onMenuItemClickListener?.invoke(OnMenuItemClickArguments(items, item))

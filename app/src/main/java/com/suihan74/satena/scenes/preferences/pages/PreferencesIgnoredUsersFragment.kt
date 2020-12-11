@@ -16,7 +16,7 @@ import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.extensions.getThemeColor
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -25,17 +25,15 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase() {
         fun createInstance() = PreferencesIgnoredUsersFragment()
     }
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            val repository = UserRelationRepository(
-                AccountLoader(
-                    requireContext(),
-                    HatenaClient,
-                    MastodonClientHolder
-                )
+    private val viewModel by lazyProvideViewModel {
+        val repository = UserRelationRepository(
+            AccountLoader(
+                requireContext(),
+                HatenaClient,
+                MastodonClientHolder
             )
-            PreferencesIgnoredUsersViewModel(repository)
-        }
+        )
+        PreferencesIgnoredUsersViewModel(repository)
     }
 
     override fun onCreateView(

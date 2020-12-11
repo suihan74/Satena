@@ -16,7 +16,7 @@ import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 class BackStackItemMenuDialog : DialogFragment() {
     companion object {
@@ -27,11 +27,11 @@ class BackStackItemMenuDialog : DialogFragment() {
         private const val ARG_TARGET_PAGE = "ARG_TARGET_PAGE"
     }
 
-    private val viewModel by lazy {
-        provideViewModel(this) {
-            val page = requireArguments().getObject<HistoryPage>(ARG_TARGET_PAGE)!!
-            DialogViewModel(requireContext(), page)
-        }
+    private val viewModel by lazyProvideViewModel {
+        DialogViewModel(
+            requireContext(),
+            page = requireArguments().getObject<HistoryPage>(ARG_TARGET_PAGE)!!
+        )
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

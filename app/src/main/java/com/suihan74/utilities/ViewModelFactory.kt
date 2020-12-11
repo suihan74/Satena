@@ -21,12 +21,16 @@ class ViewModelFactory<ViewModelT : ViewModel>(
         else ViewModelProvider(owner, this)[key, kClass.java]
 }
 
+// ------ //
+
 /**
  * ViewModel作成時に用いるNewInstanceFactoryを生成する
  */
 inline fun <reified ViewModelT : ViewModel> createViewModelFactory(
     noinline creator: ()->ViewModelT
 ) = ViewModelFactory(creator, ViewModelT::class)
+
+// ------ //
 
 /**
  * ViewModelを作成・取得する
@@ -38,9 +42,33 @@ inline fun <reified ViewModelT : ViewModel> provideViewModel(
 
 /**
  * ViewModelを作成・取得する
+ *
+ * keyを指定して登録する
  */
 inline fun <reified ViewModelT : ViewModel> provideViewModel(
     owner: ViewModelStoreOwner,
     key: String?,
     noinline creator: ()->ViewModelT
 ) = createViewModelFactory(creator).provide(owner, key)
+
+// ------ //
+// lazyデリゲートで包んだ`provideViewModel`
+// `Fragment`から`Activity`をownerに渡そうとするとアタッチ前なので失敗する(IllegalStateException)
+// ので，ownerには自分自身以外指定できないようにしている
+
+/**
+ * ViewModelを作成・取得する (lazy)
+ */
+inline fun <reified ViewModelT : ViewModel> ViewModelStoreOwner.lazyProvideViewModel(
+    noinline creator: ()->ViewModelT
+) = lazy { provideViewModel(this, creator) }
+
+/**
+ * ViewModelを作成・取得する (lazy)
+ *
+ * keyを指定して登録する
+ */
+inline fun <reified ViewModelT : ViewModel> ViewModelStoreOwner.lazyProvideViewModel(
+    key: String?,
+    noinline creator: ()->ViewModelT
+) = lazy { provideViewModel(this, key, creator) }

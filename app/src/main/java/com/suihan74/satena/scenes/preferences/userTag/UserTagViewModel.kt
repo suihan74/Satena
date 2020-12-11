@@ -193,32 +193,29 @@ class UserTagViewModel(
     }
 
     /** タグに対するメニューダイアログを開く */
-    fun openTagMenuDialog(
-        targetTag: Tag,
-        fragmentManager: FragmentManager
-    ) = viewModelScope.launch(Dispatchers.Main) {
-        TagMenuDialog.createInstance(targetTag).run {
-            showAllowingStateLoss(fragmentManager, DIALOG_TAG_MENU)
+    fun openTagMenuDialog(targetTag: Tag, fragmentManager: FragmentManager) {
+        val dialog = TagMenuDialog.createInstance(targetTag)
 
-            setOnEditListener { tag ->
-                openUserTagDialog(tag, fragmentManager)
+        dialog.setOnEditListener { (tag, f) ->
+            openUserTagDialog(tag, f.parentFragmentManager)
+        }
+
+        dialog.setOnDeleteListener { (tag) ->
+            val context = SatenaApplication.instance
+            try {
+                val tagAndUsers = tags.value?.firstOrNull { it.userTag.id == tag.id }!!
+                deleteTag(tagAndUsers)
+                context.showToast(R.string.msg_user_tag_deleted, tag.name)
             }
-
-            setOnDeleteListener { tag ->
-                val context = SatenaApplication.instance
-                try {
-                    val tagAndUsers = tags.value?.firstOrNull { it.userTag.id == tag.id }!!
-                    deleteTag(tagAndUsers)
-                    context.showToast(R.string.msg_user_tag_deleted, tag.name)
-                }
-                catch (e: Throwable) {
-                    Log.e("DeleteTag", Log.getStackTraceString(e))
-                }
-                finally {
-                    loadTags()
-                }
+            catch (e: Throwable) {
+                Log.e("DeleteTag", Log.getStackTraceString(e))
+            }
+            finally {
+                loadTags()
             }
         }
+
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_TAG_MENU)
     }
 
     /** ユーザーに対するメニューダイアログを開く */

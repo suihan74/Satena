@@ -13,13 +13,21 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.work.*
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.AppDatabase
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.PreferenceKeyMigration
 import com.suihan74.satena.models.migrate
 import com.suihan74.satena.notices.NotificationWorker
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
+import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.checkRunningByTag
 import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.whenFalse
+import com.suihan74.utilities.extensions.whenTrue
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -32,6 +40,8 @@ class SatenaApplication : Application() {
         const val WORKER_TAG_CHECKING_NOTICES = "WORKER_TAG_CHECKING_NOTICES"
     }
 
+    // ------ //
+
     var isFirstLaunch : Boolean = false
 
     lateinit var appDatabase: AppDatabase
@@ -39,6 +49,8 @@ class SatenaApplication : Application() {
 
     lateinit var networkReceiver : NetworkReceiver
         private set
+
+    // ------ //
 
     /** アプリのバージョン番号 */
     val versionCode: Long by lazy {
@@ -86,6 +98,33 @@ class SatenaApplication : Application() {
     fun getDevelopVersion(versionCode: Long) : Long =
         versionCode / 1000
 
+    // ------ //
+    // 基本的にどの画面を開いても使用するリポジトリはSatenaApplicationのインスタンスが保持する
+
+    /** 非表示URL/TEXT情報を扱うリポジトリ */
+    lateinit var ignoredEntriesRepository : IgnoredEntriesRepository
+        private set
+
+    /** お気に入りサイトを扱うリポジトリ */
+    lateinit var favoriteSitesRepository : FavoriteSitesRepository
+
+    // ------ //
+
+    /** ユーザータグDBへのアクセスオブジェクトを取得 */
+    val userTagDao
+        get() = appDatabase.userTagDao()
+
+    /** 非表示エントリDBへのアクセスオブジェクトを取得 */
+    private val ignoredEntryDao
+        get() = appDatabase.ignoredEntryDao()
+    // 全処理をignoredEntriesRepositoryを介してアクセスするようにしたので、外部には非公開に変更
+
+    /** 内部ブラウザ用DB */
+    val browserDao
+        get() = appDatabase.browserDao()
+
+    // ------ //
+
     override fun onCreate() {
         super.onCreate()
 
@@ -126,6 +165,9 @@ class SatenaApplication : Application() {
             updatePreferencesVersion()
         }
 
+        // グローバルなリポジトリを初期化する
+        initializeRepositories()
+
         // 接続状態を監視
         registerNetworkCallback()
 
@@ -136,6 +178,20 @@ class SatenaApplication : Application() {
     override fun onTerminate() {
         unregisterNetworkCallback()
         super.onTerminate()
+    }
+
+    /** 各種グローバルリポジトリを生成 */
+    private fun initializeRepositories() {
+        ignoredEntriesRepository = IgnoredEntriesRepository(ignoredEntryDao).also {
+            GlobalScope.launch {
+                it.loadAllIgnoredEntries()
+            }
+        }
+
+        favoriteSitesRepository = FavoriteSitesRepository(
+            SafeSharedPreferences.create(this),
+            HatenaClient
+        )
     }
 
     /** ネットワークの接続状態を監視する */
@@ -160,18 +216,6 @@ class SatenaApplication : Application() {
             .migrate()
             .build()
     }
-
-    /** ユーザータグDBへのアクセスオブジェクトを取得 */
-    val userTagDao
-        get() = appDatabase.userTagDao()
-
-    /** 非表示エントリDBへのアクセスオブジェクトを取得 */
-    val ignoredEntryDao
-        get() = appDatabase.ignoredEntryDao()
-
-    /** 内部ブラウザ用DB */
-    val browserDao
-        get() = appDatabase.browserDao()
 
     /** 各種設定のバージョン移行が必要か確認 */
     fun updatePreferencesVersion() {
@@ -201,7 +245,9 @@ class SatenaApplication : Application() {
                     .build()
 
             WorkManager.getInstance(context).let { manager ->
-//                val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
+                manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES).whenFalse {
+                    showToast(R.string.msg_start_checking_notifications)
+                }
 
                 manager.enqueueUniquePeriodicWork(
                     WORKER_TAG_CHECKING_NOTICES,
@@ -209,10 +255,6 @@ class SatenaApplication : Application() {
                     else ExistingPeriodicWorkPolicy.KEEP,
                     workRequest
                 )
-
-//                if (!existed) {
-                    showToast(R.string.msg_start_checking_notifications)
-//                }
             }
 
             Log.i("WorkManager", "start checking notifications")
@@ -228,12 +270,10 @@ class SatenaApplication : Application() {
     fun stopCheckingNotificationsWorker(context: Context) {
         runCatching {
             WorkManager.getInstance(context).let { manager ->
-//                val existed = manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES)
-                manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
-
-//                if (existed) {
+                manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES).whenTrue {
                     showToast(R.string.msg_stop_checking_notifications)
-//                }
+                }
+                manager.cancelAllWorkByTag(WORKER_TAG_CHECKING_NOTICES)
             }
             Log.i("WorkManager", "stop checking notifications")
         }

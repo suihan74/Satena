@@ -3,9 +3,12 @@
 package com.suihan74.utilities.extensions
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.util.TypedValue
 import android.view.Gravity
 import android.widget.Toast
+import androidx.annotation.AttrRes
+import androidx.core.content.ContextCompat
 import com.suihan74.satena.R
 
 // ------ //
@@ -75,8 +78,23 @@ fun Context.sp2px(sp: Float) : Int {
 /**
  * テーマに設定された色を取得する
  */
-fun Context.getThemeColor(attrId: Int) : Int {
-    val outValue = TypedValue()
-    theme.resolveAttribute(attrId, outValue, true)
-    return outValue.data
-}
+fun Context.getThemeColor(@AttrRes attrId: Int) : Int =
+    with(TypedValue()) {
+        theme.resolveAttribute(attrId, this, true)
+        data
+    }
+
+/**
+ * テーマに設定された`Drawable`リソースIDを取得する
+ */
+fun Context.getThemeDrawableId(@AttrRes attrId: Int) : Int =
+    with(TypedValue()) {
+        theme.resolveAttribute(attrId, this, true)
+        resourceId
+    }
+
+/**
+ * テーマに設定された`Drawable`リソースを取得する
+ */
+fun Context.getThemeDrawable(@AttrRes attrId: Int) : Drawable? =
+    ContextCompat.getDrawable(this, getThemeDrawableId(attrId))

@@ -25,7 +25,6 @@ import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.scenes.bookmarks2.information.EntryInformationFragment
 import com.suihan74.satena.scenes.post.BookmarkEditData
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
@@ -73,28 +72,24 @@ class BookmarksActivity : AppCompatActivity() {
     // ------ //
 
     /** ViewModel */
-    val viewModel: BookmarksViewModel by lazy {
-        provideViewModel(this, VIEW_MODEL_ACTIVITY) {
-            val bookmarksRepository = BookmarksRepository(
-                client = HatenaClient,
-                accountLoader = AccountLoader(
-                    applicationContext,
-                    HatenaClient,
-                    MastodonClientHolder
-                ),
-                prefs = SafeSharedPreferences.create(this)
-            )
+    val viewModel: BookmarksViewModel by lazyProvideViewModel(VIEW_MODEL_ACTIVITY) {
+        val bookmarksRepository = BookmarksRepository(
+            client = HatenaClient,
+            accountLoader = AccountLoader(
+                applicationContext,
+                HatenaClient,
+                MastodonClientHolder
+            ),
+            prefs = SafeSharedPreferences.create(this)
+        )
 
-            val userTagRepository = UserTagRepository(
-                SatenaApplication.instance.userTagDao
-            )
+        val app = SatenaApplication.instance
 
-            val ignoredEntriesRepository = IgnoredEntriesRepository(
-                    SatenaApplication.instance.ignoredEntryDao
-                )
-
-            BookmarksViewModel(bookmarksRepository, userTagRepository, ignoredEntriesRepository)
-        }
+        BookmarksViewModel(
+            bookmarksRepository,
+            userTagRepository = UserTagRepository(app.userTagDao),
+            ignoredEntryRepository = app.ignoredEntriesRepository
+        )
     }
 
     val bookmarksFragment
@@ -182,7 +177,7 @@ class BookmarksActivity : AppCompatActivity() {
             }
 
             if (state == NetworkReceiver.State.CONNECTED) {
-                viewModel.init(supportFragmentManager, true)
+                viewModel.init(true)
             }
         }
     }
@@ -259,7 +254,6 @@ class BookmarksActivity : AppCompatActivity() {
         }
 
         viewModel.init(
-            fragmentManager = supportFragmentManager,
             loading = firstLaunching,
             onError = onError,
             onFinally = onFinally

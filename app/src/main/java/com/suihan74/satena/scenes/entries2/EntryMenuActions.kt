@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
@@ -14,7 +15,6 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
-import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepositoryForEntries
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
@@ -24,7 +24,6 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /** エントリ項目に対する操作 */
 interface EntryMenuActions {
@@ -67,40 +66,45 @@ interface EntryMenuActions {
         fragmentManager: FragmentManager,
         coroutineScope: CoroutineScope
     ) {
-        EntryMenuDialog2.createInstance(entry).run {
-            setShowCommentsListener {
-                showComments(activity, entry)
+        val dialog = EntryMenuDialog2.createInstance(entry).apply {
+            setShowCommentsListener { entry, f ->
+                showComments(f.requireActivity(), entry)
             }
-            setShowPageListener {
-                showPage(activity, entry)
+            setShowPageListener { entry, f->
+                showPage(f.requireActivity(), entry)
             }
-            setSharePageListener {
-                sharePage(activity, entry)
+            setSharePageListener { entry, f ->
+                sharePage(f.requireActivity(), entry)
             }
-            setShowEntriesListener {
-                showEntries(activity, entry)
+            setShowEntriesListener { entry, f ->
+                showEntries(f.requireActivity(), entry)
             }
-            setFavoriteEntryListener {
-                favoriteEntry(activity, entry, coroutineScope)
+            setFavoriteEntryListener { entry, f ->
+                val a = f.requireActivity()
+                favoriteEntry(a, entry, a.lifecycleScope)
             }
-            setUnfavoriteEntryListener {
-                unfavoriteEntry(activity, entry, coroutineScope)
+            setUnfavoriteEntryListener { entry, f ->
+                val a = f.requireActivity()
+                unfavoriteEntry(a, entry, a.lifecycleScope)
             }
-            setIgnoreEntryListener {
-                openIgnoreEntryDialog(activity, entry, fragmentManager, coroutineScope)
+            setIgnoreEntryListener { entry, f ->
+                val a = f.requireActivity()
+                openIgnoreEntryDialog(a, entry, a.supportFragmentManager, a.lifecycleScope)
             }
-            setReadLaterListener {
-                readLaterEntry(activity, entry, coroutineScope)
+            setReadLaterListener { entry, f ->
+                val a = f.requireActivity()
+                readLaterEntry(a, entry, a.lifecycleScope)
             }
-            setReadListener {
-                readEntry(activity, entry, coroutineScope)
+            setReadListener { entry, f ->
+                val a = f.requireActivity()
+                readEntry(a, entry, a.lifecycleScope)
             }
-            setDeleteBookmarkListener {
-                deleteEntryBookmark(activity, entry, coroutineScope)
+            setDeleteBookmarkListener { entry, f ->
+                val a = f.requireActivity()
+                deleteEntryBookmark(a, entry, lifecycleScope)
             }
-
-            showAllowingStateLoss(fragmentManager, DIALOG_ENTRY_MENU)
         }
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_ENTRY_MENU)
     }
 
     // ------ //
@@ -189,6 +193,20 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
             activity.showToast(R.string.msg_show_page_in_browser_failed)
         }
     }
+
+    override fun openIgnoreEntryDialog(
+        activity: Activity,
+        entry: Entry,
+        fragmentManager: FragmentManager,
+        coroutineScope: CoroutineScope
+    ) {
+        val dialog = IgnoredEntryDialogFragment.createInstance(
+            url = entry.url,
+            title = entry.title
+        )
+
+        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
+    }
 }
 
 // ------ //
@@ -207,7 +225,7 @@ class EntryMenuActionsImplForEntries(
     override fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
             val result = runCatching {
-                repository.favoriteEntrySite(entry)
+                repository.favoriteSitesRepo.favoriteEntrySite(entry)
             }
             if (result.isSuccess) {
                 context.showToast(R.string.msg_favorite_site_registration_succeeded)
@@ -221,47 +239,12 @@ class EntryMenuActionsImplForEntries(
     override fun unfavoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
             val result = runCatching {
-                repository.unfavoriteEntrySite(entry)
+                repository.favoriteSitesRepo.unfavoriteEntrySite(entry)
             }
             if (result.isSuccess) {
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)
             }
         }
-    }
-
-    override fun openIgnoreEntryDialog(
-        activity: Activity,
-        entry: Entry,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) {
-        val dialog = IgnoredEntryDialogFragment.createInstance(
-            url = entry.url,
-            title = entry.title
-        ) { dialog, ignoredEntry ->
-            coroutineScope.launch(Dispatchers.Main) {
-                try {
-                    repository.addIgnoredEntry(ignoredEntry)
-
-                    activity.alsoAs<EntriesActivity> { a ->
-                        a.refreshLists()
-                    }
-
-                    activity.showToast(
-                        R.string.msg_ignored_entry_dialog_succeeded,
-                        ignoredEntry.query
-                    )
-
-                    dialog.dismiss()
-                }
-                catch (e: Throwable) {
-                    activity.showToast(R.string.msg_ignored_entry_dialog_failed)
-                }
-            }
-            false
-        }
-
-        dialog.showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
     }
 
     override fun readLaterEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
@@ -289,40 +272,40 @@ class EntryMenuActionsImplForEntries(
                 repository.readEntry(entry)
             }
 
-            if (result.isSuccess) {
-                val (action, bookmarkResult) = result.getOrNull()!!
-                        when (action) {
-                    EntryReadActionType.REMOVE -> {
-                        activity.alsoAs<EntriesActivity> { a ->
-                            a.removeBookmark(entry)
-                        }
-                        activity.showToast(R.string.msg_remove_bookmark_succeeded)
-                    }
-
-                    EntryReadActionType.DIALOG -> {
-                        // ブクマ編集ダイアログに遷移する
-                        // あとで戻ってきたときに画面を更新する --> Activity#onActivityResult
-                        val intent = Intent(activity, BookmarkPostActivity::class.java).also {
-                            it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
-                        }
-                        activity.startActivityForResult(
-                            intent,
-                            BookmarkPostActivity.REQUEST_CODE
-                        )
-                    }
-
-                    else -> {
-                        if (bookmarkResult != null) {
-                            activity.alsoAs<EntriesActivity> { a ->
-                                a.updateBookmark(entry, bookmarkResult)
-                            }
-                        }
-                        activity.showToast(R.string.msg_post_bookmark_succeeded)
-                    }
-                }
-            }
-            else {
+            if (result.isFailure) {
                 activity.showToast(R.string.msg_post_bookmark_failed)
+                return@launch
+            }
+
+            val (action, bookmarkResult) = result.getOrNull()!!
+            when (action) {
+                EntryReadActionType.REMOVE -> {
+                    activity.alsoAs<EntriesActivity> { a ->
+                        a.removeBookmark(entry)
+                    }
+                    activity.showToast(R.string.msg_remove_bookmark_succeeded)
+                }
+
+                EntryReadActionType.DIALOG -> {
+                    // ブクマ編集ダイアログに遷移する
+                    // あとで戻ってきたときに画面を更新する --> Activity#onActivityResult
+                    val intent = Intent(activity, BookmarkPostActivity::class.java).also {
+                        it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
+                    }
+                    activity.startActivityForResult(
+                        intent,
+                        BookmarkPostActivity.REQUEST_CODE
+                    )
+                }
+
+                else -> {
+                    if (bookmarkResult != null) {
+                        activity.alsoAs<EntriesActivity> { a ->
+                            a.updateBookmark(entry, bookmarkResult)
+                        }
+                    }
+                    activity.showToast(R.string.msg_post_bookmark_succeeded)
+                }
             }
         }
     }
@@ -337,171 +320,6 @@ class EntryMenuActionsImplForEntries(
                 repository.deleteBookmark(entry)
             }
 
-            if (result.isSuccess) {
-                activity.alsoAs<EntriesActivity> { a ->
-                    a.removeBookmark(entry)
-                }
-                activity.showToast(R.string.msg_remove_bookmark_succeeded)
-            }
-            else {
-                activity.showToast(R.string.msg_remove_bookmark_failed)
-            }
-        }
-    }
-}
-
-// ------ //
-
-/** ブクマ画面用の実装 */
-class EntryMenuActionsImplForBookmarks(
-    private val favoriteSitesRepo: FavoriteSitesRepositoryForEntries
-) : EntryMenuActionsImplBasic() {
-
-    override fun showEntries(activity: Activity, entry: Entry) {
-        val intent = Intent(activity, EntriesActivity::class.java).also {
-            it.putExtra(EntriesActivity.EXTRA_SITE_URL, entry.rootUrl)
-        }
-        activity.startActivity(intent)
-    }
-
-    override fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
-        coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
-                favoriteSitesRepo.favoriteEntrySite(entry)
-            }
-            if (result.isSuccess) {
-                context.showToast(R.string.msg_favorite_site_registration_succeeded)
-            }
-        }
-    }
-
-    override fun unfavoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
-        coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
-                favoriteSitesRepo.unfavoriteEntrySite(entry)
-            }
-            if (result.isSuccess) {
-                context.showToast(R.string.msg_favorite_site_deletion_succeeded)
-            }
-        }
-    }
-
-    override fun openIgnoreEntryDialog(
-        activity: Activity,
-        entry: Entry,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) {
-        IgnoredEntryDialogFragment.createInstance(
-            url = entry.url,
-            title = entry.title,
-            positiveAction = { dialog, ignoredEntry ->
-                coroutineScope.launch(Dispatchers.Main) {
-                    try {
-                        withContext(Dispatchers.IO) {
-// TODO:
-//                            repository.addIgnoredEntry(ignoredEntry)
-                        }
-
-                        activity.alsoAs<EntriesActivity> { a ->
-                            a.refreshLists()
-                        }
-
-                        activity.showToast(
-                            R.string.msg_ignored_entry_dialog_succeeded,
-                            ignoredEntry.query
-                        )
-
-                        dialog.dismiss()
-                    }
-                    catch (e: Throwable) {
-                        activity.showToast(R.string.msg_ignored_entry_dialog_failed)
-                    }
-                }
-                false
-            }
-        ).run {
-            showAllowingStateLoss(fragmentManager, DIALOG_IGNORE_SITE)
-        }
-    }
-
-    override fun readLaterEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
-        coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
-//TODO:
-//                repository.readLaterEntry(entry)
-            }
-/*
-            if (result.isSuccess) {
-                val bookmarkResult = result.getOrNull()!!
-                activity.alsoAs<EntriesActivity> { a ->
-                    a.updateBookmark(entry, bookmarkResult)
-                }
-                activity.showToast(R.string.msg_post_bookmark_succeeded)
-            }
-            else {
-                activity.showToast(R.string.msg_post_bookmark_failed)
-            }
-*/
-        }
-    }
-
-    override fun readEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
-        coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
-                // TODO:
-//                repository.readEntry(entry)
-            }
-/*
-            if (result.isSuccess) {
-                val (action, bookmarkResult) = result.getOrNull()!!
-                when (action) {
-                    EntryReadActionType.REMOVE -> {
-                        activity.alsoAs<EntriesActivity> { a ->
-                            a.removeBookmark(entry)
-                        }
-                        activity.showToast(R.string.msg_remove_bookmark_succeeded)
-                    }
-
-                    EntryReadActionType.DIALOG -> {
-                        // ブクマ編集ダイアログに遷移する
-                        // あとで戻ってきたときに画面を更新する --> Activity#onActivityResult
-                        val intent = Intent(activity, BookmarkPostActivity::class.java).also {
-                            it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
-                        }
-                        activity.startActivityForResult(
-                            intent,
-                            BookmarkPostActivity.REQUEST_CODE
-                        )
-                    }
-
-                    else -> {
-                        if (bookmarkResult != null) {
-                            activity.alsoAs<EntriesActivity> { a ->
-                                a.updateBookmark(entry, bookmarkResult)
-                            }
-                        }
-                        activity.showToast(R.string.msg_post_bookmark_succeeded)
-                    }
-                }
-            }
-            else {
-                activity.showToast(R.string.msg_post_bookmark_failed)
-            }
- */
-        }
-    }
-
-    override fun deleteEntryBookmark(
-        activity: Activity,
-        entry: Entry,
-        coroutineScope: CoroutineScope
-    ) {
-        coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
-                // TODO:
-//                repository.deleteBookmark(entry)
-            }
             if (result.isSuccess) {
                 activity.alsoAs<EntriesActivity> { a ->
                     a.removeBookmark(entry)

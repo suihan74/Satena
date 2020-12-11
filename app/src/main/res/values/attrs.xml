@@ -10,7 +10,13 @@
         <attr name="tagTextColor" format="color"/>
         <attr name="bookmarkCountColor" format="color"/>
 
+        <!-- browser: 表示中ページの「戻る/進む」履歴項目の背景色 -->
         <attr name="browserBackStackCurrentPageBackground" format="color"/>
+
+        <!-- SnackBar -->
+        <attr name="snackBarBackgroundColor" format="color"/>
+        <attr name="snackBarTextColor" format="color"/>
+        <attr name="snackBarActionTextColor" format="color"/>
     </declare-styleable>
 
     <declare-styleable name="TextFloatingActionButton">

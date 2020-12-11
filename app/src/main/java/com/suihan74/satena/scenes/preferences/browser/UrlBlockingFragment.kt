@@ -4,10 +4,8 @@ import android.os.Bundle
 import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -18,9 +16,10 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.pages.PreferencesBrowserFragment
+import com.suihan74.utilities.DrawableCompat
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.letAs
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 /** URLブロック設定を編集する */
 class UrlBlockingFragment : Fragment() {
@@ -28,21 +27,26 @@ class UrlBlockingFragment : Fragment() {
         fun createInstance() = UrlBlockingFragment()
     }
 
-    val viewModel by lazy {
-        provideViewModel(this) {
-            val context = requireContext()
-            val repository =
-                parentFragment.letAs<PreferencesBrowserFragment, BrowserRepository> {
-                    it.viewModel.browserRepo
-                } ?: BrowserRepository(
-                    client = HatenaClient,
-                    prefs = SafeSharedPreferences.create(context),
-                    browserSettings =  SafeSharedPreferences.create(context)
-                )
+    // ------ //
 
-            UrlBlockingViewModel(repository)
-        }
+    private val preferencesActivity : PreferencesActivity?
+        get() = requireActivity() as? PreferencesActivity
+
+    val viewModel by lazyProvideViewModel {
+        val context = requireContext()
+        val repository =
+            parentFragment.letAs<PreferencesBrowserFragment, BrowserRepository> {
+                it.viewModel.browserRepo
+            } ?: BrowserRepository(
+                client = HatenaClient,
+                prefs = SafeSharedPreferences.create(context),
+                browserSettings =  SafeSharedPreferences.create(context)
+            )
+
+        UrlBlockingViewModel(repository)
     }
+
+    // ------ //
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +60,7 @@ class UrlBlockingFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentUrlBlockingBinding>(
             inflater,
             R.layout.fragment_url_blocking,
@@ -93,5 +97,28 @@ class UrlBlockingFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (preferencesActivity != null) {
+            setHasOptionsMenu(true)
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+
+        inflater.inflate(R.menu.browser_url_blocking_list, menu)
+
+        menu.findItem(R.id.button).apply {
+            val color = ActivityCompat.getColor(requireActivity(), R.color.colorPrimaryText)
+            DrawableCompat.setColorFilter(icon.mutate(), color)
+
+            setOnMenuItemClickListener {
+                activity?.onBackPressed()
+                true
+            }
+        }
     }
 }

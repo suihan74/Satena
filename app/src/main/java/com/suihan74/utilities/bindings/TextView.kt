@@ -6,6 +6,7 @@ import android.net.Uri
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.widget.TextView
+import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
@@ -45,6 +46,14 @@ fun TextView.textSizeSp(size: Float) {
 
 //////////////////////////////////////////////////
 
+/** エンコードされたURLをデコードして表示する */
+@BindingAdapter("encodedUrl")
+fun TextView.setUrlWithDecoding(encodedUrl: String?) {
+    text = encodedUrl?.let { Uri.decode(it) } ?: ""
+}
+
+//////////////////////////////////////////////////
+
 /**
  * 数値をテキストとしてセットする
  *
@@ -63,7 +72,7 @@ class TextViewWithDrawable @JvmOverloads constructor(
     defStyleInt: Int = 0
 ) : AppCompatTextView(context, attrs, defStyleInt)
 
-object TexViewWithDrawableBinder {
+object TextViewWithDrawableBinder {
     /** drawableをテキストと同じサイズにして追加する */
     @JvmStatic
     @BindingAdapter(
@@ -84,6 +93,25 @@ object TexViewWithDrawableBinder {
         val bottom = drawableBottom?.setTextSizeBounds(this, color)
 
         setCompoundDrawables(start, top, end, bottom)
+    }
+
+    /** drawableをテキストと同じサイズにして追加する */
+    @JvmStatic
+    @BindingAdapter(
+        value = ["drawableStart", "drawableTop", "drawableEnd", "drawableBottom"],
+        requireAll = false
+    )
+    fun TextViewWithDrawable.setBoundedDrawable(
+        @DrawableRes drawableStartId: Int? = null,
+        @DrawableRes drawableTopId: Int? = null,
+        @DrawableRes drawableEndId: Int? = null,
+        @DrawableRes drawableBottomId: Int? = null,
+    ) {
+        val drawableStart = drawableStartId?.let { ContextCompat.getDrawable(context, it) }
+        val drawableTop = drawableTopId?.let { ContextCompat.getDrawable(context, it) }
+        val drawableEnd = drawableEndId?.let { ContextCompat.getDrawable(context, it) }
+        val drawableBottom = drawableBottomId?.let { ContextCompat.getDrawable(context, it) }
+        setBoundedDrawable(drawableStart, drawableTop, drawableEnd, drawableBottom)
     }
 
     private fun Drawable.setTextSizeBounds(

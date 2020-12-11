@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.Star
@@ -26,6 +27,7 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 interface BookmarkMenuActions {
 
@@ -39,14 +41,12 @@ class BookmarkMenuActionsImpl(
     private val DIALOG_BOOKMARK_MENU by lazy { "DIALOG_BOOKMARK_MENU" }
 
     /** ブクマ項目に対する操作メニューを表示 */
-    fun openBookmarkMenuDialog(
-        activity: Activity,
+    suspend fun openBookmarkMenuDialog(
         entry: Entry,
         bookmark: Bookmark,
         starsEntry: StarsEntry?,
         fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
-    ) = coroutineScope.launch(Dispatchers.Main) {
+    ) = withContext(Dispatchers.Main) {
         val ignored = repository.checkIgnored(bookmark)
 
         val dialog = BookmarkMenuDialog.createInstance(
@@ -56,19 +56,40 @@ class BookmarkMenuActionsImpl(
             repository.userSignedIn
         )
 
-        dialog.setOnShowEntries { showEntries(activity, it) }
+        dialog.setOnShowEntries { user, f -> showEntries(f.requireActivity(), user) }
 
-        dialog.setOnIgnoreUser { ignoreUser(it, coroutineScope) }
+        dialog.setOnIgnoreUser { user, f -> ignoreUser(user, f.requireActivity().lifecycleScope) }
 
-        dialog.setOnUnignoreUser { unIgnoreUser(it, coroutineScope) }
+        dialog.setOnUnignoreUser { user, f -> unIgnoreUser(user, f.requireActivity().lifecycleScope) }
 
-        dialog.setOnReportBookmark { reportBookmark(entry, it, fragmentManager) }
+        dialog.setOnReportBookmark { b, f -> reportBookmark(entry, b, f.parentFragmentManager) }
 
-        dialog.setOnSetUserTag { openUserTagSelectionDialog(it, fragmentManager, coroutineScope) }
+        dialog.setOnSetUserTag { user, f ->
+            openUserTagSelectionDialog(
+                user,
+                f.parentFragmentManager,
+                f.requireActivity().lifecycleScope
+            )
+        }
 
-        dialog.setOnDeleteStar { openDeleteStarDialog(entry, it.first, it.second, fragmentManager, coroutineScope) }
+        dialog.setOnDeleteStar { (b, stars), f ->
+            openDeleteStarDialog(
+                entry,
+                b,
+                stars,
+                f.parentFragmentManager
+            )
+        }
 
-        dialog.setOnDeleteBookmark { openConfirmBookmarkDeletionDialog(activity, it, fragmentManager, coroutineScope) }
+        dialog.setOnDeleteBookmark { b, f ->
+            val a = f.requireActivity()
+            openConfirmBookmarkDeletionDialog(
+                a,
+                b,
+                f.parentFragmentManager,
+                a.lifecycleScope
+            )
+        }
 
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
     }
@@ -190,8 +211,8 @@ class BookmarkMenuActionsImpl(
             }
         }
 
-        dialog.setOnAddNewTagListener {
-            openUserTagCreationDialog(user, fragmentManager)
+        dialog.setOnAddNewTagListener { f ->
+            openUserTagCreationDialog(user, f.parentFragmentManager)
         }
 
         dialog.setOnCompleteListener {
@@ -255,13 +276,13 @@ class BookmarkMenuActionsImpl(
         entry: Entry,
         bookmark: Bookmark,
         stars: List<Star>,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
+        fragmentManager: FragmentManager
     ) {
         val dialog = StarDeletionDialog.createInstance(stars)
 
-        dialog.setOnDeleteStars { selectedStars ->
-            coroutineScope.launch(Dispatchers.Main) {
+        dialog.setOnDeleteStars { selectedStars, f ->
+            val activity = f.requireActivity()
+            activity.lifecycleScope.launch(Dispatchers.Main) {
                 val completed = selectedStars.all { star ->
                     val result = runCatching {
                         repository.deleteStar(entry, bookmark, star, updateCacheImmediately = false)
@@ -269,12 +290,11 @@ class BookmarkMenuActionsImpl(
                     result.isSuccess
                 }
 
-                val context = SatenaApplication.instance
                 if (completed) {
-                    context.showToast(R.string.msg_delete_star_succeeded)
+                    activity.showToast(R.string.msg_delete_star_succeeded)
                 }
                 else {
-                    context.showToast(R.string.msg_delete_star_failed)
+                    activity.showToast(R.string.msg_delete_star_failed)
                 }
 
                 // スター表示の更新

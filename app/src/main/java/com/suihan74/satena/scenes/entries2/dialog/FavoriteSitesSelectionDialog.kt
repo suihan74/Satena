@@ -12,7 +12,7 @@ import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 
 /** 有効なお気に入りサイトを選択するダイアログ */
 // TODO: BottomSheetDialog化する？
@@ -26,11 +26,9 @@ class FavoriteSitesSelectionDialog : DialogFragment() {
         private const val ARG_SITES = "ARG_SITES"
     }
 
-    private val viewModel: DialogViewModel by lazy {
-        provideViewModel(this) {
-            val sites = requireArguments().getObject<List<FavoriteSite>>(ARG_SITES)!!
-            DialogViewModel(sites)
-        }
+    private val viewModel: DialogViewModel by lazyProvideViewModel {
+        val sites = requireArguments().getObject<List<FavoriteSite>>(ARG_SITES)!!
+        DialogViewModel(sites)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

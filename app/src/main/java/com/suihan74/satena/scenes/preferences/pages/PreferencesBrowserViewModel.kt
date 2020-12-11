@@ -85,10 +85,17 @@ class PreferencesBrowserViewModel(
         browserRepo.searchEngine
     }
 
+    val useMarqueeOnBackStackItems by lazy {
+        browserRepo.useMarqueeOnBackStackItems
+    }
+
     // ------ //
 
-    /** スタートページURLを登録する */
-    @Throws(InvalidUrlException::class)
+    /**
+     * スタートページURLを登録する
+     * 
+     * @throws InvalidUrlException
+     */
     fun registerStartPageUrl() {
         val url = startPageEditText.value ?: ""
         if (!URLUtil.isNetworkUrl(url)) {

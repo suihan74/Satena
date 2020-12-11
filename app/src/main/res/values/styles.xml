@@ -43,6 +43,11 @@
 
         <!-- for NumberPicker -->
         <item name="colorControlNormal">@color/colorPrimary</item>
+
+        <!-- SnackBar -->
+        <item name="snackBarBackgroundColor">@color/snackBarBackgroundColor</item>
+        <item name="snackBarTextColor">@color/snackBarTextColor</item>
+        <item name="snackBarActionTextColor">@color/snackBarActionTextColor</item>
     </style>
 
     <!-- Light Theme -->
@@ -66,6 +71,7 @@
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Light</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
         <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackground</item>
@@ -92,6 +98,7 @@
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Dark</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
         <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundDark</item>
@@ -394,7 +401,7 @@
         <item name="android:textColor">@color/starPurple</item>
     </style>
 
-    <!-- ボトムシートの角を丸める -->
+    <!-- ボトムシート(View)の角を丸める -->
     <style name="ShapeAppearanceOverlay.RoundedCorner">
         <item name="cornerFamilyTopLeft">rounded</item>
         <item name="cornerFamilyTopRight">rounded</item>
@@ -402,5 +409,30 @@
         <item name="cornerSizeTopRight">12dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
         <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <!-- BottomSheetDialogのテーマ -->
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="colorPrimary">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
+    <style name="BottomSheetDialogTheme.Light">
+        <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
+        <item name="editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="bottomSheetStyle">@style/BottomSheet.Light</item>
+    </style>
+    <style name="BottomSheetDialogTheme.Dark">
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="bottomSheetStyle">@style/BottomSheet.Dark</item>
+    </style>
+
+    <style name="BottomSheet" parent="Widget.Design.BottomSheet.Modal"/>
+    <style name="BottomSheet.Light">
+        <item name="android:background">@drawable/shape_bottom_sheet_rounded_corner</item>
+    </style>
+    <style name="BottomSheet.Dark">
+        <item name="android:background">@drawable/shape_bottom_sheet_rounded_corner_dark</item>
     </style>
 </resources>

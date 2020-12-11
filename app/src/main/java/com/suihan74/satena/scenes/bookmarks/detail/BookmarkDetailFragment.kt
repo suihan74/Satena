@@ -18,6 +18,7 @@ import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
+import kotlinx.coroutines.launch
 
 /**
  * 選択したひとつのブクマ情報を表示する画面
@@ -99,12 +100,9 @@ class BookmarkDetailFragment : Fragment() {
         // ブクマに対するメニュー
         binding.menuButton.setOnClickListener {
             val bookmark = viewModel.bookmark.value ?: return@setOnClickListener
-            bookmarksViewModel.openBookmarkMenuDialog(
-                requireActivity(),
-                bookmark,
-                childFragmentManager,
-                lifecycleScope
-            )
+            lifecycleScope.launch {
+                bookmarksViewModel.openBookmarkMenuDialog(bookmark, childFragmentManager)
+            }
         }
 
         // コメントの文字列選択
