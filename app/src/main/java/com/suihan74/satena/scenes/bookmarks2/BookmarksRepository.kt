@@ -15,6 +15,7 @@ import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.*
 
+@Deprecated("replace with .bookmarks")
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookmarksRepository(
     private val client: HatenaClient,

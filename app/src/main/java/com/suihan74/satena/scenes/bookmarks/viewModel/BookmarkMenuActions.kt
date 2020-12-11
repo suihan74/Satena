@@ -47,16 +47,22 @@ class BookmarkMenuActionsImpl(
         starsEntry: StarsEntry?,
         fragmentManager: FragmentManager,
     ) = withContext(Dispatchers.Main) {
-        val ignored = repository.checkIgnored(bookmark)
+        val ignoring = repository.checkIgnored(bookmark)
+        val following = repository.getFollowers().contains(bookmark.user)
 
         val dialog = BookmarkMenuDialog.createInstance(
             bookmark,
             starsEntry,
-            ignored,
+            following,
+            ignoring,
             repository.userSignedIn
         )
 
         dialog.setOnShowEntries { user, f -> showEntries(f.requireActivity(), user) }
+
+        dialog.setOnFollowUser { user, f -> followUser(user, f.requireActivity().lifecycleScope) }
+
+        dialog.setOnUnfollowUser { user, f -> unFollowUser(user, f.requireActivity().lifecycleScope) }
 
         dialog.setOnIgnoreUser { user, f -> ignoreUser(user, f.requireActivity().lifecycleScope) }
 
@@ -102,24 +108,49 @@ class BookmarkMenuActionsImpl(
         activity.startActivity(intent)
     }
 
+    /** ユーザーをお気に入りにする */
+    private fun followUser(user: String, coroutineScope: CoroutineScope) = coroutineScope.launch(Dispatchers.Main) {
+        val result = runCatching {
+            repository.followUser(user)
+        }
+
+        val app = SatenaApplication.instance
+        if (result.isSuccess) {
+            app.showToast(R.string.msg_follow_user_succeeded, user)
+        }
+        else {
+            app.showToast(R.string.msg_follow_user_failed, user)
+        }
+    }
+
+    /** ユーザーのお気に入りを解除する */
+    private fun unFollowUser(user: String, coroutineScope: CoroutineScope) = coroutineScope.launch(Dispatchers.Main) {
+        val result = runCatching {
+            repository.unFollowUser(user)
+        }
+
+        val app = SatenaApplication.instance
+        if (result.isSuccess) {
+            app.showToast(R.string.msg_unfollow_user_succeeded, user)
+        }
+        else {
+            app.showToast(R.string.msg_unfollow_user_failed, user)
+        }
+    }
+
     /** ユーザーを非表示にする */
     private fun ignoreUser(user: String, coroutineScope: CoroutineScope) = coroutineScope.launch(Dispatchers.Main) {
         val result = runCatching {
             repository.ignoreUser(user)
         }
 
+        val app = SatenaApplication.instance
         if (result.isSuccess) {
             repository.refreshBookmarks()
-            SatenaApplication.instance.showToast(
-                R.string.msg_ignore_user_succeeded,
-                user
-            )
+            app.showToast(R.string.msg_ignore_user_succeeded, user)
         }
         else {
-            SatenaApplication.instance.showToast(
-                R.string.msg_ignore_user_failed,
-                user
-            )
+            app.showToast(R.string.msg_ignore_user_failed, user)
         }
     }
 
@@ -129,18 +160,13 @@ class BookmarkMenuActionsImpl(
             repository.unIgnoreUser(user)
         }
 
+        val app = SatenaApplication.instance
         if (result.isSuccess) {
             repository.refreshBookmarks()
-            SatenaApplication.instance.showToast(
-                R.string.msg_unignore_user_succeeded,
-                user
-            )
+            app.showToast(R.string.msg_unignore_user_succeeded, user)
         }
         else {
-            SatenaApplication.instance.showToast(
-                R.string.msg_unignore_user_failed,
-                user
-            )
+            app.showToast(R.string.msg_unignore_user_failed, user)
         }
     }
 

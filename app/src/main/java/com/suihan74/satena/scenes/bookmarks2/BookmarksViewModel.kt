@@ -34,6 +34,7 @@ import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.*
 
+@Deprecated("replace with .bookmarks")
 class BookmarksViewModel(
     val repository: BookmarksRepository,
     private val userTagRepository: UserTagRepository,
@@ -637,6 +638,7 @@ class BookmarksViewModel(
         bookmark: Bookmark,
         starTarget: Bookmark = bookmark
     ) {
+        /*
         val starsEntry = repository.getStarsEntryTo(starTarget.user)
         val ignored = repository.ignoredUsers.contains(bookmark.user)
         val userSignedIn = repository.userSignedIn
@@ -665,6 +667,7 @@ class BookmarksViewModel(
 
             showAllowingStateLoss(activity.supportFragmentManager, DIALOG_BOOKMARK_MENU)
         }
+        */
     }
 
     private fun onShowEntries(activity: Activity, user: String) {

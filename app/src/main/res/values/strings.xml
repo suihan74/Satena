@@ -122,6 +122,8 @@
     <!-- ブックマークに対する操作メニュー -->
     <string name="bookmark_show_user_entries">最近のブックマークを見る</string>
     <string name="bookmark_delete">ブックマークを削除</string>
+    <string name="bookmark_follow">ユーザーをお気に入りに追加</string>
+    <string name="bookmark_unfollow">ユーザーをお気に入り解除</string>
     <string name="bookmark_ignore">ユーザーを非表示</string>
     <string name="bookmark_unignore">ユーザー非表示を解除</string>
     <string name="bookmark_report">通報する</string>
@@ -465,6 +467,10 @@
     <string name="msg_fetch_ignored_users_failed">非表示ユーザーリスト取得失敗</string>
     <string name="msg_update_bookmarks_failed">ブクマリスト更新失敗</string>
     <string name="msg_no_bookmarks">まだ誰もブクマしていません</string>
+    <string name="msg_follow_user_succeeded">id:%sをフォローしました</string>
+    <string name="msg_follow_user_failed">id:%sのフォローに失敗しました</string>
+    <string name="msg_unfollow_user_succeeded">id:%sをフォロー解除しました</string>
+    <string name="msg_unfollow_user_failed">id:%sのフォロー解除に失敗しました</string>
     <string name="msg_ignore_user_succeeded">id:%sを非表示にしました</string>
     <string name="msg_ignore_user_failed">id:%sの非表示に失敗しました</string>
     <string name="msg_unignore_user_succeeded">id:%sの非表示を解除しました</string>
