@@ -1,14 +1,21 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import androidx.fragment.app.FragmentManager
+import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.AppUpdateNoticeMode
 import com.suihan74.satena.models.DialogThemeSetting
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PreferencesGeneralsViewModel(
     prefs: SafeSharedPreferences<PreferenceKey>
@@ -79,6 +86,25 @@ class PreferencesGeneralsViewModel(
     )
 
     // ------ //
+
+    /** 画像キャッシュを削除するか確認するダイアログを開く */
+    fun openClearImageCacheConfirmDialog(fragmentManager: FragmentManager) {
+        val dialog = AlertDialogFragment.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(R.string.pref_generals_clear_image_cache_dialog_message)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                GlobalScope.launch(Dispatchers.Main) {
+                    val app = SatenaApplication.instance
+                    withContext(Dispatchers.IO) {
+                        GlideApp.get(app).clearDiskCache()
+                    }
+                    app.showToast(R.string.msg_pref_generals_clear_image_cache_succeeded)
+                }
+            }
+            .create()
+        dialog.showAllowingStateLoss(fragmentManager)
+    }
 
     /** ダイアログのテーマを選択するダイアログを開く */
     fun openDialogThemeSelectionDialog(fragmentManager: FragmentManager) {

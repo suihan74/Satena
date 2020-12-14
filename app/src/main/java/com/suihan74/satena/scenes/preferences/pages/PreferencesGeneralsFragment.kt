@@ -130,6 +130,11 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
             viewModel.openAppUpdateNoticeModeSelectionDialog(childFragmentManager)
         }
 
+        // 画像キャッシュを削除する
+        binding.clearImageCacheButton.setOnClickListener {
+            viewModel.openClearImageCacheConfirmDialog(childFragmentManager)
+        }
+
         return binding.root
     }
 }
