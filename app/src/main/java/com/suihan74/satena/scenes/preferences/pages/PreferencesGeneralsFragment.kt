@@ -52,7 +52,7 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
 
     private val viewModel by lazyProvideViewModel {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        PreferencesGeneralsViewModel(prefs)
+        PreferencesGeneralsViewModel(requireContext(), prefs)
     }
 
     // ------ //

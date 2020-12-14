@@ -1,6 +1,10 @@
 package com.suihan74.satena.scenes.preferences.pages
 
+import android.content.Context
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -18,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PreferencesGeneralsViewModel(
+    context: Context,
     prefs: SafeSharedPreferences<PreferenceKey>
 ) : PreferencesViewModel<PreferenceKey>(prefs) {
 
@@ -85,7 +90,26 @@ class PreferencesGeneralsViewModel(
         PreferenceKey.SHOW_RELEASE_NOTES_AFTER_UPDATE
     )
 
+    /** 画像キャッシュサイズ */
+    val imageCacheSize : LiveData<Long> by lazy { _imageCacheSize }
+    private val _imageCacheSize = MutableLiveData<Long>()
+
     // ------ //
+
+    init {
+        viewModelScope.launch {
+            calcImageCacheSize(context)
+        }
+    }
+
+    // ------ //
+
+    /** 画像キャッシュの合計サイズを計算する */
+    private suspend fun calcImageCacheSize(context: Context) = withContext(Dispatchers.IO) {
+        val dir = GlideApp.getPhotoCacheDir(context)
+        val size = dir?.listFiles()?.sumOf { it.length() } ?: 0
+        _imageCacheSize.postValue(size)
+    }
 
     /** 画像キャッシュを削除するか確認するダイアログを開く */
     fun openClearImageCacheConfirmDialog(fragmentManager: FragmentManager) {
@@ -100,6 +124,7 @@ class PreferencesGeneralsViewModel(
                         GlideApp.get(app).clearDiskCache()
                     }
                     app.showToast(R.string.msg_pref_generals_clear_image_cache_succeeded)
+                    calcImageCacheSize(app)
                 }
             }
             .create()
