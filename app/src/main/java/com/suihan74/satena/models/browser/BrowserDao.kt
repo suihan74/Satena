@@ -12,7 +12,6 @@ interface BrowserDao {
     /**
      * 直近の閲覧履歴を指定件数取得する
      */
-    @Transaction
     @Query("""
         select * from browser_history_items
         order by visitedAt desc
@@ -36,7 +35,6 @@ interface BrowserDao {
      * 完全に一致する時刻を指定する必要があるため、
      * 主に履歴追加直後にIDが付加されたインスタンスを再取得するために使用する
      */
-    @Transaction
     @Query("""
         select * from browser_history_items
         where visitedAt = :visited
@@ -47,12 +45,42 @@ interface BrowserDao {
     /**
      * 指定期間内で指定ページを参照している閲覧履歴を取得する
      */
-    @Transaction
     @Query("""
         select * from browser_history_items
         where visitedAt>=:start and visitedAt<:end and pageId = :pageId
         """)
     suspend fun findHistory(pageId: Long, start: LocalDateTime, end: LocalDateTime) : List<HistoryLog>
+
+    /**
+     * 履歴を検索する
+     */
+    @Query("""
+        select * from browser_history_items
+        where pageId in (
+            select id from browser_history_pages
+            where title like :query or url like :query
+        )
+        order by visitedAt desc
+        limit :offset, :limit
+    """)
+    suspend fun __findHistory(query: String, offset: Int, limit: Int) : List<History>
+
+    /**
+     * 履歴を検索する
+     */
+    @Transaction
+    suspend fun findHistory(query: String = "", offset: Int = 0, limit: Int = 10) : List<History> {
+        return if (query.isBlank()) {
+            getRecentHistories(offset, limit)
+        }
+        else {
+            val modifiedQuery =
+                Regex("""[%_]""").let { r ->
+                    "%${query.replace(r) { m -> "\\" + m.value }}%"
+                }
+            __findHistory(modifiedQuery, offset, limit)
+        }
+    }
 
     // ------ //
     // INSERT
