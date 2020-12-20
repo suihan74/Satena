@@ -6,7 +6,11 @@ import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.databinding.BindingAdapter
 
-/** Marqueeを正しく動作させるためのTextView */
+/**
+ * Marqueeを正しく動作させるためのTextView
+ *
+ * TODO: フォーカスを奪い続ける関係で、`EditText`と同じ画面に置けない問題がある
+ */
 class MarqueeTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
