@@ -43,6 +43,9 @@ data class MigrationData(
             addAll(data?.toList() ?: emptyList())
         }.toByteArray()
 
+    /**
+     * @throws java.io.IOException
+     */
     fun write(stream: OutputStream) = stream.run {
         writeInt(type.ordinal)
         writeString(keyName)

@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -21,23 +22,26 @@ import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.tools.RestartActivity
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.setHtml
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 
 class PreferencesInformationFragment : PreferencesFragmentBase()
 {
     companion object {
-        fun createInstance() =
-            PreferencesInformationFragment()
+        fun createInstance() = PreferencesInformationFragment()
 
         private const val DIALOG_RELEASE_NOTES = "DIALOG_RELEASE_NOTES"
 
-        private const val WRITE_REQUEST_CODE = 42
-        private const val READ_REQUEST_CODE = 43
+        enum class RequestCode {
+            WRITE,
+            READ
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -82,7 +86,7 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
                 type = "application/octet-stream"
                 putExtra(Intent.EXTRA_TITLE, "${LocalDateTime.now()}.satena-settings")
             }
-            startActivityForResult(intent, WRITE_REQUEST_CODE)
+            startActivityForResult(intent, RequestCode.WRITE.ordinal)
         }
 
         // ファイルから設定を復元
@@ -91,18 +95,70 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "application/octet-stream"
             }
-            startActivityForResult(intent, READ_REQUEST_CODE)
+            startActivityForResult(intent, RequestCode.READ.ordinal)
         }
 
         return binding.root
     }
 
+    // ------ //
+
+    class Credentials private constructor(
+        val deviceId : String?,
+        val hatenaRk : String?,
+        val hatenaUser : String?,
+        val hatenaPass : String?,
+        val mstdnToken : String?
+    ) {
+        companion object {
+            /**
+             * 保存対象に含めないユーザー情報などを抽出する
+             */
+            suspend fun extract(context: Context) : Credentials {
+                val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+                val credentials = Credentials(
+                    deviceId = prefs.getString(PreferenceKey.ID),
+                    hatenaRk = prefs.getString(PreferenceKey.HATENA_RK),
+                    hatenaUser = prefs.getString(PreferenceKey.HATENA_USER_NAME),
+                    hatenaPass = prefs.getString(PreferenceKey.HATENA_PASSWORD),
+                    mstdnToken = prefs.getString(PreferenceKey.MASTODON_ACCESS_TOKEN)
+                )
+                prefs.editSync {
+                    remove(PreferenceKey.ID)
+                    remove(PreferenceKey.HATENA_RK)
+                    remove(PreferenceKey.HATENA_USER_NAME)
+                    remove(PreferenceKey.HATENA_PASSWORD)
+                    remove(PreferenceKey.MASTODON_ACCESS_TOKEN)
+                }
+                return credentials
+            }
+        }
+
+        /**
+         * 抽出したデータを`SafeSharedPreferences`に再登録する
+         */
+        suspend fun restore(context: Context) {
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            prefs.editSync {
+                putString(PreferenceKey.ID, deviceId)
+                putString(PreferenceKey.HATENA_RK, hatenaRk)
+                putString(PreferenceKey.HATENA_USER_NAME, hatenaUser)
+                putString(PreferenceKey.HATENA_PASSWORD, hatenaPass)
+                putString(PreferenceKey.MASTODON_ACCESS_TOKEN, mstdnToken)
+            }
+        }
+    }
+
+    // ------ //
+
     private fun savePreferencesToFile(targetUri: Uri) {
         val activity = activity as? ActivityBase
         activity?.showProgressBar()
 
-        lifecycleScope.launch(Dispatchers.Main) {
+        lifecycleScope.launch(Dispatchers.Default) {
             val context = SatenaApplication.instance.applicationContext
+            val credentials = Credentials.extract(context)
+
             try {
                 PreferencesMigration.Output(context).run {
                     addPreference<PreferenceKey>()
@@ -116,14 +172,21 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
                     write(targetUri)
                 }
 
-                context.showToast(R.string.msg_pref_information_save_succeeded, targetUri.path!!)
+                withContext(Dispatchers.Main) {
+                    context.showToast(R.string.msg_pref_information_save_succeeded, targetUri.path!!)
+                }
             }
             catch (e: Throwable) {
                 Log.e("SavingSettings", e.message ?: "")
-                context.showToast(R.string.msg_pref_information_save_failed)
+                withContext(Dispatchers.Main) {
+                    context.showToast(R.string.msg_pref_information_save_failed)
+                }
             }
             finally {
-                activity?.hideProgressBar()
+                credentials.restore(context)
+                withContext(Dispatchers.Main) {
+                    activity?.hideProgressBar()
+                }
             }
         }
     }
@@ -132,30 +195,39 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
         val activity = activity as? ActivityBase
         activity?.showProgressBar()
 
-        lifecycleScope.launch(Dispatchers.Main) {
+        lifecycleScope.launch(Dispatchers.Default) {
             val context = SatenaApplication.instance.applicationContext
+            val credentials = Credentials.extract(context)
+
             try {
                 PreferencesMigration.Input(context)
                     .read(targetUri)
 
-                context.showToast(R.string.msg_pref_information_load_succeeded, targetUri.path!!)
+                withContext(Dispatchers.Main) {
+                    context.showToast(R.string.msg_pref_information_load_succeeded, targetUri.path!!)
 
-                // アプリを再起動
-                val intent = RestartActivity.createIntent(context)
-                context.startActivity(intent)
+                    // アプリを再起動
+                    val intent = RestartActivity.createIntent(context)
+                    context.startActivity(intent)
+                }
             }
-            catch (e: Throwable) {
+            catch (e: PreferencesMigration.MigrationFailureException) {
                 val msg = e.message ?: ""
                 Log.e("LoadingSettings", msg)
-                if (e is IllegalStateException) {
-                    context.showToast("${getString(R.string.msg_pref_information_load_failed)}\n${msg}")
-                }
-                else {
-                    context.showToast(R.string.msg_pref_information_load_failed)
+                withContext(Dispatchers.Main) {
+                    if (e.cause is IllegalStateException) {
+                        context.showToast("${getString(R.string.msg_pref_information_load_failed)}\n${msg}")
+                    }
+                    else {
+                        context.showToast(R.string.msg_pref_information_load_failed)
+                    }
                 }
             }
             finally {
-                activity?.hideProgressBar()
+                credentials.restore(context)
+                withContext(Dispatchers.Main) {
+                    activity?.hideProgressBar()
+                }
             }
         }
     }
@@ -169,12 +241,12 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
         }
 
         when (requestCode) {
-            WRITE_REQUEST_CODE -> {
+            RequestCode.WRITE.ordinal -> {
                 Log.d("SaveSettings", targetUri.path ?: "")
                 savePreferencesToFile(targetUri)
             }
 
-            READ_REQUEST_CODE -> {
+            RequestCode.READ.ordinal -> {
                 Log.d("LoadSettings", targetUri.path ?: "")
                 loadPreferencesFromFile(targetUri)
             }
