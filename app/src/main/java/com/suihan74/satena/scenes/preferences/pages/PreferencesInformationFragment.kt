@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
@@ -151,6 +152,20 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
 
     // ------ //
 
+    fun contentFilePath(context: Context, uri: Uri) : String {
+        val contentResolver = context.contentResolver
+        val columns = arrayOf(MediaStore.MediaColumns.DISPLAY_NAME)
+        return contentResolver.query(uri, columns, null, null, null).use { cursor ->
+            if (cursor != null && cursor.count > 0) {
+                cursor.moveToFirst()
+                cursor.getString(0)
+            }
+            else uri.path!!
+        }
+    }
+
+    // ------ //
+
     private fun savePreferencesToFile(targetUri: Uri) {
         val activity = activity as? ActivityBase
         activity?.showProgressBar()
@@ -173,7 +188,8 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
                 }
 
                 withContext(Dispatchers.Main) {
-                    context.showToast(R.string.msg_pref_information_save_succeeded, targetUri.path!!)
+                    val path = contentFilePath(context, targetUri)
+                    context.showToast(R.string.msg_pref_information_save_succeeded, path)
                 }
             }
             catch (e: Throwable) {
@@ -204,7 +220,8 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
                     .read(targetUri)
 
                 withContext(Dispatchers.Main) {
-                    context.showToast(R.string.msg_pref_information_load_succeeded, targetUri.path!!)
+                    val path = contentFilePath(context, targetUri)
+                    context.showToast(R.string.msg_pref_information_load_succeeded, path)
 
                     // アプリを再起動
                     val intent = RestartActivity.createIntent(context)
