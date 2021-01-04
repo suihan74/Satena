@@ -52,7 +52,12 @@ class PreferencesInformationFragment : PreferencesFragmentBase()
 
         // コピーライト
         binding.copyright.run {
-            setHtml(getString(R.string.copyright))
+            val startYear = 2019
+            val yearStr = LocalDateTime.now().year.let {
+                if (it <= startYear) "$startYear-"
+                else "$startYear-$it"
+            }
+            setHtml(getString(R.string.copyright, yearStr))
             movementMethod = LinkMovementMethod.getInstance()
         }
 

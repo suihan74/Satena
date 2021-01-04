@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Satena</string>
-    <string name="copyright">Copyright \u00A9 2019-2020 &lt;a href=&quot;https://suihan74.github.io&quot;&gt;suihan&lt;/a&gt;</string>
+    <string name="copyright">Copyright \u00A9 %s &lt;a href=&quot;https://suihan74.github.io&quot;&gt;suihan&lt;/a&gt;</string>
 
     <string name="drawer_open">開く</string>
     <string name="drawer_close">閉じる</string>
