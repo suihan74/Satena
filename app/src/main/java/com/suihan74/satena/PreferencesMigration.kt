@@ -17,7 +17,7 @@ class PreferencesMigration {
     companion object {
         @Suppress("SpellCheckingInspection")
         private val SIGNATURE get() = byteArrayOf(0).plus("SATESET".toByteArray())
-        private val VERSION get() = byteArrayOf(1)
+        private val VERSION get() = byteArrayOf(2)
 
         private val SIGNATURE_SIZE = SIGNATURE.size
         private const val HASH_SIZE = 16
@@ -173,7 +173,7 @@ class PreferencesMigration {
                         SatenaApplication.instance.updatePreferencesVersion()
                     }
                     catch (e: Throwable) {
-                        throw MigrationFailureException(cause = e)
+                        throw MigrationFailureException(message = e.message, cause = e)
                     }
                     finally {
                         SatenaApplication.instance.initializeDataBase()
