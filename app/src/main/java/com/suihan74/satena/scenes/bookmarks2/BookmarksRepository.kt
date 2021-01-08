@@ -225,8 +225,9 @@ class BookmarksRepository(
 
     /** ブックマークエントリを取得 */
     suspend fun loadBookmarksEntry() {
+        val entry = entry.value ?: return
         val result = runCatching {
-            val url = entry.value!!.url
+            val url = entry.url
             client.getBookmarksEntryAsync(url).await()
         }
 
@@ -498,7 +499,7 @@ class BookmarksRepository(
     /**
      * ユーザーのブクマを更新する
      *
-     * @param bookmarkResult 削除する際はnullをwタス
+     * @param bookmarkResult 削除する際はnullを渡す
      */
     suspend fun updateUserBookmark(bookmarkResult: BookmarkResult?) = withContext(Dispatchers.Default) {
         val bookmark = bookmarkResult?.let{ Bookmark.create(it) }
