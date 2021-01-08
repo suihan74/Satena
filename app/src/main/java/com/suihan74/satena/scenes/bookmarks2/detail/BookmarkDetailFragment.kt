@@ -18,6 +18,7 @@ import androidx.activity.addCallback
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
@@ -171,11 +172,13 @@ class BookmarkDetailFragment : Fragment() {
         // スター付与ボタンの表示状態を切り替える
         binding.showStarsButton.run {
             setOnClickListener {
-                if (!viewModel.userStars.loaded) {
-                    // 所持スターがロードされていない場合、再度ロード処理
-                    viewModel.loadUserStars()
+                lifecycleScope.launch(Dispatchers.Default) {
+                    viewModel.userStars.onLoaded {
+                        // 所持スターがロードされていない場合、再度ロード処理
+                        viewModel.loadUserStars()
+                    }
+                    viewModel.starsMenuOpened.postValue(viewModel.starsMenuOpened.value != true)
                 }
-                viewModel.starsMenuOpened.postValue(viewModel.starsMenuOpened.value != true)
             }
             hide()
         }

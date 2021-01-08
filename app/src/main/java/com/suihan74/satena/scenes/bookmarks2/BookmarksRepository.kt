@@ -14,6 +14,8 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookmarksRepository(
@@ -556,34 +558,40 @@ class BookmarksRepository(
 
         override fun getValue() = userStars
 
-        var loaded = false
-            get() = synchronized(field) { field }
-            private set(value) {
-                synchronized(field) {
-                    field = value
-                }
-            }
+        private var loaded = false
 
-        suspend fun load() {
-            loaded = false
-            if (client.signedIn()) {
-                try {
-                    val result = client.getMyColorStarsAsync().await()
-                    userStars = result
-                    loaded = true
-                    postValue(result)
+        private val loadedMutex = Mutex()
+
+        suspend fun onLoaded(action: ()->Unit) {
+            loadedMutex.withLock {
+                if (loaded) {
+                    action()
                 }
-                catch (e: Throwable) {
-                    setDummy()
-                    throw e
-                }
-            }
-            else {
-                setDummy()
             }
         }
 
-        private fun setDummy() {
+        suspend fun load() = withContext(Dispatchers.Default) {
+            loadedMutex.withLock {
+                loaded = false
+                if (client.signedIn()) {
+                    try {
+                        val result = client.getMyColorStarsAsync().await()
+                        userStars = result
+                        loaded = true
+                        postValue(result)
+                    }
+                    catch (e: Throwable) {
+                        setDummy()
+                        throw e
+                    }
+                }
+                else {
+                    setDummy()
+                }
+            }
+        }
+
+        private suspend fun setDummy() = withContext(Dispatchers.Default) {
             val dummy = UserColorStarsCount(0, 0, 0, 0)
             userStars = dummy
             postValue(dummy)
