@@ -168,8 +168,12 @@ class BookmarksRepository(
         }
     }
 
-    /** エントリ情報を取得 */
-    @Throws(ConnectionFailureException::class)
+    /**
+     * エントリ情報を取得
+     *
+     * @throws InvalidUrlException
+     * @throws ConnectionFailureException
+     */
     suspend fun loadEntry(url: String) = withContext(Dispatchers.Default) {
         if (!URLUtil.isNetworkUrl(url)) {
             throw InvalidUrlException(url)
@@ -187,8 +191,11 @@ class BookmarksRepository(
         }
     }
 
-    /** エントリ情報を取得 */
-    @Throws(ConnectionFailureException::class)
+    /**
+     * エントリ情報を取得
+     *
+     * @throws ConnectionFailureException
+     */
     suspend fun loadEntry(eid: Long) = withContext(Dispatchers.Default) {
         val result = runCatching {
             entry.postValue(
@@ -394,8 +401,11 @@ class BookmarksRepository(
             }
         }
 
-    /** ブクマにスターをつける */
-    @Throws(ConnectionFailureException::class)
+    /**
+     * ブクマにスターをつける
+     *
+     * @throws ConnectionFailureException
+     */
     suspend fun postStar(bookmark: Bookmark, color: StarColor, quote: String = "") : Star {
         val result = runCatching {
             val e = entry.value!!
@@ -409,8 +419,11 @@ class BookmarksRepository(
         return result.getOrNull() ?: throw ConnectionFailureException()
     }
 
-    /** スターを削除する */
-    @Throws(ConnectionFailureException::class)
+    /**
+     * スターを削除する
+     *
+     * @throws ConnectionFailureException
+     */
     suspend fun deleteStar(bookmark: Bookmark, star: Star) {
         val result = runCatching {
             val e = entry.value!!
