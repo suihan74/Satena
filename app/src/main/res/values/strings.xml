@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Satena</string>
-    <string name="copyright">Copyright \u00A9 2019-2020 &lt;a href=&quot;https://suihan74.github.io&quot;&gt;suihan&lt;/a&gt;</string>
+    <string name="copyright">Copyright \u00A9 %s &lt;a href=&quot;https://suihan74.github.io&quot;&gt;suihan&lt;/a&gt;</string>
 
     <string name="drawer_open">開く</string>
     <string name="drawer_close">閉じる</string>
@@ -31,6 +31,7 @@
     <string name="invalid_url_error">無効なURLです</string>
     <string name="scroll_to_top">一番上までスクロール</string>
     <string name="search_button_tooltip">検索</string>
+    <string name="minutes">分</string>
 
     <!-- ログイン画面 -->
     <string name="cancel">キャンセル</string>
@@ -192,7 +193,12 @@
     <string name="pref_generals_show_release_notes_after_update_desc">アプリ更新後の初回起動時に更新履歴を表示する</string>
     <string name="pref_generals_notices_intervals_dialog_title">通知確認間隔を設定</string>
     <string name="pref_generals_notices_intervals_dialog_msg">%d分～%d分で指定できます</string>
-    <string name="minutes">分</string>
+
+    <string name="pref_generals_clear_image_cache_desc">画像キャッシュをクリアする</string>
+    <string name="pref_generals_clear_image_cache_button">実行</string>
+    <string name="msg_pref_generals_clear_image_cache_succeeded">画像キャッシュを削除しました</string>
+    <string name="pref_generals_clear_image_cache_dialog_message">キャッシュを削除するとストレージ使用量を削減できる一方、一時的に通信量が増えて画像の読み込みが遅くなります。削除しますか？</string>
+
     <!-- entries -->
     <string name="pref_entries_layout_mode_desc">ボトムバーを使用する</string>
     <string name="pref_hide_bottom_appbar_by_scrolling_desc">スクロールでボトムバーを隠す</string>

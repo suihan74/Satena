@@ -35,7 +35,7 @@ class HistoryViewModel(
         repository.keyword.also {
             it.observeForever {
                 viewModelScope.launch {
-                    repository.updateHistoriesLiveData()
+                    repository.loadHistories()
                 }
             }
         }

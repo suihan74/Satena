@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.annotation.MainThread
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -33,6 +32,8 @@ import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @Deprecated("replace with .bookmarks")
 class BookmarksViewModel(
@@ -164,8 +165,7 @@ class BookmarksViewModel(
     }
 
     /** 各リストを再構成する */
-    @MainThread
-    private fun refreshLists() {
+    private suspend fun refreshLists() = withContext(Dispatchers.Main) {
         if (repository.bookmarksEntry != null) {
             bookmarksEntry.value = repository.bookmarksEntry
         }
@@ -274,9 +274,7 @@ class BookmarksViewModel(
                     viewModelScope.async { repository.loadBookmarksRecent() }
                 ).run {
                     awaitAll()
-                    withContext(Dispatchers.Main) {
-                        refreshLists()
-                    }
+                    refreshLists()
                 }
             }
             catch (e: Throwable) {
@@ -287,21 +285,31 @@ class BookmarksViewModel(
 
             // キーワードが更新されたら各リストを再生成する
             var initializedFilteringWord = false
+            val initializedFilteringWordMutex = Mutex()
             filteringWord.observeForever {
-                refreshLists()
-                if (initializedFilteringWord) {
+                viewModelScope.launch {
                     refreshLists()
+                    initializedFilteringWordMutex.withLock {
+                        if (initializedFilteringWord) {
+                            refreshLists()
+                        }
+                        initializedFilteringWord = true
+                    }
                 }
-                initializedFilteringWord = true
             }
 
             // 非表示ユーザーリストの更新を監視
             var initializedIgnoredUsers = false
+            val initializedIgnoredUsersMutex = Mutex()
             ignoredUsers.observeForever {
-                if (initializedIgnoredUsers) {
-                    refreshLists()
+                viewModelScope.launch {
+                    initializedIgnoredUsersMutex.withLock {
+                        if (initializedIgnoredUsers) {
+                            refreshLists()
+                        }
+                        initializedIgnoredUsers = true
+                    }
                 }
-                initializedIgnoredUsers = true
             }
         }
 

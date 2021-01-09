@@ -21,6 +21,38 @@ import com.suihan74.satena.R
 import com.suihan74.utilities.extensions.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
+import kotlin.math.floor
+import kotlin.math.log
+import kotlin.math.pow
+
+/**
+ * サイズを表す数値を表示する
+ *
+ * @param size: 表示する数値
+ * @param unit: 数値の単位
+ */
+@BindingAdapter(value = ["sizeText", "unit"], requireAll = false)
+fun TextView.setSizeText(size: Long?, unit: String? = "") {
+    if (size == null) {
+        this.text = ""
+        return
+    }
+
+    val rawSize = kotlin.math.max(0L, size)
+
+    val metrics = arrayOf("", "Ki", "Mi", "Gi", "Ti")
+    val exp = kotlin.math.min(
+        if (rawSize == 0L) 0
+        else floor(log(rawSize.toDouble(), 1024.0)).toInt(),
+        metrics.lastIndex
+    )
+    val metric = metrics[exp]
+    val num = rawSize / 1024.0.pow(exp)
+
+    this.text = String.format("%.1f%s%s", num, metric, unit.orEmpty())
+}
+
+//////////////////////////////////////////////////
 
 /**
  * 画面の向きごとに最大表示行数を設定する

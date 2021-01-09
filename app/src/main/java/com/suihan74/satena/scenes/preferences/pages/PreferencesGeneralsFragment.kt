@@ -52,7 +52,7 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
 
     private val viewModel by lazyProvideViewModel {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        PreferencesGeneralsViewModel(prefs)
+        PreferencesGeneralsViewModel(requireContext(), prefs)
     }
 
     // ------ //
@@ -128,6 +128,11 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
         // アプリ内アップデート通知の対象を選択
         binding.buttonAppUpdateNoticeMode.setOnClickListener {
             viewModel.openAppUpdateNoticeModeSelectionDialog(childFragmentManager)
+        }
+
+        // 画像キャッシュを削除する
+        binding.clearImageCacheButton.setOnClickListener {
+            viewModel.openClearImageCacheConfirmDialog(childFragmentManager)
         }
 
         return binding.root

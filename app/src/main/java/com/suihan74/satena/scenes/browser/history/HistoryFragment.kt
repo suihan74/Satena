@@ -48,7 +48,7 @@ class HistoryFragment :
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentBrowserHistoryBinding>(
             inflater,
             R.layout.fragment_browser_history,

@@ -17,11 +17,17 @@ class PreferencesMigration {
     companion object {
         @Suppress("SpellCheckingInspection")
         private val SIGNATURE get() = byteArrayOf(0).plus("SATESET".toByteArray())
-        private val VERSION get() = byteArrayOf(1)
+        private val VERSION get() = byteArrayOf(2)
 
         private val SIGNATURE_SIZE = SIGNATURE.size
         private const val HASH_SIZE = 16
     }
+
+    // ------ //
+
+    class MigrationFailureException(message: String? = null, cause: Throwable? = null) : Throwable(message, cause)
+
+    // ------ //
 
     class Output(private val context: Context) {
         private val items = ArrayList<MigrationData>()
@@ -57,9 +63,15 @@ class PreferencesMigration {
             items.add(MigrationData(MigrationData.DataType.PREFERENCE, keyName, keyVersion, fileName, dataSize, bytes))
         }
 
+        /**
+         * @throws IllegalStateException
+         */
         suspend inline fun <reified DB_T> addDatabase(fileName: String) =
             addDatabase(DB_T::class.java, fileName)
 
+        /**
+         * @throws IllegalStateException
+         */
         suspend fun <DB_T> addDatabase(DBClass: Class<DB_T>, fileName: String) = withContext(Dispatchers.IO) {
             val file = context.getDatabasePath(fileName)
             check(file.exists()) { "the database file does not exist: $fileName" }
@@ -74,6 +86,10 @@ class PreferencesMigration {
             items.add(MigrationData(MigrationData.DataType.DATABASE, "database__$fileName", version, fileName, bytes.size, bytes))
         }
 
+        /**
+         * @throws IOException
+         */
+        @Suppress("BlockingMethodInNonBlockingContext")
         suspend fun write(targetUri: Uri) = withContext(Dispatchers.IO) {
             val headerHash = getMd5Bytes(VERSION.plus(items.size.toByteArray()))
             val bodyHash = getMd5Bytes(items.flatMap { data ->
@@ -99,17 +115,23 @@ class PreferencesMigration {
         }
     }
 
-    class Input(private val context: Context) {
-        suspend fun read(targetUri: Uri, onErrorAction: ((MigrationData) -> Unit)? = null) =
-            withContext(Dispatchers.IO) {
-                SatenaApplication.instance.appDatabase.run {
-                    close()
-                }
+    // ------ //
 
-                val path = targetUri.path!!
-                val contentResolver = context.contentResolver
-                contentResolver.openFileDescriptor(targetUri, "r")?.use {
-                    FileInputStream(it.fileDescriptor).buffered().use { stream ->
+    class Input(private val context: Context) {
+        /**
+         * @throws MigrationFailureException
+         */
+        @Suppress("BlockingMethodInNonBlockingContext")
+        suspend fun read(targetUri: Uri, onErrorAction: ((MigrationData) -> Unit)? = null) = withContext(Dispatchers.IO) {
+            SatenaApplication.instance.appDatabase.run {
+                close()
+            }
+
+            val path = targetUri.path!!
+            val contentResolver = context.contentResolver
+            contentResolver.openFileDescriptor(targetUri, "r")?.use {
+                FileInputStream(it.fileDescriptor).buffered().use { stream ->
+                    try {
                         val signature = stream.readByteArray(SIGNATURE_SIZE)
                         check(signature.contentEquals(SIGNATURE)) { "the file is not a settings for Satena: $path" }
 
@@ -121,8 +143,9 @@ class PreferencesMigration {
 
                         val itemsCount = stream.readInt()
 
-                        val actualHeaderHash =
-                            getMd5Bytes(version.plus(itemsCount.toByteArray()))
+                        val actualHeaderHash = getMd5Bytes(
+                            version.plus(itemsCount.toByteArray())
+                        )
                         check(actualHeaderHash.contentEquals(headerHash)) { "the file is falsified: $path" }
 
                         val items = ArrayList<MigrationData>(itemsCount)
@@ -130,38 +153,52 @@ class PreferencesMigration {
                             items.add(MigrationData.read(stream))
                         }
 
-                        val actualBodyHash =
-                            getMd5Bytes(items.flatMap { getMd5Bytes(it.toByteArray()).toList() }
-                                .toByteArray())
+                        val actualBodyHash = getMd5Bytes(
+                            items.flatMap { getMd5Bytes(it.toByteArray()).toList() }
+                                .toByteArray()
+                        )
                         check(actualBodyHash.contentEquals(bodyHash)) { "the file is falsified: $path" }
 
                         for (item in items) {
-                            val result = apply(item)
-                            if (!result) {
+                            runCatching {
+                                apply(item)
+                            }
+                            .onFailure { e ->
+                                Log.e("migration", Log.getStackTraceString(e))
                                 onErrorAction?.invoke(item)
                             }
                         }
 
                         // バージョン移行
                         SatenaApplication.instance.updatePreferencesVersion()
+                    }
+                    catch (e: Throwable) {
+                        throw MigrationFailureException(message = e.message, cause = e)
+                    }
+                    finally {
                         SatenaApplication.instance.initializeDataBase()
                     }
                 }
-
-                Log.d("migration", "completed loading")
             }
 
-        private suspend fun apply(data: MigrationData): Boolean = when (data.type) {
-            MigrationData.DataType.PREFERENCE ->
-                applyPreferences(data)
-
-            MigrationData.DataType.DATABASE ->
-                applyDatabase(data)
+            Log.d("migration", "completed loading")
         }
 
-        private suspend fun applyPreferences(data: MigrationData): Boolean = withContext(Dispatchers.IO) {
-            var result = true
+        /**
+         * @throws MigrationFailureException
+         */
+        private suspend fun apply(data: MigrationData) {
+            when (data.type) {
+                MigrationData.DataType.PREFERENCE -> applyPreferences(data)
+                MigrationData.DataType.DATABASE -> applyDatabase(data)
+            }
+        }
 
+        /**
+         * @throws MigrationFailureException
+         */
+        @Suppress("BlockingMethodInNonBlockingContext")
+        private suspend fun applyPreferences(data: MigrationData) = withContext(Dispatchers.IO) {
             val path = context.filesDir.absolutePath.let {
                 "${it.substring(0, it.indexOf("/files"))}/shared_prefs/${data.fileName}.xml"
             }
@@ -197,21 +234,22 @@ class PreferencesMigration {
                 }
             }
             catch (e: Throwable) {
-                Log.e("migration", "failed to load: ${data.fileName}")
-                result = false
-
                 if (backupSuccess) {
                     backup.copyTo(file, true)
                 }
+
+                throw MigrationFailureException("failed to read preferences", cause = e)
             }
             finally {
                 backup.delete()
             }
-
-            return@withContext result
         }
 
-        private suspend fun applyDatabase(data: MigrationData): Boolean = withContext(Dispatchers.IO) {
+        /**
+         * @throws MigrationFailureException
+         */
+        @Suppress("BlockingMethodInNonBlockingContext")
+        private suspend fun applyDatabase(data: MigrationData) = withContext(Dispatchers.IO) {
             val file = context.getDatabasePath(data.fileName)
             val backup = context.getDatabasePath(data.keyName + ".bak")
 
@@ -228,8 +266,7 @@ class PreferencesMigration {
                 }
                 else false
 
-            var result = false
-            try {
+            return@withContext try {
                 // 初回起動時にはdatabasesディレクトリが存在しないので作成する必要がある
                 val dir = File(file.parent!!)
                 if (!dir.exists()) {
@@ -239,18 +276,17 @@ class PreferencesMigration {
                 file.outputStream().buffered().use {
                     it.write(data.data)
                 }
-                result = true
             }
             catch (e: Throwable) {
-                Log.e("migration", "failed to load a database: ${data.fileName}")
                 if (backupSuccess) {
                     backup.copyTo(file, true)
                 }
+
+                throw MigrationFailureException("failed to read databases", cause = e)
             }
             finally {
                 backup.delete()
             }
-            return@withContext result
         }
     }
 }
@@ -266,6 +302,9 @@ fun Int.toByteArray(): ByteArray {
     return result
 }
 
+/**
+ * @throws ArrayIndexOutOfBoundsException
+ */
 fun ByteArray.toInt(): Int {
     var result = 0
     val bytes = Int.SIZE_BYTES
@@ -281,10 +320,16 @@ fun ByteArray.toInt(): Int {
     return result
 }
 
+/**
+ * @throws IOException
+ */
 fun OutputStream.writeInt(value: Int) {
     this.write(value.toByteArray())
 }
 
+/**
+ * @throws IOException
+ */
 fun OutputStream.writeString(value: String) {
     value.toByteArray().let {
         writeInt(it.size)
@@ -292,12 +337,20 @@ fun OutputStream.writeString(value: String) {
     }
 }
 
+/**
+ * @exception  IOException
+ * @exception  IndexOutOfBoundsException
+ */
 fun InputStream.readInt() : Int {
     val bytes = ByteArray(Int.SIZE_BYTES)
     this.read(bytes)
     return bytes.toInt()
 }
 
+/**
+ * @exception  IOException
+ * @exception  IndexOutOfBoundsException
+ */
 fun InputStream.readString() : String {
     val size = readInt()
     val bytes = ByteArray(size)
@@ -305,6 +358,10 @@ fun InputStream.readString() : String {
     return bytes.toString(Charsets.UTF_8)
 }
 
+/**
+ * @exception  IOException
+ * @exception  IndexOutOfBoundsException
+ */
 fun InputStream.readByteArray(size: Int) : ByteArray {
     val bytes = ByteArray(size)
     this.read(bytes, 0, size)
