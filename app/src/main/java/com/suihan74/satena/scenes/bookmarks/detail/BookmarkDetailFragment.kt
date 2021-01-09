@@ -10,14 +10,18 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarkDetail3Binding
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.repository.StarExhaustedException
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
+import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
@@ -124,7 +128,8 @@ class BookmarkDetailFragment : Fragment() {
             override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?) = false
         }
 
-        // TODO: スター付与ボタン設定
+        // スター付与ボタン設定
+        initializeStarButtons(binding)
 
         binding.showStarsButton.setOnClickListener {
             viewModel.starsMenuOpened.value = viewModel.starsMenuOpened.value != true
@@ -138,6 +143,34 @@ class BookmarkDetailFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    // ------ //
+
+    /** スター付与ボタンの挙動を設定 */
+    private fun initializeStarButtons(binding: FragmentBookmarkDetail3Binding) {
+        fun listener(color: StarColor) : (View)->Unit = {
+            lifecycleScope.launch(Dispatchers.Main) {
+                val targetUser = viewModel.bookmark.value?.user ?: "???"
+
+                try {
+                    viewModel.postStar(color)
+                    context?.showToast(R.string.msg_post_star_succeeded, targetUser)
+                }
+                catch(e: StarExhaustedException) {
+                    context?.showToast(R.string.msg_no_color_stars, color.name)
+                }
+                catch (e: Throwable) {
+                    context?.showToast(R.string.msg_post_star_failed, targetUser)
+                }
+            }
+        }
+
+        binding.yellowStarButton.setOnClickListener(listener(StarColor.Yellow))
+        binding.redStarButton.setOnClickListener(listener(StarColor.Red))
+        binding.greenStarButton.setOnClickListener(listener(StarColor.Green))
+        binding.blueStarButton.setOnClickListener(listener(StarColor.Blue))
+        binding.purpleStarButton.setOnClickListener(listener(StarColor.Purple))
     }
 
     // ------ //

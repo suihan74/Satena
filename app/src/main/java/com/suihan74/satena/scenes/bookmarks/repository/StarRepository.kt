@@ -215,7 +215,7 @@ class StarRepository(
         color: StarColor,
         quote: String,
         updateCacheImmediately: Boolean
-    ) {
+    ) = withContext(Dispatchers.Default) {
         if (!checkColorStarAvailability(color)) {
             throw StarExhaustedException(color)
         }
