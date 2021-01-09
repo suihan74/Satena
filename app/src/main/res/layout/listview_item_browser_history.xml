@@ -25,13 +25,11 @@
                 android:layout_alignParentTop="true"
                 />
 
-        <!-- TODO: スワイプできない問題を解消するまではマーキーしないようにする -->
-        <com.suihan74.utilities.views.MarqueeTextView
+        <TextView
                 android:id="@+id/title"
                 style="@style/MarqueeTextView"
                 android:ellipsize="end"
                 android:text="@{history.page.title}"
-                marqueeEnabled="@{!vm.keywordEditTextVisible}"
                 android:contentDescription="@null"
                 android:textColor="?attr/textColor"
                 android:textSize="16sp"
@@ -40,12 +38,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
-        <!-- TODO: スワイプできない問題を解消するまではマーキーしないようにする -->
-        <com.suihan74.utilities.views.MarqueeTextView
+        <TextView
                 android:id="@+id/url"
                 style="@style/MarqueeTextView"
                 android:ellipsize="end"
-                marqueeEnabled="@{!vm.keywordEditTextVisible}"
                 android:text="@{history.page.url}"
                 android:textColor="?attr/tagTextColor"
                 android:textSize="13sp"

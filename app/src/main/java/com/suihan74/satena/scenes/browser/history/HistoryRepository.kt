@@ -13,7 +13,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
-import org.threeten.bp.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -88,7 +87,7 @@ class HistoryRepository(
         historiesCacheLock.withLock {
             historiesCache.clear()
             historiesCache.addAll(
-                dao.getRecentHistories()
+                dao.findHistory(query = keyword.value.orEmpty())
             )
         }
 
@@ -119,7 +118,8 @@ class HistoryRepository(
     /** 履歴リストの続きを取得 */
     suspend fun loadAdditional() = withContext(Dispatchers.Default) {
         historiesCacheLock.withLock {
-            val additional = dao.getRecentHistories(offset = historiesCache.size)
+            val additional = dao.findHistory(query = keyword.value.orEmpty(), offset = historiesCache.size)
+            if (additional.isEmpty()) return@withContext
 
             historiesCache.addAll(additional)
             historiesCache.sortBy { it.log.visitedAt }
@@ -130,6 +130,7 @@ class HistoryRepository(
 
     /** 表示用の履歴リストを更新する */
     suspend fun updateHistoriesLiveData() = withContext(Dispatchers.Default) {
+        /*
         val locale = Locale.JAPANESE
         val keyword = keyword.value?.toLowerCase(locale)
         historiesCacheLock.withLock {
@@ -149,5 +150,7 @@ class HistoryRepository(
                 histories.postValue(list)
             }
         }
+        */
+        histories.postValue(historiesCache)
     }
 }

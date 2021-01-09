@@ -14,6 +14,8 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookmarksRepository(
@@ -168,8 +170,12 @@ class BookmarksRepository(
         }
     }
 
-    /** エントリ情報を取得 */
-    @Throws(ConnectionFailureException::class)
+    /**
+     * エントリ情報を取得
+     *
+     * @throws InvalidUrlException
+     * @throws ConnectionFailureException
+     */
     suspend fun loadEntry(url: String) = withContext(Dispatchers.Default) {
         if (!URLUtil.isNetworkUrl(url)) {
             throw InvalidUrlException(url)
@@ -187,8 +193,11 @@ class BookmarksRepository(
         }
     }
 
-    /** エントリ情報を取得 */
-    @Throws(ConnectionFailureException::class)
+    /**
+     * エントリ情報を取得
+     *
+     * @throws ConnectionFailureException
+     */
     suspend fun loadEntry(eid: Long) = withContext(Dispatchers.Default) {
         val result = runCatching {
             entry.postValue(
@@ -216,8 +225,9 @@ class BookmarksRepository(
 
     /** ブックマークエントリを取得 */
     suspend fun loadBookmarksEntry() {
+        val entry = entry.value ?: return
         val result = runCatching {
-            val url = entry.value!!.url
+            val url = entry.url
             client.getBookmarksEntryAsync(url).await()
         }
 
@@ -394,8 +404,11 @@ class BookmarksRepository(
             }
         }
 
-    /** ブクマにスターをつける */
-    @Throws(ConnectionFailureException::class)
+    /**
+     * ブクマにスターをつける
+     *
+     * @throws ConnectionFailureException
+     */
     suspend fun postStar(bookmark: Bookmark, color: StarColor, quote: String = "") : Star {
         val result = runCatching {
             val e = entry.value!!
@@ -409,8 +422,11 @@ class BookmarksRepository(
         return result.getOrNull() ?: throw ConnectionFailureException()
     }
 
-    /** スターを削除する */
-    @Throws(ConnectionFailureException::class)
+    /**
+     * スターを削除する
+     *
+     * @throws ConnectionFailureException
+     */
     suspend fun deleteStar(bookmark: Bookmark, star: Star) {
         val result = runCatching {
             val e = entry.value!!
@@ -483,7 +499,7 @@ class BookmarksRepository(
     /**
      * ユーザーのブクマを更新する
      *
-     * @param bookmarkResult 削除する際はnullをwタス
+     * @param bookmarkResult 削除する際はnullを渡す
      */
     suspend fun updateUserBookmark(bookmarkResult: BookmarkResult?) = withContext(Dispatchers.Default) {
         val bookmark = bookmarkResult?.let{ Bookmark.create(it) }
@@ -543,34 +559,40 @@ class BookmarksRepository(
 
         override fun getValue() = userStars
 
-        var loaded = false
-            get() = synchronized(field) { field }
-            private set(value) {
-                synchronized(field) {
-                    field = value
-                }
-            }
+        private var loaded = false
 
-        suspend fun load() {
-            loaded = false
-            if (client.signedIn()) {
-                try {
-                    val result = client.getMyColorStarsAsync().await()
-                    userStars = result
-                    loaded = true
-                    postValue(result)
+        private val loadedMutex = Mutex()
+
+        suspend fun onLoaded(action: ()->Unit) {
+            loadedMutex.withLock {
+                if (loaded) {
+                    action()
                 }
-                catch (e: Throwable) {
-                    setDummy()
-                    throw e
-                }
-            }
-            else {
-                setDummy()
             }
         }
 
-        private fun setDummy() {
+        suspend fun load() = withContext(Dispatchers.Default) {
+            loadedMutex.withLock {
+                loaded = false
+                if (client.signedIn()) {
+                    try {
+                        val result = client.getMyColorStarsAsync().await()
+                        userStars = result
+                        loaded = true
+                        postValue(result)
+                    }
+                    catch (e: Throwable) {
+                        setDummy()
+                        throw e
+                    }
+                }
+                else {
+                    setDummy()
+                }
+            }
+        }
+
+        private suspend fun setDummy() = withContext(Dispatchers.Default) {
             val dummy = UserColorStarsCount(0, 0, 0, 0)
             userStars = dummy
             postValue(dummy)
