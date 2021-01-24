@@ -56,16 +56,8 @@ data class Bookmark (
     ) = tags.joinToString(separator, prefix, postfix, limit, truncated, transform)
 
     // ブックマーク自身を指すURLを取得する
-    // ブコメについたスターを取得する際に使用する
-    fun getBookmarkUrl(entry: BookmarksEntry) : String {
-        val dateFormat = DateTimeFormatter.ofPattern("yyyMMdd")
-        val date = timestamp.format(dateFormat)
-        return "${HatenaClient.B_BASE_URL}/$user/$date#bookmark-${entry.id}"
-//    return "http://b.hatena.ne.jp/entry/${entry.id}/comment/$user"
-    }
-
     fun getBookmarkUrl(entry: Entry) : String {
-        val dateFormat = DateTimeFormatter.ofPattern("yyyMMdd")
+        val dateFormat = DateTimeFormatter.ofPattern("uuuuMMdd")
         val date = timestamp.format(dateFormat)
         return "${HatenaClient.B_BASE_URL}/$user/$date#bookmark-${entry.id}"
     }

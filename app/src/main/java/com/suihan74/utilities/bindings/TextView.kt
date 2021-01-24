@@ -156,12 +156,12 @@ fun TextView.setDomain(rootUrl: String?, url: String?) {
 }
 
 /** タイムスタンプ */
-@BindingAdapter("timestamp")
-fun TextView.setTimestamp(timestamp: LocalDateTime?) {
-    if (timestamp != null) {
-        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
-        text = timestamp.format(formatter)
-    }
+@BindingAdapter(value = ["timestamp", "timezone"], requireAll = false)
+fun TextView.setTimestamp(timestamp: LocalDateTime?, timezone: String?) {
+    text = timestamp
+        ?.toSystemZonedDateTime(timezone ?: "Asia/Tokyo")
+        ?.format(DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm"))
+        .orEmpty()
 }
 
 //////////////////////////////////////////////////
@@ -231,15 +231,16 @@ fun TextView.setHtmlText(title: String) {
 /** 障害情報のタイムスタンプ */
 @BindingAdapter("maintenanceTimestamp")
 fun TextView.setMaintenanceTimestamp(value: MaintenanceEntry) {
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss")
+    val zone = "Asia/Tokyo"
     text =
         if (value.timestamp == value.timestampUpdated) {
-            value.timestamp.format(dateTimeFormatter)
+            value.timestamp.toSystemZonedDateTime(zone).format(dateTimeFormatter)
         }
         else {
             buildString {
-                append(value.timestamp.format(dateTimeFormatter))
-                append("  (更新: ", value.timestampUpdated.format(dateTimeFormatter), ")")
+                append(value.timestamp.toSystemZonedDateTime(zone).format(dateTimeFormatter))
+                append("  (更新: ", value.timestampUpdated.toSystemZonedDateTime(zone).format(dateTimeFormatter), ")")
             }
         }
 }
