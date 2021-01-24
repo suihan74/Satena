@@ -15,6 +15,7 @@ import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUserRelation
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.models.userTag.UserTagDao
+import org.threeten.bp.OffsetDateTime
 
 /**
  * アプリで使用するDB
@@ -28,7 +29,7 @@ import com.suihan74.satena.models.userTag.UserTagDao
         HistoryPage::class,
         HistoryLog::class
     ],
-    version = 5
+    version = 6
 )
 @TypeConverters(LocalDateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -52,6 +53,7 @@ fun RoomDatabase.Builder<AppDatabase>.migrate() : RoomDatabase.Builder<AppDataba
         Migration4to5(),
         // ------ //
         Migration1to5(),
+        Migration5to6()
     )
     .fallbackToDestructiveMigration()
 
@@ -129,5 +131,19 @@ class Migration1to5 : Migration(1, 5) {
 
     override fun migrate(database: SupportSQLiteDatabase) {
         createHistoryTables(database)
+    }
+}
+
+/**
+ * v1.5.26: タイムゾーンを考慮に入れる
+ *
+ * ブラウザ閲覧履歴の時刻(`LocalDateTime`)がすべてUTCに変換しない端末ローカル値で保存されていたので、
+ * 端末の現在のタイムゾーンで保存されたと仮定して、その分のオフセットを差し引いたUTC値に修正する
+ */
+class Migration5to6 : Migration(5, 6) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        val offset = OffsetDateTime.now().offset.totalSeconds
+        database.execSQL("UPDATE `browser_history_pages` SET `lastVisited` = `lastVisited` - $offset")
+        database.execSQL("UPDATE `browser_history_items` SET `visitedAt` = `visitedAt` - $offset")
     }
 }
