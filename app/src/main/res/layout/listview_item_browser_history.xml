@@ -55,6 +55,7 @@
         <TextView
                 android:id="@+id/last_visited"
                 timestamp="@{history.log.visitedAt}"
+                timezone="@{`UTC`}"
                 android:singleLine="true"
                 android:textColor="?attr/tagTextColor"
                 android:textSize="13sp"

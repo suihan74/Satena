@@ -27,6 +27,7 @@ import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.appendStarSpan
+import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.coroutines.*
 import org.threeten.bp.format.DateTimeFormatter
@@ -420,8 +421,11 @@ class BookmarksAdapter(
 
             // タイムスタンプ & スター
             val builder = SpannableStringBuilder()
-            val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
-            builder.append(bookmark.timestamp.format(formatter))
+            builder.append(
+                bookmark.timestamp
+                    .toSystemZonedDateTime("Asia/Tokyo")
+                    .format(DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm"))
+            )
             builder.append("　")
 
             if (!bookmark.starCount.isNullOrEmpty()) {

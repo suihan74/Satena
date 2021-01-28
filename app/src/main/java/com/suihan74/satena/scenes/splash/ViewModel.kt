@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.splash
 
+import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.ViewModel
 import com.suihan74.satena.R
@@ -24,11 +25,16 @@ class ViewModel(
                 activity.showToast(R.string.msg_auth_mastodon_failed)
         } }
 
-        activity.startActivity(
-            intent, ActivityOptionsCompat.makeCustomAnimation(
+        try {
+            val optionsCompat = ActivityOptionsCompat.makeCustomAnimation(
                 activity,
                 android.R.anim.fade_in, android.R.anim.fade_out
-            ).toBundle()
-        )
+            )
+
+            ActivityCompat.startActivity(activity, intent, optionsCompat.toBundle())
+        }
+        catch (e: Throwable) {
+            activity.startActivity(intent)
+        }
     }
 }

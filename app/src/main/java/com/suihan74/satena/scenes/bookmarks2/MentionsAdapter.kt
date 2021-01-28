@@ -75,7 +75,7 @@ open class MentionsAdapter (
                 }
 
                 binding.timestamp.text = value.timestamp.format(
-                    DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
+                    DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
                 )
 
                 Glide.with(context).run {

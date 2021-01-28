@@ -653,7 +653,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = async {
         val apiUrl = "$B_BASE_URL/entry/jsonlite/?url=${Uri.encode(url)}&${cacheAvoidance()}"
-        return@async getJson<BookmarksEntry>(apiUrl, "yyyy/MM/dd HH:mm")
+        return@async getJson<BookmarksEntry>(apiUrl, "uuuu/MM/dd HH:mm")
     }
 
     fun getEmptyEntryAsync(url: String) : Deferred<Entry> = async {
@@ -1407,7 +1407,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 require(response.isSuccessful) { "connection failure" }
 
                 val brRegex = Regex("""<br/?>""")
-                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss")
 
                 fun getTimestamp(header: Element, className: String) : LocalDateTime? =
                     header.getElementsByClass(className).firstOrNull()?.let {
@@ -1625,7 +1625,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 val rootUrlRegex = Regex("""\S+""")
                 val eidRegex = Regex("""bookmark-(\d+)""")
                 val article = "centerarticle"
-                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu/MM/dd")
                 val entries = html.getElementsByClass("bookmark-item js-user-bookmark-item").mapNotNull m@ { item ->
                     val titleArea = item.getElementsByAttributeValue(dataAttr, "$userAttr-bookmark-title").firstOrNull() ?: return@m null
                     val title = titleArea.wholeText()

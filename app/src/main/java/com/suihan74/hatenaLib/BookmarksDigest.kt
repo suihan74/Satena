@@ -63,7 +63,7 @@ data class BookmarkWithStarCount (
     // ------ //
 
     fun getBookmarkUrl(entry: Entry) : String {
-        val dateFormat = DateTimeFormatter.ofPattern("yyyMMdd")
+        val dateFormat = DateTimeFormatter.ofPattern("uuuuMMdd")
         val date = timestamp.format(dateFormat)
         return "${HatenaClient.B_BASE_URL}/$user/$date#bookmark-${entry.id}"
     }
