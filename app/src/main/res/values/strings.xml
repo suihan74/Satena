@@ -495,10 +495,10 @@
     <string name="star_with_count">★%d</string>
     <string name="bookmark_detail_quote_comment">"%s"</string>
 
-    <string name="bookmark_detail_tab_stars_from">from %s</string>
-    <string name="bookmark_detail_tab_stars_to">to %s</string>
-    <string name="bookmark_detail_tab_mentions_from">from %s</string>
-    <string name="bookmark_detail_tab_mentions_to">to %s</string>
+    <string name="bookmark_detail_tab_stars_from">(%d) from %s</string>
+    <string name="bookmark_detail_tab_stars_to">(%d) to %s</string>
+    <string name="bookmark_detail_tab_mentions_from">(%d) from %s</string>
+    <string name="bookmark_detail_tab_mentions_to">(%d) to %s</string>
 
     <string name="bookmark_detail_tab_tooltip_stars_from">id:%sがスターをつけた他のブコメ</string>
     <string name="bookmark_detail_tab_tooltip_stars_to">id:%sにスターをつけたユーザーとそのブコメ</string>

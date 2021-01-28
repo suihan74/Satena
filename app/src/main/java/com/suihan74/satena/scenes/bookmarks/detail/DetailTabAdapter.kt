@@ -6,13 +6,17 @@ import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks.detail.tabs.StarRelationsTabFragment
 import com.suihan74.utilities.IconFragmentPagerAdapter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class DetailTabAdapter(
-    val viewModel : BookmarkDetailViewModel,
+    viewModel : BookmarkDetailViewModel,
     val bookmark : Bookmark,
     lifecycleOwner : LifecycleOwner,
     fragmentManager : FragmentManager
@@ -34,7 +38,13 @@ class DetailTabAdapter(
     override fun getTooltipTextId(position: Int): Int = tabs[position].tooltipTextId
 
     override fun getTitle(context: Context, position: Int, textId: Int): CharSequence {
-        return context.getString(textId, bookmark.user)
+        val count = when (tabs[position]) {
+            TabType.STARS_TO_USER -> starsToUserCount
+            TabType.STARS_FROM_USER -> starsFromUserCount
+            TabType.MENTION_TO_USER -> mentionsToUserCount
+            TabType.MENTION_FROM_USER -> mentionsFromUserCount
+        }
+        return context.getString(textId, count, bookmark.user)
     }
 
     override fun getTooltipText(context: Context, position: Int, textId: Int): CharSequence {
@@ -43,20 +53,52 @@ class DetailTabAdapter(
 
     // ------ //
 
-    init {
-        viewModel.mentionsToUser.observe(lifecycleOwner, {
-            if (!it.isNullOrEmpty() && !tabs.contains(TabType.MENTION_TO_USER)) {
-                tabs = tabs.plus(TabType.MENTION_TO_USER)
-                notifyDataSetChanged()
-            }
-        })
+    private var starsToUserCount = 0
 
-        viewModel.mentionsFromUser.observe(lifecycleOwner, {
-            if (!it.isNullOrEmpty() && !tabs.contains(TabType.MENTION_FROM_USER)) {
-                tabs = tabs.plus(TabType.MENTION_FROM_USER)
+    private var starsFromUserCount = 0
+
+    private var mentionsToUserCount = 0
+
+    private var mentionsFromUserCount = 0
+
+    // ------ //
+
+    init {
+        lifecycleOwner.lifecycleScope.launch(Dispatchers.Main.immediate) {
+            viewModel.starsToUser.observe(lifecycleOwner, { list ->
+                lifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+                    starsToUserCount = list.sumBy { it.star?.count ?: 0 }
+                    withContext(Dispatchers.Main) {
+                        notifyDataSetChanged()
+                    }
+                }
+            })
+
+            viewModel.starsFromUser.observe(lifecycleOwner, { list ->
+                lifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+                    starsFromUserCount = list.sumBy { it.star?.count ?: 0 }
+                    withContext(Dispatchers.Main) {
+                        notifyDataSetChanged()
+                    }
+                }
+            })
+
+            viewModel.mentionsToUser.observe(lifecycleOwner, { list ->
+                if (!list.isNullOrEmpty() && !tabs.contains(TabType.MENTION_TO_USER)) {
+                    tabs = tabs.plus(TabType.MENTION_TO_USER)
+                }
+                mentionsToUserCount = list.size
                 notifyDataSetChanged()
-            }
-        })
+            })
+
+            viewModel.mentionsFromUser.observe(lifecycleOwner, { list ->
+                if (!list.isNullOrEmpty() && !tabs.contains(TabType.MENTION_FROM_USER)) {
+                    tabs = tabs.plus(TabType.MENTION_FROM_USER)
+                }
+                mentionsFromUserCount = list.size
+                notifyDataSetChanged()
+            })
+        }
     }
 
     // ------ //
