@@ -35,6 +35,7 @@ import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.Theme
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.entries2.dialog.BrowserShortcutDialog
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
@@ -131,10 +132,7 @@ class EntriesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-        setTheme(
-            if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppTheme_Dark
-            else R.style.AppTheme_Light
-        )
+        setTheme(Theme.themeId(prefs))
 
         viewModel.initialize(
             forceUpdate = false,

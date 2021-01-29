@@ -5,9 +5,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.suihan74.hatenaLib.*
-import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.Theme
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
@@ -92,10 +92,7 @@ class BookmarksRepository(
     }
 
     /** テーマ */
-    val themeId: Int by lazy {
-        if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppTheme_Dark
-        else R.style.AppTheme_Light
-    }
+    val themeId: Int by lazy { Theme.themeId(prefs) }
 
     /** スクロールでツールバーを隠す */
     val hideToolbarByScrolling: Boolean by lazy {

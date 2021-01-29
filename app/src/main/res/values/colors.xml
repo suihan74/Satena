@@ -11,6 +11,7 @@
     <!-- 画面背景 -->
     <color name="panelBackground">#EEE</color>
     <color name="panelBackgroundDark">#383839</color>
+    <color name="panelBackgroundExDark">#000</color>
 
     <!-- ダイアログ背景 -->
     <color name="dialogBackground">#EEE</color>
@@ -29,12 +30,15 @@
     <color name="textCursorDrawable">#777</color>
     <color name="textColor">#222</color>
     <color name="textColorDark">#dfdfdf</color>
+    <color name="textColorExDark">#BDBDBD</color>
+
     <color name="textColorHint">#999</color>
     <color name="textColorHintDark">#777</color>
 
     <!-- RecyclerView -->
     <color name="swipeRefreshBackground">@color/panelBackground</color>
     <color name="swipeRefreshBackgroundDark">#5D5D5E</color>
+    <color name="swipeRefreshBackgroundExDark">#111</color>
 
     <!-- RecyclerViewの仕切りの色 -->
     <color name="dividerColor">#FFA0A0A0</color>
@@ -49,6 +53,7 @@
     <!-- タブ -->
     <color name="tabBackground">#F0F0F0</color>
     <color name="tabBackgroundDark">#494947</color>
+    <color name="tabBackgroundExDark">#000</color>
 
     <!-- BookmarkDetailFragment#portraitの上部分 -->
     <color name="BookmarkDetailTopBackground">#F0F0F0</color>
@@ -62,6 +67,7 @@
     <!-- ブックマーク投稿ダイアログ -->
     <color name="bookmarkDialogBackground">#EEE</color>
     <color name="bookmarkDialogBackgroundDark">#3F3F40</color>
+    <color name="bookmarkDialogBackgroundExDark">#000</color>
 
     <!-- タイムスタンプ テキスト -->
     <color name="timestampColor">#888</color>
@@ -96,6 +102,7 @@
     <!-- EntryCommentの背景色 -->
     <color name="entryCommentBackground">#11000000</color>
     <color name="entryCommentBackgroundDark">#22FFFFFF</color>
+    <color name="entryCommentBackgroundExDark">#000</color>
 
     <!-- 障害情報 -->
     <color name="maintenanceResolved">#19BD3F</color>

@@ -5,6 +5,10 @@
         <variable
                 name="vm"
                 type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
+
+        <variable
+                name="bookmarksVM"
+                type="com.suihan74.satena.scenes.bookmarks.BookmarksTabViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -24,6 +28,7 @@
                     android:id="@+id/recycler_view"
                     style="@style/RecyclerView.Linear"
                     divider="@{@drawable/recycler_view_item_divider}"
+                    entities="@{bookmarksVM.displayBookmarks}"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
 

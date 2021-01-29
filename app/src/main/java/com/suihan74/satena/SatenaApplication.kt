@@ -14,10 +14,7 @@ import androidx.room.RoomDatabase
 import androidx.work.*
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.satena.models.AppDatabase
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.PreferenceKeyMigration
-import com.suihan74.satena.models.migrate
+import com.suihan74.satena.models.*
 import com.suihan74.satena.notices.NotificationWorker
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
@@ -143,11 +140,7 @@ class SatenaApplication : Application() {
         networkReceiver = NetworkReceiver(this)
 
         // テーマの設定
-        val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
-        setTheme(
-            if (isThemeDark) R.style.AppTheme_Dark
-            else R.style.AppTheme_Light
-        )
+        setTheme(Theme.themeId(prefs))
 
         // GUIDの作成（初回のみ）
         val uuid = prefs.getString(PreferenceKey.ID)

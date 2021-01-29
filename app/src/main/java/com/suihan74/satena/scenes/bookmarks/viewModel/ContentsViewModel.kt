@@ -16,6 +16,7 @@ import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.Theme
 import com.suihan74.satena.scenes.bookmarks.BookmarkDetailOpenable
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabAdapter
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
@@ -36,9 +37,7 @@ class ContentsViewModel(
 ) : ViewModel() {
 
     /** 画面テーマ */
-    val themeId =
-        if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppTheme_Dark
-        else R.style.AppTheme_Light
+    val themeId = Theme.themeId(prefs)
 
     /** 現在表示中のタブ */
     val selectedTab by lazy {

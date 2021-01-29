@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
-import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.extensions.putEnum

@@ -33,9 +33,7 @@ class BookmarkPostViewModel(
 ) : ViewModel() {
 
     /** ダイアログ用テーマ */
-    val themeId : Int =
-        if (repository.isThemeDark) R.style.AppDialogTheme_Dark
-        else R.style.AppDialogTheme_Light
+    val themeId : Int = repository.themeId
 
     val closeOnTouchOutside : Boolean =
         repository.closeOnTouchOutside
