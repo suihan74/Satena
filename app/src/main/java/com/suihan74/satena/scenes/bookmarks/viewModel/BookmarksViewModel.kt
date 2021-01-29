@@ -137,6 +137,19 @@ class BookmarksViewModel(
         }
     }
 
+    fun loadEntryFromIntent(activity: AppCompatActivity, intent: Intent) = viewModelScope.launch {
+        val result = runCatching {
+            repository.loadEntryFromIntent(intent)
+        }
+
+        if (result.exceptionOrNull() is IllegalArgumentException) {
+            activity.lifecycleScope.launch(Dispatchers.Main.immediate) {
+                activity.showToast(R.string.invalid_url_error)
+                activity.finish()
+            }
+        }
+    }
+
     /**
      * クリックに伴う画面遷移などのイベントリスナを設定する
      */

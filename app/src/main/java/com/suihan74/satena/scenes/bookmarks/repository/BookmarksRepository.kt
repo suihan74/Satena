@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.bookmarks.repository
 import android.content.Intent
 import android.util.Log
 import android.webkit.URLUtil
-import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
@@ -304,8 +303,7 @@ class BookmarksRepository(
     }
 
     /** 取得済みのエントリ情報をセットする */
-    @MainThread
-    fun loadEntry(e: Entry) {
+    private suspend fun loadEntry(e: Entry) = withContext(Dispatchers.Main.immediate) {
         entry.value = e
     }
 
@@ -314,7 +312,7 @@ class BookmarksRepository(
      *
      * @throws ConnectionFailureException
      */
-    suspend fun loadEntry(url: String) : Entry {
+    private suspend fun loadEntry(url: String) : Entry {
         val result = runCatching {
             getEntry(url)
         }
@@ -333,7 +331,7 @@ class BookmarksRepository(
      *
      * @throws ConnectionFailureException
      */
-    suspend fun loadEntry(eid: Long) : Entry {
+    private suspend fun loadEntry(eid: Long) : Entry {
         val result = runCatching {
             getEntry(eid)
         }

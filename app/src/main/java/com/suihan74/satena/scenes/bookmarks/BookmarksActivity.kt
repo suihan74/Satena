@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -19,7 +18,6 @@ import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
-import kotlinx.coroutines.launch
 
 /**
  * ブクマ一覧画面
@@ -61,20 +59,11 @@ class BookmarksActivity :
             SafeSharedPreferences.create(this),
             app.ignoredEntriesRepository,
             app.userTagDao
-        ).also { repo ->
-            lifecycleScope.launch {
-                val result = runCatching {
-                    repo.loadEntryFromIntent(intent)
-                }
+        )
 
-                if (result.exceptionOrNull() is IllegalArgumentException) {
-                    showToast(R.string.invalid_url_error)
-                    finish()
-                }
-            }
+        BookmarksViewModel(repository).also {
+            it.loadEntryFromIntent(this, intent)
         }
-
-        BookmarksViewModel(repository)
     }
 
     /** タブ制御用のViewModel */
