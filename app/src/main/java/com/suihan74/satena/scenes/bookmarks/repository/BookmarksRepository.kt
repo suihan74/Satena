@@ -426,6 +426,12 @@ class BookmarksRepository(
 
     // ------ //
 
+    /** ユーザーが非表示対象かを判別する */
+    fun checkIgnored(user: String) : Boolean {
+        if (ignoredUsersCache.contains(user)) return true
+        return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w -> user.contains(w) }
+    }
+
     /** ブクマが非表示対象かを判別する */
     fun checkIgnored(bookmark: Bookmark) : Boolean {
         if (ignoredUsersCache.any { bookmark.user == it }) return true
@@ -941,16 +947,24 @@ class BookmarksRepository(
 
     /** 指定ブクマに言及しているブクマを取得する */
     fun getMentionsTo(bookmark: Bookmark) : List<Bookmark> {
+        val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
         val mentionRegex = Regex("""(id\s*:|>)\s*\Q${bookmark.user}\E""")
-        return bookmarksEntry.value?.bookmarks?.filter { it.comment.contains(mentionRegex) }.orEmpty()
+        val bookmarks = bookmarksEntry.value?.bookmarks?.filter { it.comment.contains(mentionRegex) }.orEmpty()
+
+        return if (displayIgnoredUsers) bookmarks
+        else bookmarks.filter { !checkIgnored(it) }
     }
 
     /** 指定ブクマが言及しているブクマを取得する */
     fun getMentionsFrom(bookmark: Bookmark) : List<Bookmark> {
+        val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
         val mentionRegex = Regex("""(id\s*:|>)\s*([A-Za-z0-9_]+)""")
         val matches = mentionRegex.findAll(bookmark.comment)
         val ids = matches.map { it.groupValues[2] }
-        return bookmarksEntry.value?.bookmarks?.filter { ids.contains(it.user) }.orEmpty()
+        val bookmarks = bookmarksEntry.value?.bookmarks?.filter { ids.contains(it.user) }.orEmpty()
+
+        return if (displayIgnoredUsers) bookmarks
+        else bookmarks.filter { !checkIgnored(it) }
     }
 
     /** 指定ブクマにつけられたスターとそれをつけたユーザーのブクマを取得する */
@@ -961,7 +975,11 @@ class BookmarksRepository(
         val receiver = bookmark.user
         val starsEntry = getStarsEntry(bookmark, forceUpdate)
 
-        starsEntry?.value?.allStars?.map { star ->
+        val allStars =
+            if (prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_STARS_OF_IGNORED_USERS)) starsEntry?.value?.allStars
+            else starsEntry?.value?.allStars?.filterNot { checkIgnored(it.user) }
+
+        allStars.orEmpty().map { star ->
             val sender = star.user
             StarRelation(
                 sender,
@@ -970,7 +988,7 @@ class BookmarksRepository(
                 receiverBookmark = bookmark,
                 star = star
             )
-        }.orEmpty()
+        }
     }
 
     /** 指定ブクマのユーザーがつけたスターとブクマを取得する */
@@ -990,6 +1008,8 @@ class BookmarksRepository(
             }
         }
 
+        val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_STARS_OF_IGNORED_USERS)
+
         val userNameRegex = Regex("""\Q${HatenaClient.B_BASE_URL}\E/([A-Za-z0-9_]+)/.*""")
         val sender = bookmark.user
         val starsEntries = getUserStars(sender)
@@ -999,6 +1019,8 @@ class BookmarksRepository(
             val star = starsEntry.allStars.firstOrNull { it.user == sender } ?: return@mapNotNull null
             val match = userNameRegex.find(starsEntry.url)
             val receiver = match?.groupValues?.get(1) ?: return@mapNotNull null
+            if (!displayIgnoredUsers && checkIgnored(receiver)) return@mapNotNull null
+
             StarRelation(
                 sender,
                 receiver,
