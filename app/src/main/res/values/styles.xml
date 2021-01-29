@@ -32,6 +32,9 @@
         <!-- ポップアップ部分の文字色 -->
         <item name="android:textColor">@color/textColor</item>
 
+        <!-- ツールバーの色を他の部分に渡すために使用 -->
+        <item name="toolbarBackground">@color/colorPrimary</item>
+
         <!-- SearchView -->
         <item name="searchViewStyle">@style/SearchViewStyle.Toolbar</item>
         <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.Toolbar</item>
@@ -104,6 +107,44 @@
         <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundDark</item>
     </style>
 
+    <!-- Extremely Dark Theme -->
+    <style name="AppTheme.ExDark">
+        <!-- ツールバーの色を他の部分に渡すために使用 -->
+        <item name="toolbarBackground">@color/panelBackgroundExDark</item>
+
+        <item name="colorPrimary">@color/colorPrimaryDark</item>
+        <item name="android:toolbarStyle">@style/ToolbarStyleExDark</item>
+        <item name="toolbarStyle">@style/ToolbarStyleExDark</item>
+        <item name="android:statusBarColor">@color/panelBackgroundExDark</item>
+        <item name="panelBackground">@color/panelBackgroundExDark</item>
+        <item name="tabBackground">@color/tabBackgroundExDark</item>
+        <item name="textColor">@color/textColorExDark</item>
+        <item name="textColorHint">@color/textColorHintDark</item>
+        <item name="dividerColor">@color/dividerColorDark</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundExDark</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundExDark</item>
+        <item name="entryCommentBackground">@color/entryCommentBackgroundExDark</item>
+        <item name="bookmarkDetailTopBackground">@color/panelBackgroundExDark</item>
+        <item name="tagTextColor">@color/tagColorDark</item>
+        <item name="bookmarkCountColor">@color/bookmarkUsersCountTextDark</item>
+        <!-- オプションメニュー背景色 -->
+        <item name="colorSurface">@color/panelBackgroundDark</item>
+
+        <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
+
+        <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
+        <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundDark</item>
+    </style>
+
+    <style name="ToolbarStyleExDark" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">@color/panelBackgroundExDark</item>
+    </style>
+
     <!-- スプラッシュ画面のテーマ -->
     <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -173,6 +214,23 @@
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
+        <item name="tagTextColor">@color/tagColorDark</item>
+
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+    </style>
+
+    <!-- Extremely Dark Theme -->
+    <style name="AppDialogTheme.ExDark">
+        <item name="panelBackground">@color/panelBackgroundExDark</item>
+        <item name="tabBackground">@color/tabBackgroundExDark</item>
+        <item name="textColor">@color/textColorExDark</item>
+        <item name="textColorHint">@color/textColorHintDark</item>
+        <item name="dividerColor">@color/dividerColorDark</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundExDark</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundExDark</item>
+        <item name="entryCommentBackground">@color/entryCommentBackgroundExDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
 
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
@@ -427,6 +485,11 @@
         <item name="editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="bottomSheetStyle">@style/BottomSheet.Dark</item>
     </style>
+    <style name="BottomSheetDialogTheme.ExDark">
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="bottomSheetStyle">@style/BottomSheet.ExDark</item>
+    </style>
 
     <style name="BottomSheet" parent="Widget.Design.BottomSheet.Modal"/>
     <style name="BottomSheet.Light">
@@ -434,5 +497,8 @@
     </style>
     <style name="BottomSheet.Dark">
         <item name="android:background">@drawable/shape_bottom_sheet_rounded_corner_dark</item>
+    </style>
+    <style name="BottomSheet.ExDark">
+        <item name="android:background">@drawable/shape_bottom_sheet_rounded_corner_ex_dark</item>
     </style>
 </resources>

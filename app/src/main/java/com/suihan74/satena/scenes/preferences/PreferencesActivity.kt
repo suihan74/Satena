@@ -17,6 +17,7 @@ import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.Theme
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.alsoAs
@@ -55,13 +56,7 @@ class PreferencesActivity : ActivityBase() {
         super.onCreate(savedInstanceState)
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-        val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
-        if (isThemeDark) {
-            setTheme(R.style.AppTheme_Dark)
-        }
-        else {
-            setTheme(R.style.AppTheme_Light)
-        }
+        setTheme(Theme.themeId(prefs))
         setContentView(R.layout.activity_preferences)
         setSupportActionBar(toolbar)
 

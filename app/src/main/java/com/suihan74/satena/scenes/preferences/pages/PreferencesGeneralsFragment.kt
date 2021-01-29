@@ -10,7 +10,7 @@ import android.widget.ToggleButton
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.InverseBindingAdapter
-import androidx.lifecycle.observe
+import androidx.lifecycle.Observer
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesGeneralsBinding
@@ -72,12 +72,17 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
             lifecycleOwner = viewLifecycleOwner
         }
 
-        // ダークテーマか否か
-        val initialTheme = viewModel.darkTheme.value
-        viewModel.darkTheme.observe(viewLifecycleOwner) {
+        // アプリのテーマを選択
+        binding.appThemeButton.setOnClickListener {
+            viewModel.openAppThemeSelectionDialog(childFragmentManager)
+        }
+
+        // テーマが変更されたら再起動して適用する
+        val initialTheme = viewModel.theme.value
+        viewModel.theme.observe(viewLifecycleOwner, Observer {
             // ユーザーの操作によって値が変更された場合のみテーマの再設定とアプリ再起動を行う
             // この判別をしないと無限ループする
-            if (initialTheme == it) return@observe
+            if (initialTheme == it) return@Observer
 
             // 再起動
             val intent = Intent(activity, PreferencesActivity::class.java).apply {
@@ -91,7 +96,7 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
                 putExtra(PreferencesActivity.EXTRA_THEME_CHANGED, true)
             }
             startActivity(intent)
-        }
+        })
 
         // ダイアログのテーマを選択
         binding.dialogThemeButton.setOnClickListener {
@@ -100,15 +105,15 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
 
         // バックグラウンドで通知を確認する
         var called = false // TODO: 応急
-        viewModel.checkNotices.observe(viewLifecycleOwner) {
+        viewModel.checkNotices.observe(viewLifecycleOwner, Observer {
             if (!called) {
                 called = true
-                return@observe
+                return@Observer
             }
             val context = requireContext()
             if (it) SatenaApplication.instance.startCheckingNotificationsWorker(context)
             else SatenaApplication.instance.stopCheckingNotificationsWorker(context)
-        }
+        })
 
         // 通知確認の間隔
         binding.buttonCheckingNoticesInterval.setOnClickListener {

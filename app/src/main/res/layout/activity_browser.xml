@@ -78,7 +78,7 @@
 
                 <com.google.android.material.bottomappbar.BottomAppBar
                         android:id="@+id/bottom_app_bar"
-                        app:backgroundTint="@color/colorPrimary"
+                        app:backgroundTint="?toolbarBackground"
                         app:contentInsetLeft="8dp"
                         app:contentInsetRight="8dp"
                         android:layout_width="match_parent"
