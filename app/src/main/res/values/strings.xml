@@ -169,7 +169,7 @@
     <string name="pref_generals_theme_desc">アプリのテーマ</string>
     <string name="pref_generals_theme_dark">Dark</string>
     <string name="pref_generals_theme_light">Light</string>
-    <string name="pref_generals_theme_ex_dark">Extremely Dark</string>
+    <string name="pref_generals_theme_ex_dark">Extreme Dark</string>
 
     <string name="pref_generals_dialog_theme_desc">ダイアログのテーマ</string>
     <string name="pref_generals_dialog_theme_dark">Dark</string>
