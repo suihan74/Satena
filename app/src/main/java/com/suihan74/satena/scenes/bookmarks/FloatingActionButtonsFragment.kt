@@ -8,10 +8,8 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksFabs3Binding
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
@@ -52,9 +50,8 @@ class FloatingActionButtonsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentBookmarksFabs3Binding>(
+        val binding = FragmentBookmarksFabs3Binding.inflate(
             inflater,
-            R.layout.fragment_bookmarks_fabs3,
             container,
             false
         ).also {
