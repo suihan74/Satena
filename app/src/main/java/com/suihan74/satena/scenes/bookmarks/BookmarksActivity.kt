@@ -95,15 +95,17 @@ class BookmarksActivity :
         binding = ActivityBookmarksBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // コンテンツフラグメントを生成
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_layout, BookmarksContentFragment.createInstance())
-            .commitAllowingStateLoss()
+        if (savedInstanceState == null) {
+            // コンテンツフラグメントを生成
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.main_layout, BookmarksContentFragment.createInstance())
+                .commitAllowingStateLoss()
 
-        // ドロワフラグメントを生成
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.entry_information_layout, EntryInformationFragment.createInstance())
-            .commitAllowingStateLoss()
+            // ドロワフラグメントを生成
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.entry_information_layout, EntryInformationFragment.createInstance())
+                .commitAllowingStateLoss()
+        }
 
         binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {}

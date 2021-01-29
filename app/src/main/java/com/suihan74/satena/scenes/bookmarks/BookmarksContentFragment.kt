@@ -56,9 +56,11 @@ class BookmarksContentFragment : Fragment() {
         )
 
         // 下部ボタンエリアを生成
-        childFragmentManager.beginTransaction()
-            .replace(R.id.buttons_layout, FloatingActionButtonsFragment.createInstance())
-            .commitAllowingStateLoss()
+        if (savedInstanceState == null) {
+            childFragmentManager.beginTransaction()
+                .replace(R.id.buttons_layout, FloatingActionButtonsFragment.createInstance())
+                .commitAllowingStateLoss()
+        }
 
         return binding.root
     }
