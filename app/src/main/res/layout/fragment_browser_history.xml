@@ -22,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
-        <EditText
+        <com.suihan74.utilities.views.ImeEnhancedEditText
                 android:id="@+id/search_text"
 
                 android:text="@={vm.keyword}"

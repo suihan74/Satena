@@ -296,6 +296,7 @@ class BookmarkDetailFragment : Fragment() {
                 bookmarksActivity.onBackPressedCallback.handleOnBackPressed()
             }
         }
+        binding.root.requestFocus()
     }
 
     private inline fun <reified T> getTabIndex(tabAdapter: DetailTabAdapter) =
