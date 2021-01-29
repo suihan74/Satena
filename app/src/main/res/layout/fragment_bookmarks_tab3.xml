@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
     <data>
-        <import type="androidx.lifecycle.LiveData"/>
-        <import type="java.util.List"/>
-        <import type="com.suihan74.hatenaLib.Bookmark"/>
-
         <variable
-                name="bookmarks"
-                type="LiveData&lt;List&lt;Bookmark&gt;&gt;" />
-
-        <variable
-                name="fragment"
-                type="com.suihan74.satena.scenes.bookmarks.BookmarksTabFragment" />
+                name="vm"
+                type="com.suihan74.satena.scenes.bookmarks.BookmarksTabViewModel" />
     </data>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -24,8 +16,7 @@
                 android:id="@+id/recycler_view"
                 style="@style/RecyclerView.Linear"
                 divider="@{@drawable/recycler_view_item_divider}"
-                bookmarks="@{bookmarks}"
-                fragment="@{fragment}"
+                entities="@{vm.displayBookmarks}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 

@@ -4,12 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.BindingAdapter
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
@@ -20,6 +17,7 @@ import com.suihan74.utilities.ScrollableToBottom
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.launch
 
 abstract class BookmarksTabFragment :
@@ -47,6 +45,10 @@ abstract class BookmarksTabFragment :
     val contentsViewModel : ContentsViewModel
         get() = bookmarksActivity.contentsViewModel
 
+    val viewModel by lazyProvideViewModel {
+        BookmarksTabViewModel(bookmarksViewModel.repository, bookmarksLiveData)
+    }
+
     private var _binding : FragmentBookmarksTab3Binding? = null
     private val binding : FragmentBookmarksTab3Binding
         get() = _binding!!
@@ -61,17 +63,15 @@ abstract class BookmarksTabFragment :
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val binding = DataBindingUtil.inflate<FragmentBookmarksTab3Binding>(
+        _binding = FragmentBookmarksTab3Binding.inflate(
             inflater,
-            R.layout.fragment_bookmarks_tab3,
             container,
             false
         ).also {
-            it.bookmarks = bookmarksLiveData
-            it.fragment = this
+            it.vm = viewModel
             it.lifecycleOwner = viewLifecycleOwner
         }
-        this._binding = binding
+        viewModel.init(viewLifecycleOwner)
 
         initializeRecyclerView(binding)
 
@@ -86,7 +86,11 @@ abstract class BookmarksTabFragment :
     /** ブクマリストの初期化 */
     protected open fun initializeRecyclerView(binding: FragmentBookmarksTab3Binding) {
         val bookmarksAdapter = BookmarksAdapter().also { adapter ->
-            adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+            adapter.setOnSubmitListener {
+                binding.swipeLayout.isRefreshing = false
+                binding.swipeLayout.isEnabled = true
+                afterLoadedBookmarks()
+            }
 
             adapter.setOnItemClickedListener { bookmark ->
                 // 詳細画面を開く
@@ -151,36 +155,5 @@ abstract class BookmarksTabFragment :
     override fun scrollToBottom() {
         val adapter = _binding?.recyclerView?.adapter ?: return
         _binding?.recyclerView?.scrollToPosition(adapter.itemCount - 1)
-    }
-
-    // ------ //
-
-    object BookmarksBindingAdapters {
-        @JvmStatic
-        @BindingAdapter("bookmarks", "fragment")
-        fun bindBookmarks(
-            rv: RecyclerView,
-            bookmarks: List<Bookmark>?,
-            fragment: BookmarksTabFragment?
-        ) {
-            if (bookmarks == null || fragment == null) return
-            val vm = fragment.bookmarksActivity.bookmarksViewModel
-            val repo = vm.repository
-            rv.adapter.alsoAs<BookmarksAdapter> { adapter ->
-                fragment.lifecycleScope.launch {
-                    adapter.setBookmarks(
-                        bookmarks = bookmarks,
-                        bookmarksEntry = vm.bookmarksEntry.value,
-                        taggedUsers = repo.taggedUsers.mapNotNull { it.value.value },
-                        ignoredUsers = repo.ignoredUsersCache,
-                        displayMutedMention = false
-                    ) {
-                        fragment._binding?.swipeLayout?.isRefreshing = false
-                        fragment._binding?.swipeLayout?.isEnabled = true
-                        fragment.afterLoadedBookmarks()
-                    }
-                }
-            }
-        }
     }
 }

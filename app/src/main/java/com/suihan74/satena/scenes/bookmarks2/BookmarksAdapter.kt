@@ -81,6 +81,8 @@ class BookmarksAdapter(
     /** 表示項目リスト */
     private var loadableFooter: LoadableFooterViewHolder? = null
 
+    private var onSubmitted: Listener<List<RecyclerState<Entity>>>? = null
+
     /** ブクマ項目クリック時処理 */
     private var onItemClicked: Listener<Bookmark>? = null
 
@@ -104,6 +106,10 @@ class BookmarksAdapter(
 
     /** スターをつける処理をボタンに設定する */
     private var addStarButtonBinder : ((button: ImageButton, bookmark: Bookmark)->Unit)? = null
+
+    fun setOnSubmitListener(listener: Listener<List<RecyclerState<Entity>>>?) {
+        onSubmitted = listener
+    }
 
     fun setOnItemClickedListener(listener: Listener<Bookmark>?) {
         onItemClicked = listener
@@ -248,6 +254,12 @@ class BookmarksAdapter(
     }
 
     private val setBookmarksLock = Mutex()
+
+    fun setBookmarks(entities: List<RecyclerState<Entity>>) {
+        submitList(entities) {
+            onSubmitted?.invoke(entities)
+        }
+    }
 
     suspend fun setBookmarks(
         bookmarks: List<Bookmark>,
