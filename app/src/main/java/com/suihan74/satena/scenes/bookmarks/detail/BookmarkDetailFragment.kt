@@ -6,6 +6,7 @@ import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
+import androidx.activity.addCallback
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -77,6 +78,10 @@ class BookmarkDetailFragment : Fragment() {
         enterTransition = TransitionSet()
             .addTransition(Fade())
             .addTransition(Slide(Gravity.END))
+
+        exitTransition = TransitionSet()
+            .addTransition(Fade())
+            .addTransition(Slide(Gravity.START))
     }
 
     override fun onCreateView(
@@ -135,11 +140,19 @@ class BookmarkDetailFragment : Fragment() {
             viewModel.starsMenuOpened.value = viewModel.starsMenuOpened.value != true
         }
 
+        // 戻るボタンでスターメニューを閉じる
+        val onBackPressedCallback = requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            false,
+            { viewModel.starsMenuOpened.value = false }
+        )
+
         viewModel.starsMenuOpened.observe(viewLifecycleOwner) {
             when (it) {
                 true -> openStarMenu(binding)
                 false -> closeStarMenu(binding)
             }
+            onBackPressedCallback.isEnabled = it
         }
 
         return binding.root

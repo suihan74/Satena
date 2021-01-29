@@ -4,10 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
@@ -36,17 +38,21 @@ abstract class BookmarksTabFragment :
 
     // ------ //
 
-    val bookmarksActivity: BookmarksActivity
+    val bookmarksActivity : BookmarksActivity
         get() = requireActivity() as BookmarksActivity
 
-    val bookmarksViewModel: BookmarksViewModel
+    val bookmarksViewModel : BookmarksViewModel
         get() = bookmarksActivity.bookmarksViewModel
 
-    val contentsViewModel: ContentsViewModel
+    val contentsViewModel : ContentsViewModel
         get() = bookmarksActivity.contentsViewModel
 
-    var binding: FragmentBookmarksTab3Binding? = null
-        private set
+    private var _binding : FragmentBookmarksTab3Binding? = null
+    private val binding : FragmentBookmarksTab3Binding
+        get() = _binding!!
+
+    protected val bookmarksAdapter : BookmarksAdapter
+        get() = binding.recyclerView.adapter as BookmarksAdapter
 
     // ------ //
 
@@ -61,18 +67,27 @@ abstract class BookmarksTabFragment :
             container,
             false
         ).also {
+            it.bookmarks = bookmarksLiveData
+            it.fragment = this
             it.lifecycleOwner = viewLifecycleOwner
         }
-        this.binding = binding
+        this._binding = binding
 
         initializeRecyclerView(binding)
 
         return binding.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     /** ブクマリストの初期化 */
     protected open fun initializeRecyclerView(binding: FragmentBookmarksTab3Binding) {
         val bookmarksAdapter = BookmarksAdapter().also { adapter ->
+            adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+
             adapter.setOnItemClickedListener { bookmark ->
                 // 詳細画面を開く
                 activity.alsoAs<BookmarkDetailOpenable> { container ->
@@ -125,39 +140,47 @@ abstract class BookmarksTabFragment :
             // 初期ロード中は無効にしておく
             swipeLayout.isEnabled = false
         }
-
-        // 取得したリストを表示
-        bookmarksLiveData.observe(viewLifecycleOwner) {
-            if (it == null) {
-                bookmarksAdapter.submitList(null)
-            }
-            else {
-                val repo = bookmarksViewModel.repository
-                bookmarksAdapter.setBookmarks(
-                    lifecycleScope,
-                    bookmarks = it,
-                    bookmarksEntry = bookmarksViewModel.bookmarksEntry.value,
-                    taggedUsers = repo.taggedUsers.mapNotNull { it.value.value },
-                    ignoredUsers = repo.ignoredUsersCache,
-                    displayMutedMention = false,
-                    starsEntryGetter = { b -> repo.getStarsEntry(b)?.value }
-                ) {
-                    binding.swipeLayout.isRefreshing = false
-                    binding.swipeLayout.isEnabled = true
-                    afterLoadedBookmarks()
-                }
-            }
-        }
     }
 
     // ------ //
 
     override fun scrollToTop() {
-        binding?.recyclerView?.scrollToPosition(0)
+        _binding?.recyclerView?.scrollToPosition(0)
     }
 
     override fun scrollToBottom() {
-        val adapter = binding?.recyclerView?.adapter ?: return
-        binding?.recyclerView?.scrollToPosition(adapter.itemCount - 1)
+        val adapter = _binding?.recyclerView?.adapter ?: return
+        _binding?.recyclerView?.scrollToPosition(adapter.itemCount - 1)
+    }
+
+    // ------ //
+
+    object BookmarksBindingAdapters {
+        @JvmStatic
+        @BindingAdapter("bookmarks", "fragment")
+        fun bindBookmarks(
+            rv: RecyclerView,
+            bookmarks: List<Bookmark>?,
+            fragment: BookmarksTabFragment?
+        ) {
+            if (bookmarks == null || fragment == null) return
+            val vm = fragment.bookmarksActivity.bookmarksViewModel
+            val repo = vm.repository
+            rv.adapter.alsoAs<BookmarksAdapter> { adapter ->
+                fragment.lifecycleScope.launch {
+                    adapter.setBookmarks(
+                        bookmarks = bookmarks,
+                        bookmarksEntry = vm.bookmarksEntry.value,
+                        taggedUsers = repo.taggedUsers.mapNotNull { it.value.value },
+                        ignoredUsers = repo.ignoredUsersCache,
+                        displayMutedMention = false
+                    ) {
+                        fragment._binding?.swipeLayout?.isRefreshing = false
+                        fragment._binding?.swipeLayout?.isEnabled = true
+                        fragment.afterLoadedBookmarks()
+                    }
+                }
+            }
+        }
     }
 }

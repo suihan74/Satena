@@ -40,12 +40,10 @@ class BookmarksViewModel(
 ) : ViewModel() {
 
     /** サインイン状態 */
-    val signedIn
-        get() = repository.signedIn
+    val signedIn = repository.signedIn
 
     /** 表示中のページのEntry */
-    val entry
-        get() = repository.entry
+    val entry = repository.entry
 
     /** 表示中のページのBookmarksEntry */
     val bookmarksEntry by lazy {
@@ -67,29 +65,22 @@ class BookmarksViewModel(
     }
 
     /** エントリにつけられたスター */
-    val entryStarsEntry
-        get() = repository.entryStarsEntry
+    val entryStarsEntry = repository.entryStarsEntry
 
     /** アクションバーに表示するサブタイトル */
-    val subtitle by lazy {
-        MutableLiveData<String>()
-    }
+    val subtitle = MutableLiveData<String>()
 
     /** 人気ブクマリスト */
-    val popularBookmarks
-        get() = repository.popularBookmarks
+    val popularBookmarks = repository.popularBookmarks
 
     /** 新着ブクマリスト */
-    val recentBookmarks
-        get() = repository.recentBookmarks
+    val recentBookmarks = repository.recentBookmarks
 
     /** 無言や非表示を含むすべての新着ブクマリスト */
-    val allBookmarks
-        get() = repository.allBookmarks
+    val allBookmarks = repository.allBookmarks
 
     /** ユーザータグによる抽出を行う新着ブクマリスト */
-    val customBookmarks
-        get() = repository.customBookmarks
+    val customBookmarks = repository.customBookmarks
 
     /** サインインしているユーザーのブクマ */
     val userBookmark : Bookmark?
@@ -98,12 +89,10 @@ class BookmarksViewModel(
         }
 
     /** ユーザーの所持カラースター数 */
-    val userColorStarsCount
-        get() = repository.userColorStarsCount
+    val userColorStarsCount = repository.userColorStarsCount
 
     /** フィルタテキスト */
-    val filteringText
-        get() = repository.filteringText
+    val filteringText = repository.filteringText
 
     /** 途中で中断されたブコメ編集内容 */
     var editData : BookmarkEditData? = null

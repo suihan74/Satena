@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.viewpager.widget.ViewPager
@@ -16,7 +17,6 @@ import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarkDetailOpenable
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabAdapter
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailFragment
@@ -87,17 +87,17 @@ class ContentsViewModel(
 
     /** タブ制御を初期化 */
     fun initializeTabPager(
-        activity: BookmarksActivity,
+        context: Context,
+        fragmentManager: FragmentManager,
         viewPager: ViewPager,
         tabLayout: TabLayout
     ) {
-        val adapter = BookmarksTabAdapter(activity, activity.supportFragmentManager)
+        val adapter = BookmarksTabAdapter(context, fragmentManager)
         viewPager.adapter = adapter
 
         tabLayout.also { layout ->
             layout.setupWithViewPager(viewPager)
             layout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-
                 /** タブを切替え */
                 override fun onTabSelected(tab: TabLayout.Tab?) {
                     tab?.position?.let {
@@ -124,9 +124,9 @@ class ContentsViewModel(
                 if (initialTabOrdinal.value == idx) return@setOnTabLongClickListener false
 
                 initialTabOrdinal.value = idx
-                activity.showToast(
+                context.showToast(
                     R.string.msg_bookmarks_initial_tab_changed,
-                    activity.getString(BookmarksTabType.fromOrdinal(idx).textId)
+                    context.getString(BookmarksTabType.fromOrdinal(idx).textId)
                 )
                 return@setOnTabLongClickListener true
             }
@@ -198,7 +198,7 @@ class ContentsViewModel(
 
         val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
         fragmentManager.beginTransaction()
-            .add(container.bookmarkDetailFrameLayoutId, bookmarkDetailFragment, backStackName)
+            .replace(container.bookmarkDetailFrameLayoutId, bookmarkDetailFragment, backStackName)
             .addToBackStack(backStackName)
             .commitAllowingStateLoss()
     }

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="bookmarksViewModel"
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
+        <variable
+                name="contentsViewModel"
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appbar_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <com.suihan74.utilities.views.MarqueeToolbar
+                    android:id="@+id/toolbar"
+                    app:layout_scrollFlags="enterAlways|scroll"
+                    app:title="@{bookmarksViewModel.entry.title}"
+                    app:subtitle="@{bookmarksViewModel.subtitle}"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tab_layout"
+                    style="@style/TabLayoutStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/tabBackground"/>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <!-- ブクマリストを表示するための領域 -->
+        <androidx.viewpager.widget.ViewPager
+                android:id="@+id/tab_pager"
+                currentTab="@{contentsViewModel.selectedTab}"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+
+        <!-- ブクマリスト用下部ボタンを表示するための領域 -->
+        <FrameLayout
+                android:id="@+id/buttons_layout"
+                android:layout_gravity="bottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <ProgressBar
+                android:id="@+id/progress_bar"
+                android:visibility="@{bookmarksViewModel.repository.loadingEntry}"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

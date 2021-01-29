@@ -17,7 +17,7 @@ class BookmarksTabAdapter(
     override fun getItem(position: Int) =
         getTabType(position).createFragment()
 
-    override fun getPageTitle(position: Int): CharSequence? =
+    override fun getPageTitle(position: Int): CharSequence =
         context.getString(getTabType(position).textId)
 
     override fun getCount() = BookmarksTabType.values().size

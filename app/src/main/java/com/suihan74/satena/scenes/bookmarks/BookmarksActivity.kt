@@ -6,7 +6,6 @@ import android.view.View
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
-import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
@@ -91,39 +90,17 @@ class BookmarksActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setTheme(contentsViewModel.themeId)
 
-        binding = DataBindingUtil.setContentView<ActivityBookmarksBinding>(
-            this.also { it.setTheme(contentsViewModel.themeId) },
-            R.layout.activity_bookmarks
-        ).also {
-            it.bookmarksViewModel = bookmarksViewModel
-            it.contentsViewModel = contentsViewModel
-            it.lifecycleOwner = this
-        }
+        binding = ActivityBookmarksBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        // イベントリスナの設定
-        bookmarksViewModel.initializeListeners(this)
-
-        // タブ制御の初期化
-        contentsViewModel.initializeTabPager(
-            this,
-            binding.tabPager,
-            binding.tabLayout
-        )
-
-        // スクロールにあわせてビューを隠す設定を反映させる
-        contentsViewModel.setScrollingBehavior(
-            this,
-            binding.toolbar,
-            binding.buttonsLayout
-        )
-
-        // 下部ボタンエリアを生成
+        // コンテンツフラグメントを生成
         supportFragmentManager.beginTransaction()
-            .replace(R.id.buttons_layout, FloatingActionButtonsFragment.createInstance())
+            .replace(R.id.main_layout, BookmarksContentFragment.createInstance())
             .commitAllowingStateLoss()
 
-        // ドロワエリアを生成
+        // ドロワフラグメントを生成
         supportFragmentManager.beginTransaction()
             .replace(R.id.entry_information_layout, EntryInformationFragment.createInstance())
             .commitAllowingStateLoss()
@@ -134,7 +111,7 @@ class BookmarksActivity :
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {
                 // ドロワ開閉でIMEを閉じる
-                hideSoftInputMethod(binding.mainArea)
+                hideSoftInputMethod(binding.mainLayout)
             }
         })
 
@@ -167,10 +144,6 @@ class BookmarksActivity :
                 closeDrawer()
             }
 
-            onBackPressedDispatcher.hasEnabledCallbacks() -> {
-                onBackPressedDispatcher.onBackPressed()
-            }
-
             else -> super.onBackPressed()
         }
     }
@@ -198,5 +171,5 @@ class BookmarksActivity :
         get() = supportFragmentManager
 
     override val bookmarkDetailFrameLayoutId: Int
-        get() = R.id.detail_content_layout
+        get() = R.id.main_layout
 }

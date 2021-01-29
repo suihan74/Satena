@@ -1,102 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
-    <data>
-        <variable
-                name="contentsViewModel"
-                type="com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel" />
-        <variable
-                name="bookmarksViewModel"
-                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
-    </data>
+<androidx.drawerlayout.widget.DrawerLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/panelBackground"
+        android:id="@+id/drawer_layout">
 
-    <androidx.drawerlayout.widget.DrawerLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+    <!-- Main contents -->
+    <FrameLayout
+            android:id="@+id/main_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="match_parent"/>
+
+    <!-- Drawer -->
+    <FrameLayout
+            android:id="@+id/entry_information_layout"
             android:background="?attr/panelBackground"
-            android:id="@+id/drawer_layout">
-
-        <!-- Main contents -->
-        <!--
-            FrameLayoutで包んでいるのは，
-            detail_content_layoutに表示中の画面内でのスクロールで
-            Toolbarの状態を変化させないため
-        -->
-        <FrameLayout
-                android:id="@+id/main_area"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            <androidx.coordinatorlayout.widget.CoordinatorLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                <com.google.android.material.appbar.AppBarLayout
-                        android:id="@+id/appbar_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                    <com.suihan74.utilities.views.MarqueeToolbar
-                            android:id="@+id/toolbar"
-                            app:layout_scrollFlags="enterAlways|scroll"
-                            app:title="@{bookmarksViewModel.entry.title}"
-                            app:subtitle="@{bookmarksViewModel.subtitle}"
-                            android:focusable="true"
-                            android:focusableInTouchMode="true"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"/>
-
-                    <com.google.android.material.tabs.TabLayout
-                            android:id="@+id/tab_layout"
-                            style="@style/TabLayoutStyle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="?attr/tabBackground"/>
-
-                </com.google.android.material.appbar.AppBarLayout>
-
-                <!-- ブクマリストを表示するための領域 -->
-                <androidx.viewpager.widget.ViewPager
-                        android:id="@+id/tab_pager"
-                        currentTab="@{contentsViewModel.selectedTab}"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-
-                <!-- ブクマリスト用下部ボタンを表示するための領域 -->
-                <FrameLayout
-                        android:id="@+id/buttons_layout"
-                        android:layout_gravity="bottom"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-
-            </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-            <!-- ブクマ詳細画面を表示するための領域 -->
-            <FrameLayout
-                    android:id="@+id/detail_content_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
-
-            <ProgressBar
-                    android:id="@+id/progress_bar"
-                    android:layout_gravity="center"
-                    android:visibility="@{bookmarksViewModel.repository.loadingEntry}"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-        </FrameLayout>
-
-        <!-- Drawer -->
-        <FrameLayout
-                android:id="@+id/entry_information_layout"
-                android:background="?attr/panelBackground"
-                android:clickable="true"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:layout_gravity="end"
-                android:layout_width="280dp"
-                android:layout_height="match_parent"/>
-    </androidx.drawerlayout.widget.DrawerLayout>
-</layout>
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:layout_gravity="end"
+            android:layout_width="280dp"
+            android:layout_height="match_parent"/>
+</androidx.drawerlayout.widget.DrawerLayout>

@@ -6,7 +6,6 @@ import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
 import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
-import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
@@ -46,9 +45,7 @@ class RecentBookmarksTabFragment : BookmarksTabFragment() {
 
     override fun afterLoadedBookmarks() {
         scrollingUpdater?.isEnabled = true
-        binding?.recyclerView?.adapter.alsoAs<BookmarksAdapter> { adapter ->
-            adapter.additionalLoadable = bookmarksViewModel.repository.additionalLoadable
-        }
+        bookmarksAdapter.additionalLoadable = bookmarksViewModel.repository.additionalLoadable
     }
 
     // ------ //

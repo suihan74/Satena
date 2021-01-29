@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.NotFoundException
@@ -183,50 +184,51 @@ class BookmarksTabFragment : Fragment() {
 
         // ブクマリストの更新を監視
         var initializedList = false
-        viewModel.bookmarks.observe(viewLifecycleOwner) {
-            val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
-            val userTags = activityViewModel.taggedUsers.value ?: emptyList()
-            val ignoredUsers = activityViewModel.ignoredUsers.value
-            val displayMutedMention = activityViewModel.repository.showCalledIgnoredUsers
-            bookmarksAdapter.setBookmarks(
-                lifecycleScope,
-                it,
-                bookmarksEntry,
-                userTags,
-                ignoredUsers,
-                displayMutedMention,
-                { b -> activityViewModel.repository.getStarsEntryTo(b.user) }
-            ) { newStates ->
-                // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
-                if (!initializedList && savedInstanceState == null) {
-                    binding.bookmarksList.adapter = bookmarksAdapter
-                    initializedList = true
-                }
-                scrollingUpdater.isEnabled = true
-                viewModel.displayStates = newStates
-            }
-        }
-
-        // ユーザータグの更新を監視
-        activityViewModel.taggedUsers.observe(viewLifecycleOwner) {
-            val bookmarks = viewModel.bookmarks.value
-            if (bookmarks != null) {
-                val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@observe
+        viewModel.bookmarks.observe(viewLifecycleOwner, Observer {
+            lifecycleScope.launch {
+                val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@launch
+                val userTags = activityViewModel.taggedUsers.value ?: emptyList()
                 val ignoredUsers = activityViewModel.ignoredUsers.value
                 val displayMutedMention = activityViewModel.repository.showCalledIgnoredUsers
+
                 bookmarksAdapter.setBookmarks(
-                    lifecycleScope,
-                    bookmarks,
-                    bookmarksEntry,
                     it,
+                    bookmarksEntry,
+                    userTags,
                     ignoredUsers,
-                    displayMutedMention,
-                    { b -> activityViewModel.repository.getStarsEntryTo(b.user) }
+                    displayMutedMention
                 ) { newStates ->
+                    // 少なくとも一度以上リストが更新されてから追加ロードを有効にする
+                    if (!initializedList && savedInstanceState == null) {
+                        binding.bookmarksList.adapter = bookmarksAdapter
+                        initializedList = true
+                    }
+                    scrollingUpdater.isEnabled = true
                     viewModel.displayStates = newStates
                 }
             }
-        }
+        })
+
+        // ユーザータグの更新を監視
+        activityViewModel.taggedUsers.observe(viewLifecycleOwner, Observer {
+            val bookmarks = viewModel.bookmarks.value
+            if (bookmarks != null) {
+                lifecycleScope.launch {
+                    val bookmarksEntry = activityViewModel.bookmarksEntry.value ?: return@launch
+                    val ignoredUsers = activityViewModel.ignoredUsers.value
+                    val displayMutedMention = activityViewModel.repository.showCalledIgnoredUsers
+                    bookmarksAdapter.setBookmarks(
+                        bookmarks,
+                        bookmarksEntry,
+                        it,
+                        ignoredUsers,
+                        displayMutedMention
+                    ) { newStates ->
+                        viewModel.displayStates = newStates
+                    }
+                }
+            }
+        })
 
         // スター数の変化を監視する
         var initializedStars = false

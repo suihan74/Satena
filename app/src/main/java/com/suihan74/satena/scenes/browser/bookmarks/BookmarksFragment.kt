@@ -128,19 +128,15 @@ class BookmarksFragment :
         }
 
         viewModel.recentBookmarks.observe(viewLifecycleOwner) {
-            if (it == null) {
-                bookmarksAdapter.submitList(null)
-            }
-            else {
+            if (it == null) return@observe
+            lifecycleScope.launch {
                 val repo = viewModel.repository
                 bookmarksAdapter.setBookmarks(
-                    lifecycleScope,
                     bookmarks = it,
                     bookmarksEntry = viewModel.bookmarksEntry.value,
                     taggedUsers = repo.taggedUsers.mapNotNull { it.value.value },
                     ignoredUsers = repo.ignoredUsersCache,
-                    displayMutedMention = false,
-                    starsEntryGetter = { b -> repo.getStarsEntry(b)?.value }
+                    displayMutedMention = false
                 ) {
                     binding.swipeLayout.isRefreshing = false
                     binding.swipeLayout.isEnabled = true

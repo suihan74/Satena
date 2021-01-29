@@ -8,6 +8,10 @@
         <variable
                 name="bookmarks"
                 type="LiveData&lt;List&lt;Bookmark&gt;&gt;" />
+
+        <variable
+                name="fragment"
+                type="com.suihan74.satena.scenes.bookmarks.BookmarksTabFragment" />
     </data>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -20,6 +24,8 @@
                 android:id="@+id/recycler_view"
                 style="@style/RecyclerView.Linear"
                 divider="@{@drawable/recycler_view_item_divider}"
+                bookmarks="@{bookmarks}"
+                fragment="@{fragment}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 

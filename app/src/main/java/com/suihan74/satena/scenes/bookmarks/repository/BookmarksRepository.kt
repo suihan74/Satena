@@ -4,7 +4,6 @@ import android.content.Intent
 import android.util.Log
 import android.webkit.URLUtil
 import androidx.annotation.MainThread
-import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
@@ -496,10 +495,9 @@ class BookmarksRepository(
     }
 
     /** 新着ブクマリストに依存する各種リストに変更を通知する */
-    @WorkerThread
     private suspend fun updateRecentBookmarksLiveData(
         rawList: List<BookmarkWithStarCount>
-    ) = coroutineScope {
+    ) = withContext(Dispatchers.Default) {
         val list = wordFilter(rawList)
 
         val jobs = listOf(

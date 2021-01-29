@@ -30,13 +30,14 @@ import com.suihan74.utilities.extensions.appendStarSpan
 import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
 import org.threeten.bp.format.DateTimeFormatter
 
-fun <T> List<T>?.contentsEquals(other: List<T>?) =
+fun <T> List<T>?.contentsEquals(other: List<T>?, comparator: ((T, T)->Boolean) = { a, b -> a == b }) =
     if (this == null && other == null) true
     else if (this == null && other != null) false
     else if (this != null && other == null) false
-    else this!!.size == other!!.size && this.mapIndexed { index, _ -> this[index] == other[index] }.all { it }
+    else this!!.size == other!!.size && this.mapIndexed { index, _ -> comparator(this[index], other[index]) }.all { it }
 
 
 class BookmarksAdapter(
@@ -70,8 +71,8 @@ class BookmarksAdapter(
 
             return bookmark.same(other.bookmark) &&
                     isIgnored == other.isIgnored &&
-                    mentions.contentsEquals(other.mentions) &&
-                    userTags.contentsEquals(other.userTags)
+                    mentions.contentsEquals(other.mentions) { a, b -> a.same(b) } &&
+                    userTags.contentsEquals(other.userTags) { a, b -> a.name == b.name }
         }
 
         override fun hashCode() = super.hashCode()
@@ -246,39 +247,26 @@ class BookmarksAdapter(
         loadableFooter?.hideProgressBar(additionalLoadable)
     }
 
-    private var setBookmarksJob : Job? = null
-        get() = synchronized(setBookmarksTaskLock) { field }
-        set(value) {
-            synchronized(setBookmarksTaskLock) {
-                field = value
-            }
-        }
-    private val setBookmarksTaskLock = Any()
+    private val setBookmarksLock = Mutex()
 
-    fun setBookmarks(
-        coroutineScope: CoroutineScope,
+    suspend fun setBookmarks(
         bookmarks: List<Bookmark>,
         bookmarksEntry: BookmarksEntry?,
         taggedUsers: List<UserAndTags>,
         ignoredUsers: List<String>,
         displayMutedMention: Boolean,
-        starsEntryGetter: suspend (bookmark: Bookmark)->StarsEntry?,
         onSubmitted: Listener<List<RecyclerState<Entity>>>? = null
-    ) {
-        setBookmarksJob?.cancel()
-        setBookmarksJob = coroutineScope.launch(Dispatchers.Default) {
-            try {
-                val newStates = RecyclerState.makeStatesWithFooter(bookmarks.map {
-                    val analyzedComment = BookmarkCommentDecorator.convert(it.comment)
-                    /* TODO: スターを上書きするようにすると取得を待ってしまって非常に遅くなる
-                             そもそもこれ必要か？というところも考える
-                     */
-                    //val stars = starsEntryGetter(it)
-                    val bookmark = it//it.copy(starCount = stars?.allStars ?: it.starCount)
+    ) = withContext(Dispatchers.Main) {
+        if (!setBookmarksLock.tryLock()) return@withContext
+
+        try {
+            val newStates = withContext(Dispatchers.Default) {
+                RecyclerState.makeStatesWithFooter(bookmarks.map { bookmark ->
+                    val analyzedComment = BookmarkCommentDecorator.convert(bookmark.comment)
                     Entity(
                         bookmark = bookmark,
                         analyzedComment = analyzedComment,
-                        isIgnored = ignoredUsers.contains(it.user),
+                        isIgnored = ignoredUsers.contains(bookmark.user),
                         mentions = analyzedComment.ids.mapNotNull { called ->
                             bookmarksEntry?.bookmarks?.firstOrNull { b -> b.user == called }
                                 ?.let { mentioned ->
@@ -286,27 +274,24 @@ class BookmarksAdapter(
                                     else mentioned
                                 }
                         },
-                        userTags = taggedUsers.firstOrNull { t -> t.user.name == it.user }?.tags
+                        userTags = taggedUsers.firstOrNull { t -> t.user.name == bookmark.user }?.tags
                             ?: emptyList()
                     )
                 })
+            }
 
-                withContext(Dispatchers.Main) {
-                    submitList(newStates) {
-                        coroutineScope.launch(Dispatchers.Main) {
-                            onSubmitted?.invoke(newStates)
-                        }
-                    }
-                }
-
-                setBookmarksJob = null
+            submitList(newStates) {
+                onSubmitted?.invoke(newStates)
+                setBookmarksLock.unlock()
             }
-            catch (e: CancellationException) {
-                Log.i("BookmarksAdapter", "#setBookmarks() is canceled")
-            }
-            catch (e: Throwable) {
-                Log.e("BookmarksAdapter", Log.getStackTraceString(e))
-            }
+        }
+        catch (e: CancellationException) {
+            Log.i("BookmarksAdapter", "#setBookmarks() is canceled")
+            setBookmarksLock.unlock()
+        }
+        catch (e: Throwable) {
+            Log.e("BookmarksAdapter", Log.getStackTraceString(e))
+            setBookmarksLock.unlock()
         }
     }
 
