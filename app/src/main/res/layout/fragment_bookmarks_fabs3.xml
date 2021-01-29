@@ -125,7 +125,7 @@
 
         </LinearLayout>
 
-        <EditText
+        <com.suihan74.utilities.views.ImeEnhancedEditText
                 android:id="@+id/bookmarks_search_text"
                 android:text="@={bookmarksViewModel.filteringText}"
                 android:hint="検索キーワード"
