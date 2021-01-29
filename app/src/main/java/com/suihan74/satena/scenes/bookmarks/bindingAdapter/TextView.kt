@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.bookmarks
+package com.suihan74.satena.scenes.bookmarks.bindingAdapter
 
 import android.content.res.ColorStateList
 import android.text.SpannableStringBuilder
@@ -25,16 +25,13 @@ import com.suihan74.utilities.extensions.getThemeColor
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
-/**
- * ブクマ関係の汎用的なBindingAdapter
- */
-object BindingAdapters {
+object TextViewBindingAdapters {
     /**
      * コメント中のリンクをクリック可能文字列としてバインドする
      */
     @JvmStatic
     @BindingAdapter("comment", "onLinkClick", "onLinkLongClick", "onEntryIdClick", "onEntryIdLongClick")
-    fun setBookmarkComment(
+    fun bindBookmarkComment(
         textView: TextView,
         bookmark: Bookmark?,
         onLinkClick: Listener<String>?,
@@ -79,7 +76,7 @@ object BindingAdapters {
      */
     @JvmStatic
     @BindingAdapter("tagLinks", "onTagClick")
-    fun setBookmarkTagLinks(textView: TextView, bookmark: Bookmark?, onClick : Listener<String>?) {
+    fun bindBookmarkTagLinks(textView: TextView, bookmark: Bookmark?, onClick : Listener<String>?) {
         val tags = bookmark?.tags
         if (tags.isNullOrEmpty()) {
             textView.text = ""
@@ -116,7 +113,7 @@ object BindingAdapters {
      */
     @JvmStatic
     @BindingAdapter(value = ["starsEntry", "timestamp"], requireAll = false)
-    fun setStarsEntry(textView: TextView, starsEntry: StarsEntry?, timestamp: LocalDateTime?) {
+    fun bindStarsEntry(textView: TextView, starsEntry: StarsEntry?, timestamp: LocalDateTime?) {
         val builder = SpannableStringBuilder()
 
         timestamp?.let {
@@ -151,7 +148,7 @@ object BindingAdapters {
      */
     @JvmStatic
     @BindingAdapter(value = ["userName", "userTags", "tagsSize"], requireAll = false)
-    fun setUserTagsText(textView: TextView, user: String?, userTags: UserAndTags?, tagsSizePx: Int?) {
+    fun bindUserTagsText(textView: TextView, user: String?, userTags: UserAndTags?, tagsSizePx: Int?) {
         textView.text = buildSpannedString {
             append(user)
 
