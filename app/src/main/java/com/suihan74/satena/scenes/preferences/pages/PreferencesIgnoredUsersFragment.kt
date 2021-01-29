@@ -40,7 +40,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentPreferencesIgnoredUsersBinding>(
             inflater,
             R.layout.fragment_preferences_ignored_users,
@@ -61,7 +61,7 @@ class PreferencesIgnoredUsersFragment : PreferencesFragmentBase() {
 
         viewModel.isFilterTextVisible.observe(viewLifecycleOwner) {
             if (it != true) {
-                binding.searchText.text.clear()
+                binding.searchText.text?.clear()
             }
         }
 
