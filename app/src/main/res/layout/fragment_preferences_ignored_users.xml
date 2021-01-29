@@ -27,7 +27,7 @@
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-        <EditText
+        <com.suihan74.utilities.views.ImeEnhancedEditText
                 android:id="@+id/search_text"
                 android:text="@={vm.filterText}"
                 android:hint="@string/pref_ignored_users_filter_text_hint"

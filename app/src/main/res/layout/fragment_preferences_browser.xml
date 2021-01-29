@@ -61,7 +61,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                    <EditText
+                    <com.suihan74.utilities.views.ImeEnhancedEditText
                             android:id="@+id/start_page_edit_text"
                             style="@style/Widget.AppCompat.EditText"
 
@@ -77,7 +77,7 @@
                             android:imeOptions="actionDone"
                             android:selectAllOnFocus="true"
 
-                            android:layout_toLeftOf="@id/register_start_page_button"
+                            android:layout_toStartOf="@id/register_start_page_button"
                             android:layout_centerVertical="true"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"/>
@@ -86,8 +86,8 @@
                             android:id="@+id/register_start_page_button"
                             style="@style/Widget.AppCompat.Button"
                             android:text="@string/dialog_register"
-                            android:layout_marginLeft="4dp"
-                            android:layout_alignParentRight="true"
+                            android:layout_marginStart="4dp"
+                            android:layout_alignParentEnd="true"
                             android:layout_centerVertical="true"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"/>
@@ -227,7 +227,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"/>
 
-                    <EditText
+                    <com.suihan74.utilities.views.ImeEnhancedEditText
                             android:id="@+id/user_agent_edit_text"
                             style="@style/Widget.AppCompat.EditText"
 
