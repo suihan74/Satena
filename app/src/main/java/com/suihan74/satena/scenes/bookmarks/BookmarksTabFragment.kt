@@ -12,7 +12,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
-import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.utilities.ScrollableToBottom
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.alsoAs
@@ -71,7 +70,6 @@ abstract class BookmarksTabFragment :
             it.vm = viewModel
             it.lifecycleOwner = viewLifecycleOwner
         }
-        viewModel.init(viewLifecycleOwner)
 
         initializeRecyclerView(binding)
 

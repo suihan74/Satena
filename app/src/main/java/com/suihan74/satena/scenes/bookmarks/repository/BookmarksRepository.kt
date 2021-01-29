@@ -19,6 +19,8 @@ import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.updateFirstOrPlusAhead
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * ブクマ画面用のリポジトリ
@@ -108,6 +110,11 @@ class BookmarksRepository(
     }
 
     // ------ //
+
+    /**
+     * ブクマエントリ情報のロード完了前に，それに依存するブクマリストの加工を始めないようにするためのロック
+     */
+    private val loadingBookmarksEntryMutex = Mutex()
 
     // エントリ情報
     var url: String = ""
@@ -375,16 +382,18 @@ class BookmarksRepository(
      * @throws ConnectionFailureException
      */
     suspend fun loadBookmarksEntry(url: String) {
-        val result = runCatching {
-            client.getBookmarksEntryAsync(url).await()
-        }
+        loadingBookmarksEntryMutex.withLock {
+            val result = runCatching {
+                client.getBookmarksEntryAsync(url).await()
+            }
 
-        val e = result.getOrElse {
-            throw ConnectionFailureException(it)
-        }
+            val e = result.getOrElse {
+                throw ConnectionFailureException(it)
+            }
 
-        withContext(Dispatchers.Main) {
-            bookmarksEntry.value = e
+            withContext(Dispatchers.Main.immediate) {
+                bookmarksEntry.value = e
+            }
         }
     }
 
@@ -707,22 +716,24 @@ class BookmarksRepository(
             loadUserTags(it.user)
         }
 
-        // 各表示用リストに変更を通知する
-        updateRecentBookmarksLiveData(bookmarksRecentCache)
-
         // スター情報を取得する
         loadStarsEntriesForBookmarksWithStarCount(response.bookmarks)
 
-        // BookmarksEntryのブクマリストにも追加しておく
-        bookmarksEntry.value?.let { bEntry ->
-            val exists = bEntry.bookmarks.filter { existed ->
-                response.bookmarks.none { it.user == existed.user }
-            }
-            val new = response.bookmarks.map { Bookmark.create(it) }
+        // 各表示用リストに変更を通知する
+        updateRecentBookmarksLiveData(bookmarksRecentCache)
 
-            bookmarksEntry.postValue(
-                bEntry.copy(bookmarks = exists.plus(new).sortedByDescending { it.timestamp })
-            )
+        loadingBookmarksEntryMutex.withLock {
+            // BookmarksEntryのブクマリストにも追加しておく
+            bookmarksEntry.value?.let { bEntry ->
+                val exists = bEntry.bookmarks.filter { existed ->
+                    response.bookmarks.none { it.user == existed.user }
+                }
+                val new = response.bookmarks.map { Bookmark.create(it) }
+
+                bookmarksEntry.postValue(
+                    bEntry.copy(bookmarks = exists.plus(new).sortedByDescending { it.timestamp })
+                )
+            }
         }
     }
 

@@ -9,7 +9,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.isVisible
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
@@ -17,8 +16,9 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
+import com.suihan74.satena.scenes.bookmarks.BookmarksAdapter
+import com.suihan74.satena.scenes.bookmarks.BookmarksTabViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
-import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostFragment
@@ -55,6 +55,11 @@ class BookmarksFragment :
     private val bookmarkPostViewModel : BookmarkPostViewModel
         get() = browserActivity.bookmarkPostViewModel
 
+    /** ブクマリスト表示用のVM */
+    private val bookmarksTabViewModel by lazyProvideViewModel {
+        BookmarksTabViewModel(viewModel.repository, viewModel.recentBookmarks)
+    }
+
     private val viewModel by lazyProvideViewModel {
         BookmarksViewModel(activityViewModel.bookmarksRepo)
     }
@@ -72,90 +77,18 @@ class BookmarksFragment :
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentBrowserBookmarksBinding>(
+        val binding = FragmentBrowserBookmarksBinding.inflate(
             inflater,
-            R.layout.fragment_browser_bookmarks,
             container,
             false
         ).apply {
             vm = viewModel
+            bookmarksVM = bookmarksTabViewModel
             lifecycleOwner = viewLifecycleOwner
         }
         this.binding = binding
 
-        val scrollingUpdater = RecyclerViewScrollingUpdater {
-            lifecycleScope.launch(Dispatchers.Main) {
-                activityViewModel.bookmarksRepo.loadRecentBookmarks(
-                    additionalLoading = true
-                )
-                loadCompleted()
-            }
-        }
-
-        val bookmarksAdapter = BookmarksAdapter().also { adapter ->
-            adapter.setOnItemLongClickedListener { bookmark ->
-                lifecycleScope.launch {
-                    viewModel.openBookmarkMenuDialog(bookmark, childFragmentManager)
-                }
-            }
-
-            adapter.setOnLinkClickedListener { url ->
-                browserActivity.openUrl(url)
-            }
-
-            viewModel.setAddStarButtonBinder(
-                requireActivity(),
-                adapter,
-                viewLifecycleOwner,
-                childFragmentManager,
-                lifecycleScope
-            )
-        }
-
-        binding.recyclerView.let { recyclerView ->
-            recyclerView.adapter = bookmarksAdapter
-            recyclerView.addOnScrollListener(scrollingUpdater)
-        }
-
-        activityViewModel.loadingBookmarksEntry.observe(viewLifecycleOwner) {
-            if (it == true) {
-                if (!binding.swipeLayout.isRefreshing) {
-                    bookmarksAdapter.submitList(null)
-                    binding.swipeLayout.isEnabled = false
-                    binding.progressBar.visibility = View.VISIBLE
-                }
-            }
-        }
-
-        viewModel.recentBookmarks.observe(viewLifecycleOwner) {
-            if (it == null) return@observe
-            lifecycleScope.launch {
-                val repo = viewModel.repository
-                bookmarksAdapter.setBookmarks(
-                    bookmarks = it,
-                    bookmarksEntry = viewModel.bookmarksEntry.value,
-                    taggedUsers = repo.taggedUsers.mapNotNull { it.value.value },
-                    ignoredUsers = repo.ignoredUsersCache,
-                    displayMutedMention = false
-                ) {
-                    binding.swipeLayout.isRefreshing = false
-                    binding.swipeLayout.isEnabled = true
-                    binding.progressBar.visibility = View.GONE
-                }
-            }
-        }
-
-        // スワイプしてブクマリストを更新する
-        binding.swipeLayout.let { swipeLayout ->
-            val activity = requireActivity()
-            swipeLayout.setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
-            swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
-            swipeLayout.setOnRefreshListener {
-                viewModel.reloadBookmarks {
-                    swipeLayout.isRefreshing = false
-                }
-            }
-        }
+        initializeRecyclerView(binding)
 
         // 投稿エリアの表示状態を変更する
         binding.openPostAreaButton.setOnClickListener {
@@ -207,6 +140,74 @@ class BookmarksFragment :
         super.onDestroyView()
         binding = null
     }
+
+    // ------ //
+
+    private fun initializeRecyclerView(binding: FragmentBrowserBookmarksBinding) {
+        val scrollingUpdater = RecyclerViewScrollingUpdater {
+            lifecycleScope.launch(Dispatchers.Main) {
+                activityViewModel.bookmarksRepo.loadRecentBookmarks(
+                    additionalLoading = true
+                )
+                loadCompleted()
+            }
+        }
+
+        val bookmarksAdapter = BookmarksAdapter().also { adapter ->
+            adapter.setOnSubmitListener {
+                binding.swipeLayout.isRefreshing = false
+                binding.swipeLayout.isEnabled = true
+                binding.progressBar.visibility = View.GONE
+            }
+
+            adapter.setOnItemLongClickedListener { bookmark ->
+                lifecycleScope.launch {
+                    viewModel.openBookmarkMenuDialog(bookmark, childFragmentManager)
+                }
+            }
+
+            adapter.setOnLinkClickedListener { url ->
+                browserActivity.openUrl(url)
+            }
+
+            viewModel.setAddStarButtonBinder(
+                requireActivity(),
+                adapter,
+                viewLifecycleOwner,
+                childFragmentManager,
+                lifecycleScope
+            )
+        }
+
+        binding.recyclerView.let { recyclerView ->
+            recyclerView.adapter = bookmarksAdapter
+            recyclerView.addOnScrollListener(scrollingUpdater)
+        }
+
+        activityViewModel.loadingBookmarksEntry.observe(viewLifecycleOwner) {
+            if (it == true) {
+                if (!binding.swipeLayout.isRefreshing) {
+                    bookmarksAdapter.submitList(null)
+                    binding.swipeLayout.isEnabled = false
+                    binding.progressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        // スワイプしてブクマリストを更新する
+        binding.swipeLayout.let { swipeLayout ->
+            val activity = requireActivity()
+            swipeLayout.setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
+            swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
+            swipeLayout.setOnRefreshListener {
+                viewModel.reloadBookmarks {
+                    swipeLayout.isRefreshing = false
+                }
+            }
+        }
+    }
+
+    // ------ //
 
     /** 投稿エリアの表示状態を切り替える */
     private fun switchPostLayout(binding: FragmentBrowserBookmarksBinding, opened: Boolean) {
