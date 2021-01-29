@@ -10,7 +10,7 @@
 
     <!-- 画面背景 -->
     <color name="panelBackground">#EEE</color>
-    <color name="panelBackgroundDark">#3F3F40</color>
+    <color name="panelBackgroundDark">#383839</color>
 
     <!-- ダイアログ背景 -->
     <color name="dialogBackground">#EEE</color>
@@ -48,7 +48,7 @@
 
     <!-- タブ -->
     <color name="tabBackground">#F0F0F0</color>
-    <color name="tabBackgroundDark">#565653</color>
+    <color name="tabBackgroundDark">#494947</color>
 
     <!-- BookmarkDetailFragment#portraitの上部分 -->
     <color name="BookmarkDetailTopBackground">#F0F0F0</color>
