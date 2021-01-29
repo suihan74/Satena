@@ -107,12 +107,11 @@
         <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundDark</item>
     </style>
 
-    <!-- Extremely Dark Theme -->
+    <!-- Extreme Dark Theme -->
     <style name="AppTheme.ExDark">
         <!-- ツールバーの色を他の部分に渡すために使用 -->
         <item name="toolbarBackground">@color/panelBackgroundExDark</item>
 
-        <item name="colorPrimary">@color/colorPrimaryDark</item>
         <item name="android:toolbarStyle">@style/ToolbarStyleExDark</item>
         <item name="toolbarStyle">@style/ToolbarStyleExDark</item>
         <item name="android:statusBarColor">@color/panelBackgroundExDark</item>
@@ -221,7 +220,7 @@
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
-    <!-- Extremely Dark Theme -->
+    <!-- Extreme Dark Theme -->
     <style name="AppDialogTheme.ExDark">
         <item name="panelBackground">@color/panelBackgroundExDark</item>
         <item name="tabBackground">@color/tabBackgroundExDark</item>
