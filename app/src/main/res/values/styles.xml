@@ -174,7 +174,7 @@
         <item name="colorAccent">@color/colorPrimary</item>
 
         <!-- ダイアログのデフォルトスタイル -->
-        <item name="android:alertDialogTheme">@style/AlertDialogStyle</item>
+        <item name="alertDialogTheme">@style/AlertDialogStyle</item>
 
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -199,6 +199,7 @@
         <item name="entryCommentBackground">@color/entryCommentBackground</item>
         <item name="tagTextColor">@color/tagColor</item>
 
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
@@ -216,6 +217,7 @@
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
 
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
@@ -234,6 +236,7 @@
         <item name="entryCommentBackground">@color/entryCommentBackgroundExDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
 
+        <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
