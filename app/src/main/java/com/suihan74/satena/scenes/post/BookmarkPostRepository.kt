@@ -31,7 +31,7 @@ class BookmarkPostRepository(
     }
 
     /** ダイアログテーマ */
-    val themeId = Theme.dialogThemeId(prefs)
+    val themeId = Theme.dialogActivityThemeId(prefs)
 
     val entry = MutableLiveData<Entry>()
 

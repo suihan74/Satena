@@ -33,7 +33,7 @@
                     android:src="@drawable/ic_baseline_settings"
                     android:contentDescription="@null"
                     app:fabSize="mini"
-                    app:backgroundTint="@color/colorPrimary"
+                    app:backgroundTint="?colorPrimary"
                     android:layout_gravity="bottom"
                     android:layout_marginStart="24dp"
                     android:layout_marginBottom="24dp"
@@ -45,7 +45,7 @@
                     android:src="@drawable/ic_baseline_search"
                     android:contentDescription="@null"
                     app:fabSize="mini"
-                    app:backgroundTint="@color/colorPrimary"
+                    app:backgroundTint="?colorPrimary"
                     android:layout_gravity="bottom"
                     android:layout_marginStart="24dp"
                     android:layout_marginBottom="24dp"
@@ -63,7 +63,7 @@
                         android:src="@drawable/ic_baseline_arrow_upward"
                         android:contentDescription="@null"
                         app:fabSize="mini"
-                        app:backgroundTint="@color/colorPrimary"
+                        app:backgroundTint="?colorPrimary"
                         android:layout_gravity="bottom"
                         android:layout_marginTop="18dp"
                         android:layout_marginStart="24dp"
@@ -76,7 +76,7 @@
                         android:src="@drawable/ic_baseline_bookmark"
                         android:contentDescription="@null"
                         app:fabSize="mini"
-                        app:backgroundTint="@color/colorPrimary"
+                        app:backgroundTint="?colorPrimary"
                         android:layout_gravity="bottom"
                         android:layout_marginStart="24dp"
                         android:layout_marginBottom="18dp"
@@ -88,7 +88,7 @@
                         android:src="@drawable/ic_baseline_arrow_downward"
                         android:contentDescription="@null"
                         app:fabSize="mini"
-                        app:backgroundTint="@color/colorPrimary"
+                        app:backgroundTint="?colorPrimary"
                         android:layout_gravity="bottom"
                         android:layout_marginStart="24dp"
                         android:layout_marginBottom="18dp"
@@ -100,7 +100,7 @@
                         android:src="@drawable/ic_baseline_menu_white"
                         android:contentDescription="@null"
                         app:fabSize="mini"
-                        app:backgroundTint="@color/colorPrimary"
+                        app:backgroundTint="?colorPrimary"
                         android:layout_gravity="bottom"
                         android:layout_marginBottom="24dp"
                         android:layout_marginStart="24dp"
@@ -122,7 +122,7 @@
                     app:text="B!"
                     app:textColor="#fff"
                     app:layout_dodgeInsetEdges="bottom"
-                    app:backgroundTint="?attr/colorPrimary"/>
+                    app:backgroundTint="?colorPrimary"/>
 
         </LinearLayout>
 
@@ -131,9 +131,9 @@
                 android:text="@={bookmarksViewModel.filteringText}"
                 android:hint="検索キーワード"
 
-                android:background="@color/colorPrimary"
+                android:background="?colorPrimary"
                 android:textColor="@color/colorPrimaryText"
-                android:textColorHint="@color/bookmarkSearchHintColor"
+                android:textColorHint="@color/colorPrimaryText"
 
                 android:singleLine="true"
                 android:inputType="text"

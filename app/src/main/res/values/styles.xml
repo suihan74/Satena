@@ -33,19 +33,19 @@
         <item name="android:textColor">@color/textColor</item>
 
         <!-- ツールバーの色を他の部分に渡すために使用 -->
-        <item name="toolbarBackground">@color/colorPrimary</item>
+        <item name="toolbarBackground">?colorPrimary</item>
 
         <!-- SearchView -->
         <item name="searchViewStyle">@style/SearchViewStyle.Toolbar</item>
         <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.Toolbar</item>
 
         <!-- TabLayout -->
-        <item name="tabSelectedTextColor">@color/colorPrimary</item>
+        <item name="tabSelectedTextColor">?colorPrimary</item>
         <item name="tabTextColor">@color/disabledColor</item>
-        <item name="tabIndicatorColor">@color/colorPrimary</item>
+        <item name="tabIndicatorColor">?colorPrimary</item>
 
         <!-- for NumberPicker -->
-        <item name="colorControlNormal">@color/colorPrimary</item>
+        <item name="colorControlNormal">?colorPrimary</item>
 
         <!-- SnackBar -->
         <item name="snackBarBackgroundColor">@color/snackBarBackgroundColor</item>
@@ -109,10 +109,11 @@
 
     <!-- Extreme Dark Theme -->
     <style name="AppTheme.ExDark">
+        <item name="colorPrimary">@color/colorPrimaryExDark</item>
+        <item name="android:windowBackground">@drawable/dialog_background_ex_dark</item>
+
         <!-- ツールバーの色を他の部分に渡すために使用 -->
         <item name="toolbarBackground">@color/panelBackgroundExDark</item>
-
-        <item name="android:toolbarStyle">@style/ToolbarStyleExDark</item>
         <item name="toolbarStyle">@style/ToolbarStyleExDark</item>
         <item name="android:statusBarColor">@color/panelBackgroundExDark</item>
         <item name="panelBackground">@color/panelBackgroundExDark</item>
@@ -130,9 +131,9 @@
         <item name="colorSurface">@color/panelBackgroundDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
-        <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
-        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
-        <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
 
@@ -182,8 +183,8 @@
         <item name="android:windowContentTransitions">true</item>
 
         <!-- 画面幅占有比率 -->
-        <item name="android:windowMinWidthMajor">@dimen/post_bookmark_dialog_width_ratio</item>
-        <item name="android:windowMinWidthMinor">@dimen/post_bookmark_dialog_width_ratio</item>
+        <item name="android:windowMinWidthMajor">@fraction/post_bookmark_dialog_width_ratio</item>
+        <item name="android:windowMinWidthMinor">@fraction/post_bookmark_dialog_width_ratio</item>
     </style>
 
     <!-- Light Theme -->
@@ -222,18 +223,19 @@
 
     <!-- Extreme Dark Theme -->
     <style name="AppDialogTheme.ExDark">
+        <item name="colorPrimary">@color/colorPrimaryExDark</item>
         <item name="panelBackground">@color/panelBackgroundExDark</item>
         <item name="tabBackground">@color/tabBackgroundExDark</item>
         <item name="textColor">@color/textColorExDark</item>
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundExDark</item>
-        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundExDark</item>
+        <item name="bookmarkDialogBackground">@drawable/dialog_background_ex_dark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundExDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
 
-        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
-        <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
@@ -257,23 +259,23 @@
     </style>
 
     <!-- AlertDialog -->
-    <style name="AlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="colorAccent">@color/colorPrimary</item>
+    <style name="AlertDialogStyle" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="colorAccent">?colorPrimary</item>
         <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/ButtonBarButtonStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/ButtonBarButtonStyle</item>
         <item name="buttonBarNeutralButtonStyle">@style/ButtonBarButtonStyle</item>
 
-        <item name="android:windowMinWidthMajor">@dimen/alert_dialog_width_ratio</item>
-        <item name="android:windowMinWidthMinor">@dimen/alert_dialog_width_ratio</item>
+        <item name="android:windowMinWidthMajor">@fraction/alert_dialog_width_ratio</item>
+        <item name="android:windowMinWidthMinor">@fraction/alert_dialog_width_ratio</item>
 
         <!-- TabLayout -->
-        <item name="tabSelectedTextColor">@color/colorPrimary</item>
+        <item name="tabSelectedTextColor">?colorPrimary</item>
         <item name="tabTextColor">@color/disabledColor</item>
-        <item name="tabIndicatorColor">@color/colorPrimary</item>
+        <item name="tabIndicatorColor">?colorPrimary</item>
 
         <!-- for NumberPicker -->
-        <item name="colorControlNormal">@color/colorPrimary</item>
+        <item name="colorControlNormal">?colorPrimary</item>
     </style>
 
     <!-- Light -->
@@ -308,6 +310,24 @@
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
+    <!-- Extreme Dark -->
+    <style name="AlertDialogStyle.ExDark">
+        <item name="colorBackgroundFloating">@null</item>
+        <item name="android:windowBackground">@drawable/dialog_background_ex_dark</item>
+
+        <item name="android:textColor">@color/textColorExDark</item>
+        <item name="textColor">@color/textColorExDark</item>
+        <item name="android:textColorPrimary">@color/textColorExDark</item>
+        <item name="android:textColorSecondary">@color/textColorExDark</item>
+        <item name="textColorAlertDialogListItem">@color/textColorExDark</item>
+        <item name="tabBackground">@color/tabBackgroundExDark</item>
+
+        <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+    </style>
+
     <style name="AlertDialogTitleStyle" parent="TextAppearance.AppCompat.Title">
         <item name="android:textColor">?textColor</item>
     </style>
@@ -318,6 +338,7 @@
 
     <!-- TabLayout -->
     <style name="TabLayoutStyle" parent="Widget.Design.TabLayout">
+        <item name="tabBackground">?attr/tabBackground</item>
         <item name="tabTextAppearance">@android:style/TextAppearance.Widget.TabWidget</item>
         <item name="tabSelectedTextColor">?attr/tabSelectedTextColor</item>
         <item name="tabIndicatorColor">?attr/tabIndicatorColor</item>
@@ -356,6 +377,10 @@
         <item name="android:textColor">@color/textColorDark</item>
         <item name="textColor">@color/textColorDark</item>
     </style>
+    <style name="TextViewStyle.ExDark">
+        <item name="android:textColor">@color/textColorExDark</item>
+        <item name="textColor">@color/textColorExDark</item>
+    </style>
 
     <!-- EditText -->
     <style name="EditTextStyle" parent="Widget.AppCompat.EditText"/>
@@ -365,6 +390,10 @@
     </style>
     <style name="EditTextStyle.Dark">
         <item name="android:textColor">@color/textColorDark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
+    </style>
+    <style name="EditTextStyle.ExDark">
+        <item name="android:textColor">@color/textColorExDark</item>
         <item name="android:textColorHint">@color/textColorHintDark</item>
     </style>
 

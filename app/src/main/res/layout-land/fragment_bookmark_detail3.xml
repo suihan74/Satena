@@ -65,10 +65,29 @@
                             android:layout_alignBottom="@id/user_icon"
                             android:layout_toEndOf="@id/user_icon"/>
 
+                    <ImageView
+                            android:id="@+id/ignored_user_mark"
+                            android:visibility="@{vm.ignored}"
+                            android:contentDescription="@null"
+                            app:srcCompat="@drawable/ic_ignored_user_mark"
+                            app:tint="?attr/tagTextColor"
+                            android:layout_alignBottom="@id/user_icon"
+                            android:layout_alignEnd="@id/user_icon"
+                            android:layout_marginBottom="-6dp"
+                            android:layout_marginEnd="-6dp"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"/>
+
                 </RelativeLayout>
 
                 <com.suihan74.utilities.views.SelectableTextView
                         android:id="@+id/comment"
+                        comment="@{vm.bookmark}"
+                        onLinkClick="@{bookmarksViewModel.onLinkClicked}"
+                        onLinkLongClick="@{bookmarksViewModel.onLinkLongClicked}"
+                        onEntryIdClick="@{bookmarksViewModel.onEntryIdClicked}"
+                        onEntryIdLongClick="@{bookmarksViewModel.onEntryIdLongClicked}"
+
                         android:textSize="14sp"
                         android:textColor="?attr/textColor"
                         android:minHeight="43dp"
@@ -86,21 +105,11 @@
                         android:textSize="14sp"
                         android:textColor="?attr/tagTextColor"
                         android:textColorLink="?attr/tagTextColor"
-                        android:layout_marginStart="2dp"
+                        android:layout_below="@id/comment"
+                        android:layout_alignStart="@id/comment"
+                        android:layout_alignEnd="@id/comment"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"/>
-
-                <ImageView
-                        android:id="@+id/ignored_user_mark"
-                        android:visibility="@{vm.ignored}"
-                        android:contentDescription="@null"
-                        app:srcCompat="@drawable/ic_ignored_user_mark"
-                        app:tint="?attr/tagTextColor"
-                        android:layout_below="@id/tags"
-                        android:layout_alignStart="@id/tags"
-                        android:layout_marginTop="4dp"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"/>
 
                 <ImageButton
                         android:id="@+id/menu_button"
@@ -109,7 +118,7 @@
                         app:tint="?attr/textColor"
                         android:background="@drawable/control_background_40dp_material"
                         android:layout_alignEnd="@id/comment"
-                        android:layout_below="@id/comment"
+                        android:layout_below="@id/tags"
                         android:layout_marginTop="2dp"
                         android:layout_width="36dp"
                         android:layout_height="36dp"/>
@@ -124,6 +133,7 @@
                 <com.google.android.material.tabs.TabLayout
                         android:id="@+id/tab_layout"
                         style="@style/TabLayoutStyle"
+                        android:elevation="6dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
                 </com.google.android.material.tabs.TabLayout>

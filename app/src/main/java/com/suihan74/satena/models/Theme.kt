@@ -12,27 +12,31 @@ enum class Theme(
     val id: Int,
     @StringRes val textId: Int,
     @StyleRes val themeId: Int,
-    @StyleRes val dialogThemeId: Int,
+    @StyleRes val dialogActivityThemeId: Int,
+    @StyleRes val dialogFragmentStyleId: Int,
 ) {
     /** ライト */
     LIGHT(0,
         R.string.pref_generals_theme_light,
         R.style.AppTheme_Light,
-        R.style.AppDialogTheme_Light
+        R.style.AppDialogTheme_Light,
+        R.style.AlertDialogStyle_Light
     ),
 
     /** ダーク */
     DARK(1,
         R.string.pref_generals_theme_dark,
         R.style.AppTheme_Dark,
-        R.style.AppDialogTheme_Dark
+        R.style.AppDialogTheme_Dark,
+        R.style.AlertDialogStyle_Dark
     ),
 
     /** 真っ黒 */
     EX_DARK(2,
         R.string.pref_generals_theme_ex_dark,
         R.style.AppTheme_ExDark,
-        R.style.AppDialogTheme_ExDark
+        R.style.AppDialogTheme_ExDark,
+        R.style.AlertDialogStyle_ExDark
     )
     ;
 
@@ -46,9 +50,15 @@ enum class Theme(
         }
 
         @StyleRes
-        fun dialogThemeId(prefs: SafeSharedPreferences<PreferenceKey>) : Int {
+        fun dialogActivityThemeId(prefs: SafeSharedPreferences<PreferenceKey>) : Int {
             val theme = fromId(prefs.getInt(PreferenceKey.THEME))
-            return theme.dialogThemeId
+            return theme.dialogActivityThemeId
+        }
+
+        @StyleRes
+        fun dialogFragmentStyleId(prefs: SafeSharedPreferences<PreferenceKey>) : Int {
+            val theme = fromId(prefs.getInt(PreferenceKey.THEME))
+            return theme.dialogFragmentStyleId
         }
     }
 }
