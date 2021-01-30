@@ -57,7 +57,9 @@
     <style name="AppTheme.Light">
         <item name="panelBackground">@color/panelBackground</item>
         <item name="tabBackground">@color/tabBackground</item>
+        <item name="android:textColor">@color/textColor</item>
         <item name="textColor">@color/textColor</item>
+        <item name="android:textColorHint">@color/textColorHint</item>
         <item name="textColorHint">@color/textColorHint</item>
         <item name="dividerColor">@color/dividerColor</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
@@ -73,7 +75,7 @@
         <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
-        <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Light</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
@@ -84,7 +86,9 @@
     <style name="AppTheme.Dark">
         <item name="panelBackground">@color/panelBackgroundDark</item>
         <item name="tabBackground">@color/tabBackgroundDark</item>
+        <item name="android:textColor">@color/textColorDark</item>
         <item name="textColor">@color/textColorDark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
@@ -100,7 +104,7 @@
         <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
-        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Dark</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
@@ -118,7 +122,9 @@
         <item name="android:statusBarColor">@color/panelBackgroundExDark</item>
         <item name="panelBackground">@color/panelBackgroundExDark</item>
         <item name="tabBackground">@color/tabBackgroundExDark</item>
+        <item name="android:textColor">@color/textColorExDark</item>
         <item name="textColor">@color/textColorExDark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundExDark</item>
@@ -134,7 +140,7 @@
         <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
-        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
@@ -294,7 +300,7 @@
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
         <item name="android:textColorHint">@color/textColorHint</item>
-        <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
     </style>
 
     <!-- Dark -->
@@ -310,7 +316,7 @@
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="android:textColorHint">@color/textColorHintDark</item>
-        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
     <!-- Extreme Dark -->
@@ -328,7 +334,7 @@
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="android:textColorHint">@color/textColorHintDark</item>
-        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
     <style name="AlertDialogTitleStyle" parent="TextAppearance.AppCompat.Title">
@@ -517,8 +523,8 @@
         <item name="bottomSheetStyle">@style/BottomSheet.Dark</item>
     </style>
     <style name="BottomSheetDialogTheme.ExDark">
-        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
-        <item name="editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
+        <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="bottomSheetStyle">@style/BottomSheet.ExDark</item>
     </style>
 
