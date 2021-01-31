@@ -404,6 +404,8 @@ class BookmarksRepository(
                 is ConnectionFailureException,
                 is NotFoundException ->
                     throw e
+
+                else -> throw ConnectionFailureException(cause = e)
             }
         }
 
