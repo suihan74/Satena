@@ -99,8 +99,10 @@ class BookmarkDetailViewModel(
     init {
         this._bookmark.value = bookmark
         viewModelScope.launch {
-            updateList(DetailTabAdapter.TabType.MENTION_TO_USER)
-            updateList(DetailTabAdapter.TabType.MENTION_FROM_USER)
+            runCatching {
+                updateList(DetailTabAdapter.TabType.MENTION_TO_USER)
+                updateList(DetailTabAdapter.TabType.MENTION_FROM_USER)
+            }
         }
     }
 
@@ -109,7 +111,9 @@ class BookmarkDetailViewModel(
     /** タブに対応するリストを取得する */
     fun getList(tabType: DetailTabAdapter.TabType) : LiveData<List<StarRelation>> {
         viewModelScope.launch(Dispatchers.Default) {
-            updateList(tabType, forceUpdate = false)
+            runCatching {
+                updateList(tabType, forceUpdate = false)
+            }
         }
 
         return when (tabType) {
@@ -123,7 +127,11 @@ class BookmarkDetailViewModel(
         }
     }
 
-    /** タブに対応するリストを更新する */
+    /**
+     * タブに対応するリストを更新する
+     *
+     * @throws TaskFailureException
+     */
     suspend fun updateList(
         tabType: DetailTabAdapter.TabType,
         forceUpdate: Boolean = false

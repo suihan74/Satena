@@ -476,7 +476,7 @@ class BookmarksViewModel(
         bookmarkMenuActions.openBookmarkMenuDialog(
             entry,
             bookmark,
-            starsEntry?.value,
+            starsEntry.value,
             fragmentManager
         )
     }
@@ -518,7 +518,7 @@ class BookmarksViewModel(
 
             coroutineScope.launch(Dispatchers.Main) {
                 val liveData = repository.getStarsEntry(bookmark)
-                val userStarred = liveData?.value?.allStars?.any { it.user == user } ?: false
+                val userStarred = liveData.value?.allStars?.any { it.user == user } ?: false
                 if (userStarred) {
                     button.setImageResource(R.drawable.ic_add_star_filled)
 

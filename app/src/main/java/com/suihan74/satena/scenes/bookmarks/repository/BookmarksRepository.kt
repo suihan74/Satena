@@ -805,15 +805,17 @@ class BookmarksRepository(
     /**
      * 対象ブクマにつけられたスター情報を取得する
      *
-     * @return 取得失敗時null
+     * @throws TaskFailureException
      */
-    suspend fun getStarsEntry(bookmark: Bookmark, forceUpdate: Boolean = false) : LiveData<StarsEntry>? {
-        return entry.value?.let { entry ->
-            val result = runCatching {
-                getStarsEntry(bookmark.getBookmarkUrl(entry), forceUpdate)
-            }
-            result.getOrNull()
+    suspend fun getStarsEntry(bookmark: Bookmark, forceUpdate: Boolean = false) : LiveData<StarsEntry> {
+        val result = runCatching {
+            getStarsEntry(bookmark.getBookmarkUrl(entry.value!!), forceUpdate)
         }
+        .onFailure {
+            throw TaskFailureException(cause = it)
+        }
+
+        return result.getOrNull()!!
     }
 
     /**
@@ -848,8 +850,13 @@ class BookmarksRepository(
      * ユーザーが対象ブクマにスターをつけているか確認する
      */
     suspend fun getUserStars(bookmark: Bookmark, user: String) : List<Star>? {
-        val starsEntry = getStarsEntry(bookmark, forceUpdate = false)?.value
-        return starsEntry?.allStars?.filter { it.user == user }
+        try {
+            val starsEntry = getStarsEntry(bookmark, forceUpdate = false).value
+            return starsEntry?.allStars?.filter { it.user == user }
+        }
+        catch (e: Throwable) {
+            return null
+        }
     }
 
     // ------ //
@@ -993,17 +1000,23 @@ class BookmarksRepository(
         else bookmarks.filter { !checkIgnored(it) }
     }
 
-    /** 指定ブクマにつけられたスターとそれをつけたユーザーのブクマを取得する */
+    /**
+     * 指定ブクマにつけられたスターとそれをつけたユーザーのブクマを取得する
+     *
+     * @throws TaskFailureException
+     */
     suspend fun getStarRelationsTo(
         bookmark: Bookmark,
         forceUpdate: Boolean = false
     ) : List<StarRelation> = withContext(Dispatchers.Default) {
         val receiver = bookmark.user
-        val starsEntry = getStarsEntry(bookmark, forceUpdate)
+        val starsEntry =
+            runCatching { getStarsEntry(bookmark, forceUpdate) }
+            .getOrThrow()
 
         val allStars =
-            if (prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_STARS_OF_IGNORED_USERS)) starsEntry?.value?.allStars
-            else starsEntry?.value?.allStars?.filterNot { checkIgnored(it.user) }
+            if (prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_STARS_OF_IGNORED_USERS)) starsEntry.value?.allStars
+            else starsEntry.value?.allStars?.filterNot { checkIgnored(it.user) }
 
         allStars.orEmpty().map { star ->
             val sender = star.user

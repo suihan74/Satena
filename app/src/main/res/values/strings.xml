@@ -518,7 +518,7 @@
     <string name="msg_no_color_stars">%sスターを所持していません</string>
     <string name="msg_remove_star_succeeded">%sへの★を削除しました</string>
     <string name="msg_remove_star_failed">%sへの★の削除に失敗しました</string>
-    <string name="msg_update_stars_failed">スターリスト更新失敗</string>
+    <string name="msg_update_stars_failed">リスト更新失敗</string>
     <!-- スター項目に対する操作メニュー -->
     <string name="star_item_menu_show_user_entries">@string/bookmark_show_user_entries</string>
     <string name="star_item_menu_remove">スターを削除する</string>

@@ -59,7 +59,7 @@ class StarRelationsTabViewModel(
         bookmarkMenuActions.openBookmarkMenuDialog(
             entry,
             bookmark,
-            starsEntry?.value,
+            starsEntry.value,
             fragmentManager
         )
     }
