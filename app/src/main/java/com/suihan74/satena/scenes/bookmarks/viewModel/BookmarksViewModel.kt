@@ -16,6 +16,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.scenes.bookmarks.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks.BookmarksAdapter
 import com.suihan74.satena.scenes.bookmarks.EntryMenuActionsImplForBookmarks
@@ -160,10 +161,17 @@ class BookmarksViewModel(
         runCatching {
             repository.loadEntryFromIntent(intent)
         }
+        .onSuccess {
+            entry.value?.saveHistory(activity)
+        }
         .onFailure {
             showLoadingErrorMessage(activity, it)
-            activity.lifecycleScope.launch {
-                activity.finish()
+
+            // 不正なURLが渡された場合は閉じる
+            if (it is IllegalArgumentException) {
+                activity.lifecycleScope.launch {
+                    activity.finish()
+                }
             }
         }
     }
