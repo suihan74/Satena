@@ -263,14 +263,12 @@ class BookmarksViewModel(
      * 最新ブクマリストを取得
      */
     suspend fun loadRecentBookmarks(context: Context, additionalLoading: Boolean = false) {
-        val result = runCatching {
+        runCatching {
             repository.loadRecentBookmarks(additionalLoading)
         }
-
-        if (result.isFailure) {
-            val e = result.exceptionOrNull()!!
-            Log.e("loadRecentBookmarks", e.stackTraceToString())
-            showLoadingErrorMessage(context, e)
+        .onFailure {
+            Log.e("loadRecentBookmarks", it.stackTraceToString())
+            showLoadingErrorMessage(context, it)
         }
     }
 
@@ -472,11 +470,11 @@ class BookmarksViewModel(
         fragmentManager: FragmentManager,
     ) {
         val entry = entry.value ?: return
-        val starsEntry = repository.getStarsEntry(bookmark)
+        val starsEntry = runCatching { repository.getStarsEntry(bookmark) }.getOrNull()
         bookmarkMenuActions.openBookmarkMenuDialog(
             entry,
             bookmark,
-            starsEntry.value,
+            starsEntry?.value,
             fragmentManager
         )
     }
@@ -517,8 +515,8 @@ class BookmarksViewModel(
             }
 
             coroutineScope.launch(Dispatchers.Main) {
-                val liveData = repository.getStarsEntry(bookmark)
-                val userStarred = liveData.value?.allStars?.any { it.user == user } ?: false
+                val liveData = runCatching { repository.getStarsEntry(bookmark) }.getOrNull()
+                val userStarred = liveData?.value?.allStars?.any { it.user == user } ?: false
                 if (userStarred) {
                     button.setImageResource(R.drawable.ic_add_star_filled)
 

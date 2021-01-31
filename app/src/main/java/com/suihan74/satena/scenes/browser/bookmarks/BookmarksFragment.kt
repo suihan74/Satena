@@ -145,9 +145,7 @@ class BookmarksFragment :
     private fun initializeRecyclerView(binding: FragmentBrowserBookmarksBinding) {
         val scrollingUpdater = RecyclerViewScrollingUpdater {
             lifecycleScope.launch(Dispatchers.Main) {
-                activityViewModel.bookmarksRepo.loadRecentBookmarks(
-                    additionalLoading = true
-                )
+                viewModel.loadRecentBookmarks(requireContext(), additionalLoading = true)
                 loadCompleted()
             }
         }

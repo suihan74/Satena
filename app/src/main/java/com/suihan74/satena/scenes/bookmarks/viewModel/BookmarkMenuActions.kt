@@ -298,8 +298,10 @@ class BookmarkMenuActionsImpl(
                 }
 
                 // スター表示の更新
-                repository.getStarsEntry(bookmark, forceUpdate = true)
-                repository.refreshBookmarks()
+                runCatching {
+                    repository.getStarsEntry(bookmark, forceUpdate = true)
+                    repository.refreshBookmarks()
+                }
             }
         }
 
