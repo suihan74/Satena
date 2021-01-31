@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.bookmarks
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
@@ -39,7 +40,11 @@ class RecentBookmarksTabFragment : BookmarksTabFragment() {
         }
 
     override fun reloadBookmarks() {
-        bookmarksViewModel.reloadBookmarks()
+        bookmarksViewModel.let { vm ->
+            vm.viewModelScope.launch {
+                vm.loadRecentBookmarks(requireContext())
+            }
+        }
     }
 
     override fun afterLoadedBookmarks() {
@@ -69,13 +74,9 @@ class RecentBookmarksTabFragment : BookmarksTabFragment() {
 
             bookmarksAdapter.startLoading()
             lifecycleScope.launch(Dispatchers.Main) {
-                try {
-                    bookmarksViewModel.repository.loadRecentBookmarks(additionalLoading = true)
-                }
-                finally {
-                    bookmarksAdapter.stopLoading()
-                    loadCompleted()
-                }
+                bookmarksViewModel.loadRecentBookmarks(requireContext(), additionalLoading = true)
+                bookmarksAdapter.stopLoading()
+                loadCompleted()
             }
         }
         this.scrollingUpdater = scrollingUpdater
@@ -98,13 +99,9 @@ class RecentBookmarksTabFragment : BookmarksTabFragment() {
             bookmarksAdapter.startLoading()
             scrollingUpdater.isEnabled = false
             lifecycleScope.launch(Dispatchers.Main) {
-                try {
-                    bookmarksViewModel.repository.loadRecentBookmarks(additionalLoading = true)
-                }
-                finally {
-                    bookmarksAdapter.stopLoading()
-                    scrollingUpdater.isEnabled = true
-                }
+                bookmarksViewModel.loadRecentBookmarks(requireContext(), additionalLoading = true)
+                bookmarksAdapter.stopLoading()
+                scrollingUpdater.isEnabled = true
             }
         }
     }

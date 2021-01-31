@@ -22,6 +22,7 @@ import com.suihan74.satena.scenes.bookmarks.dialog.ReportDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 
 class NoticeMenuDialog : DialogFragment() {
     companion object {

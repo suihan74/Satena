@@ -15,10 +15,10 @@ import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner.Companion.VIEW
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.putObjectExtra
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.lazyProvideViewModel
 
 /**

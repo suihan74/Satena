@@ -22,7 +22,7 @@ import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.OnSuccess
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

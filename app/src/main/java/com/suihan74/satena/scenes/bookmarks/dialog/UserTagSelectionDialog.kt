@@ -13,8 +13,8 @@ import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.SuspendListener
 import com.suihan74.utilities.exceptions.TaskFailureException
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.setButtonsEnabled
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers

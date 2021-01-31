@@ -23,6 +23,7 @@ import com.suihan74.utilities.Listener
 import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -190,7 +191,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
                     it.setOnClickListener {
                         if (queryText.text.isNullOrBlank()) {
-                            activity?.showToast(R.string.msg_ignored_entry_dialog_empty_query)
+                            showToast(R.string.msg_ignored_entry_dialog_empty_query)
                             return@setOnClickListener
                         }
 
@@ -199,11 +200,10 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                                 viewModel.register(modifyingEntry)
                             }
 
-                            val app = SatenaApplication.instance
                             val ignoredEntry = result.getOrNull()
 
                             if (ignoredEntry != null) {
-                                app.showToast(
+                                showToast(
                                     R.string.msg_ignored_entry_dialog_succeeded,
                                     ignoredEntry.query
                                 )
@@ -217,11 +217,11 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                             else {
                                 when (result.exceptionOrNull()) {
                                     is AlreadyExistedException -> {
-                                        app.showToast(R.string.msg_ignored_entry_dialog_already_existed)
+                                        showToast(R.string.msg_ignored_entry_dialog_already_existed)
                                     }
 
                                     else -> {
-                                        app.showToast(R.string.msg_ignored_entry_dialog_failed)
+                                        showToast(R.string.msg_ignored_entry_dialog_failed)
                                     }
                                 }
                             }

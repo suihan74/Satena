@@ -17,9 +17,9 @@ import com.suihan74.satena.databinding.FragmentBookmarkDetail3Binding
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.repository.StarExhaustedException
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers

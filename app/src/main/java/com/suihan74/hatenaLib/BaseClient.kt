@@ -127,11 +127,11 @@ open class BaseClient {
         )
     )
 
-    @Throws(
-        ConnectionFailureException::class,
-        NotFoundException::class,
-        SocketTimeoutException::class
-    )
+    /**
+     * @throws ConnectionFailureException
+     * @throws NotFoundException
+     * @throws TimeoutException
+     */
     protected fun <T> getJson(
         type: Type,
         url: String,
@@ -155,11 +155,11 @@ open class BaseClient {
         }
     }
 
-    @Throws(
-        ConnectionFailureException::class,
-        NotFoundException::class,
-        SocketTimeoutException::class
-    )
+    /**
+     * @throws ConnectionFailureException
+     * @throws NotFoundException
+     * @throws TimeoutException
+     */
     protected inline fun <reified T> getJson(
         url: String,
         dateFormat: String? = null,

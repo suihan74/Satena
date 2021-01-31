@@ -20,7 +20,7 @@ import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesReposit
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.checkRunningByTag
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.whenFalse
 import com.suihan74.utilities.extensions.whenTrue
 import kotlinx.coroutines.GlobalScope

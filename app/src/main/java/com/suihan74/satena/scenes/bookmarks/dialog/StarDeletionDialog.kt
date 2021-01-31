@@ -14,6 +14,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.lazyProvideViewModel
 
 class StarDeletionDialog : DialogFragment() {
@@ -57,7 +58,7 @@ class StarDeletionDialog : DialogFragment() {
             .show().apply {
                 getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                     if (!viewModel.checkedArray.contains(true)) {
-                        requireContext().showToast(R.string.msg_no_deleting_star_selected)
+                        showToast(R.string.msg_no_deleting_star_selected)
                     }
                     else {
                         viewModel.onDeleteStars?.invoke(viewModel.selectedStars, this@StarDeletionDialog)

@@ -9,25 +9,65 @@ import android.view.Gravity
 import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 // ------ //
 
-fun Context.showToast(message: String) {
-    runCatching {
-        val dimen = this.resources.getDimension(R.dimen.toast_offset_y)
-        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT).apply {
-            setGravity(Gravity.TOP, 0, dimen.toInt())
+object ContextExtensions {
+    private val liveTags = HashSet<String>()
+    private val liveTagsMutex = Mutex()
+
+    fun Context.showToast(message: String) {
+        runCatching {
+            val dimen = this.resources.getDimension(R.dimen.toast_offset_y)
+            val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT).apply {
+                setGravity(Gravity.TOP, 0, dimen.toInt())
+            }
+            toast.show()
         }
-        toast.show()
     }
+
+    fun Context.showToast(messageId: Int) = showToast(getString(messageId))
+
+    fun Context.showToast(messageId: Int, vararg args: Any) = showToast(getString(messageId, *args))
+
+    /**
+     * 同一タグがついたトーストの重複通知を回避する
+     */
+    fun Context.showToast(message: String, tag: String) = GlobalScope.launch {
+        liveTagsMutex.withLock {
+            if (liveTags.contains(tag)) return@launch
+            liveTags.add(tag)
+        }
+        withContext(Dispatchers.Main) { showToast(message) }
+        delay(2_000L)
+        liveTagsMutex.withLock {
+            liveTags.remove(tag)
+        }
+    }
+
+    fun Context.showToast(messageId: Int, tag: String) = showToast(getString(messageId), tag)
+
+    fun Context.showToast(messageId: Int, tag: String, vararg args: Any) = showToast(getString(messageId, *args), tag)
+
+    // --- //
+
+    fun Fragment.showToast(message: String) = requireContext().showToast(message)
+
+    fun Fragment.showToast(messageId: Int) = requireContext().showToast(messageId)
+
+    fun Fragment.showToast(messageId: Int, vararg args: Any) = requireContext().showToast(messageId, args)
+
+    fun Fragment.showToast(message: String, tag: String) = requireContext().showToast(message, tag)
+
+    fun Fragment.showToast(messageId: Int, tag: String) = requireContext().showToast(messageId, tag)
+
+    fun Fragment.showToast(messageId: Int, tag: String, vararg args: Any) = requireContext().showToast(messageId, tag, args)
 }
-
-fun Context.showToast(messageId: Int) =
-    showToast(getString(messageId))
-
-fun Context.showToast(messageId: Int, vararg args: Any) =
-    showToast(getString(messageId, *args))
 
 // ------ //
 

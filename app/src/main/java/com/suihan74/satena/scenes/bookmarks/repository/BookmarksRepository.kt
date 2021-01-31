@@ -240,11 +240,10 @@ class BookmarksRepository(
 
     /**
      * URLを渡して必要な初期化を行う
+     *
+     * @throws TaskFailureException
      */
-    suspend fun loadBookmarks(
-        url: String,
-        onFinally: OnFinally? = null
-    ) = withContext(Dispatchers.Default) {
+    suspend fun loadBookmarks(url: String) = withContext(Dispatchers.Default) {
         loadingEntry.postValue(true)
 
         val modifyResult = runCatching {
@@ -279,32 +278,26 @@ class BookmarksRepository(
                 },
                 // 全ブクマ情報を含むエントリ
                 async {
-                    runCatching {
-                        loadBookmarksEntry(modifiedUrl)
-                    }
+                    loadBookmarksEntry(modifiedUrl)
                 },
                 // 人気ブクマ
                 async {
-                    runCatching {
-                        loadPopularBookmarks()
-                    }
+                    loadPopularBookmarks()
                 },
                 // 新着ブクマ
                 async {
-                    runCatching {
-                        loadRecentBookmarks(additionalLoading = false)
-                    }
+                    loadRecentBookmarks(additionalLoading = false)
                 }
             )
             loadingContentsTasks.awaitAll()
         }
         catch (e: Throwable) {
             Log.e("BookmarksRepo", Log.getStackTraceString(e))
+            throw TaskFailureException(cause = e)
         }
         finally {
             withContext(Dispatchers.Main) {
                 loadingEntry.value = false
-                onFinally?.invoke()
             }
         }
     }
@@ -400,21 +393,37 @@ class BookmarksRepository(
     /**
      * Intentで渡された情報からエントリを読み込み、ブクマリストを初期化する
      *
-     * @throws IllegalArgumentException
-     * @throws kotlinx.coroutines.JobCancellationException
+     * @throws ConnectionFailureException - 通信失敗
+     * @throws NotFoundException - エントリ情報が取得できない
+     * @throws IllegalArgumentException - インテントに正しいパラメータが設定されていない
+     * @throws JobCancellationException - ロードがキャンセルされた
      */
     suspend fun loadEntryFromIntent(intent: Intent) {
+        val onLoadBookmarksFailure: (Throwable)->Unit = {
+            when (val e = it.cause) {
+                is ConnectionFailureException,
+                is NotFoundException ->
+                    throw e
+            }
+        }
+
         val entry = intent.getObjectExtra<Entry>(EXTRA_ENTRY)
         if (entry != null) {
             loadEntry(entry)
-            loadBookmarks(entry.url)
+            runCatching {
+                loadBookmarks(entry.url)
+            }
+            .onFailure(onLoadBookmarksFailure)
             return
         }
 
         val eid = intent.getLongExtra(EXTRA_ENTRY_ID, 0L)
         if (eid > 0L) {
             val e = loadEntry(eid)
-            loadBookmarks(e.url)
+            runCatching {
+                loadBookmarks(e.url)
+            }
+            .onFailure(onLoadBookmarksFailure)
             return
         }
 
@@ -426,7 +435,11 @@ class BookmarksRepository(
         if (url != null && URLUtil.isNetworkUrl(url)) {
             val modifiedUrl = modifySpecificUrls(url) ?: url
             val e = loadEntry(modifiedUrl)
-            loadBookmarks(e.url)
+            runCatching {
+                loadBookmarks(e.url)
+            }
+            .onFailure(onLoadBookmarksFailure)
+
             return
         }
 
@@ -642,7 +655,17 @@ class BookmarksRepository(
             client.getDigestBookmarksAsync(url).await()
         }
 
-        val digest = result.getOrElse {
+        val digest = result.getOrElse { bookmarksDigestCache }
+
+        bookmarksDigestCache = digest
+        val bookmarks = filterIgnored(digest?.scoredBookmarks.orEmpty())
+        bookmarks.forEach {
+            loadUserTags(it.user)
+        }
+
+        popularBookmarks.postValue(bookmarks)
+
+        result.onFailure {
             when (it) {
                 is TimeoutException, is NotFoundException ->
                     throw it
@@ -651,14 +674,6 @@ class BookmarksRepository(
                     throw ConnectionFailureException(it)
             }
         }
-
-        bookmarksDigestCache = digest
-        val bookmarks = filterIgnored(digest.scoredBookmarks)
-        bookmarks.forEach {
-            loadUserTags(it.user)
-        }
-
-        popularBookmarks.postValue(bookmarks)
 
         // スター情報を取得する
         loadStarsEntriesForBookmarks(bookmarks)
@@ -681,10 +696,7 @@ class BookmarksRepository(
 
         val result = runCatching {
             if (additionalLoading) {
-                client.getRecentBookmarksAsync(
-                    url = url,
-                    cursor = recentCursor
-                ).await()
+                client.getRecentBookmarksAsync(url, cursor = recentCursor).await()
             }
             else {
                 loadMostRecentBookmarks(url)
@@ -692,6 +704,7 @@ class BookmarksRepository(
         }
 
         if (result.isFailure) {
+            updateRecentBookmarksLiveData(bookmarksRecentCache)
             throw result.exceptionOrNull() ?: ConnectionFailureException()
         }
 
@@ -740,6 +753,7 @@ class BookmarksRepository(
     /**
      * 最新のブクマリストを(取得済みの位置まで)取得する
      *
+     * @throws ConnectionFailureException
      * @throws TimeoutException
      * @throws NotFoundException
      */
@@ -757,8 +771,7 @@ class BookmarksRepository(
             }
 
             when (val e = result.exceptionOrNull()) {
-                is TimeoutException, is NotFoundException ->
-                    throw e
+                is Throwable -> throw e
             }
 
             val shouldBreak =

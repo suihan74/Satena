@@ -467,6 +467,7 @@
     <string name="custom_bookmarks_no_user_tags_active">タグ無しユーザーを表示</string>
     <string name="additional_loading_desc">続きを読み込む</string>
 
+    <string name="msg_bookmark_comments_are_hidden">サイト管理者によってブコメが非表示にされています</string>
     <string name="msg_get_entry_failed">エントリ取得失敗</string>
     <string name="msg_fetch_ignored_users_failed">非表示ユーザーリスト取得失敗</string>
     <string name="msg_update_bookmarks_failed">ブクマリスト更新失敗</string>

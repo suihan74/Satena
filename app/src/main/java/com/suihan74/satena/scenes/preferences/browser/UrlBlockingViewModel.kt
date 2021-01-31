@@ -8,7 +8,7 @@ import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.scenes.browser.BlockUrlSetting
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.UrlBlockingDialog
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 
 class UrlBlockingViewModel(

@@ -13,7 +13,7 @@ import com.suihan74.satena.databinding.ActivityHatenaAuthenticationBinding
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonClientHolder
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

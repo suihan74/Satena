@@ -25,10 +25,9 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.post.BookmarkEditData
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.bindings.setVisibility
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.getObjectExtra
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -131,20 +130,38 @@ class BookmarksViewModel(
 
     // ------ //
 
+    private enum class ToastTag {
+        LOAD_BOOKMARKS_FAILURE
+    }
+
+    /** ブクマリスト取得失敗時のエラーメッセージ */
+    fun showLoadingErrorMessage(context: Context, e: Throwable) {
+        val msgId = when (e) {
+            is NotFoundException -> R.string.msg_bookmark_comments_are_hidden
+            is IllegalArgumentException -> R.string.invalid_url_error
+            else -> R.string.msg_update_bookmarks_failed
+        }
+        context.showToast(msgId, ToastTag.LOAD_BOOKMARKS_FAILURE.name)
+    }
+
+    // ------ //
+
     init {
         viewModelScope.launch {
             repository.signIn()
         }
     }
 
-    fun loadEntryFromIntent(activity: AppCompatActivity, intent: Intent) = viewModelScope.launch {
-        val result = runCatching {
+    fun loadEntryFromIntent(
+        activity: AppCompatActivity,
+        intent: Intent
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        runCatching {
             repository.loadEntryFromIntent(intent)
         }
-
-        if (result.exceptionOrNull() is IllegalArgumentException) {
-            activity.lifecycleScope.launch(Dispatchers.Main.immediate) {
-                activity.showToast(R.string.invalid_url_error)
+        .onFailure {
+            showLoadingErrorMessage(activity, it)
+            activity.lifecycleScope.launch {
                 activity.finish()
             }
         }
@@ -233,16 +250,32 @@ class BookmarksViewModel(
 
     // ------ //
 
-    /** 最新ブクマリストを再取得 */
-    fun reloadBookmarks(
-        onFinally: OnFinally? = null
-    ) = viewModelScope.launch(Dispatchers.Main) {
-        runCatching {
-            repository.loadRecentBookmarks(
-                additionalLoading = false
-            )
+    /**
+     * 最新ブクマリストを取得
+     */
+    suspend fun loadRecentBookmarks(context: Context, additionalLoading: Boolean = false) {
+        val result = runCatching {
+            repository.loadRecentBookmarks(additionalLoading)
         }
-        onFinally?.invoke()
+
+        if (result.isFailure) {
+            val e = result.exceptionOrNull()!!
+            Log.e("loadRecentBookmarks", e.stackTraceToString())
+            showLoadingErrorMessage(context, e)
+        }
+    }
+
+    /**
+     * 人気ブクマリストを取得
+     */
+    suspend fun loadPopularBookmarks(context: Context) {
+        runCatching {
+            repository.loadPopularBookmarks()
+        }
+        .onFailure {
+            Log.e("loadPopularBookmarks", it.stackTraceToString())
+            showLoadingErrorMessage(context, it)
+        }
     }
 
     // ------ //

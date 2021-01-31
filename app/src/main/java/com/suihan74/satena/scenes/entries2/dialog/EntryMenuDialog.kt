@@ -32,6 +32,7 @@ import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

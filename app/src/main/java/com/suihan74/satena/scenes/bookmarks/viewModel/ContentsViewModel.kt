@@ -25,9 +25,9 @@ import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ScrollableToBottom
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.setOnTabLongClickListener
-import com.suihan74.utilities.extensions.showToast
 
 /**
  * タブ制御など画面の状態管理用のViewModel

@@ -37,6 +37,7 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -70,20 +71,20 @@ class BookmarkDetailFragment : Fragment() {
     private fun initializeViewModel(vm: BookmarkDetailViewModel) {
         // スターロード失敗時の挙動
         vm.setOnLoadedStarsFailureListener { e ->
-            activity?.showToast(R.string.msg_update_stars_failed)
+            showToast(R.string.msg_update_stars_failed)
             Log.e("UserStars", Log.getStackTraceString(e))
         }
         // スター付与完了時の挙動を設定
         vm.setOnCompletedPostStarListener {
-            activity?.showToast(R.string.msg_post_star_succeeded, viewModel.bookmark.user)
+            showToast(R.string.msg_post_star_succeeded, viewModel.bookmark.user)
         }
         vm.setOnPostStarFailureListener { color, throwable ->
             when (throwable) {
                 is StarExhaustedException -> {
-                    activity?.showToast(R.string.msg_no_color_stars, color)
+                    showToast(R.string.msg_no_color_stars, color)
                 }
                 else -> {
-                    activity?.showToast(R.string.msg_post_star_failed, viewModel.bookmark.user)
+                    showToast(R.string.msg_post_star_failed, viewModel.bookmark.user)
                 }
             }
             Log.e("PostStar", Log.getStackTraceString(throwable))

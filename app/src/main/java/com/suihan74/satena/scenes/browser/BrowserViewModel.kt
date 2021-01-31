@@ -33,13 +33,14 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteRegistrationDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 import java.io.File
 import kotlin.math.absoluteValue
@@ -80,7 +81,9 @@ class BrowserViewModel(
             addressText.value = Uri.decode(it)
             bookmarksRepo.bookmarksEntry.value = null
             isUrlFavorite.value = favoriteSitesRepo.contains(it)
-            loadBookmarksEntry(it)
+            viewModelScope.launch {
+                loadBookmarksEntry(it)
+            }
         }
     }
 
@@ -726,17 +729,17 @@ class BrowserViewModel(
     // ------ //
 
     /** BookmarksEntryを更新 */
-    fun loadBookmarksEntry(url: String, onFinally: OnFinally? = null) {
+    private suspend fun loadBookmarksEntry(url: String) = withContext(Dispatchers.Main) {
         loadBookmarksEntryJob?.cancel()
 
         if (URLUtil.isNetworkUrl(url)) {
             loadingBookmarksEntry.value = true
-            loadBookmarksEntryJob = viewModelScope.launch {
-                bookmarksRepo.loadBookmarks(url) {
-                    onFinally?.invoke()
-                    loadBookmarksEntryJob = null
-                    loadingBookmarksEntry.value = false
+            loadBookmarksEntryJob = viewModelScope.launch(Dispatchers.Main) {
+                runCatching {
+                    bookmarksRepo.loadBookmarks(url)
                 }
+                loadBookmarksEntryJob = null
+                loadingBookmarksEntry.value = false
             }
         }
     }

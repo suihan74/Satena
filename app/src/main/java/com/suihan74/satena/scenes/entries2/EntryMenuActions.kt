@@ -16,10 +16,10 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.startInnerBrowser
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
 import com.suihan74.utilities.extensions.putObjectExtra
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -44,6 +44,7 @@ import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.views.CustomBottomAppBar
 import com.suihan74.utilities.views.bindMenuItemsGravity
 

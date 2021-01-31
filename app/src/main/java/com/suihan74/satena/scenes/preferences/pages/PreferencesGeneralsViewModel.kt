@@ -15,7 +15,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

@@ -22,7 +22,7 @@ import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

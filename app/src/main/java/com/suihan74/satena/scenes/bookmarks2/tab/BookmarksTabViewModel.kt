@@ -20,7 +20,7 @@ import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
 import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks2.BookmarksViewModel
 import com.suihan74.utilities.*
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch

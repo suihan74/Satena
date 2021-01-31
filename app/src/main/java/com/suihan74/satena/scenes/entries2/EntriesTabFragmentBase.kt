@@ -22,10 +22,10 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.extensions.putObjectExtra
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.provideViewModel
 
 abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {

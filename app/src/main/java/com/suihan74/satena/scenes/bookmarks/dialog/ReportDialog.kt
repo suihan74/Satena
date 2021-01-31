@@ -18,8 +18,8 @@ import com.suihan74.satena.databinding.FragmentDialogReportBinding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.utilities.SuspendSwitcher
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers

@@ -12,9 +12,9 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.putEnum
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.extensions.withArguments
 
 class UserEntriesTabFragment : EntriesTabFragmentBase() {

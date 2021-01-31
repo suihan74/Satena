@@ -15,8 +15,10 @@ class PopularBookmarksTabFragment : BookmarksTabFragment() {
     // ------ //
 
     override fun reloadBookmarks() {
-        bookmarksViewModel.viewModelScope.launch {
-            bookmarksViewModel.repository.loadPopularBookmarks()
+        bookmarksViewModel.let { vm ->
+            vm.viewModelScope.launch {
+                vm.loadPopularBookmarks(requireContext())
+            }
         }
     }
 

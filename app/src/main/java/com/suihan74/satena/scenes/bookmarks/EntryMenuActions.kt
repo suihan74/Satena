@@ -11,8 +11,8 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntryMenuActionsImplBasic
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.putObjectExtra
-import com.suihan74.utilities.extensions.showToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

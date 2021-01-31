@@ -19,6 +19,7 @@ import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -260,12 +261,12 @@ class BookmarksTabFragment : Fragment() {
             null -> {}
 
             is NotFoundException -> {
-                context?.showToast(R.string.msg_no_bookmarks)
+                showToast(R.string.msg_no_bookmarks)
                 Log.w("FailedToUpdateBookmarks", Log.getStackTraceString(e))
             }
 
             else -> {
-                context?.showToast(R.string.msg_update_bookmarks_failed)
+                showToast(R.string.msg_update_bookmarks_failed)
                 Log.d("FailedToUpdateBookmarks", Log.getStackTraceString(e))
             }
         }

@@ -13,9 +13,9 @@ import com.suihan74.satena.databinding.FragmentBookmarks2Binding
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks2.tab.BookmarksTabViewModel
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.setOnTabLongClickListener
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.provideViewModel
 
 class BookmarksFragment : Fragment() {

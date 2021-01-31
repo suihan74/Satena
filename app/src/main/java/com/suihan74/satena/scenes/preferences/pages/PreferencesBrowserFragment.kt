@@ -24,8 +24,8 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.exceptions.InvalidUrlException
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.lazyProvideViewModel
 
 class PreferencesBrowserFragment :

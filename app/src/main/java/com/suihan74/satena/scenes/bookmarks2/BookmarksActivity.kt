@@ -28,10 +28,10 @@ import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.InvalidUrlException
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.findFragmentByTag
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.extensions.showToast
 
 class BookmarksActivity : AppCompatActivity() {
     companion object {

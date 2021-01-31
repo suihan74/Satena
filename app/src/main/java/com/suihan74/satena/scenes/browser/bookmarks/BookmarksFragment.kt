@@ -113,10 +113,9 @@ class BookmarksFragment :
 
         // 投稿完了したらそのブクマをリストに追加する
         bookmarkPostViewModel.setOnPostSuccessListener { bookmarkResult ->
-            viewModel.reloadBookmarks {
-                viewModel.viewModelScope.launch {
-                    viewModel.repository.updateBookmark(bookmarkResult)
-                }
+            viewModel.viewModelScope.launch {
+                viewModel.loadRecentBookmarks(requireContext())
+                viewModel.repository.updateBookmark(bookmarkResult)
             }
             switchPostLayout(binding, false)
         }
@@ -200,7 +199,8 @@ class BookmarksFragment :
             swipeLayout.setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
             swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
             swipeLayout.setOnRefreshListener {
-                viewModel.reloadBookmarks {
+                lifecycleScope.launch {
+                    viewModel.loadRecentBookmarks(requireContext())
                     swipeLayout.isRefreshing = false
                 }
             }
