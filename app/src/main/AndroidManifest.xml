@@ -36,7 +36,8 @@
         <activity android:name=".scenes.browser.BrowserActivity" android:launchMode="standard" android:windowSoftInputMode="adjustResize">
         </activity>
 
-        <activity android:name=".scenes.bookmarks2.BookmarksActivity">
+        <!-- ブクマ一覧画面 -->
+        <activity android:name=".scenes.bookmarks.BookmarksActivity">
             <intent-filter android:label="ブコメを見る">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT" />
@@ -45,23 +46,6 @@
             </intent-filter>
 
             <intent-filter android:label="Satenaで見る">
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="https" android:host="b.hatena.ne.jp" android:pathPrefix="/entry"/>
-            </intent-filter>
-        </activity>
-
-        <!-- ブクマ一覧画面 -->
-        <activity android:name=".scenes.bookmarks.BookmarksActivity">
-            <intent-filter android:label="(新)ブコメを見る">
-                <action android:name="android.intent.action.SEND"/>
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:mimeType="text/plain"/>
-            </intent-filter>
-
-            <intent-filter android:label="(新)Satenaで見る">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>

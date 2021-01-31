@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.bookmarks2
+package com.suihan74.satena.scenes.bookmarks
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

@@ -19,7 +19,6 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FooterRecyclerViewLoadableBinding
 import com.suihan74.satena.databinding.ListviewItemBookmarksBinding
-import com.suihan74.satena.scenes.bookmarks2.MentionsAdapter
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.bindings.setVisibility
