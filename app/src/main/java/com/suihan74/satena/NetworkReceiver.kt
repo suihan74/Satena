@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import androidx.annotation.RequiresApi
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 
@@ -18,9 +19,8 @@ class NetworkReceiver(private val context: Context) {
         DISCONNECTED,
     }
 
-    private val mState by lazy { SingleUpdateMutableLiveData<State>() }
-    val state : LiveData<State>
-        get() = mState
+    private val mState = SingleUpdateMutableLiveData<State>()
+    val state : LiveData<State>  = mState
 
     var previousState = State.INITIALIZING
         private set
@@ -32,6 +32,7 @@ class NetworkReceiver(private val context: Context) {
     }
 
     @RequiresApi(23)
+    @WorkerThread
     private fun checkConnection() {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetworks = cm.allNetworks
