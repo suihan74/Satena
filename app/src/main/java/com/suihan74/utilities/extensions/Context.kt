@@ -17,8 +17,19 @@ import kotlinx.coroutines.sync.withLock
 
 // ------ //
 
+/**
+ * 同種のトースト通知の重複を防ぐためのタグ
+ *
+ * ex)
+ *
+ * enum class HogeToastTag : ToastTag {
+ *     MSG_FOO
+ * }
+ */
+interface ToastTag
+
 object ContextExtensions {
-    private val liveTags = HashSet<String>()
+    private val liveTags = HashSet<ToastTag>()
     private val liveTagsMutex = Mutex()
 
     fun Context.showToast(message: String) {
@@ -38,7 +49,7 @@ object ContextExtensions {
     /**
      * 同一タグがついたトーストの重複通知を回避する
      */
-    fun Context.showToast(message: String, tag: String) = GlobalScope.launch {
+    fun Context.showToast(message: String, tag: ToastTag) = GlobalScope.launch {
         liveTagsMutex.withLock {
             if (liveTags.contains(tag)) return@launch
             liveTags.add(tag)
@@ -50,9 +61,9 @@ object ContextExtensions {
         }
     }
 
-    fun Context.showToast(messageId: Int, tag: String) = showToast(getString(messageId), tag)
+    fun Context.showToast(messageId: Int, tag: ToastTag) = showToast(getString(messageId), tag)
 
-    fun Context.showToast(messageId: Int, tag: String, vararg args: Any) = showToast(getString(messageId, *args), tag)
+    fun Context.showToast(messageId: Int, tag: ToastTag, vararg args: Any) = showToast(getString(messageId, *args), tag)
 
     // --- //
 
@@ -62,11 +73,11 @@ object ContextExtensions {
 
     fun Fragment.showToast(messageId: Int, vararg args: Any) = requireContext().showToast(messageId, args)
 
-    fun Fragment.showToast(message: String, tag: String) = requireContext().showToast(message, tag)
+    fun Fragment.showToast(message: String, tag: ToastTag) = requireContext().showToast(message, tag)
 
-    fun Fragment.showToast(messageId: Int, tag: String) = requireContext().showToast(messageId, tag)
+    fun Fragment.showToast(messageId: Int, tag: ToastTag) = requireContext().showToast(messageId, tag)
 
-    fun Fragment.showToast(messageId: Int, tag: String, vararg args: Any) = requireContext().showToast(messageId, tag, args)
+    fun Fragment.showToast(messageId: Int, tag: ToastTag, vararg args: Any) = requireContext().showToast(messageId, tag, args)
 }
 
 // ------ //

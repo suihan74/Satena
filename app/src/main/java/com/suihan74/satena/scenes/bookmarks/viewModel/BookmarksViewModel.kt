@@ -27,6 +27,7 @@ import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.ToastTag
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
@@ -130,18 +131,18 @@ class BookmarksViewModel(
 
     // ------ //
 
-    private enum class ToastTag {
+    private enum class ErrorToastTag : ToastTag {
         LOAD_BOOKMARKS_FAILURE
     }
 
     /** ブクマリスト取得失敗時のエラーメッセージ */
-    fun showLoadingErrorMessage(context: Context, e: Throwable) {
+    private fun showLoadingErrorMessage(context: Context, e: Throwable) {
         val msgId = when (e) {
             is NotFoundException -> R.string.msg_bookmark_comments_are_hidden
             is IllegalArgumentException -> R.string.invalid_url_error
             else -> R.string.msg_update_bookmarks_failed
         }
-        context.showToast(msgId, ToastTag.LOAD_BOOKMARKS_FAILURE.name)
+        context.showToast(msgId, ErrorToastTag.LOAD_BOOKMARKS_FAILURE)
     }
 
     // ------ //
