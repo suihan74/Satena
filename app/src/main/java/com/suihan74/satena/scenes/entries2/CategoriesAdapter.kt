@@ -75,7 +75,7 @@ class CategoriesAdapter :
         val holder = ViewHolder(binding)
 
         holder.itemView.setOnClickListener {
-            val position = holder.adapterPosition
+            val position = holder.bindingAdapterPosition
             val category = currentList[position]
             onItemClicked?.invoke(category)
         }
@@ -103,12 +103,12 @@ class CategoriesAdapter :
         val categoryIcon : ImageView
     }
 
-    private class BinderForLinear(val binding: ListviewItemCategoriesBinding) : Binder {
+    private class BinderForLinear(binding: ListviewItemCategoriesBinding) : Binder {
         override val categoryText = binding.categoryText
         override val categoryIcon = binding.categoryIcon
     }
 
-    private class BinderForGrid(val binding: ListviewItemCategoriesGridBinding) : Binder {
+    private class BinderForGrid(binding: ListviewItemCategoriesGridBinding) : Binder {
         override val categoryText = binding.categoryText
         override val categoryIcon = binding.categoryIcon
     }

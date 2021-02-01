@@ -70,12 +70,12 @@ class UrlBlockingDialog : DialogFragment() {
                 }
 
                 // クリックしたURLをEditTextに入力する
-                listView?.setOnItemClickListener { adapterView, view, i, l ->
+                listView?.setOnItemClickListener { _, _, i, _ ->
                     viewModel.pattern.value = viewModel.getPatternCandidate(i)
                 }
 
                 // 既にブロックされている設定の説明を表示する
-                listView?.setOnItemLongClickListener { adapterView, view, i, l ->
+                listView?.setOnItemLongClickListener { _, _, i, _ ->
                     if (viewModel.urls?.get(i)?.blocked == true) {
                         showToast(R.string.msg_url_blocked)
                     }
