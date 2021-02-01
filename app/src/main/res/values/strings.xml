@@ -190,7 +190,7 @@
     <string name="pref_generals_ignore_notices_from_spam_desc">スパムと思われるスター通知を行わない</string>
     <string name="pref_generals_show_release_notes_after_update_desc">アプリ更新後の初回起動時に更新履歴を表示する</string>
     <string name="pref_generals_notices_intervals_dialog_title">通知確認間隔を設定</string>
-    <string name="pref_generals_notices_intervals_dialog_msg">%d分～%d分で指定できます</string>
+    <string name="pref_generals_notices_intervals_dialog_msg">%1$d分～%2$d分で指定できます</string>
 
     <string name="pref_generals_clear_image_cache_desc">画像キャッシュをクリアする</string>
     <string name="pref_generals_clear_image_cache_button">実行</string>
@@ -270,7 +270,7 @@
     <string name="user_tag_dialog_name_hint">ユーザータグ名</string>
     <string name="tagged_user_dialog_name_hint">はてなID</string>
     <string name="msg_user_tag_deleted">「%s」を削除しました</string>
-    <string name="msg_user_tag_relation_deleted">id:%sのタグ「%s」を外しました</string>
+    <string name="msg_user_tag_relation_deleted">id:%1$sのタグ「%2$s」を外しました</string>
     <!-- ユーザータグに対する操作メニュー -->
     <string name="pref_user_tags_tag_menu_edit">編集</string>
     <string name="pref_user_tags_tag_menu_remove">タグを削除</string>
@@ -394,7 +394,7 @@
     <string name="report_dialog_text_hint">このブコメを通報する理由など(任意)</string>
     <string name="report_dialog_ignore_after_reporting_hint">通報後ユーザーを非表示にする</string>
     <string name="report_dialog_description">通報内容</string>
-    <string name="report_dialog_confirm_msg">%sを「%s」のため通報します。よろしいですか？</string>
+    <string name="report_dialog_confirm_msg">%1$sを「%2$s」のため通報します。よろしいですか？</string>
     <string name="msg_report_succeeded">id:%sを通報しました</string>
     <string name="msg_report_and_ignore_succeeded">id:%sを通報して非表示にしました</string>
     <string name="msg_report_and_mute_succeeded">id:%sを通報して非表示にしました</string>
@@ -408,17 +408,17 @@
     <string name="msg_user_tag_existed">既に存在するタグです</string>
     <string name="msg_user_tag_no_name">タグ名を入力してください</string>
     <string name="msg_user_tag_created">タグ「%s」を作成しました</string>
-    <string name="msg_user_tag_updated">タグ「%s」の名称を「%s」に変更しました</string>
-    <string name="msg_user_tag_created_and_added_user">タグ「%s」を作成して id:%s を追加しました</string>
-    <string name="msg_user_tagged">id:%sに%d個のタグを設定しました</string>
+    <string name="msg_user_tag_updated">タグ「%1$s」の名称を「%2$s」に変更しました</string>
+    <string name="msg_user_tag_created_and_added_user">タグ「%1$s」を作成して id:%2$s を追加しました</string>
+    <string name="msg_user_tagged">id:%1$sに%2$d個のタグを設定しました</string>
     <string name="msg_user_tagged_single">id:%s にタグをつけました</string>
-    <string name="msg_user_has_already_tagged">タグ「%s」はid:%sに既についています</string>
+    <string name="msg_user_has_already_tagged">タグ「%1$s」はid:%2$sに既についています</string>
     <string name="msg_user_tag_creation_failure">ユーザータグ作成に失敗しました</string>
     <string name="msg_user_tag_selection_failure">ユーザータグ設定に失敗しました</string>
 
     <!-- リリースノートダイアログ -->
     <string name="release_notes_dialog_title">更新履歴</string>
-    <string name="release_notes_dialog_update_message">updated from v%s to v%s</string>
+    <string name="release_notes_dialog_update_message">updated from v%1$s to v%2$s</string>
     <string name="msg_read_release_notes_failed">更新履歴の読み込みに失敗しました</string>
 
     <!-- 認証 -->
@@ -441,7 +441,7 @@
     <string name="msg_get_categories_failed">カテゴリ・特集情報の取得に失敗しました</string>
     <string name="msg_update_entries_failed">エントリーリスト取得失敗</string>
     <string name="msg_get_stars_report_failed">スターの取得失敗</string>
-    <string name="msg_entries_initial_tab_changed">「%s」カテゴリ「%s」タブを最初に表示するように設定しました</string>
+    <string name="msg_entries_initial_tab_changed">「%1$s」カテゴリ「%2$s」タブを最初に表示するように設定しました</string>
     <string name="msg_force_default_home_category">エラーによりホームカテゴリを表示できないので「総合」カテゴリを表示します</string>
     <string name="msg_retry_sign_in_succeeded">id:%sでサインインしました</string>
 
@@ -459,7 +459,7 @@
     <string name="menu_notice_remove">通知を削除</string>
 
     <!-- ブクマ画面 -->
-    <string name="toolbar_subtitle_bookmarks">"%d users (%d comments)"</string>
+    <string name="toolbar_subtitle_bookmarks">"%1$d users (%2$d comments)"</string>
     <string name="add_star_popup_desc">スターをつける</string>
     <string name="custom_bookmarks_tab_pref_dialog_title">カスタムブクマリストの設定</string>
     <string name="custom_bookmarks_no_comment_active">無言ブクマを表示</string>
@@ -497,10 +497,10 @@
     <string name="star_with_count">★%d</string>
     <string name="bookmark_detail_quote_comment">"%s"</string>
 
-    <string name="bookmark_detail_tab_stars_from">(%d) from %s</string>
-    <string name="bookmark_detail_tab_stars_to">(%d) to %s</string>
-    <string name="bookmark_detail_tab_mentions_from">(%d) from %s</string>
-    <string name="bookmark_detail_tab_mentions_to">(%d) to %s</string>
+    <string name="bookmark_detail_tab_stars_from">(%1$d) from %2$s</string>
+    <string name="bookmark_detail_tab_stars_to">(%1$d) to %2$s</string>
+    <string name="bookmark_detail_tab_mentions_from">(%1$d) from %2$s</string>
+    <string name="bookmark_detail_tab_mentions_to">(%1$d) to %2$s</string>
 
     <string name="bookmark_detail_tab_tooltip_stars_from">id:%sがスターをつけた他のブコメ</string>
     <string name="bookmark_detail_tab_tooltip_stars_to">id:%sにスターをつけたユーザーとそのブコメ</string>
