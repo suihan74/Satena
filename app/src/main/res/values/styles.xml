@@ -29,8 +29,10 @@
         <item name="android:textColorPrimary">@color/colorPrimaryText</item>
         <!-- subtitleの文字色 -->
         <item name="android:textColorSecondary">@color/colorPrimaryText</item>
-        <!-- ポップアップ部分の文字色 -->
+        <!-- デフォルト文字色 -->
         <item name="android:textColor">@color/textColor</item>
+        <!-- ポップアップ背景 -->
+        <item name="popupMenuBackground">?panelBackground</item>
 
         <!-- ツールバーの色を他の部分に渡すために使用 -->
         <item name="toolbarBackground">?colorPrimary</item>
@@ -138,6 +140,8 @@
         <item name="bookmarkCountColor">@color/bookmarkUsersCountTextDark</item>
         <!-- オプションメニュー背景色 -->
         <item name="colorSurface">@color/panelBackgroundDark</item>
+        <!-- ポップアップ背景 -->
+        <item name="popupMenuBackground">@drawable/dialog_background_ex_dark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>
