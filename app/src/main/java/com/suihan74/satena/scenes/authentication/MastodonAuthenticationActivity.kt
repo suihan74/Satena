@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
@@ -112,8 +113,11 @@ class MastodonAuthenticationActivity : ActivityBase() {
 
             val intent = CustomTabsIntent.Builder()
                 .setShowTitle(true)
-                .enableUrlBarHiding()
-                .setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimary))
+                .setUrlBarHidingEnabled(true)
+                .setDefaultColorSchemeParams(CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimary))
+                    .build()
+                )
                 .build()
                 .apply {
                     val packageName = CustomTabsHelper.getPackageNameToUse(context)

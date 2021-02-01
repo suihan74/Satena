@@ -8,6 +8,7 @@ import android.net.Uri
 import android.util.Log
 import android.webkit.URLUtil
 import android.widget.RemoteViews
+import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import com.suihan74.hatenaLib.Entry
@@ -100,10 +101,12 @@ class BrowserToolbarManager : BroadcastReceiver() {
 private fun Context.startInnerBrowser(remoteViews: RemoteViews, url: String) = CustomTabsIntent
     .Builder()
     .setShowTitle(true)
-    .enableUrlBarHiding()
-    .addDefaultShareMenuItem()
-    .setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
-    .setSecondaryToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
+    .setUrlBarHidingEnabled(true)
+    .setShareState(CustomTabsIntent.SHARE_STATE_ON)
+    .setDefaultColorSchemeParams(CustomTabColorSchemeParams.Builder()
+        .setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
+        .setSecondaryToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
+        .build())
     .setSecondaryToolbarViews(
         remoteViews,
         BrowserToolbarManager.getClickableIds(),
