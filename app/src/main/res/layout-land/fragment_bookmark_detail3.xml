@@ -53,7 +53,6 @@
 
                             android:textStyle="bold"
                             android:textSize="16sp"
-                            android:textColor="?attr/textColor"
                             android:gravity="center_vertical"
                             android:textAlignment="gravity"
                             android:maxLines="3"
@@ -89,7 +88,6 @@
                         onEntryIdLongClick="@{bookmarksViewModel.onEntryIdLongClicked}"
 
                         android:textSize="14sp"
-                        android:textColor="?attr/textColor"
                         android:minHeight="43dp"
                         android:textIsSelectable="true"
                         android:layout_width="match_parent"
@@ -152,7 +150,6 @@
                 app:layout_anchor="@id/bookmark_detail_layout"
                 app:layout_anchorGravity="bottom"
                 android:background="#aa000000"
-                android:textColor="?attr/textColor"
                 android:textSize="20sp"
                 android:paddingStart="8dp"
                 android:paddingEnd="108dp"

@@ -9,7 +9,6 @@
             android:background="?android:attr/selectableItemBackground"
             android:visibility="gone"
             android:text="@string/additional_loading_desc"
-            android:textColor="?attr/textColor"
             android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>

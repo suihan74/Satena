@@ -32,7 +32,6 @@
                         android:id="@+id/entry_title"
                         android:visibility="@{vm.displayEntryTitle}"
                         android:text="@{vm.entry.title}"
-                        android:textColor="?attr/textColor"
                         android:textSize="16sp"
 
                         android:singleLine="true"
@@ -68,7 +67,6 @@
                     android:id="@+id/comment"
                     android:text="@={vm.comment}"
 
-                    android:textColor="?attr/textColor"
                     android:gravity="top"
                     android:hint="@string/bookmark_comment_edit_text_hint"
                     android:importantForAutofill="no"
@@ -88,7 +86,6 @@
                     android:layout_toStartOf="@id/post_button"
                     android:layout_alignBaseline="@id/post_button"
                     android:layout_marginEnd="16dp"
-                    android:textColor="?attr/textColor"
                     android:text="@{vm.commentLength.toString()}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>

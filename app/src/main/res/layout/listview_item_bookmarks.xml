@@ -29,7 +29,6 @@
 
     <TextView
             android:id="@+id/bookmark_user_name"
-            android:textColor="?attr/textColor"
             android:textStyle="bold"
             android:ellipsize="end"
             android:maxLines="1"
@@ -56,7 +55,6 @@
 
     <TextView
             android:id="@+id/bookmark_comment"
-            android:textColor="?attr/textColor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:lineSpacingExtra="1.2sp"

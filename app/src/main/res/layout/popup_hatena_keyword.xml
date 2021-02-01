@@ -20,7 +20,6 @@
                 android:id="@+id/title_text_view"
                 android:text="@{title}"
                 android:textSize="18sp"
-                android:textColor="?attr/textColor"
                 android:layout_marginBottom="10dp"
                 android:layout_alignParentTop="true"
                 android:layout_width="match_parent"

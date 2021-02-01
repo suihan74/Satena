@@ -20,7 +20,6 @@
 
     <TextView
             android:id="@+id/app_name"
-            android:textColor="?attr/textColor"
             android:text="@string/app_name"
             android:textSize="20sp"
             android:layout_width="wrap_content"
@@ -31,7 +30,6 @@
 
     <TextView
             android:id="@+id/app_version"
-            android:textColor="?attr/textColor"
             android:textSize="16sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -41,7 +39,6 @@
 
     <TextView
             android:id="@+id/copyright"
-            android:textColor="?attr/textColor"
             android:text="@string/copyright"
             android:textSize="14sp"
             android:layout_width="wrap_content"
@@ -59,16 +56,16 @@
 
         <Button
                 android:id="@+id/show_release_notes_button"
+                style="?buttonStyle"
                 android:text="@string/pref_information_release_notes_desc"
-                android:textColor="@color/textColor"
                 android:layout_marginEnd="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
         <Button
                 android:id="@+id/show_licenses_button"
+                style="?buttonStyle"
                 android:text="@string/pref_information_licenses_desc"
-                android:textColor="@color/textColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -77,8 +74,8 @@
 
     <Button
             android:id="@+id/save_settings_button"
+            style="?buttonStyle"
             android:text="@string/pref_information_save_settings_desc"
-            android:textColor="@color/textColor"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
             android:layout_width="wrap_content"
@@ -86,8 +83,8 @@
 
     <Button
             android:id="@+id/load_settings_button"
+            style="?buttonStyle"
             android:text="@string/pref_information_load_settings_desc"
-            android:textColor="@color/textColor"
             android:layout_above="@id/save_settings_button"
             android:layout_alignParentEnd="true"
             android:layout_marginBottom="6dp"

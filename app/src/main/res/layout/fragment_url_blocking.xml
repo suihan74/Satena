@@ -24,7 +24,6 @@
                     android:id="@+id/title_text_view"
                     android:text="@string/pref_browser_open_url_blocking_desc"
                     android:textSize="18sp"
-                    android:textColor="?textColor"
                     android:background="?attr/tabBackground"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="12dp"

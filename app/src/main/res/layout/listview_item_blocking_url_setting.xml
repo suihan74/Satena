@@ -17,7 +17,6 @@
 
         <TextView
                 android:text="@{model.pattern}"
-                android:textColor="?attr/textColor"
                 android:textSize="16sp"
                 android:singleLine="true"
                 android:ellipsize="end"

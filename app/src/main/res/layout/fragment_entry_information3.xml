@@ -42,7 +42,6 @@
                 android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
                 android:scrollbars="vertical"
                 android:text="@{vm.entry.title}"
-                android:textColor="?attr/textColor"
                 android:textIsSelectable="true"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -108,7 +107,6 @@
                 android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
                 android:scrollbars="vertical"
                 android:text="@{vm.entry.description}"
-                android:textColor="?attr/textColor"
                 android:textIsSelectable="true"
                 android:textSize="12sp"
                 tools:text="@tools:sample/lorem/random" />
@@ -152,8 +150,7 @@
                     android:id="@+id/to_lower_floor_button"
                     android:text="@string/entry_information_lower_floor"
                     lowerFloorButtonVisibility="@{vm.entry}"
-                    style="@style/Widget.AppCompat.Button"
-                    android:textColor="@color/textColor"
+                    style="?buttonStyle"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -164,11 +161,10 @@
                     android:id="@+id/to_upper_floor_button"
                     android:text="@string/entry_information_upper_floor"
                     upperFloorButtonVisibility="@{vm.entry}"
-                    style="@style/Widget.AppCompat.Button"
+                    style="?buttonStyle"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    android:textColor="@color/textColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 

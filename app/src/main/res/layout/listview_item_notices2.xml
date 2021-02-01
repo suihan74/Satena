@@ -26,7 +26,6 @@
         <TextView
                 android:id="@+id/notice_message"
                 noticeText="@{notice}"
-                android:textColor="?attr/textColor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/notice_icon"/>

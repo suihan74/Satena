@@ -19,6 +19,9 @@
         <!-- browser: 表示中ページの「戻る/進む」履歴項目の背景色 -->
         <attr name="browserBackStackCurrentPageBackground" format="color"/>
 
+        <!-- ToggleButton -->
+        <attr name="toggleButtonStyle" format="reference"/>
+
         <!-- SnackBar -->
         <attr name="snackBarBackgroundColor" format="color"/>
         <attr name="snackBarTextColor" format="color"/>

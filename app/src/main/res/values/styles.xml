@@ -37,6 +37,11 @@
         <!-- ツールバーの色を他の部分に渡すために使用 -->
         <item name="toolbarBackground">?colorPrimary</item>
 
+        <!-- Button -->
+        <item name="buttonStyle">@style/ButtonStyle</item>
+        <!-- ToggleButton -->
+        <item name="toggleButtonStyle">@style/ToggleButtonStyle</item>
+
         <!-- SearchView -->
         <item name="searchViewStyle">@style/SearchViewStyle.Toolbar</item>
         <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.Toolbar</item>
@@ -121,6 +126,11 @@
         <!-- クリック時背景アニメーション色 -->
         <item name="colorControlHighlight">@color/ripple_material_ex_dark</item>
 
+        <!-- Button -->
+        <item name="buttonStyle">@style/ButtonStyle.ExDark</item>
+        <!-- ToggleButton -->
+        <item name="toggleButtonStyle">@style/ToggleButtonStyle.ExDark</item>
+
         <!-- ツールバーの色を他の部分に渡すために使用 -->
         <item name="toolbarBackground">@color/panelBackgroundExDark</item>
         <item name="toolbarStyle">@style/ToolbarStyleExDark</item>
@@ -175,9 +185,14 @@
     </style>
 
     <!-- 設定画面のトグルボタン -->
-    <style name="PreferencesToggleButtonStyle" parent="Widget.AppCompat.Button">
+    <style name="ToggleButtonStyle" parent="Widget.AppCompat.Button">
         <item name="android:backgroundTint">@drawable/preferences_toggle_background_selector</item>
         <item name="android:textColor">@drawable/preferences_toggle_text_color_selector</item>
+    </style>
+    <style name="ToggleButtonStyle.ExDark" parent="Widget.AppCompat.Button">
+        <item name="android:backgroundTint">@null</item>
+        <item name="android:background">@drawable/button_background_toggle_ex_dark</item>
+        <item name="android:textColor">@drawable/preferences_toggle_text_color_selector_ex_dark</item>
     </style>
 
     <!-- ブクマ投稿ダイアログ用 -->
@@ -417,6 +432,11 @@
     <style name="ButtonStyle" parent="Widget.AppCompat.Button">
         <item name="backgroundTint">?android:attr/colorButtonNormal</item>
         <item name="android:textColor">@android:color/black</item>
+    </style>
+    <style name="ButtonStyle.ExDark">
+        <item name="backgroundTint">@null</item>
+        <item name="android:background">@drawable/button_background_ex_dark</item>
+        <item name="android:textColor">?textColor</item>
     </style>
 
     <!-- FAB -->

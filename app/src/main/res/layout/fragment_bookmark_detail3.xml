@@ -70,7 +70,6 @@
 
                                 android:textStyle="bold"
                                 android:textSize="16sp"
-                                android:textColor="?attr/textColor"
                                 android:singleLine="true"
                                 android:ellipsize="end"
 
@@ -90,7 +89,6 @@
                                 onEntryIdLongClick="@{bookmarksViewModel.onEntryIdLongClicked}"
 
                                 android:textSize="14sp"
-                                android:textColor="?attr/textColor"
                                 android:textIsSelectable="true"
 
                                 android:minHeight="43dp"
@@ -149,7 +147,6 @@
         <TextView
                 android:id="@+id/quote_text_view"
                 android:text="@{vm.selectedText}"
-                android:textColor="?attr/textColor"
                 android:textSize="20sp"
 
                 app:layout_anchor="@id/bookmark_detail_layout"

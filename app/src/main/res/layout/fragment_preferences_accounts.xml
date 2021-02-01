@@ -11,7 +11,6 @@
 
     <TextView
             android:text="@string/pref_accounts_service_name_hatena"
-            android:textColor="?attr/textColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
@@ -23,14 +22,13 @@
 
     <Button
             android:id="@+id/preferences_accounts_hatena_sign_in_button"
+            style="?buttonStyle"
             android:text="@string/pref_accounts_sign_in"
-            android:textColor="@color/textColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
     <TextView
             android:text="@string/pref_accounts_service_name_mastodon"
-            android:textColor="?attr/textColor"
             android:layout_marginTop="36dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
@@ -43,8 +41,8 @@
 
     <Button
             android:id="@+id/preferences_accounts_mastodon_sign_in_button"
+            style="?buttonStyle"
             android:text="@string/pref_accounts_sign_in"
-            android:textColor="@color/textColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 

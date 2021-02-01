@@ -32,7 +32,6 @@
         <TextView
                 android:id="@+id/user_name"
                 android:text="@{user}"
-                android:textColor="?attr/textColor"
                 android:textSize="18sp"
                 android:singleLine="true"
                 android:layout_centerVertical="true"
