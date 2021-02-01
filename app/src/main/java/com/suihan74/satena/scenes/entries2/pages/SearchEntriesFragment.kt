@@ -8,7 +8,6 @@ import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.observe
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.SearchType
@@ -137,7 +136,7 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
                 return@setOnMenuItemClickListener true
             }
 
-            viewModel.searchType.observe(viewLifecycleOwner) {
+            viewModel.searchType.observe(viewLifecycleOwner, {
                 val context = requireContext()
                 val iconId =
                     when (it) {
@@ -153,7 +152,7 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
                 activity.alsoAs<EntriesActivity> { activity ->
                     activity.toolbar.title = text + getString(R.string.category_search)
                 }
-            }
+            })
         }
     }
 

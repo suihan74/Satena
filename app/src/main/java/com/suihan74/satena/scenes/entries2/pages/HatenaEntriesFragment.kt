@@ -6,7 +6,6 @@ import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.observe
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
@@ -94,7 +93,7 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
 
         val viewModel = viewModel as HatenaEntriesViewModel
 
-        viewModel.issues.observe(viewLifecycleOwner) { issues ->
+        viewModel.issues.observe(viewLifecycleOwner, { issues ->
             val activity = requireActivity() as EntriesActivity
             val spinnerItems = issues.map { it.name }
 
@@ -122,10 +121,10 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
                     }
                 }
             }
-        }
+        })
 
         // Issue選択時にサブタイトルを表示する
-        viewModel.issue.observe(viewLifecycleOwner) {
+        viewModel.issue.observe(viewLifecycleOwner, {
             val toolbar = (requireActivity() as EntriesActivity).toolbar
             toolbar.subtitle = it?.name
 
@@ -134,7 +133,7 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
             if (it == null) {
                 spinner.setSelection(0)
             }
-        }
+        })
 
         // Issueを選択している場合、戻るボタンで選択を解除する
         clearIssueCallback?.remove()

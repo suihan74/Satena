@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
 import android.util.Log
-import androidx.lifecycle.observe
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -77,7 +76,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         // タグの変更を監視
         var isTagInitialized = false
         val parentViewModel = parentViewModel!!
-        parentViewModel.tag.observe(viewLifecycleOwner) {
+        parentViewModel.tag.observe(viewLifecycleOwner, {
             if (!isTagInitialized) {
                 isTagInitialized = true
                 return@observe
@@ -87,6 +86,6 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
             entriesAdapter.submitEntries(null) {
                 viewModel.reloadLists(onError = onErrorRefreshEntries)
             }
-        }
+        })
     }
 }

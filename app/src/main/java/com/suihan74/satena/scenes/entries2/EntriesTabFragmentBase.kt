@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.hatenaLib.BookmarkResult
@@ -95,17 +94,11 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
         // 通信状態の変更を監視
         // リスト未ロード状態なら再試行する
-        var isNetworkReceiverInitialized = false
-        SatenaApplication.instance.networkReceiver.state.observe(viewLifecycleOwner) { state ->
-            if (!isNetworkReceiverInitialized) {
-                isNetworkReceiverInitialized = true
-                return@observe
-            }
-
+        SatenaApplication.instance.networkReceiver.state.observe(viewLifecycleOwner, { state ->
             if (state == NetworkReceiver.State.CONNECTED && viewModel.filteredEntries.value.isNullOrEmpty()) {
                 viewModel.reloadLists(onError = onErrorRefreshEntries)
             }
-        }
+        })
 
         initializeRecyclerView(binding.entriesList, binding.swipeLayout)
 

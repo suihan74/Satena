@@ -9,8 +9,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.TooltipCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.observe
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
@@ -219,7 +219,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
         } ?: return
 
         // タグ一覧のロード完了後に候補リストを作成する
-        viewModel.tags.observe(viewLifecycleOwner) { tags ->
+        viewModel.tags.observe(viewLifecycleOwner, Observer { tags ->
             val activity = requireActivity()
 
             if (tags.isNotEmpty()) {
@@ -250,10 +250,10 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
                     }
                 }
             }
-        }
+        })
 
         // タグ選択時にサブタイトルを表示する
-        viewModel.tag.observe(viewLifecycleOwner) {
+        viewModel.tag.observe(viewLifecycleOwner, Observer {
             setSubTitle(fragmentViewModel)
 
             if (it == null) {
@@ -265,7 +265,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
                 // 戻るボタンの割り込みを有効化する
                 onBackPressedCallback?.isEnabled = true
             }
-        }
+        })
     }
 
     /** 検索情報をサブタイトルに表示する */

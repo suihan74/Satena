@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.observe
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.OnError
@@ -41,8 +40,8 @@ class MyBookmarksViewModel(
         onError: OnError?
     ) {
         super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
-        searchQuery.observe(lifecycleOwner) {
+        searchQuery.observe(lifecycleOwner, {
             viewModel.searchQuery = it
-        }
+        })
     }
 }

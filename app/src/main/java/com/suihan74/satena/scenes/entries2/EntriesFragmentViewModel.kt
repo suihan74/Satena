@@ -1,10 +1,7 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.content.Context
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.observe
+import androidx.lifecycle.*
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.hatenaLib.Tag
 import com.suihan74.satena.models.Category
@@ -60,31 +57,31 @@ abstract class EntriesFragmentViewModel : ViewModel() {
         // Issueの変更を監視する
         // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる
         viewModel.issue = issue.value
-        issue.observe(lifecycleOwner) {
-            if (viewModel.issue == it) return@observe
+        issue.observe(lifecycleOwner, Observer {
+            if (viewModel.issue == it) return@Observer
             viewModel.issue = it
             // 一度クリアしておかないとスクロール位置が滅茶苦茶になる
             entriesAdapter.clearEntries {
                 viewModel.reloadLists(onError = onError)
             }
-        }
+        })
 
         // Tagの変更を監視する
         viewModel.tag = tag.value
-        tag.observe(lifecycleOwner) {
-            if (viewModel.tag == it) return@observe
+        tag.observe(lifecycleOwner, Observer {
+            if (viewModel.tag == it) return@Observer
             viewModel.tag = it
             entriesAdapter.clearEntries {
                 viewModel.reloadLists(onError = onError)
             }
-        }
+        })
 
         // サイトURL指定
         viewModel.siteUrl = siteUrl.value
-        siteUrl.observe(lifecycleOwner) {
-            if (category.value != Category.Site && (it == null || viewModel.siteUrl == it)) return@observe
+        siteUrl.observe(lifecycleOwner, Observer {
+            if (category.value != Category.Site && (it == null || viewModel.siteUrl == it)) return@Observer
             viewModel.siteUrl = it
             viewModel.reloadLists(onError = onError)
-        }
+        })
     }
 }

@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentUserTagsListBinding
@@ -63,9 +62,9 @@ class UserTagsListFragment : Fragment() {
         }
 
         // リストの変更を監視
-        viewModel.tags.observe(viewLifecycleOwner) { tags ->
+        viewModel.tags.observe(viewLifecycleOwner, { tags ->
             userTagsAdapter.setItems(tags)
-        }
+        })
 
         return binding.root
     }
