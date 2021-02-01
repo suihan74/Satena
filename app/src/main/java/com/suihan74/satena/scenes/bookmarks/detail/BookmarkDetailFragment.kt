@@ -15,14 +15,11 @@ import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarkDetail3Binding
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
-import com.suihan74.satena.scenes.bookmarks.repository.StarExhaustedException
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
-import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
@@ -162,28 +159,21 @@ class BookmarkDetailFragment : Fragment() {
 
     /** スター付与ボタンの挙動を設定 */
     private fun initializeStarButtons(binding: FragmentBookmarkDetail3Binding) {
-        fun listener(color: StarColor) : (View)->Unit = {
-            lifecycleScope.launch(Dispatchers.Main) {
-                val targetUser = viewModel.bookmark.value?.user ?: "???"
-
-                try {
-                    viewModel.postStar(color)
-                    context?.showToast(R.string.msg_post_star_succeeded, targetUser)
-                }
-                catch(e: StarExhaustedException) {
-                    context?.showToast(R.string.msg_no_color_stars, color.name)
-                }
-                catch (e: Throwable) {
-                    context?.showToast(R.string.msg_post_star_failed, targetUser)
-                }
-            }
+        fun postStar(color: StarColor) : (View)->Unit = {
+            bookmarksViewModel.postStarToBookmark(
+                requireContext(),
+                viewModel.bookmark.value!!,
+                color,
+                viewModel.selectedText.value,
+                childFragmentManager
+            )
         }
 
-        binding.yellowStarButton.setOnClickListener(listener(StarColor.Yellow))
-        binding.redStarButton.setOnClickListener(listener(StarColor.Red))
-        binding.greenStarButton.setOnClickListener(listener(StarColor.Green))
-        binding.blueStarButton.setOnClickListener(listener(StarColor.Blue))
-        binding.purpleStarButton.setOnClickListener(listener(StarColor.Purple))
+        binding.yellowStarButton.setOnClickListener(postStar(StarColor.Yellow))
+        binding.redStarButton.setOnClickListener(postStar(StarColor.Red))
+        binding.greenStarButton.setOnClickListener(postStar(StarColor.Green))
+        binding.blueStarButton.setOnClickListener(postStar(StarColor.Blue))
+        binding.purpleStarButton.setOnClickListener(postStar(StarColor.Purple))
     }
 
     // ------ //

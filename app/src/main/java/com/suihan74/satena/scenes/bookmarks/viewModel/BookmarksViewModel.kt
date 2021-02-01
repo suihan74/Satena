@@ -334,10 +334,7 @@ class BookmarksViewModel(
     ) = withContext(Dispatchers.Main) {
         val starAvailable = repository.checkColorStarAvailability(color)
         if (!starAvailable) {
-            context.showToast(
-                R.string.msg_post_star_failed,
-                bookmark.user
-            )
+            context.showToast(R.string.msg_no_color_stars, color.name)
             return@withContext
         }
 

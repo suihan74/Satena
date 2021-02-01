@@ -5,9 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
-import com.suihan74.satena.scenes.bookmarks.repository.StarExhaustedException
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.Dispatchers
@@ -183,30 +181,6 @@ class BookmarkDetailViewModel(
                     mentionsFromUser.postValue(relations)
                 }
             }
-        }
-    }
-
-    // ------ //
-
-    /**
-     * 表示中の対象ブクマにスターを付与する
-     *
-     * @throws StarExhaustedException 所持していないカラースターを使用しようとした
-     * @throws TaskFailureException それ以外の要因による失敗
-     */
-    suspend fun postStar(color: StarColor) {
-        try {
-            val entry = repository.entry.value!!
-            val bookmark = bookmark.value!!
-            val quote = selectedText.value.orEmpty()
-
-            repository.postStar(entry, bookmark, color, quote)
-        }
-        catch (e: StarExhaustedException) {
-            throw e
-        }
-        catch (e: Throwable) {
-            throw TaskFailureException(message = "failed to post a star", cause = e)
         }
     }
 }
