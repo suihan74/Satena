@@ -369,10 +369,8 @@
         <item name="android:paddingBottom">2dp</item>
         <item name="android:scrollbarAlwaysDrawVerticalTrack">true</item>
         <item name="android:textSize">18sp</item>
-        <item name="android:textColor">@color/colorPrimaryText</item>
-        <item name="android:dropDownSelector">@color/colorPrimaryText</item>
+        <item name="android:dropDownSelector">?colorControlHighlight</item>
         <item name="subMenuArrow">@null</item>
-        <item name="backgroundTint">@color/colorPrimaryText</item>
     </style>
 
     <style name="SpinnerStyle.Light">
