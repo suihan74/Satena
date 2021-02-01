@@ -143,7 +143,7 @@
         <!-- ポップアップ背景 -->
         <item name="popupMenuBackground">@drawable/dialog_background_ex_dark</item>
 
-        <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
+        <item name="android:spinnerStyle">@style/SpinnerStyle.ExDark</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
@@ -378,9 +378,11 @@
     <style name="SpinnerStyle.Light">
         <item name="android:popupBackground">@color/panelBackground</item>
     </style>
-
     <style name="SpinnerStyle.Dark">
         <item name="android:popupBackground">@color/panelBackgroundDark</item>
+    </style>
+    <style name="SpinnerStyle.ExDark">
+        <item name="android:popupBackground">@drawable/dialog_background_ex_dark</item>
     </style>
 
     <!-- TextView -->
