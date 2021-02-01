@@ -3,7 +3,7 @@
     <data>
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.bookmarks.BookmarksTabViewModel" />
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel" />
     </data>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

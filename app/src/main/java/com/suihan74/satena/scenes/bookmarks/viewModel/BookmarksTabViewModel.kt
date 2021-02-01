@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.bookmarks
+package com.suihan74.satena.scenes.bookmarks.viewModel
 
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.DiffUtil

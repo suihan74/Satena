@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
+import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.utilities.ScrollableToBottom

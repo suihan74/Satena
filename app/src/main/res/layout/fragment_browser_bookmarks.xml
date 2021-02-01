@@ -8,7 +8,7 @@
 
         <variable
                 name="bookmarksVM"
-                type="com.suihan74.satena.scenes.bookmarks.BookmarksTabViewModel" />
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
