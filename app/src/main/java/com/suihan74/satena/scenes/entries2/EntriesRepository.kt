@@ -220,13 +220,13 @@ class EntriesRepository(
 
             Category.MyHotEntries -> client.getMyHotEntriesAsync().await()
 
-            Category.MyBookmarks -> loadMyBookmarks(tabPosition, offset, params)
+            Category.MyBookmarks -> loadMyBookmarks(offset, params)
 
             Category.Search -> searchEntries(tabPosition, offset, params!!)
 
             Category.Stars ->
-                if (tabPosition == 0) loadMyStars(offset)
-                else loadStarsReport(offset)
+                if (tabPosition == 0) loadMyStars()
+                else loadStarsReport()
 
             Category.User -> loadUserEntries(offset, params!!)
 
@@ -255,7 +255,7 @@ class EntriesRepository(
         historyPrefs.get<List<Entry>>(EntriesHistoryKey.ENTRIES).reversed()
 
     /** マイブックマークを取得する */
-    private suspend fun loadMyBookmarks(tabPosition: Int, offset: Int?, params: LoadEntryParameter?) : List<Entry> {
+    private suspend fun loadMyBookmarks(offset: Int?, params: LoadEntryParameter?) : List<Entry> {
         val tag = params?.get<String>(LoadEntryParameter.TAG)
         val query = params?.get<String>(LoadEntryParameter.SEARCH_QUERY)
 
@@ -358,13 +358,13 @@ class EntriesRepository(
     }
 
     /** 最近つけたスターを取得する */
-    private suspend fun loadMyStars(offset: Int?) : List<Entry> {
+    private suspend fun loadMyStars() : List<Entry> {
         val starsEntries = client.getRecentStarsAsync().await()
         return convertStarsToEntries(starsEntries)
     }
 
     /** 最近つけられたスターを取得する */
-    private suspend fun loadStarsReport(offset: Int?) : List<Entry> {
+    private suspend fun loadStarsReport() : List<Entry> {
         val starsEntries = client.getRecentStarsReportAsync().await()
         return convertStarsToEntries(starsEntries)
     }

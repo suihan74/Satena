@@ -30,7 +30,7 @@ class UrlBlockingViewModel(
         val dialog = AlertDialogFragment.Builder()
             .setTitle(model.pattern)
             .setNegativeButton(R.string.dialog_cancel)
-            .setItems(labels) { _, which ->
+            .setItems(labels) { _, _ ->
                 blockUrls.value = blockUrls.value?.minus(model)
             }
             .create()

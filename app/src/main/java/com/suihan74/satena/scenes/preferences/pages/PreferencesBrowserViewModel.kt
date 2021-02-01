@@ -204,7 +204,7 @@ class PreferencesBrowserViewModel(
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(R.string.pref_browser_clear_history_dialog_message)
             .setNegativeButton(R.string.dialog_cancel)
-            .setPositiveButton(R.string.dialog_ok) { dialog ->
+            .setPositiveButton(R.string.dialog_ok) {
                 viewModelScope.launch(Dispatchers.Main) {
                     runCatching {
                         historyRepo.clearHistories()

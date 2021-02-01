@@ -87,7 +87,7 @@ class PreferencesBrowserFragment :
             viewModel.startPageEditText.value = it
         }
 
-        binding.startPageEditText.setOnFocusChangeListener { view, b ->
+        binding.startPageEditText.setOnFocusChangeListener { _, b ->
             if (!b) {
                 requireActivity().hideSoftInputMethod(binding.contentLayout)
             }
@@ -103,7 +103,7 @@ class PreferencesBrowserFragment :
             }
         }
 
-        binding.userAgentEditText.setOnFocusChangeListener { view, b ->
+        binding.userAgentEditText.setOnFocusChangeListener { _, b ->
             if (!b) {
                 requireActivity().hideSoftInputMethod(binding.contentLayout)
             }
