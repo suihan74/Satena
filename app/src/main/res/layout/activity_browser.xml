@@ -127,7 +127,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <RelativeLayout
+        <RelativeLayout
                 android:id="@+id/drawer_area"
                 android:background="?attr/panelBackground"
                 android:focusable="true"
