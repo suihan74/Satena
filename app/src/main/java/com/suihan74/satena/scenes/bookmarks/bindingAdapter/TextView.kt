@@ -15,6 +15,7 @@ import com.suihan74.hatenaLib.StarColor
 import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.UserAndTags
+import com.suihan74.satena.scenes.bookmarks.detail.tabs.StarRelationsAdapter
 import com.suihan74.utilities.BookmarkCommentDecorator
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.MutableLinkMovementMethod2
@@ -103,6 +104,22 @@ object TextViewBindingAdapters {
         }
         textView.movementMethod = LinkMovementMethod.getInstance()
         textView.visibility = View.VISIBLE
+    }
+
+    /**
+     * スターリストのコメント+引用文表示
+     */
+    @JvmStatic
+    @BindingAdapter("starRelationComment")
+    fun bindStarRelationText(textView: TextView, item: StarRelationsAdapter.Item?) {
+        textView.text = buildString {
+            item?.star?.quote?.let {
+                if (it.isNotBlank()) append("\"$it\"\n")
+            }
+            item?.comment?.let {
+                append(it)
+            }
+        }
     }
 
     /**
