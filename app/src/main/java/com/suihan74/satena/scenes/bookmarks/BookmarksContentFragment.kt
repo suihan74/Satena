@@ -24,6 +24,9 @@ class BookmarksContentFragment : Fragment() {
     val contentsViewModel
         get() = bookmarksActivity.contentsViewModel
 
+    private var _binding : FragmentBookmarksContentBinding? = null
+    private val binding get() = _binding!!
+
     // ------ //
 
     override fun onCreateView(
@@ -31,7 +34,7 @@ class BookmarksContentFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentBookmarksContentBinding.inflate(inflater, container, false).also {
+        _binding = FragmentBookmarksContentBinding.inflate(inflater, container, false).also {
             it.bookmarksViewModel = bookmarksViewModel
             it.contentsViewModel = contentsViewModel
             it.lifecycleOwner = viewLifecycleOwner
@@ -63,5 +66,15 @@ class BookmarksContentFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.toolbar.startMarquee()
     }
 }
