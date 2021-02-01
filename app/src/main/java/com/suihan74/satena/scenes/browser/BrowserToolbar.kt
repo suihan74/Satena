@@ -76,7 +76,7 @@ class BrowserToolbar @JvmOverloads constructor(
 
         binding.addressEditText.let { editText ->
             // フォーカスを失ったときに空欄だったら表示中のページのURLをセットし直す
-            editText.setOnFocusChangeListener { view, b ->
+            editText.setOnFocusChangeListener { _, b ->
                 if (!b && viewModel.addressText.value.isNullOrBlank()) {
                     viewModel.addressText.value = viewModel.url.value ?: ""
                 }

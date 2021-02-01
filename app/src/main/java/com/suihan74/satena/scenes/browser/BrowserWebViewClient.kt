@@ -33,7 +33,7 @@ class BrowserWebViewClient(
             }
 
             else -> {
-                handleOtherSchemes(scheme, uri)
+                handleOtherSchemes(uri)
                 true
             }
         }
@@ -54,7 +54,7 @@ class BrowserWebViewClient(
     }
 
     /** ネットワークアドレスでもなく、intentでもないアドレスを処理する */
-    private fun handleOtherSchemes(scheme: String?, uri: Uri) {
+    private fun handleOtherSchemes(uri: Uri) {
         try {
             val intent = Intent(Intent.ACTION_DEFAULT, uri).withSafety()
             activity.startActivity(intent)
