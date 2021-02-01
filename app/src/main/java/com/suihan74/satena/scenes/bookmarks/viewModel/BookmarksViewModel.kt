@@ -26,6 +26,7 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.post.BookmarkEditData
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.Listener
+import com.suihan74.utilities.OnSuccess
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.ToastTag
@@ -293,7 +294,8 @@ class BookmarksViewModel(
         bookmark: Bookmark,
         color: StarColor,
         quote: String?,
-        fragmentManager: FragmentManager
+        fragmentManager: FragmentManager,
+        onSuccess: OnSuccess<Unit>? = null
     ) {
         val entry = entry.value ?: let {
             context.showToast(
@@ -309,8 +311,13 @@ class BookmarksViewModel(
                 .setMessage(context.getString(R.string.msg_post_star_dialog, color.name))
                 .setNegativeButton(R.string.dialog_cancel) { it.dismiss() }
                 .setPositiveButton(R.string.dialog_ok) {
-                    viewModelScope.launch {
-                        postStarToBookmarkImpl(context, entry, bookmark, color, quote)
+                    viewModelScope.launch(Dispatchers.Main) {
+                        runCatching {
+                            postStarToBookmarkImpl(context, entry, bookmark, color, quote)
+                        }
+                        .onSuccess {
+                            onSuccess?.invoke(Unit)
+                        }
                         it.dismiss()
                     }
                 }
@@ -319,8 +326,13 @@ class BookmarksViewModel(
             dialog.showAllowingStateLoss(fragmentManager)
         }
         else {
-            viewModelScope.launch {
-                postStarToBookmarkImpl(context, entry, bookmark, color, quote)
+            viewModelScope.launch(Dispatchers.Main) {
+                runCatching {
+                    postStarToBookmarkImpl(context, entry, bookmark, color, quote)
+                }
+                .onSuccess {
+                    onSuccess?.invoke(Unit)
+                }
             }
         }
     }
