@@ -359,7 +359,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_star"
-                app:backgroundTint="@color/colorPrimary"
+                app:backgroundTint="?colorPrimary"
                 app:layout_anchor="@id/parent_layout"
                 app:layout_anchorGravity="bottom|end|right"
                 android:contentDescription="@null"

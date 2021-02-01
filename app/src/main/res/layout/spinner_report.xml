@@ -9,5 +9,5 @@
         android:paddingEnd="12dp"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
-        android:backgroundTint="@color/colorPrimary"
-        android:textColor="@color/colorPrimary" />
+        android:backgroundTint="?colorPrimary"
+        android:textColor="?colorPrimary" />

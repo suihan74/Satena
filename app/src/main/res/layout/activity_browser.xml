@@ -30,7 +30,7 @@
 
                 <com.google.android.material.appbar.AppBarLayout
                         android:id="@+id/appbar_layout"
-                        android:background="@color/colorPrimary"
+                        android:background="?colorPrimary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"/>
 

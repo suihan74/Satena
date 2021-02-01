@@ -46,7 +46,7 @@
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/add_button"
                 android:src="@drawable/ic_baseline_add"
-                app:backgroundTint="@color/colorPrimary"
+                app:backgroundTint="?colorPrimary"
                 app:fabSize="normal"
 
                 android:layout_marginBottom="24dp"

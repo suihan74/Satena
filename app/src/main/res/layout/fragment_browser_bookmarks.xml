@@ -57,7 +57,7 @@
                     android:id="@+id/open_post_area_button"
                     android:src="@drawable/ic_add_comment"
                     app:fabSize="mini"
-                    app:backgroundTint="@color/colorPrimary"
+                    app:backgroundTint="?colorPrimary"
                     app:layout_anchor="@id/bottom_app_bar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>

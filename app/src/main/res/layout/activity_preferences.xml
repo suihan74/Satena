@@ -45,7 +45,7 @@
                     <ImageButton
                             android:id="@+id/preferences_tab_information"
                             android:src="@drawable/ic_baseline_info"
-                            android:background="@color/colorPrimary"
+                            android:background="?colorPrimary"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:onClick="onClickedTab"
