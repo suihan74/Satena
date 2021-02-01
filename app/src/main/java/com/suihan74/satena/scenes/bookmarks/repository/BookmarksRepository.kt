@@ -991,7 +991,7 @@ class BookmarksRepository(
     /** 指定ブクマが言及しているブクマを取得する */
     fun getMentionsFrom(bookmark: Bookmark) : List<Bookmark> {
         val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
-        val mentionRegex = Regex("""(id\s*:|>)\s*([A-Za-z0-9_]+)""")
+        val mentionRegex = Regex("""(id\s*:|>)\s*([A-Za-z0-9_-]+)""")
         val matches = mentionRegex.findAll(bookmark.comment)
         val ids = matches.map { it.groupValues[2] }
         val bookmarks = bookmarksEntry.value?.bookmarks?.filter { ids.contains(it.user) }.orEmpty()
