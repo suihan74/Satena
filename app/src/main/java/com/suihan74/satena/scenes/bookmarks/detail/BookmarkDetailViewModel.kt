@@ -22,7 +22,7 @@ class BookmarkDetailViewModel(
 
     private val _bookmark = MutableLiveData<Bookmark>().also {
         it.observeForever { b ->
-            _ignored.value = repository.checkIgnored(b)
+            _ignored.value = repository.checkIgnoredUser(b.user)
             viewModelScope.launch {
                 repository.loadUserTags(b.user)
             }
@@ -42,7 +42,7 @@ class BookmarkDetailViewModel(
     val ignoredUsers by lazy {
         repository.ignoredUsers.also {
             it.observeForever {
-                _ignored.value = repository.checkIgnored(bookmark)
+                _ignored.value = repository.checkIgnoredUser(bookmark.user)
             }
         }
     }

@@ -450,14 +450,28 @@ class BookmarksRepository(
 
     // ------ //
 
-    /** ユーザーが非表示対象かを判別する */
-    fun checkIgnored(user: String) : Boolean {
+    /**
+     * ユーザーが非表示ユーザーであるかを判別する
+     *
+     * はてなの「非表示ユーザー」として登録されているかだけを判別する
+     */
+    fun checkIgnoredUser(user: String) : Boolean {
+        return ignoredUsersCache.contains(user)
+    }
+
+    /**
+     * ユーザーが非表示対象かを判別する
+     *
+     * `checkIgnoredUser(user)`との違いは，非表示テキストにマッチするかも確認すること。
+     * はてなの「非表示ユーザー」設定が有効かどうかを確認する場合には`checkIgnoredUser(user)`を使用する
+     */
+    private fun checkIgnored(user: String) : Boolean {
         if (ignoredUsersCache.contains(user)) return true
         return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w -> user.contains(w) }
     }
 
     /** ブクマが非表示対象かを判別する */
-    fun checkIgnored(bookmark: Bookmark) : Boolean {
+    private fun checkIgnored(bookmark: Bookmark) : Boolean {
         if (ignoredUsersCache.any { bookmark.user == it }) return true
         return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
             bookmark.commentRaw.contains(w)
@@ -467,7 +481,7 @@ class BookmarksRepository(
     }
 
     /** ブクマが非表示対象かを判別する */
-    fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean {
+    private fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean {
         if (ignoredUsersCache.any { bookmark.user == it }) return true
         return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
             bookmark.comment.contains(w)

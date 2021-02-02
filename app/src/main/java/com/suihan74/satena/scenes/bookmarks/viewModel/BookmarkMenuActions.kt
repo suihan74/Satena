@@ -47,12 +47,10 @@ class BookmarkMenuActionsImpl(
         starsEntry: StarsEntry?,
         fragmentManager: FragmentManager,
     ) = withContext(Dispatchers.Main) {
-        val ignored = repository.checkIgnored(bookmark)
-
         val dialog = BookmarkMenuDialog.createInstance(
             bookmark,
             starsEntry,
-            ignored,
+            repository.checkIgnoredUser(bookmark.user),
             repository.userSignedIn
         )
 
