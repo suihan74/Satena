@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.bookmarks.viewModel
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.DiffUtil
 import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.utilities.AnalyzedBookmarkComment
@@ -37,10 +36,8 @@ class BookmarksTabViewModel(
     private suspend fun createDisplayBookmarks(
         bookmarks: List<Bookmark>
     ) : List<RecyclerState<Entity>> = withContext(Dispatchers.Default) {
-        val bookmarksEntry = repo.bookmarksEntry.value
         val taggedUsers = repo.taggedUsers.mapNotNull { it.value.value }
         val ignoredUsers = repo.ignoredUsersCache
-        val displayMutedMention = repo.prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
 
         return@withContext RecyclerState.makeStatesWithFooter(bookmarks.map { bookmark ->
             val analyzedComment = BookmarkCommentDecorator.convert(bookmark.comment)
@@ -48,16 +45,8 @@ class BookmarksTabViewModel(
                 bookmark = bookmark,
                 analyzedComment = analyzedComment,
                 isIgnored = ignoredUsers.contains(bookmark.user),
-                mentions = analyzedComment.ids.mapNotNull { called ->
-                    bookmarksEntry?.bookmarks
-                        ?.firstOrNull { b -> b.user == called }
-                        ?.let { mentioned ->
-                            if (!displayMutedMention && ignoredUsers.contains(mentioned.user)) null
-                            else mentioned
-                        }
-                },
-                userTags = taggedUsers.firstOrNull { t -> t.user.name == bookmark.user }?.tags
-                    ?: emptyList()
+                mentions = repo.getMentionsFrom(bookmark, analyzedComment),
+                userTags = taggedUsers.firstOrNull { t -> t.user.name == bookmark.user }?.tags ?: emptyList()
             )
         })
     }

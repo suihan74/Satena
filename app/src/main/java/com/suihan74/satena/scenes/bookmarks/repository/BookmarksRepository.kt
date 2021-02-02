@@ -471,7 +471,7 @@ class BookmarksRepository(
     }
 
     /** ブクマが非表示対象かを判別する */
-    private fun checkIgnored(bookmark: Bookmark) : Boolean {
+    fun checkIgnored(bookmark: Bookmark) : Boolean {
         if (ignoredUsersCache.any { bookmark.user == it }) return true
         return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
             bookmark.commentRaw.contains(w)
@@ -1003,11 +1003,15 @@ class BookmarksRepository(
     }
 
     /** 指定ブクマが言及しているブクマを取得する */
-    fun getMentionsFrom(bookmark: Bookmark) : List<Bookmark> {
+    fun getMentionsFrom(bookmark: Bookmark, analyzedBookmarkComment: AnalyzedBookmarkComment? = null) : List<Bookmark> {
         val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
-        val mentionRegex = Regex("""(id\s*:|>)\s*([A-Za-z0-9_-]+)""")
-        val matches = mentionRegex.findAll(bookmark.comment)
-        val ids = matches.map { it.groupValues[2] }
+
+        val ids = analyzedBookmarkComment?.ids ?: let {
+            val mentionRegex = Regex("""(id\s*:|>)\s*([A-Za-z0-9_-]+)""")
+            val matches = mentionRegex.findAll(bookmark.comment)
+            matches.map { it.groupValues[2] }.toList()
+        }
+
         val bookmarks = bookmarksEntry.value?.bookmarks?.filter { ids.contains(it.user) }.orEmpty()
 
         return if (displayIgnoredUsers) bookmarks
