@@ -71,13 +71,13 @@ object ContextExtensions {
 
     fun Fragment.showToast(messageId: Int) = requireContext().showToast(messageId)
 
-    fun Fragment.showToast(messageId: Int, vararg args: Any) = requireContext().showToast(messageId, args)
+    fun Fragment.showToast(messageId: Int, vararg args: Any) = requireContext().showToast(messageId, *args)
 
     fun Fragment.showToast(message: String, tag: ToastTag) = requireContext().showToast(message, tag)
 
     fun Fragment.showToast(messageId: Int, tag: ToastTag) = requireContext().showToast(messageId, tag)
 
-    fun Fragment.showToast(messageId: Int, tag: ToastTag, vararg args: Any) = requireContext().showToast(messageId, tag, args)
+    fun Fragment.showToast(messageId: Int, tag: ToastTag, vararg args: Any) = requireContext().showToast(messageId, tag, *args)
 }
 
 // ------ //
