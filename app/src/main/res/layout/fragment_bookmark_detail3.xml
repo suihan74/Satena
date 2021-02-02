@@ -28,7 +28,8 @@
 
             <com.google.android.material.appbar.AppBarLayout
                     android:id="@+id/appbar_layout"
-                    android:background="?attr/bookmarkDetailTopBackground"
+                    android:background="?bookmarkDetailTopBackground"
+                    android:elevation="6dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -130,7 +131,7 @@
                     <com.google.android.material.tabs.TabLayout
                             android:id="@+id/tab_layout"
                             style="@style/TabLayoutStyle"
-                            android:elevation="6dp"
+                            app:tabBackground="?bookmarkDetailTopBackground"
                             android:layout_marginTop="6dp"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"/>
