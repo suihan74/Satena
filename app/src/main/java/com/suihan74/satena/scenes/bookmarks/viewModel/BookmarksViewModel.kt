@@ -32,10 +32,7 @@ import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.ToastTag
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class BookmarksViewModel(
     val repository: BookmarksRepository
@@ -140,6 +137,7 @@ class BookmarksViewModel(
     /** ブクマリスト取得失敗時のエラーメッセージ */
     private fun showLoadingErrorMessage(context: Context, e: Throwable) {
         val msgId = when (e) {
+            is CancellationException -> return
             is NotFoundException -> R.string.msg_bookmark_comments_are_hidden
             is IllegalArgumentException -> R.string.invalid_url_error
             else -> R.string.msg_update_bookmarks_failed

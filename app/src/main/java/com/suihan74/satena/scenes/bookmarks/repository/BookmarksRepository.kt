@@ -396,11 +396,12 @@ class BookmarksRepository(
      * @throws ConnectionFailureException - 通信失敗
      * @throws NotFoundException - エントリ情報が取得できない
      * @throws IllegalArgumentException - インテントに正しいパラメータが設定されていない
-     * @throws JobCancellationException - ロードがキャンセルされた
      */
     suspend fun loadEntryFromIntent(intent: Intent) {
         val onLoadBookmarksFailure: (Throwable)->Unit = {
+            if (it is CancellationException) throw it
             when (val e = it.cause) {
+                is CancellationException,
                 is ConnectionFailureException,
                 is NotFoundException ->
                     throw e
@@ -421,8 +422,8 @@ class BookmarksRepository(
 
         val eid = intent.getLongExtra(EXTRA_ENTRY_ID, 0L)
         if (eid > 0L) {
-            val e = loadEntry(eid)
             runCatching {
+                val e = loadEntry(eid)
                 loadBookmarks(e.url)
             }
             .onFailure(onLoadBookmarksFailure)
