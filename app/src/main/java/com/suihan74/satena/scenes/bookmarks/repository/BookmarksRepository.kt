@@ -431,8 +431,12 @@ class BookmarksRepository(
         }
 
         val url = intent.getStringExtra(EXTRA_ENTRY_URL) ?: when (intent.action) {
-            Intent.ACTION_VIEW -> intent.dataString
+            Intent.ACTION_VIEW -> {
+                HatenaClient.getEntryUrlFromCommentPageUrl(intent.dataString.orEmpty())
+            }
+
             Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)
+
             else -> null
         }
         if (url != null && URLUtil.isNetworkUrl(url)) {
