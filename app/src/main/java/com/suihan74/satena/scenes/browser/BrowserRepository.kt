@@ -5,9 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.webkit.WebViewFeature
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Keyword
-import com.suihan74.satena.R
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.Theme
 import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
 
@@ -36,14 +36,14 @@ class BrowserRepository(
 
     /** アプリのテーマがダークテーマか */
     val isThemeDark by lazy {
-        prefs.getBoolean(PreferenceKey.DARK_THEME)
+        when (prefs.getInt(PreferenceKey.THEME)) {
+            Theme.DARK.id, Theme.EX_DARK.id -> true
+            else -> false
+        }
     }
 
     /** アプリのテーマID */
-    val themeId by lazy {
-        if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppTheme_Dark
-        else R.style.AppTheme_Light
-    }
+    val themeId by lazy { Theme.themeId(prefs) }
 
     /** ウェブサイトのテーマ指定 */
     val webViewTheme =

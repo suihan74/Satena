@@ -17,7 +17,6 @@ import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -25,21 +24,22 @@ import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.getEntryRootUrl
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.models.browser.HistoryPage
-import com.suihan74.satena.scenes.bookmarks2.BookmarksActivity
-import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteRegistrationDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 import java.io.File
 import kotlin.math.absoluteValue
@@ -49,14 +49,13 @@ class BrowserViewModel(
     val bookmarksRepo: BookmarksRepository,
     val favoriteSitesRepo: FavoriteSitesRepository,
     val historyRepo: HistoryRepository,
-    val initialUrl: String?
+    private val initialUrl: String?
 ) : ViewModel() {
 
-    private val DIALOG_BLOCK_URL by lazy { "DIALOG_BLOCK_URL" }
-    private val DIALOG_CONTEXT_MENU by lazy { "DIALOG_CONTEXT_MENU" }
-
-    /** 画像ファイルの保存先選択画面とのやりとり */
-    private val REQUEST_CODE_SAVE_IMAGE = 1
+    enum class RequestCode {
+        /** 画像ファイルの保存先選択画面とのやりとり */
+        SAVE_IMAGE
+    }
 
     // ------ //
 
@@ -65,7 +64,7 @@ class BrowserViewModel(
         get() = browserRepo.themeId
 
     /** Webサイトのテーマ指定 */
-    val webViewTheme : LiveData<WebViewTheme> by lazy {
+    private val webViewTheme : LiveData<WebViewTheme> by lazy {
         browserRepo.webViewTheme
     }
 
@@ -80,48 +79,34 @@ class BrowserViewModel(
             addressText.value = Uri.decode(it)
             bookmarksRepo.bookmarksEntry.value = null
             isUrlFavorite.value = favoriteSitesRepo.contains(it)
-            loadBookmarksEntry(it)
+            viewModelScope.launch {
+                loadBookmarksEntry(it)
+            }
         }
     }
 
     /** 表示中のページタイトル */
-    val title by lazy {
-        MutableLiveData("")
-    }
+    val title = MutableLiveData("")
 
     /** ユーザーエージェント */
-    val userAgent by lazy {
-        browserRepo.userAgent
-    }
+    private val userAgent = browserRepo.userAgent
 
-    val privateBrowsingEnabled by lazy {
-        browserRepo.privateBrowsingEnabled
-    }
+    private val privateBrowsingEnabled = browserRepo.privateBrowsingEnabled
 
     /** JavaScriptを有効にする */
-    val javaScriptEnabled by lazy {
-        browserRepo.javascriptEnabled
-    }
+    private val javaScriptEnabled = browserRepo.javascriptEnabled
 
     /** URLブロッキングを使用する */
-    val useUrlBlocking by lazy {
-        browserRepo.useUrlBlocking
-    }
+    val useUrlBlocking = browserRepo.useUrlBlocking
 
     /** アプリバーを画面下部に配置する */
-    val useBottomAppBar by lazy {
-        browserRepo.useBottomAppBar
-    }
+    val useBottomAppBar = browserRepo.useBottomAppBar
 
     /** アドレスバーの入力内容 */
-    val addressText by lazy {
-        SingleUpdateMutableLiveData("")
-    }
+    val addressText = SingleUpdateMutableLiveData("")
 
     /** 「戻る/進む」の履歴 */
-    val backStack by lazy {
-        _backStack
-    }
+    val backStack by lazy { _backStack }
     private val _backStack = MutableLiveData<List<HistoryPage>>()
 
     /** 「戻る/進む」履歴項目でマーキーを使用する */
@@ -133,11 +118,10 @@ class BrowserViewModel(
      *
      * `backStack`の更新時に使用する
      */
-    var previousUrl : String? = null
-        private set
+    private var previousUrl : String? = null
 
     /** 現在表示中のページで読み込んだすべてのURL */
-    val resourceUrls : List<ResourceUrl>
+    private val resourceUrls : List<ResourceUrl>
         get() = browserRepo.resourceUrls
 
     /** お気に入りサイト */
@@ -150,7 +134,7 @@ class BrowserViewModel(
         }
 
     /** 表示中のページがお気に入りに登録されているか */
-    val isUrlFavorite = MutableLiveData<Boolean>(false)
+    val isUrlFavorite = MutableLiveData(false)
 
     /** ドロワの開閉状態 */
     val drawerOpened = SingleUpdateMutableLiveData<Boolean>()
@@ -207,7 +191,7 @@ class BrowserViewModel(
 
         // コンテンツのダウンロードに割り込む
         // pdfを開こうとした場合、処理を外部のアプリに投げる
-        wv.setDownloadListener { url, userAgent, contentDisposition, mimeType, size ->
+        wv.setDownloadListener { url, _/*userAgent*/, _/*contentDisposition*/, mimeType, _/*size*/ ->
             if (mimeType == "application/pdf") {
                 val intent = Intent(Intent.ACTION_VIEW).also {
                     it.setDataAndType(Uri.parse(url), mimeType)
@@ -232,18 +216,18 @@ class BrowserViewModel(
 
         // jsのON/OFF
         wv.settings.javaScriptEnabled = javaScriptEnabled.value ?: true
-        javaScriptEnabled.observe(activity) {
+        javaScriptEnabled.observe(activity, Observer {
             wv.settings.javaScriptEnabled = it
-        }
+        })
 
         // UserAgentの設定
         wv.settings.userAgentString = userAgent.value
-        userAgent.observe(activity) {
+        userAgent.observe(activity, Observer {
             wv.settings.userAgentString = it
-        }
+        })
 
         // テーマの設定
-        webViewTheme.observe(activity) {
+        webViewTheme.observe(activity, Observer {
             val theme =
                 when (it) {
                     WebViewTheme.AUTO ->
@@ -273,16 +257,16 @@ class BrowserViewModel(
             else if (browserRepo.isForceDarkSupported) {
                 WebSettingsCompat.setForceDark(wv.settings, WebSettingsCompat.FORCE_DARK_OFF)
             }
-        }
+        })
 
         var initialPrivateBrowsingEnabled : Boolean? = privateBrowsingEnabled.value
-        privateBrowsingEnabled.observe(activity) {
+        privateBrowsingEnabled.observe(activity, Observer {
             setPrivateBrowsing(wv, it)
             if (it != initialPrivateBrowsingEnabled) {
                 initialPrivateBrowsingEnabled = null
                 wv.reload()
             }
-        }
+        })
 
         // スタートページに遷移
         goAddress(url.value ?: initialUrl ?: browserRepo.startPage.value!!)
@@ -300,7 +284,7 @@ class BrowserViewModel(
 
         // WebView単体ではシングルタップが検知できないので、onTouchListenerで無理矢理シングルタップを検知させる
         // あくまでリンククリックだけを検出したいので、あえてWebViewClientを使用した方法をとっていない
-        @Suppress("ClickableViewAccessibility")
+        @Suppress("ClickableViewAccessibility", "Recycle")
         wv.setOnTouchListener { view, motionEvent ->
             when (motionEvent?.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -314,7 +298,6 @@ class BrowserViewModel(
 
                 MotionEvent.ACTION_MOVE -> {
                     velocityTracker?.also { vt ->
-                        val pointerId = motionEvent.getPointerId(motionEvent.actionIndex)
                         vt.addMovement(motionEvent)
                         vt.computeCurrentVelocity(1000)
                         if (vt.xVelocity.absoluteValue > 100.0f || vt.yVelocity.absoluteValue > 100.0f) {
@@ -345,7 +328,6 @@ class BrowserViewModel(
                         val word = keywordRegex.find(url)?.groupValues?.getOrNull(2)
                         (word != null).whenTrue {
                             val popup = openKeywordPopup(
-                                null,
                                 view,
                                 motionEvent.x.toInt(),
                                 motionEvent.y.toInt(),
@@ -432,7 +414,7 @@ class BrowserViewModel(
             .setNegativeButton(R.string.dialog_close)
             .create()
 
-        dialog.showAllowingStateLoss(activity.supportFragmentManager, DIALOG_CONTEXT_MENU) { e ->
+        dialog.showAllowingStateLoss(activity.supportFragmentManager) { e ->
             Log.e("error", Log.getStackTraceString(e))
         }
     }
@@ -455,7 +437,7 @@ class BrowserViewModel(
             .setNegativeButton(R.string.dialog_close)
             .create()
 
-        dialog.showAllowingStateLoss(activity.supportFragmentManager, DIALOG_CONTEXT_MENU) { e ->
+        dialog.showAllowingStateLoss(activity.supportFragmentManager) { e ->
             Log.e("error", Log.getStackTraceString(e))
         }
     }
@@ -484,7 +466,7 @@ class BrowserViewModel(
             .setNegativeButton(R.string.dialog_close)
             .create()
 
-        dialog.showAllowingStateLoss(activity.supportFragmentManager, DIALOG_CONTEXT_MENU) { e ->
+        dialog.showAllowingStateLoss(activity.supportFragmentManager) { e ->
             Log.e("error", Log.getStackTraceString(e))
         }
     }
@@ -520,16 +502,16 @@ class BrowserViewModel(
     fun bindOptionsMenu(owner: LifecycleOwner, context: Context, menu: Menu) {
         val textOn = "ON"
         val textOff = "OFF"
-        useUrlBlocking.observe(owner) {
+        useUrlBlocking.observe(owner, Observer {
             val state = if (it) textOn else textOff
             val title = context.getText(R.string.pref_browser_use_url_blocking_desc)
             menu.findItem(R.id.adblock)?.title = "$title: $state"
-        }
-        javaScriptEnabled.observe(owner) {
+        })
+        javaScriptEnabled.observe(owner, Observer {
             val state = if (it) textOn else textOff
             val title = context.getText(R.string.pref_browser_javascript_enabled_desc)
             menu.findItem(R.id.javascript)?.title = "$title: $state"
-        }
+        })
     }
 
     /** オプションメニューの処理 */
@@ -584,7 +566,7 @@ class BrowserViewModel(
     fun onActivityResult(activity: BrowserActivity, requestCode: Int, resultCode: Int, intent: Intent?) {
         when (requestCode) {
             // ファイル保存先の選択
-            REQUEST_CODE_SAVE_IMAGE -> {
+            RequestCode.SAVE_IMAGE.ordinal -> {
                 val destUri = intent?.data
                 if (resultCode != Activity.RESULT_OK || destUri == null) {
                     Log.d("FilePick", "canceled")
@@ -601,28 +583,12 @@ class BrowserViewModel(
     /** はてなキーワードの解説ポップアップを開く */
     @OptIn(ExperimentalStdlibApi::class)
     private fun openKeywordPopup(
-        response: List<Keyword>?,
         anchor: View,
         x: Int,
         y: Int,
         activity: BrowserActivity
     ) : HatenaKeywordPopup {
-        val data =
-            if (!response.isNullOrEmpty()) {
-                // TODO: このリスト生成処理をpopup#setData()で行われるようにする
-
-                // 一般的な用法を優先して表示する
-                val generalItem = response.firstOrNull { it.category.contains("一般") }
-
-                if (generalItem == null) response
-                else  buildList {
-                    add(generalItem)
-                    addAll(response.minus(generalItem))
-                }
-            }
-            else null
-
-        return HatenaKeywordPopup(activity, data).also { popup ->
+        return HatenaKeywordPopup(activity).also { popup ->
             popup.showAsDropDown(anchor, x - 100, y - 32, Gravity.TOP)
         }
     }
@@ -692,7 +658,7 @@ class BrowserViewModel(
             it.type = "image/*"
             it.putExtra(Intent.EXTRA_TITLE, uri.lastPathSegment ?: uri.path ?: "image")
         }
-        activity.startActivityForResult(intent, REQUEST_CODE_SAVE_IMAGE)
+        activity.startActivityForResult(intent, RequestCode.SAVE_IMAGE.ordinal)
     }
 
     /** 画像を保存する */
@@ -726,17 +692,17 @@ class BrowserViewModel(
     // ------ //
 
     /** BookmarksEntryを更新 */
-    fun loadBookmarksEntry(url: String, onFinally: OnFinally? = null) {
+    private suspend fun loadBookmarksEntry(url: String) = withContext(Dispatchers.Main) {
         loadBookmarksEntryJob?.cancel()
 
         if (URLUtil.isNetworkUrl(url)) {
             loadingBookmarksEntry.value = true
-            loadBookmarksEntryJob = viewModelScope.launch {
-                bookmarksRepo.launchLoadingUrl(url) {
-                    onFinally?.invoke()
-                    loadBookmarksEntryJob = null
-                    loadingBookmarksEntry.value = false
+            loadBookmarksEntryJob = viewModelScope.launch(Dispatchers.Main) {
+                runCatching {
+                    bookmarksRepo.loadBookmarks(url)
                 }
+                loadBookmarksEntryJob = null
+                loadingBookmarksEntry.value = false
             }
         }
     }
@@ -845,7 +811,7 @@ class BrowserViewModel(
     // ------ //
 
     /** ページをお気に入りに追加するダイアログを開く */
-    fun openFavoritePageDialog(
+    private fun openFavoritePageDialog(
         url: String,
         title: String,
         fragmentManager: FragmentManager
@@ -866,7 +832,7 @@ class BrowserViewModel(
     }
 
     /** ページをお気に入りから除外するか確認するダイアログを開く */
-    fun openUnfavoritePageDialog(
+    private fun openUnfavoritePageDialog(
         site: FavoriteSite,
         fragmentManager: FragmentManager
     ) {
@@ -909,7 +875,7 @@ class BrowserViewModel(
             SatenaApplication.instance.showToast(R.string.msg_add_url_blocking_succeeded)
         }
 
-        dialog.showAllowingStateLoss(fragmentManager, DIALOG_BLOCK_URL)
+        dialog.showAllowingStateLoss(fragmentManager)
     }
 
     /** 「戻る/進む」履歴項目のメニューダイアログを開く */

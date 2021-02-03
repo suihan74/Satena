@@ -3,15 +3,24 @@
     <declare-styleable name="AppTheme">
         <attr name="dividerColor" format="color"/>
         <attr name="swipeRefreshBackground" format="color"/>
-        <attr name="bookmarkDialogBackground" format="color"/>
+        <attr name="bookmarkDialogBackground" format="color|reference"/>
         <attr name="entryCommentBackground" format="color"/>
         <attr name="textColorHint" format="color"/>
         <attr name="bookmarkDetailTopBackground" format="color"/>
         <attr name="tagTextColor" format="color"/>
         <attr name="bookmarkCountColor" format="color"/>
 
+        <!--
+            ツールバー背景色を他の部分に共有するために使用
+            この値単体ではツールバー背景色は変化しないので注意
+        -->
+        <attr name="toolbarBackground" format="color"/>
+
         <!-- browser: 表示中ページの「戻る/進む」履歴項目の背景色 -->
         <attr name="browserBackStackCurrentPageBackground" format="color"/>
+
+        <!-- ToggleButton -->
+        <attr name="toggleButtonStyle" format="reference"/>
 
         <!-- SnackBar -->
         <attr name="snackBarBackgroundColor" format="color"/>

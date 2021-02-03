@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <import type="com.suihan74.satena.scenes.bookmarks.BookmarksTabType" />
+
+        <variable
+                name="bookmarksViewModel"
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
+
+        <variable
+                name="contentsViewModel"
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel" />
+    </data>
+    
+    <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/main_layout"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_gravity="bottom|end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/custom_settings_button"
+                    isShown="@{contentsViewModel.selectedTab == BookmarksTabType.CUSTOM}"
+                    android:src="@drawable/ic_baseline_settings"
+                    android:contentDescription="@null"
+                    app:fabSize="mini"
+                    app:backgroundTint="?colorPrimary"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginBottom="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/search_button"
+                    android:src="@drawable/ic_baseline_search"
+                    android:contentDescription="@null"
+                    app:fabSize="mini"
+                    app:backgroundTint="?colorPrimary"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginBottom="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:orientation="vertical">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/bookmarks_scroll_top_button"
+                        android:src="@drawable/ic_baseline_arrow_upward"
+                        android:contentDescription="@null"
+                        app:fabSize="mini"
+                        app:backgroundTint="?colorPrimary"
+                        android:layout_gravity="bottom"
+                        android:layout_marginTop="18dp"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginBottom="18dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/bookmarks_open_my_bookmark_button"
+                        android:src="@drawable/ic_baseline_bookmark"
+                        android:contentDescription="@null"
+                        app:fabSize="mini"
+                        app:backgroundTint="?colorPrimary"
+                        android:layout_gravity="bottom"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginBottom="18dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/bookmarks_scroll_bottom_button"
+                        android:src="@drawable/ic_baseline_arrow_downward"
+                        android:contentDescription="@null"
+                        app:fabSize="mini"
+                        app:backgroundTint="?colorPrimary"
+                        android:layout_gravity="bottom"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginBottom="18dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/bookmarks_scroll_menu_button"
+                        android:src="@drawable/ic_baseline_menu_white"
+                        android:contentDescription="@null"
+                        app:fabSize="mini"
+                        app:backgroundTint="?colorPrimary"
+                        android:layout_gravity="bottom"
+                        android:layout_marginBottom="24dp"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginEnd="24dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <com.suihan74.utilities.views.TextFloatingActionButton
+                    android:id="@+id/bookmark_button"
+                    style="@style/FloatingActionButtonStyle"
+                    isShown="@{bookmarksViewModel.signedIn}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="24dp"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginBottom="24dp"
+                    app:text="B!"
+                    app:textColor="#fff"
+                    app:layout_dodgeInsetEdges="bottom"
+                    app:backgroundTint="?colorPrimary"/>
+
+        </LinearLayout>
+
+        <com.suihan74.utilities.views.ImeEnhancedEditText
+                android:id="@+id/bookmarks_search_text"
+                android:text="@={bookmarksViewModel.filteringText}"
+                android:hint="検索キーワード"
+
+                android:background="?colorPrimary"
+                android:textColor="@color/colorPrimaryText"
+                android:textColorHint="@color/colorPrimaryText"
+
+                android:singleLine="true"
+                android:inputType="text"
+                android:imeOptions="actionDone"
+                android:importantForAutofill="no"
+
+                android:paddingStart="24dp"
+                android:paddingEnd="8dp"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+</layout>

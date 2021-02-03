@@ -71,3 +71,11 @@ object ViewBindingAdapters {
         TooltipCompat.setTooltipText(view, text)
     }
 }
+
+/**
+ * 空文字列のとき非表示にする
+ */
+@BindingAdapter(value = ["android:visibility", "disabledDefaultVisibility"], requireAll = false)
+fun View.setVisibility(charSequence: CharSequence?, disabledDefault: Int? = View.GONE) {
+    setVisibility(!charSequence.isNullOrBlank(), disabledDefault)
+}

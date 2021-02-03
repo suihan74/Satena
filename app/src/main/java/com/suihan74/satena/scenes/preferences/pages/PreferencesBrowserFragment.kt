@@ -24,8 +24,8 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.exceptions.InvalidUrlException
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.lazyProvideViewModel
 
 class PreferencesBrowserFragment :
@@ -87,7 +87,7 @@ class PreferencesBrowserFragment :
             viewModel.startPageEditText.value = it
         }
 
-        binding.startPageEditText.setOnFocusChangeListener { view, b ->
+        binding.startPageEditText.setOnFocusChangeListener { _, b ->
             if (!b) {
                 requireActivity().hideSoftInputMethod(binding.contentLayout)
             }
@@ -103,7 +103,7 @@ class PreferencesBrowserFragment :
             }
         }
 
-        binding.userAgentEditText.setOnFocusChangeListener { view, b ->
+        binding.userAgentEditText.setOnFocusChangeListener { _, b ->
             if (!b) {
                 requireActivity().hideSoftInputMethod(binding.contentLayout)
             }

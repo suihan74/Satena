@@ -16,7 +16,6 @@
             android:theme="@style/AppTheme.Light"
             android:fullBackupContent="true"
             android:usesCleartextTraffic="true">  <!-- 暗号化されていないHTTP通信を許可 -->
-        <!-- android:theme="@style/Theme.AppCompat.Light.NoActionBar" -->
 
         <!-- Receivers -->
         <receiver android:name=".BrowserToolbarManager"/>
@@ -36,7 +35,8 @@
         <activity android:name=".scenes.browser.BrowserActivity" android:launchMode="standard" android:windowSoftInputMode="adjustResize">
         </activity>
 
-        <activity android:name=".scenes.bookmarks2.BookmarksActivity">
+        <!-- ブクマ一覧画面 -->
+        <activity android:name=".scenes.bookmarks.BookmarksActivity">
             <intent-filter android:label="ブコメを見る">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT" />

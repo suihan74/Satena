@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <import type="com.suihan74.satena.scenes.browser.BrowserMode"/>
 
@@ -9,7 +10,6 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -35,7 +35,6 @@
 
                 <TextView
                         android:text="@string/pref_browser_mode_desc"
-                        android:textColor="?attr/textColor"
                         android:visibility="@{vm.preferencesActivity}"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
@@ -45,15 +44,13 @@
                         android:visibility="@{vm.preferencesActivity}"
                         android:text="@{vm.browserMode.textId}"
                         android:textAllCaps="false"
-                        style="@style/Widget.AppCompat.Button"
-                        android:textColor="@color/textColor"
+                        style="?buttonStyle"
                         android:layout_marginBottom="24dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
 
                 <TextView
                         android:text="@string/pref_browser_start_page_desc"
-                        android:textColor="?attr/textColor"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
 
@@ -67,7 +64,6 @@
 
                             android:text="@={vm.startPageEditText}"
                             android:hint="@string/pref_browser_start_page_hint"
-                            android:textColor="?attr/textColor"
                             android:textSize="18sp"
                             android:textColorHint="?attr/textColorHint"
 
@@ -84,7 +80,7 @@
 
                     <Button
                             android:id="@+id/register_start_page_button"
-                            style="@style/Widget.AppCompat.Button"
+                            style="?buttonStyle"
                             android:text="@string/dialog_register"
                             android:layout_marginStart="4dp"
                             android:layout_alignParentEnd="true"
@@ -96,202 +92,185 @@
 
                 <TextView
                         android:text="@{`現在値:` + vm.startPage}"
-                        android:textColor="?attr/textColor"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"/>
 
                 <LinearLayout
-                        android:visibility="@{vm.browserMode == BrowserMode.WEB_VIEW}"
-                        android:orientation="vertical"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="@{vm.browserMode == BrowserMode.WEB_VIEW}">
 
                     <TextView
-                            android:visibility="@{vm.forceDarkSupported}"
-                            android:text="@string/pref_browser_theme_desc"
-                            android:textColor="?attr/textColor"
-                            android:layout_marginTop="24dp"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_theme_desc"
+                            android:visibility="@{vm.forceDarkSupported}" />
 
                     <Button
                             android:id="@+id/web_view_theme_button"
-                            android:visibility="@{vm.forceDarkSupported}"
+                            style="?buttonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:text="@{vm.webViewTheme.textId}"
                             android:textAllCaps="false"
-                            style="@style/Widget.AppCompat.Button"
-                            android:textColor="@color/textColor"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:visibility="@{vm.forceDarkSupported}" />
 
                     <TextView
-                            android:text="@string/pref_browser_private_browsing_enabled_desc"
-                            android:layout_marginTop="24dp"
-                            android:textColor="?attr/textColor"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_private_browsing_enabled_desc" />
 
                     <ToggleButton
-                            style="@style/PreferencesToggleButtonStyle"
-                            android:checked="@={vm.secretModeEnabled}"
+                            style="?toggleButtonStyle"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:checked="@={vm.secretModeEnabled}" />
 
                     <TextView
-                            android:text="@string/pref_browser_javascript_enabled_desc"
-                            android:layout_marginTop="24dp"
-                            android:textColor="?attr/textColor"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_javascript_enabled_desc" />
 
                     <ToggleButton
-                            style="@style/PreferencesToggleButtonStyle"
-                            android:checked="@={vm.javascriptEnabled}"
+                            style="?toggleButtonStyle"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:checked="@={vm.javascriptEnabled}" />
 
                     <TextView
-                            android:text="@string/pref_browser_use_url_blocking_desc"
-                            android:textColor="?attr/textColor"
-                            android:layout_marginTop="24dp"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_use_url_blocking_desc" />
 
                     <ToggleButton
-                            style="@style/PreferencesToggleButtonStyle"
-                            android:checked="@={vm.useUrlBlock}"
+                            style="?toggleButtonStyle"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:checked="@={vm.useUrlBlock}" />
 
                     <TextView
-                            android:text="@string/pref_browser_open_url_blocking_desc"
-                            android:textColor="?attr/textColor"
-                            android:layout_marginTop="24dp"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_open_url_blocking_desc" />
 
                     <Button
                             android:id="@+id/open_blocking_urls_button"
-                            android:text="@string/pref_browser_open_url_blocking_button_text"
-                            style="@style/Widget.AppCompat.Button"
-                            android:textColor="@color/textColor"
+                            style="?buttonStyle"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:text="@string/pref_browser_open_url_blocking_button_text" />
 
                     <TextView
-                            android:text="@string/pref_browser_use_bottom_app_bar_desc"
-                            android:layout_marginTop="24dp"
-                            android:textColor="?attr/textColor"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_use_bottom_app_bar_desc" />
 
                     <ToggleButton
-                            style="@style/PreferencesToggleButtonStyle"
-                            android:checked="@={vm.useBottomAppBar}"
+                            style="?toggleButtonStyle"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:checked="@={vm.useBottomAppBar}" />
 
                     <TextView
-                            android:text="@string/pref_browser_use_marquee_on_back_stack_items_desc"
-                            android:layout_marginTop="24dp"
-                            android:textColor="?attr/textColor"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_use_marquee_on_back_stack_items_desc" />
 
                     <ToggleButton
-                            style="@style/PreferencesToggleButtonStyle"
-                            android:checked="@={vm.useMarqueeOnBackStackItems}"
+                            style="?toggleButtonStyle"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:checked="@={vm.useMarqueeOnBackStackItems}" />
 
                     <TextView
-                            android:text="@string/pref_browser_search_engine_desc"
-                            android:textColor="?attr/textColor"
-                            android:layout_marginTop="24dp"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_search_engine_desc" />
 
                     <Button
                             android:id="@+id/search_engine_selection_button"
-                            android:text="@{vm.searchEngine.title}"
-                            android:textAllCaps="false"
-                            style="@style/Widget.AppCompat.Button"
-                            android:textColor="@color/textColor"
+                            style="?buttonStyle"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:text="@{vm.searchEngine.title}"
+                            android:textAllCaps="false" />
 
                     <TextView
-                            android:text="@string/pref_browser_user_agent_desc"
-                            android:textColor="?attr/textColor"
-                            android:layout_marginTop="24dp"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_user_agent_desc" />
 
                     <com.suihan74.utilities.views.ImeEnhancedEditText
                             android:id="@+id/user_agent_edit_text"
                             style="@style/Widget.AppCompat.EditText"
 
-                            android:text="@={vm.userAgent}"
-                            android:hint="@string/pref_browser_user_agent_hint"
-                            android:textColor="?attr/textColor"
-                            android:textColorHint="?attr/textColorHint"
-
-                            android:inputType="textNoSuggestions"
-                            android:singleLine="true"
-                            android:importantForAutofill="no"
-                            android:imeOptions="actionDone"
-                            android:selectAllOnFocus="true"
-
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:hint="@string/pref_browser_user_agent_hint"
+
+                            android:imeOptions="actionDone"
+                            android:importantForAutofill="no"
+                            android:inputType="textNoSuggestions"
+                            android:selectAllOnFocus="true"
+                            android:singleLine="true"
+
+                            android:text="@={vm.userAgent}"
+                            android:textColorHint="?attr/textColorHint" />
 
                     <TextView
-                            android:text="@string/pref_browser_clear_cache_desc"
-                            android:textColor="?attr/textColor"
-                            android:layout_marginTop="24dp"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_clear_cache_desc" />
 
                     <Button
                             android:id="@+id/web_view_clear_cache_button"
-                            android:text="@string/pref_browser_clear_button"
-                            style="@style/Widget.AppCompat.Button"
-                            app:backgroundTint="@color/colorAccent"
-                            android:textColor="@color/colorPrimaryText"
+                            style="?buttonStyle"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:text="@string/pref_browser_clear_button"
+                            android:textColor="@color/colorPrimaryText"
+                            app:backgroundTint="@color/colorAccent" />
 
                     <TextView
-                            android:text="@string/pref_browser_clear_cookie_desc"
-                            android:textColor="?attr/textColor"
-                            android:layout_marginTop="24dp"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_clear_cookie_desc" />
 
                     <Button
                             android:id="@+id/web_view_clear_cookie_button"
-                            android:text="@string/pref_browser_clear_button"
-                            style="@style/Widget.AppCompat.Button"
-                            app:backgroundTint="@color/colorAccent"
-                            android:textColor="@color/colorPrimaryText"
+                            style="?buttonStyle"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:text="@string/pref_browser_clear_button"
+                            android:textColor="@color/colorPrimaryText"
+                            app:backgroundTint="@color/colorAccent" />
 
                     <TextView
-                            android:text="@string/pref_browser_clear_history_desc"
-                            android:textColor="?attr/textColor"
-                            android:layout_marginTop="24dp"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:text="@string/pref_browser_clear_history_desc" />
 
                     <Button
                             android:id="@+id/web_view_clear_history_button"
-                            android:text="@string/pref_browser_clear_button"
-                            style="@style/Widget.AppCompat.Button"
-                            app:backgroundTint="@color/colorAccent"
-                            android:textColor="@color/colorPrimaryText"
+                            style="?buttonStyle"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:text="@string/pref_browser_clear_button"
+                            android:textColor="@color/colorPrimaryText"
+                            app:backgroundTint="@color/colorAccent" />
                 </LinearLayout>
 
             </LinearLayout>

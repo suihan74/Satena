@@ -16,7 +16,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
-import androidx.lifecycle.observe
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
@@ -35,6 +34,7 @@ import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.Theme
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.entries2.dialog.BrowserShortcutDialog
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
@@ -43,6 +43,7 @@ import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.views.CustomBottomAppBar
 import com.suihan74.utilities.views.bindMenuItemsGravity
 
@@ -131,10 +132,7 @@ class EntriesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
-        setTheme(
-            if (prefs.getBoolean(PreferenceKey.DARK_THEME)) R.style.AppTheme_Dark
-            else R.style.AppTheme_Light
-        )
+        setTheme(Theme.themeId(prefs))
 
         viewModel.initialize(
             forceUpdate = false,
@@ -236,7 +234,7 @@ class EntriesActivity : AppCompatActivity() {
 
         // --- Observers ---
 
-        viewModel.signedIn.observe(this) {
+        viewModel.signedIn.observe(this, Observer {
             if (it) {
                 binding.entriesMenuNoticesButton.show()
             }
@@ -244,16 +242,10 @@ class EntriesActivity : AppCompatActivity() {
                 binding.entriesMenuNoticesButton.hide()
             }
             binding.entriesMenuNoticesDesc.visibility = it.toVisibility()
-        }
+        })
 
         // 通信状態の変更を監視
-        var isNetworkReceiverInitialized = false
-        SatenaApplication.instance.networkReceiver.state.observe(this) { state ->
-            if (!isNetworkReceiverInitialized) {
-                isNetworkReceiverInitialized = true
-                return@observe
-            }
-
+        SatenaApplication.instance.networkReceiver.state.observe(this, Observer { state ->
             if (state == NetworkReceiver.State.CONNECTED) {
                 val needToSignIn = viewModel.signedIn.value != true
                 viewModel.initialize(
@@ -266,7 +258,7 @@ class EntriesActivity : AppCompatActivity() {
                     }
                 )
             }
-        }
+        })
 
         // 非表示エントリ情報が更新されたらリストを更新する
         viewModel.repository.ignoredEntriesRepo.ignoredEntriesForEntries.observe(this, Observer {

@@ -7,7 +7,7 @@
     <dimen name="dp_238">238dp</dimen>
 
     <!-- ブクマ投稿ダイアログの画面幅占有比率 -->
-    <item type="dimen" name="post_bookmark_dialog_width_ratio">98%</item>
+    <fraction name="post_bookmark_dialog_width_ratio">98%</fraction>
 
     <!-- トースト通知の表示位置調整用 -->
     <dimen name="toast_offset_y">8dp</dimen>
@@ -20,7 +20,7 @@
     <dimen name="purple_star_position">296dp</dimen>
 
     <!-- ダイアログサイズ -->
-    <dimen name="alert_dialog_width_ratio">95%</dimen>
+    <fraction name="alert_dialog_width_ratio">88%</fraction>
 
     <!-- アローアイコンを差し替えたSpinnerの背景用 -->
     <item name="highlight_alpha_material_colored_for_custom_spinner" format="float" type="dimen">0.10</item>

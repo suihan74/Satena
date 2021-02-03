@@ -12,6 +12,7 @@ interface BrowserDao {
     /**
      * 直近の閲覧履歴を指定件数取得する
      */
+    @Transaction
     @Query("""
         select * from browser_history_items
         order by visitedAt desc
@@ -35,6 +36,7 @@ interface BrowserDao {
      * 完全に一致する時刻を指定する必要があるため、
      * 主に履歴追加直後にIDが付加されたインスタンスを再取得するために使用する
      */
+    @Transaction
     @Query("""
         select * from browser_history_items
         where visitedAt = :visited
@@ -54,6 +56,7 @@ interface BrowserDao {
     /**
      * 履歴を検索する
      */
+    @Transaction
     @Query("""
         select * from browser_history_items
         where pageId in (

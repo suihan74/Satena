@@ -16,7 +16,7 @@ import com.suihan74.satena.scenes.browser.SearchEngineSetting
 import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.utilities.exceptions.InvalidUrlException
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -204,7 +204,7 @@ class PreferencesBrowserViewModel(
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(R.string.pref_browser_clear_history_dialog_message)
             .setNegativeButton(R.string.dialog_cancel)
-            .setPositiveButton(R.string.dialog_ok) { dialog ->
+            .setPositiveButton(R.string.dialog_ok) {
                 viewModelScope.launch(Dispatchers.Main) {
                     runCatching {
                         historyRepo.clearHistories()

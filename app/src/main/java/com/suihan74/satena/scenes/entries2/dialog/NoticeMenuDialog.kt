@@ -18,10 +18,11 @@ import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.NoticeTimestamp
 import com.suihan74.satena.models.NoticesKey
-import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
+import com.suihan74.satena.scenes.bookmarks.dialog.ReportDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 
 class NoticeMenuDialog : DialogFragment() {
     companion object {

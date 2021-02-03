@@ -4,13 +4,15 @@
 
     <color name="colorPrimary">#2196F3</color>
     <color name="colorPrimaryDark">#1C79C4</color>
+    <color name="colorPrimaryExDark">#2278BD</color>
     <color name="colorAccent">#D12841</color>
 
     <color name="disabledColor">#AAA</color>
 
     <!-- 画面背景 -->
     <color name="panelBackground">#EEE</color>
-    <color name="panelBackgroundDark">#3F3F40</color>
+    <color name="panelBackgroundDark">#383839</color>
+    <color name="panelBackgroundExDark">#000</color>
 
     <!-- ダイアログ背景 -->
     <color name="dialogBackground">#EEE</color>
@@ -18,6 +20,9 @@
 
     <!-- クリック防止ビュー -->
     <color name="clickGuard">#a0000000</color>
+
+    <!-- EX_DARKテーマでのビュー選択背景ripple -->
+    <color name="ripple_material_ex_dark">#1EBDBDBD</color>
 
     <!-- SnackBar -->
     <color name="snackBarBackgroundColor">#282829</color>
@@ -29,12 +34,15 @@
     <color name="textCursorDrawable">#777</color>
     <color name="textColor">#222</color>
     <color name="textColorDark">#dfdfdf</color>
+    <color name="textColorExDark">#d3d3d3</color>
+
     <color name="textColorHint">#999</color>
     <color name="textColorHintDark">#777</color>
 
     <!-- RecyclerView -->
     <color name="swipeRefreshBackground">@color/panelBackground</color>
     <color name="swipeRefreshBackgroundDark">#5D5D5E</color>
+    <color name="swipeRefreshBackgroundExDark">#111</color>
 
     <!-- RecyclerViewの仕切りの色 -->
     <color name="dividerColor">#FFA0A0A0</color>
@@ -48,7 +56,8 @@
 
     <!-- タブ -->
     <color name="tabBackground">#F0F0F0</color>
-    <color name="tabBackgroundDark">#565653</color>
+    <color name="tabBackgroundDark">#494947</color>
+    <color name="tabBackgroundExDark">#000</color>
 
     <!-- BookmarkDetailFragment#portraitの上部分 -->
     <color name="BookmarkDetailTopBackground">#F0F0F0</color>
@@ -62,6 +71,7 @@
     <!-- ブックマーク投稿ダイアログ -->
     <color name="bookmarkDialogBackground">#EEE</color>
     <color name="bookmarkDialogBackgroundDark">#3F3F40</color>
+    <color name="bookmarkDialogBackgroundExDark">#000</color>
 
     <!-- タイムスタンプ テキスト -->
     <color name="timestampColor">#888</color>
@@ -96,6 +106,7 @@
     <!-- EntryCommentの背景色 -->
     <color name="entryCommentBackground">#11000000</color>
     <color name="entryCommentBackgroundDark">#22FFFFFF</color>
+    <color name="entryCommentBackgroundExDark">#000</color>
 
     <!-- 障害情報 -->
     <color name="maintenanceResolved">#19BD3F</color>

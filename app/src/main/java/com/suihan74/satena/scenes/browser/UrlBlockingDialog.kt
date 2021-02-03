@@ -18,7 +18,11 @@ import com.suihan74.satena.databinding.DialogTitleUrlBlockingBinding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.append
+import com.suihan74.utilities.extensions.getObject
+import com.suihan74.utilities.extensions.putObject
+import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.lazyProvideViewModel
 
 class UrlBlockingDialog : DialogFragment() {
@@ -66,14 +70,14 @@ class UrlBlockingDialog : DialogFragment() {
                 }
 
                 // クリックしたURLをEditTextに入力する
-                listView?.setOnItemClickListener { adapterView, view, i, l ->
+                listView?.setOnItemClickListener { _, _, i, _ ->
                     viewModel.pattern.value = viewModel.getPatternCandidate(i)
                 }
 
                 // 既にブロックされている設定の説明を表示する
-                listView?.setOnItemLongClickListener { adapterView, view, i, l ->
+                listView?.setOnItemLongClickListener { _, _, i, _ ->
                     if (viewModel.urls?.get(i)?.blocked == true) {
-                        context.showToast(R.string.msg_url_blocked)
+                        showToast(R.string.msg_url_blocked)
                     }
                     true
                 }
@@ -97,7 +101,7 @@ class UrlBlockingDialog : DialogFragment() {
     /** 空白確認して設定を登録する */
     private fun invokeRegister() : Boolean {
         return if (viewModel.pattern.value.isNullOrBlank()) {
-            context?.showToast(R.string.msg_empty_url_blocking_pattern)
+            showToast(R.string.msg_empty_url_blocking_pattern)
             false
         }
         else {

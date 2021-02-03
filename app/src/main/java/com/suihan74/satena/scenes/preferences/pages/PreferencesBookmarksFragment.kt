@@ -13,7 +13,7 @@ import com.suihan74.satena.databinding.FragmentPreferencesBookmarksBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
-import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
+import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.lazyProvideViewModel

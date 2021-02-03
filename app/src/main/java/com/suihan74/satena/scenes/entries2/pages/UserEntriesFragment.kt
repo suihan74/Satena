@@ -6,7 +6,6 @@ import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.observe
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
@@ -45,7 +44,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         return UserEntriesTabFragment.createInstance(viewModelKey, user)
     }
 
-    override val title : String?
+    override val title : String
         get() = "id:${viewModel.user.value}"
 
     override val subtitle : String?
@@ -61,11 +60,11 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         val root = super.onCreateView(inflater, container, savedInstanceState)
 
         // ユーザーIDをタイトルに表示する
-        viewModel.user.observe(viewLifecycleOwner) {
+        viewModel.user.observe(viewLifecycleOwner, {
             activity.alsoAs<EntriesActivity> {
                 it.toolbar.title = title
             }
-        }
+        })
 
         return root
     }
@@ -107,7 +106,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
             it.visibility = View.GONE
         } ?: return
 
-        viewModel.tags.observe(viewLifecycleOwner) { tags ->
+        viewModel.tags.observe(viewLifecycleOwner, { tags ->
             val activity = requireActivity()
 
             if (tags.isNotEmpty()) {
@@ -135,10 +134,10 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
                     spinner.setSelection(position + 1)
                 }
             }
-        }
+        })
 
         // タグ選択時にサブタイトルを表示する
-        viewModel.tag.observe(viewLifecycleOwner) {
+        viewModel.tag.observe(viewLifecycleOwner, {
             activity.alsoAs<EntriesActivity> { activity ->
                 activity.toolbar.subtitle = subtitle
             }
@@ -148,7 +147,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
             if (it == null) {
                 spinner.setSelection(0)
             }
-        }
+        })
 
         // タグを選択している場合、戻るボタンでタグ選択を解除する
         clearTagCallback?.remove()

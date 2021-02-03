@@ -12,6 +12,9 @@ class SignInStarFailureException(message: String? = null, cause: Throwable? = nu
 /** 非表示ユーザーリスト更新失敗 */
 class FetchIgnoredUsersFailureException(message: String? = null, cause: Throwable? = null) : Throwable(message, cause)
 
+/** 403 Forbidden */
+class ForbiddenException(message: String? = null, cause: Throwable? = null) : Throwable(message, cause)
+
 /** 404 Not Found */
 class NotFoundException(message: String? = null, cause: Throwable? = null) : Throwable(message, cause)
 

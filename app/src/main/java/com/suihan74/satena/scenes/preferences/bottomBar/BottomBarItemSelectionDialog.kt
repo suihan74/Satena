@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.preferences.bottomBar
 
 import android.app.Dialog
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.text.style.ImageSpan
 import androidx.core.content.ContextCompat
@@ -89,17 +88,13 @@ class BottomBarItemSelectionDialog : DialogFragment() {
 
     private fun createLabel(context: Context, item: UserBottomItem) =
         buildSpannedString {
-            ContextCompat.getDrawable(context, item.iconId)?.let { icon ->
-                val lineHeight = context.sp2px(18)
-                val vAlign =
-                    if (Build.VERSION.SDK_INT >= 29) ImageSpan.ALIGN_CENTER
-                    else ImageSpan.ALIGN_BASELINE
-
-                icon.setTint(context.getThemeColor(R.attr.textColor))
-                icon.setBounds(0, 0, lineHeight, lineHeight)
-                append("_", ImageSpan(icon, vAlign))
-                append("\u2002") // for margin
-            }
+            appendDrawable(
+                context = context,
+                resId = item.iconId,
+                sizePx = context.sp2px(18),
+                color = context.getThemeColor(R.attr.textColor)
+            )
+            append("\u2002") // for margin
             append(getString(item.textId))
         }
 

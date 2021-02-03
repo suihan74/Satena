@@ -30,7 +30,7 @@
 
                 <com.google.android.material.appbar.AppBarLayout
                         android:id="@+id/appbar_layout"
-                        android:background="@color/colorPrimary"
+                        android:background="?colorPrimary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"/>
 
@@ -78,7 +78,7 @@
 
                 <com.google.android.material.bottomappbar.BottomAppBar
                         android:id="@+id/bottom_app_bar"
-                        app:backgroundTint="@color/colorPrimary"
+                        app:backgroundTint="?toolbarBackground"
                         app:contentInsetLeft="8dp"
                         app:contentInsetRight="8dp"
                         android:layout_width="match_parent"
@@ -127,7 +127,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <RelativeLayout
+        <RelativeLayout
                 android:id="@+id/drawer_area"
                 android:background="?attr/panelBackground"
                 android:focusable="true"

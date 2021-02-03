@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.observe
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.EntriesAdapter
@@ -43,11 +42,11 @@ class SearchEntriesViewModel(
         super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
 
         // 検索用パラメータの変更を伝播
-        searchQuery.observe(lifecycleOwner) {
+        searchQuery.observe(lifecycleOwner, {
             viewModel.searchQuery = it
-        }
-        searchType.observe(lifecycleOwner) {
+        })
+        searchType.observe(lifecycleOwner, {
             viewModel.searchType = it
-        }
+        })
     }
 }

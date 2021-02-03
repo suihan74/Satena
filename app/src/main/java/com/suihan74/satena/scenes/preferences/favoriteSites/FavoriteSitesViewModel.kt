@@ -10,7 +10,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.getEntryRootUrl
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.launch
 

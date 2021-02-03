@@ -27,20 +27,18 @@
 
             <TextView
                     android:text="@string/pref_entries_layout_mode_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <ToggleButton
                     android:id="@+id/preferences_entries_layout_mode_button"
-                    style="@style/PreferencesToggleButtonStyle"
+                    style="?toggleButtonStyle"
                     android:checked="@={vm.bottomLayoutMode}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_hide_bottom_appbar_by_scrolling_desc"
-                    android:textColor="?attr/textColor"
                     android:visibility="@{vm.bottomLayoutMode}"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
@@ -48,7 +46,7 @@
 
             <ToggleButton
                     android:id="@+id/preferences_hide_bottom_appbar_by_scroll_button"
-                    style="@style/PreferencesToggleButtonStyle"
+                    style="?toggleButtonStyle"
                     android:visibility="@{vm.bottomLayoutMode}"
                     android:checked="@={vm.hideBottomLayoutByScroll}"
                     android:layout_width="wrap_content"
@@ -56,7 +54,6 @@
 
             <TextView
                     android:text="@string/pref_bottom_bar_items_desc"
-                    android:textColor="?attr/textColor"
                     android:visibility="@{vm.bottomLayoutMode}"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
@@ -72,14 +69,13 @@
 
             <TextView
                     android:text="@string/pref_bottom_menu_items_gravity_desc"
-                    android:textColor="?attr/textColor"
                     android:visibility="@{vm.bottomLayoutMode}"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <ToggleButton
-                    style="@style/PreferencesToggleButtonStyle"
+                    style="?toggleButtonStyle"
                     android:visibility="@{vm.bottomLayoutMode}"
                     android:checked="@={BottomMenuItemsGravityConverter.set(vm.bottomBarButtonsGravity)}"
                     android:textOn="@string/pref_bottom_items_alignment_right"
@@ -90,86 +86,80 @@
             <TextView
                     android:visibility="@{vm.bottomLayoutMode}"
                     android:text="@string/pref_extra_bottom_items_alignment_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
                     android:id="@+id/extra_bottom_items_alignment_button"
+                    style="?buttonStyle"
                     android:visibility="@{vm.bottomLayoutMode}"
-                    android:textColor="@color/textColor"
                     android:text="@{vm.extraBottomItemsAlignment.textId}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_entries_single_tap_action_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
                     android:id="@+id/preferences_entries_single_tap_action"
-                    android:textColor="@color/textColor"
+                    style="?buttonStyle"
                     android:text="@{vm.singleTapAction.titleId}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_entries_multiple_tap_action_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
                     android:id="@+id/preferences_entries_multiple_tap_action"
-                    android:textColor="@color/textColor"
+                    style="?buttonStyle"
                     android:text="@{vm.multipleTapAction.titleId}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_entries_long_tap_action_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
                     android:id="@+id/preferences_entries_long_tap_action"
-                    android:textColor="@color/textColor"
+                    style="?buttonStyle"
                     android:text="@{vm.longTapAction.titleId}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_entries_multiple_tap_duration_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
                     android:id="@+id/preferences_entries_multiple_tap_duration"
-                    android:textColor="@color/textColor"
+                    style="?buttonStyle"
                     android:text="@{vm.multipleTapDuration.toString() + `ミリ秒`}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_home_category_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
                     android:id="@+id/preferences_home_category"
+                    style="?buttonStyle"
                     android:text="@{vm.homeCategory.textId}"
-                    android:textColor="@color/textColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
@@ -177,30 +167,28 @@
                     android:id="@+id/preferences_entries_initial_tab_desc"
                     android:visibility="@{!vm.homeCategory.singleColumns}"
                     android:text="@string/pref_entries_initial_tab_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
                     android:id="@+id/preferences_entries_initial_tab"
+                    style="?buttonStyle"
                     android:visibility="@{!vm.homeCategory.singleColumns}"
                     app:homeCategory="@{vm.homeCategory}"
                     app:initialTab="@{vm.initialTab}"
-                    android:textColor="@color/textColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_entries_change_home_by_long_tapping_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <ToggleButton
                     android:id="@+id/preferences_entries_change_home_by_long_tapping"
-                    style="@style/PreferencesToggleButtonStyle"
+                    style="?toggleButtonStyle"
                     android:checked="@={vm.changeHomeByLongTappingTab}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
@@ -208,78 +196,72 @@
             <TextView
                     android:visibility="@{!vm.homeCategory.singleColumns}"
                     android:text="@string/pref_entries_categories_mode_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
                     android:id="@+id/preferences_entries_categories_mode"
+                    style="?buttonStyle"
                     android:text="@{vm.categoriesMode.textId}"
-                    android:textColor="@color/textColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_entries_menu_tap_guard_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <ToggleButton
                     android:id="@+id/preferences_entries_menu_tap_guard"
-                    style="@style/PreferencesToggleButtonStyle"
+                    style="?toggleButtonStyle"
                     android:checked="@={vm.menuTapGuard}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_entries_hiding_toolbar_by_scrolling_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <ToggleButton
                     android:id="@+id/preferences_entries_hiding_toolbar_by_scrolling"
-                    style="@style/PreferencesToggleButtonStyle"
+                    style="?toggleButtonStyle"
                     android:checked="@={vm.hideToolbarWithScroll}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_entries_history_max_size_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
                     android:id="@+id/preferences_entries_history_max_size"
+                    style="?buttonStyle"
                     android:text="@{vm.historyMaxSize + @string/pref_entries_history_max_size_text}"
-                    android:textColor="@color/textColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_entries_read_action_type_desc"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <Button
                     android:id="@+id/preferences_entries_read_action_type"
+                    style="?buttonStyle"
                     android:text="@{vm.entryReadActionType.textId}"
-                    android:textColor="@color/textColor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
             <TextView
                     android:text="@string/pref_entries_read_action_boilerplate_desc"
                     android:visibility="@{vm.entryReadActionType == EntryReadActionType.BOILERPLATE}"
-                    android:textColor="?attr/textColor"
                     android:layout_marginTop="24dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
@@ -291,7 +273,6 @@
                     android:text="@={vm.entryReadActionBoilerPlate}"
                     android:hint="@string/pref_entries_read_action_boilerplate_hint"
                     android:inputType="textNoSuggestions"
-                    android:textColor="?attr/textColor"
                     android:importantForAutofill="no"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>

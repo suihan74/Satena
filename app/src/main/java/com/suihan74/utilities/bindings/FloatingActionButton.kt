@@ -16,3 +16,10 @@ fun FloatingActionButton.setIconId(resId: Int?) {
         Log.e("resource error", Log.getStackTraceString(e))
     }
 }
+
+/** FABの表示状態を真偽値で指定 */
+@BindingAdapter("isShown")
+fun FloatingActionButton.setShown(flag: Boolean) {
+    if (flag) this.show()
+    else this.hide()
+}

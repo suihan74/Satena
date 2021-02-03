@@ -3,7 +3,7 @@
     <data>
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog.DialogViewModel" />
+                type="com.suihan74.satena.scenes.bookmarks.dialog.ReportDialog.DialogViewModel" />
     </data>
 
     <LinearLayout
@@ -72,7 +72,7 @@
 
                 <androidx.appcompat.widget.AppCompatSpinner
                         android:id="@+id/category_spinner"
-                        app:backgroundTint="@color/colorPrimary"
+                        app:backgroundTint="?colorPrimary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"/>
 

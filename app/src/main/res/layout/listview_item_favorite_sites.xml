@@ -31,7 +31,6 @@
                 android:ellipsize="end"
                 android:text="@{site.title}"
                 android:contentDescription="@null"
-                android:textColor="?attr/textColor"
                 android:textSize="16sp"
                 android:layout_toEndOf="@id/favicon"
                 android:layout_alignParentTop="true"

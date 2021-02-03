@@ -1,6 +1,7 @@
 package com.suihan74.utilities
 
 import androidx.annotation.MainThread
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
 
 /**
@@ -23,13 +24,14 @@ open class SingleUpdateMutableLiveData<T> : MutableLiveData<T> {
         selector(other) != selector(currentValue)
 
     @MainThread
-    final override fun setValue(value: T?) {
+    override fun setValue(value: T?) {
         if (checkUpdatable(value)) {
             super.setValue(value)
         }
     }
 
-    final override fun postValue(value: T?) {
+    @WorkerThread
+    override fun postValue(value: T?) {
         if (checkUpdatable(value)) {
             super.postValue(value)
         }

@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <style name="Base.AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+
+        <!-- FABのデフォルトスタイル -->
+        <item name="floatingActionButtonStyle">@style/FloatingActionButtonStyle</item>
+
+        <!-- ボタンのデフォルトスタイル -->
+        <item name="materialButtonStyle">@style/ButtonStyle</item>
+
+        <!-- enable fragment transition -->
+        <item name="android:windowContentTransitions">true</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+
+        <!-- action bar area -->
+        <item name="android:actionOverflowButtonStyle">@style/ActionBarButtonStyle</item>
+        <!-- バーの背景色 -->
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <!-- titleの文字色 -->
+        <item name="android:textColorPrimary">@color/colorPrimaryText</item>
+        <!-- subtitleの文字色 -->
+        <item name="android:textColorSecondary">@color/colorPrimaryText</item>
+        <!-- デフォルト文字色 -->
+        <item name="android:textColor">@color/textColor</item>
+        <!-- ポップアップ背景 -->
+        <item name="popupMenuBackground">?panelBackground</item>
+
+        <!-- ツールバーの色を他の部分に渡すために使用 -->
+        <item name="toolbarBackground">?colorPrimary</item>
+
+        <!-- Button -->
+        <item name="buttonStyle">@style/ButtonStyle</item>
+        <!-- ToggleButton -->
+        <item name="toggleButtonStyle">@style/ToggleButtonStyle</item>
+
+        <!-- SearchView -->
+        <item name="searchViewStyle">@style/SearchViewStyle.Toolbar</item>
+        <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextView.Toolbar</item>
+
+        <!-- TabLayout -->
+        <item name="tabSelectedTextColor">?colorPrimary</item>
+        <item name="tabTextColor">@color/disabledColor</item>
+        <item name="tabIndicatorColor">?colorPrimary</item>
+
+        <!-- for NumberPicker -->
+        <item name="colorControlNormal">?colorPrimary</item>
+
+        <!-- SnackBar -->
+        <item name="snackBarBackgroundColor">@color/snackBarBackgroundColor</item>
+        <item name="snackBarTextColor">@color/snackBarTextColor</item>
+        <item name="snackBarActionTextColor">@color/snackBarActionTextColor</item>
+    </style>
+
+    <!-- Light Theme -->
+    <style name="Base.AppTheme.Light">
+        <item name="panelBackground">@color/panelBackground</item>
+        <item name="tabBackground">@color/tabBackground</item>
+        <item name="android:textColor">@color/textColor</item>
+        <item name="textColor">@color/textColor</item>
+        <item name="android:textColorHint">@color/textColorHint</item>
+        <item name="textColorHint">@color/textColorHint</item>
+        <item name="dividerColor">@color/dividerColor</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
+        <item name="entryCommentBackground">@color/entryCommentBackground</item>
+        <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackground</item>
+        <item name="tagTextColor">@color/tagColor</item>
+        <item name="bookmarkCountColor">@color/bookmarkUsersCountText</item>
+        <!-- オプションメニュー背景色 -->
+        <item name="colorSurface">@color/panelBackground</item>
+
+        <item name="android:spinnerStyle">@style/SpinnerStyle.Light</item>
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Light</item>
+
+        <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
+        <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackground</item>
+    </style>
+
+    <!-- Dark Theme -->
+    <style name="Base.AppTheme.Dark">
+        <item name="panelBackground">@color/panelBackgroundDark</item>
+        <item name="tabBackground">@color/tabBackgroundDark</item>
+        <item name="android:textColor">@color/textColorDark</item>
+        <item name="textColor">@color/textColorDark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
+        <item name="textColorHint">@color/textColorHintDark</item>
+        <item name="dividerColor">@color/dividerColorDark</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
+        <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
+        <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackgroundDark</item>
+        <item name="tagTextColor">@color/tagColorDark</item>
+        <item name="bookmarkCountColor">@color/bookmarkUsersCountTextDark</item>
+        <!-- オプションメニュー背景色 -->
+        <item name="colorSurface">@color/panelBackgroundDark</item>
+
+        <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Dark</item>
+
+        <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
+        <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundDark</item>
+    </style>
+
+    <!-- Extreme Dark Theme -->
+    <style name="Base.AppTheme.ExDark">
+        <item name="colorPrimary">@color/colorPrimaryExDark</item>
+        <item name="android:windowBackground">@drawable/dialog_background_ex_dark</item>
+
+        <!-- クリック時背景アニメーション色 -->
+        <item name="colorControlHighlight">@color/ripple_material_ex_dark</item>
+
+        <!-- Button -->
+        <item name="buttonStyle">@style/ButtonStyle.ExDark</item>
+        <!-- ToggleButton -->
+        <item name="toggleButtonStyle">@style/ToggleButtonStyle.ExDark</item>
+
+        <!-- ツールバーの色を他の部分に渡すために使用 -->
+        <item name="toolbarBackground">@color/panelBackgroundExDark</item>
+        <item name="toolbarStyle">@style/ToolbarStyleExDark</item>
+        <item name="android:statusBarColor">@color/panelBackgroundExDark</item>
+        <item name="panelBackground">@color/panelBackgroundExDark</item>
+        <item name="tabBackground">@color/tabBackgroundExDark</item>
+        <item name="android:textColor">@color/textColorExDark</item>
+        <item name="textColor">@color/textColorExDark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
+        <item name="textColorHint">@color/textColorHintDark</item>
+        <item name="dividerColor">@color/dividerColorDark</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundExDark</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundExDark</item>
+        <item name="entryCommentBackground">@color/entryCommentBackgroundExDark</item>
+        <item name="bookmarkDetailTopBackground">@color/panelBackgroundExDark</item>
+        <item name="tagTextColor">@color/tagColorDark</item>
+        <item name="bookmarkCountColor">@color/bookmarkUsersCountTextDark</item>
+        <!-- オプションメニュー背景色 -->
+        <item name="colorSurface">@color/panelBackgroundDark</item>
+        <!-- ポップアップ背景 -->
+        <item name="popupMenuBackground">@drawable/dialog_background_ex_dark</item>
+
+        <item name="android:spinnerStyle">@style/SpinnerStyle.ExDark</item>
+        <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
+
+        <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
+        <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundDark</item>
+    </style>
+
+    <!-- ========= -->
+
+    <!-- スプラッシュ画面のテーマ -->
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="textColor">@color/colorPrimaryText</item>
+        <item name="android:textColor">@color/colorPrimaryText</item>
+
+        <item name="android:windowEnterTransition">@android:transition/fade</item>
+        <item name="android:windowExitTransition">@android:transition/fade</item>
+    </style>
+
+    <!-- ========= -->
+
+    <!-- ブクマ投稿ダイアログ用 -->
+    <style name="Base.AppDialogTheme" parent="Theme.AppCompat.Dialog">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- enable fragment transition -->
+        <item name="android:windowContentTransitions">true</item>
+
+        <!-- 画面幅占有比率 -->
+        <item name="android:windowMinWidthMajor">@fraction/post_bookmark_dialog_width_ratio</item>
+        <item name="android:windowMinWidthMinor">@fraction/post_bookmark_dialog_width_ratio</item>
+    </style>
+
+    <!-- Light Theme -->
+    <style name="Base.AppDialogTheme.Light">
+        <item name="panelBackground">@color/panelBackground</item>
+        <item name="tabBackground">@color/tabBackground</item>
+        <item name="textColor">@color/textColor</item>
+        <item name="textColorHint">@color/textColorHint</item>
+        <item name="dividerColor">@color/dividerColor</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
+        <item name="entryCommentBackground">@color/entryCommentBackground</item>
+        <item name="tagTextColor">@color/tagColor</item>
+
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
+    </style>
+
+    <!-- Dark Theme -->
+    <style name="Base.AppDialogTheme.Dark">
+        <item name="panelBackground">@color/panelBackgroundDark</item>
+        <item name="tabBackground">@color/tabBackgroundDark</item>
+        <item name="textColor">@color/textColorDark</item>
+        <item name="textColorHint">@color/textColorHintDark</item>
+        <item name="dividerColor">@color/dividerColorDark</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
+        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
+        <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
+        <item name="tagTextColor">@color/tagColorDark</item>
+
+        <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+    </style>
+
+    <!-- Extreme Dark Theme -->
+    <style name="Base.AppDialogTheme.ExDark">
+        <item name="colorPrimary">@color/colorPrimaryExDark</item>
+        <item name="panelBackground">@color/panelBackgroundExDark</item>
+        <item name="tabBackground">@color/tabBackgroundExDark</item>
+        <item name="textColor">@color/textColorExDark</item>
+        <item name="textColorHint">@color/textColorHintDark</item>
+        <item name="dividerColor">@color/dividerColorDark</item>
+        <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundExDark</item>
+        <item name="bookmarkDialogBackground">@drawable/dialog_background_ex_dark</item>
+        <item name="entryCommentBackground">@color/entryCommentBackgroundExDark</item>
+        <item name="tagTextColor">@color/tagColorDark</item>
+
+        <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>
+        <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+    </style>
+
+    <!-- ========= -->
+
+    <!-- AlertDialog -->
+    <style name="Base.AlertDialogStyle" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="colorAccent">?colorPrimary</item>
+        <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/ButtonBarButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/ButtonBarButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/ButtonBarButtonStyle</item>
+
+        <item name="android:windowMinWidthMajor">@fraction/alert_dialog_width_ratio</item>
+        <item name="android:windowMinWidthMinor">@fraction/alert_dialog_width_ratio</item>
+
+        <!-- TabLayout -->
+        <item name="tabSelectedTextColor">?colorPrimary</item>
+        <item name="tabTextColor">@color/disabledColor</item>
+        <item name="tabIndicatorColor">?colorPrimary</item>
+
+        <!-- for NumberPicker -->
+        <item name="colorControlNormal">?colorPrimary</item>
+    </style>
+
+    <!-- Light -->
+    <style name="Base.AlertDialogStyle.Light">
+        <item name="colorBackgroundFloating">@color/dialogBackground</item>
+        <item name="android:textColor">@color/textColor</item>
+        <item name="textColor">@color/textColor</item>
+        <item name="android:textColorPrimary">@color/textColor</item>
+        <item name="android:textColorSecondary">@color/textColor</item>
+        <item name="textColorAlertDialogListItem">@color/textColor</item>
+        <item name="tabBackground">@color/tabBackground</item>
+
+        <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="android:textColorHint">@color/textColorHint</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
+    </style>
+
+    <!-- Dark -->
+    <style name="Base.AlertDialogStyle.Dark">
+        <item name="colorBackgroundFloating">@color/dialogBackgroundDark</item>
+        <item name="android:textColor">@color/textColorDark</item>
+        <item name="textColor">@color/textColorDark</item>
+        <item name="android:textColorPrimary">@color/textColorDark</item>
+        <item name="android:textColorSecondary">@color/textColorDark</item>
+        <item name="textColorAlertDialogListItem">@color/textColorDark</item>
+        <item name="tabBackground">@color/tabBackgroundDark</item>
+
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
+    </style>
+
+    <!-- Extreme Dark -->
+    <style name="Base.AlertDialogStyle.ExDark">
+        <item name="colorBackgroundFloating">@null</item>
+        <item name="android:windowBackground">@drawable/dialog_background_ex_dark</item>
+
+        <item name="android:textColor">@color/textColorExDark</item>
+        <item name="textColor">@color/textColorExDark</item>
+        <item name="android:textColorPrimary">@color/textColorExDark</item>
+        <item name="android:textColorSecondary">@color/textColorExDark</item>
+        <item name="textColorAlertDialogListItem">@color/textColorExDark</item>
+        <item name="tabBackground">@color/tabBackgroundExDark</item>
+
+        <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
+        <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
+        <item name="android:textColorHint">@color/textColorHintDark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
+    </style>
+
+    <!-- ========= -->
+
+    <!-- BottomSheetDialogのテーマ -->
+    <style name="Base.BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="colorPrimary">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
+    <style name="Base.BottomSheetDialogTheme.Light">
+        <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
+        <item name="editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="bottomSheetStyle">@style/BottomSheet.Light</item>
+    </style>
+    <style name="Base.BottomSheetDialogTheme.Dark">
+        <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
+        <item name="editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="bottomSheetStyle">@style/BottomSheet.Dark</item>
+    </style>
+    <style name="Base.BottomSheetDialogTheme.ExDark">
+        <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
+        <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
+        <item name="bottomSheetStyle">@style/BottomSheet.ExDark</item>
+    </style>
+</resources>

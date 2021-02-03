@@ -9,7 +9,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.isVisible
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
@@ -17,7 +16,9 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
-import com.suihan74.satena.scenes.bookmarks2.BookmarksAdapter
+import com.suihan74.satena.scenes.bookmarks.BookmarksAdapter
+import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel
+import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostFragment
@@ -54,6 +55,11 @@ class BookmarksFragment :
     private val bookmarkPostViewModel : BookmarkPostViewModel
         get() = browserActivity.bookmarkPostViewModel
 
+    /** ブクマリスト表示用のVM */
+    private val bookmarksTabViewModel by lazyProvideViewModel {
+        BookmarksTabViewModel(viewModel.repository, viewModel.recentBookmarks)
+    }
+
     private val viewModel by lazyProvideViewModel {
         BookmarksViewModel(activityViewModel.bookmarksRepo)
     }
@@ -71,29 +77,90 @@ class BookmarksFragment :
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentBrowserBookmarksBinding>(
+        val binding = FragmentBrowserBookmarksBinding.inflate(
             inflater,
-            R.layout.fragment_browser_bookmarks,
             container,
             false
         ).apply {
             vm = viewModel
+            bookmarksVM = bookmarksTabViewModel
             lifecycleOwner = viewLifecycleOwner
         }
         this.binding = binding
 
+        initializeRecyclerView(binding)
+
+        // 投稿エリアの表示状態を変更する
+        binding.openPostAreaButton.setOnClickListener {
+            val postLayout = binding.bookmarkPostFrameLayout
+            // "変更後の"表示状態
+            val opened = !postLayout.isVisible
+
+            switchPostLayout(binding, opened)
+        }
+
+        binding.bottomAppBar.setOnClickListener {
+            scrollToTop()
+        }
+
+        // 戻るボタンで投稿エリアを隠す
+        onBackPressedCallback = activity?.onBackPressedDispatcher?.addCallback(
+            viewLifecycleOwner,
+            false
+        ) {
+            switchPostLayout(binding, false)
+        }
+
+        // 投稿完了したらそのブクマをリストに追加する
+        bookmarkPostViewModel.setOnPostSuccessListener { bookmarkResult ->
+            viewModel.viewModelScope.launch {
+                viewModel.loadRecentBookmarks(requireContext())
+                viewModel.repository.updateBookmark(bookmarkResult)
+            }
+            switchPostLayout(binding, false)
+        }
+
+        // 投稿エリアを作成
+        if (childFragmentManager.findFragmentById(R.id.bookmark_post_frame_layout) == null) {
+            val bookmarkPostFragment = BookmarkPostFragment.createInstance()
+            childFragmentManager.beginTransaction()
+                .replace(
+                    R.id.bookmark_post_frame_layout,
+                    bookmarkPostFragment,
+                    FRAGMENT_BOOKMARK_POST
+                )
+                .commitAllowingStateLoss()
+        }
+
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    // ------ //
+
+    private fun initializeRecyclerView(binding: FragmentBrowserBookmarksBinding) {
         val scrollingUpdater = RecyclerViewScrollingUpdater {
             lifecycleScope.launch(Dispatchers.Main) {
-                activityViewModel.bookmarksRepo.loadRecentBookmarks(
-                    additionalLoading = true
-                )
+                viewModel.loadRecentBookmarks(requireContext(), additionalLoading = true)
                 loadCompleted()
             }
         }
 
         val bookmarksAdapter = BookmarksAdapter().also { adapter ->
+            adapter.setOnSubmitListener {
+                binding.swipeLayout.isRefreshing = false
+                binding.swipeLayout.isEnabled = true
+                binding.progressBar.visibility = View.GONE
+            }
+
             adapter.setOnItemLongClickedListener { bookmark ->
-                viewModel.openBookmarkMenuDialog(bookmark, childFragmentManager)
+                lifecycleScope.launch {
+                    viewModel.openBookmarkMenuDialog(bookmark, childFragmentManager)
+                }
             }
 
             adapter.setOnLinkClickedListener { url ->
@@ -124,90 +191,21 @@ class BookmarksFragment :
             }
         }
 
-        viewModel.bookmarks.observe(viewLifecycleOwner) {
-            if (it == null) {
-                bookmarksAdapter.submitList(null)
-            }
-            else {
-                val repo = viewModel.repository
-                bookmarksAdapter.setBookmarks(
-                    lifecycleScope,
-                    bookmarks = it,
-                    bookmarksEntry = viewModel.bookmarksEntry.value,
-                    taggedUsers = repo.taggedUsers,
-                    ignoredUsers = repo.ignoredUsersCache,
-                    displayMutedMention = false,
-                    starsEntryGetter = { b -> repo.getStarsEntry(b)?.value }
-                ) {
-                    binding.swipeLayout.isRefreshing = false
-                    binding.swipeLayout.isEnabled = true
-                    binding.progressBar.visibility = View.GONE
-                }
-            }
-        }
-
         // スワイプしてブクマリストを更新する
         binding.swipeLayout.let { swipeLayout ->
             val activity = requireActivity()
             swipeLayout.setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
             swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
             swipeLayout.setOnRefreshListener {
-                viewModel.reloadBookmarks {
+                lifecycleScope.launch {
+                    viewModel.loadRecentBookmarks(requireContext())
                     swipeLayout.isRefreshing = false
                 }
             }
         }
-
-        // 投稿エリアの表示状態を変更する
-        binding.openPostAreaButton.setOnClickListener {
-            val postLayout = binding.bookmarkPostFrameLayout
-            // "変更後の"表示状態
-            val opened = !postLayout.isVisible
-
-            switchPostLayout(binding, opened)
-        }
-
-        binding.bottomAppBar.setOnClickListener {
-            scrollToTop()
-        }
-
-        // 戻るボタンで投稿エリアを隠す
-        onBackPressedCallback = activity?.onBackPressedDispatcher?.addCallback(
-            viewLifecycleOwner,
-            false
-        ) {
-            switchPostLayout(binding, false)
-        }
-
-        // 投稿完了したらそのブクマをリストに追加する
-        bookmarkPostViewModel.setOnPostSuccessListener { bookmarkResult ->
-            viewModel.reloadBookmarks {
-                viewModel.viewModelScope.launch {
-                    viewModel.repository.updateBookmark(bookmarkResult)
-                }
-            }
-            switchPostLayout(binding, false)
-        }
-
-        // 投稿エリアを作成
-        if (childFragmentManager.findFragmentById(R.id.bookmark_post_frame_layout) == null) {
-            val bookmarkPostFragment = BookmarkPostFragment.createInstance()
-            childFragmentManager.beginTransaction()
-                .replace(
-                    R.id.bookmark_post_frame_layout,
-                    bookmarkPostFragment,
-                    FRAGMENT_BOOKMARK_POST
-                )
-                .commitAllowingStateLoss()
-        }
-
-        return binding.root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
-    }
+    // ------ //
 
     /** 投稿エリアの表示状態を切り替える */
     private fun switchPostLayout(binding: FragmentBrowserBookmarksBinding, opened: Boolean) {

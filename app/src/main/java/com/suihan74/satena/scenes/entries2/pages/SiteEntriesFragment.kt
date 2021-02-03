@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.observe
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
@@ -50,9 +49,9 @@ class SiteEntriesFragment : MultipleTabsEntriesFragment() {
 
         // Category.SiteではサイトURLをタイトルに表示する
         activity.alsoAs<EntriesActivity> { activity ->
-            viewModel.siteUrl.observe(viewLifecycleOwner) {
+            viewModel.siteUrl.observe(viewLifecycleOwner, {
                 activity.toolbar.title = title
-            }
+            })
         }
 
         return root

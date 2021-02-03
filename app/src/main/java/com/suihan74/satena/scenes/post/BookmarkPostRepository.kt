@@ -4,6 +4,7 @@ import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.Theme
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
 import com.suihan74.satena.scenes.post.exceptions.PostingMastodonFailureException
@@ -29,8 +30,8 @@ class BookmarkPostRepository(
         const val MAX_TAGS_COUNT = 10
     }
 
-    /** ダークテーマを使用 */
-    val isThemeDark = prefs.getBoolean(PreferenceKey.DARK_THEME)
+    /** ダイアログテーマ */
+    val themeId = Theme.dialogActivityThemeId(prefs)
 
     val entry = MutableLiveData<Entry>()
 

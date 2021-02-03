@@ -23,7 +23,6 @@
         <TextView
                 android:id="@+id/title"
                 maintenanceTitle="@{item.title}"
-                android:textColor="?attr/textColor"
                 android:textStyle="bold"
                 android:ellipsize="end"
                 android:maxLines="3"
@@ -45,7 +44,6 @@
                 android:id="@+id/body"
                 html="@{item.body}"
                 android:visibility="@{bodyVisibility}"
-                android:textColor="?attr/textColor"
                 android:paddingTop="12dp"
                 android:paddingBottom="6dp"
                 android:paddingStart="6dp"

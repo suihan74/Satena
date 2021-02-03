@@ -11,7 +11,6 @@
 
     <TextView
             android:id="@+id/tag_name"
-            android:textColor="?attr/textColor"
             android:maxLines="1"
             android:ellipsize="end"
             android:textSize="18sp"
@@ -20,7 +19,6 @@
 
     <TextView
             android:id="@+id/users_count"
-            android:textColor="?attr/textColor"
             android:maxLines="1"
             android:textSize="13sp"
             android:layout_below="@id/tag_name"

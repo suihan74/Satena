@@ -12,7 +12,6 @@
     <TextView
         android:id="@+id/mode_text"
         android:text="[TEXT]"
-        android:textColor="?attr/textColor"
         android:layout_marginEnd="8dp"
         android:textAlignment="textEnd"
         android:layout_width="42sp"
@@ -20,7 +19,6 @@
 
     <TextView
         android:id="@+id/query_text"
-        android:textColor="?attr/textColor"
         android:layout_toEndOf="@id/mode_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>

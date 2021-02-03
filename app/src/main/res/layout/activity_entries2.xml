@@ -36,7 +36,6 @@
                             android:layout_width="match_parent"
                             android:layout_height="?attr/actionBarSize"
                             app:titleTextColor="?android:attr/textColorSecondary"
-                            android:background="?attr/colorPrimary"
                             android:contentInsetStart="8dp"
                             app:elevation="0dp"
                             app:layout_scrollFlags="scroll|enterAlways"/>
@@ -91,7 +90,6 @@
                         android:id="@+id/entries_menu_background_guard_full"
                         android:clickable="true"
                         android:focusable="true"
-                        android:elevation="6dp"
                         android:focusableInTouchMode="true"
                         android:visibility="gone"
                         android:background="@color/clickGuard"

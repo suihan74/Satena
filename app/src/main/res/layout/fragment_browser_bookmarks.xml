@@ -4,7 +4,11 @@
     <data>
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.browser.bookmarks.BookmarksViewModel" />
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
+
+        <variable
+                name="bookmarksVM"
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -24,6 +28,7 @@
                     android:id="@+id/recycler_view"
                     style="@style/RecyclerView.Linear"
                     divider="@{@drawable/recycler_view_item_divider}"
+                    entities="@{bookmarksVM.displayBookmarks}"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
 
@@ -52,7 +57,7 @@
                     android:id="@+id/open_post_area_button"
                     android:src="@drawable/ic_add_comment"
                     app:fabSize="mini"
-                    app:backgroundTint="@color/colorPrimary"
+                    app:backgroundTint="?colorPrimary"
                     app:layout_anchor="@id/bottom_app_bar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>

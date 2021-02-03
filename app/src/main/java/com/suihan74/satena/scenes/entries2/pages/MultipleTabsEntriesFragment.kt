@@ -18,9 +18,9 @@ import com.suihan74.satena.scenes.entries2.EntriesFragment
 import com.suihan74.satena.scenes.entries2.EntriesTabAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragment
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.setOnTabLongClickListener
-import com.suihan74.utilities.extensions.showToast
 
 abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     protected var binding : FragmentEntries2Binding? = null

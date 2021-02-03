@@ -13,6 +13,7 @@ import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.utilities.SuspendSwitcher
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,7 +73,7 @@ class UserTagDialogFragment : DialogFragment() {
                         else {
                             when (result.exceptionOrNull()) {
                                 is EmptyTagNameException ->
-                                    context?.showToast(R.string.msg_user_tag_no_name)
+                                    showToast(R.string.msg_user_tag_no_name)
                             }
 
                             dialog.setButtonsEnabled(true)

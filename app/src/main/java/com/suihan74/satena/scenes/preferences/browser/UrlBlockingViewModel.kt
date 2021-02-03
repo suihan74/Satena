@@ -8,7 +8,7 @@ import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.scenes.browser.BlockUrlSetting
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.UrlBlockingDialog
-import com.suihan74.utilities.extensions.showToast
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 
 class UrlBlockingViewModel(
@@ -30,7 +30,7 @@ class UrlBlockingViewModel(
         val dialog = AlertDialogFragment.Builder()
             .setTitle(model.pattern)
             .setNegativeButton(R.string.dialog_cancel)
-            .setItems(labels) { _, which ->
+            .setItems(labels) { _, _ ->
                 blockUrls.value = blockUrls.value?.minus(model)
             }
             .create()

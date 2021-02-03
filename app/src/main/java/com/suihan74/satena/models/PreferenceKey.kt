@@ -2,7 +2,7 @@ package com.suihan74.satena.models
 
 import android.content.Context
 import android.view.Gravity
-import com.suihan74.satena.scenes.bookmarks2.BookmarksTabType
+import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
@@ -13,7 +13,7 @@ import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
 
-@SharedPreferencesKey(fileName = "default", version = 5, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 6, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -43,7 +43,11 @@ enum class PreferenceKey(
     ////////////////////////////////////////
 
     /** ダークテーマを使用 */
+    @Deprecated("migrate to `THEME`")
     DARK_THEME(typeInfo<Boolean>(), false),
+
+    /** アプリテーマ */
+    THEME(typeInfo<Int>(), Theme.LIGHT.id),
 
     /** ダイアログのテーマ設定 */
     DIALOG_THEME(typeInfo<Int>(), DialogThemeSetting.APP.id),
@@ -223,6 +227,8 @@ object PreferenceKeyMigration {
 
                 4 -> migrateFromVersion4(context)
 
+                5 -> migrateFromVersion5(context)
+
                 else -> break
             }
         }
@@ -310,6 +316,35 @@ object PreferenceKeyMigration {
 
             if (result.isFailure) {
                 putLong(key, 15L)
+            }
+        }
+    }
+
+    /**
+     * v5 -> v6
+     *
+     * テーマの保存方法を変更
+     */
+    private fun migrateFromVersion5(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val key = PreferenceKey.DARK_THEME
+
+        prefs.edit {
+            val result = runCatching {
+                if (prefs.getBoolean(key)) {
+                    put(PreferenceKey.THEME, Theme.DARK.id)
+                }
+                else {
+                    put(PreferenceKey.THEME, Theme.LIGHT.id)
+                }
+                remove(PreferenceKey.DARK_THEME)
+            }
+
+            if (result.isFailure) {
+                runCatching {
+                    remove(PreferenceKey.DARK_THEME)
+                    remove(PreferenceKey.THEME)
+                }
             }
         }
     }

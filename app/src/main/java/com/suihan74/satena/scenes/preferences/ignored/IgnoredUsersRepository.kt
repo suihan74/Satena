@@ -3,7 +3,7 @@ package com.suihan74.satena.scenes.preferences.ignored
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
-import com.suihan74.satena.scenes.bookmarks2.dialog.ReportDialog
+import com.suihan74.satena.scenes.bookmarks.dialog.ReportDialog
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.Dispatchers

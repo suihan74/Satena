@@ -36,7 +36,6 @@
                 android:id="@+id/title"
                 android:text="@{entry.title}"
                 android:contentDescription="@null"
-                android:textColor="?attr/textColor"
                 android:textStyle="bold"
                 android:ellipsize="end"
                 android:maxLines="3"

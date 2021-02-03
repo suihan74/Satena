@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
+    </data>
+
+    <RelativeLayout
+            android:background="?attr/panelBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <ImageView
+                android:id="@+id/icon"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="@null"
+                app:src="@{vm.entry.imageUrl}"
+                tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_toStartOf="@id/icon"
+                android:ellipsize="end"
+                maxLinesPortrait="@{6}"
+                maxLinesLandscape="@{3}"
+                android:minHeight="64dp"
+                android:scrollbarSize="4dp"
+                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+                android:scrollbars="vertical"
+                android:text="@{vm.entry.title}"
+                android:textIsSelectable="true"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="sample title text" />
+
+        <TextView
+                android:id="@+id/stars"
+                starsEntry="@{vm.entryStarsEntry}"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/title"
+                android:layout_alignStart="@id/title"
+                android:layout_toStartOf="@id/add_star_button"
+                android:layout_marginEnd="6dp"
+                android:visibility="@{stars.text}"
+                tools:text="★" />
+
+        <ImageButton
+                android:id="@+id/add_star_button"
+                android:visibility="@{vm.signedIn}"
+                app:srcCompat="@drawable/ic_add_star"
+                android:tint="?attr/tagTextColor"
+                android:background="?attr/actionBarItemBackground"
+                android:layout_below="@id/icon"
+                android:layout_alignEnd="@id/icon"
+                android:contentDescription="@null"
+                android:layout_alignBottom="@id/stars"
+                android:layout_alignTop="@id/stars"
+                android:layout_marginEnd="3dp"
+                android:layout_width="18dp"
+                android:layout_height="18dp" />
+
+        <TextView
+                android:id="@+id/page_url"
+                entryPageUrl="@{vm.entry.url}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/stars"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/icon"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="7dp"
+                android:layout_marginEnd="21dp"
+                android:background="?selectableItemBackground"
+                android:ellipsize="middle"
+                android:maxLines="2"
+                android:textColor="?attr/colorPrimary"
+                android:textIsSelectable="false"
+                tools:text="https://localhost/" />
+
+        <TextView
+                android:id="@+id/description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/page_url"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/icon"
+                android:layout_marginBottom="12dp"
+                android:ellipsize="end"
+                maxLinesPortrait="@{6}"
+                maxLinesLandscape="@{3}"
+                android:scrollbarSize="4dp"
+                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+                android:scrollbars="vertical"
+                android:text="@{vm.entry.description}"
+                android:textIsSelectable="true"
+                android:textSize="12sp"
+                tools:text="@tools:sample/lorem/random" />
+
+        <com.suihan74.utilities.bindings.TextViewWithDrawable
+                android:id="@+id/tags_header"
+                app:drawableStart="@{@drawable/ic_tag}"
+                android:text="@string/entry_information_tags_header"
+                android:textStyle="bold"
+                android:textColor="?attr/tagTextColor"
+                android:layout_below="@id/description"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/icon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/tags_list"
+                bookmarksEntryTags="@{vm.bookmarksEntry.tags}"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@id/floor_buttons_area"
+                android:layout_below="@id/tags_header"
+                android:layout_alignStart="@id/title"
+                android:layout_alignEnd="@id/icon"
+                android:layout_marginTop="2dp"
+                android:scrollbarSize="4dp"
+                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+                android:scrollbars="vertical" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/floor_buttons_area"
+                android:layout_alignParentBottom="true"
+                android:paddingHorizontal="24dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <Button
+                    android:id="@+id/to_lower_floor_button"
+                    android:text="@string/entry_information_lower_floor"
+                    lowerFloorButtonVisibility="@{vm.entry}"
+                    style="?buttonStyle"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <Button
+                    android:id="@+id/to_upper_floor_button"
+                    android:text="@string/entry_information_upper_floor"
+                    upperFloorButtonVisibility="@{vm.entry}"
+                    style="?buttonStyle"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </RelativeLayout>
+</layout>

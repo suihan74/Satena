@@ -24,7 +24,6 @@
                     android:id="@+id/title_text_view"
                     android:text="@string/pref_browser_open_url_blocking_desc"
                     android:textSize="18sp"
-                    android:textColor="?textColor"
                     android:background="?attr/tabBackground"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="12dp"
@@ -46,7 +45,7 @@
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/add_button"
                 android:src="@drawable/ic_baseline_add"
-                app:backgroundTint="@color/colorPrimary"
+                app:backgroundTint="?colorPrimary"
                 app:fabSize="normal"
 
                 android:layout_marginBottom="24dp"

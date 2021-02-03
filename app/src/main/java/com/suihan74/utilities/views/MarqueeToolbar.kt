@@ -37,10 +37,16 @@ class MarqueeToolbar : Toolbar {
     /** Viewが生成されたときに呼ばれる */
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
         super.onWindowFocusChanged(hasWindowFocus)
-        if (hasWindowFocus && !reflected) {
-            reflected = reflectTitle()
-            selectTitle()
+        if (hasWindowFocus) {
+            startMarquee()
         }
+    }
+
+    fun startMarquee() {
+        if (!reflected) {
+            reflected = reflectTitle()
+        }
+        selectTitle()
     }
 
     /** タイトル部分のTextViewを設定 */
@@ -63,6 +69,9 @@ class MarqueeToolbar : Toolbar {
 
     /** タイトル部分を選択 */
     private fun selectTitle() {
-        titleTextView?.isSelected = true
+        titleTextView?.let {
+            it.isSelected = true
+            it.requestFocus()
+        }
     }
 }

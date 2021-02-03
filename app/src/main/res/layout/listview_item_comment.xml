@@ -25,7 +25,6 @@
             android:textStyle="bold"
             android:singleLine="true"
             android:ellipsize="end"
-            android:textColor="?attr/textColor"
             android:textSize="12sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
@@ -40,7 +39,6 @@
             android:singleLine="true"
             android:paddingStart="4dp"
             android:paddingEnd="0dp"
-            android:textColor="?attr/textColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
@@ -50,7 +48,6 @@
             android:layout_alignStart="@id/user_name"
             android:layout_marginTop="1dp"
             android:textSize="12sp"
-            android:textColor="?attr/textColor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 

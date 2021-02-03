@@ -13,7 +13,7 @@ data class BookmarksEntry (
     val bookmarks : List<Bookmark>
 ) {
     // for Gson
-    private constructor() : this(0, "", 0, "", "", "", emptyList())
+    internal constructor() : this(0, "", 0, "", "", "", emptyList())
 
     /**
      * ブクマした全ユーザーが付けたタグをその数と共に集計して返す

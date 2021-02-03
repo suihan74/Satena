@@ -8,6 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.suihan74.satena.models.DialogThemeSetting
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.Theme
 import com.suihan74.utilities.SafeSharedPreferences
 
 /**
@@ -62,8 +63,10 @@ fun DialogFragment.themeWrappedContext(@StyleRes themeId: Int? = null) : Context
         )
 
         if (dialogThemeSetting == DialogThemeSetting.APP) {
-            if (prefs.getBoolean(PreferenceKey.DARK_THEME)) DialogThemeSetting.DARK.themeId
-            else DialogThemeSetting.LIGHT.themeId
+            when (prefs.getInt(PreferenceKey.THEME)) {
+                Theme.LIGHT.id -> DialogThemeSetting.LIGHT.themeId
+                else -> DialogThemeSetting.DARK.themeId
+            }
         }
         else dialogThemeSetting.themeId
     })

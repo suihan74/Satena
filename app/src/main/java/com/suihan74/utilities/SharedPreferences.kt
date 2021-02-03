@@ -166,7 +166,7 @@ class SafeSharedPreferences<KeyT> private constructor (
                             typeInfo<Float>() -> old.rawPrefs.getFloat(oldKey.name, oldKey.defaultValue as Float)
                             typeInfo<String>() -> old.rawPrefs.getString(oldKey.name, oldKey.defaultValue as String?)
                             else -> old.rawPrefs.getString(oldKey.name, "null") as Any
-                        } as? Any
+                        }
                         val latestKey = latestKeys.firstOrNull { it.name == oldKey.name }
 
                         if (latestKey != null && latestKey.valueType == oldKey.valueType) {

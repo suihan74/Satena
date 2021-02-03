@@ -8,7 +8,7 @@ import android.view.*
 import androidx.activity.addCallback
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.observe
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentTaggedUsersListBinding
@@ -63,12 +63,12 @@ class TaggedUsersListFragment : Fragment() {
             adapter = taggedUsersAdapter
         }
 
-        viewModel.currentTag.observe(viewLifecycleOwner) {
-            if (it == null) return@observe
+        viewModel.currentTag.observe(viewLifecycleOwner, Observer {
+            if (it == null) return@Observer
             binding.tagName.text = it.userTag.name
             binding.usersCount.text = String.format("%d users", it.users.size)
             taggedUsersAdapter.setItems(it.users)
-        }
+        })
 
         // 戻るボタンで閉じる
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {

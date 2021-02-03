@@ -51,7 +51,6 @@ fun Entry.saveHistory(context: Context) {
         }
     }
     catch (e: Throwable) {
-        // TODO: Entry.dateの追加によって例外が発生 。単に開発中に色々弄ったのが原因かわからないので、あとでバージョン移行テストをすること
         prefs.edit {
             put(EntriesHistoryKey.ENTRIES, emptyList<Entry>())
         }

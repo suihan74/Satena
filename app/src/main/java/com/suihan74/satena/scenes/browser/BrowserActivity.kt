@@ -20,7 +20,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityBrowserBinding
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.browser.bookmarks.BookmarksRepository
+import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.post.BookmarkPostRepository
 import com.suihan74.satena.scenes.post.BookmarkPostViewModel
@@ -35,7 +35,8 @@ import kotlinx.coroutines.launch
 
 class BrowserActivity :
     AppCompatActivity(),
-    BookmarkPostViewModelOwner
+    BookmarkPostViewModelOwner,
+    DrawerOwner
 {
     companion object {
         /** 最初に開くページのURL */
@@ -266,7 +267,7 @@ class BrowserActivity :
 
     /** ドロワを開く */
     @MainThread
-    fun openDrawer() {
+    override fun openDrawer() {
         lifecycleScope.launchWhenResumed {
             binding.drawerLayout.openDrawer(binding.drawerArea)
             viewModel.drawerOpened.value = true
@@ -279,7 +280,7 @@ class BrowserActivity :
      * BrowserActivityに依存するフラグメント側から閉じるために使用
      */
     @MainThread
-    fun closeDrawer() {
+    override fun closeDrawer() {
         lifecycleScope.launchWhenResumed {
             binding.drawerLayout.closeDrawer(binding.drawerArea)
             viewModel.drawerOpened.value = false

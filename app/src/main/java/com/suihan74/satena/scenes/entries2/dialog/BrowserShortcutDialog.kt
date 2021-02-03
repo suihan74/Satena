@@ -27,8 +27,8 @@ import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.exceptions.EmptyException
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.extensions.showToast
 import com.suihan74.utilities.lazyProvideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
 

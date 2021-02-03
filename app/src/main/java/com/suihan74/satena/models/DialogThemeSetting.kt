@@ -17,7 +17,10 @@ enum class DialogThemeSetting(
     LIGHT(1, R.string.pref_generals_dialog_theme_light),
 
     /** ダークテーマ */
-    DARK(2, R.string.pref_generals_dialog_theme_dark)
+    DARK(2, R.string.pref_generals_dialog_theme_dark),
+
+    /** 真っ黒 */
+    EX_DARK(3, R.string.pref_generals_theme_ex_dark)
     ;
 
     companion object {
@@ -27,8 +30,9 @@ enum class DialogThemeSetting(
 
     val themeId : Int
         get() = when(this) {
-            LIGHT -> R.style.AlertDialogStyle_Light
-            DARK -> R.style.AlertDialogStyle_Dark
+            LIGHT -> Theme.LIGHT.dialogFragmentStyleId
+            DARK -> Theme.DARK.dialogFragmentStyleId
+            EX_DARK -> Theme.EX_DARK.dialogFragmentStyleId
             APP -> 0
         }
 }
