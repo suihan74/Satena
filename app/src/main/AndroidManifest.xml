@@ -16,7 +16,6 @@
             android:theme="@style/AppTheme.Light"
             android:fullBackupContent="true"
             android:usesCleartextTraffic="true">  <!-- 暗号化されていないHTTP通信を許可 -->
-        <!-- android:theme="@style/Theme.AppCompat.Light.NoActionBar" -->
 
         <!-- Receivers -->
         <receiver android:name=".BrowserToolbarManager"/>
