@@ -653,7 +653,8 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getBookmarksEntryAsync(url: String) : Deferred<BookmarksEntry> = async {
         val apiUrl = "$B_BASE_URL/entry/jsonlite/?url=${Uri.encode(url)}&${cacheAvoidance()}"
-        return@async getJson<BookmarksEntry>(apiUrl, "uuuu/MM/dd HH:mm")
+        // ブクマが付いていないエントリを取得しようとするとcode=200でnullが返ってくる
+        return@async getJson<BookmarksEntry?>(apiUrl, "uuuu/MM/dd HH:mm") ?: BookmarksEntry()
     }
 
     fun getEmptyEntryAsync(url: String) : Deferred<Entry> = async {
@@ -897,7 +898,13 @@ object HatenaClient : BaseClient(), CoroutineScope {
             if (limit != null) append("&limit=$limit")
             if (cursor != null) append("&cursor=$cursor")
         }
-        return@async getJson<BookmarksWithCursor>(BookmarksWithCursor::class.java, apiUrl, withCookie = false)
+        return@async try {
+            getJson<BookmarksWithCursor>(BookmarksWithCursor::class.java, apiUrl, withCookie = false)
+        }
+        catch (e: NotFoundException) {
+            // まだブクマされていない場合
+            BookmarksWithCursor()
+        }
     }
 
     /**
@@ -908,7 +915,13 @@ object HatenaClient : BaseClient(), CoroutineScope {
             append("$B_BASE_URL/api/ipad.entry_reactions?${cacheAvoidance()}&url=${Uri.encode(url)}")
             if (limit != null) append("&limit=$limit")
         }
-        return@async getJson<BookmarksDigest>(apiUrl, withCookie = false)
+        return@async try {
+            getJson<BookmarksDigest>(apiUrl, withCookie = false)
+        }
+        catch (e: NotFoundException) {
+            // まだブクマされていない場合
+            BookmarksDigest()
+        }
     }
 
     /**

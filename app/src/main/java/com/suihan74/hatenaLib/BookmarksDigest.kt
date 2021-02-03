@@ -73,7 +73,9 @@ data class BookmarkWithStarCount (
 data class BookmarksWithCursor (
     val cursor: String?,
     val bookmarks: List<BookmarkWithStarCount>
-)
+) {
+    internal constructor() : this(null, emptyList())
+}
 
 /** 人気コメントを取得するためのレスポンス */
 data class BookmarksDigest (
@@ -82,5 +84,5 @@ data class BookmarksDigest (
     val favoriteBookmarks : List<BookmarkWithStarCount>
 ) {
     // for Gson
-    private constructor() : this(emptyList(), emptyList(), emptyList())
+    internal constructor() : this(emptyList(), emptyList(), emptyList())
 }

@@ -263,6 +263,7 @@ class BookmarksRepository(
             loadingIgnoresTasks.awaitAll()
             loadEntry(modifiedUrl)
 
+            var forbiddenException: ForbiddenException? = null
             val loadingContentsTasks = listOf(
                 // エントリにつけられたスター
                 async {
@@ -282,14 +283,28 @@ class BookmarksRepository(
                 },
                 // 人気ブクマ
                 async {
-                    loadPopularBookmarks()
+                    try {
+                        loadPopularBookmarks()
+                    }
+                    catch (e: ForbiddenException) {
+                        forbiddenException = e
+                    }
                 },
                 // 新着ブクマ
                 async {
-                    loadRecentBookmarks(additionalLoading = false)
+                    try {
+                        loadRecentBookmarks(additionalLoading = false)
+                    }
+                    catch (e: ForbiddenException) {
+                        forbiddenException = e
+                    }
                 }
             )
             loadingContentsTasks.awaitAll()
+
+            forbiddenException?.let {
+                throw it
+            }
         }
         catch (e: Throwable) {
             Log.e("BookmarksRepo", Log.getStackTraceString(e))
@@ -403,6 +418,7 @@ class BookmarksRepository(
             when (val e = it.cause) {
                 is CancellationException,
                 is ConnectionFailureException,
+                is ForbiddenException,
                 is NotFoundException ->
                     throw e
 
@@ -668,8 +684,8 @@ class BookmarksRepository(
      * 人気ブクマリストを取得する
      *
      * @throws ConnectionFailureException
+     * @throws ForbiddenException
      * @throws TimeoutException
-     * @throws NotFoundException
      */
     suspend fun loadPopularBookmarks() = withContext(Dispatchers.Default) {
         val result = runCatching {
@@ -688,7 +704,8 @@ class BookmarksRepository(
 
         result.onFailure {
             when (it) {
-                is TimeoutException, is NotFoundException ->
+                is TimeoutException,
+                is ForbiddenException ->
                     throw it
 
                 else ->
@@ -705,7 +722,7 @@ class BookmarksRepository(
      *
      * @throws ConnectionFailureException
      * @throws TimeoutException
-     * @throws NotFoundException
+     * @throws ForbiddenException
      */
     suspend fun loadRecentBookmarks(
         additionalLoading: Boolean = false
@@ -775,8 +792,8 @@ class BookmarksRepository(
      * 最新のブクマリストを(取得済みの位置まで)取得する
      *
      * @throws ConnectionFailureException
+     * @throws ForbiddenException
      * @throws TimeoutException
-     * @throws NotFoundException
      */
     private suspend fun loadMostRecentBookmarks(url: String) : BookmarksWithCursor {
         val bookmarks = ArrayList<BookmarkWithStarCount>()

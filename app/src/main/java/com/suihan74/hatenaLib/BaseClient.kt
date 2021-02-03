@@ -94,24 +94,20 @@ open class BaseClient {
             = send(T::class.java, request, GsonBuilder())
 
     private fun <T> responseTo(type: Type, response: Response, gsonBuilder: GsonBuilder) : T =
-        if (response.isSuccessful) {
-            val json = response.body!!.use { it.string() }
+        when (val code = response.code) {
+            200 -> {
+                val json = response.body!!.use { it.string() }
+                gsonBuilder
+                    .serializeNulls()
+                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                    .registerTypeAdapter(Boolean::class.java, BooleanDeserializer())
+                    .create()
+                    .fromJson(json, type)
+            }
 
-            gsonBuilder
-                .serializeNulls()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .registerTypeAdapter(Boolean::class.java, BooleanDeserializer())
-                .create()
-                .fromJson<T>(json, type)
-        }
-        else {
-            val code = response.code
-            if (code == 404) {
-                throw NotFoundException()
-            }
-            else {
-                throw RuntimeException("connection error: $code")
-            }
+            403 -> throw ForbiddenException()
+            404 -> throw NotFoundException()
+            else -> throw ConnectionFailureException("connection error: $code")
         }
 
     private fun <T> responseTo(
@@ -130,6 +126,7 @@ open class BaseClient {
     /**
      * @throws ConnectionFailureException
      * @throws NotFoundException
+     * @throws ForbiddenException
      * @throws TimeoutException
      */
     protected fun <T> getJson(
@@ -150,6 +147,9 @@ open class BaseClient {
         catch (e: NotFoundException) {
             throw NotFoundException("404 not found: $url", e)
         }
+        catch (e: ForbiddenException) {
+            throw e
+        }
         catch (e: Throwable) {
             throw ConnectionFailureException("${e.message ?: ""}: $url", e)
         }
@@ -158,6 +158,7 @@ open class BaseClient {
     /**
      * @throws ConnectionFailureException
      * @throws NotFoundException
+     * @throws ForbiddenException
      * @throws TimeoutException
      */
     protected inline fun <reified T> getJson(

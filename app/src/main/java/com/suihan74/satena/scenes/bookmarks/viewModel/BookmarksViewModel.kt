@@ -49,15 +49,22 @@ class BookmarksViewModel(
         repository.bookmarksEntry.also { bEntry ->
             bEntry.observeForever {
                 val bookmarks = it?.bookmarks ?: return@observeForever
-                val users = bookmarks.size
+                val users =
+                    bookmarks.size.let { listSize ->
+                        if (it.count > listSize && listSize == 0) it.count
+                        else listSize
+                    }
+
                 val comments = bookmarks.count { b -> b.comment.isNotBlank() }
                 subtitle.value = buildString {
                     append(users, " user")
                     if (users != 1) append("s")
 
-                    append(" (", comments, " comment")
-                    if (comments != 1) append("s")
-                    append(")")
+                    if (comments > 0) {
+                        append(" (", comments, " comment")
+                        if (comments != 1) append("s")
+                        append(")")
+                    }
                 }
             }
         }
@@ -138,10 +145,11 @@ class BookmarksViewModel(
     private fun showLoadingErrorMessage(context: Context, e: Throwable) {
         val msgId = when (e) {
             is CancellationException -> return
-            is NotFoundException -> R.string.msg_bookmark_comments_are_hidden
+            is ForbiddenException -> R.string.msg_bookmark_comments_are_hidden
             is IllegalArgumentException -> R.string.invalid_url_error
             else -> R.string.msg_update_bookmarks_failed
         }
+        Log.w("loadingBookmarksFailure", e.stackTraceToString())
         context.showToast(msgId, ErrorToastTag.LOAD_BOOKMARKS_FAILURE)
     }
 
