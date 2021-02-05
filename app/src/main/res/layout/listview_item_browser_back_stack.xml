@@ -6,13 +6,16 @@
                 name="vm"
                 type="com.suihan74.satena.scenes.browser.BrowserViewModel" />
         <variable
+                name="index"
+                type="int" />
+        <variable
                 name="item"
-                type="com.suihan74.satena.models.browser.HistoryPage" />
+                type="android.webkit.WebHistoryItem" />
     </data>
 
     <LinearLayout
-            currentUrl="@{vm.url}"
-            itemUrl="@{item.url}"
+            list="@{vm.backForwardList}"
+            itemIdx="@{index}"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -29,7 +32,7 @@
 
             <ImageView
                     android:id="@+id/favicon"
-                    src="@{item.faviconUrl}"
+                    src="@{item.favicon}"
                     android:contentDescription="@null"
                     android:layout_marginTop="2dp"
                     android:layout_marginEnd="6dp"

@@ -4,13 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebBackForwardList
+import android.webkit.WebHistoryItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.suihan74.satena.databinding.FragmentDialogBrowserBackstackBinding
-import com.suihan74.satena.models.browser.HistoryPage
 import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.lazyProvideViewModel
 
@@ -28,7 +29,7 @@ class BackStackDialog : BottomSheetDialogFragment() {
         get() = browserActivity.viewModel
 
     private val viewModel by lazyProvideViewModel {
-        DialogViewModel(browserViewModel.backStack)
+        DialogViewModel(browserViewModel.backForwardList)
     }
 
     // ------ //
@@ -67,21 +68,21 @@ class BackStackDialog : BottomSheetDialogFragment() {
 
     // ------ //
 
-    fun setOnClickItemListener(l : DialogListener<HistoryPage>?) = lifecycleScope.launchWhenCreated {
+    fun setOnClickItemListener(l : DialogListener<WebHistoryItem>?) = lifecycleScope.launchWhenCreated {
         viewModel.onClickItem = l
     }
 
-    fun setOnLongClickItemListener(l : DialogListener<HistoryPage>?) = lifecycleScope.launchWhenCreated {
+    fun setOnLongClickItemListener(l : DialogListener<WebHistoryItem>?) = lifecycleScope.launchWhenCreated {
         viewModel.onLongClickItem = l
     }
 
     // ------ //
 
     class DialogViewModel(
-        val items: LiveData<List<HistoryPage>>
+        val items: LiveData<WebBackForwardList>
     ) : ViewModel() {
-        var onClickItem : DialogListener<HistoryPage>? = null
+        var onClickItem : DialogListener<WebHistoryItem>? = null
 
-        var onLongClickItem : DialogListener<HistoryPage>? = null
+        var onLongClickItem : DialogListener<WebHistoryItem>? = null
     }
 }

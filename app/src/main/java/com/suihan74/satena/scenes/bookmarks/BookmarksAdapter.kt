@@ -30,9 +30,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import org.threeten.bp.format.DateTimeFormatter
 
-class BookmarksAdapter(
-    cache: List<RecyclerState<Entity>>? = null
-) : ListAdapter<RecyclerState<Entity>, RecyclerView.ViewHolder>(Entity.DiffCallback()) {
+class BookmarksAdapter : ListAdapter<RecyclerState<Entity>, RecyclerView.ViewHolder>(Entity.DiffCallback()) {
 
     /** 表示項目リスト */
     private var loadableFooter: LoadableFooterViewHolder? = null
@@ -128,14 +126,6 @@ class BookmarksAdapter(
      */
     fun getPosition(bookmark: Bookmark) =
         currentList.indexOfFirst { it.body?.bookmark?.user == bookmark.user }
-
-    init {
-        // キャッシュが存在する場合、その内容を引き継ぐ
-        // 画面回転のたびにリストが再生成されるのを防ぐために行っている
-        if (!cache.isNullOrEmpty()) {
-            submitList(cache)
-        }
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         LayoutInflater.from(parent.context).let { inflater ->

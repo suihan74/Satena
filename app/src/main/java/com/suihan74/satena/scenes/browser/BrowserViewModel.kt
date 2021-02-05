@@ -23,7 +23,6 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.getEntryRootUrl
 import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.satena.models.browser.HistoryPage
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
@@ -40,7 +39,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.threeten.bp.LocalDateTime
 import java.io.File
 import kotlin.math.absoluteValue
 
@@ -106,8 +104,8 @@ class BrowserViewModel(
     val addressText = SingleUpdateMutableLiveData("")
 
     /** 「戻る/進む」の履歴 */
-    val backStack : LiveData<List<HistoryPage>> by lazy { _backStack }
-    private val _backStack = MutableLiveData<List<HistoryPage>>()
+    val backForwardList : LiveData<WebBackForwardList> by lazy { _backForwardList }
+    private val _backForwardList = MutableLiveData<WebBackForwardList>()
 
     /** 「戻る/進む」履歴項目でマーキーを使用する */
     val useMarqueeOnBackStackItems : LiveData<Boolean> =
@@ -754,7 +752,8 @@ class BrowserViewModel(
         }
 
         // 「戻る/進む」履歴に追加する
-        updateBackStack(url, title, faviconUrl)
+        _backForwardList.value = view!!.copyBackForwardList()
+        //updateBackStack(url, title, faviconUrl)
 
         runCatching {
             onPageFinishedListener?.invoke(url)
@@ -766,23 +765,6 @@ class BrowserViewModel(
     /** リソースを追加 */
     fun addResource(url: String, blocked: Boolean) = viewModelScope.launch(Dispatchers.IO) {
         browserRepo.resourceUrls.addUnique(ResourceUrl(url, blocked))
-    }
-
-    /** 「戻る/進む」履歴を更新する */
-    private fun updateBackStack(url: String, title: String, faviconUrl: String) {
-        val histories = _backStack.value.orEmpty()
-        if (histories.any { it.url == url }) return
-
-        val previousPagePosition = histories.indexOfFirst { it.url == previousUrl }
-        val poppedHistories =
-            if (previousPagePosition >= 0 && previousPagePosition + 1 < histories.size) {
-                histories.take(previousPagePosition + 1)
-            }
-            else histories
-
-        _backStack.value = poppedHistories.plus(
-            HistoryPage(url, title, faviconUrl, LocalDateTime.now())
-        )
     }
 
     // ------ //
@@ -874,11 +856,10 @@ class BrowserViewModel(
         dialog.showAllowingStateLoss(fragmentManager)
     }
 
-    private fun goBackOrForward(webView: WebView, target: HistoryPage) {
-        val items = backStack.value ?: return
-        val currentUrl = url.value ?: return
-        val targetIdx = items.indexOf(target)
-        val currentIdx = items.indexOfFirst { it.url == currentUrl }
+    private fun goBackOrForward(webView: WebView, target: WebHistoryItem) {
+        val items = backForwardList.value ?: return
+        val targetIdx = (0 until items.size).firstOrNull { items.getItemAtIndex(it) == target } ?: return
+        val currentIdx = items.currentIndex
         val steps = targetIdx - currentIdx
         if (webView.canGoBackOrForward(steps)) {
             webView.goBackOrForward(steps)
@@ -904,7 +885,7 @@ class BrowserViewModel(
     }
 
     /** 「戻る/進む」履歴項目のメニューダイアログを開く */
-    private fun openBackStackItemMenuDialog(page: HistoryPage, fragmentManager: FragmentManager) {
+    private fun openBackStackItemMenuDialog(page: WebHistoryItem, fragmentManager: FragmentManager) {
         val dialog = BackStackItemMenuDialog.createInstance(page)
         dialog.setOnOpenListener { item, f ->
             runCatching {
