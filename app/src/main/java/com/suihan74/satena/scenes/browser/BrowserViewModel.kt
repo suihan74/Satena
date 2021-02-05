@@ -874,13 +874,26 @@ class BrowserViewModel(
         dialog.showAllowingStateLoss(fragmentManager)
     }
 
+    private fun goBackOrForward(webView: WebView, target: HistoryPage) {
+        val items = backStack.value ?: return
+        val currentUrl = url.value ?: return
+        val targetIdx = items.indexOf(target)
+        val currentIdx = items.indexOfFirst { it.url == currentUrl }
+        val steps = targetIdx - currentIdx
+        if (webView.canGoBackOrForward(steps)) {
+            webView.goBackOrForward(steps)
+        }
+    }
+
     /** 「戻る/進む」ダイアログを開く */
     fun openBackStackDialog(fragmentManager: FragmentManager) {
         val dialog = BackStackDialog.createInstance()
 
         dialog.setOnClickItemListener { item, f ->
             f.dismiss()
-            goAddress(item.url)
+            f.activity?.alsoAs<BrowserActivity> { activity ->
+                goBackOrForward(activity.webView, item)
+            }
         }
 
         dialog.setOnLongClickItemListener { item, f ->
@@ -900,7 +913,9 @@ class BrowserViewModel(
                     it.dismiss()
                 }
             }
-            goAddress(item.url)
+            f.activity?.alsoAs<BrowserActivity> { activity ->
+                goBackOrForward(activity.webView, item)
+            }
         }
 
         dialog.setOnOpenBookmarksListener { item, f ->
