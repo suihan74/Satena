@@ -159,7 +159,7 @@
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
-        <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundDark</item>
+        <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundExDark</item>
     </style>
 
     <!-- ========= -->
@@ -344,5 +344,7 @@
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="bottomSheetStyle">@style/BottomSheet.ExDark</item>
+        <!-- クリック時背景アニメーション色 -->
+        <item name="colorControlHighlight">@color/ripple_material_ex_dark</item>
     </style>
 </resources>

@@ -204,16 +204,6 @@
         <item name="android:textColor">@color/starPurple</item>
     </style>
 
-    <!-- ボトムシート(View)の角を丸める -->
-    <style name="ShapeAppearanceOverlay.RoundedCorner">
-        <item name="cornerFamilyTopLeft">rounded</item>
-        <item name="cornerFamilyTopRight">rounded</item>
-        <item name="cornerSizeTopLeft">12dp</item>
-        <item name="cornerSizeTopRight">12dp</item>
-        <item name="cornerSizeBottomLeft">0dp</item>
-        <item name="cornerSizeBottomRight">0dp</item>
-    </style>
-
     <style name="BottomSheet" parent="Widget.Design.BottomSheet.Modal"/>
     <style name="BottomSheet.Light">
         <item name="android:background">@drawable/shape_bottom_sheet_rounded_corner</item>
