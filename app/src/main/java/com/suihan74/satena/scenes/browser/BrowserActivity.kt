@@ -12,7 +12,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -111,7 +110,7 @@ class BrowserActivity :
         initializeDrawer()
 
         // ボトムシートの設定
-        initializeBottomSheet()
+        //initializeBottomSheet()
 
         // WebViewの設定
         viewModel.initializeWebView(binding.webview, this)
@@ -141,11 +140,6 @@ class BrowserActivity :
                 onBackPressedDispatcher.onBackPressed()
             }
 
-            bottomSheetOpened -> {
-                // ボトムシートを閉じる
-                closeBottomSheet()
-            }
-
             drawerOpened -> {
                 // ドロワを閉じる
                 closeDrawer()
@@ -165,7 +159,8 @@ class BrowserActivity :
     override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
-                switchBottomSheetState()
+//                switchBottomSheetState()
+                viewModel.openBackStackDialog(supportFragmentManager)
                 true
             }
             else -> super.onKeyLongPress(keyCode, event)
@@ -215,46 +210,6 @@ class BrowserActivity :
         super.onActivityResult(requestCode, resultCode, data)
         viewModel.onActivityResult(this, requestCode, resultCode, data)
     }
-
-    // ------ //
-
-    /** ボトムシートの表示状態を切り替える */
-    @MainThread
-    fun switchBottomSheetState() {
-        if (bottomSheetOpened) {
-            closeBottomSheet()
-        }
-        else {
-            openBottomSheet()
-        }
-    }
-
-    /** ボトムシートを開く */
-    @MainThread
-    fun openBottomSheet() {
-        if (viewModel.drawerOpened.value != true) {
-            val behavior = BottomSheetBehavior.from(binding.bottomSheetLayout)
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            viewModel.bottomSheetOpened.value = true
-        }
-    }
-
-    /** ボトムシートを閉じる */
-    @MainThread
-    fun closeBottomSheet() {
-        val behavior = BottomSheetBehavior.from(binding.bottomSheetLayout)
-        behavior.state = BottomSheetBehavior.STATE_HIDDEN
-        viewModel.bottomSheetOpened.value = false
-    }
-
-    /** ボトムシートが開かれているか */
-    val bottomSheetOpened : Boolean
-        get() = when (BottomSheetBehavior.from(binding.bottomSheetLayout).state) {
-            BottomSheetBehavior.STATE_COLLAPSED,
-            BottomSheetBehavior.STATE_HIDDEN -> false
-
-            else -> true
-        }
 
     // ------ //
 
@@ -380,64 +335,6 @@ class BrowserActivity :
             if (it) openDrawer()
             else closeDrawer()
         })
-    }
-
-    /**
-     * ボトムシートを設定する
-     */
-    @SuppressLint("ClickableViewAccessibility")
-    @MainThread
-    fun initializeBottomSheet() {
-        // 「戻る/進む」履歴を表示する
-        binding.bottomSheetBackStack.adapter = BackStackAdapter(viewModel, this).also { adapter ->
-            adapter.setOnClickItemListener { binding ->
-                val url = binding.item?.url ?: return@setOnClickItemListener
-                viewModel.goAddress(url)
-            }
-
-            adapter.setOnLongLickItemListener { binding ->
-                val item = binding.item ?: return@setOnLongLickItemListener
-                viewModel.openBackStackItemMenuDialog(this, item, supportFragmentManager)
-            }
-        }
-
-        val behavior = BottomSheetBehavior.from(binding.bottomSheetLayout)
-
-        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-            }
-
-            // ボトムシート表示状態ではドロワを表示できないようにする
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                val drawerLayout = binding.drawerLayout
-
-                when (newState) {
-                    BottomSheetBehavior.STATE_COLLAPSED,
-                    BottomSheetBehavior.STATE_HIDDEN -> {
-                        viewModel.bottomSheetOpened.value = false
-                        closeBottomSheet()
-                        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-                    }
-
-                    else -> {
-                        viewModel.bottomSheetOpened.value = true
-                        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-                    }
-                }
-            }
-        })
-
-        viewModel.bottomSheetOpened.observe(this, {
-            if (it) openBottomSheet()
-            else closeBottomSheet()
-        })
-
-        // クリック防止ビュー
-        binding.bottomSheetClickGuard.setOnTouchListener { _, motionEvent ->
-            if (motionEvent.action != MotionEvent.ACTION_UP) return@setOnTouchListener false
-            closeBottomSheet()
-            return@setOnTouchListener true
-        }
     }
 
     /**

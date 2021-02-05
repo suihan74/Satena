@@ -106,7 +106,7 @@ class BrowserViewModel(
     val addressText = SingleUpdateMutableLiveData("")
 
     /** 「戻る/進む」の履歴 */
-    val backStack by lazy { _backStack }
+    val backStack : LiveData<List<HistoryPage>> by lazy { _backStack }
     private val _backStack = MutableLiveData<List<HistoryPage>>()
 
     /** 「戻る/進む」履歴項目でマーキーを使用する */
@@ -138,9 +138,6 @@ class BrowserViewModel(
 
     /** ドロワの開閉状態 */
     val drawerOpened = SingleUpdateMutableLiveData<Boolean>()
-
-    /** ボトムシートの開閉状態 */
-    val bottomSheetOpened = SingleUpdateMutableLiveData<Boolean>()
 
     // ------ //
 
@@ -518,7 +515,7 @@ class BrowserViewModel(
     @MainThread
     fun onOptionsItemSelected(item: MenuItem, activity: BrowserActivity): Boolean = when (item.itemId) {
         R.id.back_stack -> {
-            bottomSheetOpened.value = true
+            openBackStackDialog(activity.supportFragmentManager)
             true
         }
 
@@ -716,7 +713,6 @@ class BrowserViewModel(
         }
 
         drawerOpened.value = false
-        bottomSheetOpened.value = false
 
         when {
             // アドレスが渡されたら直接遷移する
@@ -878,31 +874,50 @@ class BrowserViewModel(
         dialog.showAllowingStateLoss(fragmentManager)
     }
 
+    /** 「戻る/進む」ダイアログを開く */
+    fun openBackStackDialog(fragmentManager: FragmentManager) {
+        val dialog = BackStackDialog.createInstance()
+
+        dialog.setOnClickItemListener { item, f ->
+            f.dismiss()
+            goAddress(item.url)
+        }
+
+        dialog.setOnLongClickItemListener { item, f ->
+            openBackStackItemMenuDialog(item, f.parentFragmentManager)
+        }
+
+        dialog.show(fragmentManager, "BackStackDialog")
+    }
+
     /** 「戻る/進む」履歴項目のメニューダイアログを開く */
-    fun openBackStackItemMenuDialog(
-        activity: BrowserActivity,
-        page: HistoryPage,
-        fragmentManager: FragmentManager
-    ) {
+    private fun openBackStackItemMenuDialog(page: HistoryPage, fragmentManager: FragmentManager) {
         val dialog = BackStackItemMenuDialog.createInstance(page)
-        dialog.setOnOpenListener {
-            goAddress(page.url)
-        }
-
-        dialog.setOnOpenBookmarksListener {
-            val intent = Intent(activity, BookmarksActivity::class.java).also {
-                it.putExtra(BookmarksActivity.EXTRA_ENTRY_URL, page.url)
+        dialog.setOnOpenListener { item, f ->
+            runCatching {
+                val backStackDialog = f.parentFragmentManager.findFragmentByTag("BackStackDialog")
+                backStackDialog.alsoAs<BackStackDialog> {
+                    it.dismiss()
+                }
             }
-            activity.startActivity(intent)
+            goAddress(item.url)
         }
 
-        dialog.setOnOpenEntriesListener {
+        dialog.setOnOpenBookmarksListener { item, f ->
+            val intent = Intent(f.activity, BookmarksActivity::class.java).also {
+                it.putExtra(BookmarksActivity.EXTRA_ENTRY_URL, item.url)
+            }
+            f.activity?.startActivity(intent)
+        }
+
+        dialog.setOnOpenEntriesListener { item, f ->
+            val activity = f.activity
             viewModelScope.launch(Dispatchers.Main) {
                 val intent = Intent(activity, EntriesActivity::class.java).also {
-                    val rootUrl = getEntryRootUrl(page.url)
+                    val rootUrl = getEntryRootUrl(item.url)
                     it.putExtra(EntriesActivity.EXTRA_SITE_URL, rootUrl)
                 }
-                activity.startActivity(intent)
+                activity?.startActivity(intent)
             }
         }
 

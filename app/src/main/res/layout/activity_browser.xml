@@ -86,45 +86,6 @@
 
             </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-            <androidx.coordinatorlayout.widget.CoordinatorLayout
-                    android:elevation="24dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                <View
-                        android:id="@+id/bottom_sheet_click_guard"
-                        android:visibility="@{vm.bottomSheetOpened}"
-                        android:background="@color/clickGuard"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
-
-                <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/bottom_sheet_layout"
-                        android:background="?panelBackground"
-                        app:behavior_peekHeight="0dp"
-                        app:behavior_hideable="true"
-                        app:behavior_fitToContents="true"
-                        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.RoundedCorner"
-                        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/bottom_sheet_back_stack"
-                            style="@style/RecyclerView.Linear"
-                            divider="@{@drawable/recycler_view_item_divider}"
-                            backStack="@{vm.backStack}"
-                            android:layout_marginTop="16dp"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
-
-                </com.google.android.material.card.MaterialCardView>
-
-            </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <RelativeLayout
