@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.splash
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.ViewModel
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.utilities.AccountLoader
@@ -34,6 +35,7 @@ class ViewModel(
             ActivityCompat.startActivity(activity, intent, optionsCompat.toBundle())
         }
         catch (e: Throwable) {
+            FirebaseCrashlytics.getInstance().recordException(e)
             activity.startActivity(intent)
         }
     }
