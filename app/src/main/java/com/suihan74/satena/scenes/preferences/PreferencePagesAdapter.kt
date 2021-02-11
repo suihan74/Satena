@@ -32,7 +32,7 @@ enum class PreferencesTabMode(
     GENERALS(3,
         R.string.pref_title_generals,
         R.id.preferences_tab_generals,
-        { PreferencesGeneralsFragment.createInstance() }),
+        { GeneralsFragment.createInstance() }),
 
     ENTRIES(4,
         R.string.pref_title_entries,

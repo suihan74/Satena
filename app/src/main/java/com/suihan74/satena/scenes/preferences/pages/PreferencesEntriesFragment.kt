@@ -52,7 +52,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
             lifecycleOwner = viewLifecycleOwner
         }
 
-        val tapActions = TapEntryAction.values().map { it.titleId }
+        val tapActions = TapEntryAction.values().map { it.textId }
 
         // ボトムバーメニュー項目を編集するダイアログを表示する
         binding.bottomBarItemSetter.setOnMenuItemClickListener { args ->

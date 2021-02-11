@@ -99,7 +99,7 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
                 .setTitle(descId)
                 .setNegativeButton(R.string.dialog_cancel)
                 .setSingleChoiceItems(
-                    TapEntryAction.values().map { it.titleId },
+                    TapEntryAction.values().map { it.textId },
                     selectedActionLiveData.value!!.ordinal
                 ) { _, which ->
                     when (tag) {

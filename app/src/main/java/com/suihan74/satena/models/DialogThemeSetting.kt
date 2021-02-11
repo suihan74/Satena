@@ -8,8 +8,8 @@ import com.suihan74.satena.R
  */
 enum class DialogThemeSetting(
     val id: Int,
-    @StringRes val titleId: Int
-) {
+    @StringRes override val textId: Int
+) : TextIdContainer {
     /** アプリにあわせる */
     APP(0, R.string.pref_generals_dialog_theme_app),
 

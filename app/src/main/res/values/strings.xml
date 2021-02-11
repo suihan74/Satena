@@ -11,6 +11,9 @@
     <string name="drawer_open">開く</string>
     <string name="drawer_close">閉じる</string>
 
+    <string name="on">ON</string>
+    <string name="off">OFF</string>
+
     <string name="confirm_dialog_title_simple">確認</string>
 
     <string name="app_termination_dialog_msg">アプリを終了しますか？</string>
@@ -177,6 +180,16 @@
     <string name="pref_information_developer_twitter">Twitter</string>
     <string name="pref_information_hatena_rules">はてな利用規約</string>
     <string name="pref_information_privacy_policy">プライバシーポリシー</string>
+
+    <!-- generals 2 -->
+    <string name="pref_item_current_value_prefix">現在値:</string>
+
+    <string name="pref_generals_section_theme">テーマ</string>
+    <string name="pref_generals_section_notices">通知</string>
+    <string name="pref_generals_section_update">アップデート通知</string>
+    <string name="pref_generals_section_dialogs">ダイアログ</string>
+    <string name="pref_generals_section_backup">バックアップ</string>
+
     <!-- accounts -->
     <string name="pref_accounts_service_name_hatena">Hatena</string>
     <string name="pref_accounts_service_name_mastodon">Mastodon</string>

@@ -45,7 +45,7 @@
             <Button
                     android:id="@+id/dialog_theme_button"
                     style="?buttonStyle"
-                    android:text="@{vm.dialogTheme.titleId}"
+                    android:text="@{vm.dialogTheme.textId}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 

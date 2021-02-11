@@ -6,8 +6,10 @@
                 type="Integer" />
     </data>
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
             android:background="@android:color/transparent"
             android:paddingTop="12dp"
             android:paddingHorizontal="@dimen/pref_list_horizontal_padding"
@@ -15,11 +17,29 @@
             android:layout_height="wrap_content">
 
         <TextView
+                android:id="@+id/text"
                 android:text="@{textId}"
+                tools:text="@string/pref_information_section_info"
                 android:textSize="16sp"
                 android:textColor="?colorPrimary"
-                android:layout_width="match_parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/border"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
-    </FrameLayout>
+        <View
+                android:id="@+id/border"
+                android:background="?colorPrimary"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/text"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginStart="@dimen/pref_list_horizontal_padding"
+                android:layout_width="0dp"
+                android:layout_height="1dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
