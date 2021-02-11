@@ -72,7 +72,12 @@ class InformationFragment : Fragment() {
             })
             add(PreferencesAdapter.Button(R.string.pref_information_developer_email) {
                 runCatching {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.developer_email)))
+                    val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")).also {
+                        it.putExtra(
+                            Intent.EXTRA_EMAIL,
+                            arrayOf(getString(R.string.developer_email))
+                        )
+                    }
                     startActivity(intent)
                 }
             })
