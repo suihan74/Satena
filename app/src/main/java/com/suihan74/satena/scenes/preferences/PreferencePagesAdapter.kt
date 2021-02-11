@@ -22,7 +22,7 @@ enum class PreferencesTabMode(
     INFORMATION(1,
         R.string.pref_title_information,
         R.id.preferences_tab_information,
-        { InformationFragment.createInstance() }),
+        { ListPreferencesFragment.createInstance { c -> InformationViewModel(c) } }),
 
     ACCOUNT(2,
         R.string.pref_title_account,
@@ -32,7 +32,7 @@ enum class PreferencesTabMode(
     GENERALS(3,
         R.string.pref_title_generals,
         R.id.preferences_tab_generals,
-        { GeneralsFragment.createInstance() }),
+        { ListPreferencesFragment.createInstance { c -> GeneralViewModel(c) } }),
 
     ENTRIES(4,
         R.string.pref_title_entries,

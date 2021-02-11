@@ -70,6 +70,7 @@ class PreferencesAdapter(
     open class Button(
         @StringRes val textId: Int,
         @StringRes val subTextId: Int? = null,
+        var onLongClick : (()->Unit)? = null,
         var onClick : (()->Unit)? = null
     ) : Item {
         override val layoutId : Int = R.layout.listview_item_general_button
@@ -79,6 +80,9 @@ class PreferencesAdapter(
                 it.subTextId = subTextId
                 it.root.setOnClickListener {
                     onClick?.invoke()
+                }
+                it.root.setOnLongClickListener {
+                    onLongClick?.invoke() != null
                 }
             }
         }
@@ -131,7 +135,9 @@ open class PreferenceItem<T>(
 class PreferenceToggleItem(
     liveData: MutableLiveData<Boolean>,
     @StringRes private val titleId: Int,
-) : PreferenceItem<Boolean>(liveData, titleId, { liveData.value = liveData.value != true })
+) : PreferenceItem<Boolean>(liveData, titleId, null, {
+    liveData.value = liveData.value != true
+})
 
 // ------ //
 
@@ -143,7 +149,17 @@ fun MutableList<PreferencesAdapter.Item>.addSection(
 ) = add(PreferencesAdapter.Section(textId))
 
 /**
- * 単クリックでアクションが発生する設定項目を追加する
+ * ボタン(非設定項目)を追加する
+ */
+fun MutableList<PreferencesAdapter.Item>.addButton(
+    @StringRes textId: Int,
+    @StringRes subTextId: Int? = null,
+    onLongClick: (() -> Unit)? = null,
+    onClick: (() -> Unit)? = null
+) = add(PreferencesAdapter.Button(textId, subTextId, onLongClick, onClick))
+
+/**
+ * 設定項目を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addPrefItem(
     liveData: LiveData<*>,
@@ -171,7 +187,7 @@ object PrefsTextViewBindingAdapters {
     fun bindPref(textView: TextView, liveData: LiveData<*>?) {
         val context = textView.context
         textView.text = when (val value = liveData?.value) {
-            is Long -> value.toString()
+            is Number -> value.toString()
 
             is Boolean ->
                 context.getString(

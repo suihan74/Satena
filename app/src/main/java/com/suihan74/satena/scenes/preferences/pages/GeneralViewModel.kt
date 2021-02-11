@@ -15,18 +15,20 @@ import com.suihan74.satena.models.AppUpdateNoticeMode
 import com.suihan74.satena.models.DialogThemeSetting
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
-import com.suihan74.satena.scenes.preferences.*
-import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.satena.scenes.preferences.PreferencesAdapter
+import com.suihan74.satena.scenes.preferences.addPrefItem
+import com.suihan74.satena.scenes.preferences.addPrefToggleItem
+import com.suihan74.satena.scenes.preferences.addSection
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class GeneralsViewModel(
-    context: Context
-) : PreferencesViewModel<PreferenceKey>(SafeSharedPreferences.create(context)) {
-
+/**
+ * 「基本」画面
+ */
+class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     /** アプリのテーマ */
     val theme = createLiveDataEnum(
         PreferenceKey.THEME,
@@ -100,7 +102,7 @@ class GeneralsViewModel(
     // ------ //
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun createItems(fragmentManager: FragmentManager) = buildList {
+    override fun createList(fragmentManager: FragmentManager) = buildList {
         addSection(R.string.pref_generals_section_theme)
         addPrefItem(theme, R.string.pref_generals_theme_desc) { openAppThemeSelectionDialog(fragmentManager) }
         addPrefItem(dialogTheme, R.string.pref_generals_dialog_theme_desc) { openDialogThemeSelectionDialog(fragmentManager) }
