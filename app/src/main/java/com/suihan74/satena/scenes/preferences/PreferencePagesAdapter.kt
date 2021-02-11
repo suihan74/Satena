@@ -22,7 +22,7 @@ enum class PreferencesTabMode(
     INFORMATION(1,
         R.string.pref_title_information,
         R.id.preferences_tab_information,
-        { PreferencesInformationFragment.createInstance() }),
+        { InformationFragment.createInstance() }),
 
     ACCOUNT(2,
         R.string.pref_title_account,

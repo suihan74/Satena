@@ -1,6 +1,12 @@
 <resources>
     <string name="app_name">Satena</string>
-    <string name="copyright">Copyright \u00A9 %s &lt;a href=&quot;https://suihan74.github.io&quot;&gt;suihan&lt;/a&gt;</string>
+    <string name="copyright">Copyright \u00A9 %s suihan</string>
+    <string name="developer">すいはん</string>
+    <string name="developer_website">https://suihan74.github.io/</string>
+    <string name="developer_email">suihan742@gmail.com</string>
+    <string name="developer_twitter">https://twitter.com/suihan742</string>
+    <string name="developer_twitter_id">\@suihan742</string>
+    <string name="privacy_policy">https://suihan74.github.io/privacy_satena/</string>
 
     <string name="drawer_open">開く</string>
     <string name="drawer_close">閉じる</string>
@@ -161,6 +167,16 @@
     <string name="msg_pref_information_load_succeeded">設定を%sから読み込みました</string>
     <string name="msg_pref_information_load_failed">設定の読み込みに失敗しました</string>
     <string name="msg_loading_release_notes_failed">更新履歴の読み込み失敗</string>
+    <!-- information 2 -->
+    <string name="pref_information_section_app">アプリ情報</string>
+    <string name="pref_information_section_developer">開発者</string>
+    <string name="pref_information_section_info">情報</string>
+
+    <string name="pref_information_developer_website">Webサイト</string>
+    <string name="pref_information_developer_email">メール</string>
+    <string name="pref_information_developer_twitter">Twitter</string>
+    <string name="pref_information_hatena_rules">はてな利用規約</string>
+    <string name="pref_information_privacy_policy">プライバシーポリシー</string>
     <!-- accounts -->
     <string name="pref_accounts_service_name_hatena">Hatena</string>
     <string name="pref_accounts_service_name_mastodon">Mastodon</string>
