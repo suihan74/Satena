@@ -12,6 +12,7 @@ import androidx.core.content.pm.PackageInfoCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.work.*
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.*
@@ -19,8 +20,8 @@ import com.suihan74.satena.notices.NotificationWorker
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.extensions.checkRunningByTag
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.checkRunningByTag
 import com.suihan74.utilities.extensions.whenFalse
 import com.suihan74.utilities.extensions.whenTrue
 import kotlinx.coroutines.GlobalScope
@@ -124,6 +125,12 @@ class SatenaApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // デバッグビルドでクラッシュレポートを送信しない
+        FirebaseCrashlytics.getInstance()
+            .setCrashlyticsCollectionEnabled(
+                BuildConfig.DEBUG.not()
+            )
 
         instance = this
 

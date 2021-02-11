@@ -40,11 +40,6 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        debug {
-            firebaseCrashlytics {
-                mappingFileUploadEnabled false
-            }
-        }
     }
 
     compileOptions {
