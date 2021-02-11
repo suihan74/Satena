@@ -1,0 +1,242 @@
+package com.suihan74.satena.scenes.preferences.pages
+
+import android.content.Context
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.viewModelScope
+import com.suihan74.satena.R
+import com.suihan74.satena.models.*
+import com.suihan74.satena.scenes.entries2.CategoriesMode
+import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
+import com.suihan74.satena.scenes.entries2.UserBottomItem
+import com.suihan74.satena.scenes.preferences.addPrefItem
+import com.suihan74.satena.scenes.preferences.addPrefToggleItem
+import com.suihan74.satena.scenes.preferences.addSection
+import com.suihan74.satena.scenes.preferences.bottomBar.BottomBarItemSelectionDialog
+import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.showAllowingStateLoss
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
+
+    private val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
+
+    /** レイアウトモード */
+    val bottomLayoutMode = createLiveData<Boolean>(
+        PreferenceKey.ENTRIES_BOTTOM_LAYOUT_MODE
+    )
+
+    /** 下部レイアウトをスクロールで隠す */
+    val hideBottomLayoutByScroll = createLiveData<Boolean>(
+        PreferenceKey.ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING
+    )
+
+    /** 下部バーに表示するボタン */
+    val bottomBarButtons = createLiveData<List<UserBottomItem>>(
+        PreferenceKey.ENTRIES_BOTTOM_ITEMS
+    )
+
+    /** 下部バーの項目を右詰めで表示するか左詰めで表示するか */
+    val bottomBarButtonsGravity = createLiveData<Int>(
+        PreferenceKey.ENTRIES_BOTTOM_ITEMS_GRAVITY
+    )
+
+    /** 下部バーの追加項目の配置方法 */
+    val extraBottomItemsAlignment = createLiveDataEnum(
+        PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT,
+        { it.id },
+        { ExtraBottomItemsAlignment.fromId(it) }
+    )
+
+    /** エントリ項目シングルタップの挙動 */
+    val singleTapAction = createLiveDataEnum(
+        PreferenceKey.ENTRY_SINGLE_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromId(it) }
+    )
+
+    /** エントリ項目複数回タップの挙動 */
+    val multipleTapAction = createLiveDataEnum(
+        PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromId(it) }
+    )
+
+    /** エントリ項目ロングタップの挙動 */
+    val longTapAction = createLiveDataEnum(
+        PreferenceKey.ENTRY_LONG_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromId(it) }
+    )
+
+    /** エントリ項目タップ回数判定時間 */
+    val multipleTapDuration = createLiveData<Long>(
+        PreferenceKey.ENTRY_MULTIPLE_TAP_DURATION
+    )
+
+    /** 最初に表示するカテゴリ */
+    val homeCategory = createLiveDataEnum<Category>(
+        PreferenceKey.ENTRIES_HOME_CATEGORY,
+        { it.id },
+        { Category.fromId(it) }
+    )
+
+    /** 最初に表示するタブ */
+    val initialTab = createLiveData<Int>(
+        PreferenceKey.ENTRIES_INITIAL_TAB
+    )
+
+    /** カテゴリリストの表示形式 */
+    val categoriesMode = createLiveDataEnum<CategoriesMode>(
+        PreferenceKey.ENTRIES_CATEGORIES_MODE
+    )
+
+    /** メニュー表示中の操作を許可 */
+    val menuTapGuard = createLiveData<Boolean>(
+        PreferenceKey.ENTRIES_MENU_TAP_GUARD
+    )
+
+    /** スクロールでツールバーを隠す */
+    val hideToolbarWithScroll = createLiveData<Boolean>(
+        PreferenceKey.ENTRIES_HIDING_TOOLBAR_BY_SCROLLING
+    )
+
+    /** ブクマ閲覧履歴の最大保存数 */
+    val historyMaxSize = createLiveData<EntriesHistoryKey, Int>(
+        historyPrefs,
+        EntriesHistoryKey.MAX_SIZE
+    )
+
+    /** タブ長押しでホームカテゴリ・初期タブを変更する */
+    val changeHomeByLongTappingTab = createLiveData<Boolean>(
+        PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB
+    )
+
+    /** 「あとで読む」エントリを「読んだ」したときの挙動 */
+    val entryReadActionType = createLiveDataEnum<EntryReadActionType>(
+        PreferenceKey.ENTRY_READ_ACTION_TYPE
+    )
+
+    /** EntryReadActionType.BOILERPLATE時の定型文 */
+    val entryReadActionBoilerPlate = createLiveData<String>(
+        PreferenceKey.ENTRY_READ_ACTION_BOILERPLATE
+    )
+
+    // ------ //
+
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun createList(fragmentManager: FragmentManager) = buildList {
+        addSection(R.string.pref_entry_section_bottom_menu)
+        addPrefToggleItem(bottomLayoutMode, R.string.pref_entries_layout_mode_desc)
+        addPrefToggleItem(hideBottomLayoutByScroll, R.string.pref_hide_bottom_appbar_by_scrolling_desc)
+        // addPrefItem(, R.string.pref_bottom_bar_items_desc)
+        addPrefItem(bottomBarButtonsGravity, R.string.pref_bottom_menu_items_gravity_desc) {
+        }
+        addPrefItem(extraBottomItemsAlignment, R.string.pref_extra_bottom_items_alignment_desc) {
+        }
+
+        // --- //
+
+        addSection(R.string.pref_entry_section_click)
+        addPrefItem(singleTapAction, R.string.pref_entries_single_tap_action_desc) {
+        }
+        addPrefItem(multipleTapAction, R.string.pref_entries_multiple_tap_action_desc) {
+        }
+        addPrefItem(longTapAction, R.string.pref_entries_long_tap_action_desc) {
+        }
+        addPrefItem(multipleTapDuration, R.string.pref_entries_multiple_tap_duration_desc) {
+        }
+
+        // --- //
+
+        addSection(R.string.pref_entry_section_category)
+        addPrefItem(homeCategory, R.string.home_category_desc) {
+        }
+        addPrefItem(initialTab, R.string.pref_entries_initial_tab_desc) {
+        }
+        addPrefToggleItem(changeHomeByLongTappingTab, R.string.pref_entries_change_home_by_long_tapping_desc)
+        addPrefItem(categoriesMode, R.string.pref_entries_categories_mode_desc) {
+        }
+
+        // --- //
+
+        addSection(R.string.pref_entry_section_behavior)
+        addPrefToggleItem(menuTapGuard, R.string.pref_entries_menu_tap_guard_desc)
+        addPrefToggleItem(hideToolbarWithScroll, R.string.pref_entries_hiding_toolbar_by_scrolling_desc)
+
+        // --- //
+
+        addSection(R.string.pref_entry_section_history)
+        addPrefItem(historyMaxSize, R.string.pref_entries_history_max_size_desc) {
+        }
+
+        // --- //
+
+        addSection(R.string.pref_entry_section_read_later)
+        addPrefItem(entryReadActionType, R.string.pref_entries_read_action_type_desc) {
+        }
+    }
+
+    // ------ //
+
+    /** ボトムバーの項目をセットするダイアログを表示する */
+    fun showBottomBarItemSetterDialog(
+        args: UserBottomItemsSetter.OnMenuItemClickArguments,
+        fragmentManager: FragmentManager,
+        tag: String? = null
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        BottomBarItemSelectionDialog.createInstance(args.items, args.target).run {
+            showAllowingStateLoss(fragmentManager, tag)
+
+            setOnSelectItemListener { (position, old, new) ->
+                onSelectItem(position, old, new)
+            }
+
+            setOnReorderItemListener { (posA, posB, itemA, itemB) ->
+                onReorderItem(posA, posB, itemA, itemB!!)
+            }
+        }
+    }
+
+    /** ボトムバーの項目を追加・編集 */
+    private fun onSelectItem(position: Int, old: UserBottomItem?, new: UserBottomItem?) {
+        if (old == null && new == null) return
+        else if (new == null) {
+            bottomBarButtons.value = bottomBarButtons.value?.minus(old!!)
+        }
+        else if (old == null) {
+            bottomBarButtons.value = (bottomBarButtons.value ?: emptyList()).plus(new)
+        }
+        else {
+            bottomBarButtons.value = bottomBarButtons.value?.mapIndexed { idx, item ->
+                if (idx == position) new
+                else item
+            }
+        }
+    }
+
+    /** ボトムバーの項目を入れ替え */
+    private fun onReorderItem(
+        positionA: Int,
+        positionB: Int,
+        itemA: UserBottomItem?,
+        itemB: UserBottomItem
+    ) {
+        val items = bottomBarButtons.value ?: emptyList()
+        if (itemA == null) {
+            // 末尾に移動
+            bottomBarButtons.value = items.minus(itemB).plus(itemB)
+        }
+        else {
+            // 項目同士の入れ替え
+            bottomBarButtons.value = items.mapIndexed { idx, item ->
+                when (idx) {
+                    positionA -> itemB
+                    positionB -> itemA
+                    else -> item
+                }
+            }
+        }
+    }
+}

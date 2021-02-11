@@ -37,7 +37,7 @@ enum class PreferencesTabMode(
     ENTRIES(4,
         R.string.pref_title_entries,
         R.id.preferences_tab_entries,
-        { PreferencesEntriesFragment.createInstance() }),
+        { ListPreferencesFragment.createInstance { c -> EntryViewModel(c) } }),
 
     BOOKMARKS(5,
         R.string.pref_title_bookmarks,

@@ -273,6 +273,14 @@
     <string name="pref_categories_mode_list">リスト</string>
     <string name="pref_categories_mode_grid">グリッド</string>
 
+    <!-- entries 2 -->
+    <string name="pref_entry_section_bottom_menu">ボトムメニュー</string>
+    <string name="pref_entry_section_click">タップ時動作</string>
+    <string name="pref_entry_section_category">カテゴリ・タブ</string>
+    <string name="pref_entry_section_behavior">振る舞い</string>
+    <string name="pref_entry_section_history">ブクマ閲覧履歴</string>
+    <string name="pref_entry_section_read_later">あとで読む</string>
+
     <!-- bookmarks -->
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
     <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>
