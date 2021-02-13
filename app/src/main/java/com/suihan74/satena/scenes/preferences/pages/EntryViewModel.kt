@@ -1,20 +1,27 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
+import androidx.annotation.StringRes
+import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.ListviewItemPrefsBottomItemsBinding
 import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
-import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.satena.scenes.preferences.addPrefItem
-import com.suihan74.satena.scenes.preferences.addPrefToggleItem
-import com.suihan74.satena.scenes.preferences.addSection
+import com.suihan74.satena.scenes.preferences.*
+import com.suihan74.satena.scenes.preferences.bottomBar.BottomBarItemSelectionDialog
+import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.showAllowingStateLoss
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
 
@@ -132,7 +139,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         addSection(R.string.pref_entry_section_bottom_menu)
         addPrefToggleItem(bottomLayoutMode, R.string.pref_entries_layout_mode_desc)
         addPrefToggleItem(hideBottomLayoutByScroll, R.string.pref_hide_bottom_appbar_by_scrolling_desc)
-        // addPrefItem(, R.string.pref_bottom_bar_items_desc)
+        add(PrefItemBottomMenuSetter(R.string.pref_bottom_bar_items_desc, this@EntryViewModel, fragmentManager))
         addPrefItem(bottomBarButtonsGravity, R.string.pref_bottom_menu_items_gravity_desc) {
             openEnumSelectionDialog(
                 GravitySetting.values(),
@@ -254,6 +261,27 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         dialog.show(fragmentManager, null)
     }
 
+    // ------ //
+
+    /** ボトムバーの項目をセットするダイアログを表示する */
+    fun openBottomBarItemSetterDialog(
+        args: UserBottomItemsSetter.OnMenuItemClickArguments,
+        fragmentManager: FragmentManager,
+        tag: String? = null
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        BottomBarItemSelectionDialog.createInstance(args.items, args.target).run {
+            showAllowingStateLoss(fragmentManager, tag)
+
+            setOnSelectItemListener { (position, old, new) ->
+                onSelectItem(position, old, new)
+            }
+
+            setOnReorderItemListener { (posA, posB, itemA, itemB) ->
+                onReorderItem(posA, posB, itemA, itemB!!)
+            }
+        }
+    }
+
     /** ボトムバーの項目を追加・編集 */
     private fun onSelectItem(position: Int, old: UserBottomItem?, new: UserBottomItem?) {
         if (old == null && new == null) return
@@ -295,6 +323,8 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         }
     }
 
+    // ------ //
+
     /** ブクマ閲覧履歴の最大保存件数を設定するダイアログを開く */
     private fun openHistorySizeSelectionDialog(fragmentManager: FragmentManager) {
         val dialog = NumberPickerDialog.createInstance(
@@ -307,5 +337,30 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             historyMaxSize.value = value
         }
         dialog.show(fragmentManager, null)
+    }
+
+    // ------ //
+
+    /**
+     * ボトムメニューの項目編集用ビュー
+     */
+    class PrefItemBottomMenuSetter(
+        @StringRes private val titleId : Int,
+        private val viewModel : EntryViewModel,
+        private val fragmentManager: FragmentManager
+    ) : PreferencesAdapter.Item {
+        override val layoutId: Int
+            get() = R.layout.listview_item_prefs_bottom_items
+
+        override fun bind(binding: ViewDataBinding) {
+            binding.alsoAs<ListviewItemPrefsBottomItemsBinding> {
+                it.vm = viewModel
+                it.titleId = titleId
+
+                it.itemSetter.setOnMenuItemClickListener { args ->
+                    viewModel.openBottomBarItemSetterDialog(args, fragmentManager)
+                }
+            }
+        }
     }
 }

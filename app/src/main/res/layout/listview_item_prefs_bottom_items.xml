@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <import type="androidx.lifecycle.LiveData"/>
+
+        <variable
+                name="titleId"
+                type="Integer" />
+
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.preferences.pages.EntryViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:background="?selectableItemBackground"
+            android:paddingHorizontal="@dimen/pref_list_horizontal_padding"
+            android:paddingVertical="14dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/mainText"
+                android:text="@{titleId}"
+                tools:text="Title"
+                android:textSize="16sp"
+                android:textColor="?textColor"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/itemSetter"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
+                android:id="@+id/itemSetter"
+                android:visibility="@{vm.bottomLayoutMode}"
+                items="@{vm.bottomBarButtons}"
+                app:menuGravity="@{vm.bottomBarButtonsGravity.gravity}"
+                app:layout_constraintTop_toBottomOf="@id/mainText"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="6dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
