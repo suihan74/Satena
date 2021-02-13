@@ -162,7 +162,7 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
                 titleId = R.string.pref_entries_history_max_size_dialog_title,
                 messageId = R.string.pref_entries_history_max_size_dialog_msg
             ) { value ->
-                viewModel.multipleTapDuration.value = value.toLong()
+                viewModel.historyMaxSize.value = value
             }
             dialog.showAllowingStateLoss(childFragmentManager)
         }
