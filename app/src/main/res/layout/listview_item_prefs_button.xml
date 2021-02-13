@@ -53,6 +53,7 @@
         <TextView
                 android:id="@+id/valueText"
                 currentPreference="@{item.liveData}"
+                suffixId="@{item.suffixId}"
                 tools:text="current value"
                 android:textSize="13sp"
                 android:textColor="?textColor"

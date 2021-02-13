@@ -119,7 +119,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         addSection(R.string.pref_generals_section_notices)
         addPrefToggleItem(checkNotices, R.string.pref_generals_background_checking_notices_desc)
-        addPrefItem(checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc) {
+        addPrefItem(checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc, R.string.minutes) {
             openCheckingNoticesIntervalSelectionDialog(fragmentManager)
         }
         addPrefToggleItem(noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
