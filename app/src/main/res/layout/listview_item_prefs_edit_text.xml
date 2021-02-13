@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="item"
+                type="com.suihan74.satena.scenes.preferences.PreferenceEditTextItem" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:paddingHorizontal="@dimen/pref_list_horizontal_padding"
+            android:paddingVertical="14dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/mainText"
+                android:text="@{item.titleId}"
+                tools:text="Title"
+                android:textSize="16sp"
+                android:textColor="?textColor"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/editText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <com.suihan74.utilities.views.ImeEnhancedEditText
+                android:id="@+id/editText"
+                android:text="@={item.liveData}"
+                android:hint="@{item.hintId}"
+                android:singleLine="true"
+                android:importantForAutofill="no"
+                android:imeOptions="actionDone"
+                app:layout_constraintTop_toBottomOf="@id/mainText"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="6dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.preferences
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.databinding.BindingAdapter
@@ -17,9 +18,13 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemGeneralButtonBinding
 import com.suihan74.satena.databinding.ListviewItemGeneralSectionBinding
 import com.suihan74.satena.databinding.ListviewItemPrefsButtonBinding
+import com.suihan74.satena.databinding.ListviewItemPrefsEditTextBinding
 import com.suihan74.satena.models.TextIdContainer
 import com.suihan74.utilities.extensions.alsoAs
 
+/**
+ * 設定項目表示用アダプタ
+ */
 class PreferencesAdapter(
     private val lifecycleOwner: LifecycleOwner
 ) : ListAdapter<PreferencesAdapter.Item, PreferencesAdapter.ViewHolder>(
@@ -35,14 +40,13 @@ class PreferencesAdapter(
             layoutId,
             parent,
             false
-        ).also {
-            it.lifecycleOwner = lifecycleOwner
-        }
+        )
         return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         currentList[position].bind(holder.binding)
+        holder.binding.lifecycleOwner = lifecycleOwner
     }
 
     // ------ //
@@ -58,6 +62,9 @@ class PreferencesAdapter(
         fun areContentsTheSame(old: Item, new: Item) : Boolean = old == new
     }
 
+    /**
+     * セクション名
+     */
     open class Section(@StringRes val textId: Int) : Item {
         override val layoutId : Int = R.layout.listview_item_general_section
         override fun bind(binding: ViewDataBinding) {
@@ -73,6 +80,9 @@ class PreferencesAdapter(
             old is Section && new is Section && old == new
     }
 
+    /**
+     * 汎用的なボタン
+     */
     open class Button(
         @StringRes val textId: Int,
         @StringRes val subTextId: Int? = null,
@@ -151,15 +161,44 @@ open class PreferenceItem<T>(
 }
 
 /**
- * トグルボタン
+ * 設定用トグルボタン
  */
-class PreferenceToggleItem(
+open class PreferenceToggleItem(
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
     @StringRes suffixId: Int? = null
 ) : PreferenceItem<Boolean>(liveData, titleId, suffixId, null, {
     liveData.value = liveData.value != true
 })
+
+/**
+ * テキスト編集用ビュー
+ */
+open class PreferenceEditTextItem(
+    val liveData: MutableLiveData<String>,
+    @StringRes val titleId: Int,
+    @StringRes val hintId: Int,
+) : PreferencesAdapter.Item {
+    override val layoutId: Int
+        get() = R.layout.listview_item_prefs_edit_text
+
+    override fun bind(binding: ViewDataBinding) {
+        binding.alsoAs<ListviewItemPrefsEditTextBinding> { b ->
+            b.item = this
+
+            b.editText.setOnEditorActionListener { _, actionId, _ ->
+                when (actionId) {
+                    EditorInfo.IME_ACTION_DONE -> {
+                        b.editText.hideSoftInputMethod()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+        }
+    }
+}
 
 // ------ //
 

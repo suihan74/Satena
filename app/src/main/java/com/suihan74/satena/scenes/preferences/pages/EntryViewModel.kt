@@ -136,11 +136,17 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
         super.onCreateView(fragment)
+
+        val owner = fragment.viewLifecycleOwner
+        fun reload() = viewModelScope.launch { load(fragment) }
+
         // ボトムバー設定項目の表示を切り替える
-        bottomLayoutMode.observe(fragment.viewLifecycleOwner, {
-            viewModelScope.launch {
-                load(fragment)
-            }
+        bottomLayoutMode.observe(owner, {
+            reload()
+        })
+        // 「読んだ」したときの定型文編集ビューを表示切替え
+        entryReadActionType.observe(owner, {
+            reload()
         })
     }
 
@@ -253,6 +259,13 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 entryReadActionType,
                 R.string.pref_entries_read_action_type_desc,
                 fragmentManager
+            )
+        }
+        if (entryReadActionType.value == EntryReadActionType.BOILERPLATE) {
+            add(PreferenceEditTextItem(
+                entryReadActionBoilerPlate,
+                R.string.pref_entries_read_action_boilerplate_desc,
+                R.string.pref_entries_read_action_boilerplate_hint)
             )
         }
     }
