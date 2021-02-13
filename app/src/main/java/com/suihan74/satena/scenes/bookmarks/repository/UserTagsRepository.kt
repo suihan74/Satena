@@ -15,8 +15,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 interface UserTagsRepositoryInterface {
-    /** ユーザーに対応するユーザータグ */
-    val taggedUsers : HashMap<String, MutableLiveData<UserAndTags>>
+    /** タグ付けされたユーザー情報を使用する */
+    suspend fun <T> withTaggedUsers(action: (Map<String, LiveData<UserAndTags>>)->T) : T
 
     /** 全てのタグリスト */
     val userTags : List<Tag>
@@ -35,7 +35,7 @@ interface UserTagsRepositoryInterface {
      *
      * ロードは行われない
      */
-    fun getUserTags(user : String) : LiveData<UserAndTags>
+    suspend fun getUserTags(user : String) : LiveData<UserAndTags>
 
     /** タグを作成する
      *
@@ -68,7 +68,19 @@ class UserTagsRepository(
     private val userTagsMutex by lazy { Mutex() }
 
     /** ユーザーに対応するユーザータグのキャッシュ */
-    override val taggedUsers = HashMap<String, MutableLiveData<UserAndTags>>()
+    private val taggedUsers = HashMap<String, MutableLiveData<UserAndTags>>()
+
+    override suspend fun getUserTags(user: String) : LiveData<UserAndTags> {
+        return userTagsMutex.withLock {
+            taggedUsers.getOrPut(user) { MutableLiveData<UserAndTags>() }
+        }
+    }
+
+    override suspend fun <T> withTaggedUsers(action: (Map<String, LiveData<UserAndTags>>)->T) : T {
+        return userTagsMutex.withLock {
+            action(taggedUsers)
+        }
+    }
 
     /** 全てのタグ */
     private var userTagsCache : List<Tag> = emptyList()
@@ -105,15 +117,6 @@ class UserTagsRepository(
         }
 
         return@withContext liveData
-    }
-
-    /**
-     * ユーザータグのキャッシュを取得する
-     *
-     * ロードは行われない
-     */
-    override fun getUserTags(user : String) : LiveData<UserAndTags> {
-        return taggedUsers.getOrPut(user) { MutableLiveData<UserAndTags>() }
     }
 
     /** タグを作成する
