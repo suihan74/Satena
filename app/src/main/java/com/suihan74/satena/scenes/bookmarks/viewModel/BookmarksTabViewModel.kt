@@ -36,7 +36,11 @@ class BookmarksTabViewModel(
     private suspend fun createDisplayBookmarks(
         bookmarks: List<Bookmark>
     ) : List<RecyclerState<Entity>> = withContext(Dispatchers.Default) {
-        val taggedUsers = repo.taggedUsers.mapNotNull { it.value.value }
+        val taggedUsers = repo.withTaggedUsers { taggedUsers ->
+            taggedUsers.mapNotNull {
+                it.value.value
+            }
+        }
         val ignoredUsers = repo.ignoredUsersCache
 
         return@withContext RecyclerState.makeStatesWithFooter(bookmarks.map { bookmark ->

@@ -10,6 +10,7 @@ import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class BookmarkDetailViewModel(
@@ -49,8 +50,10 @@ class BookmarkDetailViewModel(
 
     /**
      * ユーザータグ
+     *
+     * TODO
      */
-    val userTags = repository.getUserTags(bookmark.user)
+    val userTags = runBlocking { repository.getUserTags(bookmark.user) }
 
     /**
      * 現在選択中の文字列

@@ -532,7 +532,7 @@ class BookmarksRepository(
     }
 
     /** カスタムタブに表示するブクマを抽出する */
-    private fun filterForCustomTab(src: List<BookmarkWithStarCount>) : List<Bookmark> {
+    private suspend fun filterForCustomTab(src: List<BookmarkWithStarCount>) : List<Bookmark> {
         val filterNoCommentUsers = showNoCommentUsersInCustomBookmarks.value != true
         val filterMutedUsers = showMutedUsersInCustomBookmarks.value != true
         val showUntaggedUsers = showUnaffiliatedUsersInCustomBookmarks.value == true
@@ -549,10 +549,9 @@ class BookmarksRepository(
                 // ユーザータグがひとつもついていない or 設定したタグがついている
                 // 予めユーザータグがロードされている必要がある
                 // TODO: liveData化
-                else -> taggedUsers[b.user].let { liveData ->
-                    liveData?.value?.tags?.any { tag -> activeTagIds.any { it == tag.id } }
-                        ?: showUntaggedUsers
-                }
+                else -> getUserTags(b.user).let { liveData ->
+                    liveData.value?.tags?.any { tag -> activeTagIds.any { it == tag.id } }
+                } ?: showUntaggedUsers
             }
         }.map { Bookmark.create(it) }
     }
