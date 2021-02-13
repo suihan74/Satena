@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.preferences.pages
 import android.content.Context
 import android.content.Intent
 import android.view.Gravity
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -101,7 +102,9 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     // ------ //
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(activity: PreferencesActivity, fragmentManager: FragmentManager) = buildList {
+    override fun createList(activity: PreferencesActivity, fragment: Fragment) = buildList {
+        val fragmentManager = fragment.childFragmentManager
+
         addSection(R.string.pref_generals_section_theme)
         addPrefItem(theme, R.string.pref_generals_theme_desc) { openAppThemeSelectionDialog(fragmentManager) }
         addPrefItem(dialogTheme, R.string.pref_generals_dialog_theme_desc) { openDialogThemeSelectionDialog(fragmentManager) }
@@ -124,6 +127,19 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         }
         addPrefToggleItem(noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
         addPrefToggleItem(ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
+
+        // 通知確認タスクの有効無効を切り替える
+        checkNotices.observe(fragment.viewLifecycleOwner, {
+            val app = SatenaApplication.instance
+            if (it) app.startCheckingNotificationsWorker(app, forceReplace = true)
+            else app.stopCheckingNotificationsWorker(app)
+        })
+
+        // 通知確認間隔の変更を反映させるためにWorkを再起動する
+        checkNoticesInterval.observe(fragment.viewLifecycleOwner, {
+            val app = SatenaApplication.instance
+            app.startCheckingNotificationsWorker(app, forceReplace = true)
+        })
 
         // --- //
 

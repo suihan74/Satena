@@ -58,7 +58,7 @@ class ListPreferencesFragment : Fragment() {
     @OptIn(ExperimentalStdlibApi::class)
     private fun initializeRecyclerView(recyclerView: RecyclerView) {
         val adapter = PreferencesAdapter(viewLifecycleOwner)
-        adapter.submitList(viewModel.createList(preferencesActivity, childFragmentManager))
+        adapter.submitList(viewModel.createList(preferencesActivity, this))
         recyclerView.adapter = adapter
     }
 }
