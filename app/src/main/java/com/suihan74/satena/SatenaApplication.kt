@@ -255,10 +255,13 @@ class SatenaApplication : Application() {
                 .build()
 
             val workRequest =
-                PeriodicWorkRequestBuilder<NotificationWorker>(interval, TimeUnit.MINUTES)
-                    .setConstraints(constraints)
-                    .addTag(WORKER_TAG_CHECKING_NOTICES)
-                    .build()
+                PeriodicWorkRequestBuilder<NotificationWorker>(
+                    interval, TimeUnit.MINUTES,
+                    PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.MILLISECONDS
+                )
+                .setConstraints(constraints)
+                .addTag(WORKER_TAG_CHECKING_NOTICES)
+                .build()
 
             WorkManager.getInstance(context).let { manager ->
                 manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES).whenFalse {
