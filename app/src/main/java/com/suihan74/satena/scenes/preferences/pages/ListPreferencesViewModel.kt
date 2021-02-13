@@ -18,6 +18,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * 設定リスト画面用ベースViewModel
+ */
 abstract class ListPreferencesViewModel(
     context: Context
 ) : PreferencesViewModel<PreferenceKey>(SafeSharedPreferences.create(context)) {

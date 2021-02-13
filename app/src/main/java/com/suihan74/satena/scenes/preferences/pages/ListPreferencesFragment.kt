@@ -9,11 +9,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import com.suihan74.satena.databinding.FragmentPreferencesInformation2Binding
+import com.suihan74.satena.databinding.FragmentListPreferencesBinding
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesAdapter
 import com.suihan74.utilities.provideViewModel
 
+/**
+ * 設定リスト画面共通フラグメント
+ */
 class ListPreferencesFragment : Fragment() {
     companion object {
         fun createInstance(
@@ -46,7 +49,7 @@ class ListPreferencesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentPreferencesInformation2Binding.inflate(inflater, container, false).also {
+        val binding = FragmentListPreferencesBinding.inflate(inflater, container, false).also {
             it.vm = viewModel
             it.lifecycleOwner = viewLifecycleOwner
             initializeRecyclerView(it.recyclerView)

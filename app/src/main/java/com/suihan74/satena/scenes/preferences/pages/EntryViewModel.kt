@@ -22,6 +22,9 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+/**
+ * 「エントリ」画面
+ */
 class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     private val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
