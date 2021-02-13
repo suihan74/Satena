@@ -42,7 +42,7 @@ enum class PreferencesTabMode(
     BOOKMARKS(5,
         R.string.pref_title_bookmarks,
         R.id.preferences_tab_bookmarks,
-        { PreferencesBookmarksFragment.createInstance() }),
+        { ListPreferencesFragment.createInstance { c -> BookmarkViewModel(c) } }),
 
     FAVORITE_SITES(6,
         R.string.category_favorite_sites,
