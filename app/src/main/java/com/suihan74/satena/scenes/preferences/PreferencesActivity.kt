@@ -1,8 +1,12 @@
 package com.suihan74.satena.scenes.preferences
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -11,21 +15,40 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
+import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.Theme
+import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.preferences.backup.Credentials
+import com.suihan74.satena.scenes.tools.RestartActivity
 import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getObjectExtra
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.threeten.bp.LocalDateTime
 
 class PreferencesActivity : ActivityBase() {
+    enum class RequestCode {
+        WRITE,
+        READ
+    }
+
+    companion object {
+        const val EXTRA_THEME_CHANGED = "theme_changed"
+        const val EXTRA_CURRENT_TAB = "current_tab"
+        const val EXTRA_RELOAD_ALL_PREFERENCES = "reload_all_preferences"
+    }
+
+    // ------ //
+
     class ViewModel : androidx.lifecycle.ViewModel() {
         val currentTab : MutableLiveData<PreferencesTabMode> by lazy {
             MutableLiveData(PreferencesTabMode.INFORMATION)
@@ -36,8 +59,10 @@ class PreferencesActivity : ActivityBase() {
         ViewModelProvider(this)[ViewModel::class.java]
     }
 
-    override val progressBarId: Int? = R.id.detail_progress_bar
-    override val progressBackgroundId: Int? = R.id.click_guard
+    // ------ //
+
+    override val progressBarId: Int = R.id.detail_progress_bar
+    override val progressBackgroundId: Int = R.id.click_guard
     override val toolbar : Toolbar
         get() = findViewById(R.id.preferences_toolbar)
 
@@ -46,11 +71,7 @@ class PreferencesActivity : ActivityBase() {
 
     private var themeChanged : Boolean = false
 
-    companion object {
-        const val EXTRA_THEME_CHANGED = "theme_changed"
-        const val EXTRA_CURRENT_TAB = "current_tab"
-        const val EXTRA_RELOAD_ALL_PREFERENCES = "reload_all_preferences"
-    }
+    // ------ //
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -196,6 +217,140 @@ class PreferencesActivity : ActivityBase() {
                 true
             }
             else false
+        }
+    }
+
+    // ------ //
+
+    fun openSaveSettingsDialog() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/octet-stream"
+            putExtra(Intent.EXTRA_TITLE, "${LocalDateTime.now()}.satena-settings")
+        }
+        startActivityForResult(intent, RequestCode.WRITE.ordinal)
+    }
+
+    fun openLoadSettingsDialog() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/octet-stream"
+        }
+        startActivityForResult(intent, RequestCode.READ.ordinal)
+    }
+
+    private fun contentFilePath(context: Context, uri: Uri) : String {
+        val contentResolver = context.contentResolver
+        val columns = arrayOf(MediaStore.MediaColumns.DISPLAY_NAME)
+        return contentResolver.query(uri, columns, null, null, null).use { cursor ->
+            if (cursor != null && cursor.count > 0) {
+                cursor.moveToFirst()
+                cursor.getString(0)
+            }
+            else uri.path!!
+        }
+    }
+
+    private fun savePreferencesToFile(targetUri: Uri) {
+        showProgressBar()
+
+        lifecycleScope.launch(Dispatchers.Default) {
+            val context = SatenaApplication.instance.applicationContext
+            val credentials = Credentials.extract(context)
+
+            try {
+                PreferencesMigration.Output(context).run {
+                    addPreference<PreferenceKey>()
+                    addPreference<NoticesKey>()
+                    addPreference<EntriesHistoryKey>()
+                    addPreference<BrowserSettingsKey>()
+                    addPreference<FavoriteSitesKey>()
+                    addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME)
+                    addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME + "-shm")
+                    addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME + "-wal")
+                    write(targetUri)
+                }
+
+                withContext(Dispatchers.Main) {
+                    val path = contentFilePath(context, targetUri)
+                    context.showToast(R.string.msg_pref_information_save_succeeded, path)
+                }
+            }
+            catch (e: Throwable) {
+                Log.e("SavingSettings", e.message ?: "")
+                withContext(Dispatchers.Main) {
+                    context.showToast(R.string.msg_pref_information_save_failed)
+                }
+            }
+            finally {
+                credentials.restore(context)
+                withContext(Dispatchers.Main) {
+                    hideProgressBar()
+                }
+            }
+        }
+    }
+
+    private fun loadPreferencesFromFile(targetUri: Uri) {
+        showProgressBar()
+
+        lifecycleScope.launch(Dispatchers.Default) {
+            val context = SatenaApplication.instance.applicationContext
+            val credentials = Credentials.extract(context)
+
+            try {
+                PreferencesMigration.Input(context)
+                    .read(targetUri)
+
+                withContext(Dispatchers.Main) {
+                    val path = contentFilePath(context, targetUri)
+                    context.showToast(R.string.msg_pref_information_load_succeeded, path)
+
+                    // アプリを再起動
+                    val intent = RestartActivity.createIntent(this@PreferencesActivity)
+                    startActivity(intent)
+                }
+            }
+            catch (e: PreferencesMigration.MigrationFailureException) {
+                val msg = e.message ?: ""
+                Log.e("LoadingSettings", msg)
+                withContext(Dispatchers.Main) {
+                    if (e.cause is IllegalStateException) {
+                        context.showToast("${getString(R.string.msg_pref_information_load_failed)}\n${msg}")
+                    }
+                    else {
+                        context.showToast(R.string.msg_pref_information_load_failed)
+                    }
+                }
+            }
+            finally {
+                credentials.restore(context)
+                withContext(Dispatchers.Main) {
+                    hideProgressBar()
+                }
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val targetUri = data?.data
+
+        if (resultCode != Activity.RESULT_OK || targetUri == null) {
+            Log.d("FilePick", "canceled")
+            return
+        }
+
+        when (requestCode) {
+            RequestCode.WRITE.ordinal -> {
+                Log.d("SaveSettings", targetUri.path ?: "")
+                savePreferencesToFile(targetUri)
+            }
+
+            RequestCode.READ.ordinal -> {
+                Log.d("LoadSettings", targetUri.path ?: "")
+                loadPreferencesFromFile(targetUri)
+            }
         }
     }
 }

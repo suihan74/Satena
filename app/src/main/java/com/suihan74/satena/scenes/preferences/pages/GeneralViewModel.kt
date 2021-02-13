@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
+import android.content.Intent
 import android.view.Gravity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
@@ -15,11 +16,9 @@ import com.suihan74.satena.models.AppUpdateNoticeMode
 import com.suihan74.satena.models.DialogThemeSetting
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
-import com.suihan74.satena.scenes.preferences.PreferencesAdapter
-import com.suihan74.satena.scenes.preferences.addPrefItem
-import com.suihan74.satena.scenes.preferences.addPrefToggleItem
-import com.suihan74.satena.scenes.preferences.addSection
+import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.putObjectExtra
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -102,7 +101,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     // ------ //
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(fragmentManager: FragmentManager) = buildList {
+    override fun createList(activity: PreferencesActivity, fragmentManager: FragmentManager) = buildList {
         addSection(R.string.pref_generals_section_theme)
         addPrefItem(theme, R.string.pref_generals_theme_desc) { openAppThemeSelectionDialog(fragmentManager) }
         addPrefItem(dialogTheme, R.string.pref_generals_dialog_theme_desc) { openDialogThemeSelectionDialog(fragmentManager) }
@@ -136,8 +135,12 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_generals_section_backup)
-        add(PreferencesAdapter.Button(R.string.pref_information_save_settings_desc) {})
-        add(PreferencesAdapter.Button(R.string.pref_information_load_settings_desc) {})
+        add(PreferencesAdapter.Button(R.string.pref_information_save_settings_desc) {
+            activity.openSaveSettingsDialog()
+        })
+        add(PreferencesAdapter.Button(R.string.pref_information_load_settings_desc) {
+            activity.openLoadSettingsDialog()
+        })
     }
 
     // ------ //
@@ -191,8 +194,12 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
             .setSingleChoiceItems(
                 labelIds,
                 checkedItem
-            ) { _, which ->
+            ) { f, which ->
                 theme.value = Theme.fromId(which)
+
+                if (checkedItem != which) {
+                    restartActivity(f.requireContext())
+                }
             }
             .dismissOnClickItem(true)
             .create()
@@ -216,6 +223,21 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
             .dismissOnClickItem(true)
             .create()
         dialog.show(fragmentManager, null)
+    }
+
+    /** 再起動してテーマ変更を適用する */
+    private fun restartActivity(context: Context) {
+        val intent = Intent(context, PreferencesActivity::class.java).apply {
+            flags =
+                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
+
+            putObjectExtra(
+                PreferencesActivity.EXTRA_CURRENT_TAB,
+                PreferencesTabMode.GENERALS
+            )
+            putExtra(PreferencesActivity.EXTRA_THEME_CHANGED, true)
+        }
+        context.startActivity(intent)
     }
 
     /** ドロワの配置を選択するダイアログを開く */
