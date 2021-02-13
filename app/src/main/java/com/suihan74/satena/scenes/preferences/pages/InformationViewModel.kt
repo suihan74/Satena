@@ -4,13 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.databinding.ViewDataBinding
-import androidx.fragment.app.Fragment
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemAppInfoBinding
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
-import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesAdapter
 import com.suihan74.satena.scenes.preferences.addButton
 import com.suihan74.satena.scenes.preferences.addSection
@@ -22,7 +20,7 @@ import org.threeten.bp.LocalDateTime
  */
 class InformationViewModel(private val context: Context) : ListPreferencesViewModel(context) {
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(activity: PreferencesActivity, fragment: Fragment) = buildList {
+    override fun createList(fragment: ListPreferencesFragment) = buildList {
         val fragmentManager = fragment.childFragmentManager
 
         addSection(R.string.pref_information_section_app)

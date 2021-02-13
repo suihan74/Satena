@@ -29,7 +29,7 @@ class ListPreferencesFragment : Fragment() {
 
     // ------ //
 
-    private val preferencesActivity
+    val preferencesActivity
         get() = requireActivity() as PreferencesActivity
 
     // ------ //
@@ -47,18 +47,17 @@ class ListPreferencesFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentPreferencesInformation2Binding.inflate(inflater, container, false).also {
+            it.vm = viewModel
             it.lifecycleOwner = viewLifecycleOwner
             initializeRecyclerView(it.recyclerView)
         }
+        viewModel.onCreateView(this)
         return binding.root
     }
 
     // ------ //
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun initializeRecyclerView(recyclerView: RecyclerView) {
-        val adapter = PreferencesAdapter(viewLifecycleOwner)
-        adapter.submitList(viewModel.createList(preferencesActivity, this))
-        recyclerView.adapter = adapter
+        recyclerView.adapter = PreferencesAdapter(viewLifecycleOwner)
     }
 }

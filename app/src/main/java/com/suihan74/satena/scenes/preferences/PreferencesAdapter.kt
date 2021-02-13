@@ -65,6 +65,12 @@ class PreferencesAdapter(
                 it.textId = textId
             }
         }
+
+        override fun areItemsTheSame(old: Item, new: Item): Boolean =
+            old is Section && new is Section && old.textId == new.textId
+
+        override fun areContentsTheSame(old: Item, new: Item): Boolean =
+            old is Section && new is Section && old == new
     }
 
     open class Button(
@@ -86,6 +92,11 @@ class PreferencesAdapter(
                 }
             }
         }
+        override fun areItemsTheSame(old: Item, new: Item): Boolean =
+            old is Section && new is Section && old.textId == new.textId
+
+        override fun areContentsTheSame(old: Item, new: Item): Boolean =
+            old is Section && new is Section && old == new
     }
 
     // ------ //
@@ -128,6 +139,15 @@ open class PreferenceItem<T>(
             onLongClick?.invoke() != null
         }
     }
+
+    override fun areItemsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) : Boolean =
+        old is PreferenceItem<*> && new is PreferenceItem<*> && old.titleId == new.titleId
+
+    override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) : Boolean =
+        old is PreferenceItem<*> && new is PreferenceItem<*> &&
+                old.titleId == new.titleId &&
+                old.suffixId == new.suffixId &&
+                old.liveData.value == new.liveData.value
 }
 
 /**
@@ -182,10 +202,21 @@ fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
 
 // ------ //
 
-/**
- * 現在の設定値を表示する
- */
-object PrefsTextViewBindingAdapters {
+object PreferencesAdapterBindingAdapters {
+    /**
+     * 設定項目をビューに反映する
+     */
+    @JvmStatic
+    @BindingAdapter("items")
+    fun bindItems(recyclerView: RecyclerView, items: List<PreferencesAdapter.Item>?) {
+        recyclerView.adapter.alsoAs<PreferencesAdapter> { adapter ->
+            adapter.submitList(items)
+        }
+    }
+
+    /**
+     * 現在の設定値を表示する
+     */
     @JvmStatic
     @BindingAdapter("currentPreference", "suffixId")
     fun bindPref(textView: TextView, liveData: LiveData<*>?, suffixId: Int?) {

@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.preferences.pages
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.databinding.ViewDataBinding
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.HatenaClient
@@ -132,29 +131,41 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     // ------ //
 
+    override fun onCreateView(fragment: ListPreferencesFragment) {
+        super.onCreateView(fragment)
+        // ボトムバー設定項目の表示を切り替える
+        bottomLayoutMode.observe(fragment.viewLifecycleOwner, {
+            viewModelScope.launch {
+                load(fragment)
+            }
+        })
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(activity: PreferencesActivity, fragment: Fragment) = buildList {
+    override fun createList(fragment: ListPreferencesFragment) = buildList {
         val fragmentManager = fragment.childFragmentManager
 
         addSection(R.string.pref_entry_section_bottom_menu)
         addPrefToggleItem(bottomLayoutMode, R.string.pref_entries_layout_mode_desc)
-        addPrefToggleItem(hideBottomLayoutByScroll, R.string.pref_hide_bottom_appbar_by_scrolling_desc)
-        add(PrefItemBottomMenuSetter(R.string.pref_bottom_bar_items_desc, this@EntryViewModel, fragmentManager))
-        addPrefItem(bottomBarButtonsGravity, R.string.pref_bottom_menu_items_gravity_desc) {
-            openEnumSelectionDialog(
-                GravitySetting.values(),
-                bottomBarButtonsGravity,
-                R.string.pref_bottom_menu_items_gravity_desc,
-                fragmentManager
-            )
-        }
-        addPrefItem(extraBottomItemsAlignment, R.string.pref_extra_bottom_items_alignment_desc) {
-            openEnumSelectionDialog(
-                ExtraBottomItemsAlignment.values(),
-                extraBottomItemsAlignment,
-                R.string.pref_extra_bottom_items_alignment_desc,
-                fragmentManager
-            )
+        if (bottomLayoutMode.value == true) {
+            addPrefToggleItem(hideBottomLayoutByScroll,R.string.pref_hide_bottom_appbar_by_scrolling_desc)
+            add(PrefItemBottomMenuSetter(R.string.pref_bottom_bar_items_desc, this@EntryViewModel, fragmentManager))
+            addPrefItem(bottomBarButtonsGravity, R.string.pref_bottom_menu_items_gravity_desc) {
+                openEnumSelectionDialog(
+                    GravitySetting.values(),
+                    bottomBarButtonsGravity,
+                    R.string.pref_bottom_menu_items_gravity_desc,
+                    fragmentManager
+                )
+            }
+            addPrefItem(extraBottomItemsAlignment, R.string.pref_extra_bottom_items_alignment_desc) {
+                openEnumSelectionDialog(
+                    ExtraBottomItemsAlignment.values(),
+                    extraBottomItemsAlignment,
+                    R.string.pref_extra_bottom_items_alignment_desc,
+                    fragmentManager
+                )
+            }
         }
 
         // --- //
