@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.databinding.FragmentPreferencesInformation2Binding
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesAdapter
 import com.suihan74.utilities.provideViewModel
 
@@ -25,6 +26,11 @@ class ListPreferencesFragment : Fragment() {
             }
         }
     }
+
+    // ------ //
+
+    private val preferencesActivity
+        get() = requireActivity() as PreferencesActivity
 
     // ------ //
 
@@ -52,7 +58,7 @@ class ListPreferencesFragment : Fragment() {
     @OptIn(ExperimentalStdlibApi::class)
     private fun initializeRecyclerView(recyclerView: RecyclerView) {
         val adapter = PreferencesAdapter(viewLifecycleOwner)
-        adapter.submitList(viewModel.createList(childFragmentManager))
+        adapter.submitList(viewModel.createList(preferencesActivity, this))
         recyclerView.adapter = adapter
     }
 }

@@ -108,7 +108,8 @@ class PreferencesAdapter(
  */
 open class PreferenceItem<T>(
     val liveData: LiveData<T>,
-    @StringRes private val titleId: Int,
+    @StringRes val titleId: Int,
+    @StringRes val suffixId: Int? = null,
     private val onLongClick: (()->Unit)? = null,
     private val onClick: (()->Unit)? = null
 ) : PreferencesAdapter.Item {
@@ -134,8 +135,9 @@ open class PreferenceItem<T>(
  */
 class PreferenceToggleItem(
     liveData: MutableLiveData<Boolean>,
-    @StringRes private val titleId: Int,
-) : PreferenceItem<Boolean>(liveData, titleId, null, {
+    @StringRes titleId: Int,
+    @StringRes suffixId: Int? = null
+) : PreferenceItem<Boolean>(liveData, titleId, suffixId, null, {
     liveData.value = liveData.value != true
 })
 
@@ -164,17 +166,19 @@ fun MutableList<PreferencesAdapter.Item>.addButton(
 fun MutableList<PreferencesAdapter.Item>.addPrefItem(
     liveData: LiveData<*>,
     @StringRes titleId: Int,
+    @StringRes suffixId: Int? = null,
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
-) = add(PreferenceItem(liveData, titleId, onLongClick, onClick))
+) = add(PreferenceItem(liveData, titleId, suffixId, onLongClick, onClick))
 
 /**
  * 真偽値をトグルする設定項目を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
     liveData: MutableLiveData<Boolean>,
-    @StringRes titleId: Int
-) = add(PreferenceToggleItem(liveData, titleId))
+    @StringRes titleId: Int,
+    @StringRes suffixId: Int? = null,
+    ) = add(PreferenceToggleItem(liveData, titleId, suffixId))
 
 // ------ //
 
@@ -183,10 +187,10 @@ fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
  */
 object PrefsTextViewBindingAdapters {
     @JvmStatic
-    @BindingAdapter("currentPreference")
-    fun bindPref(textView: TextView, liveData: LiveData<*>?) {
+    @BindingAdapter("currentPreference", "suffixId")
+    fun bindPref(textView: TextView, liveData: LiveData<*>?, suffixId: Int?) {
         val context = textView.context
-        textView.text = when (val value = liveData?.value) {
+        val value = when (val value = liveData?.value) {
             is Number -> value.toString()
 
             is Boolean ->
@@ -199,5 +203,7 @@ object PrefsTextViewBindingAdapters {
 
             else -> ""
         }
+        val suffix = suffixId?.let { context.getText(it) } ?: ""
+        textView.text = String.format("%s%s", value, suffix)
     }
 }

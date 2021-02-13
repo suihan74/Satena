@@ -4,12 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.databinding.ViewDataBinding
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.Fragment
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemAppInfoBinding
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesAdapter
 import com.suihan74.satena.scenes.preferences.addButton
 import com.suihan74.satena.scenes.preferences.addSection
@@ -21,9 +22,20 @@ import org.threeten.bp.LocalDateTime
  */
 class InformationViewModel(private val context: Context) : ListPreferencesViewModel(context) {
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(fragmentManager: FragmentManager) = buildList {
+    override fun createList(activity: PreferencesActivity, fragment: Fragment) = buildList {
+        val fragmentManager = fragment.childFragmentManager
+
         addSection(R.string.pref_information_section_app)
         add(AppInfoHeaderItem())
+        addButton(R.string.pref_information_open_play_store_desc) {
+            runCatching {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    data = Uri.parse(context.getString(R.string.play_store))
+                    `package` = "com.android.vending"
+                }
+                context.startActivity(intent)
+            }
+        }
         addButton(R.string.pref_information_release_notes_desc) {
             ReleaseNotesDialogFragment.createInstance()
                 .show(fragmentManager, null)

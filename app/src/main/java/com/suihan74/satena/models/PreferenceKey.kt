@@ -1,5 +1,6 @@
 package com.suihan74.satena.models
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
@@ -13,7 +14,7 @@ import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
 
-@SharedPreferencesKey(fileName = "default", version = 6, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 7, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -56,7 +57,7 @@ enum class PreferenceKey(
     CLOSE_DIALOG_ON_TOUCH_OUTSIDE(typeInfo<Boolean>(), true),
 
     /** ドロワーの位置 */
-    DRAWER_GRAVITY(typeInfo<Int>(), Gravity.RIGHT),
+    DRAWER_GRAVITY(typeInfo<Int>(), GravitySetting.END.gravity),
 
     /** アプリ内アップデート通知 */
     APP_UPDATE_NOTICE_MODE(typeInfo<Int>(), AppUpdateNoticeMode.FIX.id),
@@ -105,7 +106,7 @@ enum class PreferenceKey(
     ENTRIES_BOTTOM_ITEMS(typeInfo<List<UserBottomItem>>(), listOf(UserBottomItem.SCROLL_TO_TOP)),
 
     /** ボトムバーの項目を左詰めにするか右詰めにするか */
-    ENTRIES_BOTTOM_ITEMS_GRAVITY(typeInfo<Int>(), Gravity.END),
+    ENTRIES_BOTTOM_ITEMS_GRAVITY(typeInfo<Int>(), GravitySetting.END.gravity),
 
     /** ボトムバーの追加項目の表示位置 */
     ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT(typeInfo<Int>(), ExtraBottomItemsAlignment.DEFAULT.id),
@@ -229,6 +230,8 @@ object PreferenceKeyMigration {
 
                 5 -> migrateFromVersion5(context)
 
+                6 -> migrateFromVersion6(context)
+
                 else -> break
             }
         }
@@ -344,6 +347,36 @@ object PreferenceKeyMigration {
                 runCatching {
                     remove(PreferenceKey.DARK_THEME)
                     remove(PreferenceKey.THEME)
+                }
+            }
+        }
+    }
+
+    /**
+     * v6 -> v7
+     *
+     * `Gravity`を`GravitySetting`に変更
+     *
+     * それに伴い`Gravity.LEFT`,`Gravity.RIGHT`を`Gravity.START`,`Gravity.END`に修正する
+     */
+    @SuppressLint("RtlHardcoded")
+    private fun migrateFromVersion6(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val key = PreferenceKey.DRAWER_GRAVITY
+
+        prefs.edit {
+            val result = runCatching {
+                if (Gravity.LEFT == prefs.getInt(key)) {
+                    put(key, GravitySetting.START.gravity)
+                }
+                else {
+                    put(key, GravitySetting.END.gravity)
+                }
+            }
+
+            if (result.isFailure) {
+                runCatching {
+                    remove(PreferenceKey.DRAWER_GRAVITY)
                 }
             }
         }

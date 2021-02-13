@@ -1,7 +1,8 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
-import android.view.Gravity
+import android.content.Intent
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,15 +12,10 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialog
-import com.suihan74.satena.models.AppUpdateNoticeMode
-import com.suihan74.satena.models.DialogThemeSetting
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.Theme
-import com.suihan74.satena.scenes.preferences.PreferencesAdapter
-import com.suihan74.satena.scenes.preferences.addPrefItem
-import com.suihan74.satena.scenes.preferences.addPrefToggleItem
-import com.suihan74.satena.scenes.preferences.addSection
+import com.suihan74.satena.models.*
+import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.putObjectExtra
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -49,8 +45,10 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     )
 
     /** ドロワーの位置 */
-    val drawerGravity = createLiveData<Int>(
-        PreferenceKey.DRAWER_GRAVITY
+    val drawerGravity = createLiveDataEnum(
+        PreferenceKey.DRAWER_GRAVITY,
+        { it.gravity },
+        { i -> GravitySetting.fromGravity(i) }
     )
 
     /** アプリ内アップデート通知を使用する */
@@ -102,7 +100,9 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     // ------ //
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(fragmentManager: FragmentManager) = buildList {
+    override fun createList(activity: PreferencesActivity, fragment: Fragment) = buildList {
+        val fragmentManager = fragment.childFragmentManager
+
         addSection(R.string.pref_generals_section_theme)
         addPrefItem(theme, R.string.pref_generals_theme_desc) { openAppThemeSelectionDialog(fragmentManager) }
         addPrefItem(dialogTheme, R.string.pref_generals_dialog_theme_desc) { openDialogThemeSelectionDialog(fragmentManager) }
@@ -120,11 +120,24 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         addSection(R.string.pref_generals_section_notices)
         addPrefToggleItem(checkNotices, R.string.pref_generals_background_checking_notices_desc)
-        addPrefItem(checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc) {
+        addPrefItem(checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc, R.string.minutes) {
             openCheckingNoticesIntervalSelectionDialog(fragmentManager)
         }
         addPrefToggleItem(noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
         addPrefToggleItem(ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
+
+        // 通知確認タスクの有効無効を切り替える
+        checkNotices.observe(fragment.viewLifecycleOwner, {
+            val app = SatenaApplication.instance
+            if (it) app.startCheckingNotificationsWorker(app, forceReplace = true)
+            else app.stopCheckingNotificationsWorker(app)
+        })
+
+        // 通知確認間隔の変更を反映させるためにWorkを再起動する
+        checkNoticesInterval.observe(fragment.viewLifecycleOwner, {
+            val app = SatenaApplication.instance
+            app.startCheckingNotificationsWorker(app, forceReplace = true)
+        })
 
         // --- //
 
@@ -136,8 +149,12 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_generals_section_backup)
-        add(PreferencesAdapter.Button(R.string.pref_information_save_settings_desc) {})
-        add(PreferencesAdapter.Button(R.string.pref_information_load_settings_desc) {})
+        add(PreferencesAdapter.Button(R.string.pref_information_save_settings_desc) {
+            activity.openSaveSettingsDialog()
+        })
+        add(PreferencesAdapter.Button(R.string.pref_information_load_settings_desc) {
+            activity.openLoadSettingsDialog()
+        })
     }
 
     // ------ //
@@ -191,8 +208,12 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
             .setSingleChoiceItems(
                 labelIds,
                 checkedItem
-            ) { _, which ->
+            ) { f, which ->
                 theme.value = Theme.fromId(which)
+
+                if (checkedItem != which) {
+                    restartActivity(f.requireContext())
+                }
             }
             .dismissOnClickItem(true)
             .create()
@@ -218,10 +239,25 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         dialog.show(fragmentManager, null)
     }
 
+    /** 再起動してテーマ変更を適用する */
+    private fun restartActivity(context: Context) {
+        val intent = Intent(context, PreferencesActivity::class.java).apply {
+            flags =
+                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
+
+            putObjectExtra(
+                PreferencesActivity.EXTRA_CURRENT_TAB,
+                PreferencesTabMode.GENERALS
+            )
+            putExtra(PreferencesActivity.EXTRA_THEME_CHANGED, true)
+        }
+        context.startActivity(intent)
+    }
+
     /** ドロワの配置を選択するダイアログを開く */
     private fun openDrawerGravitySelectionDialog(fragmentManager: FragmentManager) {
-        val items = listOf(Gravity.LEFT, Gravity.RIGHT)
-        val labelIds = listOf(R.string.pref_generals_drawer_gravity_left, R.string.pref_generals_drawer_gravity_right)
+        val items = GravitySetting.values()
+        val labelIds = items.map { it.textId }
         val checkedItem = items.indexOf(drawerGravity.value)
 
         val dialog = AlertDialogFragment.Builder()

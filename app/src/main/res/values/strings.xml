@@ -7,12 +7,19 @@
     <string name="developer_twitter">https://twitter.com/suihan742</string>
     <string name="developer_twitter_id">\@suihan742</string>
     <string name="privacy_policy">https://suihan74.github.io/privacy_satena/</string>
+    <string name="play_store">http://play.google.com/store/apps/details?id=com.suihan74.satena</string>
 
+    <!-- drawer states -->
     <string name="drawer_open">開く</string>
     <string name="drawer_close">閉じる</string>
 
+    <!-- switch, boolean -->
     <string name="on">ON</string>
     <string name="off">OFF</string>
+
+    <!-- gravity -->
+    <string name="gravity_start">左</string>
+    <string name="gravity_end">右</string>
 
     <string name="confirm_dialog_title_simple">確認</string>
 
@@ -158,6 +165,7 @@
     <string name="pref_title_user_tags">ユーザータグ</string>
     <string name="pref_title_fonts">フォント</string>
     <!-- information -->
+    <string name="pref_information_open_play_store_desc">Playストア</string>
     <string name="pref_information_release_notes_desc">更新履歴</string>
     <string name="pref_information_licenses_desc">ライセンス</string>
     <string name="pref_information_save_settings_desc">設定をファイルに保存</string>
