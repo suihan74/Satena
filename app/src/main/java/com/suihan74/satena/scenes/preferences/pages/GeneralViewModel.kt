@@ -183,10 +183,10 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_generals_section_backup)
-        add(PreferencesAdapter.Button(R.string.pref_information_save_settings_desc) {
+        add(PreferencesAdapter.Button(R.string.pref_generals_save_settings_desc) {
             activity.openSaveSettingsDialog()
         })
-        add(PreferencesAdapter.Button(R.string.pref_information_load_settings_desc) {
+        add(PreferencesAdapter.Button(R.string.pref_generals_load_settings_desc) {
             activity.openLoadSettingsDialog()
         })
     }
