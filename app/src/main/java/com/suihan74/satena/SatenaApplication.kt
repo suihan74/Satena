@@ -1,5 +1,6 @@
 package com.suihan74.satena
 
+import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
@@ -8,6 +9,7 @@ import android.net.NetworkRequest
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.getSystemService
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -126,6 +128,12 @@ class SatenaApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        if (!isMainProcess(this)) {
+            // 別プロセスでの起動は`RestartActivity`でのみ使用する
+            // このとき通常の`SatenaApplication`初期化処理は必要ないので行わない
+            return
+        }
+
         // デバッグビルドでクラッシュレポートを送信しない
         FirebaseCrashlytics.getInstance()
             .setCrashlyticsCollectionEnabled(
@@ -180,6 +188,8 @@ class SatenaApplication : Application() {
         super.onTerminate()
     }
 
+    // ------ //
+
     /** 各種グローバルリポジトリを生成 */
     private fun initializeRepositories() {
         ignoredEntriesRepository = IgnoredEntriesRepository(ignoredEntryDao).also {
@@ -193,6 +203,8 @@ class SatenaApplication : Application() {
             HatenaClient
         )
     }
+
+    // ------ //
 
     /** ネットワークの接続状態を監視する */
     private fun registerNetworkCallback() {
@@ -209,6 +221,8 @@ class SatenaApplication : Application() {
         cm.unregisterNetworkCallback(networkReceiver.networkCallback)
     }
 
+    // ------ //
+
     /** DBを準備する */
     fun initializeDataBase() {
         appDatabase = Room.databaseBuilder(this, AppDatabase::class.java, APP_DATABASE_FILE_NAME)
@@ -221,6 +235,8 @@ class SatenaApplication : Application() {
     fun updatePreferencesVersion() {
         PreferenceKeyMigration.check(applicationContext)
     }
+
+    // ------ //
 
     /** 通知確認をバックグラウンドで開始 */
     fun startCheckingNotificationsWorker(context: Context, forceReplace: Boolean = false) {
@@ -277,6 +293,21 @@ class SatenaApplication : Application() {
             }
             Log.i("WorkManager", "stop checking notifications")
         }
+    }
+
+    // ------ //
+
+    /**
+     * メインプロセスで実行されているかを確認する
+     *
+     * @throws NullPointerException `ActivityManager`が取得できない
+     */
+    private fun isMainProcess(context: Context) : Boolean {
+        val manager = context.getSystemService<ActivityManager>()!!
+        val pid = android.os.Process.myPid()
+        return manager.runningAppProcesses.firstOrNull {
+            it.processName == BuildConfig.APPLICATION_ID && it.pid == pid
+        } != null
     }
 
     // ------ //
