@@ -104,15 +104,45 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         val fragmentManager = fragment.childFragmentManager
 
         addSection(R.string.pref_generals_section_theme)
-        addPrefItem(theme, R.string.pref_generals_theme_desc) { openAppThemeSelectionDialog(fragmentManager) }
-        addPrefItem(dialogTheme, R.string.pref_generals_dialog_theme_desc) { openDialogThemeSelectionDialog(fragmentManager) }
-        addPrefItem(drawerGravity, R.string.pref_generals_drawer_gravity_desc) { openDrawerGravitySelectionDialog(fragmentManager) }
+        addPrefItem(theme, R.string.pref_generals_theme_desc) {
+            openEnumSelectionDialog(
+                Theme.values(),
+                theme,
+                R.string.pref_generals_theme_desc,
+                fragmentManager
+            ) { f, old, new ->
+                if (old != new) {
+                    restartActivity(f.requireContext())
+                }
+            }
+        }
+        addPrefItem(dialogTheme, R.string.pref_generals_dialog_theme_desc) {
+            openEnumSelectionDialog(
+                DialogThemeSetting.values(),
+                dialogTheme,
+                R.string.pref_generals_dialog_theme_desc,
+                fragmentManager
+            )
+        }
+        addPrefItem(drawerGravity, R.string.pref_generals_drawer_gravity_desc) {
+            openEnumSelectionDialog(
+                GravitySetting.values(),
+                drawerGravity,
+                R.string.pref_generals_drawer_gravity_desc,
+                fragmentManager
+            )
+        }
 
         // --- //
 
         addSection(R.string.pref_generals_section_update)
         addPrefItem(appUpdateNoticeMode, R.string.pref_generals_app_update_notice_mode_desc) {
-            openAppUpdateNoticeModeSelectionDialog(fragmentManager)
+            openEnumSelectionDialog(
+                AppUpdateNoticeMode.values(),
+                appUpdateNoticeMode,
+                R.string.pref_generals_app_update_notice_mode_desc,
+                fragmentManager
+            )
         }
         addPrefToggleItem(noticeIgnoredAppUpdate, R.string.pref_generals_notice_ignored_app_update_desc)
 
@@ -196,49 +226,6 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     // ------ //
 
-    /** アプリのテーマを選択するダイアログを開く */
-    private fun openAppThemeSelectionDialog(fragmentManager: FragmentManager) {
-        val values = Theme.values()
-        val labelIds = values.map { it.textId }
-        val checkedItem = values.indexOf(theme.value)
-
-        val dialog = AlertDialogFragment.Builder()
-            .setTitle(R.string.pref_generals_theme_desc)
-            .setNegativeButton(R.string.dialog_cancel)
-            .setSingleChoiceItems(
-                labelIds,
-                checkedItem
-            ) { f, which ->
-                theme.value = Theme.fromId(which)
-
-                if (checkedItem != which) {
-                    restartActivity(f.requireContext())
-                }
-            }
-            .dismissOnClickItem(true)
-            .create()
-        dialog.show(fragmentManager, null)
-    }
-
-    /** ダイアログのテーマを選択するダイアログを開く */
-    private fun openDialogThemeSelectionDialog(fragmentManager: FragmentManager) {
-        val labelIds = DialogThemeSetting.values().map { it.textId }
-        val checkedItem = DialogThemeSetting.values().indexOf(dialogTheme.value)
-
-        val dialog = AlertDialogFragment.Builder()
-            .setTitle(R.string.pref_generals_dialog_theme_desc)
-            .setNegativeButton(R.string.dialog_cancel)
-            .setSingleChoiceItems(
-                labelIds,
-                checkedItem
-            ) { _, which ->
-                dialogTheme.value = DialogThemeSetting.fromOrdinal(which)
-            }
-            .dismissOnClickItem(true)
-            .create()
-        dialog.show(fragmentManager, null)
-    }
-
     /** 再起動してテーマ変更を適用する */
     private fun restartActivity(context: Context) {
         val intent = Intent(context, PreferencesActivity::class.java).apply {
@@ -252,44 +239,6 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
             putExtra(PreferencesActivity.EXTRA_THEME_CHANGED, true)
         }
         context.startActivity(intent)
-    }
-
-    /** ドロワの配置を選択するダイアログを開く */
-    private fun openDrawerGravitySelectionDialog(fragmentManager: FragmentManager) {
-        val items = GravitySetting.values()
-        val labelIds = items.map { it.textId }
-        val checkedItem = items.indexOf(drawerGravity.value)
-
-        val dialog = AlertDialogFragment.Builder()
-            .setTitle(R.string.pref_generals_drawer_gravity_desc)
-            .setNegativeButton(R.string.dialog_cancel)
-            .setSingleChoiceItems(
-                labelIds,
-                checkedItem
-            ) { _, which ->
-                drawerGravity.value = items[which]
-            }
-            .dismissOnClickItem(true)
-            .create()
-        dialog.show(fragmentManager,null)
-    }
-
-    /** 新バージョン通知対象を選択するダイアログを開く */
-    private fun openAppUpdateNoticeModeSelectionDialog(fragmentManager: FragmentManager) {
-        val currentValue = appUpdateNoticeMode.value ?: AppUpdateNoticeMode.FIX
-        val currentIdx = AppUpdateNoticeMode.values().indexOf(currentValue)
-        val dialog = AlertDialogFragment.Builder()
-            .setTitle(R.string.pref_generals_app_update_notice_mode_desc)
-            .setSingleChoiceItems(
-                AppUpdateNoticeMode.values().map { it.textId },
-                currentIdx
-            ) { _, which ->
-                appUpdateNoticeMode.value = AppUpdateNoticeMode.fromOrdinal(which)
-            }
-            .dismissOnClickItem(true)
-            .setNegativeButton(R.string.dialog_cancel)
-            .create()
-        dialog.show(fragmentManager, null)
     }
 
     /** 通知確認間隔を設定するダイアログを開く */

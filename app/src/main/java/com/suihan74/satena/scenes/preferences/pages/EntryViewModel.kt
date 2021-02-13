@@ -1,22 +1,20 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.viewModelScope
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.addPrefItem
 import com.suihan74.satena.scenes.preferences.addPrefToggleItem
 import com.suihan74.satena.scenes.preferences.addSection
-import com.suihan74.satena.scenes.preferences.bottomBar.BottomBarItemSelectionDialog
-import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
 
@@ -38,8 +36,10 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     )
 
     /** 下部バーの項目を右詰めで表示するか左詰めで表示するか */
-    val bottomBarButtonsGravity = createLiveData<Int>(
-        PreferenceKey.ENTRIES_BOTTOM_ITEMS_GRAVITY
+    val bottomBarButtonsGravity = createLiveDataEnum(
+        PreferenceKey.ENTRIES_BOTTOM_ITEMS_GRAVITY,
+        { it.gravity },
+        { GravitySetting.fromGravity(it) }
     )
 
     /** 下部バーの追加項目の配置方法 */
@@ -126,37 +126,88 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     // ------ //
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(fragmentManager: FragmentManager) = buildList {
+    override fun createList(activity: PreferencesActivity, fragment: Fragment) = buildList {
+        val fragmentManager = fragment.childFragmentManager
+
         addSection(R.string.pref_entry_section_bottom_menu)
         addPrefToggleItem(bottomLayoutMode, R.string.pref_entries_layout_mode_desc)
         addPrefToggleItem(hideBottomLayoutByScroll, R.string.pref_hide_bottom_appbar_by_scrolling_desc)
         // addPrefItem(, R.string.pref_bottom_bar_items_desc)
         addPrefItem(bottomBarButtonsGravity, R.string.pref_bottom_menu_items_gravity_desc) {
+            openEnumSelectionDialog(
+                GravitySetting.values(),
+                bottomBarButtonsGravity,
+                R.string.pref_bottom_menu_items_gravity_desc,
+                fragmentManager
+            )
         }
         addPrefItem(extraBottomItemsAlignment, R.string.pref_extra_bottom_items_alignment_desc) {
+            openEnumSelectionDialog(
+                ExtraBottomItemsAlignment.values(),
+                extraBottomItemsAlignment,
+                R.string.pref_extra_bottom_items_alignment_desc,
+                fragmentManager
+            )
         }
 
         // --- //
 
         addSection(R.string.pref_entry_section_click)
         addPrefItem(singleTapAction, R.string.pref_entries_single_tap_action_desc) {
+            openEnumSelectionDialog(
+                TapEntryAction.values(),
+                singleTapAction,
+                R.string.pref_entries_single_tap_action_desc,
+                fragmentManager
+            )
         }
         addPrefItem(multipleTapAction, R.string.pref_entries_multiple_tap_action_desc) {
+            openEnumSelectionDialog(
+                TapEntryAction.values(),
+                multipleTapAction,
+                R.string.pref_entries_multiple_tap_action_desc,
+                fragmentManager
+            )
         }
         addPrefItem(longTapAction, R.string.pref_entries_long_tap_action_desc) {
+            openEnumSelectionDialog(
+                TapEntryAction.values(),
+                longTapAction,
+                R.string.pref_entries_long_tap_action_desc,
+                fragmentManager
+            )
         }
-        addPrefItem(multipleTapDuration, R.string.pref_entries_multiple_tap_duration_desc) {
+        addPrefItem(multipleTapDuration, R.string.pref_entries_multiple_tap_duration_desc, R.string.pref_entries_multiple_tap_duration_unit) {
+            openMultipleTapDurationDialog(fragmentManager)
         }
 
         // --- //
 
         addSection(R.string.pref_entry_section_category)
         addPrefItem(homeCategory, R.string.home_category_desc) {
+            val categories = (
+                if (HatenaClient.signedIn()) Category.valuesWithSignedIn()
+                else Category.valuesWithoutSignedIn()
+            ).filter { it.willBeHome }.toTypedArray()
+
+            openEnumSelectionDialog(
+                categories,
+                homeCategory,
+                R.string.home_category_desc,
+                fragmentManager
+            )
         }
         addPrefItem(initialTab, R.string.pref_entries_initial_tab_desc) {
+            // TODO
         }
         addPrefToggleItem(changeHomeByLongTappingTab, R.string.pref_entries_change_home_by_long_tapping_desc)
         addPrefItem(categoriesMode, R.string.pref_entries_categories_mode_desc) {
+            openEnumSelectionDialog(
+                CategoriesMode.values(),
+                categoriesMode,
+                R.string.pref_entries_categories_mode_desc,
+                fragmentManager
+            )
         }
 
         // --- //
@@ -168,35 +219,39 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_entry_section_history)
-        addPrefItem(historyMaxSize, R.string.pref_entries_history_max_size_desc) {
+        addPrefItem(historyMaxSize, R.string.pref_entries_history_max_size_desc, R.string.pref_entries_history_max_size_text) {
+            openHistorySizeSelectionDialog(fragmentManager)
         }
 
         // --- //
 
         addSection(R.string.pref_entry_section_read_later)
         addPrefItem(entryReadActionType, R.string.pref_entries_read_action_type_desc) {
+            openEnumSelectionDialog(
+                EntryReadActionType.values(),
+                entryReadActionType,
+                R.string.pref_entries_read_action_type_desc,
+                fragmentManager
+            )
         }
     }
 
     // ------ //
 
-    /** ボトムバーの項目をセットするダイアログを表示する */
-    fun showBottomBarItemSetterDialog(
-        args: UserBottomItemsSetter.OnMenuItemClickArguments,
-        fragmentManager: FragmentManager,
-        tag: String? = null
-    ) = viewModelScope.launch(Dispatchers.Main) {
-        BottomBarItemSelectionDialog.createInstance(args.items, args.target).run {
-            showAllowingStateLoss(fragmentManager, tag)
-
-            setOnSelectItemListener { (position, old, new) ->
-                onSelectItem(position, old, new)
-            }
-
-            setOnReorderItemListener { (posA, posB, itemA, itemB) ->
-                onReorderItem(posA, posB, itemA, itemB!!)
-            }
+    /**
+     * 複数回タップを検知する待ち時間を設定するダイアログを開く
+     */
+    private fun openMultipleTapDurationDialog(fragmentManager: FragmentManager) {
+        val dialog = NumberPickerDialog.createInstance(
+            min = 0,
+            max = 500,
+            default = multipleTapDuration.value!!.toInt(),
+            titleId = R.string.pref_entries_multiple_tap_duration_desc,
+            messageId = R.string.pref_entries_multiple_tap_duration_dialog_message
+        ) { value ->
+            multipleTapDuration.value = value.toLong()
         }
+        dialog.show(fragmentManager, null)
     }
 
     /** ボトムバーの項目を追加・編集 */
@@ -238,5 +293,19 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 }
             }
         }
+    }
+
+    /** ブクマ閲覧履歴の最大保存件数を設定するダイアログを開く */
+    private fun openHistorySizeSelectionDialog(fragmentManager: FragmentManager) {
+        val dialog = NumberPickerDialog.createInstance(
+            min = 1,
+            max = 100,
+            default = historyMaxSize.value!!,
+            titleId = R.string.pref_entries_history_max_size_dialog_title,
+            messageId = R.string.pref_browser_clear_history_dialog_message
+        ) { value ->
+            historyMaxSize.value = value
+        }
+        dialog.show(fragmentManager, null)
     }
 }
