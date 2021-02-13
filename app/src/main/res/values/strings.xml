@@ -9,11 +9,17 @@
     <string name="privacy_policy">https://suihan74.github.io/privacy_satena/</string>
     <string name="play_store">http://play.google.com/store/apps/details?id=com.suihan74.satena</string>
 
+    <!-- drawer states -->
     <string name="drawer_open">開く</string>
     <string name="drawer_close">閉じる</string>
 
+    <!-- switch, boolean -->
     <string name="on">ON</string>
     <string name="off">OFF</string>
+
+    <!-- gravity -->
+    <string name="gravity_start">左</string>
+    <string name="gravity_end">右</string>
 
     <string name="confirm_dialog_title_simple">確認</string>
 

@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
 import android.content.Intent
-import android.view.Gravity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
@@ -13,10 +12,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialog
-import com.suihan74.satena.models.AppUpdateNoticeMode
-import com.suihan74.satena.models.DialogThemeSetting
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.Theme
+import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.putObjectExtra
@@ -49,8 +45,10 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     )
 
     /** ドロワーの位置 */
-    val drawerGravity = createLiveData<Int>(
-        PreferenceKey.DRAWER_GRAVITY
+    val drawerGravity = createLiveDataEnum(
+        PreferenceKey.DRAWER_GRAVITY,
+        { it.gravity },
+        { i -> GravitySetting.fromGravity(i) }
     )
 
     /** アプリ内アップデート通知を使用する */
@@ -258,8 +256,8 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     /** ドロワの配置を選択するダイアログを開く */
     private fun openDrawerGravitySelectionDialog(fragmentManager: FragmentManager) {
-        val items = listOf(Gravity.LEFT, Gravity.RIGHT)
-        val labelIds = listOf(R.string.pref_generals_drawer_gravity_left, R.string.pref_generals_drawer_gravity_right)
+        val items = GravitySetting.values()
+        val labelIds = items.map { it.textId }
         val checkedItem = items.indexOf(drawerGravity.value)
 
         val dialog = AlertDialogFragment.Builder()
