@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="description_app_icon">アプリアイコン</string>
+    <string name="description_user_icon">ユーザーアイコン</string>
+    <string name="description_delete_account">アカウント削除</string>
+</resources>

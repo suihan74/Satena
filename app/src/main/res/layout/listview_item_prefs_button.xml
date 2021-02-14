@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
     <data>
-        <import type="androidx.lifecycle.LiveData"/>
-
         <variable
                 name="titleId"
                 type="Integer" />

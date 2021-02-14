@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.preferences.pages.AccountViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:background="?selectableItemBackground"
+            android:paddingHorizontal="@dimen/pref_list_horizontal_padding"
+            android:paddingVertical="14dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/userIcon"
+                android:contentDescription="@string/description_user_icon"
+                src="@{vm.accountHatena.userIconUrl}"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/userName"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        <TextView
+                android:id="@+id/userName"
+                android:text="@{vm.accountHatena.name}"
+                tools:text="userName"
+                android:textSize="16sp"
+                android:textColor="?textColor"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/userIcon"
+                app:layout_constraintEnd_toStartOf="@id/deleteButton"
+                android:layout_marginStart="@dimen/pref_list_horizontal_padding"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <ImageButton
+                android:id="@+id/deleteButton"
+                android:contentDescription="@string/description_delete_account"
+                android:foreground="@drawable/ic_baseline_close"
+                android:foregroundTint="?textColor"
+                android:background="@drawable/control_background_40dp_material"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/userName"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginHorizontal="@dimen/pref_list_horizontal_padding"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
