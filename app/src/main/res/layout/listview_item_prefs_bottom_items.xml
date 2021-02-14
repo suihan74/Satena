@@ -16,7 +16,7 @@
             xmlns:tools="http://schemas.android.com/tools"
             android:background="?selectableItemBackground"
             android:paddingHorizontal="@dimen/pref_list_horizontal_padding"
-            android:paddingVertical="14dp"
+            android:paddingVertical="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
