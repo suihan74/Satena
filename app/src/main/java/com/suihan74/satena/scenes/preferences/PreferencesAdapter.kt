@@ -8,6 +8,7 @@ import androidx.annotation.StringRes
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -84,6 +85,7 @@ class PreferencesAdapter(
      * 汎用的なボタン
      */
     open class Button(
+        val fragment: Fragment,
         @StringRes val textId: Int,
         @StringRes val subTextId: Int? = null,
         var onLongClick : (()->Unit)? = null,
@@ -103,10 +105,12 @@ class PreferencesAdapter(
             }
         }
         override fun areItemsTheSame(old: Item, new: Item): Boolean =
-            old is Section && new is Section && old.textId == new.textId
+            old is Button && new is Button && old.textId == new.textId
 
         override fun areContentsTheSame(old: Item, new: Item): Boolean =
-            old is Section && new is Section && old == new
+            old is Button && new is Button &&
+                    old.fragment == new.fragment &&
+                    old.textId == new.textId
     }
 
     // ------ //
@@ -128,6 +132,7 @@ class PreferencesAdapter(
  * 設定アイテム
  */
 open class PreferenceItem<T>(
+    val fragment: Fragment,
     val liveData: LiveData<T>,
     @StringRes val titleId: Int,
     @StringRes val suffixId: Int? = null,
@@ -155,6 +160,7 @@ open class PreferenceItem<T>(
 
     override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) : Boolean =
         old is PreferenceItem<*> && new is PreferenceItem<*> &&
+                old.fragment == new.fragment &&
                 old.titleId == new.titleId &&
                 old.suffixId == new.suffixId &&
                 old.liveData.value == new.liveData.value
@@ -164,10 +170,11 @@ open class PreferenceItem<T>(
  * 設定用トグルボタン
  */
 open class PreferenceToggleItem(
+    fragment: Fragment,
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
     @StringRes suffixId: Int? = null
-) : PreferenceItem<Boolean>(liveData, titleId, suffixId, null, {
+) : PreferenceItem<Boolean>(fragment, liveData, titleId, suffixId, null, {
     liveData.value = liveData.value != true
 })
 
@@ -213,31 +220,34 @@ fun MutableList<PreferencesAdapter.Item>.addSection(
  * ボタン(非設定項目)を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addButton(
+    fragment: Fragment,
     @StringRes textId: Int,
     @StringRes subTextId: Int? = null,
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
-) = add(PreferencesAdapter.Button(textId, subTextId, onLongClick, onClick))
+) = add(PreferencesAdapter.Button(fragment, textId, subTextId, onLongClick, onClick))
 
 /**
  * 設定項目を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addPrefItem(
+    fragment: Fragment,
     liveData: LiveData<*>,
     @StringRes titleId: Int,
     @StringRes suffixId: Int? = null,
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
-) = add(PreferenceItem(liveData, titleId, suffixId, onLongClick, onClick))
+) = add(PreferenceItem(fragment, liveData, titleId, suffixId, onLongClick, onClick))
 
 /**
  * 真偽値をトグルする設定項目を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
+    fragment: Fragment,
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
     @StringRes suffixId: Int? = null,
-    ) = add(PreferenceToggleItem(liveData, titleId, suffixId))
+    ) = add(PreferenceToggleItem(fragment, liveData, titleId, suffixId))
 
 // ------ //
 

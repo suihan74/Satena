@@ -87,7 +87,7 @@ class BookmarkViewModel(context: Context) : ListPreferencesViewModel(context) {
         val fragmentManager = fragment.childFragmentManager
 
         addSection(R.string.pref_bookmark_section_tab)
-        addPrefItem(initialTabPosition, R.string.pref_bookmarks_initial_tab_desc) {
+        addPrefItem(fragment, initialTabPosition, R.string.pref_bookmarks_initial_tab_desc) {
             openEnumSelectionDialog(
                 BookmarksTabType.values(),
                 initialTabPosition,
@@ -95,32 +95,32 @@ class BookmarkViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefToggleItem(changeHomeByLongTapping, R.string.pref_bookmarks_change_home_by_long_tapping_desc)
+        addPrefToggleItem(fragment, changeHomeByLongTapping, R.string.pref_bookmarks_change_home_by_long_tapping_desc)
 
         // --- //
 
         addSection(R.string.pref_bookmark_section_dialog)
-        addPrefToggleItem(confirmPostBookmark, R.string.pref_bookmarks_using_post_dialog_desc)
-        addPrefToggleItem(confirmPostStar, R.string.pref_bookmarks_using_post_star_dialog_desc)
+        addPrefToggleItem(fragment, confirmPostBookmark, R.string.pref_bookmarks_using_post_dialog_desc)
+        addPrefToggleItem(fragment, confirmPostStar, R.string.pref_bookmarks_using_post_star_dialog_desc)
 
         // --- //
 
         addSection(R.string.pref_bookmark_section_behavior)
-        addPrefToggleItem(useAddStarPopupMenu, R.string.pref_bookmarks_using_add_star_popup_menu_desc)
-        addPrefToggleItem(toggleToolbarByScrolling, R.string.pref_bookmarks_hiding_toolbar_by_scrolling)
-        addPrefToggleItem(toggleButtonsByScrolling, R.string.pref_bookmarks_hiding_buttons_with_scrolling_desc)
+        addPrefToggleItem(fragment, useAddStarPopupMenu, R.string.pref_bookmarks_using_add_star_popup_menu_desc)
+        addPrefToggleItem(fragment, toggleToolbarByScrolling, R.string.pref_bookmarks_hiding_toolbar_by_scrolling)
+        addPrefToggleItem(fragment, toggleButtonsByScrolling, R.string.pref_bookmarks_hiding_buttons_with_scrolling_desc)
 
         // --- //
 
         addSection(R.string.pref_bookmark_section_ignoring)
-        addPrefToggleItem(displayMutedBookmarksInAllBookmarksTab, R.string.pref_bookmarks_showing_ignored_users_in_all_bookmarks_desc)
-        addPrefToggleItem(displayMutedBookmarksInMention, R.string.pref_bookmarks_showing_ignored_users_with_calling_desc)
-        addPrefToggleItem(displayIgnoredUsersStar, R.string.pref_bookmarks_showing_stars_of_ignored_users_desc)
+        addPrefToggleItem(fragment, displayMutedBookmarksInAllBookmarksTab, R.string.pref_bookmarks_showing_ignored_users_in_all_bookmarks_desc)
+        addPrefToggleItem(fragment, displayMutedBookmarksInMention, R.string.pref_bookmarks_showing_ignored_users_with_calling_desc)
+        addPrefToggleItem(fragment, displayIgnoredUsersStar, R.string.pref_bookmarks_showing_stars_of_ignored_users_desc)
 
         // --- //
 
         addSection(R.string.pref_bookmark_section_link)
-        addPrefItem(linkSingleTapAction, R.string.pref_bookmark_link_single_tap_action_desc) {
+        addPrefItem(fragment, linkSingleTapAction, R.string.pref_bookmark_link_single_tap_action_desc) {
             openEnumSelectionDialog(
                 TapEntryAction.values(),
                 linkSingleTapAction,
@@ -128,7 +128,7 @@ class BookmarkViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefItem(linkLongTapAction, R.string.pref_bookmark_link_long_tap_action_desc) {
+        addPrefItem(fragment, linkLongTapAction, R.string.pref_bookmark_link_long_tap_action_desc) {
             openEnumSelectionDialog(
                 TapEntryAction.values(),
                 linkLongTapAction,

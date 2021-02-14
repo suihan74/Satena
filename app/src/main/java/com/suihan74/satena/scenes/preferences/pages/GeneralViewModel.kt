@@ -121,7 +121,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         val fragmentManager = fragment.childFragmentManager
 
         addSection(R.string.pref_generals_section_theme)
-        addPrefItem(theme, R.string.pref_generals_theme_desc) {
+        addPrefItem(fragment, theme, R.string.pref_generals_theme_desc) {
             openEnumSelectionDialog(
                 Theme.values(),
                 theme,
@@ -133,7 +133,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
                 }
             }
         }
-        addPrefItem(dialogTheme, R.string.pref_generals_dialog_theme_desc) {
+        addPrefItem(fragment, dialogTheme, R.string.pref_generals_dialog_theme_desc) {
             openEnumSelectionDialog(
                 DialogThemeSetting.values(),
                 dialogTheme,
@@ -141,7 +141,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefItem(drawerGravity, R.string.pref_generals_drawer_gravity_desc) {
+        addPrefItem(fragment, drawerGravity, R.string.pref_generals_drawer_gravity_desc) {
             openEnumSelectionDialog(
                 GravitySetting.values(),
                 drawerGravity,
@@ -153,7 +153,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_generals_section_update)
-        addPrefItem(appUpdateNoticeMode, R.string.pref_generals_app_update_notice_mode_desc) {
+        addPrefItem(fragment, appUpdateNoticeMode, R.string.pref_generals_app_update_notice_mode_desc) {
             openEnumSelectionDialog(
                 AppUpdateNoticeMode.values(),
                 appUpdateNoticeMode,
@@ -161,34 +161,34 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefToggleItem(noticeIgnoredAppUpdate, R.string.pref_generals_notice_ignored_app_update_desc)
+        addPrefToggleItem(fragment, noticeIgnoredAppUpdate, R.string.pref_generals_notice_ignored_app_update_desc)
 
         // --- //
 
         addSection(R.string.pref_generals_section_notices)
-        addPrefToggleItem(checkNotices, R.string.pref_generals_background_checking_notices_desc)
-        addPrefItem(checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc, R.string.minutes) {
+        addPrefToggleItem(fragment, checkNotices, R.string.pref_generals_background_checking_notices_desc)
+        addPrefItem(fragment, checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc, R.string.minutes) {
             openCheckingNoticesIntervalSelectionDialog(fragmentManager)
         }
-        addPrefToggleItem(noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
-        addPrefToggleItem(ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
+        addPrefToggleItem(fragment, noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
+        addPrefToggleItem(fragment, ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
 
         // --- //
 
         addSection(R.string.pref_generals_section_dialogs)
-        addPrefToggleItem(closeDialogOnTouchOutside, R.string.pref_generals_close_dialog_touch_outside_desc)
-        addPrefToggleItem(confirmTerminationDialog, R.string.pref_generals_using_termination_dialog_desc)
-        addPrefToggleItem(displayReleaseNotes, R.string.pref_generals_show_release_notes_after_update_desc)
+        addPrefToggleItem(fragment, closeDialogOnTouchOutside, R.string.pref_generals_close_dialog_touch_outside_desc)
+        addPrefToggleItem(fragment, confirmTerminationDialog, R.string.pref_generals_using_termination_dialog_desc)
+        addPrefToggleItem(fragment, displayReleaseNotes, R.string.pref_generals_show_release_notes_after_update_desc)
 
         // --- //
 
         addSection(R.string.pref_generals_section_backup)
-        add(PreferencesAdapter.Button(R.string.pref_generals_save_settings_desc) {
+        addButton(fragment, R.string.pref_generals_save_settings_desc) {
             activity.openSaveSettingsDialog()
-        })
-        add(PreferencesAdapter.Button(R.string.pref_generals_load_settings_desc) {
+        }
+        addButton(fragment, R.string.pref_generals_load_settings_desc) {
             activity.openLoadSettingsDialog()
-        })
+        }
     }
 
     // ------ //

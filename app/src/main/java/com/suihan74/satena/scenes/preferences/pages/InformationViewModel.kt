@@ -26,7 +26,7 @@ class InformationViewModel(private val context: Context) : ListPreferencesViewMo
 
         addSection(R.string.pref_information_section_app)
         add(AppInfoHeaderItem())
-        addButton(R.string.pref_information_open_play_store_desc) {
+        addButton(fragment, R.string.pref_information_open_play_store_desc) {
             runCatching {
                 val intent = Intent(Intent.ACTION_VIEW).apply {
                     data = Uri.parse(context.getString(R.string.play_store))
@@ -35,7 +35,7 @@ class InformationViewModel(private val context: Context) : ListPreferencesViewMo
                 context.startActivity(intent)
             }
         }
-        addButton(R.string.pref_information_release_notes_desc) {
+        addButton(fragment, R.string.pref_information_release_notes_desc) {
             ReleaseNotesDialogFragment.createInstance()
                 .show(fragmentManager, null)
         }
@@ -43,10 +43,10 @@ class InformationViewModel(private val context: Context) : ListPreferencesViewMo
         // --- //
 
         addSection(R.string.pref_information_section_developer)
-        addButton(R.string.developer) { openUrl(R.string.developer_hatena) }
-        addButton(R.string.pref_information_developer_website) { openUrl(R.string.developer_website) }
-        addButton(R.string.pref_information_developer_twitter) { openUrl(R.string.developer_twitter) }
-        addButton(R.string.pref_information_developer_email) {
+        addButton(fragment, R.string.developer) { openUrl(R.string.developer_hatena) }
+        addButton(fragment, R.string.pref_information_developer_website) { openUrl(R.string.developer_website) }
+        addButton(fragment, R.string.pref_information_developer_twitter) { openUrl(R.string.developer_twitter) }
+        addButton(fragment, R.string.pref_information_developer_email) {
             runCatching {
                 val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")).also {
                     it.putExtra(
@@ -61,9 +61,9 @@ class InformationViewModel(private val context: Context) : ListPreferencesViewMo
         // --- //
 
         addSection(R.string.pref_information_section_info)
-        addButton(R.string.pref_information_hatena_rules) { openUrl(R.string.hatena_rule) }
-        addButton(R.string.pref_information_privacy_policy) { openUrl(R.string.privacy_policy) }
-        addButton(R.string.pref_information_licenses_desc) {
+        addButton(fragment, R.string.pref_information_hatena_rules) { openUrl(R.string.hatena_rule) }
+        addButton(fragment, R.string.pref_information_privacy_policy) { openUrl(R.string.privacy_policy) }
+        addButton(fragment, R.string.pref_information_licenses_desc) {
             runCatching {
                 val intent = Intent(context, OssLicensesMenuActivity::class.java).apply {
                     putExtra("title", "Licenses")
@@ -92,6 +92,7 @@ class InformationViewModel(private val context: Context) : ListPreferencesViewMo
      */
     class AppInfoHeaderItem : PreferencesAdapter.Item {
         override val layoutId: Int = R.layout.listview_item_app_info
+
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemAppInfoBinding> {
                 it.copyrightYear = 2019.let { startYear -> LocalDateTime.now().year.let { y ->

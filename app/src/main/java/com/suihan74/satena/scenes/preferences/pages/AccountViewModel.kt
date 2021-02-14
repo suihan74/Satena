@@ -6,6 +6,7 @@ import android.net.Uri
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.databinding.ViewDataBinding
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Account
@@ -49,24 +50,24 @@ class AccountViewModel(
 
         addSection(R.string.pref_accounts_service_name_hatena)
         if (accountHatena.value == null) {
-            addButton(R.string.sign_in) {
+            addButton(fragment, R.string.sign_in) {
                 openHatenaAuthenticationActivity(context)
             }
         }
         else {
-            add(PrefItemHatenaAccount(this@AccountViewModel))
+            add(PrefItemHatenaAccount(fragment, this@AccountViewModel))
         }
 
         // --- //
 
         addSection(R.string.pref_accounts_service_name_mastodon)
         if (accountMastodon.value == null) {
-            addButton(R.string.sign_in) {
+            addButton(fragment, R.string.sign_in) {
                 openMastodonAuthenticationActivity(context)
             }
         }
         else {
-            add(PrefItemMastodonAccount(this@AccountViewModel))
+            add(PrefItemMastodonAccount(fragment, this@AccountViewModel))
         }
     }
 
@@ -88,9 +89,11 @@ class AccountViewModel(
      * サインイン済みのはてなアカウントボタン
      */
     class PrefItemHatenaAccount(
+        private val fragment: Fragment,
         private val viewModel: AccountViewModel
     ) : PreferencesAdapter.Item {
         override val layoutId: Int = R.layout.listview_item_prefs_sign_in_hatena
+
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemPrefsSignInHatenaBinding> {
                 it.vm = viewModel
@@ -99,15 +102,26 @@ class AccountViewModel(
                 }
             }
         }
+
+        override fun areItemsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is PrefItemHatenaAccount && new is PrefItemHatenaAccount &&
+                    old.viewModel == new.viewModel
+
+        override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is PrefItemHatenaAccount && new is PrefItemHatenaAccount &&
+                    old.fragment == new.fragment &&
+                    old.viewModel.accountMastodon.value == new.viewModel.accountMastodon.value
     }
 
     /**
      * サインイン済みのMastodonアカウントボタン
      */
     class PrefItemMastodonAccount(
+        private val fragment: Fragment,
         private val viewModel: AccountViewModel
     ) : PreferencesAdapter.Item {
         override val layoutId: Int = R.layout.listview_item_prefs_sign_in_mastodon
+
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemPrefsSignInMastodonBinding> {
                 it.vm = viewModel
@@ -116,6 +130,15 @@ class AccountViewModel(
                 }
             }
         }
+
+        override fun areItemsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is PrefItemMastodonAccount && new is PrefItemMastodonAccount &&
+                    old.viewModel == new.viewModel
+
+        override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is PrefItemMastodonAccount && new is PrefItemMastodonAccount &&
+                    old.fragment == new.fragment &&
+                    old.viewModel.accountMastodon.value == new.viewModel.accountMastodon.value
     }
 
     object MastodonAccountBindingAdapters {
