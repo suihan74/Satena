@@ -389,5 +389,15 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 }
             }
         }
+
+        override fun areItemsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is PrefItemBottomMenuSetter && new is PrefItemBottomMenuSetter &&
+                    old.titleId == new.titleId
+
+        override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is PrefItemBottomMenuSetter && new is PrefItemBottomMenuSetter &&
+                    old.fragmentManager == new.fragmentManager &&
+                    old.titleId == new.titleId &&
+                    old.viewModel == new.viewModel
     }
 }
