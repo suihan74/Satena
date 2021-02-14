@@ -37,7 +37,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/userIcon"
                 app:layout_constraintEnd_toStartOf="@id/deleteButton"
-                android:layout_marginStart="@dimen/pref_list_horizontal_padding"
+                android:layout_marginHorizontal="12dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
 
@@ -51,7 +51,6 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/userName"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginHorizontal="@dimen/pref_list_horizontal_padding"
                 android:layout_width="24dp"
                 android:layout_height="24dp"/>
 

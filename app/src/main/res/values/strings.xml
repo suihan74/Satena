@@ -2,12 +2,14 @@
     <string name="app_name">Satena</string>
     <string name="copyright">Copyright \u00A9 %s suihan</string>
     <string name="developer">すいはん</string>
+    <string name="developer_hatena">https://b.hatena.ne.jp/suihan74</string>
     <string name="developer_website">https://suihan74.github.io/</string>
     <string name="developer_email">suihan742@gmail.com</string>
     <string name="developer_twitter">https://twitter.com/suihan742</string>
     <string name="developer_twitter_id">\@suihan742</string>
     <string name="privacy_policy">https://suihan74.github.io/privacy_satena/</string>
     <string name="play_store">http://play.google.com/store/apps/details?id=com.suihan74.satena</string>
+    <string name="hatena_rule">https://policies.hatena.ne.jp/rule</string>
 
     <!-- drawer states -->
     <string name="drawer_open">開く</string>
