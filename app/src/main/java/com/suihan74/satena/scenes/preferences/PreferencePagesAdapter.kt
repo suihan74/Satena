@@ -6,12 +6,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesFragment
 import com.suihan74.satena.scenes.preferences.pages.*
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 
 enum class PreferencesTabMode(
     val int : Int,
@@ -31,7 +29,7 @@ enum class PreferencesTabMode(
         R.string.pref_title_account,
         R.id.preferences_tab_accounts,
         { ListPreferencesFragment.createInstance { c ->
-            AccountViewModel(c, AccountLoader(c, HatenaClient, MastodonClientHolder))
+            AccountViewModel(c, SatenaApplication.instance.accountLoader)
         } }),
 
     GENERALS(3,

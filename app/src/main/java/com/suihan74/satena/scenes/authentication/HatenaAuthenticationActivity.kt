@@ -5,14 +5,11 @@ import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityHatenaAuthenticationBinding
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,17 +65,13 @@ class HatenaAuthenticationActivity : ActivityBase() {
     }
 
     private suspend fun signIn(name: String, password: String) = withContext(Dispatchers.Main) {
+        val app = SatenaApplication.instance
         try {
-            val account = HatenaClient.signInAsync(name, password).await()
+            val account = app.accountLoader.signInHatena(name, password)
 
             showToast(R.string.msg_hatena_sign_in_succeeded, account.name)
 
-            AccountLoader(
-                applicationContext,
-                HatenaClient,
-                MastodonClientHolder
-            ).saveHatenaAccount(name, password, HatenaClient.rkStr!!)
-            SatenaApplication.instance.startCheckingNotificationsWorker(this@HatenaAuthenticationActivity)
+            app.startCheckingNotificationsWorker(this@HatenaAuthenticationActivity)
 
             // 前の画面に戻る
             finish()
@@ -90,11 +83,7 @@ class HatenaAuthenticationActivity : ActivityBase() {
 
         // 現在のアカウントがある場合、ログイン状態を復元する
         try {
-            AccountLoader(
-                applicationContext,
-                HatenaClient,
-                MastodonClientHolder
-            ).signInHatenaAsync()
+            app.accountLoader.signInHatenaAsync()
         }
         catch (e: Throwable) {
             Log.e("Hatena", e.message ?: "")

@@ -11,6 +11,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Account
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInHatenaBinding
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInMastodonBinding
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
@@ -19,8 +20,12 @@ import com.suihan74.satena.scenes.preferences.PreferencesAdapter
 import com.suihan74.satena.scenes.preferences.addButton
 import com.suihan74.satena.scenes.preferences.addSection
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonAccount
 import com.suihan74.utilities.extensions.alsoAs
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class AccountViewModel(
@@ -30,16 +35,21 @@ class AccountViewModel(
 
     val accountHatena = MutableLiveData<Account?>()
 
-    val accountMastodon = MutableLiveData<com.sys1yagi.mastodon4j.api.entity.Account?>()
+    val accountMastodon = MutableLiveData<MastodonAccount?>()
 
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
-        super.onCreateView(fragment)
+        combine(accountLoader.hatenaFlow, accountLoader.mastodonFlow, ::Pair)
+            .onEach { (hatena, mastodon) ->
+                accountHatena.value = hatena
+                accountMastodon.value = mastodon
+                load(fragment)
+            }
+            .launchIn(viewModelScope)
 
-        viewModelScope.launch(Dispatchers.Main) {
-            accountHatena.value = accountLoader.signInHatenaAsync(reSignIn = false).await()
-            accountMastodon.value = accountLoader.signInMastodonAsync(reSignIn = false).await()
+        viewModelScope.launch {
+            accountLoader.signInAccounts(reSignIn = false)
             load(fragment)
         }
     }
@@ -97,8 +107,15 @@ class AccountViewModel(
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemPrefsSignInHatenaBinding> {
                 it.vm = viewModel
+
                 it.root.setOnClickListener { v ->
                     viewModel.openHatenaAuthenticationActivity(v.context)
+                }
+
+                it.deleteButton.setOnClickListener {
+                    GlobalScope.launch {
+                        SatenaApplication.instance.accountLoader.deleteHatenaAccount()
+                    }
                 }
             }
         }
@@ -125,8 +142,15 @@ class AccountViewModel(
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemPrefsSignInMastodonBinding> {
                 it.vm = viewModel
+
                 it.root.setOnClickListener { v ->
                     viewModel.openMastodonAuthenticationActivity(v.context)
+                }
+
+                it.deleteButton.setOnClickListener {
+                    GlobalScope.launch {
+                        SatenaApplication.instance.accountLoader.deleteMastodonAccount()
+                    }
                 }
             }
         }

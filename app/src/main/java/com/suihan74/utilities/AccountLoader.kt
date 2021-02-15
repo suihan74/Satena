@@ -6,10 +6,17 @@ import com.google.gson.Gson
 import com.suihan74.hatenaLib.Account
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.utilities.exceptions.TaskFailureException
 import com.sys1yagi.mastodon4j.MastodonClient
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
+
+typealias MastodonAccount = com.sys1yagi.mastodon4j.api.entity.Account
 
 class AccountLoader(
     private val context: Context,
@@ -19,8 +26,21 @@ class AccountLoader(
     class HatenaSignInException(message: String? = null) : Throwable(message)
     class MastodonSignInException(message: String? = null) : Throwable(message)
 
+    // ------ //
+
     private val hatenaMutex by lazy { Mutex() }
     private val mastodonMutex by lazy { Mutex() }
+
+    // ------ //
+
+    private val sharedHatenaFlow = MutableSharedFlow<Account?>()
+    val hatenaFlow : SharedFlow<Account?> = sharedHatenaFlow.asSharedFlow()
+
+    private val sharedMastodonFlow = MutableSharedFlow<MastodonAccount?>()
+    val mastodonFlow : SharedFlow<MastodonAccount?> = sharedMastodonFlow.asSharedFlow()
+
+
+    // ------ //
 
     suspend fun signInAccounts(reSignIn: Boolean = false) {
         val jobs = listOf(
@@ -33,6 +53,7 @@ class AccountLoader(
     fun signInHatenaAsync(reSignIn: Boolean = true) : Deferred<Account?> = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
         hatenaMutex.lock()
         if (client.signedIn() && !reSignIn) {
+            sharedHatenaFlow.emit(client.account)
             hatenaMutex.unlock()
             return@async client.account
         }
@@ -55,8 +76,9 @@ class AccountLoader(
                 Log.d("HatenaLoginWithCookie", Log.getStackTraceString(result.exceptionOrNull()))
             }
             else {
+                val account = result.getOrNull()
+                sharedHatenaFlow.emit(account)
                 hatenaMutex.unlock()
-                return@async result.getOrNull()
             }
         }
 
@@ -77,6 +99,8 @@ class AccountLoader(
                     saveHatenaCookie(rk)
                 }
 
+                sharedHatenaFlow.emit(account)
+
                 return@async account
             }
             catch (e: Throwable) {
@@ -96,6 +120,7 @@ class AccountLoader(
     fun signInMastodonAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
         mastodonMutex.lock()
         if (mastodonClientHolder.signedIn() && !reSignIn) {
+            sharedMastodonFlow.emit(mastodonClientHolder.account)
             mastodonMutex.unlock()
             return@async mastodonClientHolder.account
         }
@@ -120,7 +145,11 @@ class AccountLoader(
                     .accessToken(data.accessToken)
                     .build()
 
-                mastodonClientHolder.signInAsync(client).await()
+                val account = mastodonClientHolder.signInAsync(client).await()
+
+                sharedMastodonFlow.emit(account)
+
+                account
             }
             catch (e: Throwable) {
                 Log.d("MastodonLogin", Log.getStackTraceString(e))
@@ -136,7 +165,42 @@ class AccountLoader(
         }
     }
 
-    fun saveHatenaAccount(name: String, password: String, rk: String) {
+    suspend fun signInHatena(name: String, password: String) : Account {
+        hatenaMutex.withLock {
+            try {
+                val account = client.signInAsync(name, password).await()
+                sharedHatenaFlow.emit(account)
+                saveHatenaAccount(name, password, client.rkStr!!)
+
+                return account
+            }
+            catch (e: Throwable) {
+                throw TaskFailureException(cause = e)
+            }
+        }
+    }
+
+    suspend fun signInMastodon(instanceName: String, accessToken: String) : MastodonAccount {
+        mastodonMutex.withLock {
+            try {
+                val account = MastodonClientHolder.signInAsync(
+                    MastodonClient
+                        .Builder(instanceName, OkHttpClient.Builder(), Gson())
+                        .accessToken(accessToken)
+                        .build()
+                ).await()
+                sharedMastodonFlow.emit(account)
+                saveMastodonAccount(instanceName, accessToken)
+
+                return account
+            }
+            catch (e: Throwable) {
+                throw TaskFailureException(cause = e)
+            }
+        }
+    }
+
+    private fun saveHatenaAccount(name: String, password: String, rk: String) {
         val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
         val key = createKey(context)
 
@@ -152,7 +216,7 @@ class AccountLoader(
         }
     }
 
-    fun saveHatenaCookie(rk: String) {
+    private fun saveHatenaCookie(rk: String) {
         val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
         val key = createKey(context)
         val encryptedRk = CryptUtility.encrypt(rk, key)
@@ -177,8 +241,9 @@ class AccountLoader(
         }
     }
 
-    fun deleteHatenaAccount() {
-        lock (client) {
+    suspend fun deleteHatenaAccount() {
+        hatenaMutex.withLock {
+            sharedHatenaFlow.emit(null)
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
             prefs.edit {
                 remove(PreferenceKey.HATENA_USER_NAME)
@@ -189,8 +254,9 @@ class AccountLoader(
         }
     }
 
-    fun deleteMastodonAccount() {
-        lock (MastodonClientHolder) {
+    suspend fun deleteMastodonAccount() {
+        mastodonMutex.withLock {
+            sharedMastodonFlow.emit(null)
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
             prefs.edit {
                 remove(PreferenceKey.MASTODON_ACCESS_TOKEN)
