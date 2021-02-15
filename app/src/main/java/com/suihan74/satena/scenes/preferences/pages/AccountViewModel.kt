@@ -110,7 +110,7 @@ class AccountViewModel(
         override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
             old is PrefItemHatenaAccount && new is PrefItemHatenaAccount &&
                     old.fragment == new.fragment &&
-                    old.viewModel.accountMastodon.value == new.viewModel.accountMastodon.value
+                    old.viewModel.accountHatena.value == new.viewModel.accountHatena.value
     }
 
     /**
