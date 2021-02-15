@@ -5,10 +5,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
-import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel
+import com.suihan74.satena.scenes.entries2.EntriesTabType
 import com.suihan74.satena.scenes.entries2.dialog.FavoriteSitesSelectionDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.OnError
@@ -19,14 +19,12 @@ import kotlinx.coroutines.launch
 class FavoriteSitesViewModel(
     private val repository: FavoriteSitesRepository
 ) : EntriesFragmentViewModel() {
-    private val tabTitles = arrayOf(
-        R.string.entries_tab_hot,
-        R.string.entries_tab_recent
-    )
+    /** 内包するタブ */
+    private val tabs = EntriesTabType.getTabs(null)
 
-    override val tabCount: Int = 2
+    override val tabCount: Int = tabs.size
     override fun getTabTitle(context: Context, position: Int): String =
-        context.getString(tabTitles[position])
+        context.getString(tabs[position].textId)
 
     /** 表示するサイトを選択するダイアログを開く */
     fun showSitesSelectionDialog(

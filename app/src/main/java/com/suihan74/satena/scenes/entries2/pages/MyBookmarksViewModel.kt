@@ -2,7 +2,7 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
 import androidx.lifecycle.LifecycleOwner
-import com.suihan74.satena.R
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SingleUpdateMutableLiveData
@@ -10,10 +10,8 @@ import com.suihan74.utilities.SingleUpdateMutableLiveData
 class MyBookmarksViewModel(
     private val repository : EntriesRepository
 ) : EntriesFragmentViewModel(), TagsLiveDataContainer {
-    private val tabTitles = arrayOf(
-        R.string.entries_tab_mybookmarks,
-        R.string.entries_tab_read_later
-    )
+    /** 内包するタブ */
+    private val tabs = EntriesTabType.getTabs(Category.MyBookmarks)
 
     /** ユーザーのタグ一覧 */
     override val tags by lazy {
@@ -28,9 +26,9 @@ class MyBookmarksViewModel(
     /** 検索窓の展開状態 */
     var isSearchViewExpanded : Boolean = false
 
-    override val tabCount: Int = 2
+    override val tabCount: Int = tabs.size
     override fun getTabTitle(context: Context, position: Int) : String =
-        context.getString(tabTitles[position])
+        context.getString(tabs[position].textId)
 
     /** タブ用ViewModelへの値変更の伝播 */
     override fun connectToTab(

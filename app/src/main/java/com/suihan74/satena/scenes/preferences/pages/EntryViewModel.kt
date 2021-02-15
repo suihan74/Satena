@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.annotation.StringRes
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -11,6 +12,7 @@ import com.suihan74.satena.databinding.ListviewItemPrefsBottomItemsBinding
 import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.CategoriesMode
+import com.suihan74.satena.scenes.entries2.EntriesTabType
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.satena.scenes.preferences.*
@@ -92,9 +94,8 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     )
 
     /** 最初に表示するタブ */
-    val initialTab = createLiveData<Int>(
-        PreferenceKey.ENTRIES_INITIAL_TAB
-    )
+    private val initialTabPosition = createLiveData<Int>(PreferenceKey.ENTRIES_INITIAL_TAB)
+    val initialTab = MutableLiveData<EntriesTabType>()
 
     /** カテゴリリストの表示形式 */
     val categoriesMode = createLiveDataEnum<CategoriesMode>(
@@ -139,6 +140,24 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         val owner = fragment.viewLifecycleOwner
         fun reload() = viewModelScope.launch { load(fragment) }
+
+        // 初期タブ設定の表示ラベルをカテゴリによって切り替える
+        homeCategory.observe(owner, {
+            if (!it.singleColumns) {
+                val pos = initialTabPosition.value ?: 0
+                initialTab.value = EntriesTabType.fromTabOrdinal(pos, it)
+            }
+            reload()
+        })
+        initialTabPosition.observe(owner, {
+            val category = homeCategory.value ?: Category.All
+            initialTab.value = EntriesTabType.fromTabOrdinal(it, category)
+        })
+        initialTab.observe(owner, {
+            if (initialTabPosition.value != it.tabOrdinal) {
+                initialTabPosition.value = it.tabOrdinal
+            }
+        })
 
         // ボトムバー設定項目の表示を切り替える
         bottomLayoutMode.observe(owner, {
@@ -224,8 +243,16 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefItem(fragment, initialTab, R.string.pref_entries_initial_tab_desc) {
-            // TODO
+        if (homeCategory.value?.singleColumns == false) {
+            addPrefItem(fragment, initialTab, R.string.pref_entries_initial_tab_desc) {
+                val tabs = EntriesTabType.getTabs(homeCategory.value)
+                openEnumSelectionDialog(
+                    tabs.toTypedArray(),
+                    initialTab,
+                    R.string.pref_entries_initial_tab_desc,
+                    fragmentManager
+                )
+            }
         }
         addPrefToggleItem(fragment, changeHomeByLongTappingTab, R.string.pref_entries_change_home_by_long_tapping_desc)
         addPrefItem(fragment, categoriesMode, R.string.pref_entries_categories_mode_desc) {
