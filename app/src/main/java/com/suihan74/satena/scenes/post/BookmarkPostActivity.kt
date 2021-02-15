@@ -9,11 +9,9 @@ import android.webkit.URLUtil
 import androidx.appcompat.app.AppCompatActivity
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner.Companion.VIEW_MODEL_BOOKMARK_POST
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.getObjectExtra
@@ -59,11 +57,7 @@ class BookmarkPostActivity :
 
     override val bookmarkPostViewModel by lazyProvideViewModel(VIEW_MODEL_BOOKMARK_POST) {
         val repository = BookmarkPostRepository(
-            AccountLoader(
-                context = this,
-                client = HatenaClient,
-                mastodonClientHolder = MastodonClientHolder
-            ),
+            SatenaApplication.instance.accountLoader,
             SafeSharedPreferences.create(this)
         )
 

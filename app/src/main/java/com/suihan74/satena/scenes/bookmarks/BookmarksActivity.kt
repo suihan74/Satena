@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityBookmarksBinding
@@ -55,7 +54,7 @@ class BookmarksActivity :
         val app = SatenaApplication.instance
 
         val repository = BookmarksRepository(
-            AccountLoader(this, HatenaClient, MastodonClientHolder),
+            app.accountLoader,
             SafeSharedPreferences.create(this),
             app.ignoredEntriesRepository,
             app.userTagDao

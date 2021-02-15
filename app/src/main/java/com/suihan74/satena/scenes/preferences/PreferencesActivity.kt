@@ -17,7 +17,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
@@ -187,11 +186,7 @@ class PreferencesActivity : ActivityBase() {
 
         try {
             // 再ログイン
-            AccountLoader(
-                applicationContext,
-                HatenaClient,
-                MastodonClientHolder
-            ).signInAccounts(true)
+            SatenaApplication.instance.accountLoader.signInAccounts(true)
         }
         catch (e: Throwable) {
             Log.e("FailedToReload", e.message ?: "")
