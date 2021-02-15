@@ -9,6 +9,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.sys1yagi.mastodon4j.MastodonClient
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
 
 class AccountLoader(
@@ -31,108 +32,102 @@ class AccountLoader(
     }
 
     fun signInHatenaAsync(reSignIn: Boolean = true) : Deferred<Account?> = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
-        hatenaMutex.lock()
-        if (client.signedIn() && !reSignIn) {
-            hatenaMutex.unlock()
-            return@async client.account
-        }
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
-        val key = createKey(context)
-
-        // クッキーを使用してログイン状態復元を試行
-        val userRkEncryptedStr = prefs.getString(PreferenceKey.HATENA_RK)
-        if (userRkEncryptedStr.isNullOrEmpty().not()) {
-            val userRkEncryptedData = serializer.deserialize(userRkEncryptedStr!!)
-            val rk = CryptUtility.decrypt(userRkEncryptedData, key)
-
-            val result = runCatching {
-                client.signIn(rk)
+        hatenaMutex.withLock {
+            if (client.signedIn() && !reSignIn) {
+                return@async client.account
             }
 
-            if (result.isFailure) {
-                Log.d("HatenaLoginWithCookie", Log.getStackTraceString(result.exceptionOrNull()))
-            }
-            else {
-                hatenaMutex.unlock()
-                return@async result.getOrNull()
-            }
-        }
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
+            val key = createKey(context)
 
-        // ID・パスワードを使用して再ログイン
-        val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
-        val userPasswordEncryptedStr = prefs.getString(PreferenceKey.HATENA_PASSWORD)
-        if (userNameEncryptedStr?.isNotEmpty() == true && userPasswordEncryptedStr?.isNotEmpty() == true) {
-            try {
-                val userNameEncryptedData = serializer.deserialize(userNameEncryptedStr)
-                val name = CryptUtility.decrypt(userNameEncryptedData, key)
+            // クッキーを使用してログイン状態復元を試行
+            val userRkEncryptedStr = prefs.getString(PreferenceKey.HATENA_RK)
+            if (userRkEncryptedStr.isNullOrEmpty().not()) {
+                val userRkEncryptedData = serializer.deserialize(userRkEncryptedStr!!)
+                val rk = CryptUtility.decrypt(userRkEncryptedData, key)
 
-                val passwordEncryptedData = serializer.deserialize(userPasswordEncryptedStr)
-                val password = CryptUtility.decrypt(passwordEncryptedData, key)
-
-                val account = client.signInAsync(name, password).await()
-
-                client.rkStr?.let { rk ->
-                    saveHatenaCookie(rk)
+                val result = runCatching {
+                    client.signIn(rk)
                 }
 
-                return@async account
+                if (result.isFailure) {
+                    Log.d(
+                        "HatenaLoginWithCookie",
+                        Log.getStackTraceString(result.exceptionOrNull())
+                    )
+                }
+                else {
+                    return@async result.getOrNull()
+                }
             }
-            catch (e: Throwable) {
-                Log.d("HatenaLogin", Log.getStackTraceString(e))
-                throw HatenaSignInException(e.message)
+
+            // ID・パスワードを使用して再ログイン
+            val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
+            val userPasswordEncryptedStr = prefs.getString(PreferenceKey.HATENA_PASSWORD)
+            if (userNameEncryptedStr?.isNotEmpty() == true && userPasswordEncryptedStr?.isNotEmpty() == true) {
+                try {
+                    val userNameEncryptedData = serializer.deserialize(userNameEncryptedStr)
+                    val name = CryptUtility.decrypt(userNameEncryptedData, key)
+
+                    val passwordEncryptedData = serializer.deserialize(userPasswordEncryptedStr)
+                    val password = CryptUtility.decrypt(passwordEncryptedData, key)
+
+                    val account = client.signInAsync(name, password).await()
+
+                    client.rkStr?.let { rk ->
+                        saveHatenaCookie(rk)
+                    }
+
+                    return@async account
+                }
+                catch (e: Throwable) {
+                    Log.d("HatenaLogin", Log.getStackTraceString(e))
+                    throw HatenaSignInException(e.message)
+                }
             }
-            finally {
-                hatenaMutex.unlock()
+            else {
+                return@async null
             }
-        }
-        else {
-            hatenaMutex.unlock()
-            return@async null
         }
     }
 
     fun signInMastodonAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
-        mastodonMutex.lock()
-        if (mastodonClientHolder.signedIn() && !reSignIn) {
-            mastodonMutex.unlock()
-            return@async mastodonClientHolder.account
-        }
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        val mastodonAccessTokenEncryptedStr =
-            prefs.get<String>(PreferenceKey.MASTODON_ACCESS_TOKEN)
-
-        // Mastodonログイン
-        if (mastodonAccessTokenEncryptedStr.isNotEmpty()) {
-            val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
-            val dataSerializer = ObjectSerializer<SerializableMastodonAccessToken>()
-            try {
-                val key = createKey(context)
-                val mastodonAccessTokenEncryptedData =
-                    serializer.deserialize(mastodonAccessTokenEncryptedStr)
-                val decrypted = CryptUtility.decrypt(mastodonAccessTokenEncryptedData, key)
-                val data = dataSerializer.deserialize(decrypted)
-
-                val client = MastodonClient
-                    .Builder(data.instanceName, OkHttpClient.Builder(), Gson())
-                    .accessToken(data.accessToken)
-                    .build()
-
-                mastodonClientHolder.signInAsync(client).await()
+        mastodonMutex.withLock {
+            if (mastodonClientHolder.signedIn() && !reSignIn) {
+                return@async mastodonClientHolder.account
             }
-            catch (e: Throwable) {
-                Log.d("MastodonLogin", Log.getStackTraceString(e))
-                throw MastodonSignInException(e.message)
+
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val mastodonAccessTokenEncryptedStr =
+                prefs.get<String>(PreferenceKey.MASTODON_ACCESS_TOKEN)
+
+            // Mastodonログイン
+            if (mastodonAccessTokenEncryptedStr.isNotEmpty()) {
+                val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
+                val dataSerializer = ObjectSerializer<SerializableMastodonAccessToken>()
+                try {
+                    val key = createKey(context)
+                    val mastodonAccessTokenEncryptedData =
+                        serializer.deserialize(mastodonAccessTokenEncryptedStr)
+                    val decrypted = CryptUtility.decrypt(mastodonAccessTokenEncryptedData, key)
+                    val data = dataSerializer.deserialize(decrypted)
+
+                    val client = MastodonClient
+                        .Builder(data.instanceName, OkHttpClient.Builder(), Gson())
+                        .accessToken(data.accessToken)
+                        .build()
+
+                    mastodonClientHolder.signInAsync(client).await()
+                }
+                catch (e: Throwable) {
+                    Log.d("MastodonLogin", Log.getStackTraceString(e))
+                    throw MastodonSignInException(e.message)
+                }
             }
-            finally {
-                mastodonMutex.unlock()
+            else {
+                return@async null
             }
-        }
-        else {
-            mastodonMutex.unlock()
-            return@async null
         }
     }
 
