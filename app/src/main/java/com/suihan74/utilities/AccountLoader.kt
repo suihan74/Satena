@@ -86,31 +86,30 @@ class AccountLoader(
             // ID・パスワードを使用して再ログイン
             val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
             val userPasswordEncryptedStr = prefs.getString(PreferenceKey.HATENA_PASSWORD)
-            if (userNameEncryptedStr?.isNotEmpty() == true && userPasswordEncryptedStr?.isNotEmpty() == true) {
-                try {
-                    val userNameEncryptedData = serializer.deserialize(userNameEncryptedStr)
-                    val name = CryptUtility.decrypt(userNameEncryptedData, key)
-
-                    val passwordEncryptedData = serializer.deserialize(userPasswordEncryptedStr)
-                    val password = CryptUtility.decrypt(passwordEncryptedData, key)
-
-                    val account = client.signInAsync(name, password).await()
-
-                    client.rkStr?.let { rk ->
-                        saveHatenaCookie(rk)
-                    }
-
-                    sharedHatenaFlow.emit(account)
-
-                    return@async account
-                }
-                catch (e: Throwable) {
-                    Log.d("HatenaLogin", Log.getStackTraceString(e))
-                    throw HatenaSignInException(e.message)
-                }
-            }
-            else {
+            if (userNameEncryptedStr?.isEmpty() != false || userPasswordEncryptedStr?.isEmpty() != false) {
                 return@async null
+            }
+
+            try {
+                val userNameEncryptedData = serializer.deserialize(userNameEncryptedStr)
+                val name = CryptUtility.decrypt(userNameEncryptedData, key)
+
+                val passwordEncryptedData = serializer.deserialize(userPasswordEncryptedStr)
+                val password = CryptUtility.decrypt(passwordEncryptedData, key)
+
+                val account = client.signInAsync(name, password).await()
+
+                client.rkStr?.let { rk ->
+                    saveHatenaCookie(rk)
+                }
+
+                sharedHatenaFlow.emit(account)
+
+                return@async account
+            }
+            catch (e: Throwable) {
+                Log.d("HatenaLogin", Log.getStackTraceString(e))
+                throw HatenaSignInException(e.message)
             }
         }
     }
@@ -126,38 +125,38 @@ class AccountLoader(
             val mastodonAccessTokenEncryptedStr =
                 prefs.get<String>(PreferenceKey.MASTODON_ACCESS_TOKEN)
 
-            // Mastodonログイン
-            if (mastodonAccessTokenEncryptedStr.isNotEmpty()) {
-                val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
-                val dataSerializer = ObjectSerializer<SerializableMastodonAccessToken>()
-                try {
-                    val key = createKey(context)
-                    val mastodonAccessTokenEncryptedData =
-                        serializer.deserialize(mastodonAccessTokenEncryptedStr)
-                    val decrypted = CryptUtility.decrypt(mastodonAccessTokenEncryptedData, key)
-                    val data = dataSerializer.deserialize(decrypted)
-
-                    val client = MastodonClient
-                        .Builder(data.instanceName, OkHttpClient.Builder(), Gson())
-                        .accessToken(data.accessToken)
-                        .build()
-
-                    val account = mastodonClientHolder.signInAsync(client).await()
-
-                    sharedMastodonFlow.emit(account)
-
-                    account
-                }
-                catch (e: Throwable) {
-                    Log.d("MastodonLogin", Log.getStackTraceString(e))
-                    throw MastodonSignInException(e.message)
-                }
-            }
-            else {
+            if (mastodonAccessTokenEncryptedStr.isEmpty()) {
                 return@async null
+            }
+            // Mastodonログイン
+            val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
+            val dataSerializer = ObjectSerializer<SerializableMastodonAccessToken>()
+            try {
+                val key = createKey(context)
+                val mastodonAccessTokenEncryptedData =
+                    serializer.deserialize(mastodonAccessTokenEncryptedStr)
+                val decrypted = CryptUtility.decrypt(mastodonAccessTokenEncryptedData, key)
+                val data = dataSerializer.deserialize(decrypted)
+
+                val client = MastodonClient
+                    .Builder(data.instanceName, OkHttpClient.Builder(), Gson())
+                    .accessToken(data.accessToken)
+                    .build()
+
+                val account = mastodonClientHolder.signInAsync(client).await()
+
+                sharedMastodonFlow.emit(account)
+
+                return@async account
+            }
+            catch (e: Throwable) {
+                Log.d("MastodonLogin", Log.getStackTraceString(e))
+                throw MastodonSignInException(e.message)
             }
         }
     }
+
+    // ------ //
 
     suspend fun signInHatena(name: String, password: String) : Account {
         hatenaMutex.withLock {
@@ -194,6 +193,8 @@ class AccountLoader(
         }
     }
 
+    // ------ //
+
     private fun saveHatenaAccount(name: String, password: String, rk: String) {
         val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
         val key = createKey(context)
@@ -220,7 +221,7 @@ class AccountLoader(
         }
     }
 
-    fun saveMastodonAccount(instanceName: String, accessToken: String) {
+    private fun saveMastodonAccount(instanceName: String, accessToken: String) {
         val key = createKey(context)
         val data = SerializableMastodonAccessToken(instanceName, accessToken)
 
@@ -234,6 +235,8 @@ class AccountLoader(
             putString(PreferenceKey.MASTODON_ACCESS_TOKEN, serializer.serialize(encryptedData))
         }
     }
+
+    // ------ //
 
     suspend fun deleteHatenaAccount() {
         hatenaMutex.withLock {
@@ -258,6 +261,8 @@ class AccountLoader(
             mastodonClientHolder.signOut()
         }
     }
+
+    // ------ //
 
     private fun createKey(context: Context) : String {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
