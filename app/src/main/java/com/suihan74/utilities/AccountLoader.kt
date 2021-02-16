@@ -87,6 +87,7 @@ class AccountLoader(
             val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
             val userPasswordEncryptedStr = prefs.getString(PreferenceKey.HATENA_PASSWORD)
             if (userNameEncryptedStr?.isEmpty() != false || userPasswordEncryptedStr?.isEmpty() != false) {
+                sharedHatenaFlow.emit(null)
                 return@async null
             }
 
@@ -108,6 +109,7 @@ class AccountLoader(
                 return@async account
             }
             catch (e: Throwable) {
+                sharedHatenaFlow.emit(null)
                 Log.d("HatenaLogin", Log.getStackTraceString(e))
                 throw HatenaSignInException(e.message)
             }
@@ -126,6 +128,7 @@ class AccountLoader(
                 prefs.get<String>(PreferenceKey.MASTODON_ACCESS_TOKEN)
 
             if (mastodonAccessTokenEncryptedStr.isEmpty()) {
+                sharedMastodonFlow.emit(null)
                 return@async null
             }
             // Mastodonログイン
@@ -150,6 +153,7 @@ class AccountLoader(
                 return@async account
             }
             catch (e: Throwable) {
+                sharedMastodonFlow.emit(null)
                 Log.d("MastodonLogin", Log.getStackTraceString(e))
                 throw MastodonSignInException(e.message)
             }
