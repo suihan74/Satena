@@ -86,9 +86,11 @@ abstract class BookmarksTabFragment :
     protected open fun initializeRecyclerView(binding: FragmentBookmarksTab3Binding) {
         val bookmarksAdapter = BookmarksAdapter().also { adapter ->
             adapter.setOnSubmitListener {
-                binding.swipeLayout.isRefreshing = false
-                binding.swipeLayout.isEnabled = true
-                afterLoadedBookmarks()
+                lifecycleScope.launchWhenResumed {
+                    binding.swipeLayout.isRefreshing = false
+                    binding.swipeLayout.isEnabled = true
+                    afterLoadedBookmarks()
+                }
             }
 
             adapter.setOnItemClickedListener { bookmark ->
