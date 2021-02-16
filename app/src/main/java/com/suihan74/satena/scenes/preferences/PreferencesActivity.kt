@@ -148,7 +148,7 @@ class PreferencesActivity : ActivityBase() {
 
                     val btn = findViewById<ImageButton>(mTabAdapter.getIconId(tab.int - 1))
                     btn?.setBackgroundColor(ContextCompat.getColor(this@PreferencesActivity, R.color.colorPrimary))
-                    title = "設定 > ${getString(tab.titleId)}"
+                    title = getString(R.string.pref_toolbar_title, getString(tab.titleId))
                     invalidateOptionsMenu()
                 }
             })
@@ -158,7 +158,7 @@ class PreferencesActivity : ActivityBase() {
 
         val position = tab.int
         mViewPager.setCurrentItem(position, false)
-        title = "設定 > ${getString(tab.titleId)}"
+        title = getString(R.string.pref_toolbar_title, getString(tab.titleId))
     }
 
     override fun onOptionsItemSelected(item: MenuItem?) = when (item?.itemId) {
