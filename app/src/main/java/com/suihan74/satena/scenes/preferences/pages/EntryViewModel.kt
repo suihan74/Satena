@@ -139,7 +139,6 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         super.onCreateView(fragment)
 
         val owner = fragment.viewLifecycleOwner
-        fun reload() = viewModelScope.launch { load(fragment) }
 
         // 初期タブ設定の表示ラベルをカテゴリによって切り替える
         homeCategory.observe(owner, {
@@ -147,7 +146,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 val pos = initialTabPosition.value ?: 0
                 initialTab.value = EntriesTabType.fromTabOrdinal(pos, it)
             }
-            reload()
+            load(fragment)
         })
         initialTabPosition.observe(owner, {
             val category = homeCategory.value ?: Category.All
@@ -161,11 +160,11 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         // ボトムバー設定項目の表示を切り替える
         bottomLayoutMode.observe(owner, {
-            reload()
+            load(fragment)
         })
         // 「読んだ」したときの定型文編集ビューを表示切替え
         entryReadActionType.observe(owner, {
-            reload()
+            load(fragment)
         })
     }
 

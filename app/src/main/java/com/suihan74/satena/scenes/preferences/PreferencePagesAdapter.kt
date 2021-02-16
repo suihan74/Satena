@@ -55,7 +55,7 @@ enum class PreferencesTabMode(
     BROWSER(7,
         R.string.pref_title_browser,
         R.id.preferences_tab_browser,
-        { PreferencesBrowserFragment.createInstance() }),
+        { ListPreferencesFragment.createInstance { c -> BrowserViewModel(c) } }),
 
     IGNORED_ENTRIES(8,
         R.string.pref_title_ignored_entries,

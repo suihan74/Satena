@@ -182,7 +182,7 @@ open class PreferenceToggleItem(
  * テキスト編集用ビュー
  */
 open class PreferenceEditTextItem(
-    val liveData: MutableLiveData<String>,
+    val liveData: MutableLiveData<String?>,
     @StringRes val titleId: Int,
     @StringRes val hintId: Int,
 ) : PreferencesAdapter.Item {

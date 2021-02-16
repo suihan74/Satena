@@ -341,14 +341,17 @@
     <string name="pref_user_tags_user_menu_remove">ユーザーを除外</string>
 
     <!-- 内部ブラウザ -->
+    <string name="pref_browser_section_browser">ブラウザ</string>
+    <string name="pref_browser_section_features">機能</string>
+    <string name="pref_browser_section_display">表示</string>
+    <string name="pref_browser_section_refresh">キャッシュ・クッキー</string>
+
     <string name="pref_browser_mode_desc">利用するアプリ内ブラウザ</string>
     <string name="pref_browser_mode_web_view">WebView(新)</string>
     <string name="pref_browser_mode_chrome_custom_tab">ChromeCustomTab(旧)</string>
 
     <string name="pref_browser_start_page_desc">スタートページ</string>
     <string name="pref_browser_start_page_hint">ウェブアドレスを入力</string>
-    <string name="msg_browser_updating_start_page_succeeded">スタートページを更新しました</string>
-    <string name="msg_browser_updating_start_page_failed">不正なURLです</string>
     <string name="pref_browser_private_browsing_enabled_desc">プライベートブラウジング</string>
     <string name="pref_browser_javascript_enabled_desc">JavaScript</string>
     <string name="pref_browser_use_url_blocking_desc">URLブロック</string>
@@ -360,6 +363,9 @@
     <string name="pref_browser_search_engine_desc">アドレスバーで使用する検索エンジン</string>
     <string name="pref_browser_dialog_title_search_engine">検索エンジン</string>
     <string name="pref_browser_use_marquee_on_back_stack_items_desc">「戻る/進む」履歴項目のテキストが長い場合マーキーを使用する</string>
+
+    <string name="msg_browser_updating_start_page_succeeded">スタートページを更新しました</string>
+    <string name="msg_browser_updating_start_page_failed">不正なURLです</string>
 
     <string name="pref_browser_clear_cache_desc">キャッシュを削除する</string>
     <string name="pref_browser_clear_cache_dialog_message">キャッシュを削除するとストレージ使用量を削減できる一方、一時的に通信量が増えてウェブページの読み込みが遅くなります。削除しますか？</string>

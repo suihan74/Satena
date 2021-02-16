@@ -2,11 +2,12 @@ package com.suihan74.satena.scenes.browser
 
 import androidx.annotation.StringRes
 import com.suihan74.satena.R
+import com.suihan74.satena.models.TextIdContainer
 
 enum class WebViewTheme(
     val id: Int,
-    @StringRes val textId: Int
-) {
+    @StringRes override val textId: Int
+) : TextIdContainer {
     /**
      * Satenaのテーマにあわせる
      *
