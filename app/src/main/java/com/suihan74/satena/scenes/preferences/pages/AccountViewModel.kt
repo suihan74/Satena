@@ -7,13 +7,14 @@ import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Account
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInHatenaBinding
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInMastodonBinding
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.authentication.MastodonAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.PreferencesAdapter
@@ -22,7 +23,6 @@ import com.suihan74.satena.scenes.preferences.addSection
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonAccount
 import com.suihan74.utilities.extensions.alsoAs
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -83,14 +83,56 @@ class AccountViewModel(
 
     // ------ //
 
+    /**
+     * はてな認証画面を開く
+     */
     private fun openHatenaAuthenticationActivity(context: Context) {
         val intent = Intent(context, HatenaAuthenticationActivity::class.java)
         context.startActivity(intent)
     }
 
+    /**
+     * Mastodon認証画面を開く
+     */
     private fun openMastodonAuthenticationActivity(context: Context) {
         val intent = Intent(context, MastodonAuthenticationActivity::class.java)
         context.startActivity(intent)
+    }
+
+    // ------ //
+
+    /**
+     * はてなアカウントを削除する
+     */
+    private fun openHatenaAccountDeletionDialog(fragmentManager: FragmentManager) {
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(R.string.pref_accounts_delete_hatena_message)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                viewModelScope.launch {
+                    accountLoader.deleteHatenaAccount()
+                }
+            }
+            .create()
+            .show(fragmentManager, null)
+    }
+
+    /**
+     * Mastodonアカウントを削除する
+     */
+    private fun openMastodonAccountDeletionDialog(fragmentManager: FragmentManager) {
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(R.string.pref_accounts_delete_mastodon_message)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                viewModelScope.launch {
+                    accountLoader.deleteMastodonAccount()
+                }
+            }
+            .create()
+            .show(fragmentManager, null)
     }
 
     // ------ //
@@ -113,9 +155,7 @@ class AccountViewModel(
                 }
 
                 it.deleteButton.setOnClickListener {
-                    GlobalScope.launch {
-                        SatenaApplication.instance.accountLoader.deleteHatenaAccount()
-                    }
+                    viewModel.openHatenaAccountDeletionDialog(fragment.childFragmentManager)
                 }
             }
         }
@@ -129,6 +169,8 @@ class AccountViewModel(
                     old.fragment == new.fragment &&
                     old.viewModel.accountHatena.value == new.viewModel.accountHatena.value
     }
+
+    // ------ //
 
     /**
      * サインイン済みのMastodonアカウントボタン
@@ -148,9 +190,7 @@ class AccountViewModel(
                 }
 
                 it.deleteButton.setOnClickListener {
-                    GlobalScope.launch {
-                        SatenaApplication.instance.accountLoader.deleteMastodonAccount()
-                    }
+                    viewModel.openMastodonAccountDeletionDialog(fragment.childFragmentManager)
                 }
             }
         }

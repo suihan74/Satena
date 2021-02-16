@@ -6,7 +6,7 @@ import androidx.annotation.StringRes
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
@@ -15,7 +15,6 @@ import com.suihan74.satena.scenes.preferences.PreferencesAdapter
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -29,17 +28,19 @@ abstract class ListPreferencesViewModel(
     val preferencesItems : LiveData<List<PreferencesAdapter.Item>> = _preferencesItems
 
     /** 設定リストを作成しビューに反映する */
-    suspend fun load(fragment: ListPreferencesFragment) = withContext(Dispatchers.Default) {
-        _preferencesItems.postValue(createList(fragment))
+    fun load(fragment: ListPreferencesFragment) {
+        fragment.lifecycleScope.launchWhenCreated {
+            withContext(Dispatchers.IO) {
+                _preferencesItems.postValue(createList(fragment))
+            }
+        }
     }
 
     // ------ //
 
     @MainThread
     open fun onCreateView(fragment: ListPreferencesFragment) {
-        viewModelScope.launch {
-            load(fragment)
-        }
+        load(fragment)
     }
 
     /**
