@@ -56,11 +56,10 @@ class AccountViewModel(
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun createList(fragment: ListPreferencesFragment): List<PreferencesAdapter.Item> = buildList {
-        val context = fragment.requireContext()
-
         addSection(R.string.pref_accounts_service_name_hatena)
         if (accountHatena.value == null) {
             addButton(fragment, R.string.sign_in) {
+                val context = fragment.requireContext()
                 openHatenaAuthenticationActivity(context)
             }
         }
@@ -73,6 +72,7 @@ class AccountViewModel(
         addSection(R.string.pref_accounts_service_name_mastodon)
         if (accountMastodon.value == null) {
             addButton(fragment, R.string.sign_in) {
+                val context = fragment.requireContext()
                 openMastodonAuthenticationActivity(context)
             }
         }

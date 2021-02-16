@@ -45,6 +45,10 @@ abstract class ListPreferencesViewModel(
 
     /**
      * 設定リストを生成する
+     *
+     * `load()`メソッドから呼ばれる場合，
+     * `fragment.lifecycleScope.launchWhenCreated {}` 内で呼ばれることを保証している
+     *
      */
     abstract fun createList(
         fragment: ListPreferencesFragment
