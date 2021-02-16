@@ -90,17 +90,32 @@ class InformationViewModel(private val context: Context) : ListPreferencesViewMo
     /**
      * アプリ情報表示項目
      */
-    class AppInfoHeaderItem : PreferencesAdapter.Item {
+    class AppInfoHeaderItem(private val tag: String? = null) : PreferencesAdapter.Item {
+        private val copyrightYear =
+            2019.let { startYear -> LocalDateTime.now().year.let { y ->
+                if (y <= startYear) "$startYear-"
+                else "$startYear-$y"
+            } }
+
+        private val versionName = "version: " + SatenaApplication.instance.versionName
+
+        // ------ //
+
         override val layoutId: Int = R.layout.listview_item_app_info
 
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemAppInfoBinding> {
-                it.copyrightYear = 2019.let { startYear -> LocalDateTime.now().year.let { y ->
-                    if (y <= startYear) "$startYear-"
-                    else "$startYear-$y"
-                } }
-                it.versionName = "version: " + SatenaApplication.instance.versionName
+                it.copyrightYear = copyrightYear
+                it.versionName = versionName
             }
         }
+
+        override fun areItemsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is AppInfoHeaderItem && new is AppInfoHeaderItem && old.tag == new.tag
+
+        override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is AppInfoHeaderItem && new is AppInfoHeaderItem &&
+                    old.copyrightYear == new.copyrightYear &&
+                    old.versionName == new.versionName
     }
 }
