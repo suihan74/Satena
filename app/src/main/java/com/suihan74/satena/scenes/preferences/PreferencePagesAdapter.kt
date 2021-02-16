@@ -47,15 +47,15 @@ enum class PreferencesTabMode(
         R.id.preferences_tab_bookmarks,
         { ListPreferencesFragment.createInstance { c -> BookmarkViewModel(c) } }),
 
-    FAVORITE_SITES(6,
-        R.string.category_favorite_sites,
-        R.id.preferences_tab_favorite_sites,
-        { FavoriteSitesFragment.createInstance() }),
-
-    BROWSER(7,
+    BROWSER(6,
         R.string.pref_title_browser,
         R.id.preferences_tab_browser,
         { ListPreferencesFragment.createInstance { c -> BrowserViewModel(c) } }),
+
+    FAVORITE_SITES(7,
+        R.string.category_favorite_sites,
+        R.id.preferences_tab_favorite_sites,
+        { FavoriteSitesFragment.createInstance() }),
 
     IGNORED_ENTRIES(8,
         R.string.pref_title_ignored_entries,
