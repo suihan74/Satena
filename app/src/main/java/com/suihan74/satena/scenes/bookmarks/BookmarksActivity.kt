@@ -112,14 +112,16 @@ class BookmarksActivity :
         }
 
         // ユーザー名が与えられている場合，そのユーザーのブクマ詳細画面を開く
-        intent.getStringExtra(EXTRA_TARGET_USER).onNotNull { user ->
-            bookmarksViewModel.bookmarksEntry.observe(this, scopedObserver { bEntry ->
-                bookmarksViewModel.bookmarksEntry.removeObserver(this)
-                val bookmark = bEntry?.bookmarks?.firstOrNull { it.user == user }
-                if (bookmark != null) {
-                    contentsViewModel.openBookmarkDetail(this@BookmarksActivity, bookmark)
-                }
-            })
+        if (savedInstanceState == null) {
+            intent.getStringExtra(EXTRA_TARGET_USER).onNotNull { user ->
+                bookmarksViewModel.bookmarksEntry.observe(this, scopedObserver { bEntry ->
+                    bookmarksViewModel.bookmarksEntry.removeObserver(this)
+                    val bookmark = bEntry?.bookmarks?.firstOrNull { it.user == user }
+                    if (bookmark != null) {
+                        contentsViewModel.openBookmarkDetail(this@BookmarksActivity, bookmark)
+                    }
+                })
+            }
         }
     }
 
