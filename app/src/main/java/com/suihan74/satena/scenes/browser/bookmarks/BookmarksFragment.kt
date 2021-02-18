@@ -117,7 +117,9 @@ class BookmarksFragment :
                 viewModel.loadRecentBookmarks(requireContext())
                 viewModel.repository.updateBookmark(bookmarkResult)
             }
-            switchPostLayout(binding, false)
+            lifecycleScope.launchWhenResumed {
+                switchPostLayout(binding, false)
+            }
         }
 
         // 投稿エリアを作成
