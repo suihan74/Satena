@@ -24,10 +24,9 @@ class HistoryAdapter(
     object BindingAdapters {
         @JvmStatic
         @BindingAdapter("items")
-        fun setHistory(view: RecyclerView, items: List<History>?) {
-            if (items == null) return
+        fun setHistory(view: RecyclerView, items: List<RecyclerState<History>>?) {
             view.adapter.alsoAs<HistoryAdapter> { adapter ->
-                adapter.setItems(items)
+                adapter.submitList(items)
             }
         }
     }
@@ -45,38 +44,6 @@ class HistoryAdapter(
     override fun bind(model: History?, binding: ListviewItemBrowserHistoryBinding) {
         binding.history = model
         binding.vm = viewModel
-    }
-
-    override fun setItems(items: List<History>?, callback: Runnable?) {
-        if (items.isNullOrEmpty()) {
-            submitList(null, callback)
-            return
-        }
-
-        // 日付ごとに区切りを表示する
-        @OptIn(ExperimentalStdlibApi::class)
-        val states = buildList {
-            var currentDate: LocalDate? = null
-            items.sortedByDescending { it.log.visitedAt }.forEach { item ->
-                val itemDate = item.log.visitedAt.toLocalDate()
-                if (currentDate != itemDate) {
-                    currentDate = itemDate
-                    add(RecyclerState(
-                        type = RecyclerType.SECTION,
-                        extra = itemDate
-                    ))
-                }
-
-                add(RecyclerState(
-                    type = RecyclerType.BODY,
-                    body = item
-                ))
-            }
-            add(RecyclerState(RecyclerType.FOOTER))
-            Unit
-        }
-
-        submitList(states, callback)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

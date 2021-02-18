@@ -18,7 +18,7 @@
                 android:id="@+id/recycler_view"
                 style="@style/RecyclerView.Linear"
                 divider="@{@drawable/recycler_view_item_divider}"
-                items="@{vm.histories}"
+                items="@{vm.historyRecyclerItems}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 

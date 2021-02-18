@@ -55,7 +55,9 @@ class HistoryFragment :
             container,
             false
         ).also {
-            it.vm = viewModel
+            it.vm = viewModel.also { vm ->
+                vm.onCreateView(viewLifecycleOwner)
+            }
             it.lifecycleOwner = viewLifecycleOwner
         }
         this.binding = binding

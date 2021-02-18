@@ -1,11 +1,9 @@
 package com.suihan74.satena.scenes.browser.history
 
 import android.content.Intent
+import androidx.annotation.MainThread
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -14,10 +12,13 @@ import com.suihan74.satena.models.browser.History
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.utilities.RecyclerState
+import com.suihan74.utilities.RecyclerType
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDate
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -26,9 +27,13 @@ class HistoryViewModel(
 ) : ViewModel() {
 
     /** 閲覧履歴 */
-    val histories : LiveData<List<History>> by lazy {
-        repository.histories
+    val histories : LiveData<List<History>> = repository.histories
+
+    /** 閲覧履歴表示用データ */
+    val historyRecyclerItems : LiveData<List<RecyclerState<History>>> by lazy {
+        _historyRecyclerItems
     }
+    private val _historyRecyclerItems = MutableLiveData<List<RecyclerState<History>>>()
 
     /** 検索キーワード */
     val keyword by lazy {
@@ -59,6 +64,15 @@ class HistoryViewModel(
         }
     }
 
+    @MainThread
+    fun onCreateView(owner: LifecycleOwner) {
+        histories.observe(owner, Observer {
+            viewModelScope.launch {
+                createDisplayItems(it)
+            }
+        })
+    }
+
     // ------ //
 
     /** ページを遷移する */
@@ -71,6 +85,34 @@ class HistoryViewModel(
     /** 履歴の続きを取得する */
     suspend fun loadAdditional() {
         repository.loadAdditional()
+    }
+
+    // ------ //
+
+    @OptIn(ExperimentalStdlibApi::class)
+    suspend fun createDisplayItems(histories: List<History>) = withContext(Dispatchers.Default) {
+        // 日付ごとに区切りを表示する
+        val states = buildList {
+            var currentDate: LocalDate? = null
+            histories.sortedByDescending { it.log.visitedAt }.forEach { item ->
+                val itemDate = item.log.visitedAt.toLocalDate()
+                if (currentDate != itemDate) {
+                    currentDate = itemDate
+                    add(RecyclerState(
+                        type = RecyclerType.SECTION,
+                        extra = itemDate
+                    ))
+                }
+
+                add(RecyclerState(
+                    type = RecyclerType.BODY,
+                    body = item
+                ))
+            }
+            add(RecyclerState(RecyclerType.FOOTER))
+            Unit
+        }
+        _historyRecyclerItems.postValue(states)
     }
 
     // ------ //
