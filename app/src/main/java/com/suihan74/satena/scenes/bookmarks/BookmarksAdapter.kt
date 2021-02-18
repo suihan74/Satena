@@ -11,6 +11,8 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -27,10 +29,11 @@ import com.suihan74.utilities.extensions.appendStarSpan
 import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
 import org.threeten.bp.format.DateTimeFormatter
 
-class BookmarksAdapter : ListAdapter<RecyclerState<Entity>, RecyclerView.ViewHolder>(Entity.DiffCallback()) {
+class BookmarksAdapter(
+    private val lifecycleOwner: LifecycleOwner
+) : ListAdapter<RecyclerState<Entity>, RecyclerView.ViewHolder>(Entity.DiffCallback()) {
 
     /** 表示項目リスト */
     private var loadableFooter: LoadableFooterViewHolder? = null
@@ -118,15 +121,6 @@ class BookmarksAdapter : ListAdapter<RecyclerState<Entity>, RecyclerView.ViewHol
     override fun getItemViewType(position: Int) =
         currentList[position].type.id
 
-    /**
-     * 指定ブクマの位置を取得する
-     * @return 対象が存在するとき ---> そのインデックス
-     *
-     * 対象が存在しないとき ---> -1
-     */
-    fun getPosition(bookmark: Bookmark) =
-        currentList.indexOfFirst { it.body?.bookmark?.user == bookmark.user }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         LayoutInflater.from(parent.context).let { inflater ->
             when (RecyclerType.fromId(viewType)) {
@@ -189,24 +183,27 @@ class BookmarksAdapter : ListAdapter<RecyclerState<Entity>, RecyclerView.ViewHol
      *
      * @return ロード処理中ではない場合true
      */
-    fun startLoading() : Boolean {
-        val result = loadableFooter?.progressBar?.isVisible != true
-        additionalLoadable = false
-        loadableFooter?.showProgressBar()
-        return result
+    fun startLoading() {
+        lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            loadableFooter?.progressBar?.isVisible != true
+            additionalLoadable = false
+            loadableFooter?.showProgressBar()
+        }
     }
 
     /** フッタのローディングアニメを隠す */
     fun stopLoading(additionalLoadable: Boolean = this.additionalLoadable) {
-        this.additionalLoadable = additionalLoadable
-        loadableFooter?.hideProgressBar(additionalLoadable)
+        lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            this@BookmarksAdapter.additionalLoadable = additionalLoadable
+            loadableFooter?.hideProgressBar(additionalLoadable)
+        }
     }
 
-    private val setBookmarksLock = Mutex()
-
-    fun setBookmarks(entities: List<RecyclerState<Entity>>) {
+    fun setBookmarks(entities: List<RecyclerState<Entity>>?) {
         submitList(entities) {
-            onSubmitted?.invoke(entities)
+            lifecycleOwner.lifecycleScope.launchWhenResumed {
+                onSubmitted?.invoke(entities ?: emptyList())
+            }
         }
     }
 

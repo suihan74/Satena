@@ -144,13 +144,13 @@ class BookmarksFragment :
 
     private fun initializeRecyclerView(binding: FragmentBrowserBookmarksBinding) {
         val scrollingUpdater = RecyclerViewScrollingUpdater {
-            lifecycleScope.launch(Dispatchers.Main) {
+            lifecycleScope.launchWhenResumed {
                 viewModel.loadRecentBookmarks(requireContext(), additionalLoading = true)
                 loadCompleted()
             }
         }
 
-        val bookmarksAdapter = BookmarksAdapter().also { adapter ->
+        val bookmarksAdapter = BookmarksAdapter(viewLifecycleOwner).also { adapter ->
             adapter.setOnSubmitListener {
                 binding.swipeLayout.isRefreshing = false
                 binding.swipeLayout.isEnabled = true
@@ -158,7 +158,7 @@ class BookmarksFragment :
             }
 
             adapter.setOnItemLongClickedListener { bookmark ->
-                lifecycleScope.launch {
+                lifecycleScope.launch(Dispatchers.Main) {
                     viewModel.openBookmarkMenuDialog(bookmark, childFragmentManager)
                 }
             }
@@ -197,7 +197,7 @@ class BookmarksFragment :
             swipeLayout.setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
             swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
             swipeLayout.setOnRefreshListener {
-                lifecycleScope.launch {
+                lifecycleScope.launchWhenResumed {
                     viewModel.loadRecentBookmarks(requireContext())
                     swipeLayout.isRefreshing = false
                 }

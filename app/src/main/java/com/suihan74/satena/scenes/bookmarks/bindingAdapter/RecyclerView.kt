@@ -15,7 +15,6 @@ object BookmarksBindingAdapters {
         rv: RecyclerView,
         entities: List<RecyclerState<Entity>>?
     ) {
-        if (entities == null) return
         rv.adapter.alsoAs<BookmarksAdapter> { adapter ->
             adapter.setBookmarks(entities)
         }
