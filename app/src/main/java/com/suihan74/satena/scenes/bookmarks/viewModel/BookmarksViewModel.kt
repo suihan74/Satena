@@ -501,8 +501,7 @@ class BookmarksViewModel(
         activity: Activity,
         adapter: BookmarksAdapter,
         lifecycleOwner: LifecycleOwner,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope = viewModelScope
+        fragmentManager: FragmentManager
     ) {
         adapter.setAddStarButtonBinder adapter@ { button, bookmark ->
             val useAddStarPopupMenu = repository.useAddStarPopupMenu
@@ -529,30 +528,33 @@ class BookmarksViewModel(
                 }
             }
 
-            coroutineScope.launch(Dispatchers.Main) {
+            viewModelScope.launch {
                 val liveData = runCatching { repository.getStarsEntry(bookmark) }.getOrNull()
                 val userStarred = liveData?.value?.allStars?.any { it.user == user } ?: false
-                if (userStarred) {
-                    button.setImageResource(R.drawable.ic_add_star_filled)
 
-                    button.setOnLongClickListener {
-                        coroutineScope.launch(Dispatchers.Main) {
-                            repository.getUserStars(bookmark, user)?.let { stars ->
-                                val entry = entry.value ?: return@let
-                                bookmarkMenuActions.openDeleteStarDialog(
-                                    entry,
-                                    bookmark,
-                                    stars,
-                                    fragmentManager
-                                )
+                lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                    if (userStarred) {
+                        button.setImageResource(R.drawable.ic_add_star_filled)
+
+                        button.setOnLongClickListener {
+                            lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                                repository.getUserStars(bookmark, user)?.let { stars ->
+                                    val entry = entry.value ?: return@let
+                                    bookmarkMenuActions.openDeleteStarDialog(
+                                        entry,
+                                        bookmark,
+                                        stars,
+                                        fragmentManager
+                                    )
+                                }
                             }
+                            true
                         }
-                        true
                     }
-                }
-                else {
-                    button.setImageResource(R.drawable.ic_add_star)
-                    button.setOnLongClickListener(null)
+                    else {
+                        button.setImageResource(R.drawable.ic_add_star)
+                        button.setOnLongClickListener(null)
+                    }
                 }
             }
         }

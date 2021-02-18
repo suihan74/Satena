@@ -126,8 +126,7 @@ abstract class BookmarksTabFragment :
                 requireActivity(),
                 adapter,
                 viewLifecycleOwner,
-                childFragmentManager,
-                lifecycleScope
+                childFragmentManager
             )
         }
         binding.recyclerView.adapter = bookmarksAdapter

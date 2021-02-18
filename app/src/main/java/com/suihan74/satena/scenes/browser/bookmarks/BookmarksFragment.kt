@@ -173,8 +173,7 @@ class BookmarksFragment :
                 requireActivity(),
                 adapter,
                 viewLifecycleOwner,
-                childFragmentManager,
-                lifecycleScope
+                childFragmentManager
             )
         }
 
