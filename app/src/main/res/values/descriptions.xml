@@ -3,4 +3,12 @@
     <!-- Browser -->
     <string name="browser_bookmarks_open_post_area_button_description">ブクマ投稿画面を開く</string>
     <string name="custom_bookmarks_pref_button_description">カスタムブックマークリスト設定</string>
+
+    <!-- ============ -->
+    <!-- Preferences -->
+
+    <!-- Information -->
+    <string name="description_app_icon">アプリアイコン</string>
+    <string name="description_user_icon">ユーザーアイコン</string>
+    <string name="description_delete_account">アカウント削除</string>
 </resources>

@@ -168,9 +168,9 @@ class EntryMenuDialog2 : DialogFragment() {
 
         @OptIn(ExperimentalStdlibApi::class)
         fun createItems() = buildList {
-            add(TapEntryAction.SHOW_COMMENTS.titleId to showComments)
-            add(TapEntryAction.SHOW_PAGE.titleId to showPage)
-            add(TapEntryAction.SHOW_PAGE_IN_BROWSER.titleId to sharePage)
+            add(TapEntryAction.SHOW_COMMENTS.textId to showComments)
+            add(TapEntryAction.SHOW_PAGE.textId to showPage)
+            add(TapEntryAction.SHOW_PAGE_IN_BROWSER.textId to sharePage)
             add(R.string.entry_action_show_entries to showEntries)
 
             val alreadyFavorite = favoriteSitesRepo.favoriteSites.value?.any {

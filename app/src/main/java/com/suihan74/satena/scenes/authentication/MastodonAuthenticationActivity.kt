@@ -8,12 +8,10 @@ import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityMastodonAuthenticationBinding
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.sys1yagi.mastodon4j.MastodonClient
 import com.sys1yagi.mastodon4j.api.Scope
@@ -151,19 +149,9 @@ class MastodonAuthenticationActivity : ActivityBase() {
         ).execute()
 
         // make a MastodonClient
-        MastodonClientHolder.signInAsync(
-            MastodonClient
-            .Builder(instanceName, OkHttpClient.Builder(), Gson())
-            .accessToken(accessToken.accessToken)
-            .build()
-        ).await()
-
         // persist AccessToken
-        AccountLoader(
-            applicationContext,
-            HatenaClient,
-            MastodonClientHolder
-        ).saveMastodonAccount(instanceName, accessToken.accessToken)
+        SatenaApplication.instance.accountLoader
+            .signInMastodon(instanceName, accessToken.accessToken)
     }
 
     override fun onNewIntent(intent: Intent?) {

@@ -75,7 +75,7 @@
     <Button
             android:id="@+id/save_settings_button"
             style="?buttonStyle"
-            android:text="@string/pref_information_save_settings_desc"
+            android:text="@string/pref_generals_save_settings_desc"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
             android:layout_width="wrap_content"
@@ -84,7 +84,7 @@
     <Button
             android:id="@+id/load_settings_button"
             style="?buttonStyle"
-            android:text="@string/pref_information_load_settings_desc"
+            android:text="@string/pref_generals_load_settings_desc"
             android:layout_above="@id/save_settings_button"
             android:layout_alignParentEnd="true"
             android:layout_marginBottom="6dp"

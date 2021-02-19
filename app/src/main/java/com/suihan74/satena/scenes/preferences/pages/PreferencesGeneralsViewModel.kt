@@ -156,7 +156,7 @@ class PreferencesGeneralsViewModel(
 
     /** ダイアログのテーマを選択するダイアログを開く */
     fun openDialogThemeSelectionDialog(fragmentManager: FragmentManager) {
-        val labelIds = DialogThemeSetting.values().map { it.titleId }
+        val labelIds = DialogThemeSetting.values().map { it.textId }
         val checkedItem = DialogThemeSetting.values().indexOf(dialogTheme.value)
 
         val dialog = AlertDialogFragment.Builder()

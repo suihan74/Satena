@@ -8,7 +8,7 @@ import com.suihan74.satena.R
 @Suppress("unused")
 enum class Category(
     @IntRange(from = 1, to = 22) val id: Int,
-    @StringRes val textId: Int,
+    @StringRes override val textId: Int,
     @DrawableRes val iconId: Int,
     val categoryInApi: com.suihan74.hatenaLib.Category? = null,
     val requireSignedIn: Boolean = false,
@@ -16,7 +16,7 @@ enum class Category(
     val hasIssues: Boolean = false,
     val displayInList: Boolean = true,
     val willBeHome : Boolean = true,
-) {
+) : TextIdContainer {
     All(id = 0,
         R.string.category_all,
         R.drawable.ic_category_all,

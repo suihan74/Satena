@@ -57,7 +57,7 @@ class BrowserActivity :
         )
 
         val bookmarksRepo = BookmarksRepository(
-            AccountLoader(this, HatenaClient, MastodonClientHolder),
+            app.accountLoader,
             prefs,
             app.ignoredEntriesRepository,
             app.userTagDao

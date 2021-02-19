@@ -1,11 +1,12 @@
 package com.suihan74.satena.models
 
+import androidx.annotation.StringRes
 import com.suihan74.satena.R
 
 /** 「あとで読む」エントリを(エントリ一覧画面から)「読んだ」したときの挙動 */
 enum class EntryReadActionType(
-    val textId: Int
-) {
+    @StringRes override val textId: Int
+) : TextIdContainer {
     /** 無言ブクマ */
     SILENT_BOOKMARK(R.string.entry_read_action_silent),
 

@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesFragment
 import com.suihan74.satena.scenes.preferences.pages.*
 
@@ -22,37 +23,39 @@ enum class PreferencesTabMode(
     INFORMATION(1,
         R.string.pref_title_information,
         R.id.preferences_tab_information,
-        { PreferencesInformationFragment.createInstance() }),
+        { ListPreferencesFragment.createInstance { c -> InformationViewModel(c) } }),
 
     ACCOUNT(2,
         R.string.pref_title_account,
         R.id.preferences_tab_accounts,
-        { PreferencesAccountsFragment.createInstance() }),
+        { ListPreferencesFragment.createInstance { c ->
+            AccountViewModel(c, SatenaApplication.instance.accountLoader)
+        } }),
 
     GENERALS(3,
         R.string.pref_title_generals,
         R.id.preferences_tab_generals,
-        { PreferencesGeneralsFragment.createInstance() }),
+        { ListPreferencesFragment.createInstance { c -> GeneralViewModel(c) } }),
 
     ENTRIES(4,
         R.string.pref_title_entries,
         R.id.preferences_tab_entries,
-        { PreferencesEntriesFragment.createInstance() }),
+        { ListPreferencesFragment.createInstance { c -> EntryViewModel(c) } }),
 
     BOOKMARKS(5,
         R.string.pref_title_bookmarks,
         R.id.preferences_tab_bookmarks,
-        { PreferencesBookmarksFragment.createInstance() }),
+        { ListPreferencesFragment.createInstance { c -> BookmarkViewModel(c) } }),
 
-    FAVORITE_SITES(6,
+    BROWSER(6,
+        R.string.pref_title_browser,
+        R.id.preferences_tab_browser,
+        { ListPreferencesFragment.createInstance { c -> BrowserViewModel(c) } }),
+
+    FAVORITE_SITES(7,
         R.string.category_favorite_sites,
         R.id.preferences_tab_favorite_sites,
         { FavoriteSitesFragment.createInstance() }),
-
-    BROWSER(7,
-        R.string.pref_title_browser,
-        R.id.preferences_tab_browser,
-        { PreferencesBrowserFragment.createInstance() }),
 
     IGNORED_ENTRIES(8,
         R.string.pref_title_ignored_entries,

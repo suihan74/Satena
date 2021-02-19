@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="copyrightYear"
+                type="String" />
+
+        <variable
+                name="versionName"
+                type="String" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:paddingHorizontal="@dimen/pref_list_horizontal_padding"
+            android:paddingVertical="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/app_icon"
+                android:src="@mipmap/ic_launcher"
+                android:contentDescription="@string/description_app_icon"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="64dp"
+                android:layout_height="64dp"/>
+
+        <TextView
+                android:id="@+id/app_name"
+                android:text="@string/app_name"
+                android:textSize="20sp"
+                android:textAlignment="textStart"
+                app:layout_constraintTop_toTopOf="@id/app_icon"
+                app:layout_constraintStart_toEndOf="@id/app_icon"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/app_version"
+                app:layout_constraintVertical_chainStyle="packed"
+                android:layout_marginStart="16dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/app_version"
+                android:text="@{versionName}"
+                tools:text="v1.6.1"
+                android:textSize="16sp"
+                android:textAlignment="textStart"
+                app:layout_constraintTop_toBottomOf="@id/app_name"
+                app:layout_constraintBottom_toTopOf="@id/copyright"
+                app:layout_constraintStart_toStartOf="@id/app_name"
+                app:layout_constraintEnd_toEndOf="@id/app_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/copyright"
+                android:textSize="12sp"
+                android:textColor="?tagTextColor"
+                android:text="@{@string/copyright(copyrightYear)}"
+                android:textAlignment="textStart"
+                app:layout_constraintTop_toBottomOf="@id/app_version"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="@id/app_name"
+                app:layout_constraintEnd_toEndOf="@id/app_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

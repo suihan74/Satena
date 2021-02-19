@@ -4,18 +4,16 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivitySplashBinding
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.launch
 
 class SplashActivity : AppCompatActivity() {
     private val viewModel by lazyProvideViewModel {
         val repository = Repository(
-            AccountLoader(this, HatenaClient, MastodonClientHolder)
+            SatenaApplication.instance.accountLoader
         )
         ViewModel(repository)
     }

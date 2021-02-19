@@ -29,5 +29,9 @@ data class Account (
 ) {
     // for Gson
     private constructor() : this(false, "", "", false, 0, 0, "", false, false, false)
+
+    val userIconUrl : String by lazy {
+        HatenaClient.getUserIconUrl(name)
+    }
 }
 

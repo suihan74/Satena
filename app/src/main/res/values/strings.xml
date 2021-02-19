@@ -1,9 +1,27 @@
 <resources>
     <string name="app_name">Satena</string>
-    <string name="copyright">Copyright \u00A9 %s &lt;a href=&quot;https://suihan74.github.io&quot;&gt;suihan&lt;/a&gt;</string>
+    <string name="copyright">Copyright \u00A9 %s suihan</string>
+    <string name="developer">すいはん</string>
+    <string name="developer_hatena">https://b.hatena.ne.jp/suihan74</string>
+    <string name="developer_website">https://suihan74.github.io/</string>
+    <string name="developer_email">suihan742@gmail.com</string>
+    <string name="developer_twitter">https://twitter.com/suihan742</string>
+    <string name="developer_twitter_id">\@suihan742</string>
+    <string name="privacy_policy">https://suihan74.github.io/privacy_satena/</string>
+    <string name="play_store">http://play.google.com/store/apps/details?id=com.suihan74.satena</string>
+    <string name="hatena_rule">https://policies.hatena.ne.jp/rule</string>
 
+    <!-- drawer states -->
     <string name="drawer_open">開く</string>
     <string name="drawer_close">閉じる</string>
+
+    <!-- switch, boolean -->
+    <string name="on">ON</string>
+    <string name="off">OFF</string>
+
+    <!-- gravity -->
+    <string name="gravity_start">左</string>
+    <string name="gravity_end">右</string>
 
     <string name="confirm_dialog_title_simple">確認</string>
 
@@ -137,6 +155,18 @@
     <string name="entry_read_action_dialog">ブコメ投稿ダイアログ</string>
     <string name="entry_read_action_remove">削除</string>
 
+    <!-- PreferencesActivity -->
+    <string name="pref_toolbar_title">設定 > %s</string>
+    <string name="pref_item_current_value_prefix">現在値:</string>
+
+    <string name="dialog_title_pref_information_save_settings">設定保存先を選択</string>
+    <string name="dialog_title_pref_information_load_settings">復元する設定ファイルを選択</string>
+    <string name="msg_pref_information_save_load_permission_failed">ファイルを入出力するための権限がありません</string>
+    <string name="msg_pref_information_save_succeeded">設定を%sに保存しました</string>
+    <string name="msg_pref_information_save_failed">設定の保存に失敗しました</string>
+    <string name="msg_pref_information_load_succeeded">設定を%sから読み込みました</string>
+    <string name="msg_pref_information_load_failed">設定の読み込みに失敗しました</string>
+
     <!-- 設定項目の説明 -->
     <string name="pref_title_information">情報</string>
     <string name="pref_title_account">アカウント</string>
@@ -149,23 +179,34 @@
     <string name="pref_title_user_tags">ユーザータグ</string>
     <string name="pref_title_fonts">フォント</string>
     <!-- information -->
+    <string name="pref_information_section_app">アプリ情報</string>
+    <string name="pref_information_section_developer">開発者</string>
+    <string name="pref_information_section_info">情報</string>
+
+    <string name="pref_information_open_play_store_desc">Playストア</string>
     <string name="pref_information_release_notes_desc">更新履歴</string>
     <string name="pref_information_licenses_desc">ライセンス</string>
-    <string name="pref_information_save_settings_desc">設定をファイルに保存</string>
-    <string name="pref_information_load_settings_desc">ファイルから設定を読み込む</string>
-    <string name="dialog_title_pref_information_save_settings">設定保存先を選択</string>
-    <string name="dialog_title_pref_information_load_settings">復元する設定ファイルを選択</string>
-    <string name="msg_pref_information_save_load_permission_failed">ファイルを入出力するための権限がありません</string>
-    <string name="msg_pref_information_save_succeeded">設定を%sに保存しました</string>
-    <string name="msg_pref_information_save_failed">設定の保存に失敗しました</string>
-    <string name="msg_pref_information_load_succeeded">設定を%sから読み込みました</string>
-    <string name="msg_pref_information_load_failed">設定の読み込みに失敗しました</string>
     <string name="msg_loading_release_notes_failed">更新履歴の読み込み失敗</string>
+
+    <string name="pref_information_developer_website">Webサイト</string>
+    <string name="pref_information_developer_email">メール</string>
+    <string name="pref_information_developer_twitter">Twitter</string>
+    <string name="pref_information_hatena_rules">はてな利用規約</string>
+    <string name="pref_information_privacy_policy">プライバシーポリシー</string>
+
     <!-- accounts -->
     <string name="pref_accounts_service_name_hatena">Hatena</string>
     <string name="pref_accounts_service_name_mastodon">Mastodon</string>
     <string name="pref_accounts_sign_in">ログイン</string>
+    <string name="pref_accounts_delete_hatena_message">Satenaでのはてなアカウント利用を停止します。\nアカウント情報が必要なサービスのご利用には再度ログインが必要になります。</string>
+    <string name="pref_accounts_delete_mastodon_message">SatenaでのMastodonアカウント利用を停止します。\nブクマ時のMastodonへの同時投稿機能のご利用には再度ログインが必要になります。</string>
     <!-- generals -->
+    <string name="pref_generals_section_theme">テーマ</string>
+    <string name="pref_generals_section_notices">通知</string>
+    <string name="pref_generals_section_update">アップデート通知</string>
+    <string name="pref_generals_section_dialogs">ダイアログ</string>
+    <string name="pref_generals_section_backup">バックアップ</string>
+
     <string name="pref_generals_theme_desc">アプリのテーマ</string>
     <string name="pref_generals_theme_dark">Dark</string>
     <string name="pref_generals_theme_light">Light</string>
@@ -177,6 +218,9 @@
     <string name="pref_generals_dialog_theme_app">アプリテーマにあわせる</string>
 
     <string name="pref_generals_close_dialog_touch_outside_desc">ダイアログの外側をタッチしたら閉じる</string>
+
+    <string name="pref_generals_save_settings_desc">設定をファイルに保存</string>
+    <string name="pref_generals_load_settings_desc">ファイルから設定を読み込む</string>
 
     <string name="pref_generals_drawer_gravity_desc">ドロワの位置</string>
     <string name="pref_generals_drawer_gravity_right">右側</string>
@@ -190,7 +234,7 @@
     <string name="pref_generals_ignore_notices_from_spam_desc">スパムと思われるスター通知を行わない</string>
     <string name="pref_generals_show_release_notes_after_update_desc">アプリ更新後の初回起動時に更新履歴を表示する</string>
     <string name="pref_generals_notices_intervals_dialog_title">通知確認間隔を設定</string>
-    <string name="pref_generals_notices_intervals_dialog_msg">%1$d分～%2$d分で指定できます</string>
+    <string name="pref_generals_notices_intervals_dialog_msg">%1$d分～%2$d分で指定できます。間隔は大体の目安であり5分程度前後する可能性があります</string>
 
     <string name="pref_generals_clear_image_cache_desc">画像キャッシュをクリアする</string>
     <string name="pref_generals_clear_image_cache_button">実行</string>
@@ -198,6 +242,13 @@
     <string name="pref_generals_clear_image_cache_dialog_message">キャッシュを削除するとストレージ使用量を削減できる一方、一時的に通信量が増えて画像の読み込みが遅くなります。削除しますか？</string>
 
     <!-- entries -->
+    <string name="pref_entry_section_bottom_menu">ボトムメニュー</string>
+    <string name="pref_entry_section_click">タップ時動作</string>
+    <string name="pref_entry_section_category">カテゴリ・タブ</string>
+    <string name="pref_entry_section_behavior">振る舞い</string>
+    <string name="pref_entry_section_history">ブクマ閲覧履歴</string>
+    <string name="pref_entry_section_read_later">あとで読む</string>
+
     <string name="pref_entries_layout_mode_desc">ボトムバーを使用する</string>
     <string name="pref_hide_bottom_appbar_by_scrolling_desc">スクロールでボトムバーを隠す</string>
     <string name="pref_bottom_bar_items_desc">ボトムバーの項目をカスタマイズ</string>
@@ -207,6 +258,7 @@
     <string name="pref_entries_multiple_tap_action_desc">複数回タップ時の動作</string>
     <string name="pref_entries_long_tap_action_desc">ロングタップ時の動作</string>
     <string name="pref_entries_multiple_tap_duration_desc">タップ回数の判定時間</string>
+    <string name="pref_entries_multiple_tap_duration_unit">ミリ秒</string>
     <string name="pref_entries_multiple_tap_duration_dialog_message">エントリ項目タップ回数を検知する時間を設定します。0にすると判定自体を行わないようになります</string>
     <string name="pref_home_category_desc">ホームカテゴリ</string>
     <string name="pref_entries_initial_tab_desc">最初に表示するタブ</string>
@@ -245,6 +297,12 @@
     <string name="pref_categories_mode_grid">グリッド</string>
 
     <!-- bookmarks -->
+    <string name="pref_bookmark_section_tab">タブ</string>
+    <string name="pref_bookmark_section_dialog">ダイアログ</string>
+    <string name="pref_bookmark_section_behavior">振る舞い</string>
+    <string name="pref_bookmark_section_ignoring">非表示</string>
+    <string name="pref_bookmark_section_link">リンク</string>
+
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
     <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>
     <string name="pref_bookmarks_hiding_buttons_with_scrolling_desc">スクロールにあわせて画面下部のボタンを隠す</string>
@@ -282,20 +340,19 @@
 
     <string name="pref_user_tags_user_menu_show_entries">@string/bookmark_show_user_entries</string>
     <string name="pref_user_tags_user_menu_remove">ユーザーを除外</string>
-    <!-- fonts -->
-    <string name="pref_fonts_entry_title_desc">エントリータイトル</string>
-    <string name="pref_fonts_bookmark_user_desc">ブコメユーザー名</string>
-    <string name="pref_fonts_bookmark_comment_desc">ブコメ本文</string>
 
     <!-- 内部ブラウザ -->
+    <string name="pref_browser_section_browser">ブラウザ</string>
+    <string name="pref_browser_section_features">機能</string>
+    <string name="pref_browser_section_display">表示</string>
+    <string name="pref_browser_section_refresh">キャッシュ・クッキー</string>
+
     <string name="pref_browser_mode_desc">利用するアプリ内ブラウザ</string>
     <string name="pref_browser_mode_web_view">WebView(新)</string>
     <string name="pref_browser_mode_chrome_custom_tab">ChromeCustomTab(旧)</string>
 
     <string name="pref_browser_start_page_desc">スタートページ</string>
     <string name="pref_browser_start_page_hint">ウェブアドレスを入力</string>
-    <string name="msg_browser_updating_start_page_succeeded">スタートページを更新しました</string>
-    <string name="msg_browser_updating_start_page_failed">不正なURLです</string>
     <string name="pref_browser_private_browsing_enabled_desc">プライベートブラウジング</string>
     <string name="pref_browser_javascript_enabled_desc">JavaScript</string>
     <string name="pref_browser_use_url_blocking_desc">URLブロック</string>
@@ -307,6 +364,9 @@
     <string name="pref_browser_search_engine_desc">アドレスバーで使用する検索エンジン</string>
     <string name="pref_browser_dialog_title_search_engine">検索エンジン</string>
     <string name="pref_browser_use_marquee_on_back_stack_items_desc">「戻る/進む」履歴項目のテキストが長い場合マーキーを使用する</string>
+
+    <string name="msg_browser_updating_start_page_succeeded">スタートページを更新しました</string>
+    <string name="msg_browser_updating_start_page_failed">不正なURLです</string>
 
     <string name="pref_browser_clear_cache_desc">キャッシュを削除する</string>
     <string name="pref_browser_clear_cache_dialog_message">キャッシュを削除するとストレージ使用量を削減できる一方、一時的に通信量が増えてウェブページの読み込みが遅くなります。削除しますか？</string>

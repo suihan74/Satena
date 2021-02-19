@@ -22,8 +22,7 @@ class BrowserRepository(
     ) = PreferenceLiveData(browserSettings, key, initializer)
 
     /** 利用する内部ブラウザ */
-    val browserMode by lazy {
-        MutableLiveData(
+    val browserMode = MutableLiveData(
             BrowserMode.fromId(prefs.getInt(PreferenceKey.BROWSER_MODE))
         ).apply {
             observeForever {
@@ -32,7 +31,6 @@ class BrowserRepository(
                 }
             }
         }
-    }
 
     /** アプリのテーマがダークテーマか */
     val isThemeDark by lazy {

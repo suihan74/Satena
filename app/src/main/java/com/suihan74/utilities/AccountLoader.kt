@@ -6,11 +6,17 @@ import com.google.gson.Gson
 import com.suihan74.hatenaLib.Account
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.utilities.exceptions.TaskFailureException
 import com.sys1yagi.mastodon4j.MastodonClient
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
+
+typealias MastodonAccount = com.sys1yagi.mastodon4j.api.entity.Account
 
 class AccountLoader(
     private val context: Context,
@@ -20,8 +26,21 @@ class AccountLoader(
     class HatenaSignInException(message: String? = null) : Throwable(message)
     class MastodonSignInException(message: String? = null) : Throwable(message)
 
+    // ------ //
+
     private val hatenaMutex by lazy { Mutex() }
     private val mastodonMutex by lazy { Mutex() }
+
+    // ------ //
+
+    private val sharedHatenaFlow = MutableSharedFlow<Account?>()
+    val hatenaFlow : SharedFlow<Account?> = sharedHatenaFlow.asSharedFlow()
+
+    private val sharedMastodonFlow = MutableSharedFlow<MastodonAccount?>()
+    val mastodonFlow : SharedFlow<MastodonAccount?> = sharedMastodonFlow.asSharedFlow()
+
+
+    // ------ //
 
     suspend fun signInAccounts(reSignIn: Boolean = false) {
         val jobs = listOf(
@@ -34,6 +53,7 @@ class AccountLoader(
     fun signInHatenaAsync(reSignIn: Boolean = true) : Deferred<Account?> = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
         hatenaMutex.withLock {
             if (client.signedIn() && !reSignIn) {
+                sharedHatenaFlow.emit(client.account)
                 return@async client.account
             }
 
@@ -57,6 +77,8 @@ class AccountLoader(
                     )
                 }
                 else {
+                    val account = result.getOrNull()
+                    sharedHatenaFlow.emit(account)
                     return@async result.getOrNull()
                 }
             }
@@ -64,29 +86,32 @@ class AccountLoader(
             // ID・パスワードを使用して再ログイン
             val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
             val userPasswordEncryptedStr = prefs.getString(PreferenceKey.HATENA_PASSWORD)
-            if (userNameEncryptedStr?.isNotEmpty() == true && userPasswordEncryptedStr?.isNotEmpty() == true) {
-                try {
-                    val userNameEncryptedData = serializer.deserialize(userNameEncryptedStr)
-                    val name = CryptUtility.decrypt(userNameEncryptedData, key)
-
-                    val passwordEncryptedData = serializer.deserialize(userPasswordEncryptedStr)
-                    val password = CryptUtility.decrypt(passwordEncryptedData, key)
-
-                    val account = client.signInAsync(name, password).await()
-
-                    client.rkStr?.let { rk ->
-                        saveHatenaCookie(rk)
-                    }
-
-                    return@async account
-                }
-                catch (e: Throwable) {
-                    Log.d("HatenaLogin", Log.getStackTraceString(e))
-                    throw HatenaSignInException(e.message)
-                }
-            }
-            else {
+            if (userNameEncryptedStr?.isEmpty() != false || userPasswordEncryptedStr?.isEmpty() != false) {
+                sharedHatenaFlow.emit(null)
                 return@async null
+            }
+
+            try {
+                val userNameEncryptedData = serializer.deserialize(userNameEncryptedStr)
+                val name = CryptUtility.decrypt(userNameEncryptedData, key)
+
+                val passwordEncryptedData = serializer.deserialize(userPasswordEncryptedStr)
+                val password = CryptUtility.decrypt(passwordEncryptedData, key)
+
+                val account = client.signInAsync(name, password).await()
+
+                client.rkStr?.let { rk ->
+                    saveHatenaCookie(rk)
+                }
+
+                sharedHatenaFlow.emit(account)
+
+                return@async account
+            }
+            catch (e: Throwable) {
+                sharedHatenaFlow.emit(null)
+                Log.d("HatenaLogin", Log.getStackTraceString(e))
+                throw HatenaSignInException(e.message)
             }
         }
     }
@@ -94,6 +119,7 @@ class AccountLoader(
     fun signInMastodonAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
         mastodonMutex.withLock {
             if (mastodonClientHolder.signedIn() && !reSignIn) {
+                sharedMastodonFlow.emit(mastodonClientHolder.account)
                 return@async mastodonClientHolder.account
             }
 
@@ -101,36 +127,79 @@ class AccountLoader(
             val mastodonAccessTokenEncryptedStr =
                 prefs.get<String>(PreferenceKey.MASTODON_ACCESS_TOKEN)
 
-            // Mastodonログイン
-            if (mastodonAccessTokenEncryptedStr.isNotEmpty()) {
-                val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
-                val dataSerializer = ObjectSerializer<SerializableMastodonAccessToken>()
-                try {
-                    val key = createKey(context)
-                    val mastodonAccessTokenEncryptedData =
-                        serializer.deserialize(mastodonAccessTokenEncryptedStr)
-                    val decrypted = CryptUtility.decrypt(mastodonAccessTokenEncryptedData, key)
-                    val data = dataSerializer.deserialize(decrypted)
-
-                    val client = MastodonClient
-                        .Builder(data.instanceName, OkHttpClient.Builder(), Gson())
-                        .accessToken(data.accessToken)
-                        .build()
-
-                    mastodonClientHolder.signInAsync(client).await()
-                }
-                catch (e: Throwable) {
-                    Log.d("MastodonLogin", Log.getStackTraceString(e))
-                    throw MastodonSignInException(e.message)
-                }
-            }
-            else {
+            if (mastodonAccessTokenEncryptedStr.isEmpty()) {
+                sharedMastodonFlow.emit(null)
                 return@async null
+            }
+            // Mastodonログイン
+            val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
+            val dataSerializer = ObjectSerializer<SerializableMastodonAccessToken>()
+            try {
+                val key = createKey(context)
+                val mastodonAccessTokenEncryptedData =
+                    serializer.deserialize(mastodonAccessTokenEncryptedStr)
+                val decrypted = CryptUtility.decrypt(mastodonAccessTokenEncryptedData, key)
+                val data = dataSerializer.deserialize(decrypted)
+
+                val client = MastodonClient
+                    .Builder(data.instanceName, OkHttpClient.Builder(), Gson())
+                    .accessToken(data.accessToken)
+                    .build()
+
+                val account = mastodonClientHolder.signInAsync(client).await()
+
+                sharedMastodonFlow.emit(account)
+
+                return@async account
+            }
+            catch (e: Throwable) {
+                sharedMastodonFlow.emit(null)
+                Log.d("MastodonLogin", Log.getStackTraceString(e))
+                throw MastodonSignInException(e.message)
             }
         }
     }
 
-    fun saveHatenaAccount(name: String, password: String, rk: String) {
+    // ------ //
+
+    suspend fun signInHatena(name: String, password: String) : Account {
+        hatenaMutex.withLock {
+            try {
+                val account = client.signInAsync(name, password).await()
+                sharedHatenaFlow.emit(account)
+                saveHatenaAccount(name, password, client.rkStr!!)
+
+                return account
+            }
+            catch (e: Throwable) {
+                throw TaskFailureException(cause = e)
+            }
+        }
+    }
+
+    suspend fun signInMastodon(instanceName: String, accessToken: String) : MastodonAccount {
+        mastodonMutex.withLock {
+            try {
+                val account = MastodonClientHolder.signInAsync(
+                    MastodonClient
+                        .Builder(instanceName, OkHttpClient.Builder(), Gson())
+                        .accessToken(accessToken)
+                        .build()
+                ).await()
+                sharedMastodonFlow.emit(account)
+                saveMastodonAccount(instanceName, accessToken)
+
+                return account
+            }
+            catch (e: Throwable) {
+                throw TaskFailureException(cause = e)
+            }
+        }
+    }
+
+    // ------ //
+
+    private fun saveHatenaAccount(name: String, password: String, rk: String) {
         val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
         val key = createKey(context)
 
@@ -146,7 +215,7 @@ class AccountLoader(
         }
     }
 
-    fun saveHatenaCookie(rk: String) {
+    private fun saveHatenaCookie(rk: String) {
         val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
         val key = createKey(context)
         val encryptedRk = CryptUtility.encrypt(rk, key)
@@ -156,7 +225,7 @@ class AccountLoader(
         }
     }
 
-    fun saveMastodonAccount(instanceName: String, accessToken: String) {
+    private fun saveMastodonAccount(instanceName: String, accessToken: String) {
         val key = createKey(context)
         val data = SerializableMastodonAccessToken(instanceName, accessToken)
 
@@ -171,8 +240,11 @@ class AccountLoader(
         }
     }
 
-    fun deleteHatenaAccount() {
-        lock (client) {
+    // ------ //
+
+    suspend fun deleteHatenaAccount() {
+        hatenaMutex.withLock {
+            sharedHatenaFlow.emit(null)
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
             prefs.edit {
                 remove(PreferenceKey.HATENA_USER_NAME)
@@ -183,8 +255,9 @@ class AccountLoader(
         }
     }
 
-    fun deleteMastodonAccount() {
-        lock (MastodonClientHolder) {
+    suspend fun deleteMastodonAccount() {
+        mastodonMutex.withLock {
+            sharedMastodonFlow.emit(null)
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
             prefs.edit {
                 remove(PreferenceKey.MASTODON_ACCESS_TOKEN)
@@ -192,6 +265,8 @@ class AccountLoader(
             mastodonClientHolder.signOut()
         }
     }
+
+    // ------ //
 
     private fun createKey(context: Context) : String {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)

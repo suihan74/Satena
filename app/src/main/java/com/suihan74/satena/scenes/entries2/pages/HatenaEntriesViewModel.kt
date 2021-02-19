@@ -1,23 +1,22 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
-import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.EntriesTabType
 
 class HatenaEntriesViewModel(
     private val repository: EntriesRepository
 ) : EntriesFragmentViewModel() {
-    private val tabTitles = arrayOf(
-        R.string.entries_tab_hot,
-        R.string.entries_tab_recent
-    )
+    /** 内包するタブ */
+    private val tabs = EntriesTabType.getTabs(null)
 
     /** 現在categoryが内包するissueのリスト */
     val issues by lazy {
         repository.IssuesLiveData(category)
     }
 
-    override val tabCount: Int = 2
-    override fun getTabTitle(context: Context, position: Int) = context.getString(tabTitles[position])
+    override val tabCount: Int = tabs.size
+    override fun getTabTitle(context: Context, position: Int) =
+        context.getString(tabs[position].textId)
 }

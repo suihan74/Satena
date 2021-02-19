@@ -13,11 +13,10 @@ import androidx.work.WorkerParameters
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.checkFromSpam
 import com.suihan74.utilities.extensions.makeSpannedFromHtml
@@ -52,11 +51,7 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
             val localLastUpdated = prefs.getNullable<LocalDateTime>(PreferenceKey.NOTICES_LAST_SEEN)
             val now = LocalDateTime.now()
 
-            AccountLoader(
-                context,
-                HatenaClient,
-                MastodonClientHolder
-            ).signInHatenaAsync().await()
+            SatenaApplication.instance.accountLoader.signInHatenaAsync().await()
 
             val response = HatenaClient.getNoticesAsync().await()
             if (isLastSeenUpdatable) {

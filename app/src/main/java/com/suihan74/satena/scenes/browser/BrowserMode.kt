@@ -2,12 +2,13 @@ package com.suihan74.satena.scenes.browser
 
 import androidx.annotation.StringRes
 import com.suihan74.satena.R
+import com.suihan74.satena.models.TextIdContainer
 
 /** 使用する内部ブラウザ */
 enum class BrowserMode(
     val id : Int,
-    @StringRes val textId: Int
-) {
+    @StringRes override val textId: Int
+) : TextIdContainer {
     /** CustomTabsIntent */
     CUSTOM_TABS_INTENT(0,
         R.string.pref_browser_mode_chrome_custom_tab

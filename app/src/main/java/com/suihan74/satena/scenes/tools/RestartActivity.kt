@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Process
-import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.splash.SplashActivity
 
 class RestartActivity : Activity() {
     companion object {
@@ -26,7 +26,7 @@ class RestartActivity : Activity() {
         Process.killProcess(mainPid)
 
         // メインアクティビティ再起動
-        val restartIntent = Intent(applicationContext, EntriesActivity::class.java).apply {
+        val restartIntent = Intent(applicationContext, SplashActivity::class.java).apply {
             action = Intent.ACTION_MAIN
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }

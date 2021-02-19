@@ -86,14 +86,28 @@ fun TextView.setUrlWithDecoding(encodedUrl: String?) {
 
 //////////////////////////////////////////////////
 
-/**
- * 数値をテキストとしてセットする
- *
- * 数値を直接渡す際にリソースIDとして認識されないようにするために使用
- */
-@BindingAdapter("numText")
-fun TextView.setNumberText(value: Number?) {
-    this.text = value?.toString().orEmpty()
+object TextViewBindingAdapters {
+    /**
+     * 0x0リソースを回避して文字列リソースをセットする
+     */
+    @JvmStatic
+    @BindingAdapter("android:text")
+    fun bindTextResource(textView: TextView, textId: Int?) {
+        textView.text =
+            if (textId == null || textId == 0) ""
+            else textView.context.getText(textId)
+    }
+
+    /**
+     * 数値をテキストとしてセットする
+     *
+     * 数値を直接渡す際にリソースIDとして認識されないようにするために使用
+     */
+    @JvmStatic
+    @BindingAdapter("numText")
+    fun bindNumberText(textView: TextView, value: Number?) {
+        textView.text = value?.toString().orEmpty()
+    }
 }
 
 //////////////////////////////////////////////////
