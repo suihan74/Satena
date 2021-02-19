@@ -34,6 +34,9 @@ abstract class BookmarksTabFragment :
     /** ブクマリスト */
     abstract val bookmarksLiveData : LiveData<List<Bookmark>>
 
+    /** タブ種類(人気，新着，すべて，カスタム) */
+    abstract val bookmarksTabType : BookmarksTabType
+
     // ------ //
 
     val bookmarksActivity : BookmarksActivity
@@ -72,7 +75,7 @@ abstract class BookmarksTabFragment :
             it.lifecycleOwner = viewLifecycleOwner
         }
 
-        viewModel.setBookmarksLiveData(viewLifecycleOwner, bookmarksLiveData)
+        viewModel.setBookmarksLiveData(viewLifecycleOwner, bookmarksLiveData, bookmarksTabType)
         initializeRecyclerView(binding)
 
         return binding.root

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Browser -->
+    <string name="browser_bookmarks_open_post_area_button_description">ブクマ投稿画面を開く</string>
+    <string name="custom_bookmarks_pref_button_description">カスタムブックマークリスト設定</string>
+</resources>

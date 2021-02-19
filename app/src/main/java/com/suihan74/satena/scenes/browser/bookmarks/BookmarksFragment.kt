@@ -116,10 +116,6 @@ class BookmarksFragment :
             switchPostLayout(binding, opened)
         }
 
-        binding.bottomAppBar.setOnClickListener {
-            scrollToTop()
-        }
-
         // 戻るボタンで投稿エリアを隠す
         onBackPressedCallback = activity?.onBackPressedDispatcher?.addCallback(
             viewLifecycleOwner,
@@ -152,7 +148,6 @@ class BookmarksFragment :
                     val view = super.getView(position, convertView, parent)
                     view.alsoAs<TextView> {
                         it.setPadding(0, 0, 0, 0)
-                        it.setTextColor(context.getThemeColor(R.attr.colorPrimary))
                     }
                     return view
                 }
@@ -166,15 +161,22 @@ class BookmarksFragment :
                 ) {
                     binding.recyclerView.adapter.alsoAs<BookmarksAdapter> { adapter ->
                         adapter.submitList(null) {
+                            val tabType = BookmarksTabType.fromOrdinal(position)
                             bookmarksTabViewModel.setBookmarksLiveData(
                                 viewLifecycleOwner,
-                                viewModel.bookmarksLiveData(BookmarksTabType.fromOrdinal(position))
+                                viewModel.bookmarksLiveData(tabType),
+                                tabType
                             )
                         }
                     }
                 }
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
+        }
+
+        // カスタムブクマリストの表示項目を設定する
+        binding.customBookmarksPrefButton.setOnClickListener {
+            viewModel.openCustomTabSettingsDialog(childFragmentManager)
         }
 
         // 投稿エリアを作成

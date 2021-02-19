@@ -2,6 +2,8 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
+        <import type="com.suihan74.satena.scenes.bookmarks.BookmarksTabType"/>
+
         <variable
                 name="vm"
                 type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
@@ -51,11 +53,12 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_width="0dp"
-                android:layout_height="64dp">
+                android:layout_height="80dp">
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/open_post_area_button"
                     android:src="@drawable/ic_add_comment"
+                    android:contentDescription="@string/browser_bookmarks_open_post_area_button_description"
                     app:fabSize="mini"
                     app:backgroundTint="?colorPrimary"
                     app:layout_anchor="@id/bottom_app_bar"
@@ -66,15 +69,40 @@
                     android:id="@+id/bottom_app_bar"
                     android:backgroundTint="?attr/tabBackground"
                     app:fabAlignmentMode="center"
+                    app:fabCradleRoundedCornerRadius="8dp"
+                    app:contentInsetStart="12dp"
+                    app:contentInsetEnd="12dp"
                     android:layout_gravity="bottom"
                     android:layout_width="match_parent"
-                    android:layout_height="32dp">
+                    android:layout_height="48dp">
 
-                <Spinner
-                        android:id="@+id/bookmarks_type_spinner"
-                        android:foregroundTint="?colorPrimary"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"/>
+                <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    <Spinner
+                            android:id="@+id/bookmarks_type_spinner"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            android:backgroundTint="?textColor"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"/>
+
+                    <ImageButton
+                            android:id="@+id/custom_bookmarks_pref_button"
+                            android:foreground="@drawable/ic_baseline_settings"
+                            android:foregroundTint="?textColor"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/custom_bookmarks_pref_button_description"
+                            android:visibility="@{bookmarksVM.bookmarksTabType == BookmarksTabType.CUSTOM}"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </com.google.android.material.bottomappbar.BottomAppBar>
 

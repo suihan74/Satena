@@ -5,6 +5,7 @@ import androidx.lifecycle.*
 import androidx.recyclerview.widget.DiffUtil
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.models.userTag.Tag
+import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.utilities.AnalyzedBookmarkComment
 import com.suihan74.utilities.BookmarkCommentDecorator
@@ -16,7 +17,11 @@ import kotlinx.coroutines.withContext
 class BookmarksTabViewModel(
     private val repo : BookmarksRepository,
 ) : ViewModel() {
-    private var bookmarks : LiveData<List<Bookmark>>? = null
+    var bookmarks : LiveData<List<Bookmark>>? = null
+        private set
+
+    private val _bookmarksTabType = MutableLiveData<BookmarksTabType>()
+    val bookmarksTabType : LiveData<BookmarksTabType> = _bookmarksTabType
 
     /** 実際に画面に表示するアイテム */
     val displayBookmarks = MutableLiveData<List<RecyclerState<Entity>>>()
@@ -25,7 +30,7 @@ class BookmarksTabViewModel(
 
     /** 表示対象のブクマリストを変更する */
     @MainThread
-    fun setBookmarksLiveData(owner: LifecycleOwner, liveData: LiveData<List<Bookmark>>) {
+    fun setBookmarksLiveData(owner: LifecycleOwner, liveData: LiveData<List<Bookmark>>, tabType: BookmarksTabType) {
         bookmarks?.removeObservers(owner)
         bookmarks = liveData.also {
             it.observe(owner, Observer {
@@ -34,6 +39,7 @@ class BookmarksTabViewModel(
                 }
             })
         }
+        _bookmarksTabType.value = tabType
     }
 
     // ------ //
