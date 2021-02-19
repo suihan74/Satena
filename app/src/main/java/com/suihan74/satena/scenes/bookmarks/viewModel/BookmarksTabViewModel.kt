@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks.viewModel
 
+import androidx.annotation.MainThread
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.DiffUtil
 import com.suihan74.hatenaLib.Bookmark
@@ -14,20 +15,24 @@ import kotlinx.coroutines.withContext
 
 class BookmarksTabViewModel(
     private val repo : BookmarksRepository,
-
-    /** タブに紐づいているブクマリスト */
-    bookmarks : LiveData<List<Bookmark>>
 ) : ViewModel() {
+    private var bookmarks : LiveData<List<Bookmark>>? = null
+
     /** 実際に画面に表示するアイテム */
     val displayBookmarks = MutableLiveData<List<RecyclerState<Entity>>>()
 
     // ------ //
 
-    init {
-        bookmarks.observeForever {
-            viewModelScope.launch {
-                displayBookmarks.postValue(createDisplayBookmarks(it))
-            }
+    /** 表示対象のブクマリストを変更する */
+    @MainThread
+    fun setBookmarksLiveData(owner: LifecycleOwner, liveData: LiveData<List<Bookmark>>) {
+        bookmarks?.removeObservers(owner)
+        bookmarks = liveData.also {
+            it.observe(owner, Observer {
+                viewModelScope.launch {
+                    displayBookmarks.postValue(createDisplayBookmarks(it))
+                }
+            })
         }
     }
 

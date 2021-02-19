@@ -5,6 +5,9 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.widget.TooltipCompat
@@ -17,6 +20,7 @@ import androidx.transition.TransitionManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
 import com.suihan74.satena.scenes.bookmarks.BookmarksAdapter
+import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.browser.BrowserActivity
@@ -28,6 +32,7 @@ import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.bindings.setIconId
 import com.suihan74.utilities.bindings.setVisibility
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
@@ -57,7 +62,7 @@ class BookmarksFragment :
 
     /** ブクマリスト表示用のVM */
     private val bookmarksTabViewModel by lazyProvideViewModel {
-        BookmarksTabViewModel(viewModel.repository, viewModel.recentBookmarks)
+        BookmarksTabViewModel(viewModel.repository)
     }
 
     private val viewModel by lazyProvideViewModel {
@@ -66,7 +71,8 @@ class BookmarksFragment :
 
     // ------ //
 
-    private var binding : FragmentBrowserBookmarksBinding? = null
+    private var _binding : FragmentBrowserBookmarksBinding? = null
+    private val binding get() = _binding!!
 
     // ------ //
 
@@ -77,7 +83,7 @@ class BookmarksFragment :
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentBrowserBookmarksBinding.inflate(
+        _binding = FragmentBrowserBookmarksBinding.inflate(
             inflater,
             container,
             false
@@ -86,10 +92,21 @@ class BookmarksFragment :
             bookmarksVM = bookmarksTabViewModel
             lifecycleOwner = viewLifecycleOwner
         }
-        this.binding = binding
 
         initializeRecyclerView(binding)
+        initializeBottomBar(binding)
 
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    // ------ //
+
+    private fun initializeBottomBar(binding: FragmentBrowserBookmarksBinding) {
         // 投稿エリアの表示状態を変更する
         binding.openPostAreaButton.setOnClickListener {
             val postLayout = binding.bookmarkPostFrameLayout
@@ -122,6 +139,44 @@ class BookmarksFragment :
             }
         }
 
+        // 表示するブクマリストを選択する
+        binding.bookmarksTypeSpinner.also { spinner ->
+            val tabs = BookmarksTabType.values()
+            val labels = tabs.map { getText(it.textId) }
+            spinner.adapter = object : ArrayAdapter<CharSequence>(
+                requireContext(),
+                R.layout.spinner_browser_bookmarks_tabs,
+                labels
+            ) {
+                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                    val view = super.getView(position, convertView, parent)
+                    view.alsoAs<TextView> {
+                        it.setPadding(0, 0, 0, 0)
+                        it.setTextColor(context.getThemeColor(R.attr.colorPrimary))
+                    }
+                    return view
+                }
+            }
+            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    binding.recyclerView.adapter.alsoAs<BookmarksAdapter> { adapter ->
+                        adapter.submitList(null) {
+                            bookmarksTabViewModel.setBookmarksLiveData(
+                                viewLifecycleOwner,
+                                viewModel.bookmarksLiveData(BookmarksTabType.fromOrdinal(position))
+                            )
+                        }
+                    }
+                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
+        }
+
         // 投稿エリアを作成
         if (childFragmentManager.findFragmentById(R.id.bookmark_post_frame_layout) == null) {
             val bookmarkPostFragment = BookmarkPostFragment.createInstance()
@@ -133,16 +188,7 @@ class BookmarksFragment :
                 )
                 .commitAllowingStateLoss()
         }
-
-        return binding.root
     }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
-    }
-
-    // ------ //
 
     private fun initializeRecyclerView(binding: FragmentBrowserBookmarksBinding) {
         val scrollingUpdater = RecyclerViewScrollingUpdater {
@@ -236,7 +282,7 @@ class BookmarksFragment :
     // ------ //
 
     override fun scrollToTop() {
-        binding?.recyclerView?.scrollToPosition(0)
+        _binding?.recyclerView?.scrollToPosition(0)
     }
 
     // ------ //

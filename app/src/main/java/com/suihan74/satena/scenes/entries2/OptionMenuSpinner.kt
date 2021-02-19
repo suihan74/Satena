@@ -68,10 +68,10 @@ fun Spinner.initialize(
                     setText(R.string.option_menu_spinner_no_selected)
                 }
                 setTextColor(
-                    if (position == this@initialize.selectedItemPosition)
-                        context.getColor(R.color.colorPrimary)
-                    else
-                        context.getThemeColor(R.attr.textColor)
+                    context.getThemeColor(
+                        if (position == this@initialize.selectedItemPosition) R.attr.colorPrimary
+                        else R.attr.textColor
+                    )
                 )
             }
             return view

@@ -46,7 +46,7 @@ abstract class BookmarksTabFragment :
         get() = bookmarksActivity.contentsViewModel
 
     val viewModel by lazyProvideViewModel {
-        BookmarksTabViewModel(bookmarksViewModel.repository, bookmarksLiveData)
+        BookmarksTabViewModel(bookmarksViewModel.repository)
     }
 
     private var _binding : FragmentBookmarksTab3Binding? = null
@@ -72,6 +72,7 @@ abstract class BookmarksTabFragment :
             it.lifecycleOwner = viewLifecycleOwner
         }
 
+        viewModel.setBookmarksLiveData(viewLifecycleOwner, bookmarksLiveData)
         initializeRecyclerView(binding)
 
         return binding.root

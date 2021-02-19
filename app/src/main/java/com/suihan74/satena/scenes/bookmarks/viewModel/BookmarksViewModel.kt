@@ -19,6 +19,7 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.scenes.bookmarks.AddStarPopupMenu
 import com.suihan74.satena.scenes.bookmarks.BookmarksAdapter
+import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.EntryMenuActionsImplForBookmarks
 import com.suihan74.satena.scenes.bookmarks.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
@@ -265,6 +266,16 @@ class BookmarksViewModel(
     }
 
     // ------ //
+
+    /**
+     * ブクマリストタイプに合致するブクマリストのLiveDataを取得する
+     */
+    fun bookmarksLiveData(tab: BookmarksTabType) : LiveData<List<Bookmark>> = when(tab) {
+        BookmarksTabType.POPULAR -> popularBookmarks
+        BookmarksTabType.RECENT -> recentBookmarks
+        BookmarksTabType.ALL -> allBookmarks
+        BookmarksTabType.CUSTOM -> customBookmarks
+    }
 
     /**
      * 最新ブクマリストを取得
