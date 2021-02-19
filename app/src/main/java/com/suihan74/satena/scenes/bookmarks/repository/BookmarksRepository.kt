@@ -548,10 +548,11 @@ class BookmarksRepository(
 
                 // ユーザータグがひとつもついていない or 設定したタグがついている
                 // 予めユーザータグがロードされている必要がある
-                // TODO: liveData化
                 else -> getUserTags(b.user).let { liveData ->
-                    liveData.value?.tags?.any { tag -> activeTagIds.any { it == tag.id } }
-                } ?: showUntaggedUsers
+                    val tags = liveData.value?.tags.orEmpty()
+                    showUntaggedUsers && tags.isEmpty() ||
+                            tags.any { tag -> activeTagIds.any { it == tag.id } }
+                }
             }
         }.map { Bookmark.create(it) }
     }
@@ -579,7 +580,7 @@ class BookmarksRepository(
                 )
             },
 
-            launch {
+            launch(SupervisorJob()) {
                 // カスタムタブ
                 customBookmarks.postValue(
                     filterForCustomTab(list)
