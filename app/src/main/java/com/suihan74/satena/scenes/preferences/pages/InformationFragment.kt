@@ -19,6 +19,14 @@ import org.threeten.bp.LocalDateTime
 /**
  * 「情報」画面
  */
+class InformationFragment : ListPreferencesFragment() {
+    override val viewModel by lazy {
+        InformationViewModel(requireContext())
+    }
+}
+
+// ------ //
+
 class InformationViewModel(private val context: Context) : ListPreferencesViewModel(context) {
     @OptIn(ExperimentalStdlibApi::class)
     override fun createList(fragment: ListPreferencesFragment) = buildList {

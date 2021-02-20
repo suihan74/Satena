@@ -27,6 +27,14 @@ import kotlinx.coroutines.launch
 /**
  * 「エントリ」画面
  */
+class EntryFragment : ListPreferencesFragment() {
+    override val viewModel by lazy {
+        EntryViewModel(requireContext())
+    }
+}
+
+// ------ //
+
 class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     private val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)

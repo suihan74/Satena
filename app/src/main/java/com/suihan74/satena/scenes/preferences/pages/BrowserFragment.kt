@@ -16,6 +16,14 @@ import com.suihan74.utilities.SafeSharedPreferences
 /**
  * 「ブラウザ」画面
  */
+class BrowserFragment : ListPreferencesFragment() {
+    override val viewModel by lazy {
+        BrowserViewModel(requireContext())
+    }
+}
+
+// ------ //
+
 class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
     lateinit var browserRepo : BrowserRepository  // todo
 

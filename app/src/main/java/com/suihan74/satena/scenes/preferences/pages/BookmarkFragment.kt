@@ -13,6 +13,14 @@ import com.suihan74.satena.scenes.preferences.addSection
 /**
  * 「ブックマーク」画面
  */
+class BookmarkFragment : ListPreferencesFragment() {
+    override val viewModel by lazy {
+        BookmarkViewModel(requireContext())
+    }
+}
+
+// ------ //
+
 class BookmarkViewModel(context: Context) : ListPreferencesViewModel(context) {
     /** 最初に表示するタブのindex */
     val initialTabPosition = createLiveDataEnum(

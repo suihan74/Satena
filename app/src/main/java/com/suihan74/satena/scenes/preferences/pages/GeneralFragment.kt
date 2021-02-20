@@ -23,6 +23,14 @@ import kotlinx.coroutines.withContext
 /**
  * 「基本」画面
  */
+class GeneralFragment : ListPreferencesFragment() {
+    override val viewModel by lazy {
+        GeneralViewModel(requireContext())
+    }
+}
+
+// ------ //
+
 class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     /** アプリのテーマ */
     val theme = createLiveDataEnum(

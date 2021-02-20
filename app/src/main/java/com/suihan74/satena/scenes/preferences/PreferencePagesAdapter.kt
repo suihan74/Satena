@@ -7,7 +7,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesFragment
 import com.suihan74.satena.scenes.preferences.pages.*
 
@@ -23,34 +22,38 @@ enum class PreferencesTabMode(
     INFORMATION(1,
         R.string.pref_title_information,
         R.id.preferences_tab_information,
-        { ListPreferencesFragment.createInstance { c -> InformationViewModel(c) } }),
+        { InformationFragment() }
+    ),
 
     ACCOUNT(2,
         R.string.pref_title_account,
         R.id.preferences_tab_accounts,
-        { ListPreferencesFragment.createInstance { c ->
-            AccountViewModel(c, SatenaApplication.instance.accountLoader)
-        } }),
+        { AccountFragment() }
+    ),
 
     GENERALS(3,
         R.string.pref_title_generals,
         R.id.preferences_tab_generals,
-        { ListPreferencesFragment.createInstance { c -> GeneralViewModel(c) } }),
+        { GeneralFragment() }
+    ),
 
     ENTRIES(4,
         R.string.pref_title_entries,
         R.id.preferences_tab_entries,
-        { ListPreferencesFragment.createInstance { c -> EntryViewModel(c) } }),
+        { EntryFragment() }
+    ),
 
     BOOKMARKS(5,
         R.string.pref_title_bookmarks,
         R.id.preferences_tab_bookmarks,
-        { ListPreferencesFragment.createInstance { c -> BookmarkViewModel(c) } }),
+        { BookmarkFragment() }
+    ),
 
     BROWSER(6,
         R.string.pref_title_browser,
         R.id.preferences_tab_browser,
-        { ListPreferencesFragment.createInstance { c -> BrowserViewModel(c) } }),
+        { BrowserFragment() }
+    ),
 
     FAVORITE_SITES(7,
         R.string.category_favorite_sites,

@@ -12,6 +12,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Account
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInHatenaBinding
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInMastodonBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -27,6 +28,17 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+
+/**
+ * 「アカウント」画面
+ */
+class AccountFragment : ListPreferencesFragment() {
+    override val viewModel by lazy {
+        AccountViewModel(requireContext(), SatenaApplication.instance.accountLoader)
+    }
+}
+
+// ------ //
 
 class AccountViewModel(
     context: Context,
