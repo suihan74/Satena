@@ -281,7 +281,7 @@ object PreferencesAdapterBindingAdapters {
 
             is TextIdContainer -> context.getString(value.textId)
 
-            else -> ""
+            else -> value?.toString().orEmpty()
         }
         val suffix = suffixId?.let { context.getText(it) } ?: ""
         textView.text = String.format("%s%s", value, suffix)

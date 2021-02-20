@@ -1,7 +1,7 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
-import androidx.lifecycle.MutableLiveData
+import androidx.fragment.app.FragmentManager
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -11,6 +11,7 @@ import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.*
+import com.suihan74.satena.scenes.preferences.browser.StartPageUrlEditingDialog
 import com.suihan74.utilities.SafeSharedPreferences
 
 /**
@@ -34,9 +35,6 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
     val browserMode get() = browserRepo.browserMode
 
     val startPage get() = browserRepo.startPage
-
-    /** 編集中のスタートページURL */
-    val startPageEditText get() = MutableLiveData("")
 
     val secretModeEnabled get() = browserRepo.privateBrowsingEnabled
 
@@ -102,7 +100,8 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
                 )
             }
         }
-        addPrefItem(fragment, startPageEditText, R.string.pref_browser_start_page_desc) {
+        addPrefItem(fragment, startPage, R.string.pref_browser_start_page_desc) {
+            openStartPageUrlEditingDialog(fragmentManager)
         }
 
         // CustomTabsIntent使用時には以下の設定は使用できない
@@ -131,5 +130,15 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         addPrefToggleItem(fragment, javascriptEnabled, R.string.pref_browser_javascript_enabled_desc)
         addPrefToggleItem(fragment, useUrlBlock, R.string.pref_browser_use_url_blocking_desc)
         add(PreferenceEditTextItem(userAgent, R.string.pref_browser_user_agent_desc, R.string.pref_browser_user_agent_hint))
+    }
+
+    // ------ //
+
+    /**
+     * スタートページのURLを設定するダイアログを開く
+     */
+    private fun openStartPageUrlEditingDialog(fragmentManager: FragmentManager) {
+        StartPageUrlEditingDialog.createInstance()
+            .show(fragmentManager, null)
     }
 }

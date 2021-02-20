@@ -7,7 +7,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksFragment
 import com.suihan74.satena.scenes.browser.history.HistoryFragment
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesFragment
-import com.suihan74.satena.scenes.preferences.pages.PreferencesBrowserFragment
+import com.suihan74.satena.scenes.preferences.pages.BrowserFragment
 
 /** ドロワに表示するタブ */
 enum class DrawerTab(
@@ -37,7 +37,7 @@ enum class DrawerTab(
     SETTINGS(3,
         R.drawable.ic_baseline_settings,
         R.string.browser_drawer_title_preferences,
-        { PreferencesBrowserFragment.createInstance() }
+        { BrowserFragment() }
     );
 
     companion object {
