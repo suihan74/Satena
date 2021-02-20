@@ -10,6 +10,10 @@ data class SearchEngineSetting (
     /** クエリURL */
     val query : String
 ) {
+    override fun toString(): String {
+        return title
+    }
+
     /** プリセット項目 */
     enum class Presets(
         val setting : SearchEngineSetting
