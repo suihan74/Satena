@@ -1,17 +1,17 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
-import androidx.lifecycle.MutableLiveData
+import androidx.fragment.app.FragmentManager
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.scenes.browser.BrowserActivity
-import com.suihan74.satena.scenes.browser.BrowserMode
-import com.suihan74.satena.scenes.browser.BrowserRepository
-import com.suihan74.satena.scenes.browser.WebViewTheme
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.scenes.browser.*
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.*
+import com.suihan74.satena.scenes.preferences.browser.StartPageUrlEditingDialog
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.showAllowingStateLoss
 
 /**
  * 「ブラウザ」画面
@@ -34,9 +34,6 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
     val browserMode get() = browserRepo.browserMode
 
     val startPage get() = browserRepo.startPage
-
-    /** 編集中のスタートページURL */
-    val startPageEditText get() = MutableLiveData("")
 
     val secretModeEnabled get() = browserRepo.privateBrowsingEnabled
 
@@ -102,7 +99,8 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
                 )
             }
         }
-        addPrefItem(fragment, startPageEditText, R.string.pref_browser_start_page_desc) {
+        addPrefItem(fragment, startPage, R.string.pref_browser_start_page_desc) {
+            openStartPageUrlEditingDialog(fragmentManager)
         }
 
         // CustomTabsIntent使用時には以下の設定は使用できない
@@ -130,6 +128,38 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         addPrefToggleItem(fragment, secretModeEnabled, R.string.pref_browser_private_browsing_enabled_desc)
         addPrefToggleItem(fragment, javascriptEnabled, R.string.pref_browser_javascript_enabled_desc)
         addPrefToggleItem(fragment, useUrlBlock, R.string.pref_browser_use_url_blocking_desc)
+        addPrefItem(fragment, searchEngine, R.string.pref_browser_search_engine_desc) {
+            openSearchEngineSelectionDialog(fragmentManager)
+        }
         add(PreferenceEditTextItem(userAgent, R.string.pref_browser_user_agent_desc, R.string.pref_browser_user_agent_hint))
+    }
+
+    // ------ //
+
+    /**
+     * スタートページのURLを設定するダイアログを開く
+     */
+    private fun openStartPageUrlEditingDialog(fragmentManager: FragmentManager) {
+        StartPageUrlEditingDialog.createInstance()
+            .show(fragmentManager, null)
+    }
+
+    /**
+     * 検索エンジンを選択するダイアログを開く
+     */
+    fun openSearchEngineSelectionDialog(fragmentManager: FragmentManager) {
+        val presets = SearchEngineSetting.Presets.values()
+        val labels = presets.map { it.setting.title }
+        val checkedItem = presets.indexOfFirst { it.setting == searchEngine.value }
+
+        val dialog = AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_browser_dialog_title_search_engine)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setSingleChoiceItems(labels, checkedItem) { _, which ->
+                searchEngine.value = presets[which].setting
+            }
+            .dismissOnClickItem(true)
+            .create()
+        dialog.showAllowingStateLoss(fragmentManager)
     }
 }
