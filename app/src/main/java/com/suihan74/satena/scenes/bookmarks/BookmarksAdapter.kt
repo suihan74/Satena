@@ -10,8 +10,8 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -24,7 +24,6 @@ import com.suihan74.satena.databinding.ListviewItemBookmarksBinding
 import com.suihan74.satena.scenes.bookmarks.viewModel.Entity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
-import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.appendStarSpan
 import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.extensions.toVisibility
@@ -34,9 +33,6 @@ import org.threeten.bp.format.DateTimeFormatter
 class BookmarksAdapter(
     private val lifecycleOwner: LifecycleOwner
 ) : ListAdapter<RecyclerState<Entity>, RecyclerView.ViewHolder>(Entity.DiffCallback()) {
-
-    /** 表示項目リスト */
-    private var loadableFooter: LoadableFooterViewHolder? = null
 
     private var onSubmitted: Listener<List<RecyclerState<Entity>>>? = null
 
@@ -107,12 +103,11 @@ class BookmarksAdapter(
         addStarButtonBinder = binder
     }
 
-    /** 追加ロードボタンを表示するか */
-    var additionalLoadable: Boolean = false
-        set (value) {
-            field = value
-            loadableFooter?.additionalLoadingTextView?.setVisibility(value)
-        }
+    /** Footer: ロード中の表示用 */
+    val loading = MutableLiveData<Boolean>()
+
+    /** Footer: 追加ロードボタンを表示するか */
+    val loadable = MutableLiveData<Boolean>()
 
     // ------ //
 
@@ -134,23 +129,22 @@ class BookmarksAdapter(
                         this
                     )
 
-                RecyclerType.FOOTER -> loadableFooter ?:
+                RecyclerType.FOOTER ->
                     LoadableFooterViewHolder(
                         FooterRecyclerViewLoadableBinding.inflate(
                             inflater,
                             parent,
                             false
-                        )
-                    ).also {
-                        loadableFooter = it.also { footer ->
-                            footer.additionalLoadingTextView.let { textView ->
-                                textView.setOnClickListener {
-                                    onAdditionalLoading?.invoke(Unit)
-                                }
-                                textView.setVisibility(additionalLoadable)
+                        ).also {
+                            it.loading = loading
+                            it.loadable = loadable
+                            it.lifecycleOwner = lifecycleOwner
+                            it.loadTextView.setOnClickListener {
+                                loading.value = true
+                                onAdditionalLoading?.invoke(Unit)
                             }
                         }
-                    }
+                    )
 
                 else -> throw RuntimeException("an invalid list item")
             }
@@ -185,17 +179,14 @@ class BookmarksAdapter(
      */
     fun startLoading() {
         lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-            loadableFooter?.progressBar?.isVisible != true
-            additionalLoadable = false
-            loadableFooter?.showProgressBar()
+            loading.value = true
         }
     }
 
     /** フッタのローディングアニメを隠す */
-    fun stopLoading(additionalLoadable: Boolean = this.additionalLoadable) {
+    fun stopLoading() {
         lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-            this@BookmarksAdapter.additionalLoadable = additionalLoadable
-            loadableFooter?.hideProgressBar(additionalLoadable)
+            loading.value = false
         }
     }
 

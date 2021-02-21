@@ -1,23 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="96dp">
+<layout>
+    <data>
+        <import type="androidx.lifecycle.LiveData"/>
+        <variable
+                name="loadable"
+                type="LiveData&lt;Boolean&gt;" />
+        <variable
+                name="loading"
+                type="LiveData&lt;Boolean&gt;" />
+    </data>
 
-    <TextView
-            android:id="@+id/footer_text"
-            android:background="?android:attr/selectableItemBackground"
-            android:visibility="gone"
-            android:text="@string/additional_loading_desc"
-            android:gravity="center"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="96dp">
 
-    <ProgressBar
-            android:id="@+id/footer_progress_bar"
-            android:layout_gravity="center"
-            android:visibility="invisible"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <TextView
+                android:id="@+id/loadTextView"
+                android:background="?android:attr/selectableItemBackground"
+                android:visibility="@{loadable.booleanValue() &amp;&amp; !loading.booleanValue()}"
+                android:text="@string/additional_loading_desc"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_gravity="center"
+                android:visibility="@{loading.booleanValue()}"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

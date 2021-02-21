@@ -193,18 +193,12 @@ class BookmarksFragment :
     }
 
     private fun initializeRecyclerView(binding: FragmentBrowserBookmarksBinding) {
-        val scrollingUpdater = RecyclerViewScrollingUpdater {
-            lifecycleScope.launchWhenResumed {
-                viewModel.loadRecentBookmarks(requireContext(), additionalLoading = true)
-                loadCompleted()
-            }
-        }
-
         val bookmarksAdapter = BookmarksAdapter(viewLifecycleOwner).also { adapter ->
             adapter.setOnSubmitListener {
                 binding.swipeLayout.isRefreshing = false
                 binding.swipeLayout.isEnabled = true
                 binding.progressBar.visibility = View.GONE
+                adapter.loadable.value = viewModel.repository.additionalLoadable
             }
 
             adapter.setOnItemLongClickedListener { bookmark ->
@@ -223,6 +217,15 @@ class BookmarksFragment :
                 viewLifecycleOwner,
                 childFragmentManager
             )
+        }
+
+        val scrollingUpdater = RecyclerViewScrollingUpdater {
+            lifecycleScope.launchWhenResumed {
+                bookmarksAdapter.startLoading()
+                viewModel.loadRecentBookmarks(requireContext(), additionalLoading = true)
+                bookmarksAdapter.stopLoading()
+                loadCompleted()
+            }
         }
 
         binding.recyclerView.let { recyclerView ->

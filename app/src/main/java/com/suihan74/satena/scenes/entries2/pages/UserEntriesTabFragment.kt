@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
 import android.util.Log
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -40,7 +39,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         val context = requireContext()
 
         // エントリリスト用のアダプタ
-        val entriesAdapter = EntriesAdapter(viewLifecycleOwner, viewModel.viewModelScope)
+        val entriesAdapter = EntriesAdapter(viewLifecycleOwner)
 
         // 引っ張って更新
         swipeLayout.apply swipeLayout@ {
