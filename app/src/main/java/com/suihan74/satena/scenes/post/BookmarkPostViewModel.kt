@@ -15,15 +15,15 @@ import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.ConnectionFailureException
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TootVisibility
 import com.suihan74.satena.scenes.post.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
 import com.suihan74.satena.scenes.post.exceptions.MultiplePostException
 import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.OnError
-import com.suihan74.utilities.OnSuccess
+import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
-import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -333,5 +333,34 @@ class BookmarkPostViewModel(
         }
 
         return adapter
+    }
+
+    // ------ //
+
+    /**
+     * Mastodon投稿の公開範囲を選択するダイアログを開く
+     */
+    fun openTootVisibilitySettingDialog(
+        context: Context,
+        fragmentManager: FragmentManager
+    ) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val key = PreferenceKey.MASTODON_POST_VISIBILITY
+        val items = TootVisibility.values()
+        val labels = items.map { it.textId }
+        val initialSelected = prefs.getInt(key)
+
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_accounts_mastodon_status_visibility_desc)
+            .setSingleChoiceItems(labels, initialSelected) { f, which ->
+                SafeSharedPreferences.create<PreferenceKey>(f.context)
+                    .edit {
+                        putInt(key, which)
+                    }
+            }
+            .setNegativeButton(R.string.dialog_cancel)
+            .dismissOnClickItem(true)
+            .create()
+            .show(fragmentManager, null)
     }
 }

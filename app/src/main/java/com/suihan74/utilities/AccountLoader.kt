@@ -84,6 +84,11 @@ class AccountLoader(
             }
 
             // ID・パスワードを使用して再ログイン
+            val autoRetryBasicSignIn = prefs.getBoolean(PreferenceKey.SAVE_HATENA_USER_ID_PASSWORD)
+            if (!autoRetryBasicSignIn) {
+                sharedHatenaFlow.emit(null)
+                return@async null
+            }
             val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
             val userPasswordEncryptedStr = prefs.getString(PreferenceKey.HATENA_PASSWORD)
             if (userNameEncryptedStr?.isEmpty() != false || userPasswordEncryptedStr?.isEmpty() != false) {

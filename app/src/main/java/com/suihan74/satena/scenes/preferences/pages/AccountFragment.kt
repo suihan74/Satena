@@ -16,11 +16,11 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInHatenaBinding
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInMastodonBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TootVisibility
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.authentication.MastodonAuthenticationActivity
-import com.suihan74.satena.scenes.preferences.PreferencesAdapter
-import com.suihan74.satena.scenes.preferences.addButton
-import com.suihan74.satena.scenes.preferences.addSection
+import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonAccount
 import com.suihan74.utilities.extensions.alsoAs
@@ -48,6 +48,16 @@ class AccountViewModel(
     val accountHatena = MutableLiveData<Account?>()
 
     val accountMastodon = MutableLiveData<MastodonAccount?>()
+
+    private val savingHatenaCredentialEnabled = createLiveData<Boolean>(
+        PreferenceKey.SAVE_HATENA_USER_ID_PASSWORD
+    )
+
+    private val mastodonStatusVisibility = createLiveDataEnum(
+        PreferenceKey.MASTODON_POST_VISIBILITY,
+        { it.ordinal },
+        { TootVisibility.values()[it] }
+    )
 
     // ------ //
 
@@ -77,6 +87,7 @@ class AccountViewModel(
         }
         else {
             add(PrefItemHatenaAccount(fragment, this@AccountViewModel))
+            addPrefToggleItem(fragment, savingHatenaCredentialEnabled, R.string.pref_accounts_save_hatena_id_password_desc)
         }
 
         // --- //
@@ -90,6 +101,14 @@ class AccountViewModel(
         }
         else {
             add(PrefItemMastodonAccount(fragment, this@AccountViewModel))
+            addPrefItem(fragment, mastodonStatusVisibility, R.string.pref_accounts_mastodon_status_visibility_desc) {
+                openEnumSelectionDialog(
+                    TootVisibility.values(),
+                    mastodonStatusVisibility,
+                    R.string.pref_accounts_mastodon_status_visibility_desc,
+                    fragment.childFragmentManager
+                )
+            }
         }
     }
 
