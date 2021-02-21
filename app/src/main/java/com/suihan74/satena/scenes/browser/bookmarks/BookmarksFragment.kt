@@ -198,7 +198,8 @@ class BookmarksFragment :
                 binding.swipeLayout.isRefreshing = false
                 binding.swipeLayout.isEnabled = true
                 binding.progressBar.visibility = View.GONE
-                adapter.loadable.value = viewModel.repository.additionalLoadable
+                adapter.loadable.value =
+                    bookmarksTabViewModel.bookmarksTabType.value != BookmarksTabType.POPULAR && viewModel.repository.additionalLoadable
             }
 
             adapter.setOnItemLongClickedListener { bookmark ->
