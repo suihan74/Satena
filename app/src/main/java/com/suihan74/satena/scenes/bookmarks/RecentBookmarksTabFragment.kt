@@ -49,7 +49,7 @@ class RecentBookmarksTabFragment : BookmarksTabFragment() {
 
     override fun afterLoadedBookmarks() {
         scrollingUpdater?.isEnabled = true
-        bookmarksAdapter.additionalLoadable = bookmarksViewModel.repository.additionalLoadable
+        bookmarksAdapter.loadable.value = bookmarksViewModel.repository.additionalLoadable
     }
 
     // ------ //

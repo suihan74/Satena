@@ -19,8 +19,6 @@ class EntriesAdapter(
     private var lifecycleOwner: LifecycleOwner,
     private val coroutineScope: CoroutineScope = GlobalScope
 ) : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
-    /** ロード中表示のできるフッタ */
-    private var footer: LoadableFooterViewHolder? = null
 
     /** エントリクリック時の挙動 */
     private var onItemClicked : ItemClickedListener<Entry>? = null
@@ -73,6 +71,12 @@ class EntriesAdapter(
         onItemsSubmitted = listener
     }
 
+    /** Footer: ロード中の表示用 */
+    val loading = MutableLiveData<Boolean>()
+
+    /** Footer: 追加ロードボタンを表示するか */
+    val loadable = MutableLiveData<Boolean>(false)
+
     /** 復帰時に実行する */
     fun onResume() {
         itemClicked = false
@@ -92,10 +96,12 @@ class EntriesAdapter(
             }
 
             RecyclerType.FOOTER.id -> LoadableFooterViewHolder(
-                FooterRecyclerViewLoadableBinding.inflate(inflater, parent, false)
-            ).also {
-                this.footer = it
-            }
+                FooterRecyclerViewLoadableBinding.inflate(inflater, parent, false).also {
+                    it.loading = loading
+                    it.loadable = loadable
+                    it.lifecycleOwner = lifecycleOwner
+                }
+            )
 
             else -> throw NotImplementedError()
         }
@@ -187,11 +193,15 @@ class EntriesAdapter(
     }
 
     fun showProgressBar() {
-        footer?.showProgressBar()
+        lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            loading.value = true
+        }
     }
 
     fun hideProgressBar() {
-        footer?.hideProgressBar(false)
+        lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            loading.value = false
+        }
     }
 
     private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entry>>() {

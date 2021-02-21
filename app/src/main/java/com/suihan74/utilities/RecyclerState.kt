@@ -1,8 +1,5 @@
 package com.suihan74.utilities
 
-import android.view.View
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.suihan74.satena.databinding.FooterRecyclerViewLoadableBinding
@@ -50,26 +47,6 @@ open class FooterViewHolder(val binding : ViewBinding) : RecyclerView.ViewHolder
 open class SectionViewHolder(val binding : ViewBinding) : RecyclerView.ViewHolder(binding.root)
 
 open class LoadableFooterViewHolder(
-    private val binding : FooterRecyclerViewLoadableBinding
+    val binding : FooterRecyclerViewLoadableBinding
 ) : RecyclerView.ViewHolder(binding.root) {
-
-    /** 「追加更新する」ボタン */
-    val additionalLoadingTextView : TextView by lazy {
-        binding.footerText
-    }
-
-    /** 更新中表示 */
-    val progressBar: ProgressBar by lazy {
-        binding.footerProgressBar
-    }
-
-    fun showProgressBar() {
-        additionalLoadingTextView.visibility = View.GONE
-        progressBar.visibility = View.VISIBLE
-    }
-
-    fun hideProgressBar(nextLoadable: Boolean) {
-//        additionalLoadingTextView?.visibility = nextLoadable.toVisibility()
-        progressBar.visibility = View.INVISIBLE
-    }
 }
