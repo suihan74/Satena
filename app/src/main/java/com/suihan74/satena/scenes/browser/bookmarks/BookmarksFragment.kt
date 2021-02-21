@@ -180,6 +180,26 @@ class BookmarksFragment :
             }
         }
 
+        bookmarksAdapter.setOnAdditionalLoadingListener {
+            // "引っ張って更新"中には実行しない
+            if (binding.swipeLayout.isRefreshing) {
+                return@setOnAdditionalLoadingListener
+            }
+
+            // スクロールによる追加ロード中には実行しない
+            if (scrollingUpdater.isLoading) {
+                return@setOnAdditionalLoadingListener
+            }
+
+            bookmarksAdapter.startLoading()
+            scrollingUpdater.isEnabled = false
+            lifecycleScope.launch(Dispatchers.Main) {
+                viewModel.loadRecentBookmarks(requireContext(), additionalLoading = true)
+                bookmarksAdapter.stopLoading()
+                scrollingUpdater.isEnabled = true
+            }
+        }
+
         binding.recyclerView.let { recyclerView ->
             recyclerView.adapter = bookmarksAdapter
             recyclerView.addOnScrollListener(scrollingUpdater)
