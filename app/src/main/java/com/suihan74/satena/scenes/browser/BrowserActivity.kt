@@ -269,7 +269,6 @@ class BrowserActivity :
         val drawerTabLayout = binding.drawerTabLayout
         val drawerViewPager = binding.drawerViewPager
         val mainArea = binding.mainArea
-        val drawerArea = binding.drawerArea
 
         drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
@@ -301,19 +300,13 @@ class BrowserActivity :
         val drawerTabAdapter = DrawerTabAdapter(supportFragmentManager)
         drawerTabAdapter.setup(this, drawerTabLayout, drawerViewPager)
         drawerTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            @SuppressLint("RtlHardcoded")
             override fun onTabSelected(tab: TabLayout.Tab?) {
+                if (tab == null) return
                 // ドロワ内のタブ切り替え操作と干渉するため
                 // 一番端のタブを表示中以外はスワイプで閉じないようにする
-                val closerEnabled = when (viewModel.drawerGravity) {
-                    Gravity.LEFT -> tab?.position == drawerTabAdapter.count - 1
-                    Gravity.RIGHT -> tab?.position == 0
-                    else -> true // not implemented gravity
-                }
-                drawerLayout.setCloseSwipeEnabled(closerEnabled, drawerArea)
+                setDrawerSwipeClosable(tab.position)
 
-                val position = tab?.position ?: return
-                drawerTabAdapter.findFragment(drawerViewPager, position)?.alsoAs<TabItem> { fragment ->
+                drawerTabAdapter.findFragment(drawerViewPager, tab.position)?.alsoAs<TabItem> { fragment ->
                     fragment.onTabSelected()
                 }
             }
@@ -335,6 +328,23 @@ class BrowserActivity :
             if (it) openDrawer()
             else closeDrawer()
         })
+
+        setDrawerSwipeClosable(drawerTabLayout.selectedTabPosition)
+    }
+
+    @SuppressLint("RtlHardcoded")
+    private fun setDrawerSwipeClosable(position: Int) {
+        // ドロワ内のタブ切り替え操作と干渉するため
+        // 一番端のタブを表示中以外はスワイプで閉じないようにする
+        val drawerTabAdapter = binding.drawerViewPager.adapter!!
+        val direction = resources.configuration.layoutDirection
+        val actualGravity = Gravity.getAbsoluteGravity(viewModel.drawerGravity, direction)
+        val closerEnabled = when (actualGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
+            Gravity.LEFT -> position == drawerTabAdapter.count - 1
+            Gravity.RIGHT -> position == 0
+            else -> true // not implemented gravity
+        }
+        binding.drawerLayout.setCloseSwipeEnabled(closerEnabled, binding.drawerArea)
     }
 
     /**
