@@ -42,6 +42,9 @@ enum class PreferenceKey(
     /** Mastodonのアクセストークン(暗号化) */
     MASTODON_ACCESS_TOKEN(typeInfo<String>(), ""),
 
+    /** Mastodon投稿時の公開範囲 */
+    MASTODON_POST_VISIBILITY(typeInfo<Int>(), TootVisibility.PUBLIC.ordinal),
+
     ////////////////////////////////////////
     // generals
     ////////////////////////////////////////

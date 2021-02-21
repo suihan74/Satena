@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
+import com.suihan74.satena.models.TootVisibility
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
 import com.suihan74.satena.scenes.post.exceptions.PostingMastodonFailureException
@@ -12,7 +13,6 @@ import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
-import com.sys1yagi.mastodon4j.api.entity.Status
 import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -277,6 +277,8 @@ class BookmarkPostRepository(
 
         if (editData.postMastodon) {
             val mstdnResult = runCatching {
+                val visibility = TootVisibility.fromOrdinal(prefs.getInt(PreferenceKey.MASTODON_POST_VISIBILITY))
+
                 val status =
                     if (bookmarkResult.comment.isBlank()) "\"${entry.title}\" ${entry.url}"
                     else "${bookmarkResult.comment} / \"${entry.title}\" ${entry.url}"
@@ -287,7 +289,7 @@ class BookmarkPostRepository(
                     status = status,
                     inReplyToId = null,
                     sensitive = false,
-                    visibility = Status.Visibility.Public,
+                    visibility = visibility.value,
                     mediaIds = null,
                     spoilerText = null
                 ).execute()

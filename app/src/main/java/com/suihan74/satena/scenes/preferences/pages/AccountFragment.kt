@@ -17,6 +17,7 @@ import com.suihan74.satena.databinding.ListviewItemPrefsSignInHatenaBinding
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInMastodonBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TootVisibility
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.authentication.MastodonAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.*
@@ -48,8 +49,14 @@ class AccountViewModel(
 
     val accountMastodon = MutableLiveData<MastodonAccount?>()
 
-    val savingHatenaCredentialEnabled = createLiveData<Boolean>(
+    private val savingHatenaCredentialEnabled = createLiveData<Boolean>(
         PreferenceKey.SAVE_HATENA_USER_ID_PASSWORD
+    )
+
+    private val mastodonStatusVisibility = createLiveDataEnum(
+        PreferenceKey.MASTODON_POST_VISIBILITY,
+        { it.ordinal },
+        { TootVisibility.values()[it] }
     )
 
     // ------ //
@@ -94,6 +101,14 @@ class AccountViewModel(
         }
         else {
             add(PrefItemMastodonAccount(fragment, this@AccountViewModel))
+            addPrefItem(fragment, mastodonStatusVisibility, R.string.pref_accounts_mastodon_status_visibility_desc) {
+                openEnumSelectionDialog(
+                    TootVisibility.values(),
+                    mastodonStatusVisibility,
+                    R.string.pref_accounts_mastodon_status_visibility_desc,
+                    fragment.childFragmentManager
+                )
+            }
         }
     }
 

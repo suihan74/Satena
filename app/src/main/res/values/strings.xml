@@ -198,6 +198,12 @@
     <string name="pref_accounts_service_name_hatena">Hatena</string>
     <string name="pref_accounts_service_name_mastodon">Mastodon</string>
     <string name="pref_accounts_save_hatena_id_password_desc">ID/Passwordを保存して認証情報失効時に自動的に再ログインする</string>
+    <string name="pref_accounts_mastodon_status_visibility_desc">トゥートの公開範囲</string>
+    <string name="mastodon_status_visibility_public">Public(公開TLに投稿する)</string>
+    <string name="mastodon_status_visibility_unlisted">Unlisted(公開TLで表示しない)</string>
+    <string name="mastodon_status_visibility_private">Private(フォロワーだけに表示)</string>
+    <string name="mastodon_status_visibility_direct">Direct(言及した相手にだけ表示)</string>
+
     <string name="pref_accounts_sign_in">ログイン</string>
     <string name="pref_accounts_delete_hatena_message">Satenaでのはてなアカウント利用を停止します。\nアカウント情報が必要なサービスのご利用には再度ログインが必要になります。</string>
     <string name="pref_accounts_delete_mastodon_message">SatenaでのMastodonアカウント利用を停止します。\nブクマ時のMastodonへの同時投稿機能のご利用には再度ログインが必要になります。</string>
