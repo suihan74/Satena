@@ -4,6 +4,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -16,8 +18,7 @@ import com.suihan74.utilities.*
 import kotlinx.coroutines.*
 
 class EntriesAdapter(
-    private var lifecycleOwner: LifecycleOwner,
-    private val coroutineScope: CoroutineScope = GlobalScope
+    private var lifecycleOwner: LifecycleOwner
 ) : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
 
     /** エントリクリック時の挙動 */
@@ -54,7 +55,6 @@ class EntriesAdapter(
     fun setOnItemMultipleClickedListener(listener: ItemMultipleClickedListener<Entry>?) {
         onItemMultipleClicked = listener
     }
-
 
     /** 項目長押し時の挙動をセットする */
     fun setOnItemLongClickedListener(listener: ItemLongClickedListener<Entry>?) {
@@ -122,7 +122,7 @@ class EntriesAdapter(
                     fun considerMultipleClick(entry: Entry?) {
                         if (clickCount++ == 0) {
                             val duration = multipleClickDuration
-                            coroutineScope.launch {
+                            lifecycleOwner.lifecycleScope.launch {
                                 delay(duration)
                                 val count = clickCount
                                 clickCount = 0
@@ -148,7 +148,7 @@ class EntriesAdapter(
                             if (entry != null && !itemClicked) {
                                 itemClicked = true
                                 onItemClicked?.invoke(entry)
-                                coroutineScope.launch {
+                                lifecycleOwner.lifecycleScope.launch {
                                     delay(clickGuardRefreshDelay)
                                     itemClicked = false
                                 }
@@ -186,9 +186,10 @@ class EntriesAdapter(
             else RecyclerState.makeStatesWithFooter(items)
 
         submitList(newList) {
-            hideProgressBar()
-            commitCallback?.invoke()
-            onItemsSubmitted?.invoke(items ?: emptyList())
+            lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                commitCallback?.invoke()
+                onItemsSubmitted?.invoke(items ?: emptyList())
+            }
         }
     }
 
