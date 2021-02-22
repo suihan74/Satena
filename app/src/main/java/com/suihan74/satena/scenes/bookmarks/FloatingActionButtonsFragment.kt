@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.databinding.FragmentBookmarksFabs3Binding
@@ -42,6 +43,11 @@ class FloatingActionButtonsFragment : Fragment() {
     /** 戻るボタンの監視用コールバック */
     private var onBackPressedCallbackForKeyword : OnBackPressedCallback? = null
     private var onBackPressedCallbackForScroll : OnBackPressedCallback? = null
+
+    /** ブクマ投稿画面遷移用ランチャ */
+    private val postBookmarkLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        bookmarksViewModel.onActivityResult(BookmarkPostActivity.REQUEST_CODE, result.resultCode, result.data)
+    }
 
     // ------ //
 
@@ -143,7 +149,7 @@ class FloatingActionButtonsFragment : Fragment() {
                 it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, bookmarksViewModel.entry.value)
                 it.putObjectExtra(BookmarkPostActivity.EXTRA_EDIT_DATA, bookmarksViewModel.editData)
             }
-            activity?.startActivityForResult(intent, BookmarkPostActivity.REQUEST_CODE)
+            postBookmarkLauncher.launch(intent)
         }
 
         // スクロールメニュー
