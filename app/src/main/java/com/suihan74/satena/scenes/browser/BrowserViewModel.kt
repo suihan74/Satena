@@ -10,6 +10,9 @@ import android.os.Handler
 import android.util.Log
 import android.view.*
 import android.webkit.*
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.MainThread
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
@@ -158,6 +161,13 @@ class BrowserViewModel(
 
     // ------ //
 
+    /**
+     * 画像保存時の保存先決定ダイアログを開き、結果を取得するためのランチャ
+     */
+    private lateinit var saveImageLauncher : ActivityResultLauncher<Intent>
+
+    // ------ //
+
     /** WebViewの設定 */
     @MainThread
     fun initializeWebView(wv: WebView, activity: BrowserActivity) {
@@ -262,6 +272,11 @@ class BrowserViewModel(
                 wv.reload()
             }
         })
+
+        // 結果を受け取るActivity遷移のランチャを作成
+        saveImageLauncher = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            onActivityResult(activity, RequestCode.SAVE_IMAGE, result)
+        }
 
         // スタートページに遷移
         goAddress(url.value ?: initialUrl ?: browserRepo.startPage.value!!)
@@ -427,7 +442,7 @@ class BrowserViewModel(
             )) { _, which -> when(which) {
                 0 -> goAddress(url)
                 1 -> shareImage(url, activity)
-                2 -> publishSaveImageIntent(url, activity)
+                2 -> publishSaveImageIntent(url)
             } }
             .setNegativeButton(R.string.dialog_close)
             .create()
@@ -456,7 +471,7 @@ class BrowserViewModel(
                 2 -> openBookmarksActivity(linkUrl, activity)
                 3 -> goAddress(imageUrl)
                 4 -> shareImage(imageUrl, activity)
-                5 -> publishSaveImageIntent(imageUrl, activity)
+                5 -> publishSaveImageIntent(imageUrl)
             } }
             .setNegativeButton(R.string.dialog_close)
             .create()
@@ -558,12 +573,12 @@ class BrowserViewModel(
     }
 
     /** Intent呼び出し先から結果が返ってきたときの処理 */
-    fun onActivityResult(activity: BrowserActivity, requestCode: Int, resultCode: Int, intent: Intent?) {
+    private fun onActivityResult(activity: BrowserActivity, requestCode: RequestCode, result: ActivityResult) {
         when (requestCode) {
             // ファイル保存先の選択
-            RequestCode.SAVE_IMAGE.ordinal -> {
-                val destUri = intent?.data
-                if (resultCode != Activity.RESULT_OK || destUri == null) {
+            RequestCode.SAVE_IMAGE -> {
+                val destUri = result.data?.data
+                if (result.resultCode != Activity.RESULT_OK || destUri == null) {
                     Log.d("FilePick", "canceled")
                     return
                 }
@@ -645,7 +660,7 @@ class BrowserViewModel(
     private var savingImageUrl : String? = null
 
     /** 画像保存先の選択画面を開く */
-    private fun publishSaveImageIntent(url: String, activity: BrowserActivity) {
+    private fun publishSaveImageIntent(url: String) {
         val uri = Uri.parse(url)
         savingImageUrl = url
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).also {
@@ -653,7 +668,7 @@ class BrowserViewModel(
             it.type = "image/*"
             it.putExtra(Intent.EXTRA_TITLE, uri.lastPathSegment ?: uri.path ?: "image")
         }
-        activity.startActivityForResult(intent, RequestCode.SAVE_IMAGE.ordinal)
+        saveImageLauncher.launch(intent)
     }
 
     /** 画像を保存する */

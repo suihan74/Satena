@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.browser
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.webkit.WebView
@@ -204,11 +203,6 @@ class BrowserActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return viewModel.onOptionsItemSelected(item, this)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        viewModel.onActivityResult(this, requestCode, resultCode, data)
     }
 
     // ------ //
