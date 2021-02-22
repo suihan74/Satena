@@ -36,7 +36,7 @@
     <color name="textColorDark">#dfdfdf</color>
     <color name="textColorExDark">#d3d3d3</color>
 
-    <color name="textColorHint">#999</color>
+    <color name="textColorHint">#666</color>
     <color name="textColorHintDark">#777</color>
 
     <!-- RecyclerView -->

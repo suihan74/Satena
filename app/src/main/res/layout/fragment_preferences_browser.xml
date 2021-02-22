@@ -60,7 +60,6 @@
 
                     <com.suihan74.utilities.views.ImeEnhancedEditText
                             android:id="@+id/start_page_edit_text"
-                            style="@style/Widget.AppCompat.EditText"
 
                             android:text="@={vm.startPageEditText}"
                             android:hint="@string/pref_browser_start_page_hint"
@@ -212,7 +211,6 @@
 
                     <com.suihan74.utilities.views.ImeEnhancedEditText
                             android:id="@+id/user_agent_edit_text"
-                            style="@style/Widget.AppCompat.EditText"
 
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"

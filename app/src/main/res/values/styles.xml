@@ -98,7 +98,7 @@
     <style name="EditTextStyle" parent="Widget.AppCompat.EditText"/>
     <style name="EditTextStyle.Light">
         <item name="android:textColor">@color/textColor</item>
-        <item name="android:textColorHint">@color/textColor</item>
+        <item name="android:textColorHint">@color/textColorHint</item>
     </style>
     <style name="EditTextStyle.Dark">
         <item name="android:textColor">@color/textColorDark</item>

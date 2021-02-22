@@ -268,7 +268,6 @@
 
             <com.suihan74.utilities.views.ImeEnhancedEditText
                     android:id="@+id/preferences_entries_read_action_boilerplate"
-                    style="@style/Widget.AppCompat.EditText"
                     android:visibility="@{vm.entryReadActionType == EntryReadActionType.BOILERPLATE}"
                     android:text="@={vm.entryReadActionBoilerPlate}"
                     android:hint="@string/pref_entries_read_action_boilerplate_hint"
