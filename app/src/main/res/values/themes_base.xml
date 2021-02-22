@@ -80,6 +80,7 @@
         <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="editTextStyle">@style/EditTextStyle.Light</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Light</item>
 
@@ -109,6 +110,7 @@
         <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Dark</item>
 
@@ -155,6 +157,7 @@
         <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
+        <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
 
@@ -210,7 +213,9 @@
         <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="editTextStyle">@style/EditTextStyle.Light</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
     </style>
 
     <!-- Dark Theme -->
@@ -228,7 +233,9 @@
         <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
     <!-- Extreme Dark Theme -->
@@ -247,7 +254,9 @@
         <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
+        <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
 
     <!-- ========= -->
@@ -284,6 +293,7 @@
 
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="editTextStyle">@style/EditTextStyle.Light</item>
         <item name="android:textColorHint">@color/textColorHint</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
     </style>
@@ -300,6 +310,7 @@
 
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="android:textColorHint">@color/textColorHintDark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
@@ -318,6 +329,7 @@
 
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
+        <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="android:textColorHint">@color/textColorHintDark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
     </style>
