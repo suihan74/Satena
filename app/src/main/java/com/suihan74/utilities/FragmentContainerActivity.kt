@@ -99,6 +99,7 @@ abstract class FragmentContainerActivity : AppCompatActivity(), FragmentContaine
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == RuntimePermission.REQUEST_PERMISSION) {
             val pairs = permissions.zip(grantResults.toTypedArray())
             onRequestPermissionsResult(pairs)

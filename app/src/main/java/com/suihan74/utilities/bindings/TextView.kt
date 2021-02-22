@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
@@ -213,7 +214,7 @@ fun TextView.setTimestamp(timestamp: LocalDateTime?, timezone: String?) {
 fun TextView.setBookmarkResultUser(user: String?, private: Boolean?) {
     text = user
     if (private == true) {
-        val icon = resources.getDrawable(R.drawable.ic_baseline_lock, null).apply {
+        val icon = ResourcesCompat.getDrawable(resources, R.drawable.ic_baseline_lock, null)?.apply {
             val size = textSize.toInt()
             setBounds(0, 0, size, size)
             setTint(context.getThemeColor(R.attr.textColor))

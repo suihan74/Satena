@@ -686,7 +686,7 @@ class EntriesRepository(
     /** サインイン状態の変更を通知する */
     inner class SignedInLiveData : LiveData<Boolean>(signedIn) {
         internal fun post(b: Boolean?) {
-            postValue(b)
+            postValue(b ?: false)
         }
     }
 
