@@ -11,16 +11,19 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.databinding.ActivityPreferencesBinding
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.backup.Credentials
@@ -48,25 +51,22 @@ class PreferencesActivity : ActivityBase() {
 
     // ------ //
 
-    class ViewModel : androidx.lifecycle.ViewModel() {
+    class ActivityViewModel : ViewModel() {
         val currentTab : MutableLiveData<PreferencesTabMode> by lazy {
             MutableLiveData(PreferencesTabMode.INFORMATION)
         }
     }
 
-    private val viewModel by lazy {
-        ViewModelProvider(this)[ViewModel::class.java]
-    }
+    private val viewModel by lazyProvideViewModel { ActivityViewModel() }
 
     // ------ //
+
+    private lateinit var binding: ActivityPreferencesBinding
 
     override val progressBarId: Int = R.id.detail_progress_bar
     override val progressBackgroundId: Int = R.id.click_guard
     override val toolbar : Toolbar
-        get() = findViewById(R.id.preferences_toolbar)
-
-    private lateinit var mViewPager : ViewPager
-    private lateinit var mTabAdapter : PreferencesTabAdapter
+        get() = binding.preferencesToolbar
 
     private var themeChanged : Boolean = false
 
@@ -77,7 +77,8 @@ class PreferencesActivity : ActivityBase() {
 
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         setTheme(Theme.themeId(prefs))
-        setContentView(R.layout.activity_preferences)
+        binding = ActivityPreferencesBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         setSupportActionBar(toolbar)
 
         themeChanged = intent.getBooleanExtra(EXTRA_THEME_CHANGED, false)
@@ -90,7 +91,7 @@ class PreferencesActivity : ActivityBase() {
         val invokeReload = intent.getBooleanExtra(EXTRA_RELOAD_ALL_PREFERENCES, false)
         if (invokeReload) {
             showProgressBar()
-            launch(Dispatchers.Main) {
+            lifecycleScope.launch(Dispatchers.Main) {
                 reloadAllPreferences()
                 initializeContents()
                 hideProgressBar()
@@ -102,10 +103,10 @@ class PreferencesActivity : ActivityBase() {
     }
 
     private fun initializeContents() {
-        mTabAdapter = PreferencesTabAdapter(supportFragmentManager)
-        mViewPager = findViewById<ViewPager>(R.id.preferences_view_pager).also { pager ->
+        val tabAdapter = PreferencesTabAdapter(supportFragmentManager)
+        binding.preferencesViewPager.also { pager ->
             // 環状スクロールできるように細工
-            pager.adapter = mTabAdapter
+            pager.adapter = tabAdapter
             pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 private var jumpPosition = -1
 
@@ -113,7 +114,7 @@ class PreferencesActivity : ActivityBase() {
 
                 override fun onPageScrollStateChanged(state: Int) {
                     if (state == ViewPager.SCROLL_STATE_IDLE && jumpPosition > 0) {
-                        mViewPager.setCurrentItem(jumpPosition, false)
+                        pager.setCurrentItem(jumpPosition, false)
                         jumpPosition = -1
                     }
                 }
@@ -121,20 +122,20 @@ class PreferencesActivity : ActivityBase() {
                 // position & jumpPosition => 1 ~ actualCount  // head&tailを含むインデックス
                 // fixedPosition => 0 ~ actualCount-1  // head&tailを無視したコンテンツのインデックス(0: ACCOUNTS, 1: GENERALS, ...)
                 override fun onPageSelected(position: Int) {
-                    for (i in 0 until mTabAdapter.getActualCount()) {
-                        val btn = findViewById<ImageButton>(mTabAdapter.getIconId(i))
+                    for (i in 0 until tabAdapter.getActualCount()) {
+                        val btn = findViewById<ImageButton>(tabAdapter.getIconId(i))
                         btn?.setBackgroundColor(Color.TRANSPARENT)
                     }
 
                     jumpPosition = when (position) {
-                        PreferencesTabMode.DUMMY_HEAD.int -> mTabAdapter.getActualCount()
+                        PreferencesTabMode.DUMMY_HEAD.int -> tabAdapter.getActualCount()
                         PreferencesTabMode.DUMMY_TAIL.int -> 1
                         else -> position
                     }
 
                     val prevTabId = viewModel.currentTab.value?.int
                     if (prevTabId != null) {
-                        mTabAdapter.findFragment(pager, prevTabId).alsoAs<TabItem> { fragment ->
+                        tabAdapter.findFragment(pager, prevTabId).alsoAs<TabItem> { fragment ->
                             fragment.onTabUnselected()
                         }
                     }
@@ -142,11 +143,11 @@ class PreferencesActivity : ActivityBase() {
                     val tab = PreferencesTabMode.fromId(jumpPosition)
                     viewModel.currentTab.value = tab
 
-                    mTabAdapter.findFragment(pager, tab.int).alsoAs<TabItem> { fragment ->
+                    tabAdapter.findFragment(pager, tab.int).alsoAs<TabItem> { fragment ->
                         fragment.onTabSelected()
                     }
 
-                    val btn = findViewById<ImageButton>(mTabAdapter.getIconId(tab.int - 1))
+                    val btn = findViewById<ImageButton>(tabAdapter.getIconId(tab.int - 1))
                     btn?.setBackgroundColor(ContextCompat.getColor(this@PreferencesActivity, R.color.colorPrimary))
                     title = getString(R.string.pref_toolbar_title, getString(tab.titleId))
                     invalidateOptionsMenu()
@@ -157,7 +158,7 @@ class PreferencesActivity : ActivityBase() {
         val tab = viewModel.currentTab.value!!
 
         val position = tab.int
-        mViewPager.setCurrentItem(position, false)
+        binding.preferencesViewPager.setCurrentItem(position, false)
         title = getString(R.string.pref_toolbar_title, getString(tab.titleId))
     }
 
@@ -170,13 +171,20 @@ class PreferencesActivity : ActivityBase() {
     }
 
     fun onClickedTab(view: View) {
-        mViewPager.currentItem = mTabAdapter.getIndexFromIconId(view.id)
+        binding.preferencesViewPager.also { viewPager ->
+            viewPager.adapter.alsoAs<PreferencesTabAdapter> { adapter ->
+                viewPager.currentItem = adapter.getIndexFromIconId(view.id)
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(pairs: List<Pair<String, Int>>) {
-        val currentFragment = mTabAdapter.findFragment(mViewPager, mViewPager.currentItem)
-        if (currentFragment is PermissionRequestable) {
-            currentFragment.onRequestPermissionsResult(pairs)
+        val viewPager = binding.preferencesViewPager
+        viewPager.adapter.alsoAs<PreferencesTabAdapter> { adapter ->
+            val currentFragment = adapter.findFragment(viewPager, viewPager.currentItem)
+            if (currentFragment is PermissionRequestable) {
+                currentFragment.onRequestPermissionsResult(pairs)
+            }
         }
     }
 
@@ -217,13 +225,21 @@ class PreferencesActivity : ActivityBase() {
 
     // ------ //
 
+    private val writerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        onFinishSettingDialog(RequestCode.WRITE, result)
+    }
+
+    private val readerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        onFinishSettingDialog(RequestCode.READ, result)
+    }
+
     fun openSaveSettingsDialog() {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "application/octet-stream"
             putExtra(Intent.EXTRA_TITLE, "${LocalDateTime.now()}.satena-settings")
         }
-        startActivityForResult(intent, RequestCode.WRITE.ordinal)
+        writerLauncher.launch(intent)
     }
 
     fun openLoadSettingsDialog() {
@@ -231,7 +247,7 @@ class PreferencesActivity : ActivityBase() {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "application/octet-stream"
         }
-        startActivityForResult(intent, RequestCode.READ.ordinal)
+        readerLauncher.launch(intent)
     }
 
     private fun contentFilePath(context: Context, uri: Uri) : String {
@@ -327,22 +343,21 @@ class PreferencesActivity : ActivityBase() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        val targetUri = data?.data
+    private fun onFinishSettingDialog(requestCode: RequestCode, result: ActivityResult) {
+        val targetUri = result.data?.data
 
-        if (resultCode != Activity.RESULT_OK || targetUri == null) {
+        if (result.resultCode != Activity.RESULT_OK || targetUri == null) {
             Log.d("FilePick", "canceled")
             return
         }
 
         when (requestCode) {
-            RequestCode.WRITE.ordinal -> {
+            RequestCode.WRITE -> {
                 Log.d("SaveSettings", targetUri.path ?: "")
                 savePreferencesToFile(targetUri)
             }
 
-            RequestCode.READ.ordinal -> {
+            RequestCode.READ -> {
                 Log.d("LoadSettings", targetUri.path ?: "")
                 loadPreferencesFromFile(targetUri)
             }
