@@ -4,16 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.databinding.FragmentListPreferencesBinding
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesAdapter
+import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 
 /**
  * 設定リスト画面共通フラグメント
  */
-abstract class ListPreferencesFragment : Fragment() {
+abstract class ListPreferencesFragment : PreferencesFragmentBase() {
     val preferencesActivity
         get() = requireActivity() as PreferencesActivity
 
