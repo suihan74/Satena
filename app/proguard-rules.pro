@@ -31,8 +31,8 @@
 -dontskipnonpubliclibraryclasses
 -verbose
 -keepattributes *Annotation*
--keep public class com.google.vending.licensing.ILicensingService
--keep public class com.android.vending.licensing.ILicensingService
+#-keep public class com.google.vending.licensing.ILicensingService
+#-keep public class com.android.vending.licensing.ILicensingService
 # For native methods, see http://proguard.sourceforge.net/manual/examples.html#native
 -keepclasseswithmembernames class * {
     native <methods>;
@@ -55,9 +55,9 @@
 -keep class * implements android.os.Parcelable {
   public static final android.os.Parcelable$Creator *;
 }
--keep class * implements android.os.Serializable {
-  public static final android.os.Serializable$Creator *;
-}
+#-keep class * implements android.os.Serializable {
+#  public static final android.os.Serializable$Creator *;
+#}
 -keepclassmembers class **.R$* {
     public static <fields>;
 }
@@ -94,7 +94,7 @@
 #-keep class com.google.gson.stream.** { *; }
 
 # Application classes that will be serialized/deserialized over Gson
--keep class com.google.gson.examples.android.model.** { <fields>; }
+-keep class com.google.gson.examples.android.model.*.** { <fields>; }
 
 # Prevent proguard from stripping interface information from TypeAdapterFactory,
 # JsonSerializer, JsonDeserializer instances (so they can be used in @JsonAdapter)
@@ -127,49 +127,22 @@
 
 ##---------------End: proguard configuration for OkHttp3  ----------
 
-##---------------Begin: proguard configuration for Room  ----------
-
--keep class * extends androidx.room.RoomDatabase
--dontwarn androidx.room.paging.**
-
-##---------------End: proguard configuration for Room  ----------
-
-##---------------Begin: proguard configuration for ViewModel  ----------
-
-# LifecycleObserver's empty constructor is considered to be unused by proguard
--keep class * implements androidx.lifecycle.LifecycleObserver {
-    <init>(...);
-}
-# ViewModel's empty constructor is considered to be unused by proguard
--keepclassmembers class * extends androidx.lifecycle.ViewModel {
-    <init>(...);
-}
-# keep Lifecycle State and Event enums values
--keepclassmembers class androidx.lifecycle.Lifecycle$State { *; }
--keepclassmembers class androidx.lifecycle.Lifecycle$Event { *; }
-# keep methods annotated with @OnLifecycleEvent even if they seem to be unused
-# (Mostly for LiveData.LifecycleBoundObserver.onStateChange(), but who knows)
--keepclassmembers class * {
-    @androidx.lifecycle.OnLifecycleEvent *;
-}
-
--keepclassmembers class * implements androidx.lifecycle.LifecycleObserver {
-    <init>(...);
-}
-
--keep class * implements androidx.lifecycle.LifecycleObserver {
-    <init>(...);
-}
--keepclassmembers class androidx.** { *; }
--keep class androidx.** { *; }
--dontwarn androidx.**
-
-##---------------Begin: proguard configuration for ViewModel  ----------
-
--keep class com.suihan74.hatenaLib.** { *; }
--keep class com.suihan74.satena.** { *; }
--keep class com.suihan74.utilities.** { *; }
-
 ##---------------Begin: proguard configuration for WebView  ----------
 
--keep class androidx.webkit.** { *; }
+-keep class androidx.webkit.*.** { *; }
+
+##--------------- purge Log printing ----------
+
+-assumenosideeffects class android.util.Log {
+    public static *** v(...);
+    public static *** d(...);
+    public static *** i(...);
+    public static *** w(...);
+    public static *** e(...);
+}
+
+##---------------Begin: proguard configuration for user codes  ----------
+
+-keepnames class com.suihan74.*.** { *; }
+-keep class com.suihan74.utilities.CryptUtility$EncryptedData { *; }
+-keep class com.suihan74.utilities.SerializableMastodonAccessToken { *; }
