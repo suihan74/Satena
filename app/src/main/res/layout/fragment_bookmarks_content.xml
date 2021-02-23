@@ -40,7 +40,7 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <!-- ブクマリストを表示するための領域 -->
-        <androidx.viewpager.widget.ViewPager
+        <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/tab_pager"
                 currentTab="@{contentsViewModel.selectedTab}"
                 android:layout_width="match_parent"

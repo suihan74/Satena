@@ -4,32 +4,29 @@ import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks.detail.tabs.StarRelationsTabFragment
-import com.suihan74.utilities.IconFragmentPagerAdapter
+import com.suihan74.utilities.IconFragmentStateAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class DetailTabAdapter(
+    fragment : Fragment,
     viewModel : BookmarkDetailViewModel,
-    val bookmark : Bookmark,
-    lifecycleOwner : LifecycleOwner,
-    fragmentManager : FragmentManager
-) : IconFragmentPagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+    val bookmark : Bookmark
+) : IconFragmentStateAdapter(fragment) {
 
     private var tabs = listOf(
         TabType.STARS_TO_USER,
         TabType.STARS_FROM_USER
     )
 
-    override fun getCount() = tabs.size
+    override fun getItemCount() = tabs.size
 
-    override fun getItem(position: Int) = tabs[position].createFragment()
+    override fun createFragment(position: Int) = tabs[position].createFragment()
 
     override fun getIconId(position: Int) = tabs[position].iconId
 
@@ -64,9 +61,11 @@ class DetailTabAdapter(
     // ------ //
 
     init {
-        lifecycleOwner.lifecycleScope.launch(Dispatchers.Main.immediate) {
+        val lifecycleOwner = fragment.viewLifecycleOwner
+        val lifecycleScope = fragment.lifecycleScope
+        lifecycleScope.launch(Dispatchers.Main.immediate) {
             viewModel.starsToUser.observe(lifecycleOwner, { list ->
-                lifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+                lifecycleScope.launch(Dispatchers.Default) {
                     starsToUserCount = list.sumBy { it.star?.count ?: 0 }
                     withContext(Dispatchers.Main) {
                         notifyDataSetChanged()
@@ -75,7 +74,7 @@ class DetailTabAdapter(
             })
 
             viewModel.starsFromUser.observe(lifecycleOwner, { list ->
-                lifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+                lifecycleScope.launch(Dispatchers.Default) {
                     starsFromUserCount = list.sumBy { it.star?.count ?: 0 }
                     withContext(Dispatchers.Main) {
                         notifyDataSetChanged()

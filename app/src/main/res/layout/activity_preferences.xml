@@ -144,7 +144,7 @@
                     android:layout_width="1dp"
                     android:layout_height="match_parent"/>
 
-            <androidx.viewpager.widget.ViewPager
+            <androidx.viewpager2.widget.ViewPager2
                     android:id="@+id/preferences_view_pager"
                     android:background="?attr/panelBackground"
                     android:layout_toEndOf="@id/preferences_separator"

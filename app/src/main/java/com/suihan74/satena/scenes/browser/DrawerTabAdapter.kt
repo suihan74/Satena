@@ -3,17 +3,13 @@ package com.suihan74.satena.scenes.browser
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import com.suihan74.utilities.IconFragmentPagerAdapter
+import com.suihan74.utilities.IconFragmentStateAdapter
 
-class DrawerTabAdapter(
-    fragmentManager: FragmentManager,
-    behavior: Int = BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
-) : IconFragmentPagerAdapter(fragmentManager, behavior) {
-    override fun getCount() : Int =
-        DrawerTab.values().size
+class DrawerTabAdapter(activity: BrowserActivity) : IconFragmentStateAdapter(activity) {
 
-    override fun getItem(position: Int) : Fragment =
+    override fun getItemCount() : Int = DrawerTab.values().size
+
+    override fun createFragment(position: Int) : Fragment =
         DrawerTab.fromOrdinal(position).generator()
 
     @DrawableRes

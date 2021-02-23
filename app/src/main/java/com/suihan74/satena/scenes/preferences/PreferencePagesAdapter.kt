@@ -3,9 +3,8 @@ package com.suihan74.satena.scenes.preferences
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
-import androidx.viewpager.widget.ViewPager
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesFragment
 import com.suihan74.satena.scenes.preferences.pages.*
@@ -82,12 +81,12 @@ enum class PreferencesTabMode(
     }
 }
 
-class PreferencesTabAdapter(fm : FragmentManager) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-    override fun getItem(position: Int): Fragment =
-        PreferencesTabMode.fromId(position).fragmentGenerator.invoke()
+// ------ //
 
-    fun getPageTitleId(fixedPosition: Int) =
-        PreferencesTabMode.fromId(fixedPosition + 1).titleId
+class PreferencesTabAdapter(private val activity: FragmentActivity) : FragmentStateAdapter(activity) {
+
+    override fun createFragment(position: Int): Fragment =
+        PreferencesTabMode.fromId(position).fragmentGenerator.invoke()
 
     fun getIconId(fixedPosition: Int) =
         PreferencesTabMode.fromId(fixedPosition + 1).iconId
@@ -95,9 +94,8 @@ class PreferencesTabAdapter(fm : FragmentManager) : FragmentPagerAdapter(fm, BEH
     fun getIndexFromIconId(iconId : Int) =
         PreferencesTabMode.values().firstOrNull { iconId == getIconId(it.int - 1) }?.int ?: 0
 
-    override fun getCount() = PreferencesTabMode.values().size
-    fun getActualCount() = count - 2
+    override fun getItemCount(): Int = PreferencesTabMode.values().size
+    fun getActualCount() = itemCount - 2
 
-    fun findFragment(viewPager: ViewPager, position: Int) =
-        instantiateItem(viewPager, position) as Fragment
+    fun findFragment(position: Int) : Fragment? = activity.supportFragmentManager.findFragmentByTag("f$position")
 }
