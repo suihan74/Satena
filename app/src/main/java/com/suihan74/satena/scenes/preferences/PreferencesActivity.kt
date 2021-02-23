@@ -13,14 +13,13 @@ import android.view.View
 import android.widget.ImageButton
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.widget.Toolbar
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
-import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -38,7 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
 
-class PreferencesActivity : ActivityBase() {
+class PreferencesActivity : AppCompatActivity() {
     enum class RequestCode {
         WRITE,
         READ
@@ -64,11 +63,6 @@ class PreferencesActivity : ActivityBase() {
 
     private lateinit var binding: ActivityPreferencesBinding
 
-    override val progressBarId: Int = R.id.detail_progress_bar
-    override val progressBackgroundId: Int = R.id.click_guard
-    override val toolbar : Toolbar
-        get() = binding.preferencesToolbar
-
     private var themeChanged : Boolean = false
 
     // ------ //
@@ -80,7 +74,7 @@ class PreferencesActivity : ActivityBase() {
         setTheme(Theme.themeId(prefs))
         binding = ActivityPreferencesBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.preferencesToolbar)
 
         themeChanged = intent.getBooleanExtra(EXTRA_THEME_CHANGED, false)
 
@@ -102,6 +96,8 @@ class PreferencesActivity : ActivityBase() {
             initializeContents()
         }
     }
+
+    // ------- //
 
     private fun initializeContents() {
         val tabAdapter = PreferencesTabAdapter(this)
@@ -160,6 +156,8 @@ class PreferencesActivity : ActivityBase() {
         title = getString(R.string.pref_toolbar_title, getString(tab.titleId))
     }
 
+    // ------ //
+
     override fun onOptionsItemSelected(item: MenuItem?) = when (item?.itemId) {
         android.R.id.home -> {
             onBackPressed()
@@ -176,15 +174,16 @@ class PreferencesActivity : ActivityBase() {
         }
     }
 
-    override fun onRequestPermissionsResult(pairs: List<Pair<String, Int>>) {
-        val viewPager = binding.preferencesViewPager
-        viewPager.adapter.alsoAs<PreferencesTabAdapter> { adapter ->
-            val currentFragment = adapter.findFragment(viewPager.currentItem)
-            if (currentFragment is PermissionRequestable) {
-                currentFragment.onRequestPermissionsResult(pairs)
-            }
-        }
+    private fun showProgressBar() {
+        binding.clickGuard.visibility = View.VISIBLE
+        binding.detailProgressBar.visibility = View.VISIBLE
     }
+
+    private fun hideProgressBar() {
+        binding.clickGuard.visibility = View.GONE
+        binding.detailProgressBar.visibility = View.GONE
+    }
+    // ------ //
 
     /** ファイルから設定を読み込んだ場合，このメソッドを使用して変更内容を適用する */
     private suspend fun reloadAllPreferences() {
@@ -209,15 +208,35 @@ class PreferencesActivity : ActivityBase() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed {
+        try {
+            if (onBackPressedDispatcher.hasEnabledCallbacks()) {
+                onBackPressedDispatcher.onBackPressed()
+                return
+            }
+
             if (themeChanged) {
                 val intent = Intent(this, EntriesActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 }
                 startActivity(intent)
-                true
             }
-            else false
+            else {
+                backActivity()
+            }
+        }
+        catch (e: Throwable) {
+            Log.e("onBackPressed", Log.getStackTraceString(e))
+            backActivity()
+        }
+    }
+
+    private fun backActivity() {
+        if (supportFragmentManager.backStackEntryCount <= 1) {
+            finish()
+            overridePendingTransition(0, android.R.anim.slide_out_right)
+        }
+        else {
+            supportFragmentManager.popBackStackImmediate()
         }
     }
 
