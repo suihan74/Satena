@@ -19,6 +19,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
@@ -103,25 +104,15 @@ class PreferencesActivity : ActivityBase() {
     }
 
     private fun initializeContents() {
-        val tabAdapter = PreferencesTabAdapter(supportFragmentManager)
+        val tabAdapter = PreferencesTabAdapter(this)
         binding.preferencesViewPager.also { pager ->
             // 環状スクロールできるように細工
             pager.adapter = tabAdapter
-            pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                 private var jumpPosition = -1
 
-                override fun onPageScrolled(p0: Int, p1: Float, p2: Int) {}
-
-                override fun onPageScrollStateChanged(state: Int) {
-                    if (state == ViewPager.SCROLL_STATE_IDLE && jumpPosition > 0) {
-                        pager.setCurrentItem(jumpPosition, false)
-                        jumpPosition = -1
-                    }
-                }
-
-                // position & jumpPosition => 1 ~ actualCount  // head&tailを含むインデックス
-                // fixedPosition => 0 ~ actualCount-1  // head&tailを無視したコンテンツのインデックス(0: ACCOUNTS, 1: GENERALS, ...)
                 override fun onPageSelected(position: Int) {
+                    super.onPageSelected(position)
                     for (i in 0 until tabAdapter.getActualCount()) {
                         val btn = findViewById<ImageButton>(tabAdapter.getIconId(i))
                         btn?.setBackgroundColor(Color.TRANSPARENT)
@@ -135,7 +126,7 @@ class PreferencesActivity : ActivityBase() {
 
                     val prevTabId = viewModel.currentTab.value?.int
                     if (prevTabId != null) {
-                        tabAdapter.findFragment(pager, prevTabId).alsoAs<TabItem> { fragment ->
+                        tabAdapter.findFragment(prevTabId).alsoAs<TabItem> { fragment ->
                             fragment.onTabUnselected()
                         }
                     }
@@ -143,7 +134,7 @@ class PreferencesActivity : ActivityBase() {
                     val tab = PreferencesTabMode.fromId(jumpPosition)
                     viewModel.currentTab.value = tab
 
-                    tabAdapter.findFragment(pager, tab.int).alsoAs<TabItem> { fragment ->
+                    tabAdapter.findFragment(tab.int).alsoAs<TabItem> { fragment ->
                         fragment.onTabSelected()
                     }
 
@@ -151,6 +142,13 @@ class PreferencesActivity : ActivityBase() {
                     btn?.setBackgroundColor(ContextCompat.getColor(this@PreferencesActivity, R.color.colorPrimary))
                     title = getString(R.string.pref_toolbar_title, getString(tab.titleId))
                     invalidateOptionsMenu()
+                }
+                override fun onPageScrollStateChanged(state: Int) {
+                    super.onPageScrollStateChanged(state)
+                    if (state == ViewPager.SCROLL_STATE_IDLE && jumpPosition > 0) {
+                        pager.setCurrentItem(jumpPosition, false)
+                        jumpPosition = -1
+                    }
                 }
             })
         }
@@ -181,7 +179,7 @@ class PreferencesActivity : ActivityBase() {
     override fun onRequestPermissionsResult(pairs: List<Pair<String, Int>>) {
         val viewPager = binding.preferencesViewPager
         viewPager.adapter.alsoAs<PreferencesTabAdapter> { adapter ->
-            val currentFragment = adapter.findFragment(viewPager, viewPager.currentItem)
+            val currentFragment = adapter.findFragment(viewPager.currentItem)
             if (currentFragment is PermissionRequestable) {
                 currentFragment.onRequestPermissionsResult(pairs)
             }

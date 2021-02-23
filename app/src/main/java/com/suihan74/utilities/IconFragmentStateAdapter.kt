@@ -6,10 +6,12 @@ import androidx.annotation.StringRes
 import androidx.appcompat.widget.TooltipCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
-import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.suihan74.satena.R
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
@@ -18,10 +20,19 @@ import com.suihan74.utilities.extensions.onNot
 /**
  * アイコンを表示するためのタブアダプタ
  */
-abstract class IconFragmentPagerAdapter(
-    fragmentManager: FragmentManager,
-    behavior: Int = BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
-) : FragmentPagerAdapter(fragmentManager, behavior) {
+abstract class IconFragmentStateAdapter : FragmentStateAdapter {
+
+    constructor(activity: FragmentActivity) : super(activity) {
+        fragmentManager = activity.supportFragmentManager
+    }
+
+    constructor(fragment: Fragment) : super(fragment) {
+        fragmentManager = fragment.childFragmentManager
+    }
+
+    private val fragmentManager : FragmentManager
+
+    // ------ //
 
     /**
      * アイコンID
@@ -63,58 +74,44 @@ abstract class IconFragmentPagerAdapter(
 
     // ------ //
 
-    /** タブリストが変更されたときに呼ばれるリスナ */
-    private var onDataSetChangedListener : Listener<Unit>? = null
+    fun findFragment(position: Int) : Fragment? = fragmentManager.findFragmentByTag("f$position")
 
     // ------ //
-
-    override fun notifyDataSetChanged() {
-        super.notifyDataSetChanged()
-        onDataSetChangedListener?.invoke(Unit)
-    }
-
-    fun findFragment(viewPager: ViewPager, position: Int) =
-        instantiateItem(viewPager, position) as? Fragment
 
     fun setup(
         context: Context,
         tabLayout: TabLayout,
-        viewPager: ViewPager
+        viewPager: ViewPager2
     ) {
-        onDataSetChangedListener = {
-            repeat(count) { i ->
-                val tab = tabLayout.getTabAt(i) ?: return@repeat
-
-                // アイコン
-                getIconId(i).onNot(0) { iconId ->
-                    tab.icon = ContextCompat.getDrawable(
-                        context,
-                        iconId
-                    )?.also { icon ->
-                        val color = context.getThemeColor(
-                            if (i == tabLayout.selectedTabPosition) R.attr.tabSelectedTextColor
-                            else R.attr.tabTextColor
-                        )
-                        DrawableCompat.setColorFilter(icon, color)
-                    }
-                }
-
-                // タイトル
-                getTitleId(i).onNot(0) { textId ->
-                    tab.text = getTitle(context, i, textId)
-                }
-
-                // ツールチップテキスト
-                getTooltipTextId(i).onNot(0) { textId ->
-                    TooltipCompat.setTooltipText(
-                        tab.view,
-                        getTooltipText(context, i, textId)
+        viewPager.adapter = this
+        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+            // アイコン
+            getIconId(position).onNot(0) { iconId ->
+                tab.icon = ContextCompat.getDrawable(
+                    context,
+                    iconId
+                )?.also { icon ->
+                    val color = context.getThemeColor(
+                        if (position == tabLayout.selectedTabPosition) R.attr.tabSelectedTextColor
+                        else R.attr.tabTextColor
                     )
+                    DrawableCompat.setColorFilter(icon, color)
                 }
             }
-        }
-        viewPager.adapter = this
-        tabLayout.setupWithViewPager(viewPager)
+
+            // タイトル
+            getTitleId(position).onNot(0) { textId ->
+                tab.text = getTitle(context, position, textId)
+            }
+
+            // ツールチップテキスト
+            getTooltipTextId(position).onNot(0) { textId ->
+                TooltipCompat.setTooltipText(
+                    tab.view,
+                    getTooltipText(context, position, textId)
+                )
+            }
+        }.attach()
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 val icon = tab?.icon ?: return
@@ -125,7 +122,7 @@ abstract class IconFragmentPagerAdapter(
                 DrawableCompat.setColorFilter(icon, context.getThemeColor(R.attr.tabTextColor))
             }
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                findFragment(viewPager, tab!!.position).alsoAs<ScrollableToTop> { f ->
+                findFragment(tab!!.position).alsoAs<ScrollableToTop> { f ->
                     f.scrollToTop()
                 }
             }

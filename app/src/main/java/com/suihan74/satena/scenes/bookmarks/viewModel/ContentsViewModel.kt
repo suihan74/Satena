@@ -6,13 +6,14 @@ import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
 import com.suihan74.satena.models.PreferenceKey
@@ -86,16 +87,17 @@ class ContentsViewModel(
 
     /** タブ制御を初期化 */
     fun initializeTabPager(
-        context: Context,
-        fragmentManager: FragmentManager,
-        viewPager: ViewPager,
+        activity: FragmentActivity,
+        viewPager: ViewPager2,
         tabLayout: TabLayout
     ) {
-        val adapter = BookmarksTabAdapter(context, fragmentManager)
+        val adapter = BookmarksTabAdapter(activity)
         viewPager.adapter = adapter
 
         tabLayout.also { layout ->
-            layout.setupWithViewPager(viewPager)
+            TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+                tab.text = activity.getText(adapter.getTitleId(position))
+            }.attach()
             layout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 /** タブを切替え */
                 override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -109,8 +111,7 @@ class ContentsViewModel(
 
                 /** タブ再選択で最新までスクロール */
                 override fun onTabReselected(tab: TabLayout.Tab?) {
-                    val idx = tab?.position ?: return
-                    adapter.instantiateItem(viewPager, idx).alsoAs<ScrollableToTop> { fragment ->
+                    adapter.currentFragment(viewPager).alsoAs<ScrollableToTop> { fragment ->
                         fragment.scrollToTop()
                     }
                     showFloatingActionButtons?.invoke()
@@ -123,18 +124,15 @@ class ContentsViewModel(
                 if (initialTabOrdinal.value == idx) return@setOnTabLongClickListener false
 
                 initialTabOrdinal.value = idx
-                context.showToast(
+                activity.showToast(
                     R.string.msg_bookmarks_initial_tab_changed,
-                    context.getString(BookmarksTabType.fromOrdinal(idx).textId)
+                    activity.getString(BookmarksTabType.fromOrdinal(idx).textId)
                 )
                 return@setOnTabLongClickListener true
             }
         }
 
-        currentTabFragmentSelector = {
-            val idx = tabLayout.selectedTabPosition
-            adapter.instantiateItem(viewPager, idx) as? Fragment
-        }
+        currentTabFragmentSelector = { adapter.currentFragment(viewPager) }
     }
 
     /** ツールバーやボタンをスクロールで隠す設定を反映する */

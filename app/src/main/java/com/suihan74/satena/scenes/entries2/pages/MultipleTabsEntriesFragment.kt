@@ -5,9 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
@@ -23,7 +24,16 @@ import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.setOnTabLongClickListener
 
 abstract class MultipleTabsEntriesFragment : EntriesFragment() {
-    protected var binding : FragmentEntries2Binding? = null
+    private var _binding : FragmentEntries2Binding? = null
+    protected val binding get() = _binding!!
+
+    private val entriesTabPager : ViewPager2
+        get() = binding.entriesTabPager
+
+    private val entriesTabAdapter : EntriesTabAdapter
+        get() = entriesTabPager.adapter as EntriesTabAdapter
+
+    // ------ //
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,7 +42,7 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        val binding = DataBindingUtil.inflate<FragmentEntries2Binding>(
+        _binding = DataBindingUtil.inflate<FragmentEntries2Binding>(
             inflater,
             R.layout.fragment_entries2,
             container,
@@ -41,10 +51,9 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
             lifecycleOwner = this@MultipleTabsEntriesFragment
             vm = viewModel
         }
-        this.binding = binding
 
         // タブ設定
-        binding.entriesTabPager.adapter = EntriesTabAdapter(binding.entriesTabPager, this)
+        binding.entriesTabPager.adapter = EntriesTabAdapter(this)
 
         // タブ初期選択
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
@@ -54,36 +63,34 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
         return binding.root
     }
 
-    private val entriesTabPager : ViewPager?
-        get() = binding?.entriesTabPager
-
-    private val entriesTabAdapter : EntriesTabAdapter?
-        get() = entriesTabPager?.adapter as? EntriesTabAdapter
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     /** 全てのタブのリストを再構成する */
     override fun reloadLists() {
-        entriesTabAdapter?.reloadLists()
+        entriesTabAdapter.reloadLists()
     }
 
     /** リストを再構成する(取得を行わない単なる再配置) */
     override fun refreshLists() {
-        entriesTabAdapter?.refreshLists()
+        entriesTabAdapter.refreshLists()
     }
 
     /** エントリに付けたブクマを削除 */
     override fun removeBookmark(entry: Entry) {
-        entriesTabAdapter?.removeBookmark(entry)
+        entriesTabAdapter.removeBookmark(entry)
     }
 
     /** エントリに付けたブクマを更新する */
     override fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
-        entriesTabAdapter?.updateBookmark(entry, bookmarkResult)
+        entriesTabAdapter.updateBookmark(entry, bookmarkResult)
     }
 
     /** 与えられたタブのコンテンツを最上までスクロールする */
     private fun scrollContentToTop(tabPosition: Int) {
-        val entriesTabPager = entriesTabPager ?: return
-        entriesTabAdapter?.instantiateItem(entriesTabPager, tabPosition).alsoAs<EntriesTabFragment> {
+        entriesTabAdapter.findFragment(tabPosition).alsoAs<EntriesTabFragment> {
             it.scrollToTop()
         }
     }
@@ -94,8 +101,6 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
         tabLayout: TabLayout,
         bottomAppBar: BottomAppBar?
     ) : Boolean {
-        val entriesTabPager = entriesTabPager ?: return false
-
         // タブ項目のクリックイベント
         val listener = object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {}
@@ -133,7 +138,9 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
             return@l true
         }
 
-        tabLayout.setupWithViewPager(entriesTabPager)
+        TabLayoutMediator(tabLayout, entriesTabPager) { tab, position ->
+            tab.text = getTabTitle(position)
+        }.attach()
         tabLayout.addOnTabSelectedListener(listener)
         tabLayout.setOnTabLongClickListener(longClickListener)
 
@@ -141,7 +148,7 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     }
 
     override fun scrollToTop() {
-        entriesTabPager?.currentItem.alsoAs<Int> {
+        entriesTabPager.currentItem.alsoAs<Int> {
             scrollContentToTop(it)
         }
     }

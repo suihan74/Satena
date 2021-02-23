@@ -269,7 +269,7 @@ class BrowserActivity :
                 viewModel.drawerOpened.value = true
                 drawerViewPager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
                     val position = drawerTabLayout.selectedTabPosition
-                    adapter.findFragment(drawerViewPager, position)?.alsoAs<TabItem> { fragment ->
+                    adapter.findFragment(position)?.alsoAs<TabItem> { fragment ->
                         fragment.onTabSelected()
                     }
                 }
@@ -279,7 +279,7 @@ class BrowserActivity :
                 // 閉じたことをドロワタブに通知する
                 drawerViewPager.adapter?.alsoAs<DrawerTabAdapter> { adapter ->
                     val position = drawerTabLayout.selectedTabPosition
-                    adapter.findFragment(drawerViewPager, position)?.alsoAs<TabItem> { fragment ->
+                    adapter.findFragment(position)?.alsoAs<TabItem> { fragment ->
                         fragment.onTabUnselected()
                     }
                 }
@@ -291,7 +291,7 @@ class BrowserActivity :
             }
         })
 
-        val drawerTabAdapter = DrawerTabAdapter(supportFragmentManager)
+        val drawerTabAdapter = DrawerTabAdapter(this)
         drawerTabAdapter.setup(this, drawerTabLayout, drawerViewPager)
         drawerTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -300,19 +300,19 @@ class BrowserActivity :
                 // 一番端のタブを表示中以外はスワイプで閉じないようにする
                 setDrawerSwipeClosable(tab.position)
 
-                drawerTabAdapter.findFragment(drawerViewPager, tab.position)?.alsoAs<TabItem> { fragment ->
+                drawerTabAdapter.findFragment(tab.position)?.alsoAs<TabItem> { fragment ->
                     fragment.onTabSelected()
                 }
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {
                 val position = tab?.position ?: return
-                drawerTabAdapter.findFragment(drawerViewPager, position)?.alsoAs<TabItem> { fragment ->
+                drawerTabAdapter.findFragment(position)?.alsoAs<TabItem> { fragment ->
                     fragment.onTabUnselected()
                 }
             }
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 val position = tab?.position ?: return
-                drawerTabAdapter.findFragment(drawerViewPager, position)?.alsoAs<TabItem> { fragment ->
+                drawerTabAdapter.findFragment(position)?.alsoAs<TabItem> { fragment ->
                     fragment.onTabReselected()
                 }
             }
@@ -334,7 +334,7 @@ class BrowserActivity :
         val direction = resources.configuration.layoutDirection
         val actualGravity = Gravity.getAbsoluteGravity(viewModel.drawerGravity, direction)
         val closerEnabled = when (actualGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
-            Gravity.LEFT -> position == drawerTabAdapter.count - 1
+            Gravity.LEFT -> position == drawerTabAdapter.itemCount - 1
             Gravity.RIGHT -> position == 0
             else -> true // not implemented gravity
         }
