@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
+import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
@@ -86,16 +87,20 @@ class PreferencesAdapter(
      */
     open class Button(
         val fragment: Fragment,
-        @StringRes val textId: Int,
-        @StringRes val subTextId: Int? = null,
+        val text: LiveData<CharSequence>,
+        val subText: LiveData<CharSequence>? = null,
+        val textColor: LiveData<Int>? = null,
+        val subTextColor: LiveData<Int>? = null,
         var onLongClick : (()->Unit)? = null,
         var onClick : (()->Unit)? = null
     ) : Item {
         override val layoutId : Int = R.layout.listview_item_general_button
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemGeneralButtonBinding> {
-                it.textId = textId
-                it.subTextId = subTextId
+                it.text = text
+                it.subText = subText
+                it.mainTextColor = textColor
+                it.subTextColor = subTextColor
                 it.root.setOnClickListener {
                     onClick?.invoke()
                 }
@@ -105,12 +110,16 @@ class PreferencesAdapter(
             }
         }
         override fun areItemsTheSame(old: Item, new: Item): Boolean =
-            old is Button && new is Button && old.textId == new.textId
+            old is Button && new is Button && old.text == new.text
 
         override fun areContentsTheSame(old: Item, new: Item): Boolean =
             old is Button && new is Button &&
-                    old.fragment == new.fragment &&
-                    old.textId == new.textId
+                    old.text.value == new.text.value &&
+                    old.subText?.value == new.subText?.value &&
+                    old.textColor?.value == new.textColor?.value &&
+                    old.subTextColor?.value == new.subTextColor?.value &&
+                    old.onLongClick == new.onLongClick &&
+                    old.onClick == new.onClick
     }
 
     // ------ //
@@ -160,10 +169,11 @@ open class PreferenceItem<T>(
 
     override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) : Boolean =
         old is PreferenceItem<*> && new is PreferenceItem<*> &&
-                old.fragment == new.fragment &&
+                old.liveData.value == new.liveData.value &&
                 old.titleId == new.titleId &&
                 old.suffixId == new.suffixId &&
-                old.liveData.value == new.liveData.value
+                old.onLongClick == new.onLongClick &&
+                old.onClick == new.onClick
 }
 
 /**
@@ -223,9 +233,71 @@ fun MutableList<PreferencesAdapter.Item>.addButton(
     fragment: Fragment,
     @StringRes textId: Int,
     @StringRes subTextId: Int? = null,
+    @ColorRes textColorId: Int? = null,
+    @ColorRes subTextColorId: Int? = null,
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
-) = add(PreferencesAdapter.Button(fragment, textId, subTextId, onLongClick, onClick))
+) : Boolean {
+    val context = fragment.requireContext()
+    val button = PreferencesAdapter.Button(
+        fragment = fragment,
+        text = MutableLiveData(context.getText(textId)),
+        subText = subTextId?.let { MutableLiveData(context.getText(it)) },
+        textColor = textColorId?.let { MutableLiveData(context.getColor(it)) },
+        subTextColor = subTextColorId?.let { MutableLiveData(context.getColor(it)) },
+        onLongClick = onLongClick,
+        onClick = onClick
+    )
+    return add(button)
+}
+
+/**
+ * ボタン(非設定項目)を追加する
+ */
+fun MutableList<PreferencesAdapter.Item>.addButton(
+    fragment: Fragment,
+    text: LiveData<CharSequence>,
+    subText: LiveData<CharSequence>? = null,
+    textColor: LiveData<Int>? = null,
+    subTextColor: LiveData<Int>? = null,
+    onLongClick: (() -> Unit)? = null,
+    onClick: (() -> Unit)? = null
+) = add(PreferencesAdapter.Button(
+    fragment = fragment,
+    text = text,
+    subText = subText,
+    textColor = textColor,
+    subTextColor = subTextColor,
+    onLongClick = onLongClick,
+    onClick = onClick
+))
+
+/**
+ * ボタン(非設定項目)を追加する
+ */
+fun MutableList<PreferencesAdapter.Item>.addButton(
+    fragment: Fragment,
+    text: LiveData<CharSequence>,
+    subText: LiveData<CharSequence>? = null,
+    textColorId: Int? = null,
+    subTextColorId: Int? = null,
+    onLongClick: (() -> Unit)? = null,
+    onClick: (() -> Unit)? = null
+) : Boolean {
+    val context = fragment.requireContext()
+    val button = PreferencesAdapter.Button(
+        fragment = fragment,
+        text = text,
+        subText = subText,
+        textColor = textColorId?.let { MutableLiveData(context.getColor(it)) },
+        subTextColor = subTextColorId?.let { MutableLiveData(context.getColor(it)) },
+        onLongClick = onLongClick,
+        onClick = onClick
+    )
+    return add(button)
+}
+
+// ------ //
 
 /**
  * 設定項目を追加する
@@ -246,12 +318,23 @@ fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
     fragment: Fragment,
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
-    @StringRes suffixId: Int? = null,
-    ) = add(PreferenceToggleItem(fragment, liveData, titleId, suffixId))
+    @StringRes suffixId: Int? = null
+) = add(PreferenceToggleItem(fragment, liveData, titleId, suffixId))
 
 // ------ //
 
 object PreferencesAdapterBindingAdapters {
+    /**
+     * 値が与えられた場合にテキストカラーを上書きする
+     */
+    @JvmStatic
+    @BindingAdapter("textColorOverlap")
+    fun bindTextColorOverlap(textView: TextView, color: Int?) {
+        color?.let {
+            textView.setTextColor(it)
+        }
+    }
+
     /**
      * 設定項目をビューに反映する
      */

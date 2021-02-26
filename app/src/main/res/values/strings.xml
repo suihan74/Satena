@@ -213,6 +213,7 @@
     <string name="pref_generals_section_update">アップデート通知</string>
     <string name="pref_generals_section_dialogs">ダイアログ</string>
     <string name="pref_generals_section_backup">バックアップ</string>
+    <string name="pref_generals_section_clear_caches">キャッシュ</string>
 
     <string name="pref_generals_theme_desc">アプリのテーマ</string>
     <string name="pref_generals_theme_dark">Dark</string>
@@ -353,6 +354,7 @@
     <string name="pref_browser_section_features">機能</string>
     <string name="pref_browser_section_display">表示</string>
     <string name="pref_browser_section_refresh">キャッシュ・クッキー</string>
+    <string name="pref_browser_section_optimize">最適化</string>
 
     <string name="pref_browser_mode_desc">利用するアプリ内ブラウザ</string>
     <string name="pref_browser_mode_web_view">WebView(新)</string>
