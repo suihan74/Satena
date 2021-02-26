@@ -13,6 +13,7 @@ import com.suihan74.satena.scenes.browser.*
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.satena.scenes.preferences.browser.StartPageUrlEditingDialog
+import com.suihan74.satena.scenes.preferences.browser.UrlBlockingFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import kotlinx.coroutines.Dispatchers
@@ -133,6 +134,11 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         addPrefToggleItem(fragment, secretModeEnabled, R.string.pref_browser_private_browsing_enabled_desc)
         addPrefToggleItem(fragment, javascriptEnabled, R.string.pref_browser_javascript_enabled_desc)
         addPrefToggleItem(fragment, useUrlBlock, R.string.pref_browser_use_url_blocking_desc)
+        addButton(fragment, R.string.pref_browser_open_url_blocking_desc) {
+            fragment.childFragmentManager.beginTransaction()
+                .replace(R.id.main_layout, UrlBlockingFragment.createInstance())
+                .commit()
+        }
         addPrefItem(fragment, searchEngine, R.string.pref_browser_search_engine_desc) {
             openSearchEngineSelectionDialog(fragmentManager)
         }

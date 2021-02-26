@@ -6,13 +6,17 @@
                 type="com.suihan74.satena.scenes.preferences.pages.ListPreferencesViewModel" />
     </data>
 
-    <androidx.recyclerview.widget.RecyclerView
+    <FrameLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/main_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+    <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             style="@style/RecyclerView.Linear"
             items="@{vm.preferencesItems}"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-    </androidx.recyclerview.widget.RecyclerView>
+            android:layout_height="match_parent"/>
+    </FrameLayout>
 </layout>

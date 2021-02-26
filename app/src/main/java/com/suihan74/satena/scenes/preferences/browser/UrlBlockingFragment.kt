@@ -5,6 +5,7 @@ import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
+import androidx.activity.addCallback
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -32,6 +33,9 @@ class UrlBlockingFragment : Fragment() {
     private val preferencesActivity : PreferencesActivity?
         get() = requireActivity() as? PreferencesActivity
 
+    private val browserActivity : BrowserActivity?
+        get() = requireActivity() as? BrowserActivity
+
     val viewModel by lazyProvideViewModel {
         val context = requireContext()
         val repository =
@@ -52,6 +56,10 @@ class UrlBlockingFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         enterTransition = TransitionSet()
+            .addTransition(Fade())
+            .addTransition(Slide(Gravity.END))
+
+        exitTransition = TransitionSet()
             .addTransition(Fade())
             .addTransition(Slide(Gravity.END))
     }
@@ -94,6 +102,22 @@ class UrlBlockingFragment : Fragment() {
                     viewModel.openBlockUrlDialog(childFragmentManager)
                 }
             }
+        }
+
+        if (browserActivity != null) {
+            binding.backButton.visibility = View.VISIBLE
+            binding.backButton.setOnClickListener {
+                requireActivity().onBackPressed()
+            }
+        }
+        else {
+            binding.backButton.visibility = View.GONE
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            parentFragmentManager.beginTransaction()
+                .remove(this@UrlBlockingFragment)
+                .commit()
         }
 
         return binding.root
