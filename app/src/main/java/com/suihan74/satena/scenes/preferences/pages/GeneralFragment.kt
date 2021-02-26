@@ -19,6 +19,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.floor
+import kotlin.math.log
+import kotlin.math.pow
 
 /**
  * 「基本」画面
@@ -104,6 +107,8 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     val imageCacheSize : LiveData<Long> by lazy { _imageCacheSize }
     private val _imageCacheSize = MutableLiveData<Long>()
 
+    private val imageCacheSizeLabel = MutableLiveData<CharSequence>()
+
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
@@ -120,6 +125,10 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         checkNoticesInterval.observe(fragment.viewLifecycleOwner, {
             val app = SatenaApplication.instance
             app.startCheckingNotificationsWorker(app, forceReplace = true)
+        })
+
+        imageCacheSize.observe(fragment.viewLifecycleOwner, {
+            imageCacheSizeLabel.value = createSizeText(it, "B")
         })
     }
 
@@ -197,6 +206,18 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         addButton(fragment, R.string.pref_generals_load_settings_desc) {
             activity.openLoadSettingsDialog()
         }
+
+        // --- //
+
+        addSection(R.string.pref_generals_section_clear_caches)
+        addButton(
+            fragment,
+            text = MutableLiveData(fragment.getText(R.string.pref_generals_clear_image_cache_desc)),
+            subText = imageCacheSizeLabel,
+            textColorId = R.color.clearCache
+        ) {
+            openClearImageCacheConfirmDialog(fragment.childFragmentManager)
+        }
     }
 
     // ------ //
@@ -269,5 +290,29 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
             )
         }
         dialog.show(fragmentManager, null)
+    }
+
+    // ------ //
+
+    /**
+     * 数値を人間が読むのに適した形に編集したテキストに変換する
+     */
+    private fun createSizeText(size: Long?, unit: String? = "") : String {
+        if (size == null) {
+            return ""
+        }
+
+        val rawSize = kotlin.math.max(0L, size)
+
+        val metrics = arrayOf("", "Ki", "Mi", "Gi", "Ti")
+        val exp = kotlin.math.min(
+            if (rawSize == 0L) 0
+            else floor(log(rawSize.toDouble(), 1024.0)).toInt(),
+            metrics.lastIndex
+        )
+        val metric = metrics[exp]
+        val num = rawSize / 1024.0.pow(exp)
+
+        return String.format("%.1f%s%s", num, metric, unit.orEmpty())
     }
 }

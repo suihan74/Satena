@@ -1,7 +1,10 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
+import android.webkit.CookieManager
+import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -10,8 +13,11 @@ import com.suihan74.satena.scenes.browser.*
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.satena.scenes.preferences.browser.StartPageUrlEditingDialog
+import com.suihan74.satena.scenes.preferences.browser.UrlBlockingFragment
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.showAllowingStateLoss
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * 「ブラウザ」画面
@@ -128,10 +134,28 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         addPrefToggleItem(fragment, secretModeEnabled, R.string.pref_browser_private_browsing_enabled_desc)
         addPrefToggleItem(fragment, javascriptEnabled, R.string.pref_browser_javascript_enabled_desc)
         addPrefToggleItem(fragment, useUrlBlock, R.string.pref_browser_use_url_blocking_desc)
+        addButton(fragment, R.string.pref_browser_open_url_blocking_desc) {
+            fragment.childFragmentManager.beginTransaction()
+                .replace(R.id.main_layout, UrlBlockingFragment.createInstance())
+                .commit()
+        }
         addPrefItem(fragment, searchEngine, R.string.pref_browser_search_engine_desc) {
             openSearchEngineSelectionDialog(fragmentManager)
         }
         add(PreferenceEditTextItem(userAgent, R.string.pref_browser_user_agent_desc, R.string.pref_browser_user_agent_hint))
+
+        // --- //
+
+        addSection(R.string.pref_browser_section_optimize)
+        addButton(fragment, R.string.pref_browser_clear_cache_desc, textColorId = R.color.clearCache) {
+            openClearCacheDialog(fragmentManager)
+        }
+        addButton(fragment, R.string.pref_browser_clear_cookie_desc, textColorId = R.color.clearCache) {
+            openClearCookieDialog(fragmentManager)
+        }
+        addButton(fragment, R.string.pref_browser_clear_history_desc, textColorId = R.color.clearCache) {
+            openClearHistoryDialog(fragmentManager)
+        }
     }
 
     // ------ //
@@ -147,12 +171,12 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
     /**
      * 検索エンジンを選択するダイアログを開く
      */
-    fun openSearchEngineSelectionDialog(fragmentManager: FragmentManager) {
+    private fun openSearchEngineSelectionDialog(fragmentManager: FragmentManager) {
         val presets = SearchEngineSetting.Presets.values()
         val labels = presets.map { it.setting.title }
         val checkedItem = presets.indexOfFirst { it.setting == searchEngine.value }
 
-        val dialog = AlertDialogFragment.Builder()
+        AlertDialogFragment.Builder()
             .setTitle(R.string.pref_browser_dialog_title_search_engine)
             .setNegativeButton(R.string.dialog_cancel)
             .setSingleChoiceItems(labels, checkedItem) { _, which ->
@@ -160,6 +184,56 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
             }
             .dismissOnClickItem(true)
             .create()
-        dialog.showAllowingStateLoss(fragmentManager)
+            .show(fragmentManager, null)
+    }
+
+    // ------ //
+
+    /** キャッシュを削除する */
+    private fun openClearCacheDialog(fragmentManager: FragmentManager) {
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(R.string.pref_browser_clear_cache_dialog_message)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                WebView(SatenaApplication.instance).clearCache(true)
+                SatenaApplication.instance.showToast(R.string.msg_browser_removed_all_caches)
+            }
+            .create()
+            .show(fragmentManager, null)
+    }
+
+    /** クッキーを削除する */
+    private fun openClearCookieDialog(fragmentManager: FragmentManager) {
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(R.string.pref_browser_clear_cookie_dialog_message)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                val instance = CookieManager.getInstance()
+                instance.removeAllCookies(null)
+                instance.flush()
+                SatenaApplication.instance.showToast(R.string.msg_browser_removed_all_cookies)
+            }
+            .create()
+            .show(fragmentManager, null)
+    }
+
+    /** 閲覧履歴を削除する */
+    private fun openClearHistoryDialog(fragmentManager: FragmentManager) {
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.confirm_dialog_title_simple)
+            .setMessage(R.string.pref_browser_clear_history_dialog_message)
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                viewModelScope.launch(Dispatchers.Main) {
+                    runCatching {
+                        historyRepo.clearHistories()
+                    }
+                    SatenaApplication.instance.showToast(R.string.msg_browser_removed_all_histories)
+                }
+            }
+            .create()
+            .show(fragmentManager, null)
     }
 }
