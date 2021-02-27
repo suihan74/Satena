@@ -11,7 +11,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:background="@{item.selected ? @color/colorPrimary : @android:color/transparent}"
+            android:background="@{item.selected ? Attrs.color(context, R.attr.colorPrimary) : @android:color/transparent}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
