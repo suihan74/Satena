@@ -100,6 +100,18 @@ class PreferencesActivity : AppCompatActivity() {
     // ------- //
 
     private fun initializeContents() {
+        // アイコンメニュー
+        binding.menuRecyclerView.adapter = PreferencesMenuAdapter(this).also { adapter ->
+            adapter.setOnClickListener {
+                binding.preferencesViewPager.setCurrentItem(it.int, false)
+            }
+
+            viewModel.currentTab.observe(this, {
+                adapter.selectTab(it)
+            })
+        }
+
+        // ページャ
         val tabAdapter = PreferencesTabAdapter(this)
         binding.preferencesViewPager.also { pager ->
             // 環状スクロールできるように細工

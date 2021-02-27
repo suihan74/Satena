@@ -29,116 +29,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-            <ScrollView
-                    android:id="@+id/preferences_tabs_scroll_view"
-                    android:layout_alignParentStart="true"
-                    android:background="?attr/panelBackground"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:scrollbars="vertical">
-
-                <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                    <ImageButton
-                            android:id="@+id/preferences_tab_information"
-                            android:src="@drawable/ic_baseline_info"
-                            android:background="?colorPrimary"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:onClick="onClickedTab"
-                            android:contentDescription="@string/pref_title_information" />
-
-                    <ImageButton
-                            android:id="@+id/preferences_tab_accounts"
-                            android:src="@drawable/ic_preferences_accounts"
-                            android:background="@null"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:onClick="onClickedTab"
-                            android:contentDescription="@string/pref_title_account" />
-
-                    <ImageButton
-                            android:id="@+id/preferences_tab_generals"
-                            android:src="@drawable/ic_preferences_generals"
-                            android:background="@null"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:onClick="onClickedTab"
-                            android:contentDescription="@string/pref_title_generals" />
-
-                    <ImageButton
-                            android:id="@+id/preferences_tab_entries"
-                            android:src="@drawable/ic_preferences_entries"
-                            android:background="@null"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:onClick="onClickedTab"
-                            android:contentDescription="@string/pref_title_entries" />
-
-                    <ImageButton
-                            android:id="@+id/preferences_tab_bookmarks"
-                            android:src="@drawable/ic_preferences_bookmarks"
-                            android:background="@null"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:onClick="onClickedTab"
-                            android:contentDescription="@string/pref_title_bookmarks" />
-
-                    <ImageButton
-                            android:id="@+id/preferences_tab_browser"
-                            android:src="@drawable/ic_world"
-                            android:tint="?attr/textColor"
-                            android:background="@null"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:onClick="onClickedTab"
-                            android:contentDescription="@string/pref_title_browser" />
-
-                    <ImageButton
-                            android:id="@+id/preferences_tab_favorite_sites"
-                            android:src="@drawable/ic_star"
-                            android:tint="?attr/textColor"
-                            android:background="@null"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:onClick="onClickedTab"
-                            android:contentDescription="@string/category_favorite_sites" />
-
-                    <ImageButton
-                            android:id="@+id/preferences_tab_filters"
-                            android:src="@drawable/ic_preferences_filters"
-                            android:background="@null"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:onClick="onClickedTab"
-                            android:contentDescription="@string/pref_title_ignored_entries" />
-
-                    <ImageButton
-                            android:id="@+id/preferences_tab_ignored_users"
-                            android:src="@drawable/ic_preferences_ignored_users"
-                            android:background="@null"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:onClick="onClickedTab"
-                            android:contentDescription="@string/pref_title_ignored_users" />
-
-                    <ImageButton
-                            android:id="@+id/preferences_tab_user_tags"
-                            android:src="@drawable/ic_preferences_user_tags"
-                            android:background="@null"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:onClick="onClickedTab"
-                            android:contentDescription="@string/pref_title_user_tags" />
-                </LinearLayout>
-            </ScrollView>
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/menu_recycler_view"
+                    style="@style/RecyclerView.Linear"
+                    android:background="@android:color/transparent"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"/>
 
             <LinearLayout
                     android:id="@+id/preferences_separator"
-                    android:layout_toEndOf="@id/preferences_tabs_scroll_view"
+                    android:layout_toEndOf="@id/menu_recycler_view"
                     android:background="?attr/colorPrimary"
                     android:orientation="vertical"
                     android:layout_width="1dp"
