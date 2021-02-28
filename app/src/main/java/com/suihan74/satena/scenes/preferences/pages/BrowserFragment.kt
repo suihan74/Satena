@@ -118,8 +118,18 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         addSection(R.string.pref_browser_section_display)
         addPrefItem(fragment, webViewTheme, R.string.pref_browser_theme_desc) {
+            val values = buildList {
+                add(WebViewTheme.AUTO)
+                add(WebViewTheme.NORMAL)
+                if (isForceDarkSupported) {
+                    if (isForceDarkStrategySupported) {
+                        add(WebViewTheme.DARK)
+                    }
+                    add(WebViewTheme.FORCE_DARK)
+                }
+            }
             openEnumSelectionDialog(
-                WebViewTheme.values(),
+                values.toTypedArray(),
                 webViewTheme,
                 R.string.pref_browser_theme_desc,
                 fragmentManager
