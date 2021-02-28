@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout>
     <data>
         <variable name="site" type="com.suihan74.satena.models.FavoriteSite"/>
     </data>
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:background="?android:attr/selectableItemBackground"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="12dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -19,10 +19,12 @@
                 android:contentDescription="@null"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="6dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/title"
+                app:layout_constraintTop_toTopOf="@id/title"
+                app:layout_constraintBottom_toBottomOf="@id/title"
                 android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_alignParentTop="true"
-                />
+                android:layout_height="16dp"/>
 
         <!-- TODO: スワイプできない問題を解消するまではマーキーしないようにする -->
         <com.suihan74.utilities.views.MarqueeTextView
@@ -32,9 +34,11 @@
                 android:text="@{site.title}"
                 android:contentDescription="@null"
                 android:textSize="16sp"
-                android:layout_toEndOf="@id/favicon"
-                android:layout_alignParentTop="true"
-                android:layout_width="match_parent"
+                app:layout_constraintStart_toEndOf="@id/favicon"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/url"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
 
         <!-- TODO: スワイプできない問題を解消するまではマーキーしないようにする -->
@@ -45,12 +49,13 @@
                 android:text="@{site.url}"
                 android:textColor="?attr/tagTextColor"
                 android:textSize="13sp"
-                android:layout_below="@id/title"
-                android:layout_alignStart="@id/title"
-                android:layout_alignEnd="@id/title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"/>
+                android:layout_marginTop="2dp"
+                app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintEnd_toEndOf="@id/title"
+                app:layout_constraintTop_toBottomOf="@id/title"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
 
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
