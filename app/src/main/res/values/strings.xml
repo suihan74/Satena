@@ -51,6 +51,12 @@
     <string name="search_button_tooltip">検索</string>
     <string name="minutes">分</string>
 
+    <!-- TODO: 英語用の文字列リソースを用意してそっちでplural設定する -->
+    <plurals name="user">
+        <item quantity="one">%1$d user</item>
+        <item quantity="other">%1$d users</item>
+    </plurals>
+
     <!-- ログイン画面 -->
     <string name="cancel">キャンセル</string>
     <string name="sign_in">ログイン</string>

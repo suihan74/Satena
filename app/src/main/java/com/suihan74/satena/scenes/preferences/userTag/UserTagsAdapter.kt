@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FooterRecyclerViewBinding
 import com.suihan74.satena.databinding.ListviewItemUserTagsBinding
 import com.suihan74.satena.models.userTag.TagAndUsers
@@ -95,7 +96,11 @@ open class UserTagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 if (value == null) { return }
 
                 binding.tagName.text = value.userTag.name
-                binding.usersCount.text = String.format("%d users", value.users.size)
+
+                value.users.size.also {
+                    binding.usersCount.text =
+                        binding.root.context.resources.getQuantityString(R.plurals.user, it, it)
+                }
             }
     }
 }

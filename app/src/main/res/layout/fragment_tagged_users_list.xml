@@ -10,9 +10,8 @@
             android:maxLines="1"
             android:ellipsize="end"
             android:textSize="18sp"
-            android:layout_marginTop="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginTop="@dimen/pref_item_vertical_padding"
+            android:layout_marginHorizontal="@dimen/pref_item_horizontal_padding"
             android:layout_alignParentTop="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
@@ -29,7 +28,7 @@
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/users_list"
             android:layout_below="@id/users_count"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/pref_item_vertical_padding"
             android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
             android:scrollbarSize="4dp"
             android:scrollbars="vertical"

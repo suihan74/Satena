@@ -31,4 +31,8 @@
     <!-- 設定画面のリストの左右パディング -->
     <dimen name="pref_section_horizontal_padding">12dp</dimen>
     <dimen name="pref_list_horizontal_padding">24dp</dimen>
+
+    <!-- 設定画面共通のアイテムパディング -->
+    <dimen name="pref_item_horizontal_padding">12dp</dimen>
+    <dimen name="pref_item_vertical_padding">12dp</dimen>
 </resources>
