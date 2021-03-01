@@ -6,27 +6,37 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
 import androidx.activity.addCallback
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentTaggedUsersListBinding
 import com.suihan74.satena.models.userTag.User
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
+import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
-import com.suihan74.utilities.DrawableCompat
 import com.suihan74.utilities.bindings.setDivider
 
 class TaggedUsersListFragment : Fragment() {
+    companion object {
+        fun createInstance() = TaggedUsersListFragment()
+    }
+
+    // ------ //
+
     private val userTagsFragment : PreferencesUserTagsFragment
         get() = requireParentFragment() as PreferencesUserTagsFragment
 
     private val viewModel : UserTagViewModel
         get() = userTagsFragment.viewModel
 
-    companion object {
-        fun createInstance() = TaggedUsersListFragment()
-    }
+    private val preferencesActivity : PreferencesActivity
+        get() = requireActivity() as PreferencesActivity
+
+    private val activityViewModel : PreferencesActivity.ActivityViewModel
+        get() = preferencesActivity.viewModel
+
+    // ------ //
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,33 +81,15 @@ class TaggedUsersListFragment : Fragment() {
         })
 
         // 戻るボタンで閉じる
-        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
+        val callback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            viewModel.currentTag.value = null
             parentFragmentManager.popBackStack()
             remove()
         }
+        activityViewModel.currentTab.observe(viewLifecycleOwner, {
+            callback.isEnabled = it == PreferencesTabMode.USER_TAGS
+        })
 
         return binding.root
-    }
-
-
-    override fun onResume() {
-        super.onResume()
-        setHasOptionsMenu(true)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
-        inflater.inflate(R.menu.tagged_users_list, menu)
-
-        menu.findItem(R.id.button).apply {
-            val color = ActivityCompat.getColor(requireActivity(), R.color.colorPrimaryText)
-            DrawableCompat.setColorFilter(icon.mutate(), color)
-
-            setOnMenuItemClickListener {
-                activity?.onBackPressed()
-                true
-            }
-        }
     }
 }

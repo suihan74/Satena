@@ -3,18 +3,14 @@ package com.suihan74.satena.scenes.preferences
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.MenuItem
 import android.view.View
-import android.widget.ImageButton
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -57,7 +53,7 @@ class PreferencesActivity : AppCompatActivity() {
         }
     }
 
-    private val viewModel by lazyProvideViewModel { ActivityViewModel() }
+    val viewModel by lazyProvideViewModel { ActivityViewModel() }
 
     // ------ //
 
@@ -121,10 +117,6 @@ class PreferencesActivity : AppCompatActivity() {
 
                 override fun onPageSelected(position: Int) {
                     super.onPageSelected(position)
-                    for (i in 0 until tabAdapter.getActualCount()) {
-                        val btn = findViewById<ImageButton>(tabAdapter.getIconId(i))
-                        btn?.setBackgroundColor(Color.TRANSPARENT)
-                    }
 
                     jumpPosition = when (position) {
                         PreferencesTabMode.DUMMY_HEAD.int -> tabAdapter.getActualCount()
@@ -146,10 +138,7 @@ class PreferencesActivity : AppCompatActivity() {
                         fragment.onTabSelected()
                     }
 
-                    val btn = findViewById<ImageButton>(tabAdapter.getIconId(tab.int - 1))
-                    btn?.setBackgroundColor(ContextCompat.getColor(this@PreferencesActivity, R.color.colorPrimary))
                     title = getString(R.string.pref_toolbar_title, getString(tab.titleId))
-                    invalidateOptionsMenu()
                 }
                 override fun onPageScrollStateChanged(state: Int) {
                     super.onPageScrollStateChanged(state)
@@ -169,22 +158,6 @@ class PreferencesActivity : AppCompatActivity() {
     }
 
     // ------ //
-
-    override fun onOptionsItemSelected(item: MenuItem?) = when (item?.itemId) {
-        android.R.id.home -> {
-            onBackPressed()
-            true
-        }
-        else -> super.onOptionsItemSelected(item!!)
-    }
-
-    fun onClickedTab(view: View) {
-        binding.preferencesViewPager.also { viewPager ->
-            viewPager.adapter.alsoAs<PreferencesTabAdapter> { adapter ->
-                viewPager.currentItem = adapter.getIndexFromIconId(view.id)
-            }
-        }
-    }
 
     private fun showProgressBar() {
         binding.clickGuard.visibility = View.VISIBLE

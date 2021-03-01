@@ -27,10 +27,6 @@ class UserTagsListFragment : Fragment() {
 
     // ------ //
 
-    private var binding : FragmentUserTagsListBinding? = null
-
-    // ------ //
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,11 +37,10 @@ class UserTagsListFragment : Fragment() {
             container,
             false
         )
-        this.binding = binding
 
         val userTagsAdapter = object : UserTagsAdapter() {
             override fun onItemClicked(tag: TagAndUsers) {
-                viewModel.currentTag.postValue(tag)
+                viewModel.currentTag.value = tag
                 userTagsFragment.showTaggedUsersList()
             }
 
@@ -67,10 +62,5 @@ class UserTagsListFragment : Fragment() {
         })
 
         return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
     }
 }
