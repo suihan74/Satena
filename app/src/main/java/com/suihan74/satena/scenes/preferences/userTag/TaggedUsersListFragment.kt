@@ -40,7 +40,12 @@ class TaggedUsersListFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enterTransition = TransitionSet()
+            .addTransition(Fade())
+            .addTransition(Slide(Gravity.END))
+
+        exitTransition = TransitionSet()
             .addTransition(Fade())
             .addTransition(Slide(Gravity.END))
     }
