@@ -22,6 +22,9 @@ class HatenaAuthenticationActivity : ActivityBase() {
     companion object {
         /** 初回起動時の呼び出しかを判別する */
         const val EXTRA_FIRST_LAUNCH = "EXTRA_FIRST_LAUNCH"
+
+        val REQUEST_CODE
+            get() = hashCode() and 0x0000ffff
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,10 +55,10 @@ class HatenaAuthenticationActivity : ActivityBase() {
     }
 
     override fun onBackPressed() {
-        finish()
+        finish(RESULT_CANCELED)
     }
 
-    override fun finish() {
+    fun finish(result: Int) {
         if (intent.getBooleanExtra(EXTRA_FIRST_LAUNCH, false)) {
             val intent = Intent(this, EntriesActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -63,6 +66,7 @@ class HatenaAuthenticationActivity : ActivityBase() {
             startActivity(intent)
         }
         else {
+            setResult(result)
             super.finish()
         }
     }
@@ -81,7 +85,7 @@ class HatenaAuthenticationActivity : ActivityBase() {
             SatenaApplication.instance.startCheckingNotificationsWorker(this@HatenaAuthenticationActivity)
 
             // 前の画面に戻る
-            finish()
+            finish(RESULT_OK)
         }
         catch (e: Throwable) {
             Log.d("Hatena", e.message ?: "")
