@@ -296,6 +296,8 @@ class BrowserActivity :
         drawerTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 if (tab == null) return
+                viewModel.currentDrawerTab.value = DrawerTab.fromOrdinal(tab.position)
+
                 // ドロワ内のタブ切り替え操作と干渉するため
                 // 一番端のタブを表示中以外はスワイプで閉じないようにする
                 setDrawerSwipeClosable(tab.position)

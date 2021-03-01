@@ -140,6 +140,9 @@ class BrowserViewModel(
     /** ドロワの開閉状態 */
     val drawerOpened = SingleUpdateMutableLiveData<Boolean>()
 
+    /** 現在選択中のドロワタブ */
+    val currentDrawerTab = SingleUpdateMutableLiveData<DrawerTab>()
+
     // ------ //
 
     /** ロード完了前にページ遷移した場合にロード処理を中断する */

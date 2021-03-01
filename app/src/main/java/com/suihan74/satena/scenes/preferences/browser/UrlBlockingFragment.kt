@@ -15,7 +15,9 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentUrlBlockingBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserRepository
+import com.suihan74.satena.scenes.browser.DrawerTab
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
+import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.satena.scenes.preferences.pages.PreferencesBrowserFragment
 import com.suihan74.utilities.DrawableCompat
 import com.suihan74.utilities.SafeSharedPreferences
@@ -104,20 +106,25 @@ class UrlBlockingFragment : Fragment() {
             }
         }
 
-        if (browserActivity != null) {
-            binding.backButton.visibility = View.VISIBLE
-            binding.backButton.setOnClickListener {
-                requireActivity().onBackPressed()
-            }
-        }
-        else {
-            binding.backButton.visibility = View.GONE
-        }
-
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+        val callback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             parentFragmentManager.beginTransaction()
                 .remove(this@UrlBlockingFragment)
                 .commit()
+        }
+        preferencesActivity?.viewModel?.currentTab?.observe(viewLifecycleOwner, {
+            callback.isEnabled = it == PreferencesTabMode.BROWSER
+        })
+        browserActivity?.viewModel?.let { vm ->
+            vm.currentDrawerTab.observe(viewLifecycleOwner, {
+                callback.isEnabled = it == DrawerTab.SETTINGS && vm.drawerOpened.value == true
+            })
+            vm.drawerOpened.observe(viewLifecycleOwner, {
+                callback.isEnabled = vm.currentDrawerTab.value == DrawerTab.SETTINGS && it == true
+            })
+        }
+
+        binding.backButton.setOnClickListener {
+            callback.handleOnBackPressed()
         }
 
         return binding.root
