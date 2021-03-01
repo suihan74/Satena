@@ -357,6 +357,7 @@
                 style="@style/Widget.Design.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:src="@drawable/ic_star"
                 app:backgroundTint="?colorPrimary"
                 app:layout_anchor="@id/parent_layout"

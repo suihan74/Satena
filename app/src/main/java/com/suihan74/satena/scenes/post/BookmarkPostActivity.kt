@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner.Companion.VIEW_MODEL_BOOKMARK_POST
 import com.suihan74.utilities.SafeSharedPreferences
@@ -68,6 +70,15 @@ class BookmarkPostActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // サインインしていない状態では先にサインイン画面を開く
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        if (!prefs.contains(PreferenceKey.HATENA_RK)) {
+            showToast(R.string.msg_need_to_sign_in_hatena)
+            val intent = Intent(this, HatenaAuthenticationActivity::class.java)
+            startActivityForResult(intent, HatenaAuthenticationActivity.REQUEST_CODE)
+        }
+
         setTheme(bookmarkPostViewModel.themeId)
         setContentView(R.layout.activity_bookmark_post)
 
@@ -115,6 +126,16 @@ class BookmarkPostActivity :
         else {
             showToast(R.string.msg_post_bookmark_failed)
             Log.e("BookmarkPostActivity", "entry or url is not set")
+            finish()
+        }
+    }
+
+    // ------ //
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == HatenaAuthenticationActivity.REQUEST_CODE && resultCode != RESULT_OK) {
+            showToast(R.string.msg_hatena_not_signed_in)
             finish()
         }
     }

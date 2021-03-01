@@ -21,6 +21,9 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
     companion object {
         /** 初回起動時の呼び出しかを判別する */
         const val EXTRA_FIRST_LAUNCH = "EXTRA_FIRST_LAUNCH"
+
+        val REQUEST_CODE
+            get() = hashCode() and 0x0000ffff
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,10 +54,10 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        finish()
+        finish(RESULT_CANCELED)
     }
 
-    override fun finish() {
+    fun finish(result: Int) {
         if (intent.getBooleanExtra(EXTRA_FIRST_LAUNCH, false)) {
             val intent = Intent(this, EntriesActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -62,6 +65,7 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
             startActivity(intent)
         }
         else {
+            setResult(result)
             super.finish()
         }
     }
@@ -77,7 +81,7 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
 
             // 前の画面に戻る
             lifecycleScope.launch {
-                finish()
+                finish(RESULT_OK)
             }
         }
         catch (e: Throwable) {
