@@ -9,10 +9,10 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.TextInputDialogFragment
 import com.suihan74.satena.scenes.browser.*
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.*
-import com.suihan74.satena.scenes.preferences.browser.StartPageUrlEditingDialog
 import com.suihan74.satena.scenes.preferences.browser.UrlBlockingFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -34,6 +34,8 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
     lateinit var browserRepo : BrowserRepository  // todo
 
     lateinit var historyRepo : HistoryRepository  // todo
+
+    private var browserViewModel : com.suihan74.satena.scenes.browser.BrowserViewModel? = null
 
     // ------ //
 
@@ -67,6 +69,7 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         val browserActivity = fragment.activity as? BrowserActivity
 
         if (browserActivity != null) {
+            browserViewModel = browserActivity.viewModel
             browserRepo = browserActivity.viewModel.browserRepo
             historyRepo = browserActivity.viewModel.historyRepo
         }
@@ -152,7 +155,9 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         addPrefItem(fragment, searchEngine, R.string.pref_browser_search_engine_desc) {
             openSearchEngineSelectionDialog(fragmentManager)
         }
-        add(PreferenceEditTextItem(userAgent, R.string.pref_browser_user_agent_desc, R.string.pref_browser_user_agent_hint))
+        addPrefItem(fragment, userAgent, R.string.pref_browser_user_agent_desc) {
+            openUserAgentEditingDialog(fragmentManager)
+        }
 
         // --- //
 
@@ -174,8 +179,35 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
      * スタートページのURLを設定するダイアログを開く
      */
     private fun openStartPageUrlEditingDialog(fragmentManager: FragmentManager) {
-        StartPageUrlEditingDialog.createInstance()
-            .show(fragmentManager, null)
+        val browserViewModel = browserViewModel
+        val dialog =
+            if (browserViewModel != null) {
+                TextInputDialogFragment.createInstance(
+                    titleId = R.string.pref_browser_start_page_desc,
+                    descriptionId = R.string.pref_browser_start_page_message,
+                    hintId = R.string.pref_browser_start_page_hint,
+                    neutralButtonTextId = R.string.pref_browser_start_page_set_current,
+                    initialValue = startPage.value
+                ).also {
+                    it.setOnClickNeutralButtonListener { _, f ->
+                        f.setText(browserViewModel.url.value.orEmpty())
+                    }
+                }
+            }
+            else {
+                TextInputDialogFragment.createInstance(
+                    titleId = R.string.pref_browser_start_page_desc,
+                    descriptionId = R.string.pref_browser_start_page_message,
+                    hintId = R.string.pref_browser_start_page_hint,
+                    initialValue = startPage.value
+                )
+            }
+
+        dialog.setOnCompleteListener {
+            startPage.value = it
+        }
+
+        dialog.show(fragmentManager, null)
     }
 
     /**
@@ -195,6 +227,22 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
             .dismissOnClickItem(true)
             .create()
             .show(fragmentManager, null)
+    }
+    /**
+     * UserAgentを設定するダイアログを開く
+     */
+    private fun openUserAgentEditingDialog(fragmentManager: FragmentManager) {
+        val dialog = TextInputDialogFragment.createInstance(
+            titleId = R.string.pref_browser_user_agent_desc,
+            hintId = R.string.pref_browser_user_agent_hint,
+            initialValue = userAgent.value
+        )
+
+        dialog.setOnCompleteListener {
+            userAgent.value = it
+        }
+
+        dialog.show(fragmentManager, null)
     }
 
     // ------ //
