@@ -27,7 +27,7 @@ class HistoryViewModel(
 ) : ViewModel() {
 
     /** 閲覧履歴 */
-    val histories : LiveData<List<History>> = repository.histories
+    private val histories : LiveData<List<History>> = repository.histories
 
     /** 閲覧履歴表示用データ */
     val historyRecyclerItems : LiveData<List<RecyclerState<History>>> by lazy {
@@ -36,20 +36,10 @@ class HistoryViewModel(
     private val _historyRecyclerItems = MutableLiveData<List<RecyclerState<History>>>()
 
     /** 検索キーワード */
-    val keyword by lazy {
-        repository.keyword.also {
-            it.observeForever {
-                viewModelScope.launch {
-                    repository.loadHistories()
-                }
-            }
-        }
-    }
+    val keyword = repository.keyword
 
     /** キーワード入力ボックスの表示状態 */
-    val keywordEditTextVisible by lazy {
-        MutableLiveData<Boolean>(false)
-    }
+    val keywordEditTextVisible = MutableLiveData(false)
 
     /** 日付表示のフォーマット */
     val dateFormatter : DateTimeFormatter by lazy {
@@ -58,17 +48,24 @@ class HistoryViewModel(
 
     // ------ //
 
-    init {
-        viewModelScope.launch {
-            repository.loadHistories()
-        }
-    }
-
     @MainThread
     fun onCreateView(owner: LifecycleOwner) {
         histories.observe(owner, Observer {
             viewModelScope.launch {
                 createDisplayItems(it)
+            }
+        })
+
+        keywordEditTextVisible.observe(owner, Observer {
+            if (it) {
+                keyword.observe(owner, Observer {
+                    viewModelScope.launch {
+                        repository.loadHistories()
+                    }
+                })
+            }
+            else {
+                keyword.removeObservers(owner)
             }
         })
     }

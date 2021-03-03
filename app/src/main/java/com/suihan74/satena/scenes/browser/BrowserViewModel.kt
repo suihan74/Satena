@@ -122,8 +122,7 @@ class BrowserViewModel(
     private var previousUrl : String? = null
 
     /** 現在表示中のページで読み込んだすべてのURL */
-    private val resourceUrls : List<ResourceUrl>
-        get() = browserRepo.resourceUrls
+    private val resourceUrls : List<ResourceUrl> = browserRepo.resourceUrls
 
     /** お気に入りサイト */
     val favoriteSites =
@@ -149,9 +148,7 @@ class BrowserViewModel(
     private var loadBookmarksEntryJob : Job? = null
 
     /** ローディング状態を通知する */
-    val loadingBookmarksEntry by lazy {
-        MutableLiveData<Boolean>(false)
-    }
+    val loadingBookmarksEntry = MutableLiveData(false)
 
     // ------ //
 
@@ -168,6 +165,14 @@ class BrowserViewModel(
      * 画像保存時の保存先決定ダイアログを開き、結果を取得するためのランチャ
      */
     private lateinit var saveImageLauncher : ActivityResultLauncher<Intent>
+
+    // ------ //
+
+    init {
+        viewModelScope.launch {
+            historyRepo.loadHistories()
+        }
+    }
 
     // ------ //
 

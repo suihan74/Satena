@@ -94,19 +94,41 @@ abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
         abstract fun areModelsTheSame(oldItem: ModelT?, newItem: ModelT?): Boolean
         abstract fun areModelContentsTheSame(oldItem: ModelT?, newItem: ModelT?): Boolean
 
+        open fun areSectionsTheSame(
+            oldItem: RecyclerState<ModelT>,
+            newItem: RecyclerState<ModelT>
+        ) : Boolean {
+            return oldItem.extra == newItem.extra
+        }
+
+        open fun areSectionContentsTheSame(
+            oldItem: RecyclerState<ModelT>,
+            newItem: RecyclerState<ModelT>
+        ) : Boolean {
+            return oldItem == newItem
+        }
+
         final override fun areItemsTheSame(
             oldItem: RecyclerState<ModelT>,
             newItem: RecyclerState<ModelT>
-        ): Boolean =
-            oldItem.type == newItem.type &&
-                    (oldItem.type != RecyclerType.BODY || areModelsTheSame(oldItem.body, newItem.body))
+        ) : Boolean =
+            if (oldItem.type != newItem.type) false
+            else when (oldItem.type) {
+                RecyclerType.SECTION -> areSectionsTheSame(oldItem, newItem)
+                RecyclerType.BODY -> areModelsTheSame(oldItem.body, newItem.body)
+                else -> oldItem == newItem
+            }
 
         final override fun areContentsTheSame(
             oldItem: RecyclerState<ModelT>,
             newItem: RecyclerState<ModelT>
-        ): Boolean =
-            oldItem.type == newItem.type &&
-                    (oldItem.type != RecyclerType.BODY || areModelContentsTheSame(oldItem.body, newItem.body))
+        ) : Boolean =
+            if (oldItem.type != newItem.type) false
+            else when (oldItem.type) {
+                RecyclerType.SECTION -> areSectionContentsTheSame(oldItem, newItem)
+                RecyclerType.BODY -> areModelContentsTheSame(oldItem.body, newItem.body)
+                else -> oldItem == newItem
+            }
     }
 
     // ------ //

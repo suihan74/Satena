@@ -17,7 +17,7 @@ enum class RecyclerType(val id: Int) {
     }
 }
 
-class RecyclerState<T>(
+data class RecyclerState<T>(
     /** アイテムの種類 */
     val type: RecyclerType,
 
