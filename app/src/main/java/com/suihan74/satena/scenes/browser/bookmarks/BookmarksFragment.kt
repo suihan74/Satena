@@ -19,6 +19,7 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksAdapter
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel
@@ -27,14 +28,11 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostFragment
 import com.suihan74.satena.scenes.post.BookmarkPostViewModel
-import com.suihan74.utilities.RecyclerViewScrollingUpdater
-import com.suihan74.utilities.ScrollableToTop
-import com.suihan74.utilities.TabItem
+import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setIconId
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
-import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -172,6 +170,10 @@ class BookmarksFragment :
                 }
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
+            // 初期表示タブ
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
+            val tabPosition = prefs.getInt(PreferenceKey.BOOKMARKS_INITIAL_TAB)
+            spinner.setSelection(tabPosition, false)
         }
 
         // カスタムブクマリストの表示項目を設定する
