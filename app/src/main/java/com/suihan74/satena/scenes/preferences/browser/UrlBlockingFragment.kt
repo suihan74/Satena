@@ -18,7 +18,7 @@ import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.DrawerTab
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
-import com.suihan74.satena.scenes.preferences.pages.PreferencesBrowserFragment
+import com.suihan74.satena.scenes.preferences.pages.BrowserFragment
 import com.suihan74.utilities.DrawableCompat
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.letAs
@@ -41,7 +41,7 @@ class UrlBlockingFragment : Fragment() {
     val viewModel by lazyProvideViewModel {
         val context = requireContext()
         val repository =
-            parentFragment.letAs<PreferencesBrowserFragment, BrowserRepository> {
+            parentFragment.letAs<BrowserFragment, BrowserRepository> {
                 it.viewModel.browserRepo
             } ?: BrowserRepository(
                 client = HatenaClient,

@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.preferences
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
@@ -20,7 +19,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemGeneralButtonBinding
 import com.suihan74.satena.databinding.ListviewItemGeneralSectionBinding
 import com.suihan74.satena.databinding.ListviewItemPrefsButtonBinding
-import com.suihan74.satena.databinding.ListviewItemPrefsEditTextBinding
 import com.suihan74.satena.models.TextIdContainer
 import com.suihan74.utilities.extensions.alsoAs
 
@@ -187,35 +185,6 @@ open class PreferenceToggleItem(
 ) : PreferenceItem<Boolean>(fragment, liveData, titleId, suffixId, null, {
     liveData.value = liveData.value != true
 })
-
-/**
- * テキスト編集用ビュー
- */
-open class PreferenceEditTextItem(
-    val liveData: MutableLiveData<String?>,
-    @StringRes val titleId: Int,
-    @StringRes val hintId: Int,
-) : PreferencesAdapter.Item {
-    override val layoutId: Int
-        get() = R.layout.listview_item_prefs_edit_text
-
-    override fun bind(binding: ViewDataBinding) {
-        binding.alsoAs<ListviewItemPrefsEditTextBinding> { b ->
-            b.item = this
-
-            b.editText.setOnEditorActionListener { _, actionId, _ ->
-                when (actionId) {
-                    EditorInfo.IME_ACTION_DONE -> {
-                        b.editText.hideSoftInputMethod()
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-        }
-    }
-}
 
 // ------ //
 
