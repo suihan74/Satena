@@ -6,13 +6,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.webkit.URLUtil
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner.Companion.VIEW_MODEL_BOOKMARK_POST
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -68,6 +69,15 @@ class BookmarkPostActivity :
 
     // ------ //
 
+    private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode != RESULT_OK) {
+            showToast(R.string.msg_hatena_not_signed_in)
+            finish()
+        }
+    }
+
+    // ------ //
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -76,7 +86,7 @@ class BookmarkPostActivity :
         if (!prefs.contains(PreferenceKey.HATENA_RK)) {
             showToast(R.string.msg_need_to_sign_in_hatena)
             val intent = Intent(this, HatenaAuthenticationActivity::class.java)
-            startActivityForResult(intent, HatenaAuthenticationActivity.REQUEST_CODE)
+            signInLauncher.launch(intent)
         }
 
         setTheme(bookmarkPostViewModel.themeId)
@@ -126,16 +136,6 @@ class BookmarkPostActivity :
         else {
             showToast(R.string.msg_post_bookmark_failed)
             Log.e("BookmarkPostActivity", "entry or url is not set")
-            finish()
-        }
-    }
-
-    // ------ //
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == HatenaAuthenticationActivity.REQUEST_CODE && resultCode != RESULT_OK) {
-            showToast(R.string.msg_hatena_not_signed_in)
             finish()
         }
     }
