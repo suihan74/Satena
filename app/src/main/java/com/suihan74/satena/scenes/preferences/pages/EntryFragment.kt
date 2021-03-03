@@ -10,6 +10,7 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemPrefsBottomItemsBinding
 import com.suihan74.satena.dialogs.NumberPickerDialog
+import com.suihan74.satena.dialogs.TextInputDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.EntriesTabType
@@ -296,11 +297,9 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             )
         }
         if (entryReadActionType.value == EntryReadActionType.BOILERPLATE) {
-            add(PreferenceEditTextItem(
-                entryReadActionBoilerPlate,
-                R.string.pref_entries_read_action_boilerplate_desc,
-                R.string.pref_entries_read_action_boilerplate_hint)
-            )
+            addPrefItem(fragment, entryReadActionBoilerPlate, R.string.pref_entries_read_action_boilerplate_desc) {
+                openReadActionBoilerPlateEditingDialog(fragmentManager)
+            }
         }
     }
 
@@ -397,6 +396,23 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         ) { value ->
             historyMaxSize.value = value
         }
+        dialog.show(fragmentManager, null)
+    }
+
+    /**
+     * 「読んだ」時に定型文を投稿する場合の文章を設定するダイアログを開く
+     */
+    private fun openReadActionBoilerPlateEditingDialog(fragmentManager: FragmentManager) {
+        val dialog = TextInputDialogFragment.createInstance(
+            titleId = R.string.pref_entries_read_action_boilerplate_desc,
+            hintId = R.string.pref_entries_read_action_boilerplate_hint,
+            initialValue = entryReadActionBoilerPlate.value
+        )
+
+        dialog.setOnCompleteListener {
+            entryReadActionBoilerPlate.value = it
+        }
+
         dialog.show(fragmentManager, null)
     }
 
