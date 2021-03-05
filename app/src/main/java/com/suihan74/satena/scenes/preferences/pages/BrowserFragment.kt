@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
 import android.webkit.CookieManager
+import android.webkit.URLUtil
 import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.viewModelScope
@@ -16,6 +17,7 @@ import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.satena.scenes.preferences.browser.UrlBlockingFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.whenFalse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -209,6 +211,10 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
                     initialValue = startPage.value
                 )
             }
+
+        dialog.setValidator { url -> URLUtil.isNetworkUrl(url).whenFalse {
+            SatenaApplication.instance.showToast(R.string.invalid_url_error)
+        } }
 
         dialog.setOnCompleteListener {
             startPage.value = it
