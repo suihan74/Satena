@@ -12,7 +12,7 @@ android {
         applicationId "com.suihan74.satena"
         // バージョン情報
         // major(1桁)-minor(2桁)-fix(3桁)-dev(3桁)
-        versionCode 1_06_007_001
+        versionCode 1_06_010_005
         versionName "1.7.x"
 
         minSdkVersion 23
@@ -59,7 +59,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation "androidx.fragment:fragment-ktx:1.2.5"
+    implementation "androidx.fragment:fragment-ktx:1.3.0"
 
     // Firebase
     // Import the Firebase BoM
@@ -72,11 +72,10 @@ dependencies {
     implementation 'com.google.android.play:core-ktx:1.8.1'
 
     // ViewModel and LiveData
-    def lifecycle_version = "2.2.0"
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0"
 //   kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-common-java8:2.3.0"
     testImplementation "androidx.arch.core:core-testing:2.1.0"
 
     // room; database access
@@ -96,7 +95,7 @@ dependencies {
     androidTestImplementation "androidx.work:work-testing:$work_version"
 
     // recyclerview
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'com.google.android.material:material:1.3.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.0-beta01'
 
     // coroutines
@@ -110,7 +109,7 @@ dependencies {
     implementation "com.github.sys1yagi.mastodon4j:mastodon4j-rx:$mastodon4j_version"
 
     // http client
-    def okhttp_version = '4.8.1'
+    def okhttp_version = '4.9.0'
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
     implementation "com.squareup.okhttp3:okhttp-urlconnection:$okhttp_version"
 
