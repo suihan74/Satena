@@ -5,16 +5,17 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.URLUtil
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.annotation.MainThread
 import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.suihan74.satena.R
@@ -22,6 +23,7 @@ import com.suihan74.satena.databinding.FragmentBrowserBookmarksBinding
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksAdapter
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
+import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.browser.BrowserActivity
@@ -34,7 +36,55 @@ import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
+class ContentsViewModel(
+    private val bookmarksRepo: BookmarksRepository
+) : ViewModel() {
+    /** ロード完了前にページ遷移した場合にロード処理を中断する */
+    private var loadBookmarksEntryJob : Job? = null
+
+    /** ローディング状態を通知する */
+    val loadingBookmarksEntry = MutableLiveData<Boolean>()
+
+    private val loadingJobMutex = Mutex()
+
+    // ------ //
+
+    @MainThread
+    fun onCreateView(owner: LifecycleOwner, browserViewModel: BrowserViewModel) {
+        browserViewModel.url.observe(owner, Observer { url ->
+            viewModelScope.launch {
+                loadBookmarksEntry(url)
+            }
+        })
+    }
+
+    // ------ //
+
+    /** BookmarksEntryを更新 */
+    private suspend fun loadBookmarksEntry(url: String) {
+        loadingJobMutex.withLock {
+            loadBookmarksEntryJob?.cancel()
+            if (!URLUtil.isNetworkUrl(url)) return@withLock
+            loadBookmarksEntryJob = viewModelScope.launch(Dispatchers.Main) {
+                runCatching {
+                    loadingBookmarksEntry.value = true
+                    bookmarksRepo.loadBookmarks(url)
+                }
+                loadingJobMutex.withLock {
+                    loadBookmarksEntryJob = null
+                    loadingBookmarksEntry.value = false
+                }
+            }
+        }
+    }
+}
+
+// ------ //
 
 class BookmarksFragment :
     Fragment(),
@@ -67,6 +117,10 @@ class BookmarksFragment :
         BookmarksViewModel(activityViewModel.bookmarksRepo)
     }
 
+    private val contentsViewModel by lazyProvideViewModel {
+        ContentsViewModel(activityViewModel.bookmarksRepo)
+    }
+
     // ------ //
 
     private var _binding : FragmentBrowserBookmarksBinding? = null
@@ -88,9 +142,11 @@ class BookmarksFragment :
         ).apply {
             vm = viewModel
             bookmarksVM = bookmarksTabViewModel
+            contentsVM = contentsViewModel
             lifecycleOwner = viewLifecycleOwner
         }
 
+        contentsViewModel.onCreateView(viewLifecycleOwner, activityViewModel)
         initializeRecyclerView(binding)
         initializeBottomBar(binding)
 
@@ -256,15 +312,12 @@ class BookmarksFragment :
             recyclerView.addOnScrollListener(scrollingUpdater)
         }
 
-        activityViewModel.loadingBookmarksEntry.observe(viewLifecycleOwner) {
-            if (it == true) {
-                if (!binding.swipeLayout.isRefreshing) {
-                    bookmarksAdapter.submitList(null)
-                    binding.swipeLayout.isEnabled = false
-                    binding.progressBar.visibility = View.VISIBLE
-                }
+        contentsViewModel.loadingBookmarksEntry.observe(viewLifecycleOwner, Observer {
+            if (it == true && !binding.swipeLayout.isRefreshing) {
+                bookmarksAdapter.submitList(emptyList())
+                binding.swipeLayout.isEnabled = false
             }
-        }
+        })
 
         // スワイプしてブクマリストを更新する
         binding.swipeLayout.let { swipeLayout ->

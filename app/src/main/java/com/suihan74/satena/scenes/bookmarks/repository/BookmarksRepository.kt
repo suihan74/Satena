@@ -238,6 +238,21 @@ class BookmarksRepository(
 
     // ------ //
 
+    suspend fun clear() = withContext(Dispatchers.Main) {
+        loadingBookmarksEntryMutex.withLock {
+            loadingEntry.value = false
+            entry.value = null
+            bookmarksEntry.value = null
+            entryStarsEntry.value = null
+            bookmarksRecentCache = emptyList()
+            bookmarksDigestCache = null
+            popularBookmarks.value = null
+            recentBookmarks.value = null
+            allBookmarks.value = null
+            customBookmarks.value = null
+        }
+    }
+
     /**
      * URLを渡して必要な初期化を行う
      *

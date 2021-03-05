@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.browser.bookmarks.ConfirmationViewModel" />
+
+        <variable
+                name="frameFragment"
+                type="com.suihan74.satena.scenes.browser.bookmarks.BookmarksFrameFragment" />
+
+        <variable
+                name="browserVM"
+                type="com.suihan74.satena.scenes.browser.BrowserViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="24dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <TextView
+                android:id="@+id/titleTextView"
+                android:textSize="20sp"
+                android:text="@string/browser_bookmarks_confirmation_title"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/descriptionTextView"
+                android:text="@string/browser_bookmarks_confirmation_description"
+                android:textSize="14sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/urlTextView"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/urlTextView"
+                android:text="@{vm.url}"
+                app:layout_constraintTop_toBottomOf="@id/descriptionTextView"
+                app:layout_constraintBottom_toTopOf="@id/enterButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginVertical="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/enterButton"
+                android:text="@string/browser_bookmarks_confirmation_enter"
+                android:onClick="@{() -> vm.startBookmarksFragment(frameFragment, browserVM)}"
+                app:layout_constraintTop_toBottomOf="@id/urlTextView"
+                app:layout_constraintBottom_toTopOf="@id/checkBox"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <CheckBox
+                android:id="@+id/checkBox"
+                android:text="@string/browser_bookmarks_confirmation_not_show_again"
+                android:checked="@={vm.notShowAgain}"
+                app:layout_constraintTop_toBottomOf="@id/enterButton"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

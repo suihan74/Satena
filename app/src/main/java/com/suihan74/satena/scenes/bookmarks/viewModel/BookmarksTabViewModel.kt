@@ -32,10 +32,10 @@ class BookmarksTabViewModel(
     @MainThread
     fun setBookmarksLiveData(owner: LifecycleOwner, liveData: LiveData<List<Bookmark>>, tabType: BookmarksTabType) {
         bookmarks?.removeObservers(owner)
-        bookmarks = liveData.also {
-            it.observe(owner, Observer {
-                viewModelScope.launch {
-                    displayBookmarks.postValue(createDisplayBookmarks(it))
+        bookmarks = liveData.also { ld ->
+            ld.observe(owner, Observer { rawList ->
+                viewModelScope.launch(Dispatchers.Main) {
+                    displayBookmarks.value = rawList?.let { createDisplayBookmarks(it) } ?: emptyList()
                 }
             })
         }

@@ -39,9 +39,7 @@ import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.absoluteValue
 
@@ -78,11 +76,7 @@ class BrowserViewModel(
     val url = SingleUpdateMutableLiveData<String>().apply {
         observeForever {
             addressText.value = Uri.decode(it)
-            bookmarksRepo.bookmarksEntry.value = null
             isUrlFavorite.value = favoriteSitesRepo.contains(it)
-            viewModelScope.launch {
-                loadBookmarksEntry(it)
-            }
         }
     }
 
@@ -114,6 +108,9 @@ class BrowserViewModel(
     val useMarqueeOnBackStackItems : LiveData<Boolean> =
         browserRepo.useMarqueeOnBackStackItems
 
+    /** ブクマタブの内容を自動的にロードする */
+    val autoFetchBookmarks = browserRepo.autoFetchBookmarks
+
     /**
      * ひとつ前に表示していたURL
      *
@@ -141,14 +138,6 @@ class BrowserViewModel(
 
     /** 現在選択中のドロワタブ */
     val currentDrawerTab = SingleUpdateMutableLiveData<DrawerTab>()
-
-    // ------ //
-
-    /** ロード完了前にページ遷移した場合にロード処理を中断する */
-    private var loadBookmarksEntryJob : Job? = null
-
-    /** ローディング状態を通知する */
-    val loadingBookmarksEntry = MutableLiveData(false)
 
     // ------ //
 
@@ -614,15 +603,7 @@ class BrowserViewModel(
     /** ブクマ一覧画面を開く */
     private fun openBookmarksActivity(url: String, activity: BrowserActivity) {
         val intent = Intent(activity, BookmarksActivity::class.java).also {
-            val bEntry = bookmarksRepo.bookmarksEntry.value
-            val eid = bEntry?.id ?: 0L
-
-            if (url == this.url.value && eid > 0L) {
-                it.putExtra(BookmarksActivity.EXTRA_ENTRY_ID, eid)
-            }
-            else {
-                it.putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
-            }
+            it.putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
         }
         activity.startActivity(intent)
     }
@@ -708,22 +689,6 @@ class BrowserViewModel(
     }
 
     // ------ //
-
-    /** BookmarksEntryを更新 */
-    private suspend fun loadBookmarksEntry(url: String) = withContext(Dispatchers.Main) {
-        loadBookmarksEntryJob?.cancel()
-
-        if (URLUtil.isNetworkUrl(url)) {
-            loadingBookmarksEntry.value = true
-            loadBookmarksEntryJob = viewModelScope.launch(Dispatchers.Main) {
-                runCatching {
-                    bookmarksRepo.loadBookmarks(url)
-                }
-                loadBookmarksEntryJob = null
-                loadingBookmarksEntry.value = false
-            }
-        }
-    }
 
     /** アドレスバーの入力内容に沿ってページ遷移 */
     @MainThread

@@ -39,29 +39,31 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     // ------ //
 
-    val browserMode get() = browserRepo.browserMode
+    private val browserMode get() = browserRepo.browserMode
 
-    val startPage get() = browserRepo.startPage
+    private val startPage get() = browserRepo.startPage
 
-    val secretModeEnabled get() = browserRepo.privateBrowsingEnabled
+    private val secretModeEnabled get() = browserRepo.privateBrowsingEnabled
 
-    val javascriptEnabled get() = browserRepo.javascriptEnabled
+    private val javascriptEnabled get() = browserRepo.javascriptEnabled
 
-    val userAgent get() = browserRepo.userAgent
+    private val userAgent get() = browserRepo.userAgent
 
-    val useUrlBlock get() = browserRepo.useUrlBlocking
+    private val useUrlBlock get() = browserRepo.useUrlBlocking
 
-    val useBottomAppBar get() = browserRepo.useBottomAppBar
+    private val useBottomAppBar get() = browserRepo.useBottomAppBar
 
-    val webViewTheme get() = browserRepo.webViewTheme
+    private val webViewTheme get() = browserRepo.webViewTheme
 
-    val isForceDarkSupported get() = browserRepo.isForceDarkSupported
+    private val isForceDarkSupported get() = browserRepo.isForceDarkSupported
 
-    val isForceDarkStrategySupported get() =  browserRepo.isForceDarkStrategySupported
+    private val isForceDarkStrategySupported get() =  browserRepo.isForceDarkStrategySupported
 
-    val searchEngine get() = browserRepo.searchEngine
+    private val searchEngine get() = browserRepo.searchEngine
 
-    val useMarqueeOnBackStackItems get() = browserRepo.useMarqueeOnBackStackItems
+    private val useMarqueeOnBackStackItems get() = browserRepo.useMarqueeOnBackStackItems
+
+    private val autoFetchBookmarks get() = browserRepo.autoFetchBookmarks
 
     // ------ //
 
@@ -158,6 +160,11 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         addPrefItem(fragment, userAgent, R.string.pref_browser_user_agent_desc) {
             openUserAgentEditingDialog(fragmentManager)
         }
+
+        // --- //
+
+        addSection(R.string.pref_browser_section_bookmarks)
+        addPrefToggleItem(fragment, autoFetchBookmarks, R.string.pref_browser_auto_fetch_bookmarks_desc)
 
         // --- //
 

@@ -11,6 +11,10 @@
         <variable
                 name="bookmarksVM"
                 type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel" />
+
+        <variable
+                name="contentsVM"
+                type="com.suihan74.satena.scenes.browser.bookmarks.ContentsViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -42,6 +46,7 @@
                 app:layout_constraintStart_toStartOf="@id/swipe_layout"
                 app:layout_constraintEnd_toEndOf="@id/swipe_layout"
                 app:layout_constraintBottom_toBottomOf="@id/swipe_layout"
+                android:visibility="@{contentsVM.loadingBookmarksEntry}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 

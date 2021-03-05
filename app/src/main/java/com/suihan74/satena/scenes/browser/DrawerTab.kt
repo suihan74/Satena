@@ -4,7 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
-import com.suihan74.satena.scenes.browser.bookmarks.BookmarksFragment
+import com.suihan74.satena.scenes.browser.bookmarks.BookmarksFrameFragment
 import com.suihan74.satena.scenes.browser.history.HistoryFragment
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesFragment
 import com.suihan74.satena.scenes.preferences.pages.BrowserFragment
@@ -19,7 +19,7 @@ enum class DrawerTab(
     BOOKMARKS(0,
         R.drawable.ic_baseline_bookmark,
         R.string.browser_drawer_title_bookmarks,
-        { BookmarksFragment.createInstance() }
+        { BookmarksFrameFragment.createInstance() }
     ),
 
     FAVORITES(1,

@@ -96,6 +96,12 @@ class BrowserRepository(
             p.getBoolean(key)
         }
 
+    /** ブクマタブを自動的にロードする */
+    val autoFetchBookmarks =
+        createBrowserSettingsLiveData(BrowserSettingsKey.AUTO_FETCH_BOOKMARKS) { p, key ->
+            p.getBoolean(key)
+        }
+
     /** URLブロックを使用する */
     val useUrlBlocking =
         createBrowserSettingsLiveData(BrowserSettingsKey.USE_URL_BLOCKING) { p, key ->

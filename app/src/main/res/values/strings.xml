@@ -357,8 +357,9 @@
 
     <!-- 内部ブラウザ -->
     <string name="pref_browser_section_browser">ブラウザ</string>
-    <string name="pref_browser_section_features">機能</string>
     <string name="pref_browser_section_display">表示</string>
+    <string name="pref_browser_section_features">機能</string>
+    <string name="pref_browser_section_bookmarks">ブックマーク</string>
     <string name="pref_browser_section_refresh">キャッシュ・クッキー</string>
     <string name="pref_browser_section_optimize">最適化</string>
 
@@ -381,6 +382,7 @@
     <string name="pref_browser_search_engine_desc">アドレスバーで使用する検索エンジン</string>
     <string name="pref_browser_dialog_title_search_engine">検索エンジン</string>
     <string name="pref_browser_use_marquee_on_back_stack_items_desc">「戻る/進む」履歴項目のテキストが長い場合マーキーを使用する</string>
+    <string name="pref_browser_auto_fetch_bookmarks_desc">表示中ページのブクマ情報を自動的に読み込む</string>
 
     <string name="msg_browser_updating_start_page_succeeded">スタートページを更新しました</string>
     <string name="msg_browser_updating_start_page_failed">不正なURLです</string>
@@ -653,6 +655,11 @@
     <string name="msg_add_url_blocking_succeeded">URLブロック設定を追加しました</string>
     <string name="msg_url_blocked">既にブロックされています</string>
     <string name="msg_empty_url_blocking_pattern">パターンを入力してください</string>
+
+    <string name="browser_bookmarks_confirmation_title">確認</string>
+    <string name="browser_bookmarks_confirmation_description">表示中のページのURLまたはそのリダイレクト先URLをHatenaに送信してブックマーク情報を取得します。よろしいですか？</string>
+    <string name="browser_bookmarks_confirmation_enter">表示</string>
+    <string name="browser_bookmarks_confirmation_not_show_again">次回から自動で読み込む</string>
 
     <!-- エントリ画面からブラウザを開く際のショートカット選択ダイアログ -->
     <string name="dialog_browser_shortcut_title">アプリ内ブラウザを開く</string>

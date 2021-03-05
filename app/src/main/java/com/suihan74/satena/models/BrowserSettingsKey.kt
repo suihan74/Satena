@@ -41,6 +41,9 @@ enum class BrowserSettingsKey (
     /** 「戻る/進む」歴歴でマーキーを使用する */
     USE_MARQUEE_ON_BACK_STACK_ITEMS(typeInfo<Boolean>(), false),
 
+    /** 自動的にブクマ情報を取得する */
+    AUTO_FETCH_BOOKMARKS(typeInfo<Boolean>(), false),
+
     /** ブロックURL設定を使用する */
     USE_URL_BLOCKING(typeInfo<Boolean>(), true),
 
