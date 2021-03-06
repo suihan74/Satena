@@ -163,7 +163,9 @@ class BookmarkDetailFragment : Fragment() {
                 childFragmentManager
             ) {
                 viewModel.viewModelScope.launch {
-                    viewModel.updateList(DetailTabAdapter.TabType.STARS_TO_USER, forceUpdate = true)
+                    runCatching {
+                        viewModel.updateList(DetailTabAdapter.TabType.STARS_TO_USER, forceUpdate = true)
+                    }
                 }
             }
         }
