@@ -3,13 +3,11 @@ package com.suihan74.satena.scenes.entries2
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableBoolean
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.MaintenanceEntry
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FooterRecyclerViewBinding
 import com.suihan74.satena.databinding.ListviewItemMaintenanceEntries2Binding
 import com.suihan74.utilities.*
@@ -37,11 +35,9 @@ class InformationAdapter : ListAdapter<RecyclerState<InformationItem>, RecyclerV
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
             RecyclerType.BODY.id -> {
-                val binding = DataBindingUtil.inflate<ListviewItemMaintenanceEntries2Binding>(
-                    inflater,
-                    R.layout.listview_item_maintenance_entries_2, parent, false
-                )
-                binding.body.movementMethod = LinkMovementMethod.getInstance()
+                val binding = ListviewItemMaintenanceEntries2Binding.inflate(inflater, parent, false).also {
+                    it.body.movementMethod = LinkMovementMethod.getInstance()
+                }
                 ViewHolder(binding)
             }
 

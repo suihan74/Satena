@@ -8,10 +8,8 @@ import android.view.inputmethod.EditorInfo
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.core.view.isVisible
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserHistoryBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
@@ -30,6 +28,8 @@ class HistoryFragment :
         fun createInstance() = HistoryFragment()
     }
 
+    // ------ //
+
     private val browserActivity : BrowserActivity
         get() = requireActivity() as BrowserActivity
 
@@ -40,27 +40,26 @@ class HistoryFragment :
         HistoryViewModel(activityViewModel.historyRepo)
     }
 
-    private var binding: FragmentBrowserHistoryBinding? = null
+    // ------ //
+
+    private var _binding: FragmentBrowserHistoryBinding? = null
+    private val binding get() = _binding!!
 
     private var onBackPressedCallback : OnBackPressedCallback? = null
+
+    // ------ //
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentBrowserHistoryBinding>(
-            inflater,
-            R.layout.fragment_browser_history,
-            container,
-            false
-        ).also {
+        _binding = FragmentBrowserHistoryBinding.inflate(inflater, container, false).also {
             it.vm = viewModel.also { vm ->
                 vm.onCreateView(viewLifecycleOwner)
             }
             it.lifecycleOwner = viewLifecycleOwner
         }
-        this.binding = binding
 
         binding.recyclerView.let { recyclerView ->
             recyclerView.setHasFixedSize(true)
@@ -125,6 +124,13 @@ class HistoryFragment :
         return binding.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    // ------ //
+
     /** 戻るボタンで検索ボックスを閉じる */
     private fun enableOnBackPressedCallback() {
         onBackPressedCallback = browserActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
@@ -142,7 +148,7 @@ class HistoryFragment :
     // ------ //
 
     override fun scrollToTop() {
-        binding?.recyclerView?.scrollToPosition(0)
+        binding.recyclerView.scrollToPosition(0)
     }
 
     // ------ //

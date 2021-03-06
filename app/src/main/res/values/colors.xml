@@ -5,6 +5,10 @@
     <color name="colorPrimary">#2196F3</color>
     <color name="colorPrimaryDark">#1C79C4</color>
     <color name="colorPrimaryExDark">#2278BD</color>
+
+    <!-- ?attr/colorPrimaryDark のExDarkテーマ用の値 -->
+    <color name="colorPrimaryDarkExDark">#0B4F85</color>
+
     <color name="colorAccent">#D12841</color>
 
     <color name="disabledColor">#AAA</color>

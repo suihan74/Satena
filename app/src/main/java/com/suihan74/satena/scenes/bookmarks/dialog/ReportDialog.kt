@@ -7,7 +7,6 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -52,13 +51,7 @@ class ReportDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = localLayoutInflater()
-        val binding = DataBindingUtil.inflate<FragmentDialogReportBinding>(
-            inflater,
-            R.layout.fragment_dialog_report,
-            null,
-            false
-        ).also {
+        val binding = FragmentDialogReportBinding.inflate(localLayoutInflater(), null, false).also {
             it.vm = viewModel
             it.lifecycleOwner = parentFragment?.viewLifecycleOwner
             initialize(it)

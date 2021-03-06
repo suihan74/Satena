@@ -73,15 +73,10 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
-    }
-
     override fun onResume() {
         super.onResume()
 
-        binding?.entriesList?.adapter.alsoAs<NoticesAdapter> { adapter ->
+        entriesList.adapter.alsoAs<NoticesAdapter> { adapter ->
             adapter.onResume()
         }
     }

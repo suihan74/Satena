@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.text.style.ForegroundColorSpan
 import android.view.WindowManager
 import androidx.core.text.buildSpannedString
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -40,9 +39,8 @@ class UrlBlockingDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val titleViewBinding = DataBindingUtil.inflate<DialogTitleUrlBlockingBinding>(
+        val titleViewBinding = DialogTitleUrlBlockingBinding.inflate(
             localLayoutInflater(),
-            R.layout.dialog_title_url_blocking,
             null,
             false
         ).also {

@@ -121,6 +121,7 @@
     <!-- Extreme Dark Theme -->
     <style name="Base.AppTheme.ExDark">
         <item name="colorPrimary">@color/colorPrimaryExDark</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkExDark</item>
         <item name="android:windowBackground">@drawable/dialog_background_ex_dark</item>
 
         <!-- クリック時背景アニメーション色 -->
@@ -241,6 +242,7 @@
     <!-- Extreme Dark Theme -->
     <style name="Base.AppDialogTheme.ExDark">
         <item name="colorPrimary">@color/colorPrimaryExDark</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkExDark</item>
         <item name="panelBackground">@color/panelBackgroundExDark</item>
         <item name="tabBackground">@color/tabBackgroundExDark</item>
         <item name="textColor">@color/textColorExDark</item>

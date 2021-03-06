@@ -149,7 +149,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             else {
                 isIconified = false
                 // 画面遷移や回転ごとにキーボードを表示しないようにする
-                requireActivity().hideSoftInputMethod(fragment.binding?.contentLayout)
+                requireActivity().hideSoftInputMethod(fragment.contentLayout)
                 clearFocus()
             }
             viewModel.isSearchViewExpanded = !isIconified
@@ -162,7 +162,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
 
             if (!query.isNullOrBlank()) {
                 // 画面遷移や回転ごとにキーボードを表示しないようにする
-                requireActivity().hideSoftInputMethod(fragment.binding?.contentLayout)
+                requireActivity().hideSoftInputMethod(fragment.contentLayout)
                 clearFocus()
             }
             viewModel.isSearchViewExpanded = false
@@ -184,7 +184,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 setSubTitle(viewModel)
                 reloadLists()
-                requireActivity().hideSoftInputMethod(fragment.binding?.contentLayout)
+                requireActivity().hideSoftInputMethod(fragment.contentLayout)
                 return true
             }
         })

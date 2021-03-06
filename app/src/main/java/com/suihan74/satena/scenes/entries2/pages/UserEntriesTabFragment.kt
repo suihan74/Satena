@@ -57,7 +57,10 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         val scrollingUpdater = RecyclerViewScrollingUpdater {
             entriesAdapter.showProgressBar()
             viewModel.loadAdditional(
-                onFinally = { loadCompleted() },
+                onFinally = {
+                    entriesAdapter.hideProgressBar()
+                    loadCompleted()
+                },
                 onError = { e ->
                     context.showToast(R.string.msg_get_entry_failed)
                     Log.e("loadAdditional", Log.getStackTraceString(e))

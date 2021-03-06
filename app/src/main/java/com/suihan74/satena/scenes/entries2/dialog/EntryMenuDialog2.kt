@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.entries2.dialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -47,12 +46,7 @@ class EntryMenuDialog2 : DialogFragment() {
 
         val entry = viewModel.entry
 
-        val titleViewBinding = DataBindingUtil.inflate<DialogTitleEntry2Binding>(
-            inflater,
-            R.layout.dialog_title_entry2,
-            null,
-            false
-        ).also {
+        val titleViewBinding = DialogTitleEntry2Binding.inflate(inflater, null, false).also {
             it.title = entry.title
             it.url = entry.url
             it.rootUrl = entry.rootUrl

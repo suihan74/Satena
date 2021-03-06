@@ -4,7 +4,6 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -48,12 +47,7 @@ class NoticeMenuDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val notice = viewModel.notice
 
-        val titleViewBinding = DataBindingUtil.inflate<ListviewItemNotices2Binding>(
-            localLayoutInflater(),
-            R.layout.listview_item_notices2,
-            null,
-            false
-        ).also {
+        val titleViewBinding = ListviewItemNotices2Binding.inflate(localLayoutInflater(), null, false).also {
             it.notice = notice
             it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: requireActivity()
         }
@@ -131,12 +125,7 @@ class NoticeMenuDialog : DialogFragment() {
             val arguments = requireArguments()
             val user = arguments.getString(ARG_USER)!!
 
-            val titleViewBinding = DataBindingUtil.inflate<DialogTitleUserBinding>(
-                localLayoutInflater(),
-                R.layout.dialog_title_user,
-                null,
-                false
-            ).also {
+            val titleViewBinding = DialogTitleUserBinding.inflate(localLayoutInflater(), null, false).also {
                 it.userName = user
                 it.iconUrl = HatenaClient.getUserIconUrl(user)
             }

@@ -7,7 +7,6 @@ import android.transition.TransitionSet
 import android.view.*
 import androidx.activity.addCallback
 import androidx.core.app.ActivityCompat
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.hatenaLib.HatenaClient
@@ -71,12 +70,7 @@ class UrlBlockingFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentUrlBlockingBinding>(
-            inflater,
-            R.layout.fragment_url_blocking,
-            null,
-            false
-        ).also {
+        val binding = FragmentUrlBlockingBinding.inflate(inflater, container, false).also {
             it.vm = viewModel
             it.lifecycleOwner = viewLifecycleOwner
         }
