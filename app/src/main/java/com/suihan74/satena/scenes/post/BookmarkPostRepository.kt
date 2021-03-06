@@ -28,14 +28,49 @@ class BookmarkPostRepository(
 
         /** 同時使用可能な最大タグ個数 */
         const val MAX_TAGS_COUNT = 10
+
+        /** (単数の)タグを表現する正規表現 */
+        private val tagRegex = Regex("""\[[^%/:\[\]]+]""")
+
+        /**
+         * 生文字列からコメント長を計算する
+         *
+         * 外部から分かる限りサーバ側での判定に極力近づけているが完璧である保証はない
+         * タグは判定外で、その他部分はバイト数から判定している模様
+         */
+        fun calcCommentLength(commentRaw: String) : Int =
+            ceil(commentRaw.replace(tagRegex, "").sumBy { c ->
+                val code = c.toInt()
+                when (code / 0xff) {
+                    0 -> 1
+                    1 -> if (code <= 0xc3bf) 1 else 3
+                    else -> 3
+                }
+            } / 3f).toInt()
+
+        /**
+         * コメント長が制限内か確認する
+         *
+         * @return 投稿可能 (文字列長が制限以内)
+         */
+        fun checkCommentLength(commentRaw: String) : Boolean =
+            calcCommentLength(commentRaw) <= MAX_COMMENT_LENGTH
+
+        /**
+         * 使用タグ数が制限内か確認する
+         *
+         * @return 投稿可能 (タグ数が制限以内)
+         */
+        fun checkTagsCount(commentRaw: String) : Boolean {
+            val matches = tagRegex.findAll(commentRaw)
+            return matches.count() <= MAX_TAGS_COUNT
+        }
     }
 
     /** ダイアログテーマ */
     val themeId = Theme.dialogActivityThemeId(prefs)
 
     val entry = MutableLiveData<Entry>()
-
-    val bookmarksEntry = MutableLiveData<BookmarksEntry>()
 
     /** はてなのユーザー名 */
     var userName : String = ""
@@ -250,11 +285,8 @@ class BookmarkPostRepository(
             }
 
             else -> {
-                val matches = tagRegex.findAll(tagsText)
-
-                // タグは10個まで
-                if (matches.count() == MAX_TAGS_COUNT) {
-                    throw TooManyTagsException()
+                if (!checkTagsCount(tagsText)) {
+                    throw TooManyTagsException(MAX_TAGS_COUNT)
                 }
 
                 buildString {
@@ -269,9 +301,6 @@ class BookmarkPostRepository(
     }
 
     // ------ //
-
-    /** (単数の)タグを表現する正規表現 */
-    private val tagRegex = Regex("""\[[^%/:\[\]]+]""")
 
     /** コメントのタグ部分全体を表現する正規表現 */
     private val tagsRegex by lazy { Regex("""^(\[[^%/:\[\]]*])+""") }
@@ -294,14 +323,13 @@ class BookmarkPostRepository(
         }
 
         // コメント長チェック
-        if (calcCommentLength(editData.comment) > MAX_COMMENT_LENGTH) {
-            throw CommentTooLongException()
+        if (!checkCommentLength(editData.comment)) {
+            throw CommentTooLongException(MAX_COMMENT_LENGTH)
         }
 
         // タグ個数チェック
-        val matches = tagRegex.findAll(editData.comment)
-        if (matches.count() > MAX_TAGS_COUNT) {
-            throw TooManyTagsException()
+        if (!checkTagsCount(editData.comment)) {
+            throw TooManyTagsException(MAX_TAGS_COUNT)
         }
 
         // 連携状態を保存
@@ -351,22 +379,6 @@ class BookmarkPostRepository(
 
         return@withContext bookmarkResult
     }
-
-    /**
-     * 生文字列からコメント長を計算する
-     *
-     * 外部から分かる限りサーバ側での判定に極力近づけているが完璧である保証はない
-     * タグは判定外で、その他部分はバイト数から判定している模様
-     */
-    fun calcCommentLength(commentRaw: String) : Int =
-        ceil(commentRaw.replace(tagRegex, "").sumBy { c ->
-            val code = c.toInt()
-            when (code / 0xff) {
-                0 -> 1
-                1 -> if (code <= 0xc3bf) 1 else 3
-                else -> 3
-            }
-        } / 3f).toInt()
 
     /** タグ部分の終了位置を取得する */
     fun getTagsEnd(s: CharSequence?) : Int {

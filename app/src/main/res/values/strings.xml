@@ -463,7 +463,7 @@
     <string name="hint_twitter_toggle">Twitterに投稿します</string>
     <string name="hint_facebook_toggle">Facebookに投稿します</string>
     <string name="hint_private_toggle">非公開でブクマします</string>
-    <string name="msg_post_too_many_tags">使用できるタグは最大10個です</string>
+    <string name="msg_post_too_many_tags">使用できるタグは最大%d個です</string>
     <string name="msg_fetch_tags_failed">タグリストを取得できませんでした</string>
     <string name="msg_hatena_not_signed_in">はてなアカウントが登録されていません</string>
     <string name="msg_need_to_sign_in_hatena">ブックマーク機能使用にはサインインが必要です</string>

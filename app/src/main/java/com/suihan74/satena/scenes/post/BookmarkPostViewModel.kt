@@ -54,7 +54,7 @@ class BookmarkPostViewModel(
     val comment = MutableLiveData<String>("").also {
         // コメントが変化したら文字数を計算し直す
         it.observeForever { comment ->
-            commentLength.value = repository.calcCommentLength(comment)
+            commentLength.value = BookmarkPostRepository.calcCommentLength(comment)
         }
     }
 
@@ -255,11 +255,14 @@ class BookmarkPostViewModel(
                 is CommentTooLongException ->
                     context.showToast(
                         R.string.msg_comment_too_long,
-                        BookmarkPostRepository.MAX_COMMENT_LENGTH
+                        e.limitLength
                     )
 
                 is TooManyTagsException ->
-                    context.showToast(R.string.msg_post_too_many_tags)
+                    context.showToast(
+                        R.string.msg_post_too_many_tags,
+                        e.limitCount
+                    )
 
                 else -> {
                     context.showToast(R.string.msg_post_bookmark_failed)

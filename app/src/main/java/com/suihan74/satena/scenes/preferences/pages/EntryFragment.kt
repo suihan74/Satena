@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsBottomItemsBinding
 import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.dialogs.TextInputDialogFragment
@@ -16,10 +17,12 @@ import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.EntriesTabType
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
+import com.suihan74.satena.scenes.post.BookmarkPostRepository
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.satena.scenes.preferences.bottomBar.BottomBarItemSelectionDialog
 import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import com.suihan74.utilities.showAllowingStateLoss
@@ -409,6 +412,26 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             hintId = R.string.pref_entries_read_action_boilerplate_hint,
             initialValue = entryReadActionBoilerPlate.value
         )
+
+        dialog.setValidator {
+            if (!BookmarkPostRepository.checkTagsCount(it)) {
+                SatenaApplication.instance.showToast(
+                    R.string.msg_post_too_many_tags,
+                    BookmarkPostRepository.MAX_TAGS_COUNT
+                )
+                return@setValidator false
+            }
+
+            if (!BookmarkPostRepository.checkCommentLength(it)) {
+                SatenaApplication.instance.showToast(
+                    R.string.msg_comment_too_long,
+                    BookmarkPostRepository.MAX_COMMENT_LENGTH
+                )
+                return@setValidator false
+            }
+
+            return@setValidator true
+        }
 
         dialog.setOnCompleteListener {
             entryReadActionBoilerPlate.value = it
