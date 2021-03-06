@@ -8,7 +8,6 @@ import android.view.MenuItem
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.MenuItemCompat
 import androidx.databinding.BindingAdapter
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ViewUserBottomItemsSetterBinding
@@ -68,12 +67,7 @@ class UserBottomItemsSetter : CoordinatorLayout {
         attrs: AttributeSet?,
         defStyleInt: Int
     ) : super(context, attrs, defStyleInt) {
-        binding = DataBindingUtil.inflate(
-            LayoutInflater.from(context),
-            R.layout.view_user_bottom_items_setter,
-            this,
-            true
-        )
+        binding = ViewUserBottomItemsSetterBinding.inflate(LayoutInflater.from(context), this, true)
     }
 
     /** バインド */

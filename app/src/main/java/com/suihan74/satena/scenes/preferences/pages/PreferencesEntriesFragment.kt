@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.databinding.BindingAdapter
-import androidx.databinding.DataBindingUtil
 import androidx.databinding.InverseMethod
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -42,14 +41,9 @@ class PreferencesEntriesFragment : PreferencesFragmentBase() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentPreferencesEntriesBinding>(
-            inflater,
-            R.layout.fragment_preferences_entries,
-            container,
-            false
-        ).apply {
-            vm = viewModel
-            lifecycleOwner = viewLifecycleOwner
+        val binding = FragmentPreferencesEntriesBinding.inflate(inflater, container, false).also {
+            it.vm = viewModel
+            it.lifecycleOwner = viewLifecycleOwner
         }
 
         val tapActions = TapEntryAction.values().map { it.titleId }

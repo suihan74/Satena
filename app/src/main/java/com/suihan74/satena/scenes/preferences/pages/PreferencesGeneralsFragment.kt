@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ToggleButton
 import androidx.databinding.BindingAdapter
-import androidx.databinding.DataBindingUtil
 import androidx.databinding.InverseBindingAdapter
 import androidx.lifecycle.Observer
 import com.suihan74.satena.R
@@ -62,12 +61,7 @@ class PreferencesGeneralsFragment : PreferencesFragmentBase() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentPreferencesGeneralsBinding>(
-            inflater,
-            R.layout.fragment_preferences_generals,
-            container,
-            false
-        ).apply {
+        val binding = FragmentPreferencesGeneralsBinding.inflate(inflater, container, false).apply {
             vm = viewModel
             lifecycleOwner = viewLifecycleOwner
         }

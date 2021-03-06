@@ -5,10 +5,8 @@ import android.text.style.AbsoluteSizeSpan
 import android.view.LayoutInflater
 import android.widget.PopupWindow
 import androidx.core.text.buildSpannedString
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
 import com.suihan74.hatenaLib.Keyword
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.PopupHatenaKeywordBinding
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.append
@@ -21,21 +19,15 @@ class HatenaKeywordPopup(
     data: List<Keyword>? = null
 ) : PopupWindow(context, null, 0) {
 
-    private var binding : PopupHatenaKeywordBinding
+    private val binding : PopupHatenaKeywordBinding
 
     // ------ //
 
     init {
         val inflater = LayoutInflater.from(context)
-        val binding = DataBindingUtil.inflate<PopupHatenaKeywordBinding>(
-            inflater,
-            R.layout.popup_hatena_keyword,
-            null,
-            false
-        ).also {
+        binding = PopupHatenaKeywordBinding.inflate(inflater, null, false).also {
             it.lifecycleOwner = context as? LifecycleOwner
         }
-        this.binding = binding
 
         if (data != null) {
             setData(data)

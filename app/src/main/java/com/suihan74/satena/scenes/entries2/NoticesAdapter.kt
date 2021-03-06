@@ -2,12 +2,10 @@ package com.suihan74.satena.scenes.entries2
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.Notice
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FooterRecyclerViewBinding
 import com.suihan74.satena.databinding.ListviewItemNotices2Binding
 import com.suihan74.utilities.*
@@ -39,10 +37,7 @@ class NoticesAdapter : ListAdapter<RecyclerState<Notice>, RecyclerView.ViewHolde
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
             RecyclerType.BODY.id -> {
-                val binding = DataBindingUtil.inflate<ListviewItemNotices2Binding>(
-                    inflater,
-                    R.layout.listview_item_notices2, parent, false
-                )
+                val binding = ListviewItemNotices2Binding.inflate(inflater, parent, false)
                 ViewHolder(binding)
             }
 

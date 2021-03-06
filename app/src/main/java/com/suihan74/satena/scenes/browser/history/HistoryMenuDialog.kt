@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.browser.history
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -34,12 +33,7 @@ class HistoryMenuDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         // カスタムタイトルを生成
-        val titleViewBinding = DataBindingUtil.inflate<DialogTitleEntry2Binding>(
-            localLayoutInflater(),
-            R.layout.dialog_title_entry2,
-            null,
-            false
-        ).also {
+        val titleViewBinding = DialogTitleEntry2Binding.inflate(localLayoutInflater(), null, false).also {
             val history = viewModel.targetSite
             val page = history.page
             it.title = page.title

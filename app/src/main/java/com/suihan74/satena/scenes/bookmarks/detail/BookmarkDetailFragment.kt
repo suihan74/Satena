@@ -7,7 +7,6 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
 import androidx.activity.addCallback
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
@@ -87,12 +86,7 @@ class BookmarkDetailFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentBookmarkDetail3Binding>(
-            inflater,
-            R.layout.fragment_bookmark_detail3,
-            container,
-            false
-        ).also {
+        val binding = FragmentBookmarkDetail3Binding.inflate(inflater, container, false).also {
             it.vm = viewModel
             it.bookmarksViewModel = bookmarksViewModel
             it.lifecycleOwner = viewLifecycleOwner

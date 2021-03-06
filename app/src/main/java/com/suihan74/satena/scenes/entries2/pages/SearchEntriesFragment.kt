@@ -190,7 +190,7 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
 
                 reloadLists()
 
-                requireActivity().hideSoftInputMethod(fragment.binding?.contentLayout)
+                requireActivity().hideSoftInputMethod(fragment.contentLayout)
                 return true
             }
         })
@@ -204,7 +204,7 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         }
         else {
             // 初回遷移時などの未入力状態以外の場合は自動的にキーボードを表示しないようにする
-            requireActivity().hideSoftInputMethod(fragment.binding?.contentLayout)
+            requireActivity().hideSoftInputMethod(fragment.contentLayout)
             clearFocus()
         }
 

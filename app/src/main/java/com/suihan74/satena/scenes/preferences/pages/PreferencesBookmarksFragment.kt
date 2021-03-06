@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.databinding.BindingAdapter
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesBookmarksBinding
@@ -44,14 +43,9 @@ class PreferencesBookmarksFragment : PreferencesFragmentBase() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentPreferencesBookmarksBinding>(
-            inflater,
-            R.layout.fragment_preferences_bookmarks,
-            container,
-            false
-        ).apply {
-            vm = viewModel
-            lifecycleOwner = viewLifecycleOwner
+        val binding = FragmentPreferencesBookmarksBinding.inflate(inflater, container, false).also {
+            it.vm = viewModel
+            it.lifecycleOwner = viewLifecycleOwner
         }
 
         // 最初に表示するタブ
