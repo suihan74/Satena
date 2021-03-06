@@ -82,9 +82,10 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
                 lifecycleScope.launch(Dispatchers.Main) {
                     runCatching {
                         bookmarkDetailViewModel.updateList(tabType, forceUpdate = true)
-                    }
-                    .onFailure {
-                        showToast(R.string.msg_update_stars_failed)
+                    }.onFailure {
+                        lifecycleScope.launch(Dispatchers.Main) {
+                            showToast(R.string.msg_update_stars_failed)
+                        }
                     }
                     isRefreshing = false
                 }
