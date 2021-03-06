@@ -864,7 +864,9 @@ class BookmarksRepository(
             }.map {
                 it.getBookmarkUrl(entry)
             }
-            loadStarsEntries(bookmarkUrls)
+            runCatching {
+                loadStarsEntries(bookmarkUrls)
+            }
         }
     }
 
@@ -878,7 +880,9 @@ class BookmarksRepository(
             }.map {
                 it.getBookmarkUrl(entry)
             }
-            loadStarsEntries(bookmarkUrls)
+            runCatching {
+                loadStarsEntries(bookmarkUrls)
+            }
         }
     }
 
@@ -1070,20 +1074,28 @@ class BookmarksRepository(
         }
     }
 
-    /** 指定ブクマのユーザーがつけたスターとブクマを取得する */
+    /**
+     * 指定ブクマのユーザーがつけたスターとブクマを取得する
+     *
+     * @throws TaskFailureException
+     */
     suspend fun getStarRelationsFrom(
         bookmark: Bookmark,
         forceUpdate: Boolean = false
     ) : List<StarRelation> = withContext(Dispatchers.Default) {
         if (forceUpdate) {
-            entry.value?.let { entry ->
-                bookmarksEntry.value?.bookmarks
-                    ?.filter { it.comment.isNotBlank() }
-                    ?.map {
-                        it.getBookmarkUrl(entry)
-                    }?.let { urls ->
-                        loadStarsEntries(urls, forceUpdate = true)
-                    }
+            runCatching {
+                entry.value?.let { entry ->
+                    bookmarksEntry.value?.bookmarks
+                        ?.filter { it.comment.isNotBlank() }
+                        ?.map {
+                            it.getBookmarkUrl(entry)
+                        }?.let { urls ->
+                            loadStarsEntries(urls, forceUpdate = true)
+                        }
+                }
+            }.onFailure {
+                throw TaskFailureException(cause = it)
             }
         }
 

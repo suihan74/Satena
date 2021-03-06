@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -71,14 +70,9 @@ class PreferencesBrowserFragment :
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate<FragmentPreferencesBrowserBinding>(
-            inflater,
-            R.layout.fragment_preferences_browser,
-            container,
-            false
-        ).apply {
-            vm = viewModel
-            lifecycleOwner = viewLifecycleOwner
+        binding = FragmentPreferencesBrowserBinding.inflate(inflater, container, false).also {
+            it.vm = viewModel
+            it.lifecycleOwner = viewLifecycleOwner
         }
 
         // ブラウザ画面から開かれている場合、

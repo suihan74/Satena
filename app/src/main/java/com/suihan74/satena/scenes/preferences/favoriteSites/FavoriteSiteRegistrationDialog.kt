@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.webkit.URLUtil
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -74,12 +73,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = localLayoutInflater()
-        val binding = DataBindingUtil.inflate<DialogFavoriteSiteRegistrationBinding>(
-            inflater,
-            R.layout.dialog_favorite_site_registration,
-            null,
-            false
-        ).also {
+        val binding = DialogFavoriteSiteRegistrationBinding.inflate(inflater, null, false).also {
             it.lifecycleOwner = activity
             it.vm = viewModel
         }

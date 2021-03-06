@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -61,7 +60,11 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         }
     }
 
-    protected var binding : FragmentEntriesTab2Binding? = null
+    private var _binding : FragmentEntriesTab2Binding? = null
+    private val binding get() = _binding!!
+
+    protected val entriesList : RecyclerView
+        get() = binding.entriesList
 
     /** 親のEntriesFragmentのViewModel */
     protected val parentViewModel : EntriesFragmentViewModel?
@@ -86,11 +89,10 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val binding = DataBindingUtil.inflate<FragmentEntriesTab2Binding>(inflater, R.layout.fragment_entries_tab2, container, false).apply {
-            lifecycleOwner = this@EntriesTabFragmentBase
-            vm = viewModel
+        _binding = FragmentEntriesTab2Binding.inflate(inflater, container, false).also {
+            it.lifecycleOwner = viewLifecycleOwner
+            it.vm = viewModel
         }
-        this.binding = binding
 
         // 通信状態の変更を監視
         // リスト未ロード状態なら再試行する
@@ -107,7 +109,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        binding = null
+        _binding = null
     }
 
     override fun onResume() {
@@ -120,14 +122,14 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             viewModel.reloadLists(onError = onErrorRefreshEntries)
         }
 
-        binding?.entriesList?.adapter.alsoAs<EntriesAdapter> {
+        binding.entriesList.adapter.alsoAs<EntriesAdapter> {
             it.onResume()
         }
     }
 
     /** エントリ項目用のリスナを設定する */
     private fun setEntriesAdapterListeners() {
-        val adapter = binding?.entriesList?.adapter as? EntriesAdapter ?: return
+        val adapter = binding.entriesList.adapter as? EntriesAdapter ?: return
 
         adapter.multipleClickDuration = activityViewModel.entryMultipleClickDuration
 
@@ -156,7 +158,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     /** エントリリストを再取得する */
     fun reload() {
-        binding?.entriesList?.adapter.alsoAs<EntriesAdapter> {
+        binding.entriesList.adapter.alsoAs<EntriesAdapter> {
             it.clearEntries {
                 viewModel.reloadLists(onError = onErrorRefreshEntries)
             }
@@ -180,7 +182,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     /** リストを上端までスクロールする */
     override fun scrollToTop() {
-        binding?.entriesList?.scrollToPosition(0)
+        binding.entriesList.scrollToPosition(0)
     }
 }
 

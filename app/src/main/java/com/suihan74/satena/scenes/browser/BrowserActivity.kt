@@ -8,7 +8,6 @@ import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
-import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
@@ -97,14 +96,11 @@ class BrowserActivity :
 
         setTheme(viewModel.themeId)
 
-        val binding = DataBindingUtil.setContentView<ActivityBrowserBinding>(
-            this,
-            R.layout.activity_browser
-        ).apply {
-            vm = viewModel
-            lifecycleOwner = this@BrowserActivity
+        binding = ActivityBrowserBinding.inflate(layoutInflater).also {
+            it.vm = viewModel
+            it.lifecycleOwner = this@BrowserActivity
         }
-        this.binding = binding
+        setContentView(binding.root)
 
         // ドロワの設定
         initializeDrawer()

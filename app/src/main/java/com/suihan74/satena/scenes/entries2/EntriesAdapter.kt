@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.entries2
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
@@ -11,7 +10,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FooterRecyclerViewLoadableBinding
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
 import com.suihan74.utilities.*
@@ -86,10 +84,7 @@ class EntriesAdapter(
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
             RecyclerType.BODY.id -> {
-                val binding = DataBindingUtil.inflate<ListviewItemEntries2Binding>(
-                    inflater,
-                    R.layout.listview_item_entries2, parent, false
-                ).also {
+                val binding = ListviewItemEntries2Binding.inflate(inflater, parent, false).also {
                     it.lifecycleOwner = lifecycleOwner
                 }
                 ViewHolder(binding)

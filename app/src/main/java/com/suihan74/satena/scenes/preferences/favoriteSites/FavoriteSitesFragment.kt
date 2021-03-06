@@ -4,10 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentBrowserFavoritesBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
@@ -46,23 +44,18 @@ class FavoriteSitesFragment :
         )
     }
 
-    private var binding : FragmentBrowserFavoritesBinding? = null
+    private var _binding : FragmentBrowserFavoritesBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentBrowserFavoritesBinding>(
-            inflater,
-            R.layout.fragment_browser_favorites,
-            container,
-            false
-        ).also {
+        _binding = FragmentBrowserFavoritesBinding.inflate(inflater, container, false).also {
             it.vm = viewModel
             it.lifecycleOwner = viewLifecycleOwner
         }
-        this.binding = binding
 
         binding.recyclerView.adapter = FavoriteSitesAdapter(viewLifecycleOwner).also {
             it.setOnClickItemListener { binding ->
@@ -97,7 +90,12 @@ class FavoriteSitesFragment :
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     override fun scrollToTop() {
-        binding?.recyclerView?.scrollToPosition(0)
+        binding.recyclerView.scrollToPosition(0)
     }
 }

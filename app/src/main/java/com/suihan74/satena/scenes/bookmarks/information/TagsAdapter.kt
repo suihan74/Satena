@@ -1,13 +1,11 @@
 package com.suihan74.satena.scenes.bookmarks.information
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.suihan74.satena.R
+import com.suihan74.satena.databinding.ListviewItemTagsBinding
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.alsoAs
 
@@ -32,19 +30,20 @@ class TagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     // ------ //
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val inflate = LayoutInflater.from(parent.context).inflate(R.layout.listview_item_tags, parent, false)
-        val holder =
-            ViewHolder(inflate)
+        val binding = ListviewItemTagsBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return ViewHolder(binding).also { vh ->
+            vh.itemView.setOnClickListener {
+                onItemClicked?.invoke(vh.tag)
+            }
 
-        holder.itemView.setOnClickListener {
-            onItemClicked?.invoke(holder.tag)
+            vh.itemView.setOnLongClickListener {
+                onItemLongClicked?.invoke(vh.tag) != null
+            }
         }
-
-        holder.itemView.setOnLongClickListener {
-            onItemLongClicked?.invoke(holder.tag) != null
-        }
-
-        return holder
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -78,12 +77,11 @@ class TagsAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     // ------ //
 
     /** タグアイテム */
-    class ViewHolder(view : View) : RecyclerView.ViewHolder(view) {
-        private val tagTextView = view.findViewById<TextView>(R.id.text)!!
+    class ViewHolder(val binding : ListviewItemTagsBinding) : RecyclerView.ViewHolder(binding.root) {
         var tag : String
-            get() = tagTextView.text.toString()
+            get() = binding.text.text.toString()
             internal set (value) {
-                tagTextView.text = value
+                binding.text.text = value
             }
     }
 

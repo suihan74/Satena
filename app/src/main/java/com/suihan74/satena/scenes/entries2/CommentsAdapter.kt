@@ -2,10 +2,8 @@ package com.suihan74.satena.scenes.entries2
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.hatenaLib.BookmarkResult
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemComments2Binding
 import com.suihan74.utilities.ItemClickedListener
 import com.suihan74.utilities.ItemLongClickedListener
@@ -33,10 +31,7 @@ class CommentsAdapter : RecyclerView.Adapter<CommentsAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val binding = DataBindingUtil.inflate<ListviewItemComments2Binding>(
-            inflater,
-            R.layout.listview_item_comments2, parent, false
-        )
+        val binding = ListviewItemComments2Binding.inflate(inflater, parent, false)
         return ViewHolder(binding)
     }
 

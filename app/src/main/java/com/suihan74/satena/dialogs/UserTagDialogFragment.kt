@@ -3,7 +3,6 @@ package com.suihan74.satena.dialogs
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -38,12 +37,7 @@ class UserTagDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = localLayoutInflater()
-        val binding = DataBindingUtil.inflate<FragmentDialogUserTagBinding>(
-            inflater,
-            R.layout.fragment_dialog_user_tag,
-            null,
-            false
-        ).also {
+        val binding = FragmentDialogUserTagBinding.inflate(inflater, null, false).also {
             it.vm = viewModel
             it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: activity
         }

@@ -13,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.updateLayoutParams
-import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
@@ -147,14 +146,11 @@ class EntriesActivity : AppCompatActivity() {
             }
         )
 
-        // データバインディング
-        binding = DataBindingUtil.setContentView<ActivityEntries2Binding>(
-            this,
-            R.layout.activity_entries2
-        ).apply {
-            lifecycleOwner = this@EntriesActivity
-            vm = viewModel
+        binding = ActivityEntries2Binding.inflate(layoutInflater).also {
+            it.vm = viewModel
+            it.lifecycleOwner = this
         }
+        setContentView(binding.root)
 
         // カテゴリリスト初期化
         binding.categoriesList.adapter = CategoriesAdapter().apply {
