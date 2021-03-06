@@ -70,30 +70,22 @@ class BookmarkDetailViewModel(
     /**
      * ブクマにつけられたスター
      */
-    val starsToUser by lazy {
-        MutableLiveData<List<StarRelation>>()
-    }
+    val starsToUser = MutableLiveData<List<StarRelation>>()
 
     /**
      * ブクマのユーザーがつけたスター
      */
-    val starsFromUser by lazy {
-        MutableLiveData<List<StarRelation>>()
-    }
+    val starsFromUser = MutableLiveData<List<StarRelation>>()
 
     /**
      * ブクマに言及している他のブクマ
      */
-    val mentionsToUser by lazy {
-        MutableLiveData<List<StarRelation>>()
-    }
+    val mentionsToUser = MutableLiveData<List<StarRelation>>()
 
     /**
      * ブクマが言及している他のブクマ
      */
-    val mentionsFromUser by lazy {
-        MutableLiveData<List<StarRelation>>()
-    }
+    val mentionsFromUser = MutableLiveData<List<StarRelation>>()
 
     // ------ //
 
@@ -101,6 +93,8 @@ class BookmarkDetailViewModel(
         this._bookmark.value = bookmark
         viewModelScope.launch {
             runCatching {
+                updateList(DetailTabAdapter.TabType.STARS_TO_USER)
+                updateList(DetailTabAdapter.TabType.STARS_FROM_USER)
                 updateList(DetailTabAdapter.TabType.MENTION_TO_USER)
                 updateList(DetailTabAdapter.TabType.MENTION_FROM_USER)
             }
