@@ -98,6 +98,8 @@ interface StarRepositoryInterface {
 
     /**
      * 渡された全URLに対するスター情報を取得し内部にキャッシュする
+     *
+     * @throws ConnectionFailureException
      */
     suspend fun loadStarsEntries(urls: List<String>, forceUpdate: Boolean = false)
 
@@ -330,6 +332,8 @@ class StarRepository(
 
     /**
      * 渡された全URLに対するスター情報を取得し内部にキャッシュする
+     *
+     * @throws ConnectionFailureException
      */
     override suspend fun loadStarsEntries(urls: List<String>, forceUpdate: Boolean) {
         starsEntriesLock.withLock {
@@ -339,9 +343,11 @@ class StarRepository(
 
             val result = runCatching {
                 client.getStarsEntryAsync(targetUrls).await()
+            }.onFailure {
+                throw ConnectionFailureException(cause = it)
             }
 
-            val entries = result.getOrElse { return }
+            val entries = result.getOrNull()!!
 
             entries.forEach { entry ->
                 val liveData = withContext(Dispatchers.Main) {
