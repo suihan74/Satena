@@ -19,6 +19,9 @@ import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 /**
@@ -136,20 +139,34 @@ class BookmarkViewModel(
 
     val signedInFacebook = MutableLiveData<Boolean>()
 
+    /** はてなアカウントの認証状態 */
+    val signedInHatena = MutableLiveData(
+        prefs.contains(PreferenceKey.HATENA_RK)
+    )
+
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
         super.onCreateView(fragment)
 
-        viewModelScope.launch(Dispatchers.Main.immediate) {
+        combine(accountLoader.hatenaFlow, accountLoader.mastodonFlow, ::Pair)
+            .onEach { (hatena, mastodon) ->
+                val previousSignedInHatena = signedInHatena.value
+                signedInHatena.value = hatena != null
+                signedInMastodon.value = mastodon?.isLocked == false
+                signedInTwitter.value = hatena?.isOAuthTwitter ?: false
+                signedInFacebook.value = hatena?.isOAuthFaceBook ?: false
+                // はてなのアカウントが解除されたら投稿に関するメニューを隠す
+                if (previousSignedInHatena != null && previousSignedInHatena != signedInHatena.value) {
+                    load(fragment)
+                }
+            }
+            .launchIn(viewModelScope)
+
+        viewModelScope.launch {
             // 連携SNS情報を取得
             runCatching {
-                val mastodonAccount = accountLoader.signInMastodonAsync(reSignIn = false).await()
-                signedInMastodon.value = mastodonAccount?.isLocked == false
-
-                val hatenaAccount = accountLoader.signInHatenaAsync(reSignIn = false).await()
-                signedInTwitter.value = hatenaAccount?.isOAuthTwitter ?: false
-                signedInFacebook.value = hatenaAccount?.isOAuthFaceBook ?: false
+                accountLoader.signInAccounts(reSignIn = false)
             }.onFailure {
                 fragment.lifecycleScope.launch(Dispatchers.Main) {
                     fragment.showToast(R.string.msg_pref_bookmarks_fetching_accounts_failed)
@@ -168,7 +185,7 @@ class BookmarkViewModel(
     override fun createList(fragment: ListPreferencesFragment): List<PreferencesAdapter.Item> = buildList {
         val fragmentManager = fragment.childFragmentManager
 
-        if (prefs.contains(PreferenceKey.HATENA_RK)) {
+        if (signedInHatena.value == true) {
             addSection(R.string.pref_bookmark_section_posting)
             addPrefToggleItem(fragment, confirmPostBookmark, R.string.pref_bookmarks_using_post_dialog_desc)
             addPrefToggleItem(fragment, saveAccountStates, R.string.pref_bookmarks_save_states)
