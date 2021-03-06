@@ -157,7 +157,9 @@ class BookmarksViewModel(
 
     init {
         viewModelScope.launch {
-            repository.signIn()
+            runCatching {
+                repository.signIn()
+            }
         }
     }
 
