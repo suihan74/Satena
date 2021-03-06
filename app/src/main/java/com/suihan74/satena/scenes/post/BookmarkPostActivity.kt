@@ -144,6 +144,8 @@ class BookmarkPostActivity :
 
     /** キャンセル時には編集情報を返す */
     private fun setCancelResult() {
+        bookmarkPostViewModel.onCancel()
+
         val intent = Intent().also {
             it.putObjectExtra(RESULT_ENTRY, bookmarkPostViewModel.entry.value)
             it.putObjectExtra(RESULT_EDIT_DATA, bookmarkPostViewModel.editData)

@@ -50,6 +50,14 @@ class BookmarkPostRepository(
     /** Facebookアカウントが紐づいているか否か */
     val signedInFacebook = MutableLiveData<Boolean>()
 
+    val private = MutableLiveData(false)
+
+    val postTwitter = MutableLiveData(false)
+
+    val postMastodon = MutableLiveData(false)
+
+    val postFacebook = MutableLiveData(false)
+
     /** 使用したことがあるタグのリスト */
     val tags = MutableLiveData<List<Tag>>()
 
@@ -65,28 +73,42 @@ class BookmarkPostRepository(
 
     // ------ //
 
-    /** 初期化 */
-    @Throws(
-        AccountLoader.HatenaSignInException::class,
-        AccountLoader.MastodonSignInException::class,
-    )
+    /**
+     * 初期化
+     *
+     * @throws AccountLoader.HatenaSignInException
+     * @throws AccountLoader.MastodonSignInException
+     */
     suspend fun initialize(entry: Entry) = withContext(Dispatchers.Main) {
         this@BookmarkPostRepository.entry.value = entry
         signIn()
+
+        if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
+            private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_LAST_CHECKED)
+        }
+        else {
+            private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED)
+        }
     }
 
     /**
      * 初期化
      *
      * URLからエントリ情報を作成する
+     *
+     * @throws AccountLoader.HatenaSignInException
+     * @throws AccountLoader.MastodonSignInException
+     * @throws ConnectionFailureException
      */
-    @Throws(
-        AccountLoader.HatenaSignInException::class,
-        AccountLoader.MastodonSignInException::class,
-        ConnectionFailureException::class
-    )
     suspend fun initialize(url: String) = withContext(Dispatchers.Main) {
         signIn()
+
+        if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
+            private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_LAST_CHECKED)
+        }
+        else {
+            private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED)
+        }
 
         val result = runCatching {
             val modifiedUrl = modifySpecificUrls(url) ?: throw ConnectionFailureException()
@@ -98,12 +120,13 @@ class BookmarkPostRepository(
         }
     }
 
-    /** はてなにサインインし、成功したらMastodonにもサインインを行う */
-    @Throws(
-        AccountLoader.HatenaSignInException::class,
-        AccountLoader.MastodonSignInException::class
-    )
-    suspend fun signIn() = withContext(Dispatchers.Default) {
+    /**
+     * はてなにサインインし、成功したらMastodonにもサインインを行う
+     *
+     * @throws AccountLoader.HatenaSignInException
+     * @throws AccountLoader.MastodonSignInException
+     */
+    private suspend fun signIn() = withContext(Dispatchers.Main) {
         val result = runCatching {
             accountLoader.signInHatenaAsync(reSignIn = false).await()!!
         }
@@ -113,8 +136,24 @@ class BookmarkPostRepository(
                 throw AccountLoader.HatenaSignInException()
             }
             userName = hatenaAccount.name
-            signedInTwitter.postValue(hatenaAccount.isOAuthTwitter)
-            signedInFacebook.postValue(hatenaAccount.isOAuthFaceBook)
+
+            val isTwitterActive = hatenaAccount.isOAuthTwitter
+            val isFacebookActive = hatenaAccount.isOAuthFaceBook
+            signedInTwitter.value = isTwitterActive
+            signedInFacebook.value = isFacebookActive
+
+            if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
+                postTwitter.value =
+                    isTwitterActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_TWITTER_LAST_CHECKED)
+                postFacebook.value =
+                    isFacebookActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_FACEBOOK_LAST_CHECKED)
+            }
+            else {
+                postTwitter.value =
+                    isTwitterActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_TWITTER_DEFAULT_CHECKED)
+                postFacebook.value =
+                    isFacebookActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_FACEBOOK_DEFAULT_CHECKED)
+            }
 
             signInMastodon()
         }
@@ -126,18 +165,29 @@ class BookmarkPostRepository(
         }
     }
 
-    /** Mastodonにサインインする */
-    @Throws(
-        AccountLoader.MastodonSignInException::class
-    )
-    suspend fun signInMastodon() {
+    /**
+     * Mastodonにサインインする
+     *
+     * @throws AccountLoader.MastodonSignInException
+     */
+    private suspend fun signInMastodon() = withContext(Dispatchers.Main) {
         val result = runCatching {
             accountLoader.signInMastodonAsync(reSignIn = false).await()
         }
 
         if (result.isSuccess) {
             val mstdnAccount = accountLoader.mastodonClientHolder.account
-            signedInMastodon.postValue(mstdnAccount?.isLocked == false)
+            val isMastodonActive = mstdnAccount?.isLocked == false
+            signedInMastodon.value = isMastodonActive
+
+            if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
+                postMastodon.value =
+                    isMastodonActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_MASTODON_LAST_CHECKED)
+            }
+            else {
+                postMastodon.value =
+                    isMastodonActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_MASTODON_DEFAULT_CHECKED)
+            }
         }
         else {
             throw result.exceptionOrNull() as? AccountLoader.MastodonSignInException
@@ -147,10 +197,11 @@ class BookmarkPostRepository(
 
     // ------ //
 
-    /** 使用したことがあるタグリストを取得する */
-    @Throws(
-        ConnectionFailureException::class
-    )
+    /**
+     * 使用したことがあるタグリストを取得する
+     *
+     * @throws ConnectionFailureException
+     */
     suspend fun loadTags() = withContext(Dispatchers.Default) {
         if (!tags.value.isNullOrEmpty()) {
             return@withContext
@@ -175,10 +226,9 @@ class BookmarkPostRepository(
 
     /**
      * 現在のコメントにタグを挿入/削除したものを返す
+     *
+     * @throws TooManyTagsException
      */
-    @Throws(
-        TooManyTagsException::class
-    )
     fun toggleTag(prevComment: String, tag: String) : String {
         val tagText = "[$tag]"
 
@@ -221,24 +271,20 @@ class BookmarkPostRepository(
     // ------ //
 
     /** (単数の)タグを表現する正規表現 */
-    val tagRegex = Regex("""\[[^%/:\[\]]+]""")
+    private val tagRegex = Regex("""\[[^%/:\[\]]+]""")
 
     /** コメントのタグ部分全体を表現する正規表現 */
-    val tagsRegex by lazy { Regex("""^(\[[^%/:\[\]]*])+""") }
+    private val tagsRegex by lazy { Regex("""^(\[[^%/:\[\]]*])+""") }
 
-    /** ブクマを投稿する */
-    @Throws(
-        // URLが不正
-        InvalidUrlException::class,
-        // コメント長すぎ
-        CommentTooLongException::class,
-        // タグが多すぎ
-        TooManyTagsException::class,
-        // はてなへのブクマ投稿処理中での失敗
-        ConnectionFailureException::class,
-        // Mastodonへの投稿失敗(ブクマは自体は成功)
-        PostingMastodonFailureException::class
-    )
+    /**
+     * ブクマを投稿する
+     *
+     * @throws InvalidUrlException URLが不正
+     * @throws CommentTooLongException コメント長すぎ
+     * @throws TooManyTagsException タグが多すぎ
+     * @throws ConnectionFailureException はてなへのブクマ投稿処理中での失敗
+     * @throws PostingMastodonFailureException Mastodonへの投稿失敗(ブクマは自体は成功)
+     */
     suspend fun postBookmark(editData: BookmarkEditData) : BookmarkResult = withContext(Dispatchers.Default) {
         val entry = editData.entry
 
@@ -257,6 +303,9 @@ class BookmarkPostRepository(
         if (matches.count() > MAX_TAGS_COUNT) {
             throw TooManyTagsException()
         }
+
+        // 連携状態を保存
+        saveStates()
 
         val result = runCatching {
             accountLoader.signInHatenaAsync(reSignIn = false).await()
@@ -323,5 +372,19 @@ class BookmarkPostRepository(
     fun getTagsEnd(s: CharSequence?) : Int {
         val results = tagsRegex.find(s ?: "")
         return results?.value?.length ?: 0
+    }
+
+    // ------ //
+
+    /**
+     * 連携状態を保存する
+     */
+    fun saveStates() {
+        prefs.edit {
+            putBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_LAST_CHECKED, private.value ?: false)
+            putBoolean(PreferenceKey.POST_BOOKMARK_TWITTER_LAST_CHECKED, postTwitter.value ?: false)
+            putBoolean(PreferenceKey.POST_BOOKMARK_FACEBOOK_LAST_CHECKED, postFacebook.value ?: false)
+            putBoolean(PreferenceKey.POST_BOOKMARK_MASTODON_LAST_CHECKED, postMastodon.value ?: false)
+        }
     }
 }

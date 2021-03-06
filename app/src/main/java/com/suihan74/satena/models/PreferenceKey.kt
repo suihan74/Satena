@@ -160,6 +160,33 @@ enum class PreferenceKey(
     /** ブクマ登録前に確認ダイアログを表示する */
     USING_POST_BOOKMARK_DIALOG(typeInfo<Boolean>(), true),
 
+    /** 最後に開いた投稿ダイアログでの各種状態を引き継ぐ */
+    POST_BOOKMARK_SAVE_STATES(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのTwitter連携状態 */
+    POST_BOOKMARK_TWITTER_LAST_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのMastodon連携状態 */
+    POST_BOOKMARK_MASTODON_LAST_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのFacebook連携状態 */
+    POST_BOOKMARK_FACEBOOK_LAST_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのプライベート選択状態 */
+    POST_BOOKMARK_PRIVATE_LAST_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのTwitter連携状態 */
+    POST_BOOKMARK_TWITTER_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのMastodon連携状態 */
+    POST_BOOKMARK_MASTODON_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのFacebook連携状態 */
+    POST_BOOKMARK_FACEBOOK_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのプライベート選択状態 */
+    POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
+
     /** 最初に表示するタブ */
     BOOKMARKS_INITIAL_TAB(typeInfo<Int>(), BookmarksTabType.POPULAR.ordinal),
 

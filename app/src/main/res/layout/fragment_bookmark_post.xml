@@ -119,7 +119,7 @@
                     <ToggleButton
                             android:id="@+id/post_mastodon_toggle"
                             android:checked="@={vm.postMastodon}"
-                            android:visibility="@{vm.signedInMastodon ? View.VISIBLE : View.GONE}"
+                            android:visibility="@{vm.signedInMastodon}"
                             android:enabled="@{!vm.private}"
                             android:foreground="@drawable/ic_mstdn_logo"
                             android:foregroundTint="@color/post_dialog_toggle_button"
@@ -134,7 +134,7 @@
                     <ToggleButton
                             android:id="@+id/post_twitter_toggle"
                             android:checked="@={vm.postTwitter}"
-                            android:visibility="@{vm.signedInTwitter ? View.VISIBLE : View.GONE}"
+                            android:visibility="@{vm.signedInTwitter}"
                             android:enabled="@{!vm.private}"
                             android:foreground="@drawable/ic_twitter_logo"
                             android:foregroundTint="@color/post_dialog_toggle_button"
@@ -149,7 +149,7 @@
                     <ToggleButton
                             android:id="@+id/post_facebook_toggle"
                             android:checked="@={vm.postFacebook}"
-                            android:visibility="@{vm.signedInFacebook ? View.VISIBLE : View.GONE}"
+                            android:visibility="@{vm.signedInFacebook}"
                             android:enabled="@{!vm.private}"
                             android:foreground="@drawable/toggle_button_post_facebook"
                             android:background="?selectableItemBackgroundBorderless"

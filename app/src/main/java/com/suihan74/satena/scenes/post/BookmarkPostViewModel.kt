@@ -40,13 +40,13 @@ class BookmarkPostViewModel(
 
     val entry = repository.entry
 
-    val private = MutableLiveData<Boolean>(false)
+    val private = repository.private
 
-    val postTwitter = MutableLiveData<Boolean>(false)
+    val postTwitter = repository.postTwitter
 
-    val postMastodon = MutableLiveData<Boolean>(false)
+    val postMastodon = repository.postMastodon
 
-    val postFacebook = MutableLiveData<Boolean>(false)
+    val postFacebook = repository.postFacebook
 
     /** コメント長 */
     val commentLength = MutableLiveData(0)
@@ -59,16 +59,13 @@ class BookmarkPostViewModel(
     }
 
     /** Twitterアカウントが紐づいているか否か */
-    val signedInTwitter
-        get() = repository.signedInTwitter
+    val signedInTwitter = repository.signedInTwitter
 
     /** Mastodonアカウントが紐づいているか否か */
-    val signedInMastodon
-        get() = repository.signedInMastodon
+    val signedInMastodon = repository.signedInMastodon
 
     /** Facebookアカウントが紐づいているか否か */
-    val signedInFacebook
-        get() = repository.signedInFacebook
+    val signedInFacebook = repository.signedInFacebook
 
     /**
      * 読み込み・投稿処理中の操作防止のために使用
@@ -188,6 +185,13 @@ class BookmarkPostViewModel(
         if (loadTagsResult.isFailure) {
             context.showToast(R.string.msg_fetch_tags_failed)
         }
+    }
+
+    // ------ //
+
+    /** 投稿をキャンセルして閉じたときの処理 */
+    fun onCancel() {
+        repository.saveStates()
     }
 
     // ------ //
