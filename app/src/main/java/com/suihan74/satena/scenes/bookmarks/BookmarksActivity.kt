@@ -82,6 +82,8 @@ class BookmarksActivity :
         binding = ActivityBookmarksBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        bookmarksViewModel.onCreate(this)
+
         if (savedInstanceState == null) {
             // コンテンツフラグメントを生成
             supportFragmentManager.beginTransaction()

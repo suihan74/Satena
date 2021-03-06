@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
@@ -35,12 +34,7 @@ class PreferencesIgnoredUsersFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentPreferencesIgnoredUsersBinding>(
-            inflater,
-            R.layout.fragment_preferences_ignored_users,
-            container,
-            false
-        ).also {
+        val binding = FragmentPreferencesIgnoredUsersBinding.inflate(inflater, container, false).also {
             it.vm = viewModel
             it.lifecycleOwner = viewLifecycleOwner
         }

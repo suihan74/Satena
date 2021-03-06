@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.BindingAdapter
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
@@ -59,7 +58,8 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
     val tabType: DetailTabAdapter.TabType
         get() = viewModel.tabType
 
-    private var binding : FragmentStarRelationsTabBinding? = null
+    private var _binding : FragmentStarRelationsTabBinding? = null
+    private val binding get() = _binding!!
 
     // ------ //
 
@@ -68,17 +68,11 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentStarRelationsTabBinding>(
-            inflater,
-            R.layout.fragment_star_relations_tab,
-            container,
-            false
-        ).also {
+        _binding = FragmentStarRelationsTabBinding.inflate(inflater, container, false).also {
             it.vm = bookmarkDetailViewModel
             it.tabType = tabType
             it.lifecycleOwner = viewLifecycleOwner
         }
-        this.binding = binding
 
         binding.swipeLayout.run {
             val context = requireContext()
@@ -88,9 +82,10 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
                 lifecycleScope.launch(Dispatchers.Main) {
                     runCatching {
                         bookmarkDetailViewModel.updateList(tabType, forceUpdate = true)
-                    }
-                    .onFailure {
-                        showToast(R.string.msg_update_stars_failed)
+                    }.onFailure {
+                        lifecycleScope.launch(Dispatchers.Main) {
+                            showToast(R.string.msg_update_stars_failed)
+                        }
                     }
                     isRefreshing = false
                 }
@@ -116,11 +111,11 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        binding = null
+        _binding = null
     }
 
     override fun scrollToTop() {
-        binding?.recyclerView?.scrollToPosition(0)
+        binding.recyclerView.scrollToPosition(0)
     }
 
     // ------ //

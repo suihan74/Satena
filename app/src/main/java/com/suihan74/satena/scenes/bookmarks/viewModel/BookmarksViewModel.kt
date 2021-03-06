@@ -104,6 +104,9 @@ class BookmarksViewModel(
     /** 途中で中断されたブコメ編集内容 */
     var editData : BookmarkEditData? = null
 
+    /** すべての操作を停止した状態で行うロード中 */
+    val staticLoading = MutableLiveData<Boolean>()
+
     // ------ //
 
     /**
@@ -156,10 +159,16 @@ class BookmarksViewModel(
 
     // ------ //
 
-    init {
+    fun onCreate(owner: LifecycleOwner) {
         viewModelScope.launch {
-            repository.signIn()
+            runCatching {
+                repository.signIn()
+            }
         }
+
+        repository.loadingEntry.observe(owner, Observer {
+            staticLoading.value = it
+        })
     }
 
     fun loadEntryFromIntent(
@@ -246,9 +255,14 @@ class BookmarksViewModel(
         )
 
         activity.lifecycleScope.launch(Dispatchers.Main) {
+            // 読込中表示
+            staticLoading.value = true
+
             val result = runCatching {
                 entryLoader()
             }
+
+            staticLoading.value = false
 
             val entry = result.getOrElse {
                 activity.showToast(R.string.msg_get_entry_failed)

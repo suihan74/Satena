@@ -33,6 +33,9 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     private val entriesTabAdapter : EntriesTabAdapter
         get() = entriesTabPager.adapter as EntriesTabAdapter
 
+    protected val contentLayout : ViewGroup
+        get() = binding.contentLayout
+
     // ------ //
 
     override fun onCreateView(
@@ -42,12 +45,7 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        _binding = DataBindingUtil.inflate<FragmentEntries2Binding>(
-            inflater,
-            R.layout.fragment_entries2,
-            container,
-            false
-        ).apply {
+        _binding = FragmentEntries2Binding.inflate(inflater, container, false).apply {
             lifecycleOwner = this@MultipleTabsEntriesFragment
             vm = viewModel
         }

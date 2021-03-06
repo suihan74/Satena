@@ -8,12 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntryInformation3Binding
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
@@ -31,10 +29,10 @@ class EntryInformationFragment : Fragment() {
 
     // ------ //
 
-    val bookmarksActivity
+    private val bookmarksActivity
         get() = requireActivity() as BookmarksActivity
 
-    val bookmarksViewModel: BookmarksViewModel
+    private val bookmarksViewModel: BookmarksViewModel
         get() = bookmarksActivity.bookmarksViewModel
 
     // ------ //
@@ -43,13 +41,8 @@ class EntryInformationFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val binding = DataBindingUtil.inflate<FragmentEntryInformation3Binding>(
-            inflater,
-            R.layout.fragment_entry_information3,
-            container,
-            false
-        ).also {
+    ): View {
+        val binding = FragmentEntryInformation3Binding.inflate(inflater, container, false).also {
             it.vm = bookmarksViewModel
             it.lifecycleOwner = viewLifecycleOwner
         }

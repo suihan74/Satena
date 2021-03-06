@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toolbar
 import androidx.appcompat.widget.TooltipCompat
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ToolbarBrowserBinding
@@ -64,12 +63,7 @@ class BrowserToolbar @JvmOverloads constructor(
         this.binding?.unbind()
 
         val inflater = LayoutInflater.from(context)
-        val binding = DataBindingUtil.inflate<ToolbarBrowserBinding>(
-            inflater,
-            R.layout.toolbar_browser,
-            parent,
-            attachToParent
-        ).also {
+        val binding = ToolbarBrowserBinding.inflate(inflater, parent, attachToParent).also {
             it.vm = viewModel
             it.lifecycleOwner = lifecycleOwner
         }

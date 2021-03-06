@@ -7,11 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarkPostBinding
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.BrowserActivity
@@ -61,14 +59,9 @@ class BookmarkPostFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = DataBindingUtil.inflate<FragmentBookmarkPostBinding>(
-            inflater,
-            R.layout.fragment_bookmark_post,
-            container,
-            false
-        ).apply {
-            vm = viewModel
-            lifecycleOwner = viewLifecycleOwner
+        val binding = FragmentBookmarkPostBinding.inflate(inflater, container, false).also {
+            it.vm = viewModel
+            it.lifecycleOwner = viewLifecycleOwner
         }
 
         binding.postButton.setOnClickListener {
