@@ -317,8 +317,11 @@
     <string name="pref_bookmark_section_ignoring">非表示</string>
     <string name="pref_bookmark_section_link">リンク</string>
 
-    <string name="pref_bookmarks_save_states">前回のSNS連携状態を引き継ぐ</string>
+    <string name="pref_bookmarks_save_states">前回の投稿設定を引き継ぐ</string>
+    <string name="pref_bookmarks_default_accounts_states">デフォルトの投稿設定</string>
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
+    <string name="msg_pref_bookmarks_fetching_accounts_failed">連携SNS情報取得失敗</string>
+
     <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>
     <string name="pref_bookmarks_hiding_buttons_with_scrolling_desc">スクロールにあわせて画面下部のボタンを隠す</string>
     <string name="pref_bookmarks_showing_ignored_users_in_all_bookmarks_desc">「すべて」タブでは非表示対象を表示する</string>

@@ -1,27 +1,43 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.content.Context
+import androidx.annotation.StringRes
+import androidx.databinding.ViewDataBinding
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.databinding.ListviewItemPrefsPostBookmarkAccountStatesBinding
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
-import com.suihan74.satena.scenes.preferences.PreferencesAdapter
-import com.suihan74.satena.scenes.preferences.addPrefItem
-import com.suihan74.satena.scenes.preferences.addPrefToggleItem
-import com.suihan74.satena.scenes.preferences.addSection
+import com.suihan74.satena.scenes.preferences.*
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.alsoAs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * 「ブックマーク」画面
  */
 class BookmarkFragment : ListPreferencesFragment() {
     override val viewModel by lazy {
-        BookmarkViewModel(requireContext())
+        BookmarkViewModel(
+            requireContext(),
+            SatenaApplication.instance.accountLoader
+        )
     }
 }
 
 // ------ //
 
-class BookmarkViewModel(context: Context) : ListPreferencesViewModel(context) {
+class BookmarkViewModel(
+    context: Context,
+    private val accountLoader: AccountLoader
+) : ListPreferencesViewModel(context) {
     /** 最初に表示するタブのindex */
     private val initialTabPosition = createLiveDataEnum(
         PreferenceKey.BOOKMARKS_INITIAL_TAB,
@@ -93,15 +109,82 @@ class BookmarkViewModel(context: Context) : ListPreferencesViewModel(context) {
         PreferenceKey.POST_BOOKMARK_SAVE_STATES
     )
 
+    /** プライベート投稿するかのデフォルト設定 */
+    val defaultPrivatePost = createLiveData<Boolean>(
+        PreferenceKey.POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED
+    )
+
+    /** Mastodonに連携投稿するかのデフォルト設定 */
+    val defaultPostMastodon = createLiveData<Boolean>(
+        PreferenceKey.POST_BOOKMARK_MASTODON_DEFAULT_CHECKED
+    )
+
+    /** Twitterに連携投稿するかのデフォルト設定 */
+    val defaultPostTwitter = createLiveData<Boolean>(
+        PreferenceKey.POST_BOOKMARK_TWITTER_DEFAULT_CHECKED
+    )
+
+    /** Facebookに連携投稿するかのデフォルト設定 */
+    val defaultPostFacebook = createLiveData<Boolean>(
+        PreferenceKey.POST_BOOKMARK_FACEBOOK_DEFAULT_CHECKED
+    )
+
+    val signedInMastodon = MutableLiveData<Boolean>()
+
+    val signedInTwitter = MutableLiveData<Boolean>()
+
+    val signedInFacebook = MutableLiveData<Boolean>()
+
+    // ------ //
+
+    override fun onCreateView(fragment: ListPreferencesFragment) {
+        super.onCreateView(fragment)
+
+        viewModelScope.launch(Dispatchers.Main.immediate) {
+            // 連携SNS情報を取得
+            runCatching {
+                val mastodonAccount = accountLoader.signInMastodonAsync(reSignIn = false).await()
+                signedInMastodon.value = mastodonAccount?.isLocked == false
+
+                val hatenaAccount = accountLoader.signInHatenaAsync(reSignIn = false).await()
+                signedInTwitter.value = hatenaAccount?.isOAuthTwitter ?: false
+                signedInFacebook.value = hatenaAccount?.isOAuthFaceBook ?: false
+            }.onFailure {
+                fragment.lifecycleScope.launch(Dispatchers.Main) {
+                    fragment.showToast(R.string.msg_pref_bookmarks_fetching_accounts_failed)
+                }
+            }
+        }
+
+        var saveAccountStatesInitialObserved = false
+        saveAccountStates.observe(fragment.viewLifecycleOwner, {
+            if (saveAccountStatesInitialObserved) {
+                load(fragment)
+            }
+            saveAccountStatesInitialObserved = true
+        })
+    }
+
     // ------ //
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun createList(fragment: ListPreferencesFragment): List<PreferencesAdapter.Item> = buildList {
         val fragmentManager = fragment.childFragmentManager
 
-        addSection(R.string.pref_bookmark_section_posting)
-        addPrefToggleItem(fragment, confirmPostBookmark, R.string.pref_bookmarks_using_post_dialog_desc)
-        addPrefToggleItem(fragment, saveAccountStates, R.string.pref_bookmarks_save_states)
+        if (prefs.contains(PreferenceKey.HATENA_RK)) {
+            addSection(R.string.pref_bookmark_section_posting)
+            addPrefToggleItem(fragment, confirmPostBookmark, R.string.pref_bookmarks_using_post_dialog_desc)
+            addPrefToggleItem(fragment, saveAccountStates, R.string.pref_bookmarks_save_states)
+            if (saveAccountStates.value == false) {
+                add(
+                    PrefItemAccountStatesSetter(
+                        R.string.pref_bookmarks_default_accounts_states,
+                        this@BookmarkViewModel,
+                        fragmentManager
+                    )
+                )
+            }
+        }
 
         addSection(R.string.pref_bookmark_section_tab)
         addPrefItem(fragment, initialTabPosition, R.string.pref_bookmarks_initial_tab_desc) {
@@ -148,5 +231,36 @@ class BookmarkViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
+    }
+
+    // ------ //
+
+    /**
+     * 連携アカウントのデフォルト選択状態を編集する
+     */
+    class PrefItemAccountStatesSetter(
+        @StringRes private val titleId : Int,
+        private val viewModel : BookmarkViewModel,
+        private val fragmentManager: FragmentManager
+    ) : PreferencesAdapter.Item {
+        override val layoutId: Int
+            get() = R.layout.listview_item_prefs_post_bookmark_account_states
+
+        override fun bind(binding: ViewDataBinding) {
+            binding.alsoAs<ListviewItemPrefsPostBookmarkAccountStatesBinding> {
+                it.vm = viewModel
+                it.titleId = titleId
+            }
+        }
+
+        override fun areItemsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is PrefItemAccountStatesSetter && new is PrefItemAccountStatesSetter &&
+                    old.titleId == new.titleId
+
+        override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
+            old is PrefItemAccountStatesSetter && new is PrefItemAccountStatesSetter &&
+                    old.fragmentManager == new.fragmentManager &&
+                    old.titleId == new.titleId &&
+                    old.viewModel == new.viewModel
     }
 }
