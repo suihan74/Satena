@@ -21,6 +21,7 @@ import com.suihan74.satena.scenes.preferences.bottomBar.BottomBarItemSelectionDi
 import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -168,11 +169,11 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         })
 
         // ボトムバー設定項目の表示を切り替える
-        bottomLayoutMode.observe(owner, {
+        bottomLayoutMode.observe(owner, observerForOnlyUpdates {
             load(fragment)
         })
         // 「読んだ」したときの定型文編集ビューを表示切替え
-        entryReadActionType.observe(owner, {
+        entryReadActionType.observe(owner, observerForOnlyUpdates {
             load(fragment)
         })
     }

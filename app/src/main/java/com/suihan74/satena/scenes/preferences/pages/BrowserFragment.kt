@@ -17,6 +17,7 @@ import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.satena.scenes.preferences.browser.UrlBlockingFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import com.suihan74.utilities.extensions.whenFalse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -91,7 +92,7 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         val owner = fragment.viewLifecycleOwner
 
-        browserMode.observe(owner, {
+        browserMode.observe(owner, observerForOnlyUpdates {
             load(fragment)
         })
     }

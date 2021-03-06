@@ -17,6 +17,7 @@ import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -156,12 +157,8 @@ class BookmarkViewModel(
             }
         }
 
-        var saveAccountStatesInitialObserved = false
-        saveAccountStates.observe(fragment.viewLifecycleOwner, {
-            if (saveAccountStatesInitialObserved) {
-                load(fragment)
-            }
-            saveAccountStatesInitialObserved = true
+        saveAccountStates.observe(fragment.viewLifecycleOwner, observerForOnlyUpdates {
+            load(fragment)
         })
     }
 
