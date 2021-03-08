@@ -26,117 +26,121 @@
                 android:orientation="vertical"
                 android:id="@+id/bookmark_detail_layout">
 
-            <com.google.android.material.appbar.AppBarLayout
-                    android:id="@+id/appbar_layout"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/target_bookmark_area"
                     android:background="?bookmarkDetailTopBackground"
                     android:elevation="6dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                <LinearLayout
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                <ImageView
+                        android:id="@+id/user_icon"
+                        src="@{vm.bookmark.userIconUrl}"
+                        android:contentDescription="@null"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/user_name"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"/>
 
-                    <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                <ImageView
+                        android:id="@+id/ignored_user_mark"
+                        android:contentDescription="@string/ignored_user"
+                        android:visibility="@{vm.ignored}"
+                        app:tooltipText="@{@string/ignored_user}"
+                        app:srcCompat="@drawable/bookmark_detail_ignored_user_mark"
+                        app:layout_constraintBottom_toBottomOf="@id/user_icon"
+                        app:layout_constraintEnd_toEndOf="@id/user_icon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"/>
 
-                        <ImageView
-                                android:id="@+id/user_icon"
-                                src="@{vm.bookmark.userIconUrl}"
-                                android:contentDescription="@null"
-                                android:layout_marginStart="16dp"
-                                android:layout_marginTop="16dp"
-                                android:layout_marginBottom="16dp"
-                                android:layout_width="64dp"
-                                android:layout_height="64dp"/>
+                <TextView
+                        android:id="@+id/user_name"
+                        userName="@{vm.bookmark.user}"
+                        userTags="@{vm.userTags}"
 
-                        <ImageView
-                                android:id="@+id/ignored_user_mark"
-                                android:contentDescription="@null"
-                                android:visibility="@{vm.ignored}"
-                                app:srcCompat="@drawable/ic_ignored_user_mark"
-                                app:tint="?attr/tagTextColor"
-                                android:layout_below="@id/user_icon"
-                                android:layout_alignStart="@id/user_icon"
-                                android:layout_marginTop="-12dp"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"/>
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:singleLine="true"
+                        android:ellipsize="end"
 
-                        <TextView
-                                android:id="@+id/user_name"
-                                userName="@{vm.bookmark.user}"
-                                userTags="@{vm.userTags}"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="16dp"
+                        app:layout_constraintTop_toTopOf="@id/user_icon"
+                        app:layout_constraintStart_toEndOf="@id/user_icon"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"/>
 
-                                android:textStyle="bold"
-                                android:textSize="16sp"
-                                android:singleLine="true"
-                                android:ellipsize="end"
+                <com.suihan74.utilities.views.SelectableTextView
+                        android:id="@+id/comment"
+                        comment="@{vm.bookmark}"
+                        android:visibility="@{vm.bookmark.comment}"
+                        onLinkClick="@{bookmarksViewModel.onLinkClicked}"
+                        onLinkLongClick="@{bookmarksViewModel.onLinkLongClicked}"
+                        onEntryIdClick="@{bookmarksViewModel.onEntryIdClicked}"
+                        onEntryIdLongClick="@{bookmarksViewModel.onEntryIdLongClicked}"
 
-                                android:layout_marginStart="10dp"
-                                android:layout_marginEnd="16dp"
-                                android:layout_alignTop="@id/user_icon"
-                                android:layout_toEndOf="@id/user_icon"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"/>
+                        android:textSize="14sp"
+                        android:textIsSelectable="true"
 
-                        <com.suihan74.utilities.views.SelectableTextView
-                                android:id="@+id/comment"
-                                comment="@{vm.bookmark}"
-                                onLinkClick="@{bookmarksViewModel.onLinkClicked}"
-                                onLinkLongClick="@{bookmarksViewModel.onLinkLongClicked}"
-                                onEntryIdClick="@{bookmarksViewModel.onEntryIdClicked}"
-                                onEntryIdLongClick="@{bookmarksViewModel.onEntryIdLongClicked}"
+                        android:minHeight="43dp"
+                        app:layout_constraintTop_toBottomOf="@id/user_name"
+                        app:layout_constraintStart_toStartOf="@id/user_name"
+                        app:layout_constraintEnd_toEndOf="@id/user_name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" />
 
-                                android:textSize="14sp"
-                                android:textIsSelectable="true"
+                <TextView
+                        android:id="@+id/tags"
+                        tagLinks="@{vm.bookmark}"
+                        onTagClick="@{bookmarksViewModel.onTagClicked}"
+                        android:textSize="14sp"
+                        android:textColor="?attr/tagTextColor"
+                        android:textColorLink="?attr/tagTextColor"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:layout_marginEnd="4dp"
+                        app:layout_constraintTop_toBottomOf="@id/comment"
+                        app:layout_constraintBottom_toTopOf="@id/tab_layout"
+                        app:layout_constraintVertical_bias="0"
+                        app:layout_constraintStart_toStartOf="@id/user_name"
+                        app:layout_constraintEnd_toStartOf="@id/menu_button"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintHorizontal_bias="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"/>
 
-                                android:minHeight="43dp"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_below="@id/user_name"
-                                android:layout_alignStart="@id/user_name"
-                                android:layout_alignEnd="@id/user_name"/>
+                <ImageButton
+                        android:id="@+id/menu_button"
+                        android:contentDescription="@null"
+                        app:srcCompat="@drawable/ic_more_horiz"
+                        app:tint="?attr/textColor"
+                        android:background="@drawable/control_background_40dp_material"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginBottom="6dp"
+                        app:layout_constraintTop_toBottomOf="@id/comment"
+                        app:layout_constraintBottom_toTopOf="@id/tab_layout"
+                        app:layout_constraintVertical_bias="0"
+                        app:layout_constraintStart_toEndOf="@id/tags"
+                        app:layout_constraintEnd_toEndOf="@id/user_name"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"/>
 
-                        <TextView
-                                android:id="@+id/tags"
-                                tagLinks="@{vm.bookmark}"
-                                onTagClick="@{bookmarksViewModel.onTagClicked}"
-                                android:textSize="14sp"
-                                android:textColor="?attr/tagTextColor"
-                                android:textColorLink="?attr/tagTextColor"
-                                android:layout_marginStart="2dp"
-                                android:layout_below="@id/comment"
-                                android:layout_alignStart="@id/user_name"
-                                android:layout_toStartOf="@id/menu_button"
-                                android:layout_marginTop="2dp"
-                                android:layout_marginEnd="4dp"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"/>
+                <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/tab_layout"
+                        style="@style/TabLayoutStyle"
+                        app:tabBackground="?bookmarkDetailTopBackground"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"/>
 
-                        <ImageButton
-                                android:id="@+id/menu_button"
-                                android:contentDescription="@null"
-                                app:srcCompat="@drawable/ic_more_horiz"
-                                app:tint="?attr/textColor"
-                                android:background="@drawable/control_background_40dp_material"
-                                android:layout_alignEnd="@id/comment"
-                                android:layout_below="@id/comment"
-                                android:layout_marginTop="2dp"
-                                android:layout_width="36dp"
-                                android:layout_height="36dp"/>
-                    </RelativeLayout>
-
-                    <com.google.android.material.tabs.TabLayout
-                            android:id="@+id/tab_layout"
-                            style="@style/TabLayoutStyle"
-                            app:tabBackground="?bookmarkDetailTopBackground"
-                            android:layout_marginTop="6dp"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
-                </LinearLayout>
-            </com.google.android.material.appbar.AppBarLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.viewpager.widget.ViewPager
                     android:id="@+id/tab_pager"
