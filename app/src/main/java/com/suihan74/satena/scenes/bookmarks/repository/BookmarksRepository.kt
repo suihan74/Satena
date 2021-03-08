@@ -1098,20 +1098,18 @@ class BookmarksRepository(
         bookmark: Bookmark,
         forceUpdate: Boolean = false
     ) : List<StarRelation> = withContext(Dispatchers.Default) {
-        if (forceUpdate) {
-            runCatching {
-                entry.value?.let { entry ->
-                    bookmarksEntry.value?.bookmarks
-                        ?.filter { it.comment.isNotBlank() }
-                        ?.map {
-                            it.getBookmarkUrl(entry)
-                        }?.let { urls ->
-                            loadStarsEntries(urls, forceUpdate = true)
-                        }
-                }
-            }.onFailure {
-                throw TaskFailureException(cause = it)
+        runCatching {
+            entry.value?.let { entry ->
+                bookmarksEntry.value?.bookmarks
+                    ?.filter { it.comment.isNotBlank() }
+                    ?.map {
+                        it.getBookmarkUrl(entry)
+                    }?.let { urls ->
+                        loadStarsEntries(urls, forceUpdate = forceUpdate)
+                    }
             }
+        }.onFailure {
+            throw TaskFailureException(cause = it)
         }
 
         val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_STARS_OF_IGNORED_USERS)

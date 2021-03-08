@@ -105,12 +105,6 @@ class BookmarkDetailViewModel(
 
     /** タブに対応するリストを取得する */
     fun getList(tabType: DetailTabAdapter.TabType) : LiveData<List<StarRelation>> {
-        viewModelScope.launch(Dispatchers.Default) {
-            runCatching {
-                updateList(tabType, forceUpdate = false)
-            }
-        }
-
         return when (tabType) {
             DetailTabAdapter.TabType.STARS_TO_USER -> starsToUser
 
