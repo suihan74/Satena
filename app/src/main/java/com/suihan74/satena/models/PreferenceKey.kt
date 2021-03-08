@@ -37,7 +37,7 @@ enum class PreferenceKey(
     HATENA_RK(typeInfo<String>(), ""),
 
     /** ID/Passwordを保存してクッキー失効時に自動的に再ログインする */
-    SAVE_HATENA_USER_ID_PASSWORD(typeInfo<Boolean>(), true),
+    SAVE_HATENA_USER_ID_PASSWORD(typeInfo<Boolean>(), false),
 
     /** Mastodonのアクセストークン(暗号化) */
     MASTODON_ACCESS_TOKEN(typeInfo<String>(), ""),
