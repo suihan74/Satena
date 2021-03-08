@@ -1013,52 +1013,18 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * スター情報を複数一括で取得する
      */
     fun getStarsEntryAsync(urls: Iterable<String>) : Deferred<List<StarsEntry>> = async {
-        val uriParamKey = "&uri="
-        val apiBaseUrl = "$S_BASE_URL/entry.json?${cacheAvoidance()}${uriParamKey}"
-        val params = urls.joinToString(uriParamKey) { Uri.encode(it) }
-        var apiUrl = apiBaseUrl + params
-
-        // urlの長さは2048を超えてはいけない
-        val urlLengthLimit = 2000
-
-        if (apiUrl.length > urlLengthLimit) {
-            val tasks = ArrayList<Deferred<StarsEntries?>>()
-            while (apiUrl.length > urlLengthLimit) {
-                val left = apiUrl.substring(0 until urlLengthLimit)
-                var lastSeparatorIndex = left.lastIndexOf('&')
-                if (lastSeparatorIndex < 0) lastSeparatorIndex = left.length
-
-                val curApiUrl = left.substring(0 until lastSeparatorIndex)
-                apiUrl = buildString {
-                    append(apiBaseUrl)
-                    if (lastSeparatorIndex < left.length - uriParamKey.length) append(lastSeparatorIndex + uriParamKey.length)
-                    append(apiUrl.substring(urlLengthLimit))
-                }
-
-                tasks.add(async inner@ {
-                    return@inner try { getJson<StarsEntries>(curApiUrl) } catch (e: SocketTimeoutException) { null }
-                })
+        val apiBaseUrl = "$S_BASE_URL/entry.json?${cacheAvoidance()}&"
+        val windowSize = 50
+        val windows = urls.windowed(size = windowSize, step = windowSize, partialWindows = true)
+        val tasks = windows.map { urls ->
+            async {
+                val params = urls.joinToString(separator = "&") { url -> "uri=$url" }
+                getJson<StarsEntries>(apiBaseUrl + params)
             }
-
-            tasks.add(async inner@ {
-                return@inner try {
-                    getJson<StarsEntries>(apiUrl)
-                }
-                catch (e: SocketTimeoutException) {
-                    null
-                }
-            })
-
-            tasks.awaitAll()
-
-            return@async tasks
-                .mapNotNull { it.await() }
-                .flatMap { it.entries }
         }
-        else {
-            val response = getJson<StarsEntries>(apiUrl)
-            return@async response.entries
-        }
+
+        return@async tasks.awaitAll()
+            .flatMap { it.entries }
     }
 
     /**
