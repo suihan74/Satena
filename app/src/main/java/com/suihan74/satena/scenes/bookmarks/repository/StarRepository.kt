@@ -348,7 +348,6 @@ class StarRepository(
             }
 
             val entries = result.getOrNull()!!
-
             entries.forEach { entry ->
                 val liveData = withContext(Dispatchers.Main) {
                     starsEntriesCache[entry.url]?.also {
@@ -358,6 +357,11 @@ class StarRepository(
 
                 starsEntriesCache[entry.url] = liveData
             }
+            // スターが付いていない場合，空のデータで埋める
+            targetUrls.filter { url -> entries.none { it.url == url } }
+                .forEach { url ->
+                    starsEntriesCache[url] = MutableLiveData()
+                }
         }
     }
 

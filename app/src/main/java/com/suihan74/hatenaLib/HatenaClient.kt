@@ -1018,7 +1018,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val windows = urls.windowed(size = windowSize, step = windowSize, partialWindows = true)
         val tasks = windows.map { urls ->
             async {
-                val params = urls.joinToString(separator = "&") { url -> "uri=$url" }
+                val params = urls.joinToString(separator = "&") { url -> "uri=${Uri.encode(url)}" }
                 getJson<StarsEntries>(apiBaseUrl + params)
             }
         }
