@@ -6,11 +6,9 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
 import androidx.activity.addCallback
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentUrlBlockingBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserRepository
@@ -18,7 +16,6 @@ import com.suihan74.satena.scenes.browser.DrawerTab
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
 import com.suihan74.satena.scenes.preferences.pages.BrowserFragment
-import com.suihan74.utilities.DrawableCompat
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.letAs
 import com.suihan74.utilities.lazyProvideViewModel
@@ -122,28 +119,5 @@ class UrlBlockingFragment : Fragment() {
         }
 
         return binding.root
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (preferencesActivity != null) {
-            setHasOptionsMenu(true)
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
-        inflater.inflate(R.menu.browser_url_blocking_list, menu)
-
-        menu.findItem(R.id.button).apply {
-            val color = ActivityCompat.getColor(requireActivity(), R.color.colorPrimaryText)
-            DrawableCompat.setColorFilter(icon.mutate(), color)
-
-            setOnMenuItemClickListener {
-                activity?.onBackPressed()
-                true
-            }
-        }
     }
 }
