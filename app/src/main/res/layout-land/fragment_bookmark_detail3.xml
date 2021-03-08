@@ -20,82 +20,86 @@
             android:focusable="true"
             android:focusableInTouchMode="true">
 
-        <LinearLayout
-                android:id="@+id/parent_layout"
-                android:baselineAligned="false"
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/bookmark_detail_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_height="match_parent">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/target_bookmark_area"
                     android:background="?bookmarkDetailTopBackground"
+                    android:elevation="6dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/stars_layout"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:id="@+id/bookmark_detail_layout">
+                    android:layout_height="0dp">
 
-                <RelativeLayout
-                        android:id="@+id/user_info"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="16dp">
+                <ImageView
+                        android:id="@+id/user_icon"
+                        src="@{vm.bookmark.userIconUrl}"
+                        android:contentDescription="@null"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/user_name"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"/>
 
-                    <ImageView
-                            android:id="@+id/user_icon"
-                            src="@{vm.bookmark.userIconUrl}"
-                            android:contentDescription="@null"
-                            android:layout_width="64dp"
-                            android:layout_height="64dp"/>
+                <ImageView
+                        android:id="@+id/ignored_user_mark"
+                        android:contentDescription="@string/ignored_user"
+                        android:visibility="@{vm.ignored}"
+                        app:tooltipText="@{@string/ignored_user}"
+                        app:srcCompat="@drawable/bookmark_detail_ignored_user_mark"
+                        app:layout_constraintBottom_toBottomOf="@id/user_icon"
+                        app:layout_constraintEnd_toEndOf="@id/user_icon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"/>
 
-                    <TextView
-                            android:id="@+id/user_name"
-                            userName="@{vm.bookmark.user}"
-                            userTags="@{vm.userTags}"
+                <TextView
+                        android:id="@+id/user_name"
+                        userName="@{vm.bookmark.user}"
+                        userTags="@{vm.userTags}"
 
-                            android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:gravity="center_vertical"
-                            android:textAlignment="gravity"
-                            android:maxLines="3"
-                            android:ellipsize="end"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginStart="10dp"
-                            android:layout_alignTop="@id/user_icon"
-                            android:layout_alignBottom="@id/user_icon"
-                            android:layout_toEndOf="@id/user_icon"/>
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:maxLines="3"
+                        android:textAlignment="gravity"
+                        android:gravity="center_vertical"
 
-                    <ImageView
-                            android:id="@+id/ignored_user_mark"
-                            android:visibility="@{vm.ignored}"
-                            android:contentDescription="@null"
-                            app:srcCompat="@drawable/ic_ignored_user_mark"
-                            app:tint="?attr/tagTextColor"
-                            android:layout_alignBottom="@id/user_icon"
-                            android:layout_alignEnd="@id/user_icon"
-                            android:layout_marginBottom="-6dp"
-                            android:layout_marginEnd="-6dp"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"/>
-
-                </RelativeLayout>
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="16dp"
+                        app:layout_constraintTop_toTopOf="@id/user_icon"
+                        app:layout_constraintBottom_toBottomOf="@id/user_icon"
+                        app:layout_constraintStart_toEndOf="@id/user_icon"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"/>
 
                 <com.suihan74.utilities.views.SelectableTextView
                         android:id="@+id/comment"
                         comment="@{vm.bookmark}"
+                        android:visibility="@{vm.bookmark.comment}"
                         onLinkClick="@{bookmarksViewModel.onLinkClicked}"
                         onLinkLongClick="@{bookmarksViewModel.onLinkLongClicked}"
                         onEntryIdClick="@{bookmarksViewModel.onEntryIdClicked}"
                         onEntryIdLongClick="@{bookmarksViewModel.onEntryIdLongClicked}"
 
                         android:textSize="14sp"
-                        android:minHeight="43dp"
                         android:textIsSelectable="true"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/user_info"
-                        android:layout_alignStart="@id/user_info"
-                        android:layout_alignEnd="@id/user_info"/>
+
+                        android:minHeight="43dp"
+                        app:layout_constraintTop_toBottomOf="@id/user_name"
+                        app:layout_constraintStart_toStartOf="@id/user_name"
+                        app:layout_constraintEnd_toEndOf="@id/user_name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" />
 
                 <TextView
                         android:id="@+id/tags"
@@ -104,10 +108,16 @@
                         android:textSize="14sp"
                         android:textColor="?attr/tagTextColor"
                         android:textColorLink="?attr/tagTextColor"
-                        android:layout_below="@id/comment"
-                        android:layout_alignStart="@id/comment"
-                        android:layout_alignEnd="@id/comment"
-                        android:layout_width="match_parent"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="6dp"
+                        android:layout_marginEnd="4dp"
+                        app:layout_constraintTop_toBottomOf="@id/comment"
+                        app:layout_constraintVertical_bias="0"
+                        app:layout_constraintStart_toStartOf="@id/user_name"
+                        app:layout_constraintEnd_toStartOf="@id/menu_button"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintHorizontal_bias="1"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"/>
 
                 <ImageButton
@@ -116,18 +126,25 @@
                         app:srcCompat="@drawable/ic_more_horiz"
                         app:tint="?attr/textColor"
                         android:background="@drawable/control_background_40dp_material"
-                        android:layout_alignEnd="@id/comment"
-                        android:layout_below="@id/tags"
                         android:layout_marginTop="2dp"
+                        android:layout_marginBottom="6dp"
+                        app:layout_constraintTop_toBottomOf="@id/comment"
+                        app:layout_constraintVertical_bias="0"
+                        app:layout_constraintStart_toEndOf="@id/tags"
+                        app:layout_constraintEnd_toEndOf="@id/user_name"
                         android:layout_width="36dp"
                         android:layout_height="36dp"/>
-            </RelativeLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
                     android:id="@+id/stars_layout"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/target_bookmark_area"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
+                    android:layout_height="0dp"
                     android:orientation="vertical">
                 <com.google.android.material.tabs.TabLayout
                         android:id="@+id/tab_layout"
@@ -143,7 +160,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
             </LinearLayout>
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
                 android:id="@+id/quote_text_view"
@@ -164,6 +181,7 @@
         <!-- スターボタン -->
         <LinearLayout
                 android:id="@+id/yellow_star_layout"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
@@ -202,6 +220,7 @@
 
         <LinearLayout
                 android:id="@+id/green_star_layout"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
@@ -240,6 +259,7 @@
 
         <LinearLayout
                 android:id="@+id/red_star_layout"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
@@ -278,6 +298,7 @@
 
         <LinearLayout
                 android:id="@+id/blue_star_layout"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
@@ -316,6 +337,7 @@
 
         <LinearLayout
                 android:id="@+id/purple_star_layout"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
@@ -360,7 +382,7 @@
                 android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:src="@drawable/ic_star"
                 app:backgroundTint="?colorPrimary"
-                app:layout_anchor="@id/parent_layout"
+                app:layout_anchor="@id/bookmark_detail_layout"
                 app:layout_anchorGravity="bottom|end|right"
                 android:contentDescription="@null"
                 android:layout_marginEnd="24dp"
