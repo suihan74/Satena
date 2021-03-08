@@ -169,6 +169,7 @@
         <!-- スターボタン -->
         <LinearLayout
                 android:id="@+id/yellow_star_layout"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
@@ -211,6 +212,7 @@
 
         <LinearLayout
                 android:id="@+id/green_star_layout"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
@@ -253,6 +255,7 @@
 
         <LinearLayout
                 android:id="@+id/red_star_layout"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
@@ -295,6 +298,7 @@
 
         <LinearLayout
                 android:id="@+id/blue_star_layout"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
@@ -337,6 +341,7 @@
 
         <LinearLayout
                 android:id="@+id/purple_star_layout"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
