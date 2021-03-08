@@ -177,8 +177,8 @@
     <string name="pref_title_information">情報</string>
     <string name="pref_title_account">アカウント</string>
     <string name="pref_title_generals">基本</string>
-    <string name="pref_title_entries">エントリ画面</string>
-    <string name="pref_title_bookmarks">ブックマーク画面</string>
+    <string name="pref_title_entries">エントリ</string>
+    <string name="pref_title_bookmarks">ブックマーク</string>
     <string name="pref_title_browser">アプリ内ブラウザ</string>
     <string name="pref_title_ignored_entries">非表示URL/TEXT</string>
     <string name="pref_title_ignored_users">非表示ユーザー</string>
