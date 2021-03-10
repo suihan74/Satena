@@ -13,7 +13,7 @@ android {
         // バージョン情報
         // major(1桁)-minor(2桁)-fix(3桁)-dev(3桁)
         versionCode 1_06_013_000
-        versionName "1.6.13"
+        versionName "1.7.x"
 
         minSdkVersion 23
         targetSdkVersion 29
