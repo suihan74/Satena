@@ -240,6 +240,11 @@ class BookmarksFragment :
             viewModel.openCustomTabSettingsDialog(childFragmentManager)
         }
 
+        // リストを一番上までスクロールする
+        binding.scrollToTopButton.setOnClickListener {
+            scrollToTop()
+        }
+
         // 投稿エリアを作成
         if (childFragmentManager.findFragmentById(R.id.bookmark_post_frame_layout) == null) {
             val bookmarkPostFragment = BookmarkPostFragment.createInstance()
