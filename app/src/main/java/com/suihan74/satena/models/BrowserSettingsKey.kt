@@ -1,5 +1,6 @@
 package com.suihan74.satena.models
 
+import com.suihan74.satena.models.browser.BookmarksListType
 import com.suihan74.satena.scenes.browser.BlockUrlSetting
 import com.suihan74.satena.scenes.browser.SearchEngineSetting
 import com.suihan74.satena.scenes.browser.WebViewTheme
@@ -43,6 +44,9 @@ enum class BrowserSettingsKey (
 
     /** 自動的にブクマ情報を取得する */
     AUTO_FETCH_BOOKMARKS(typeInfo<Boolean>(), false),
+
+    /** 最初に表示するブクマリスト */
+    INITIAL_BOOKMARKS_LIST(typeInfo<Int>(), BookmarksListType.SAME_AS_BOOKMARKS.ordinal),
 
     /** ブロックURL設定を使用する */
     USE_URL_BLOCKING(typeInfo<Boolean>(), true),

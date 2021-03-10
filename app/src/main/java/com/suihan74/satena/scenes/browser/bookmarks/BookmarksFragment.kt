@@ -226,9 +226,12 @@ class BookmarksFragment :
                 }
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
-            // 初期表示タブ
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
-            val tabPosition = prefs.getInt(PreferenceKey.BOOKMARKS_INITIAL_TAB)
+            // 初期表示ブクマリスト設定
+            val initialBookmarksList = activityViewModel.browserRepo.initialBookmarksList.value
+            val tabPosition = initialBookmarksList?.bookmarksTabType?.ordinal ?: let {
+                val prefs = SafeSharedPreferences.create<PreferenceKey>(requireContext())
+                prefs.getInt(PreferenceKey.BOOKMARKS_INITIAL_TAB)
+            }
             spinner.setSelection(tabPosition, false)
         }
 

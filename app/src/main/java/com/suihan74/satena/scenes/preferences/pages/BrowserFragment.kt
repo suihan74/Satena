@@ -11,6 +11,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.TextInputDialogFragment
+import com.suihan74.satena.models.browser.BookmarksListType
 import com.suihan74.satena.scenes.browser.*
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.*
@@ -67,6 +68,8 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
     private val useMarqueeOnBackStackItems get() = browserRepo.useMarqueeOnBackStackItems
 
     private val autoFetchBookmarks get() = browserRepo.autoFetchBookmarks
+
+    private val initialBookmarksList get() = browserRepo.initialBookmarksList
 
     // ------ //
 
@@ -168,6 +171,14 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         addSection(R.string.pref_browser_section_bookmarks)
         addPrefToggleItem(fragment, autoFetchBookmarks, R.string.pref_browser_auto_fetch_bookmarks_desc)
+        addPrefItem(fragment, initialBookmarksList, R.string.pref_browser_initial_bookmarks_list_desc) {
+            openEnumSelectionDialog(
+                BookmarksListType.values(),
+                initialBookmarksList,
+                R.string.pref_browser_initial_bookmarks_list_desc,
+                fragmentManager
+            )
+        }
 
         // --- //
 
