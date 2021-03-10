@@ -661,7 +661,7 @@
     <string name="msg_empty_url_blocking_pattern">パターンを入力してください</string>
 
     <string name="browser_bookmarks_confirmation_title">確認</string>
-    <string name="browser_bookmarks_confirmation_description">表示中のページのURLまたはそのリダイレクト先URLをHatenaに送信してブックマーク情報を取得します。よろしいですか？</string>
+    <string name="browser_bookmarks_confirmation_description">表示中のページのURLをHatenaに送信してブックマーク情報を取得します。よろしいですか？</string>
     <string name="browser_bookmarks_confirmation_enter">表示</string>
     <string name="browser_bookmarks_confirmation_not_show_again">次回から自動で読み込む</string>
 
