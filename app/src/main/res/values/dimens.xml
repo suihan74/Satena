@@ -20,7 +20,8 @@
     <dimen name="purple_star_position">296dp</dimen>
 
     <!-- ダイアログサイズ -->
-    <fraction name="alert_dialog_width_ratio">88%</fraction>
+    <fraction name="alert_dialog_width_ratio">95%</fraction>
+    <fraction name="alert_dialog_width_ratio_ex_dark">88%</fraction>
 
     <!-- アローアイコンを差し替えたSpinnerの背景用 -->
     <item name="highlight_alpha_material_colored_for_custom_spinner" format="float" type="dimen">0.10</item>

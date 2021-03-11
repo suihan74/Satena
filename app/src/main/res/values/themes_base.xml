@@ -322,6 +322,9 @@
         <item name="colorBackgroundFloating">@null</item>
         <item name="android:windowBackground">@drawable/dialog_background_ex_dark</item>
 
+        <item name="android:windowMinWidthMajor">@fraction/alert_dialog_width_ratio_ex_dark</item>
+        <item name="android:windowMinWidthMinor">@fraction/alert_dialog_width_ratio_ex_dark</item>
+
         <item name="android:textColor">@color/textColorExDark</item>
         <item name="textColor">@color/textColorExDark</item>
         <item name="android:textColorPrimary">@color/textColorExDark</item>
