@@ -233,8 +233,8 @@
 
     <string name="pref_generals_close_dialog_touch_outside_desc">ダイアログの外側をタッチしたら閉じる</string>
 
-    <string name="pref_generals_save_settings_desc">設定をファイルに保存</string>
-    <string name="pref_generals_load_settings_desc">ファイルから設定を読み込む</string>
+    <string name="pref_generals_save_settings_desc">設定ファイルをエクスポート</string>
+    <string name="pref_generals_load_settings_desc">設定ファイルをインポート</string>
 
     <string name="pref_generals_drawer_gravity_desc">ドロワの位置</string>
     <string name="pref_generals_drawer_gravity_right">右側</string>
@@ -369,8 +369,8 @@
     <string name="pref_browser_section_optimize">最適化</string>
 
     <string name="pref_browser_mode_desc">利用するアプリ内ブラウザ</string>
-    <string name="pref_browser_mode_web_view">WebView(新)</string>
-    <string name="pref_browser_mode_chrome_custom_tab">ChromeCustomTab(旧)</string>
+    <string name="pref_browser_mode_web_view">WebView(多機能)</string>
+    <string name="pref_browser_mode_chrome_custom_tab">ChromeCustomTab(高速)</string>
 
     <string name="pref_browser_start_page_desc">スタートページ</string>
     <string name="pref_browser_start_page_message">ウェブアドレスを入力</string>
