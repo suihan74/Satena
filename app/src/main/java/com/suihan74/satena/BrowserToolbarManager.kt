@@ -1,18 +1,17 @@
 package com.suihan74.satena
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.webkit.URLUtil
 import android.widget.RemoteViews
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import com.suihan74.hatenaLib.Entry
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
@@ -20,27 +19,17 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.extensions.putObjectExtra
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.chromium.customtabsclient.shared.CustomTabsHelper
 
 class BrowserToolbarManager : BroadcastReceiver() {
-    private fun onReceiveImpl(context: Context, intent: Intent) {
-        val url = intent.dataString
-            ?: entry?.url
-            ?: return
+    override fun onReceive(context: Context, intent: Intent) {
+        val url = intent.dataString ?: return
 
         val bIntent = when (intent.getIntExtra(CustomTabsIntent.EXTRA_REMOTEVIEWS_CLICKED_ID, -1)) {
             R.id.bookmark_button ->
                 Intent(context, BookmarkPostActivity::class.java).apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, url)
-                    if (url == entry?.url || url == entry?.ampUrl) {
-                        putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
-                    }
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
 
@@ -48,9 +37,6 @@ class BrowserToolbarManager : BroadcastReceiver() {
                 Intent(context, BookmarksActivity::class.java).apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, url)
-                    if (url == entry?.url || url == entry?.ampUrl) {
-                        putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry)
-                    }
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 }
 
@@ -59,33 +45,8 @@ class BrowserToolbarManager : BroadcastReceiver() {
         context.startActivity(bIntent)
     }
 
-    override fun onReceive(context: Context, intent: Intent) {
-        entryLoadingJob?.invokeOnCompletion {
-            entryLoadingJob = null
-            onReceiveImpl(context, intent)
-        } ?: onReceiveImpl(context, intent)
-    }
-
     companion object {
-        private var entry: Entry? = null
-        private var entryLoadingJob: Job? = null
-
-        fun createRemoteViews(context: Context, entry: Entry?): RemoteViews {
-            this.entry = entry
-            return RemoteViews(context.packageName, R.layout.browser_toolbar)
-        }
-
-        fun createRemoteViews(context: Context, url: String) : RemoteViews {
-            entryLoadingJob = GlobalScope.launch(Dispatchers.IO) {
-                try {
-                    entry = HatenaClient.getEntryAsync(url).await()
-                    /*HatenaClient.searchEntriesAsync(url, SearchType.Text).await()
-                        .firstOrNull { it.url == url }*/
-                }
-                catch (e: Throwable) {
-                    Log.d("BrowserToolbarManager", Log.getStackTraceString(e))
-                }
-            }
+        fun createRemoteViews(context: Context): RemoteViews {
             return RemoteViews(context.packageName, R.layout.browser_toolbar)
         }
 
@@ -98,6 +59,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
     }
 }
 
+@SuppressLint("WrongConstant")
 private fun Context.startInnerBrowser(remoteViews: RemoteViews, url: String) = CustomTabsIntent
     .Builder()
     .setShowTitle(true)
@@ -125,7 +87,7 @@ fun Context.startInnerBrowser(entry: Entry) {
     when (BrowserMode.fromId(prefs.getInt(PreferenceKey.BROWSER_MODE))) {
         BrowserMode.CUSTOM_TABS_INTENT ->
             startInnerBrowser(
-                BrowserToolbarManager.createRemoteViews(this, entry),
+                BrowserToolbarManager.createRemoteViews(this),
                 entry.url
             )
 
@@ -153,7 +115,7 @@ fun Context.startInnerBrowser(url: String? = null) {
             }
 
             startInnerBrowser(
-                BrowserToolbarManager.createRemoteViews(this, startUrl),
+                BrowserToolbarManager.createRemoteViews(this),
                 startUrl
             )
         }
