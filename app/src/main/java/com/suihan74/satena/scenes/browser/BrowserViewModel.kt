@@ -10,6 +10,9 @@ import android.os.Handler
 import android.util.Log
 import android.view.*
 import android.webkit.*
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.MainThread
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
@@ -36,9 +39,7 @@ import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.absoluteValue
 
@@ -75,11 +76,7 @@ class BrowserViewModel(
     val url = SingleUpdateMutableLiveData<String>().apply {
         observeForever {
             addressText.value = Uri.decode(it)
-            bookmarksRepo.bookmarksEntry.value = null
             isUrlFavorite.value = favoriteSitesRepo.contains(it)
-            viewModelScope.launch {
-                loadBookmarksEntry(it)
-            }
         }
     }
 
@@ -111,6 +108,9 @@ class BrowserViewModel(
     val useMarqueeOnBackStackItems : LiveData<Boolean> =
         browserRepo.useMarqueeOnBackStackItems
 
+    /** ブクマタブの内容を自動的にロードする */
+    val autoFetchBookmarks = browserRepo.autoFetchBookmarks
+
     /**
      * ひとつ前に表示していたURL
      *
@@ -119,8 +119,7 @@ class BrowserViewModel(
     private var previousUrl : String? = null
 
     /** 現在表示中のページで読み込んだすべてのURL */
-    private val resourceUrls : List<ResourceUrl>
-        get() = browserRepo.resourceUrls
+    private val resourceUrls : List<ResourceUrl> = browserRepo.resourceUrls
 
     /** お気に入りサイト */
     val favoriteSites =
@@ -137,15 +136,8 @@ class BrowserViewModel(
     /** ドロワの開閉状態 */
     val drawerOpened = SingleUpdateMutableLiveData<Boolean>()
 
-    // ------ //
-
-    /** ロード完了前にページ遷移した場合にロード処理を中断する */
-    private var loadBookmarksEntryJob : Job? = null
-
-    /** ローディング状態を通知する */
-    val loadingBookmarksEntry by lazy {
-        MutableLiveData<Boolean>(false)
-    }
+    /** 現在選択中のドロワタブ */
+    val currentDrawerTab = SingleUpdateMutableLiveData<DrawerTab>()
 
     // ------ //
 
@@ -154,6 +146,21 @@ class BrowserViewModel(
 
     fun setOnPageFinishedListener(listener: Listener<String>?) {
         onPageFinishedListener = listener
+    }
+
+    // ------ //
+
+    /**
+     * 画像保存時の保存先決定ダイアログを開き、結果を取得するためのランチャ
+     */
+    private lateinit var saveImageLauncher : ActivityResultLauncher<Intent>
+
+    // ------ //
+
+    init {
+        viewModelScope.launch {
+            historyRepo.loadHistories()
+        }
     }
 
     // ------ //
@@ -262,6 +269,11 @@ class BrowserViewModel(
                 wv.reload()
             }
         })
+
+        // 結果を受け取るActivity遷移のランチャを作成
+        saveImageLauncher = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            onActivityResult(activity, RequestCode.SAVE_IMAGE, result)
+        }
 
         // スタートページに遷移
         goAddress(url.value ?: initialUrl ?: browserRepo.startPage.value!!)
@@ -427,7 +439,7 @@ class BrowserViewModel(
             )) { _, which -> when(which) {
                 0 -> goAddress(url)
                 1 -> shareImage(url, activity)
-                2 -> publishSaveImageIntent(url, activity)
+                2 -> publishSaveImageIntent(url)
             } }
             .setNegativeButton(R.string.dialog_close)
             .create()
@@ -456,7 +468,7 @@ class BrowserViewModel(
                 2 -> openBookmarksActivity(linkUrl, activity)
                 3 -> goAddress(imageUrl)
                 4 -> shareImage(imageUrl, activity)
-                5 -> publishSaveImageIntent(imageUrl, activity)
+                5 -> publishSaveImageIntent(imageUrl)
             } }
             .setNegativeButton(R.string.dialog_close)
             .create()
@@ -558,12 +570,12 @@ class BrowserViewModel(
     }
 
     /** Intent呼び出し先から結果が返ってきたときの処理 */
-    fun onActivityResult(activity: BrowserActivity, requestCode: Int, resultCode: Int, intent: Intent?) {
+    private fun onActivityResult(activity: BrowserActivity, requestCode: RequestCode, result: ActivityResult) {
         when (requestCode) {
             // ファイル保存先の選択
-            RequestCode.SAVE_IMAGE.ordinal -> {
-                val destUri = intent?.data
-                if (resultCode != Activity.RESULT_OK || destUri == null) {
+            RequestCode.SAVE_IMAGE -> {
+                val destUri = result.data?.data
+                if (result.resultCode != Activity.RESULT_OK || destUri == null) {
                     Log.d("FilePick", "canceled")
                     return
                 }
@@ -591,15 +603,7 @@ class BrowserViewModel(
     /** ブクマ一覧画面を開く */
     private fun openBookmarksActivity(url: String, activity: BrowserActivity) {
         val intent = Intent(activity, BookmarksActivity::class.java).also {
-            val bEntry = bookmarksRepo.bookmarksEntry.value
-            val eid = bEntry?.id ?: 0L
-
-            if (url == this.url.value && eid > 0L) {
-                it.putExtra(BookmarksActivity.EXTRA_ENTRY_ID, eid)
-            }
-            else {
-                it.putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
-            }
+            it.putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
         }
         activity.startActivity(intent)
     }
@@ -645,7 +649,7 @@ class BrowserViewModel(
     private var savingImageUrl : String? = null
 
     /** 画像保存先の選択画面を開く */
-    private fun publishSaveImageIntent(url: String, activity: BrowserActivity) {
+    private fun publishSaveImageIntent(url: String) {
         val uri = Uri.parse(url)
         savingImageUrl = url
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).also {
@@ -653,7 +657,7 @@ class BrowserViewModel(
             it.type = "image/*"
             it.putExtra(Intent.EXTRA_TITLE, uri.lastPathSegment ?: uri.path ?: "image")
         }
-        activity.startActivityForResult(intent, RequestCode.SAVE_IMAGE.ordinal)
+        saveImageLauncher.launch(intent)
     }
 
     /** 画像を保存する */
@@ -685,22 +689,6 @@ class BrowserViewModel(
     }
 
     // ------ //
-
-    /** BookmarksEntryを更新 */
-    private suspend fun loadBookmarksEntry(url: String) = withContext(Dispatchers.Main) {
-        loadBookmarksEntryJob?.cancel()
-
-        if (URLUtil.isNetworkUrl(url)) {
-            loadingBookmarksEntry.value = true
-            loadBookmarksEntryJob = viewModelScope.launch(Dispatchers.Main) {
-                runCatching {
-                    bookmarksRepo.loadBookmarks(url)
-                }
-                loadBookmarksEntryJob = null
-                loadingBookmarksEntry.value = false
-            }
-        }
-    }
 
     /** アドレスバーの入力内容に沿ってページ遷移 */
     @MainThread

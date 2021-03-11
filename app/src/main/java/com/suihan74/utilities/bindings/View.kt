@@ -2,6 +2,7 @@ package com.suihan74.utilities.bindings
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.StringRes
 import androidx.appcompat.widget.TooltipCompat
 import androidx.databinding.BindingAdapter
 import androidx.transition.Transition
@@ -63,12 +64,24 @@ object ViewBindingAdapters {
     }
 
     /**
-     * ツールチップテキストを設定する(バージョンによる制限を回避させる)
+     * ツールチップテキストを設定する
      */
     @JvmStatic
     @BindingAdapter(value = ["tooltipText"])
     fun setTooltipText(view: View, text: CharSequence?) {
         TooltipCompat.setTooltipText(view, text)
+    }
+
+    /**
+     * ツールチップテキストを設定する
+     */
+    @JvmStatic
+    @BindingAdapter(value = ["tooltipText"])
+    fun setTooltipText(view: View, @StringRes textId: Int?) {
+        TooltipCompat.setTooltipText(
+            view,
+            textId?.let { view.context.getText(it) }
+        )
     }
 }
 

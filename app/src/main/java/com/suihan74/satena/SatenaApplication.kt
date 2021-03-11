@@ -21,6 +21,8 @@ import com.suihan74.satena.models.*
 import com.suihan74.satena.notices.NotificationWorker
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
+import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.checkRunningByTag
@@ -107,6 +109,11 @@ class SatenaApplication : Application() {
 
     /** お気に入りサイトを扱うリポジトリ */
     lateinit var favoriteSitesRepository : FavoriteSitesRepository
+
+    /** アカウント管理 */
+    val accountLoader : AccountLoader by lazy {
+        AccountLoader(this, HatenaClient, MastodonClientHolder)
+    }
 
     // ------ //
 
@@ -255,10 +262,13 @@ class SatenaApplication : Application() {
                 .build()
 
             val workRequest =
-                PeriodicWorkRequestBuilder<NotificationWorker>(interval, TimeUnit.MINUTES)
-                    .setConstraints(constraints)
-                    .addTag(WORKER_TAG_CHECKING_NOTICES)
-                    .build()
+                PeriodicWorkRequestBuilder<NotificationWorker>(
+                    interval, TimeUnit.MINUTES,
+                    PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.MILLISECONDS
+                )
+                .setConstraints(constraints)
+                .addTag(WORKER_TAG_CHECKING_NOTICES)
+                .build()
 
             WorkManager.getInstance(context).let { manager ->
                 manager.checkRunningByTag(WORKER_TAG_CHECKING_NOTICES).whenFalse {

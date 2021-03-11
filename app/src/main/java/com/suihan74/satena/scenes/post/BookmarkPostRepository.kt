@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
+import com.suihan74.satena.models.TootVisibility
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
 import com.suihan74.satena.scenes.post.exceptions.PostingMastodonFailureException
@@ -12,7 +13,6 @@ import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
-import com.sys1yagi.mastodon4j.api.entity.Status
 import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,14 +28,49 @@ class BookmarkPostRepository(
 
         /** 同時使用可能な最大タグ個数 */
         const val MAX_TAGS_COUNT = 10
+
+        /** (単数の)タグを表現する正規表現 */
+        private val tagRegex = Regex("""\[[^%/:\[\]]+]""")
+
+        /**
+         * 生文字列からコメント長を計算する
+         *
+         * 外部から分かる限りサーバ側での判定に極力近づけているが完璧である保証はない
+         * タグは判定外で、その他部分はバイト数から判定している模様
+         */
+        fun calcCommentLength(commentRaw: String) : Int =
+            ceil(commentRaw.replace(tagRegex, "").sumBy { c ->
+                val code = c.toInt()
+                when (code / 0xff) {
+                    0 -> 1
+                    1 -> if (code <= 0xc3bf) 1 else 3
+                    else -> 3
+                }
+            } / 3f).toInt()
+
+        /**
+         * コメント長が制限内か確認する
+         *
+         * @return 投稿可能 (文字列長が制限以内)
+         */
+        fun checkCommentLength(commentRaw: String) : Boolean =
+            calcCommentLength(commentRaw) <= MAX_COMMENT_LENGTH
+
+        /**
+         * 使用タグ数が制限内か確認する
+         *
+         * @return 投稿可能 (タグ数が制限以内)
+         */
+        fun checkTagsCount(commentRaw: String) : Boolean {
+            val matches = tagRegex.findAll(commentRaw)
+            return matches.count() <= MAX_TAGS_COUNT
+        }
     }
 
     /** ダイアログテーマ */
     val themeId = Theme.dialogActivityThemeId(prefs)
 
     val entry = MutableLiveData<Entry>()
-
-    val bookmarksEntry = MutableLiveData<BookmarksEntry>()
 
     /** はてなのユーザー名 */
     var userName : String = ""
@@ -49,6 +84,14 @@ class BookmarkPostRepository(
 
     /** Facebookアカウントが紐づいているか否か */
     val signedInFacebook = MutableLiveData<Boolean>()
+
+    val private = MutableLiveData(false)
+
+    val postTwitter = MutableLiveData(false)
+
+    val postMastodon = MutableLiveData(false)
+
+    val postFacebook = MutableLiveData(false)
 
     /** 使用したことがあるタグのリスト */
     val tags = MutableLiveData<List<Tag>>()
@@ -65,28 +108,42 @@ class BookmarkPostRepository(
 
     // ------ //
 
-    /** 初期化 */
-    @Throws(
-        AccountLoader.HatenaSignInException::class,
-        AccountLoader.MastodonSignInException::class,
-    )
+    /**
+     * 初期化
+     *
+     * @throws AccountLoader.HatenaSignInException
+     * @throws AccountLoader.MastodonSignInException
+     */
     suspend fun initialize(entry: Entry) = withContext(Dispatchers.Main) {
         this@BookmarkPostRepository.entry.value = entry
         signIn()
+
+        if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
+            private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_LAST_CHECKED)
+        }
+        else {
+            private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED)
+        }
     }
 
     /**
      * 初期化
      *
      * URLからエントリ情報を作成する
+     *
+     * @throws AccountLoader.HatenaSignInException
+     * @throws AccountLoader.MastodonSignInException
+     * @throws ConnectionFailureException
      */
-    @Throws(
-        AccountLoader.HatenaSignInException::class,
-        AccountLoader.MastodonSignInException::class,
-        ConnectionFailureException::class
-    )
     suspend fun initialize(url: String) = withContext(Dispatchers.Main) {
         signIn()
+
+        if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
+            private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_LAST_CHECKED)
+        }
+        else {
+            private.value = prefs.getBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED)
+        }
 
         val result = runCatching {
             val modifiedUrl = modifySpecificUrls(url) ?: throw ConnectionFailureException()
@@ -98,12 +155,13 @@ class BookmarkPostRepository(
         }
     }
 
-    /** はてなにサインインし、成功したらMastodonにもサインインを行う */
-    @Throws(
-        AccountLoader.HatenaSignInException::class,
-        AccountLoader.MastodonSignInException::class
-    )
-    suspend fun signIn() = withContext(Dispatchers.Default) {
+    /**
+     * はてなにサインインし、成功したらMastodonにもサインインを行う
+     *
+     * @throws AccountLoader.HatenaSignInException
+     * @throws AccountLoader.MastodonSignInException
+     */
+    private suspend fun signIn() = withContext(Dispatchers.Main) {
         val result = runCatching {
             accountLoader.signInHatenaAsync(reSignIn = false).await()!!
         }
@@ -113,8 +171,24 @@ class BookmarkPostRepository(
                 throw AccountLoader.HatenaSignInException()
             }
             userName = hatenaAccount.name
-            signedInTwitter.postValue(hatenaAccount.isOAuthTwitter)
-            signedInFacebook.postValue(hatenaAccount.isOAuthFaceBook)
+
+            val isTwitterActive = hatenaAccount.isOAuthTwitter
+            val isFacebookActive = hatenaAccount.isOAuthFaceBook
+            signedInTwitter.value = isTwitterActive
+            signedInFacebook.value = isFacebookActive
+
+            if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
+                postTwitter.value =
+                    isTwitterActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_TWITTER_LAST_CHECKED)
+                postFacebook.value =
+                    isFacebookActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_FACEBOOK_LAST_CHECKED)
+            }
+            else {
+                postTwitter.value =
+                    isTwitterActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_TWITTER_DEFAULT_CHECKED)
+                postFacebook.value =
+                    isFacebookActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_FACEBOOK_DEFAULT_CHECKED)
+            }
 
             signInMastodon()
         }
@@ -126,18 +200,29 @@ class BookmarkPostRepository(
         }
     }
 
-    /** Mastodonにサインインする */
-    @Throws(
-        AccountLoader.MastodonSignInException::class
-    )
-    suspend fun signInMastodon() {
+    /**
+     * Mastodonにサインインする
+     *
+     * @throws AccountLoader.MastodonSignInException
+     */
+    private suspend fun signInMastodon() = withContext(Dispatchers.Main) {
         val result = runCatching {
             accountLoader.signInMastodonAsync(reSignIn = false).await()
         }
 
         if (result.isSuccess) {
             val mstdnAccount = accountLoader.mastodonClientHolder.account
-            signedInMastodon.postValue(mstdnAccount?.isLocked == false)
+            val isMastodonActive = mstdnAccount?.isLocked == false
+            signedInMastodon.value = isMastodonActive
+
+            if (prefs.getBoolean(PreferenceKey.POST_BOOKMARK_SAVE_STATES)) {
+                postMastodon.value =
+                    isMastodonActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_MASTODON_LAST_CHECKED)
+            }
+            else {
+                postMastodon.value =
+                    isMastodonActive && prefs.getBoolean(PreferenceKey.POST_BOOKMARK_MASTODON_DEFAULT_CHECKED)
+            }
         }
         else {
             throw result.exceptionOrNull() as? AccountLoader.MastodonSignInException
@@ -147,10 +232,11 @@ class BookmarkPostRepository(
 
     // ------ //
 
-    /** 使用したことがあるタグリストを取得する */
-    @Throws(
-        ConnectionFailureException::class
-    )
+    /**
+     * 使用したことがあるタグリストを取得する
+     *
+     * @throws ConnectionFailureException
+     */
     suspend fun loadTags() = withContext(Dispatchers.Default) {
         if (!tags.value.isNullOrEmpty()) {
             return@withContext
@@ -175,10 +261,9 @@ class BookmarkPostRepository(
 
     /**
      * 現在のコメントにタグを挿入/削除したものを返す
+     *
+     * @throws TooManyTagsException
      */
-    @Throws(
-        TooManyTagsException::class
-    )
     fun toggleTag(prevComment: String, tag: String) : String {
         val tagText = "[$tag]"
 
@@ -200,11 +285,8 @@ class BookmarkPostRepository(
             }
 
             else -> {
-                val matches = tagRegex.findAll(tagsText)
-
-                // タグは10個まで
-                if (matches.count() == MAX_TAGS_COUNT) {
-                    throw TooManyTagsException()
+                if (!checkTagsCount(tagsText)) {
+                    throw TooManyTagsException(MAX_TAGS_COUNT)
                 }
 
                 buildString {
@@ -220,25 +302,18 @@ class BookmarkPostRepository(
 
     // ------ //
 
-    /** (単数の)タグを表現する正規表現 */
-    val tagRegex = Regex("""\[[^%/:\[\]]+]""")
-
     /** コメントのタグ部分全体を表現する正規表現 */
-    val tagsRegex by lazy { Regex("""^(\[[^%/:\[\]]*])+""") }
+    private val tagsRegex by lazy { Regex("""^(\[[^%/:\[\]]*])+""") }
 
-    /** ブクマを投稿する */
-    @Throws(
-        // URLが不正
-        InvalidUrlException::class,
-        // コメント長すぎ
-        CommentTooLongException::class,
-        // タグが多すぎ
-        TooManyTagsException::class,
-        // はてなへのブクマ投稿処理中での失敗
-        ConnectionFailureException::class,
-        // Mastodonへの投稿失敗(ブクマは自体は成功)
-        PostingMastodonFailureException::class
-    )
+    /**
+     * ブクマを投稿する
+     *
+     * @throws InvalidUrlException URLが不正
+     * @throws CommentTooLongException コメント長すぎ
+     * @throws TooManyTagsException タグが多すぎ
+     * @throws ConnectionFailureException はてなへのブクマ投稿処理中での失敗
+     * @throws PostingMastodonFailureException Mastodonへの投稿失敗(ブクマは自体は成功)
+     */
     suspend fun postBookmark(editData: BookmarkEditData) : BookmarkResult = withContext(Dispatchers.Default) {
         val entry = editData.entry
 
@@ -248,15 +323,17 @@ class BookmarkPostRepository(
         }
 
         // コメント長チェック
-        if (calcCommentLength(editData.comment) > MAX_COMMENT_LENGTH) {
-            throw CommentTooLongException()
+        if (!checkCommentLength(editData.comment)) {
+            throw CommentTooLongException(MAX_COMMENT_LENGTH)
         }
 
         // タグ個数チェック
-        val matches = tagRegex.findAll(editData.comment)
-        if (matches.count() > MAX_TAGS_COUNT) {
-            throw TooManyTagsException()
+        if (!checkTagsCount(editData.comment)) {
+            throw TooManyTagsException(MAX_TAGS_COUNT)
         }
+
+        // 連携状態を保存
+        saveStates()
 
         val result = runCatching {
             accountLoader.signInHatenaAsync(reSignIn = false).await()
@@ -277,6 +354,8 @@ class BookmarkPostRepository(
 
         if (editData.postMastodon) {
             val mstdnResult = runCatching {
+                val visibility = TootVisibility.fromOrdinal(prefs.getInt(PreferenceKey.MASTODON_POST_VISIBILITY))
+
                 val status =
                     if (bookmarkResult.comment.isBlank()) "\"${entry.title}\" ${entry.url}"
                     else "${bookmarkResult.comment} / \"${entry.title}\" ${entry.url}"
@@ -287,7 +366,7 @@ class BookmarkPostRepository(
                     status = status,
                     inReplyToId = null,
                     sensitive = false,
-                    visibility = Status.Visibility.Public,
+                    visibility = visibility.value,
                     mediaIds = null,
                     spoilerText = null
                 ).execute()
@@ -301,25 +380,23 @@ class BookmarkPostRepository(
         return@withContext bookmarkResult
     }
 
-    /**
-     * 生文字列からコメント長を計算する
-     *
-     * 外部から分かる限りサーバ側での判定に極力近づけているが完璧である保証はない
-     * タグは判定外で、その他部分はバイト数から判定している模様
-     */
-    fun calcCommentLength(commentRaw: String) : Int =
-        ceil(commentRaw.replace(tagRegex, "").sumBy { c ->
-            val code = c.toInt()
-            when (code / 0xff) {
-                0 -> 1
-                1 -> if (code <= 0xc3bf) 1 else 3
-                else -> 3
-            }
-        } / 3f).toInt()
-
     /** タグ部分の終了位置を取得する */
     fun getTagsEnd(s: CharSequence?) : Int {
         val results = tagsRegex.find(s ?: "")
         return results?.value?.length ?: 0
+    }
+
+    // ------ //
+
+    /**
+     * 連携状態を保存する
+     */
+    fun saveStates() {
+        prefs.edit {
+            putBoolean(PreferenceKey.POST_BOOKMARK_PRIVATE_LAST_CHECKED, private.value ?: false)
+            putBoolean(PreferenceKey.POST_BOOKMARK_TWITTER_LAST_CHECKED, postTwitter.value ?: false)
+            putBoolean(PreferenceKey.POST_BOOKMARK_FACEBOOK_LAST_CHECKED, postFacebook.value ?: false)
+            putBoolean(PreferenceKey.POST_BOOKMARK_MASTODON_LAST_CHECKED, postMastodon.value ?: false)
+        }
     }
 }

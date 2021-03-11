@@ -104,6 +104,11 @@ class BookmarkPostFragment : Fragment() {
             })
         }
 
+        binding.postMastodonToggle.setOnLongClickListener {
+            viewModel.openTootVisibilitySettingDialog(requireContext(), childFragmentManager)
+            return@setOnLongClickListener true
+        }
+
         // タグリストを初期化
         setupTagsList(binding)
 

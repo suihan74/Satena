@@ -7,10 +7,10 @@ class NotSignedInException : Throwable("not signed in")
 class LoadingTagsFailureException(cause: Throwable? = null) : Throwable("loading tags is failed.", cause)
 
 /** コメント長すぎ例外 */
-class CommentTooLongException : Throwable("the comment is too long to post.")
+class CommentTooLongException(val limitLength: Int) : Throwable("the comment is too long to post.")
 
 /** 使用タグ数が制限を超える例外 */
-class TooManyTagsException : Throwable("too many tags (more than 10)")
+class TooManyTagsException(val limitCount: Int) : Throwable("too many tags (more than 10)")
 
 /** 多重投稿例外 */
 class MultiplePostException : Throwable("multiple post")

@@ -21,7 +21,7 @@ class HistoryRepository(
 ) {
 
     /** 閲覧履歴 */
-    val histories = MutableLiveData<List<History>>(emptyList())
+    val histories = MutableLiveData<List<History>>()
 
     /** ロード済みの全閲覧履歴データのキャッシュ */
     private var historiesCache = ArrayList<History>()
@@ -66,10 +66,9 @@ class HistoryRepository(
                             && it.page.url == decodedUrl
                 }
                 historiesCache.add(inserted)
+                histories.postValue(historiesCache)
             }
         }
-
-        updateHistoriesLiveData()
     }
 
     /** 履歴を削除する */
@@ -78,8 +77,8 @@ class HistoryRepository(
 
         historiesCacheLock.withLock {
             historiesCache.removeAll { it.log.id == history.log.id }
+            histories.postValue(historiesCache)
         }
-        updateHistoriesLiveData()
     }
 
     /** 履歴リストを更新 */
@@ -89,9 +88,8 @@ class HistoryRepository(
             historiesCache.addAll(
                 dao.findHistory(query = keyword.value.orEmpty())
             )
+            histories.postValue(historiesCache)
         }
-
-        updateHistoriesLiveData()
     }
 
     /** 履歴をすべて削除 */
@@ -110,9 +108,8 @@ class HistoryRepository(
             historiesCache.removeAll { h ->
                 h.log.visitedAt.toLocalDate() == date
             }
+            histories.postValue(historiesCache)
         }
-
-        updateHistoriesLiveData()
     }
 
     /** 履歴リストの続きを取得 */
@@ -123,34 +120,7 @@ class HistoryRepository(
 
             historiesCache.addAll(additional)
             historiesCache.sortBy { it.log.visitedAt }
+            histories.postValue(historiesCache)
         }
-
-        updateHistoriesLiveData()
-    }
-
-    /** 表示用の履歴リストを更新する */
-    suspend fun updateHistoriesLiveData() = withContext(Dispatchers.Default) {
-        /*
-        val locale = Locale.JAPANESE
-        val keyword = keyword.value?.toLowerCase(locale)
-        historiesCacheLock.withLock {
-            if (keyword.isNullOrBlank()) {
-                histories.postValue(historiesCache)
-            }
-            else {
-                val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu/MM/dd hh:mm")
-                val keywords = keyword.split(Regex("""\s+"""))
-                val list = historiesCache.filter {
-                    keywords.all { k ->
-                        it.page.title.toLowerCase(locale).contains(k)
-                                || it.page.url.toLowerCase(locale).contains(k)
-                                || it.log.visitedAt.format(dateTimeFormatter).contains(k)
-                    }
-                }
-                histories.postValue(list)
-            }
-        }
-        */
-        histories.postValue(historiesCache)
     }
 }

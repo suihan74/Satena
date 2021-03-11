@@ -238,6 +238,21 @@ class BookmarksRepository(
 
     // ------ //
 
+    suspend fun clear() = withContext(Dispatchers.Main) {
+        loadingBookmarksEntryMutex.withLock {
+            loadingEntry.value = false
+            entry.value = null
+            bookmarksEntry.value = null
+            entryStarsEntry.value = null
+            bookmarksRecentCache = emptyList()
+            bookmarksDigestCache = null
+            popularBookmarks.value = null
+            recentBookmarks.value = null
+            allBookmarks.value = null
+            customBookmarks.value = null
+        }
+    }
+
     /**
      * URLを渡して必要な初期化を行う
      *
@@ -1083,20 +1098,18 @@ class BookmarksRepository(
         bookmark: Bookmark,
         forceUpdate: Boolean = false
     ) : List<StarRelation> = withContext(Dispatchers.Default) {
-        if (forceUpdate) {
-            runCatching {
-                entry.value?.let { entry ->
-                    bookmarksEntry.value?.bookmarks
-                        ?.filter { it.comment.isNotBlank() }
-                        ?.map {
-                            it.getBookmarkUrl(entry)
-                        }?.let { urls ->
-                            loadStarsEntries(urls, forceUpdate = true)
-                        }
-                }
-            }.onFailure {
-                throw TaskFailureException(cause = it)
+        runCatching {
+            entry.value?.let { entry ->
+                bookmarksEntry.value?.bookmarks
+                    ?.filter { it.comment.isNotBlank() }
+                    ?.map {
+                        it.getBookmarkUrl(entry)
+                    }?.let { urls ->
+                        loadStarsEntries(urls, forceUpdate = forceUpdate)
+                    }
             }
+        }.onFailure {
+            throw TaskFailureException(cause = it)
         }
 
         val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_STARS_OF_IGNORED_USERS)

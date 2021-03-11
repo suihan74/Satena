@@ -45,8 +45,7 @@ class BookmarksContentFragment : Fragment() {
 
         // タブ制御の初期化
         contentsViewModel.initializeTabPager(
-            requireContext(),
-            childFragmentManager,
+            requireActivity(),
             binding.tabPager,
             binding.tabLayout
         )

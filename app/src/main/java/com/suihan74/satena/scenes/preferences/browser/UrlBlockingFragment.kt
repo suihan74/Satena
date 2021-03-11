@@ -5,17 +5,17 @@ import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
-import androidx.core.app.ActivityCompat
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentUrlBlockingBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserRepository
+import com.suihan74.satena.scenes.browser.DrawerTab
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.satena.scenes.preferences.pages.PreferencesBrowserFragment
-import com.suihan74.utilities.DrawableCompat
+import com.suihan74.satena.scenes.preferences.PreferencesTabMode
+import com.suihan74.satena.scenes.preferences.pages.BrowserFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.letAs
 import com.suihan74.utilities.lazyProvideViewModel
@@ -31,10 +31,13 @@ class UrlBlockingFragment : Fragment() {
     private val preferencesActivity : PreferencesActivity?
         get() = requireActivity() as? PreferencesActivity
 
+    private val browserActivity : BrowserActivity?
+        get() = requireActivity() as? BrowserActivity
+
     val viewModel by lazyProvideViewModel {
         val context = requireContext()
         val repository =
-            parentFragment.letAs<PreferencesBrowserFragment, BrowserRepository> {
+            parentFragment.letAs<BrowserFragment, BrowserRepository> {
                 it.viewModel.browserRepo
             } ?: BrowserRepository(
                 client = HatenaClient,
@@ -51,6 +54,10 @@ class UrlBlockingFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         enterTransition = TransitionSet()
+            .addTransition(Fade())
+            .addTransition(Slide(Gravity.END))
+
+        exitTransition = TransitionSet()
             .addTransition(Fade())
             .addTransition(Slide(Gravity.END))
     }
@@ -90,29 +97,27 @@ class UrlBlockingFragment : Fragment() {
             }
         }
 
+        val callback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            parentFragmentManager.beginTransaction()
+                .remove(this@UrlBlockingFragment)
+                .commit()
+        }
+        preferencesActivity?.viewModel?.currentTab?.observe(viewLifecycleOwner, {
+            callback.isEnabled = it == PreferencesTabMode.BROWSER
+        })
+        browserActivity?.viewModel?.let { vm ->
+            vm.currentDrawerTab.observe(viewLifecycleOwner, {
+                callback.isEnabled = it == DrawerTab.SETTINGS && vm.drawerOpened.value == true
+            })
+            vm.drawerOpened.observe(viewLifecycleOwner, {
+                callback.isEnabled = vm.currentDrawerTab.value == DrawerTab.SETTINGS && it == true
+            })
+        }
+
+        binding.backButton.setOnClickListener {
+            callback.handleOnBackPressed()
+        }
+
         return binding.root
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (preferencesActivity != null) {
-            setHasOptionsMenu(true)
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
-        inflater.inflate(R.menu.browser_url_blocking_list, menu)
-
-        menu.findItem(R.id.button).apply {
-            val color = ActivityCompat.getColor(requireActivity(), R.color.colorPrimaryText)
-            DrawableCompat.setColorFilter(icon.mutate(), color)
-
-            setOnMenuItemClickListener {
-                activity?.onBackPressed()
-                true
-            }
-        }
     }
 }

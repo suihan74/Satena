@@ -25,8 +25,10 @@ class HistoryAdapter(
         @JvmStatic
         @BindingAdapter("items")
         fun setHistory(view: RecyclerView, items: List<RecyclerState<History>>?) {
-            view.adapter.alsoAs<HistoryAdapter> { adapter ->
-                adapter.submitList(items)
+            items?.let {
+                view.adapter.alsoAs<HistoryAdapter> { adapter ->
+                    adapter.submitList(it)
+                }
             }
         }
     }
@@ -90,9 +92,6 @@ class HistoryAdapter(
             oldItem?.log?.id == newItem?.log?.id
 
         override fun areModelContentsTheSame(oldItem: History?, newItem: History?): Boolean =
-            oldItem?.page?.url == newItem?.page?.url &&
-            oldItem?.page?.title == newItem?.page?.title &&
-            oldItem?.log?.visitedAt == newItem?.log?.visitedAt &&
-            oldItem?.page?.faviconUrl == newItem?.page?.faviconUrl
+            oldItem?.page == newItem?.page
     }
 }

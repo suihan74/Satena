@@ -1,5 +1,6 @@
 package com.suihan74.satena.models
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
@@ -13,7 +14,7 @@ import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
 
-@SharedPreferencesKey(fileName = "default", version = 6, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 7, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -35,8 +36,14 @@ enum class PreferenceKey(
     /** はてなのクッキー */
     HATENA_RK(typeInfo<String>(), ""),
 
+    /** ID/Passwordを保存してクッキー失効時に自動的に再ログインする */
+    SAVE_HATENA_USER_ID_PASSWORD(typeInfo<Boolean>(), false),
+
     /** Mastodonのアクセストークン(暗号化) */
     MASTODON_ACCESS_TOKEN(typeInfo<String>(), ""),
+
+    /** Mastodon投稿時の公開範囲 */
+    MASTODON_POST_VISIBILITY(typeInfo<Int>(), TootVisibility.PUBLIC.ordinal),
 
     ////////////////////////////////////////
     // generals
@@ -56,7 +63,7 @@ enum class PreferenceKey(
     CLOSE_DIALOG_ON_TOUCH_OUTSIDE(typeInfo<Boolean>(), true),
 
     /** ドロワーの位置 */
-    DRAWER_GRAVITY(typeInfo<Int>(), Gravity.RIGHT),
+    DRAWER_GRAVITY(typeInfo<Int>(), GravitySetting.END.gravity),
 
     /** アプリ内アップデート通知 */
     APP_UPDATE_NOTICE_MODE(typeInfo<Int>(), AppUpdateNoticeMode.FIX.id),
@@ -105,7 +112,7 @@ enum class PreferenceKey(
     ENTRIES_BOTTOM_ITEMS(typeInfo<List<UserBottomItem>>(), listOf(UserBottomItem.SCROLL_TO_TOP)),
 
     /** ボトムバーの項目を左詰めにするか右詰めにするか */
-    ENTRIES_BOTTOM_ITEMS_GRAVITY(typeInfo<Int>(), Gravity.END),
+    ENTRIES_BOTTOM_ITEMS_GRAVITY(typeInfo<Int>(), GravitySetting.END.gravity),
 
     /** ボトムバーの追加項目の表示位置 */
     ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT(typeInfo<Int>(), ExtraBottomItemsAlignment.DEFAULT.id),
@@ -152,6 +159,33 @@ enum class PreferenceKey(
 
     /** ブクマ登録前に確認ダイアログを表示する */
     USING_POST_BOOKMARK_DIALOG(typeInfo<Boolean>(), true),
+
+    /** 最後に開いた投稿ダイアログでの各種状態を引き継ぐ */
+    POST_BOOKMARK_SAVE_STATES(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのTwitter連携状態 */
+    POST_BOOKMARK_TWITTER_LAST_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのMastodon連携状態 */
+    POST_BOOKMARK_MASTODON_LAST_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのFacebook連携状態 */
+    POST_BOOKMARK_FACEBOOK_LAST_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのプライベート選択状態 */
+    POST_BOOKMARK_PRIVATE_LAST_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのTwitter連携状態 */
+    POST_BOOKMARK_TWITTER_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのMastodon連携状態 */
+    POST_BOOKMARK_MASTODON_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのFacebook連携状態 */
+    POST_BOOKMARK_FACEBOOK_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
+
+    /** 最後に開いた投稿ダイアログでのプライベート選択状態 */
+    POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
 
     /** 最初に表示するタブ */
     BOOKMARKS_INITIAL_TAB(typeInfo<Int>(), BookmarksTabType.POPULAR.ordinal),
@@ -228,6 +262,8 @@ object PreferenceKeyMigration {
                 4 -> migrateFromVersion4(context)
 
                 5 -> migrateFromVersion5(context)
+
+                6 -> migrateFromVersion6(context)
 
                 else -> break
             }
@@ -344,6 +380,36 @@ object PreferenceKeyMigration {
                 runCatching {
                     remove(PreferenceKey.DARK_THEME)
                     remove(PreferenceKey.THEME)
+                }
+            }
+        }
+    }
+
+    /**
+     * v6 -> v7
+     *
+     * `Gravity`を`GravitySetting`に変更
+     *
+     * それに伴い`Gravity.LEFT`,`Gravity.RIGHT`を`Gravity.START`,`Gravity.END`に修正する
+     */
+    @SuppressLint("RtlHardcoded")
+    private fun migrateFromVersion6(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val key = PreferenceKey.DRAWER_GRAVITY
+
+        prefs.edit {
+            val result = runCatching {
+                if (Gravity.LEFT == prefs.getInt(key)) {
+                    put(key, GravitySetting.START.gravity)
+                }
+                else {
+                    put(key, GravitySetting.END.gravity)
+                }
+            }
+
+            if (result.isFailure) {
+                runCatching {
+                    remove(PreferenceKey.DRAWER_GRAVITY)
                 }
             }
         }

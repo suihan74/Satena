@@ -5,8 +5,8 @@ import com.suihan74.satena.R
 
 enum class TapEntryAction(
     val id: Int,
-    @StringRes val titleId: Int
-) {
+    @StringRes override val textId: Int
+) : TextIdContainer {
     NOTHING(4, R.string.entry_action_nothing),
 
     SHOW_COMMENTS(0, R.string.entry_action_show_comments),

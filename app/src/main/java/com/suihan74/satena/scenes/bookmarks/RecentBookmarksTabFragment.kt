@@ -25,8 +25,8 @@ class RecentBookmarksTabFragment : BookmarksTabFragment() {
 
     // ------ //
 
-    override  val bookmarksLiveData : LiveData<List<Bookmark>>
-        get() = when(requireArguments().getEnum<BookmarksTabType>(ARG_TAB_TYPE)) {
+    override val bookmarksLiveData : LiveData<List<Bookmark>>
+        get() = when(bookmarksTabType) {
             BookmarksTabType.RECENT ->
                 bookmarksViewModel.recentBookmarks
 
@@ -38,6 +38,12 @@ class RecentBookmarksTabFragment : BookmarksTabFragment() {
 
             else -> throw IllegalArgumentException()
         }
+
+    override val bookmarksTabType : BookmarksTabType get() = _bookmarksTabType
+
+    private val _bookmarksTabType by lazy {
+        requireArguments().getEnum<BookmarksTabType>(ARG_TAB_TYPE)!!
+    }
 
     override fun reloadBookmarks() {
         bookmarksViewModel.let { vm ->

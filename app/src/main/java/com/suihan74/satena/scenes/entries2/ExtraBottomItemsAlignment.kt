@@ -2,12 +2,13 @@ package com.suihan74.satena.scenes.entries2
 
 import androidx.annotation.StringRes
 import com.suihan74.satena.R
+import com.suihan74.satena.models.TextIdContainer
 
 /** 画面によっては追加されるボトムバーボタンの追加位置 */
 enum class ExtraBottomItemsAlignment(
     val id: Int,
-    @StringRes val textId: Int
-) {
+    @StringRes override val textId: Int
+) : TextIdContainer {
     DEFAULT(0,
         R.string.pref_extra_bottom_items_alignment_default
     ),

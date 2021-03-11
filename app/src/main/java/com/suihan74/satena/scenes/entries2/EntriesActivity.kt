@@ -77,11 +77,7 @@ class EntriesActivity : AppCompatActivity() {
         val repository = EntriesRepository(
             context = this,
             client = HatenaClient,
-            accountLoader = AccountLoader(
-                this,
-                HatenaClient,
-                MastodonClientHolder
-            ),
+            accountLoader = app.accountLoader,
             ignoredEntriesRepo = app.ignoredEntriesRepository,
             favoriteSitesRepo = app.favoriteSitesRepository
         )

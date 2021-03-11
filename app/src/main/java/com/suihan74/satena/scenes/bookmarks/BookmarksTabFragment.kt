@@ -34,6 +34,9 @@ abstract class BookmarksTabFragment :
     /** ブクマリスト */
     abstract val bookmarksLiveData : LiveData<List<Bookmark>>
 
+    /** タブ種類(人気，新着，すべて，カスタム) */
+    abstract val bookmarksTabType : BookmarksTabType
+
     // ------ //
 
     val bookmarksActivity : BookmarksActivity
@@ -46,7 +49,7 @@ abstract class BookmarksTabFragment :
         get() = bookmarksActivity.contentsViewModel
 
     val viewModel by lazyProvideViewModel {
-        BookmarksTabViewModel(bookmarksViewModel.repository, bookmarksLiveData)
+        BookmarksTabViewModel(bookmarksViewModel.repository)
     }
 
     private var _binding : FragmentBookmarksTab3Binding? = null
@@ -72,6 +75,7 @@ abstract class BookmarksTabFragment :
             it.lifecycleOwner = viewLifecycleOwner
         }
 
+        viewModel.setBookmarksLiveData(viewLifecycleOwner, bookmarksLiveData, bookmarksTabType)
         initializeRecyclerView(binding)
 
         return binding.root

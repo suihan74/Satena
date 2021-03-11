@@ -27,4 +27,6 @@ class PopularBookmarksTabFragment : BookmarksTabFragment() {
 
     override val bookmarksLiveData: LiveData<List<Bookmark>>
         get() = bookmarksViewModel.popularBookmarks
+
+    override val bookmarksTabType: BookmarksTabType = BookmarksTabType.POPULAR
 }

@@ -1,26 +1,31 @@
 package com.suihan74.satena.scenes.bookmarks
 
-import android.content.Context
 import androidx.databinding.BindingAdapter
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
-import androidx.viewpager.widget.ViewPager
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 
-class BookmarksTabAdapter(
-    val context: Context,
-    fragmentManager: FragmentManager
-) : FragmentPagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+class BookmarksTabAdapter(val activity: FragmentActivity) : FragmentStateAdapter(activity) {
 
     private fun getTabType(position: Int) : BookmarksTabType =
         BookmarksTabType.fromOrdinal(position)
 
-    override fun getItem(position: Int) =
+    fun getTitleId(position: Int) : Int =
+        getTabType(position).textId
+
+    override fun createFragment(position: Int): Fragment =
         getTabType(position).createFragment()
 
-    override fun getPageTitle(position: Int): CharSequence =
-        context.getString(getTabType(position).textId)
+    override fun getItemCount(): Int = BookmarksTabType.values().size
 
-    override fun getCount() = BookmarksTabType.values().size
+    /**
+     * 現在表示中のフラグメントを取得する
+     */
+    fun currentFragment(viewPager: ViewPager2) : Fragment? {
+        val idx = viewPager.currentItem
+        return activity.supportFragmentManager.findFragmentByTag("f$idx")
+    }
 
     // ------ //
 
@@ -30,7 +35,7 @@ class BookmarksTabAdapter(
          */
         @JvmStatic
         @BindingAdapter("currentTab")
-        fun setCurrentTab(viewPager: ViewPager, tabType: BookmarksTabType?) {
+        fun setCurrentTab(viewPager: ViewPager2, tabType: BookmarksTabType?) {
             if (tabType != null && viewPager.currentItem != tabType.ordinal) {
                 viewPager.currentItem = tabType.ordinal
             }

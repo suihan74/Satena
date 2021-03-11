@@ -6,7 +6,7 @@
                 type="com.suihan74.satena.scenes.preferences.browser.UrlBlockingViewModel" />
     </data>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:background="?attr/panelBackground"
@@ -43,16 +43,29 @@
         </RelativeLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/back_button"
+                android:src="?homeAsUpIndicator"
+                app:backgroundTint="?colorPrimary"
+                app:fabSize="mini"
+                android:contentDescription="@string/pref_url_blocking_back_button_desc"
+                android:layout_marginEnd="24dp"
+                app:layout_constraintBottom_toBottomOf="@id/add_button"
+                app:layout_constraintEnd_toStartOf="@id/add_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/add_button"
                 android:src="@drawable/ic_baseline_add"
                 app:backgroundTint="?colorPrimary"
                 app:fabSize="normal"
-
+                android:contentDescription="@string/browser_url_blocking_dialog_title"
                 android:layout_marginBottom="24dp"
                 android:layout_marginEnd="24dp"
-                android:layout_gravity="end|bottom"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

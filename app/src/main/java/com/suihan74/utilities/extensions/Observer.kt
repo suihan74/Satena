@@ -14,3 +14,17 @@ fun <T> scopedObserver(onChanged: Observer<T>.(T)->Unit) : Observer<T> {
     }
     return observer
 }
+
+/**
+ * 初回の呼び出しを無視する`Observer`
+ */
+fun <T> observerForOnlyUpdates(onChanged: (T)->Unit) : Observer<T> {
+    var initialized = false
+    val body : (T)->Unit = {
+        if (initialized) {
+            onChanged(it)
+        }
+        initialized = true
+    }
+    return Observer(body)
+}

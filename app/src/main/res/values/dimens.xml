@@ -20,11 +20,20 @@
     <dimen name="purple_star_position">296dp</dimen>
 
     <!-- ダイアログサイズ -->
-    <fraction name="alert_dialog_width_ratio">88%</fraction>
+    <fraction name="alert_dialog_width_ratio">95%</fraction>
+    <fraction name="alert_dialog_width_ratio_ex_dark">88%</fraction>
 
     <!-- アローアイコンを差し替えたSpinnerの背景用 -->
     <item name="highlight_alpha_material_colored_for_custom_spinner" format="float" type="dimen">0.10</item>
 
     <!-- BrowserShortcutDialogの左右パディング -->
     <dimen name="browser_shortcut_horizontal_padding">12dp</dimen>
+
+    <!-- 設定画面のリストの左右パディング -->
+    <dimen name="pref_section_horizontal_padding">12dp</dimen>
+    <dimen name="pref_list_horizontal_padding">24dp</dimen>
+
+    <!-- 設定画面共通のアイテムパディング -->
+    <dimen name="pref_item_horizontal_padding">12dp</dimen>
+    <dimen name="pref_item_vertical_padding">12dp</dimen>
 </resources>

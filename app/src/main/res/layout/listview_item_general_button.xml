@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <import type="androidx.lifecycle.LiveData"/>
+
+        <variable
+                name="text"
+                type="LiveData&lt;CharSequence&gt;" />
+
+        <variable
+                name="subText"
+                type="LiveData&lt;CharSequence&gt;" />
+
+        <variable
+                name="mainTextColor"
+                type="LiveData&lt;Integer&gt;" />
+
+        <variable
+                name="subTextColor"
+                type="LiveData&lt;Integer&gt;" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:background="?selectableItemBackground"
+            android:paddingHorizontal="@dimen/pref_list_horizontal_padding"
+            android:paddingVertical="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/mainTextView"
+                android:text="@{text}"
+                tools:text="Title"
+                android:textSize="17sp"
+                android:textColor="?textColor"
+                textColorOverlap="@{mainTextColor}"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/subTextView"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/subTextView"
+                android:text="@{subText}"
+                tools:text="description"
+                android:textSize="14sp"
+                android:textColor="?textColor"
+                textColorOverlap="@{subTextColor}"
+                android:visibility="@{subText != null &amp;&amp; !subText.toString().empty}"
+                app:layout_constraintTop_toBottomOf="@id/mainTextView"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="4dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

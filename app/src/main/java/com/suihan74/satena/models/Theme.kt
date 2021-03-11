@@ -10,11 +10,11 @@ import com.suihan74.utilities.SafeSharedPreferences
  */
 enum class Theme(
     val id: Int,
-    @StringRes val textId: Int,
+    @StringRes override val textId: Int,
     @StyleRes val themeId: Int,
     @StyleRes val dialogActivityThemeId: Int,
     @StyleRes val dialogFragmentStyleId: Int,
-) {
+) : TextIdContainer {
     /** ライト */
     LIGHT(0,
         R.string.pref_generals_theme_light,

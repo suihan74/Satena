@@ -1,8 +1,11 @@
 package com.suihan74.utilities.bindings
 
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
+import androidx.annotation.DrawableRes
+import androidx.core.widget.ImageViewCompat
 import androidx.databinding.BindingAdapter
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Notice
@@ -10,6 +13,15 @@ import com.suihan74.satena.GlideApp
 import com.suihan74.utilities.extensions.users
 
 object ImageViewBindingAdapters {
+    @JvmStatic
+    @BindingAdapter("android:src", "tint")
+    fun setSource(imageView: ImageView, @DrawableRes drawableId: Int?, tint: ColorStateList?) {
+        drawableId?.let {
+            imageView.setImageResource(it)
+        }
+        ImageViewCompat.setImageTintList(imageView, tint)
+    }
+
     /** URL先の画像をImageViewで表示 */
     @JvmStatic
     @BindingAdapter(value = ["src", "errorSrc"], requireAll = false)

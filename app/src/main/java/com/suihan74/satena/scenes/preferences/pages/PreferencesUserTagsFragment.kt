@@ -4,35 +4,41 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesUserTagsBinding
-import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.userTag.TaggedUsersListFragment
 import com.suihan74.satena.scenes.preferences.userTag.UserTagRepository
 import com.suihan74.satena.scenes.preferences.userTag.UserTagViewModel
 import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.lazyProvideViewModel
 
-class PreferencesUserTagsFragment : PreferencesFragmentBase()
-{
+class PreferencesUserTagsFragment : Fragment() {
+    companion object {
+        fun createInstance() =
+            PreferencesUserTagsFragment()
+    }
+
+    // ------ //
+
     val viewModel by lazyProvideViewModel {
         UserTagViewModel(
             UserTagRepository(SatenaApplication.instance.userTagDao)
         )
     }
 
-    companion object {
-        fun createInstance() =
-            PreferencesUserTagsFragment()
-    }
+    // ------ //
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentPreferencesUserTagsBinding.inflate(
             inflater,
             container,
             false
-        )
+        ).also {
+            it.vm = viewModel
+            it.lifecycleOwner = viewLifecycleOwner
+        }
 
         viewModel.init(
             onFinally = { initializeViews(binding) }
@@ -40,6 +46,8 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase()
 
         return binding.root
     }
+
+    // ------ //
 
     /** ビューの初期化 */
     private fun initializeViews(binding: FragmentPreferencesUserTagsBinding) {
@@ -52,7 +60,7 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase()
         binding.addButton.setOnClickListener {
             val userTagsList = getCurrentFragment<UserTagsListFragment>()
             if (userTagsList != null) {
-                showNewUserTagDialog()
+                viewModel.openUserTagDialog(null, childFragmentManager)
             }
             else {
                 val taggedUsersList = getCurrentFragment<TaggedUsersListFragment>()
@@ -61,7 +69,13 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase()
                 }
             }
         }
+
+        binding.backButton.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
     }
+
+    // ------ //
 
     fun showTaggedUsersList() {
         val fragment = TaggedUsersListFragment.createInstance()
@@ -78,13 +92,11 @@ class PreferencesUserTagsFragment : PreferencesFragmentBase()
             .commitAllowingStateLoss()
     }
 
+    // ------ //
+
     private inline fun <reified T> getCurrentFragment() : T? {
         val fragment = childFragmentManager.findFragmentById(R.id.content_layout)
         @Suppress("UNCHECKED_CAST")
         return fragment as? T
-    }
-
-    private fun showNewUserTagDialog() {
-        viewModel.openUserTagDialog(null, childFragmentManager)
     }
 }

@@ -6,16 +6,15 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.webkit.URLUtil
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner.Companion.VIEW_MODEL_BOOKMARK_POST
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.getObjectExtra
@@ -61,15 +60,20 @@ class BookmarkPostActivity :
 
     override val bookmarkPostViewModel by lazyProvideViewModel(VIEW_MODEL_BOOKMARK_POST) {
         val repository = BookmarkPostRepository(
-            AccountLoader(
-                context = this,
-                client = HatenaClient,
-                mastodonClientHolder = MastodonClientHolder
-            ),
+            SatenaApplication.instance.accountLoader,
             SafeSharedPreferences.create(this)
         )
 
         BookmarkPostViewModel(repository)
+    }
+
+    // ------ //
+
+    private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode != RESULT_OK) {
+            showToast(R.string.msg_hatena_not_signed_in)
+            finish()
+        }
     }
 
     // ------ //
@@ -82,7 +86,7 @@ class BookmarkPostActivity :
         if (!prefs.contains(PreferenceKey.HATENA_RK)) {
             showToast(R.string.msg_need_to_sign_in_hatena)
             val intent = Intent(this, HatenaAuthenticationActivity::class.java)
-            startActivityForResult(intent, HatenaAuthenticationActivity.REQUEST_CODE)
+            signInLauncher.launch(intent)
         }
 
         setTheme(bookmarkPostViewModel.themeId)
@@ -138,18 +142,10 @@ class BookmarkPostActivity :
 
     // ------ //
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == HatenaAuthenticationActivity.REQUEST_CODE && resultCode != RESULT_OK) {
-            showToast(R.string.msg_hatena_not_signed_in)
-            finish()
-        }
-    }
-
-    // ------ //
-
     /** キャンセル時には編集情報を返す */
     private fun setCancelResult() {
+        bookmarkPostViewModel.onCancel()
+
         val intent = Intent().also {
             it.putObjectExtra(RESULT_ENTRY, bookmarkPostViewModel.entry.value)
             it.putObjectExtra(RESULT_EDIT_DATA, bookmarkPostViewModel.editData)

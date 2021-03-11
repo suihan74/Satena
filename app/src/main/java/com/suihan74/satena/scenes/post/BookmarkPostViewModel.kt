@@ -15,15 +15,15 @@ import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.ConnectionFailureException
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TootVisibility
 import com.suihan74.satena.scenes.post.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
 import com.suihan74.satena.scenes.post.exceptions.MultiplePostException
 import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.OnError
-import com.suihan74.utilities.OnSuccess
+import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
-import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,13 +40,13 @@ class BookmarkPostViewModel(
 
     val entry = repository.entry
 
-    val private = MutableLiveData<Boolean>(false)
+    val private = repository.private
 
-    val postTwitter = MutableLiveData<Boolean>(false)
+    val postTwitter = repository.postTwitter
 
-    val postMastodon = MutableLiveData<Boolean>(false)
+    val postMastodon = repository.postMastodon
 
-    val postFacebook = MutableLiveData<Boolean>(false)
+    val postFacebook = repository.postFacebook
 
     /** コメント長 */
     val commentLength = MutableLiveData(0)
@@ -54,21 +54,18 @@ class BookmarkPostViewModel(
     val comment = MutableLiveData<String>("").also {
         // コメントが変化したら文字数を計算し直す
         it.observeForever { comment ->
-            commentLength.value = repository.calcCommentLength(comment)
+            commentLength.value = BookmarkPostRepository.calcCommentLength(comment)
         }
     }
 
     /** Twitterアカウントが紐づいているか否か */
-    val signedInTwitter
-        get() = repository.signedInTwitter
+    val signedInTwitter = repository.signedInTwitter
 
     /** Mastodonアカウントが紐づいているか否か */
-    val signedInMastodon
-        get() = repository.signedInMastodon
+    val signedInMastodon = repository.signedInMastodon
 
     /** Facebookアカウントが紐づいているか否か */
-    val signedInFacebook
-        get() = repository.signedInFacebook
+    val signedInFacebook = repository.signedInFacebook
 
     /**
      * 読み込み・投稿処理中の操作防止のために使用
@@ -192,6 +189,13 @@ class BookmarkPostViewModel(
 
     // ------ //
 
+    /** 投稿をキャンセルして閉じたときの処理 */
+    fun onCancel() {
+        repository.saveStates()
+    }
+
+    // ------ //
+
     /**
      * ブクマを投稿する
      *
@@ -251,11 +255,14 @@ class BookmarkPostViewModel(
                 is CommentTooLongException ->
                     context.showToast(
                         R.string.msg_comment_too_long,
-                        BookmarkPostRepository.MAX_COMMENT_LENGTH
+                        e.limitLength
                     )
 
                 is TooManyTagsException ->
-                    context.showToast(R.string.msg_post_too_many_tags)
+                    context.showToast(
+                        R.string.msg_post_too_many_tags,
+                        e.limitCount
+                    )
 
                 else -> {
                     context.showToast(R.string.msg_post_bookmark_failed)
@@ -333,5 +340,34 @@ class BookmarkPostViewModel(
         }
 
         return adapter
+    }
+
+    // ------ //
+
+    /**
+     * Mastodon投稿の公開範囲を選択するダイアログを開く
+     */
+    fun openTootVisibilitySettingDialog(
+        context: Context,
+        fragmentManager: FragmentManager
+    ) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        val key = PreferenceKey.MASTODON_POST_VISIBILITY
+        val items = TootVisibility.values()
+        val labels = items.map { it.textId }
+        val initialSelected = prefs.getInt(key)
+
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_accounts_mastodon_status_visibility_desc)
+            .setSingleChoiceItems(labels, initialSelected) { f, which ->
+                SafeSharedPreferences.create<PreferenceKey>(f.context)
+                    .edit {
+                        putInt(key, which)
+                    }
+            }
+            .setNegativeButton(R.string.dialog_cancel)
+            .dismissOnClickItem(true)
+            .create()
+            .show(fragmentManager, null)
     }
 }

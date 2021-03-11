@@ -82,14 +82,6 @@ class FavoriteSitesFragment :
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-        // 設定画面では、他のタブが生成したオプションメニューがあったら消す
-        if (preferencesActivity != null) {
-            setHasOptionsMenu(false)
-        }
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

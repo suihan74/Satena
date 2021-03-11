@@ -27,3 +27,6 @@ typealias SuspendSwitcher<T> = suspend (T)->Boolean
 
 /** ダイアログが自身のインスタンスを添えて呼ぶリスナ */
 typealias DialogListener<T> = (value: T, f: DialogFragment)->Unit
+
+/** ダイアログが自身のインスタンスを添えて呼ぶリスナ(suspend関数) */
+typealias SuspendDialogListener<T> = suspend (value: T, f: DialogFragment)->Unit

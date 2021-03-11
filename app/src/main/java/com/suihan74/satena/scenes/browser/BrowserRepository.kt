@@ -8,6 +8,8 @@ import com.suihan74.hatenaLib.Keyword
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
+import com.suihan74.satena.models.browser.BookmarksListType
+import com.suihan74.satena.scenes.preferences.createLiveDataEnum
 import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
 
@@ -21,9 +23,10 @@ class BrowserRepository(
         initializer: (p: SafeSharedPreferences<BrowserSettingsKey>, key: BrowserSettingsKey)->ValueT
     ) = PreferenceLiveData(browserSettings, key, initializer)
 
+    // ------ //
+
     /** 利用する内部ブラウザ */
-    val browserMode by lazy {
-        MutableLiveData(
+    val browserMode = MutableLiveData(
             BrowserMode.fromId(prefs.getInt(PreferenceKey.BROWSER_MODE))
         ).apply {
             observeForever {
@@ -32,7 +35,6 @@ class BrowserRepository(
                 }
             }
         }
-    }
 
     /** アプリのテーマがダークテーマか */
     val isThemeDark by lazy {
@@ -97,6 +99,20 @@ class BrowserRepository(
         createBrowserSettingsLiveData(BrowserSettingsKey.USE_MARQUEE_ON_BACK_STACK_ITEMS) { p, key ->
             p.getBoolean(key)
         }
+
+    /** ブクマタブを自動的にロードする */
+    val autoFetchBookmarks =
+        createBrowserSettingsLiveData(BrowserSettingsKey.AUTO_FETCH_BOOKMARKS) { p, key ->
+            p.getBoolean(key)
+        }
+
+    /** 初期表示ブクマリスト */
+    val initialBookmarksList = createLiveDataEnum(
+        browserSettings,
+        BrowserSettingsKey.INITIAL_BOOKMARKS_LIST,
+        { it.ordinal },
+        { i -> BookmarksListType.fromOrdinal(i) }
+    )
 
     /** URLブロックを使用する */
     val useUrlBlocking =

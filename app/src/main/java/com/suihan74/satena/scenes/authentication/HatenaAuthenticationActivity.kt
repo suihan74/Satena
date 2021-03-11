@@ -4,21 +4,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.satena.ActivityBase
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityHatenaAuthenticationBinding
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class HatenaAuthenticationActivity : ActivityBase() {
+class HatenaAuthenticationActivity : AppCompatActivity() {
     companion object {
         /** 初回起動時の呼び出しかを判別する */
         const val EXTRA_FIRST_LAUNCH = "EXTRA_FIRST_LAUNCH"
@@ -41,7 +40,7 @@ class HatenaAuthenticationActivity : ActivityBase() {
                 showToast(R.string.msg_hatena_sign_in_info_is_blank)
             }
             else {
-                launch {
+                GlobalScope.launch {
                     signIn(name, password)
                 }
             }
@@ -72,33 +71,27 @@ class HatenaAuthenticationActivity : ActivityBase() {
     }
 
     private suspend fun signIn(name: String, password: String) = withContext(Dispatchers.Main) {
+        val app = SatenaApplication.instance
         try {
-            val account = HatenaClient.signInAsync(name, password).await()
+            val account = app.accountLoader.signInHatena(name, password)
 
-            showToast(R.string.msg_hatena_sign_in_succeeded, account.name)
+            app.showToast(R.string.msg_hatena_sign_in_succeeded, account.name)
 
-            AccountLoader(
-                applicationContext,
-                HatenaClient,
-                MastodonClientHolder
-            ).saveHatenaAccount(name, password, HatenaClient.rkStr!!)
-            SatenaApplication.instance.startCheckingNotificationsWorker(this@HatenaAuthenticationActivity)
+            app.startCheckingNotificationsWorker(this@HatenaAuthenticationActivity)
 
             // 前の画面に戻る
-            finish(RESULT_OK)
+            lifecycleScope.launch {
+                finish(RESULT_OK)
+            }
         }
         catch (e: Throwable) {
             Log.d("Hatena", e.message ?: "")
-            showToast(R.string.msg_hatena_sign_in_failed)
+            app.showToast(R.string.msg_hatena_sign_in_failed)
         }
 
         // 現在のアカウントがある場合、ログイン状態を復元する
         try {
-            AccountLoader(
-                applicationContext,
-                HatenaClient,
-                MastodonClientHolder
-            ).signInHatenaAsync()
+            app.accountLoader.signInHatenaAsync()
         }
         catch (e: Throwable) {
             Log.e("Hatena", e.message ?: "")

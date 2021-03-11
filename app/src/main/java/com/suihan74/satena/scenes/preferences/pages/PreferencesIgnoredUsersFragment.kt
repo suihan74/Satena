@@ -5,32 +5,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesIgnoredUsersBinding
-import com.suihan74.satena.scenes.preferences.PreferencesFragmentBase
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class PreferencesIgnoredUsersFragment : PreferencesFragmentBase() {
+class PreferencesIgnoredUsersFragment : Fragment() {
     companion object {
         fun createInstance() = PreferencesIgnoredUsersFragment()
     }
 
     private val viewModel by lazyProvideViewModel {
         val repository = IgnoredUsersRepository(
-            AccountLoader(
-                requireContext(),
-                HatenaClient,
-                MastodonClientHolder
-            )
+            SatenaApplication.instance.accountLoader
         )
         PreferencesIgnoredUsersViewModel(repository)
     }

@@ -94,7 +94,7 @@ class BookmarkDetailFragment : Fragment() {
 
         // タブの設定
         viewModel.bookmark.observe(viewLifecycleOwner) { bookmark ->
-            val adapter = DetailTabAdapter(viewModel, bookmark, viewLifecycleOwner, childFragmentManager)
+            val adapter = DetailTabAdapter(this, viewModel, bookmark)
             adapter.setup(requireContext(), binding.tabLayout, binding.tabPager)
         }
 

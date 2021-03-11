@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="titleId"
+                type="Integer" />
+
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.preferences.pages.BookmarkViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:background="?selectableItemBackground"
+            android:paddingHorizontal="@dimen/pref_list_horizontal_padding"
+            android:paddingVertical="@dimen/pref_item_vertical_padding"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/mainText"
+                android:text="@{titleId}"
+                tools:text="Title"
+                android:textSize="16sp"
+                android:textColor="?textColor"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/accountsLayout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <LinearLayout
+                android:id="@+id/accountsLayout"
+                android:alpha="@{!vm.defaultPrivatePost}"
+                android:orientation="horizontal"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/postPrivateToggle"
+                app:layout_constraintTop_toBottomOf="@id/mainText"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+            <ToggleButton
+                    android:id="@+id/postMastodonToggle"
+                    android:checked="@={vm.defaultPostMastodon}"
+                    android:visibility="@{vm.signedInMastodon}"
+                    android:enabled="@{!vm.defaultPrivatePost}"
+                    android:foreground="@drawable/ic_mstdn_logo"
+                    android:foregroundTint="@color/post_dialog_toggle_button"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:textColor="#00000000"
+                    app:tooltipText="@{@string/hint_mastodon_toggle}"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="16dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+
+            <ToggleButton
+                    android:id="@+id/postTwitterToggle"
+                    android:checked="@={vm.defaultPostTwitter}"
+                    android:visibility="@{vm.signedInTwitter}"
+                    android:enabled="@{!vm.defaultPrivatePost}"
+                    android:foreground="@drawable/ic_twitter_logo"
+                    android:foregroundTint="@color/post_dialog_toggle_button"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:textColor="#00000000"
+                    app:tooltipText="@{@string/hint_twitter_toggle}"
+                    android:layout_marginEnd="16dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+
+            <ToggleButton
+                    android:id="@+id/postFacebookToggle"
+                    android:checked="@={vm.defaultPostFacebook}"
+                    android:visibility="@{vm.signedInFacebook}"
+                    android:enabled="@{!vm.defaultPrivatePost}"
+                    android:foreground="@drawable/toggle_button_post_facebook"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:textColor="#00000000"
+                    app:tooltipText="@{@string/hint_facebook_toggle}"
+                    android:layout_marginEnd="16dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+        </LinearLayout>
+
+        <ToggleButton
+                android:id="@+id/postPrivateToggle"
+                android:checked="@={vm.defaultPrivatePost}"
+                android:foreground="@drawable/ic_baseline_lock"
+                android:foregroundTint="@color/post_dialog_toggle_button"
+                android:background="?selectableItemBackgroundBorderless"
+                android:textColor="#00000000"
+                app:tooltipText="@{@string/hint_private_toggle}"
+                app:layout_constraintStart_toEndOf="@id/accountsLayout"
+                app:layout_constraintTop_toTopOf="@id/accountsLayout"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

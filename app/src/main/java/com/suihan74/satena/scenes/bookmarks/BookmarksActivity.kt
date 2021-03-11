@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.MainThread
@@ -8,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
-import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityBookmarksBinding
@@ -55,7 +53,7 @@ class BookmarksActivity :
         val app = SatenaApplication.instance
 
         val repository = BookmarksRepository(
-            AccountLoader(this, HatenaClient, MastodonClientHolder),
+            app.accountLoader,
             SafeSharedPreferences.create(this),
             app.ignoredEntriesRepository,
             app.userTagDao
@@ -125,11 +123,6 @@ class BookmarksActivity :
                 })
             }
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        bookmarksViewModel.onActivityResult(requestCode, resultCode, data)
     }
 
     /** 戻るボタンの制御 */

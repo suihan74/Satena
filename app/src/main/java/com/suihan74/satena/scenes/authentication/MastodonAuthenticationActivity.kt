@@ -4,16 +4,16 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
-import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.satena.ActivityBase
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityMastodonAuthenticationBinding
-import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.sys1yagi.mastodon4j.MastodonClient
 import com.sys1yagi.mastodon4j.api.Scope
@@ -25,23 +25,21 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import org.chromium.customtabsclient.shared.CustomTabsHelper
 
-class MastodonAuthenticationActivity : ActivityBase() {
-    override val progressBackgroundId = R.id.click_guard
-    override val progressBarId = R.id.progress_bar
+class MastodonAuthenticationActivity : AppCompatActivity() {
 
-    companion object {
-        private var mAppRegistration : AppRegistration? = null
-    }
+    private lateinit var binding : ActivityMastodonAuthenticationBinding
+
+    // ------ //
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding = ActivityMastodonAuthenticationBinding.inflate(layoutInflater)
+        binding = ActivityMastodonAuthenticationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         binding.authButton.setOnClickListener {
             showProgressBar()
-            launch(Dispatchers.Main) {
+            lifecycleScope.launch(Dispatchers.Main) {
                 try {
                     startAuthorizeMastodon(binding.instanceName.text.toString())
                 }
@@ -62,7 +60,7 @@ class MastodonAuthenticationActivity : ActivityBase() {
         if (Intent.ACTION_VIEW == intent.action) {
             val uri = intent.data
             if (uri?.scheme == "satena-mastodon") {
-                launch(Dispatchers.Main) {
+                lifecycleScope.launch(Dispatchers.Main) {
                     showProgressBar()
                     try {
                         val instance = uri.host!!
@@ -85,6 +83,33 @@ class MastodonAuthenticationActivity : ActivityBase() {
         }
     }
 
+    // ------ //
+
+    /** Mastodonインスタンスへのアプリの登録情報を端末に保存する */
+    private fun writeAppRegistration(instance: String, appRegistration: AppRegistration) {
+        val filename = "mstdn_app_reg_$instance"
+        openFileOutput(filename, MODE_PRIVATE).use {
+            val json = Gson().toJson(appRegistration)
+            it.write(json.toByteArray())
+        }
+    }
+
+    /** 既に端末に保存されているMastodonインスタンスへのアプリの登録情報を取得する */
+    private fun readAppRegistration(instance: String) : AppRegistration? {
+        val filename = "mstdn_app_reg_$instance"
+        val result = runCatching {
+            openFileInput(filename).bufferedReader().useLines { lines ->
+                val json = lines.fold("") { some, text ->
+                    "$some\n$text"
+                }
+                Gson().fromJson(json, AppRegistration::class.java)
+            }
+        }
+        return result.getOrNull()
+    }
+
+    // ------ //
+
     private suspend fun startAuthorizeMastodon(instance: String) = withContext(Dispatchers.IO) {
         val client = MastodonClient.Builder(
             instance,
@@ -93,14 +118,17 @@ class MastodonAuthenticationActivity : ActivityBase() {
         ).build()
         val apps = Apps(client)
 
-        val appRegistration = apps.createApp(
-            "Satena for Android",
-            "satena-mastodon://$instance/callback",
-            Scope(Scope.Name.ALL),
-            "http://suihan74.orz.hm/blog/"
-        ).execute()
-
-        mAppRegistration = appRegistration
+        val appRegistration =
+            readAppRegistration(instance)
+                ?: apps.createApp(
+                    "Satena for Android",
+                    "satena-mastodon://$instance/callback",
+                    Scope(Scope.Name.ALL),
+                    getString(R.string.developer_website)
+                ).execute()
+                    .also {
+                        writeAppRegistration(instance, it)
+                    }
 
         val url = apps.getOAuthUrl(
             clientId = appRegistration.clientId,
@@ -136,7 +164,7 @@ class MastodonAuthenticationActivity : ActivityBase() {
         ).build()
         val apps = Apps(client)
 
-        val appRegistration = mAppRegistration!!
+        val appRegistration = readAppRegistration(instanceName)!!
 
         val clientId = appRegistration.clientId
         val clientSecret = appRegistration.clientSecret
@@ -151,23 +179,25 @@ class MastodonAuthenticationActivity : ActivityBase() {
         ).execute()
 
         // make a MastodonClient
-        MastodonClientHolder.signInAsync(
-            MastodonClient
-            .Builder(instanceName, OkHttpClient.Builder(), Gson())
-            .accessToken(accessToken.accessToken)
-            .build()
-        ).await()
-
         // persist AccessToken
-        AccountLoader(
-            applicationContext,
-            HatenaClient,
-            MastodonClientHolder
-        ).saveMastodonAccount(instanceName, accessToken.accessToken)
+        SatenaApplication.instance.accountLoader
+            .signInMastodon(instanceName, accessToken.accessToken)
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         setIntent(intent)
+    }
+
+    // ------ //
+
+    private fun showProgressBar() {
+        binding.clickGuard.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
+    }
+
+    private fun hideProgressBar() {
+        binding.clickGuard.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
     }
 }
