@@ -79,7 +79,10 @@ class BookmarksActivity :
         super.onCreate(savedInstanceState)
         setTheme(contentsViewModel.themeId)
 
-        binding = ActivityBookmarksBinding.inflate(layoutInflater)
+        binding = ActivityBookmarksBinding.inflate(layoutInflater).also {
+            it.vm = bookmarksViewModel
+            it.lifecycleOwner = this
+        }
         setContentView(binding.root)
 
         bookmarksViewModel.onCreate(this)
