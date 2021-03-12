@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.preferences.favoriteSites
 
 import android.app.Activity
 import com.suihan74.satena.models.FavoriteSite
+import com.suihan74.satena.scenes.preferences.pages.FavoriteSitesFragment
 
 /**
  *  設定・ブラウザドロワで異なる処理を実行するためのIF

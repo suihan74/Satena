@@ -6,8 +6,8 @@ import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.browser.bookmarks.BookmarksFrameFragment
 import com.suihan74.satena.scenes.browser.history.HistoryFragment
-import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesFragment
 import com.suihan74.satena.scenes.preferences.pages.BrowserFragment
+import com.suihan74.satena.scenes.preferences.pages.FavoriteSitesFragment
 
 /** ドロワに表示するタブ */
 enum class DrawerTab(

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.browser.BrowserActivity
+import com.suihan74.satena.scenes.preferences.pages.FavoriteSitesFragment
 
 class FavoriteSitesActionsImplForPreferences : FavoriteSitesViewModelInterface {
     private fun openMenuDialog(

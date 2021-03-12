@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.preferences.favoriteSites
+package com.suihan74.satena.scenes.preferences.pages
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,6 +10,9 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentBrowserFavoritesBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesActionsImplForBrowser
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesActionsImplForPreferences
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesViewModel
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.lazyProvideViewModel
 

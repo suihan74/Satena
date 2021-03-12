@@ -1,4 +1,4 @@
-package com.suihan74.satena.scenes.preferences.pages
+package com.suihan74.satena.scenes.preferences.ignored
 
 import android.app.Activity
 import android.content.Context
@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers

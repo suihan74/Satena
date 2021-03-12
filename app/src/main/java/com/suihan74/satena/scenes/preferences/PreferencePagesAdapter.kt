@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemPreferencesMenuBinding
-import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesFragment
 import com.suihan74.satena.scenes.preferences.pages.*
 import com.suihan74.utilities.Listener
 

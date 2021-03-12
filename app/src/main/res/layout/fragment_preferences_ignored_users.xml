@@ -3,7 +3,7 @@
     <data>
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.preferences.pages.IgnoredUsersViewModel" />
+                type="com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

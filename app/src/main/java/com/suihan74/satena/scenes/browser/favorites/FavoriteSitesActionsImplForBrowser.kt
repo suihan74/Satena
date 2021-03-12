@@ -4,8 +4,8 @@ import android.app.Activity
 import android.net.Uri
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.browser.BrowserActivity
-import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesFragment
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesViewModelInterface
+import com.suihan74.satena.scenes.preferences.pages.FavoriteSitesFragment
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.faviconUrl
 
