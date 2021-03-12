@@ -131,7 +131,7 @@
                 android:layout_height="wrap_content"/>
 
         <View
-                android:background="@android:color/transparent"
+                android:background="@color/clickGuard"
                 android:visibility="@{vm.staticLoading}"
                 android:clickable="true"
                 android:focusable="true"
