@@ -37,7 +37,7 @@
         </androidx.drawerlayout.widget.DrawerLayout>
 
         <View
-                android:background="@android:color/transparent"
+                android:background="@color/clickGuard"
                 android:visibility="@{vm.staticLoading}"
                 android:clickable="true"
                 android:focusable="true"
