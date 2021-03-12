@@ -40,16 +40,6 @@
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-        <ProgressBar
-                android:id="@+id/progress_bar"
-                app:layout_constraintTop_toTopOf="@id/swipe_layout"
-                app:layout_constraintStart_toStartOf="@id/swipe_layout"
-                app:layout_constraintEnd_toEndOf="@id/swipe_layout"
-                app:layout_constraintBottom_toBottomOf="@id/swipe_layout"
-                android:visibility="@{contentsVM.loadingBookmarksEntry}"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
         <androidx.coordinatorlayout.widget.CoordinatorLayout
                 android:id="@+id/bottom_area"
                 android:elevation="8dp"
@@ -138,6 +128,27 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <View
+                android:background="@android:color/transparent"
+                android:visibility="@{vm.staticLoading}"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:elevation="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        <ProgressBar
+                android:id="@+id/progress_bar"
+                app:layout_constraintTop_toTopOf="@id/swipe_layout"
+                app:layout_constraintStart_toStartOf="@id/swipe_layout"
+                app:layout_constraintEnd_toEndOf="@id/swipe_layout"
+                app:layout_constraintBottom_toBottomOf="@id/swipe_layout"
+                android:visibility="@{vm.staticLoading}"
+                android:elevation="8dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
