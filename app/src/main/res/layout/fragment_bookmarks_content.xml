@@ -54,21 +54,5 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
-        <View
-                android:background="@android:color/transparent"
-                android:visibility="@{bookmarksViewModel.staticLoading}"
-                android:clickable="true"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-
-        <ProgressBar
-                android:id="@+id/progress_bar"
-                android:visibility="@{bookmarksViewModel.staticLoading}"
-                android:layout_gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

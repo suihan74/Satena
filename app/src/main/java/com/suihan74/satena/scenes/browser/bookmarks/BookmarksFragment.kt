@@ -348,6 +348,11 @@ class BookmarksFragment :
         // 戻るボタンの割り込みを再設定する
         onBackPressedCallback?.isEnabled = opened
 
+        // 連携選択状態を保存する
+        if (!opened) {
+            bookmarkPostViewModel.repository.saveStates()
+        }
+
         binding.openPostAreaButton.setIconId(
             if (opened) R.drawable.ic_baseline_close
             else R.drawable.ic_add_comment

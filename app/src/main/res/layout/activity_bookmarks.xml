@@ -1,25 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/panelBackground"
-        android:id="@+id/drawer_layout">
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
+    </data>
 
-    <!-- Main contents -->
-    <FrameLayout
-            android:id="@+id/main_layout"
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent">
 
-    <!-- Drawer -->
-    <FrameLayout
-            android:id="@+id/entry_information_layout"
-            android:background="?attr/panelBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:layout_gravity="end"
-            android:layout_width="280dp"
-            android:layout_height="match_parent"/>
-</androidx.drawerlayout.widget.DrawerLayout>
+        <androidx.drawerlayout.widget.DrawerLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/panelBackground"
+                android:id="@+id/drawer_layout">
+
+            <!-- Main contents -->
+            <FrameLayout
+                    android:id="@+id/main_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            <!-- Drawer -->
+            <FrameLayout
+                    android:id="@+id/entry_information_layout"
+                    android:background="?attr/panelBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:layout_gravity="end"
+                    android:layout_width="280dp"
+                    android:layout_height="match_parent"/>
+        </androidx.drawerlayout.widget.DrawerLayout>
+
+        <View
+                android:background="@color/clickGuard"
+                android:visibility="@{vm.staticLoading}"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        <ProgressBar
+                android:id="@+id/progress_bar"
+                android:visibility="@{vm.staticLoading}"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

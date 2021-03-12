@@ -29,7 +29,7 @@ class BookmarksRepository(
     val accountLoader: AccountLoader,
     val prefs : SafeSharedPreferences<PreferenceKey>,
     val ignoredEntriesRepo : IgnoredEntriesRepository,
-    private val userTagDao: UserTagDao
+    private val userTagDao: UserTagDao,
 ) :
         // ユーザー非表示
         IgnoredUsersRepositoryInterface by IgnoredUsersRepository(accountLoader),
@@ -123,11 +123,6 @@ class BookmarksRepository(
     /** エントリ情報 */
     val entry by lazy {
         MutableLiveData<Entry?>()
-    }
-
-    /** エントリをロード中かどうか */
-    val loadingEntry by lazy {
-        SingleUpdateMutableLiveData<Boolean>(false)
     }
 
     /** ブクマを含むエントリ情報 */
@@ -238,9 +233,23 @@ class BookmarksRepository(
 
     // ------ //
 
+    private val _staticLoading = MutableLiveData<Boolean>()
+    /** 画面を停止して行うべき読み込みの発生状態 */
+    val staticLoading : LiveData<Boolean> = _staticLoading
+
+    private suspend fun startLoading() = withContext(Dispatchers.Main) {
+        _staticLoading.value = true
+    }
+
+    private suspend fun stopLoading() = withContext(Dispatchers.Main) {
+        _staticLoading.value = false
+    }
+
+    // ------ //
+
     suspend fun clear() = withContext(Dispatchers.Main) {
         loadingBookmarksEntryMutex.withLock {
-            loadingEntry.value = false
+            _staticLoading.value = false
             entry.value = null
             bookmarksEntry.value = null
             entryStarsEntry.value = null
@@ -259,7 +268,7 @@ class BookmarksRepository(
      * @throws TaskFailureException
      */
     suspend fun loadBookmarks(url: String) = withContext(Dispatchers.Default) {
-        loadingEntry.postValue(true)
+        startLoading()
 
         val modifyResult = runCatching {
             modifySpecificUrls(url)
@@ -326,9 +335,7 @@ class BookmarksRepository(
             throw TaskFailureException(cause = e)
         }
         finally {
-            withContext(Dispatchers.Main) {
-                loadingEntry.value = false
-            }
+            stopLoading()
         }
     }
 
@@ -381,9 +388,11 @@ class BookmarksRepository(
      * @throws ConnectionFailureException
      */
     suspend fun getEntry(url: String) : Entry {
+        startLoading()
         val result = runCatching {
             client.getEntryAsync(url).await()
         }
+        stopLoading()
         return result.getOrElse { throw ConnectionFailureException(it) }
     }
 
@@ -393,9 +402,11 @@ class BookmarksRepository(
      * @throws ConnectionFailureException
      */
     suspend fun getEntry(eid: Long) : Entry {
+        startLoading()
         val result = runCatching {
             client.getEntryAsync(eid).await()
         }
+        stopLoading()
         return result.getOrElse { throw ConnectionFailureException(it) }
     }
 
@@ -948,11 +959,14 @@ class BookmarksRepository(
 
         requireSignIn()
 
+        startLoading()
+
         val result = runCatching {
             client.deleteBookmarkAsync(url).await()
         }
 
         if (result.isFailure) {
+            stopLoading()
             throw TaskFailureException(cause = result.exceptionOrNull())
         }
 
@@ -979,6 +993,7 @@ class BookmarksRepository(
             bookmarksRecentCache.filterNot { it.user == user }
 
         refreshBookmarks()
+        stopLoading()
     }
 
     // ------ //
@@ -990,9 +1005,11 @@ class BookmarksRepository(
      */
     suspend fun readLater(entry: Entry) {
         requireSignIn()
+        startLoading()
         val result = runCatching {
             client.postBookmarkAsync(entry.url, readLater = true).await()
         }
+        stopLoading()
 
         if (result.isFailure) {
             throw TaskFailureException(cause = result.exceptionOrNull())

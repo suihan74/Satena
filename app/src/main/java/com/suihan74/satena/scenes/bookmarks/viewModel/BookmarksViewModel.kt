@@ -105,7 +105,7 @@ class BookmarksViewModel(
     var editData : BookmarkEditData? = null
 
     /** すべての操作を停止した状態で行うロード中 */
-    val staticLoading = MutableLiveData<Boolean>()
+    val staticLoading = repository.staticLoading
 
     // ------ //
 
@@ -165,10 +165,6 @@ class BookmarksViewModel(
                 repository.signIn()
             }
         }
-
-        repository.loadingEntry.observe(owner, Observer {
-            staticLoading.value = it
-        })
     }
 
     fun loadEntryFromIntent(
@@ -255,14 +251,9 @@ class BookmarksViewModel(
         )
 
         activity.lifecycleScope.launch(Dispatchers.Main) {
-            // 読込中表示
-            staticLoading.value = true
-
             val result = runCatching {
                 entryLoader()
             }
-
-            staticLoading.value = false
 
             val entry = result.getOrElse {
                 activity.showToast(R.string.msg_get_entry_failed)
@@ -464,7 +455,7 @@ class BookmarksViewModel(
     }
 
     /** カラースター購入ページを開く */
-    fun openPurchaseColorStarsPage(activity: Activity) {
+    private fun openPurchaseColorStarsPage(activity: Activity) {
         val intent = Intent(
             Intent.ACTION_VIEW,
             Uri.parse(repository.purchaseColorStarsPageUrl)

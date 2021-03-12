@@ -15,13 +15,13 @@ class BookmarksContentFragment : Fragment() {
 
     // ------ //
 
-    val bookmarksActivity
+    private val bookmarksActivity
         get() = requireActivity() as BookmarksActivity
 
-    val bookmarksViewModel
+    private val bookmarksViewModel
         get() = bookmarksActivity.bookmarksViewModel
 
-    val contentsViewModel
+    private val contentsViewModel
         get() = bookmarksActivity.contentsViewModel
 
     private var _binding : FragmentBookmarksContentBinding? = null
