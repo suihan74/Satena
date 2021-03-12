@@ -16,7 +16,7 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class PreferencesIgnoredUsersViewModel(
+class IgnoredUsersViewModel(
     private val repository: IgnoredUsersRepository
 ) : ViewModel() {
     /** (フィルタ前の)非表示ユーザーリスト */

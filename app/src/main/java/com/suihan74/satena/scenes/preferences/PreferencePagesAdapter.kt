@@ -70,17 +70,17 @@ enum class PreferencesTabMode(
     IGNORED_ENTRIES(8,
         R.string.pref_title_ignored_entries,
         R.drawable.ic_preferences_filters,
-        { PreferencesIgnoredEntriesFragment.createInstance() }),
+        { IgnoredEntriesFragment.createInstance() }),
 
     IGNORED_USERS(9,
         R.string.pref_title_ignored_users,
         R.drawable.ic_preferences_ignored_users,
-        { PreferencesIgnoredUsersFragment.createInstance() }),
+        { IgnoredUsersFragment.createInstance() }),
 
     USER_TAGS(10,
         R.string.pref_title_user_tags,
         R.drawable.ic_preferences_user_tags,
-        { PreferencesUserTagsFragment.createInstance() }),
+        { UserTagsFragment.createInstance() }),
 
     DUMMY_TAIL(11);
 

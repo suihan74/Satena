@@ -14,7 +14,7 @@ import com.suihan74.satena.databinding.FragmentTaggedUsersListBinding
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesTabMode
-import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
+import com.suihan74.satena.scenes.preferences.pages.UserTagsFragment
 import com.suihan74.utilities.bindings.setDivider
 
 class TaggedUsersListFragment : Fragment() {
@@ -24,8 +24,8 @@ class TaggedUsersListFragment : Fragment() {
 
     // ------ //
 
-    private val userTagsFragment : PreferencesUserTagsFragment
-        get() = requireParentFragment() as PreferencesUserTagsFragment
+    private val userTagsFragment : UserTagsFragment
+        get() = requireParentFragment() as UserTagsFragment
 
     private val viewModel : UserTagViewModel
         get() = userTagsFragment.viewModel

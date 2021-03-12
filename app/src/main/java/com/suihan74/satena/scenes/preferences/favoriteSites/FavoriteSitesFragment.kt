@@ -9,9 +9,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentBrowserFavoritesBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
-import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.browser.favorites.FavoriteSitesActionsImplForBrowser
-import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.lazyProvideViewModel
 
@@ -24,14 +22,10 @@ class FavoriteSitesFragment :
         fun createInstance() = FavoriteSitesFragment()
     }
 
+    // ------ //
+
     private val browserActivity : BrowserActivity?
         get() = requireActivity() as? BrowserActivity
-
-    private val browserViewModel : BrowserViewModel?
-        get() = browserActivity?.viewModel
-
-    private val preferencesActivity : PreferencesActivity?
-        get() = requireActivity() as? PreferencesActivity
 
     val viewModel by lazyProvideViewModel {
         val actionsImpl =
@@ -46,6 +40,8 @@ class FavoriteSitesFragment :
 
     private var _binding : FragmentBrowserFavoritesBinding? = null
     private val binding get() = _binding!!
+
+    // ------ //
 
     override fun onCreateView(
         inflater: LayoutInflater,

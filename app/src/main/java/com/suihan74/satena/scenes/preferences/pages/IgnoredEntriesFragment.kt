@@ -21,9 +21,9 @@ import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.lazyProvideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
 
-class PreferencesIgnoredEntriesFragment : Fragment() {
+class IgnoredEntriesFragment : Fragment() {
     companion object {
-        fun createInstance() = PreferencesIgnoredEntriesFragment()
+        fun createInstance() = IgnoredEntriesFragment()
     }
 
     // ------ //

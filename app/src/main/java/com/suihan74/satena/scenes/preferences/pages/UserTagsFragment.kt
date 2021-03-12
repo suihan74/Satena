@@ -14,10 +14,10 @@ import com.suihan74.satena.scenes.preferences.userTag.UserTagViewModel
 import com.suihan74.satena.scenes.preferences.userTag.UserTagsListFragment
 import com.suihan74.utilities.lazyProvideViewModel
 
-class PreferencesUserTagsFragment : Fragment() {
+class UserTagsFragment : Fragment() {
     companion object {
         fun createInstance() =
-            PreferencesUserTagsFragment()
+            UserTagsFragment()
     }
 
     // ------ //

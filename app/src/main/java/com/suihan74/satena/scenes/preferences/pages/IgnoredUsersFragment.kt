@@ -17,16 +17,16 @@ import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class PreferencesIgnoredUsersFragment : Fragment() {
+class IgnoredUsersFragment : Fragment() {
     companion object {
-        fun createInstance() = PreferencesIgnoredUsersFragment()
+        fun createInstance() = IgnoredUsersFragment()
     }
 
     private val viewModel by lazyProvideViewModel {
         val repository = IgnoredUsersRepository(
             SatenaApplication.instance.accountLoader
         )
-        PreferencesIgnoredUsersViewModel(repository)
+        IgnoredUsersViewModel(repository)
     }
 
     override fun onCreateView(

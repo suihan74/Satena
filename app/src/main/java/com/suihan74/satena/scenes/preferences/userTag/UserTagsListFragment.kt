@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentUserTagsListBinding
 import com.suihan74.satena.models.userTag.TagAndUsers
-import com.suihan74.satena.scenes.preferences.pages.PreferencesUserTagsFragment
+import com.suihan74.satena.scenes.preferences.pages.UserTagsFragment
 import com.suihan74.utilities.bindings.setDivider
 
 class UserTagsListFragment : Fragment() {
@@ -19,8 +19,8 @@ class UserTagsListFragment : Fragment() {
 
     // ------ //
 
-    private val userTagsFragment: PreferencesUserTagsFragment
-        get() = requireParentFragment() as PreferencesUserTagsFragment
+    private val userTagsFragment: UserTagsFragment
+        get() = requireParentFragment() as UserTagsFragment
 
     private val viewModel: UserTagViewModel
         get() = userTagsFragment.viewModel
