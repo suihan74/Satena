@@ -88,11 +88,9 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                 val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
                 val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
 
-                activity?.let { activity ->
-                    viewModel.waiting.observe(activity) {
-                        positiveButton?.isEnabled = !it
-                        negativeButton?.isEnabled = !it
-                    }
+                viewModel.waiting.observe(this) {
+                    positiveButton?.isEnabled = !it
+                    negativeButton?.isEnabled = !it
                 }
 
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
