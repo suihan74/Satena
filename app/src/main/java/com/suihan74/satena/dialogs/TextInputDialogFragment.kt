@@ -13,7 +13,9 @@ import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogTextInputBinding
 import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getIntOrNull
+import com.suihan74.utilities.extensions.showSoftInputMethod
 import com.suihan74.utilities.extensions.withArguments
 import kotlinx.coroutines.launch
 
@@ -51,6 +53,9 @@ class TextInputDialogFragment : DialogFragment() {
         DialogViewModel(requireArguments())
     }
 
+    private var _binding : FragmentDialogTextInputBinding? = null
+    private val binding get() = _binding!!
+
     // ------ //
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -75,6 +80,7 @@ class TextInputDialogFragment : DialogFragment() {
             it.lifecycleOwner = this
         }
         builder.setView(binding.root)
+        _binding = binding
 
         return builder.show().also { dialog ->
             dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
@@ -102,6 +108,18 @@ class TextInputDialogFragment : DialogFragment() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        dialog.alsoAs<AlertDialog> {
+            it.showSoftInputMethod(requireActivity(), binding.editText)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     // ------ //
