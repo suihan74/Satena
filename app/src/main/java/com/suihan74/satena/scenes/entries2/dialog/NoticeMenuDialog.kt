@@ -49,7 +49,7 @@ class NoticeMenuDialog : DialogFragment() {
 
         val titleViewBinding = ListviewItemNotices2Binding.inflate(localLayoutInflater(), null, false).also {
             it.notice = notice
-            it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: requireActivity()
+            it.lifecycleOwner = this
         }
 
         val items: List<Pair<String, () -> Unit>> = notice.users

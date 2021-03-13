@@ -39,7 +39,7 @@ class UserTagDialogFragment : DialogFragment() {
         val inflater = localLayoutInflater()
         val binding = FragmentDialogUserTagBinding.inflate(inflater, null, false).also {
             it.vm = viewModel
-            it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: activity
+            it.lifecycleOwner = this
         }
 
         return createBuilder()

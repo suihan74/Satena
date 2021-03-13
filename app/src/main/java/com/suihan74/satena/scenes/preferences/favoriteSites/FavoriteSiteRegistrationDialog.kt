@@ -74,8 +74,8 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = localLayoutInflater()
         val binding = DialogFavoriteSiteRegistrationBinding.inflate(inflater, null, false).also {
-            it.lifecycleOwner = activity
             it.vm = viewModel
+            it.lifecycleOwner = this
         }
 
         return createBuilder()

@@ -72,7 +72,7 @@ class TextInputDialogFragment : DialogFragment() {
 
         val binding = FragmentDialogTextInputBinding.inflate(layoutInflater, null, false).also {
             it.vm = viewModel
-            it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: requireActivity()
+            it.lifecycleOwner = this
         }
         builder.setView(binding.root)
 
