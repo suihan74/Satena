@@ -59,7 +59,7 @@ class BrowserShortcutDialog : BottomSheetDialogFragment() {
             false
         ).also {
             it.vm = viewModel
-            it.lifecycleOwner = requireActivity()
+            it.lifecycleOwner = this
         }
 
         viewModel.fragment = this

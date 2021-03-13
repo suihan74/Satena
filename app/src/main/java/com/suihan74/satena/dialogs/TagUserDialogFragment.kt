@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.*
@@ -18,8 +19,7 @@ import com.suihan74.utilities.SuspendSwitcher
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.showSoftInputMethod
 import com.suihan74.utilities.lock
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.TimeUnit
@@ -27,6 +27,11 @@ import java.util.concurrent.TimeUnit
 class TagUserDialogFragment : DialogFragment() {
     companion object {
         fun createInstance() = TagUserDialogFragment()
+
+        /**
+         * 入力中の内容が変更されてからユーザーの存在確認のための通信開始までの待機時間
+         */
+        private const val CHECKING_USER_EXISTENCE_DELAY = 750L
     }
 
     // ------ //
@@ -47,18 +52,29 @@ class TagUserDialogFragment : DialogFragment() {
         binding.userName.apply {
             setText(viewModel.userName)
             addTextChangedListener(object : TextWatcher {
+                private var checkExistsJob : Job? = null
                 override fun afterTextChanged(s: Editable?) {}
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     val userName = text.toString()
-                    viewModel.updateUserExistence(userName)
+                    GlideApp.with(context)
+                        .clear(binding.userIcon)
+                    binding.progressBar.visibility = View.VISIBLE
+                    checkExistsJob?.cancel()
+                    checkExistsJob = lifecycleScope.launch {
+                        runCatching {
+                            delay(CHECKING_USER_EXISTENCE_DELAY)
+                            viewModel.updateUserExistence(userName)
+                        }
+                    }
                 }
             })
         }
 
         // 入力したIDに対応するユーザーアイコンを表示する
-        viewModel.userIconUrl.observe(requireActivity(), Observer {
+        viewModel.userIconUrl.observe(this, Observer {
             val context = requireContext()
+            binding.progressBar.visibility = View.INVISIBLE
             if (it == null) {
                 GlideApp.with(context)
                     .clear(binding.userIcon)
@@ -154,7 +170,7 @@ class TagUserDialogFragment : DialogFragment() {
         /**
          * 入力されたユーザーIDの存在確認
          */
-        fun updateUserExistence(userName: String) = viewModelScope.launch(Dispatchers.Default) {
+        suspend fun updateUserExistence(userName: String) = withContext(Dispatchers.Default) {
             val url = "https://b.hatena.ne.jp/$userName/"
             this@DialogViewModel.userName = userName
 

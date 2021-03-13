@@ -74,8 +74,8 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = localLayoutInflater()
         val binding = DialogFavoriteSiteRegistrationBinding.inflate(inflater, null, false).also {
-            it.lifecycleOwner = activity
             it.vm = viewModel
+            it.lifecycleOwner = this
         }
 
         return createBuilder()
@@ -88,11 +88,9 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
                 val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
                 val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
 
-                activity?.let { activity ->
-                    viewModel.waiting.observe(activity) {
-                        positiveButton?.isEnabled = !it
-                        negativeButton?.isEnabled = !it
-                    }
+                viewModel.waiting.observe(this) {
+                    positiveButton?.isEnabled = !it
+                    negativeButton?.isEnabled = !it
                 }
 
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {

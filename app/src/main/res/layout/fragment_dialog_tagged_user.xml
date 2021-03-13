@@ -20,6 +20,16 @@
 
     <ImageView
             android:id="@+id/user_icon"
+            android:contentDescription="@string/description_user_icon"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="8dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"/>
+
+    <ProgressBar
+            android:id="@+id/progress_bar"
+            android:visibility="invisible"
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="8dp"

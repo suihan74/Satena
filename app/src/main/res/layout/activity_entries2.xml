@@ -93,6 +93,7 @@
                         android:focusableInTouchMode="true"
                         android:visibility="gone"
                         android:background="@color/clickGuard"
+                        android:elevation="7dp"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
 
@@ -111,6 +112,7 @@
                         android:background="#00000000"
                         android:clickable="true"
                         android:focusable="true"
+                        android:elevation="7dp"
                         android:layout_width="96dp"
                         android:layout_height="300dp"/>
 
@@ -262,7 +264,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:focusableInTouchMode="true"
-                    android:background="#a0000000"
+                    android:background="@color/clickGuard"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
 

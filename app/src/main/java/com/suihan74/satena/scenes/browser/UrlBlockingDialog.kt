@@ -45,7 +45,7 @@ class UrlBlockingDialog : DialogFragment() {
             false
         ).also {
             it.vm = viewModel
-            it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: requireActivity()
+            it.lifecycleOwner = this
         }
 
         val builder = createBuilder()

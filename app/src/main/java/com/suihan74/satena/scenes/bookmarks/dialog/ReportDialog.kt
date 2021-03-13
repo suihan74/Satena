@@ -53,7 +53,7 @@ class ReportDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val binding = FragmentDialogReportBinding.inflate(localLayoutInflater(), null, false).also {
             it.vm = viewModel
-            it.lifecycleOwner = parentFragment?.viewLifecycleOwner
+            it.lifecycleOwner = this
             initialize(it)
         }
 

@@ -28,6 +28,8 @@ class UserTagDialogFragment : DialogFragment() {
         private const val ARG_EDITING_USER_TAG = "ARG_EDITING_USER_TAG"
     }
 
+    // ------ //
+
     private val viewModel by lazyProvideViewModel {
         val args = requireArguments()
         val editingUserTag = args.getObject<Tag>(ARG_EDITING_USER_TAG)
@@ -35,11 +37,13 @@ class UserTagDialogFragment : DialogFragment() {
         DialogViewModel(editingUserTag)
     }
 
+    // ------ //
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = localLayoutInflater()
         val binding = FragmentDialogUserTagBinding.inflate(inflater, null, false).also {
             it.vm = viewModel
-            it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: activity
+            it.lifecycleOwner = this
         }
 
         return createBuilder()
@@ -50,7 +54,7 @@ class UserTagDialogFragment : DialogFragment() {
             .show()
             .also { dialog ->
                 // IME表示を維持するための設定
-                dialog.showSoftInputMethod(requireActivity(), binding.tagName)
+                showSoftInputMethod(binding.tagName)
 
                 // 登録
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {

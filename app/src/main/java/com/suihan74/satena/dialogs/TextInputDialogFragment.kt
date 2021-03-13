@@ -14,6 +14,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogTextInputBinding
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.getIntOrNull
+import com.suihan74.utilities.extensions.showSoftInputMethod
 import com.suihan74.utilities.extensions.withArguments
 import kotlinx.coroutines.launch
 
@@ -72,11 +73,13 @@ class TextInputDialogFragment : DialogFragment() {
 
         val binding = FragmentDialogTextInputBinding.inflate(layoutInflater, null, false).also {
             it.vm = viewModel
-            it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: requireActivity()
+            it.lifecycleOwner = this
         }
         builder.setView(binding.root)
 
         return builder.show().also { dialog ->
+            showSoftInputMethod(binding.editText)
+
             dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
                 lifecycleScope.launch {
                     runCatching {
