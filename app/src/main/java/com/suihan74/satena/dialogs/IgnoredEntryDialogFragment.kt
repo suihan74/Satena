@@ -178,18 +178,18 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             .setNegativeButton(R.string.dialog_cancel, null)
             .setView(binding.root)
             .show()
-            .apply {
+            .also { dialog ->
                 // IME表示を維持するための設定
-                showSoftInputMethod(requireActivity(), queryText)
+                showSoftInputMethod(queryText)
 
-                getButton(DialogInterface.BUTTON_POSITIVE).let {
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).let { button ->
                     // (主にキーボード操作の場合)クエリテキストエディタ上でENTER押したらOKボタンにフォーカス移動する
                     queryText.apply {
-                        nextFocusForwardId = it.id
-                        nextFocusDownId = it.id
+                        nextFocusForwardId = button.id
+                        nextFocusDownId = button.id
                     }
 
-                    it.setOnClickListener {
+                    button.setOnClickListener {
                         if (queryText.text.isNullOrBlank()) {
                             showToast(R.string.msg_ignored_entry_dialog_empty_query)
                             return@setOnClickListener
