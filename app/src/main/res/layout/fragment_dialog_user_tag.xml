@@ -19,6 +19,7 @@
                 android:text="@={vm.tagName}"
                 android:inputType="textNoSuggestions"
                 android:importantForAutofill="no"
+                android:selectAllOnFocus="true"
                 android:singleLine="true"
                 android:hint="@string/user_tag_dialog_name_hint"
                 android:layout_width="match_parent"
