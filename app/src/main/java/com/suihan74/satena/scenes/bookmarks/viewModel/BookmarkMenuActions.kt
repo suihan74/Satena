@@ -3,17 +3,16 @@ package com.suihan74.satena.scenes.bookmarks.viewModel
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
-import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.hatenaLib.Entry
-import com.suihan74.hatenaLib.Star
-import com.suihan74.hatenaLib.StarsEntry
+import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.dialog.BookmarkMenuDialog
 import com.suihan74.satena.scenes.bookmarks.dialog.ReportDialog
 import com.suihan74.satena.scenes.bookmarks.dialog.StarDeletionDialog
@@ -55,6 +54,10 @@ class BookmarkMenuActionsImpl(
         )
 
         dialog.setOnShowEntries { user, f -> showEntries(f.requireActivity(), user) }
+
+        dialog.setOnShowCommentEntry { b, f -> showCommentEntry(f.requireActivity(), entry, b) }
+
+        dialog.setOnShareCommentPageUrl { b, f -> shareCommentPageUrl(f.requireActivity(), entry, b) }
 
         dialog.setOnIgnoreUser { user, f -> ignoreUser(user, f.requireActivity().lifecycleScope) }
 
@@ -98,6 +101,27 @@ class BookmarkMenuActionsImpl(
             putExtra(EntriesActivity.EXTRA_USER, user)
         }
         activity.startActivity(intent)
+    }
+
+    /**
+     * ブクマに対するブクマページを開く
+     */
+    private fun showCommentEntry(activity: Activity, entry: Entry, bookmark: Bookmark) {
+        val intent = Intent(activity, BookmarksActivity::class.java).apply {
+            putExtra(BookmarksActivity.EXTRA_ENTRY_URL, bookmark.getCommentPageUrl(entry))
+        }
+        activity.startActivity(intent)
+    }
+
+    /**
+     * ブクマのコメントページURLを「共有」する
+     */
+    private fun shareCommentPageUrl(activity: Activity, entry: Entry, bookmark: Bookmark) {
+        val url = bookmark.getCommentPageUrl(entry)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        activity.startActivity(
+            Intent.createChooser(intent, url)
+        )
     }
 
     /** ユーザーを非表示にする */
