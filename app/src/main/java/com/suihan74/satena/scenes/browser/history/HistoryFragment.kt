@@ -153,10 +153,12 @@ class HistoryFragment :
 
     // ------ //
 
-    override fun onTabSelected() {}
+    override fun onTabSelected() {
+        onBackPressedCallback?.isEnabled = true
+    }
 
     override fun onTabUnselected() {
-        onBackPressedCallback?.handleOnBackPressed()
+        onBackPressedCallback?.isEnabled = false
     }
 
     override fun onTabReselected() {

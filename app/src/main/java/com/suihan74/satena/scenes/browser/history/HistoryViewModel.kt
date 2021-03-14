@@ -39,7 +39,7 @@ class HistoryViewModel(
     val keyword = repository.keyword
 
     /** キーワード入力ボックスの表示状態 */
-    val keywordEditTextVisible = MutableLiveData(false)
+    val keywordEditTextVisible = MutableLiveData<Boolean>()
 
     /** 日付表示のフォーマット */
     val dateFormatter : DateTimeFormatter by lazy {
@@ -56,16 +56,9 @@ class HistoryViewModel(
             }
         })
 
-        keywordEditTextVisible.observe(owner, Observer {
-            if (it) {
-                keyword.observe(owner, Observer {
-                    viewModelScope.launch {
-                        repository.loadHistories()
-                    }
-                })
-            }
-            else {
-                keyword.removeObservers(owner)
+        keyword.observe(owner, Observer {
+            viewModelScope.launch {
+                repository.loadHistories()
             }
         })
     }
