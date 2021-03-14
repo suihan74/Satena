@@ -725,7 +725,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
                         Jsoup.parse(bodyBytes.inputStream(), charsetName, url)
                     }
 
-                val title = doc.allElements
+                val allElements = doc.allElements
+
+                val title = allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:title" }
                     ?.attr("content")
                     ?: doc.select("title").html().let { title ->
@@ -733,17 +735,21 @@ object HatenaClient : BaseClient(), CoroutineScope {
                         else title
                     }
 
-                val description = doc.allElements
+                val description = allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:description" }
                     ?.attr("content")
                     ?: ""
 
-                val actualUrl = doc.allElements
-                    .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:url" }
-                    ?.attr("content")
-                    ?: url
+                // コメントページの"og:url"には元のエントリページのURLが入っているため，分けて処理する
+                val commentPageUrlRegex = Regex("""^$B_BASE_URL/entry/\d+/comment/\S+$""")
+                val actualUrl =
+                    if (commentPageUrlRegex.matches(url)) url
+                    else allElements
+                        .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:url" }
+                        ?.attr("content")
+                        ?: url
 
-                val imageUrl = doc.allElements
+                val imageUrl = allElements
                     .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:image" }
                     ?.attr("content")
                     ?: ""

@@ -55,11 +55,22 @@ data class Bookmark (
         transform: ((String)->CharSequence)? = null
     ) = tags.joinToString(separator, prefix, postfix, limit, truncated, transform)
 
-    // ブックマーク自身を指すURLを取得する
+    /**
+     * ブックマーク自身を指すURLを取得する
+     *
+     * スターをつけるときに使用
+     */
     fun getBookmarkUrl(entry: Entry) : String {
         val dateFormat = DateTimeFormatter.ofPattern("uuuuMMdd")
         val date = timestamp.format(dateFormat)
         return "${HatenaClient.B_BASE_URL}/$user/$date#bookmark-${entry.id}"
+    }
+
+    /**
+     * ブコメページのURL
+     */
+    fun getCommentPageUrl(entry: Entry) : String {
+        return "${HatenaClient.B_BASE_URL}/entry/${entry.id}/comment/$user"
     }
 
     /** タグを含んだコメントを取得する */
