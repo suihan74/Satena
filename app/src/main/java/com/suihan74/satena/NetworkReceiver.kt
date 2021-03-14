@@ -27,8 +27,8 @@ class NetworkReceiver(private val context: Context) {
 
     @RequiresApi(23)
     val networkCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network?) = checkConnection()
-        override fun onLost(network: Network?) = checkConnection()
+        override fun onAvailable(network: Network) = checkConnection()
+        override fun onLost(network: Network) = checkConnection()
     }
 
     @RequiresApi(23)
