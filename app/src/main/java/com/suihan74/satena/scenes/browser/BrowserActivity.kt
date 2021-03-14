@@ -260,6 +260,8 @@ class BrowserActivity :
         val drawerViewPager = binding.drawerViewPager
         val mainArea = binding.mainArea
 
+        drawerLayout.setGravity(viewModel.drawerGravity)
+
         drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
                 viewModel.drawerOpened.value = true

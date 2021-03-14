@@ -11,7 +11,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.suihan74.utilities.extensions.dp2px
 
 @SuppressLint("RtlHardcoded")
-class DrawerLayout @JvmOverloads constructor(
+open class DrawerLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleId: Int = 0
