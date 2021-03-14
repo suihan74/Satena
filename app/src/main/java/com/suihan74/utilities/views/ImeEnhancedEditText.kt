@@ -9,6 +9,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.R
 import androidx.appcompat.widget.AppCompatEditText
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.alsoAs
 
 class ImeEnhancedEditText @JvmOverloads constructor(
@@ -16,6 +17,15 @@ class ImeEnhancedEditText @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleId: Int = R.attr.editTextStyle
 ) : AppCompatEditText(context, attrs, defStyleId) {
+
+    fun showSoftInputMethod() : Boolean {
+        isFocusable = true
+        isFocusableInTouchMode = true
+        requestFocus()
+        requestFocusFromTouch()
+        val imm = context.getSystemService(InputMethodManager::class.java)
+        return imm.showSoftInput(this, 0)
+    }
 
     fun hideSoftInputMethod(nextFocus: View? = null) {
         val imm = context.getSystemService(Service.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -54,5 +64,18 @@ class ImeEnhancedEditText @JvmOverloads constructor(
             }
         }
         return super.onKeyPreIme(keyCode, event)
+    }
+
+    // ------ //
+
+    private var onVisibilityChanged : Listener<Int>? = null
+
+    fun setOnVisibilityChangedListener(l : Listener<Int>?) {
+        onVisibilityChanged = l
+    }
+
+    override fun onVisibilityChanged(changedView: View, visibility: Int) {
+        super.onVisibilityChanged(changedView, visibility)
+        onVisibilityChanged?.invoke(visibility)
     }
 }

@@ -39,7 +39,7 @@ class HistoryViewModel(
     val keyword = repository.keyword
 
     /** キーワード入力ボックスの表示状態 */
-    val keywordEditTextVisible = MutableLiveData(false)
+    val keywordEditTextVisible = MutableLiveData<Boolean>()
 
     /** 日付表示のフォーマット */
     val dateFormatter : DateTimeFormatter by lazy {
@@ -55,19 +55,6 @@ class HistoryViewModel(
                 createDisplayItems(it)
             }
         })
-
-        keywordEditTextVisible.observe(owner, Observer {
-            if (it) {
-                keyword.observe(owner, Observer {
-                    viewModelScope.launch {
-                        repository.loadHistories()
-                    }
-                })
-            }
-            else {
-                keyword.removeObservers(owner)
-            }
-        })
     }
 
     // ------ //
@@ -77,6 +64,11 @@ class HistoryViewModel(
         val activityViewModel = browserActivity.viewModel
         activityViewModel.goAddress(url)
         browserActivity.closeDrawer()
+    }
+
+    /** 履歴をロードし直す */
+    fun loadHistories() = viewModelScope.launch {
+        repository.loadHistories()
     }
 
     /** 履歴の続きを取得する */

@@ -15,7 +15,7 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.extensions.showSoftInputMethod
+import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -98,21 +98,27 @@ class HistoryFragment :
         }
 
         // 検索ボックスの表示状態にあわせてIMEの表示を切り替える
-        viewModel.keywordEditTextVisible.observe(viewLifecycleOwner) {
-            if (it) {
-                browserActivity.showSoftInputMethod(binding.searchText)
+        viewModel.keywordEditTextVisible.observe(viewLifecycleOwner, observerForOnlyUpdates {
+            if (it == true) {
+                binding.searchText.setOnVisibilityChangedListener { visibility ->
+                    if (visibility == View.VISIBLE) {
+                        binding.searchText.showSoftInputMethod()
+                        binding.searchText.setOnVisibilityChangedListener(null)
+                    }
+                }
                 enableOnBackPressedCallback()
             }
             else {
-                browserActivity.hideSoftInputMethod(binding.mainLayout)
+                binding.searchText.hideSoftInputMethod(binding.mainLayout)
                 disableOnBackPressedCallback()
             }
-        }
+        })
 
         // 入力完了でIMEを閉じる
         binding.searchText.setOnEditorActionListener { _, action, _ ->
             when (action) {
-                EditorInfo.IME_ACTION_DONE -> {
+                EditorInfo.IME_ACTION_SEARCH -> {
+                    viewModel.loadHistories()
                     browserActivity.hideSoftInputMethod(binding.mainLayout)
                     true
                 }
@@ -131,11 +137,12 @@ class HistoryFragment :
 
     // ------ //
 
-    /** 戻るボタンで検索ボックスを閉じる */
+    /** 戻るボタンでクエリ適用を解除して検索ボックスを閉じる */
     private fun enableOnBackPressedCallback() {
         onBackPressedCallback = browserActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             viewModel.keywordEditTextVisible.value = false
             viewModel.keyword.value = ""
+            viewModel.loadHistories()
             disableOnBackPressedCallback()
         }
     }
@@ -153,10 +160,12 @@ class HistoryFragment :
 
     // ------ //
 
-    override fun onTabSelected() {}
+    override fun onTabSelected() {
+        onBackPressedCallback?.isEnabled = true
+    }
 
     override fun onTabUnselected() {
-        onBackPressedCallback?.handleOnBackPressed()
+        onBackPressedCallback?.isEnabled = false
     }
 
     override fun onTabReselected() {
