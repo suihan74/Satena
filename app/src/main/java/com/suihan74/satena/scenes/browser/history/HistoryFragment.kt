@@ -112,7 +112,8 @@ class HistoryFragment :
         // 入力完了でIMEを閉じる
         binding.searchText.setOnEditorActionListener { _, action, _ ->
             when (action) {
-                EditorInfo.IME_ACTION_DONE -> {
+                EditorInfo.IME_ACTION_SEARCH -> {
+                    viewModel.loadHistories()
                     browserActivity.hideSoftInputMethod(binding.mainLayout)
                     true
                 }
@@ -131,11 +132,12 @@ class HistoryFragment :
 
     // ------ //
 
-    /** 戻るボタンで検索ボックスを閉じる */
+    /** 戻るボタンでクエリ適用を解除して検索ボックスを閉じる */
     private fun enableOnBackPressedCallback() {
         onBackPressedCallback = browserActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             viewModel.keywordEditTextVisible.value = false
             viewModel.keyword.value = ""
+            viewModel.loadHistories()
             disableOnBackPressedCallback()
         }
     }

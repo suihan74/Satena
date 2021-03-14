@@ -55,12 +55,6 @@ class HistoryViewModel(
                 createDisplayItems(it)
             }
         })
-
-        keyword.observe(owner, Observer {
-            viewModelScope.launch {
-                repository.loadHistories()
-            }
-        })
     }
 
     // ------ //
@@ -70,6 +64,11 @@ class HistoryViewModel(
         val activityViewModel = browserActivity.viewModel
         activityViewModel.goAddress(url)
         browserActivity.closeDrawer()
+    }
+
+    /** 履歴をロードし直す */
+    fun loadHistories() = viewModelScope.launch {
+        repository.loadHistories()
     }
 
     /** 履歴の続きを取得する */
