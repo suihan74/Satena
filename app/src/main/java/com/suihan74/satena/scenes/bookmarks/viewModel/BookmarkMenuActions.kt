@@ -22,6 +22,7 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -120,7 +121,7 @@ class BookmarkMenuActionsImpl(
         val url = bookmark.getCommentPageUrl(entry)
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         activity.startActivity(
-            Intent.createChooser(intent, url)
+            intent.createIntentWithoutThisApplication(activity, url)
         )
     }
 
