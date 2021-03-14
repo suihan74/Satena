@@ -12,7 +12,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <androidx.drawerlayout.widget.DrawerLayout
+        <com.suihan74.utilities.views.DrawerLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="?attr/panelBackground"
@@ -34,7 +34,7 @@
                     android:layout_gravity="end"
                     android:layout_width="280dp"
                     android:layout_height="match_parent"/>
-        </androidx.drawerlayout.widget.DrawerLayout>
+        </com.suihan74.utilities.views.DrawerLayout>
 
         <View
                 android:background="@color/clickGuard"

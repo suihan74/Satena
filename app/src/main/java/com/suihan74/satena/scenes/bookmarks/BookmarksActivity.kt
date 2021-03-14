@@ -1,14 +1,9 @@
 package com.suihan74.satena.scenes.bookmarks
 
-import android.annotation.SuppressLint
-import android.graphics.Rect
-import android.os.Build
 import android.os.Bundle
-import android.view.Gravity
 import android.view.View
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.doOnLayout
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
@@ -104,39 +99,11 @@ class BookmarksActivity :
                 .commitAllowingStateLoss()
         }
 
-        @SuppressLint("RtlHardcoded")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            binding.drawerLayout.doOnLayout { v ->
-                val drawerGravity = contentsViewModel.drawerGravity
-                val layoutDirection = resources.configuration.layoutDirection
-                val gestureExclusionRect =
-                    when (Gravity.getAbsoluteGravity(drawerGravity,layoutDirection)) {
-                        Gravity.LEFT ->
-                            Rect(0, v.bottom - dp2px(200), dp2px(32), v.bottom)
-
-                        Gravity.RIGHT ->
-                            Rect(v.right - dp2px(32), v.bottom - dp2px(200), v.right, v.bottom)
-
-                        else -> throw IllegalStateException()
-                    }
-
-                binding.drawerLayout.systemGestureExclusionRects = listOf(gestureExclusionRect)
-            }
-        }
+        binding.drawerLayout.setGravity(contentsViewModel.drawerGravity)
 
         binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
-            private var systemGestureExclusionRects : List<Rect>? = null
-            override fun onDrawerOpened(drawerView: View) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    systemGestureExclusionRects = binding.drawerLayout.systemGestureExclusionRects
-                    binding.drawerLayout.systemGestureExclusionRects = emptyList()
-                }
-            }
-            override fun onDrawerClosed(drawerView: View) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    binding.drawerLayout.systemGestureExclusionRects = systemGestureExclusionRects.orEmpty()
-                }
-            }
+            override fun onDrawerOpened(drawerView: View) {}
+            override fun onDrawerClosed(drawerView: View) {}
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {
                 // ドロワ開閉でIMEを閉じる
