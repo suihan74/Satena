@@ -8,7 +8,7 @@ import android.net.Uri
 /**
  * URLを開くために"共有先リストからこのアプリを除いた"Intentを作成する
  */
-fun Intent.createIntentWithoutThisApplication(context: Context) : Intent {
+fun Intent.createIntentWithoutThisApplication(context: Context, title: CharSequence = "Choose a browser") : Intent {
     val packageManager = context.packageManager
     val dummyIntent = Intent(this.action, Uri.parse("https://dummy"))
     val intentActivities = packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
@@ -22,7 +22,7 @@ fun Intent.createIntentWithoutThisApplication(context: Context) : Intent {
     return when (intents.size) {
         0 -> this
         1 -> intents.first()
-        else -> Intent.createChooser(Intent(), "Choose a browser").apply {
+        else -> Intent.createChooser(Intent(), title).apply {
             putExtra(Intent.EXTRA_INITIAL_INTENTS, intents.toTypedArray())
         }
     }
