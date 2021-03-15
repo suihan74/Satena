@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.bookmarks.viewModel
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
@@ -13,16 +12,12 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
-import com.suihan74.satena.scenes.bookmarks.dialog.BookmarkMenuDialog
-import com.suihan74.satena.scenes.bookmarks.dialog.ReportDialog
-import com.suihan74.satena.scenes.bookmarks.dialog.StarDeletionDialog
-import com.suihan74.satena.scenes.bookmarks.dialog.UserTagSelectionDialog
+import com.suihan74.satena.scenes.bookmarks.dialog.*
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
-import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,7 +53,7 @@ class BookmarkMenuActionsImpl(
 
         dialog.setOnShowCommentEntry { b, f -> showCommentEntry(f.requireActivity(), entry, b) }
 
-        dialog.setOnShareCommentPageUrl { b, f -> shareCommentPageUrl(f.requireActivity(), entry, b) }
+        dialog.setOnShareCommentPageUrl { b, f -> shareCommentPageUrl(entry, b, f.parentFragmentManager) }
 
         dialog.setOnIgnoreUser { user, f -> ignoreUser(user, f.requireActivity().lifecycleScope) }
 
@@ -117,12 +112,9 @@ class BookmarkMenuActionsImpl(
     /**
      * ブクマのコメントページURLを「共有」する
      */
-    private fun shareCommentPageUrl(activity: Activity, entry: Entry, bookmark: Bookmark) {
-        val url = bookmark.getCommentPageUrl(entry)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        activity.startActivity(
-            intent.createIntentWithoutThisApplication(activity, url)
-        )
+    private fun shareCommentPageUrl(entry: Entry, bookmark: Bookmark, fragmentManager: FragmentManager) {
+        ShareBookmarkDialog.createInstance(entry, bookmark)
+            .show(fragmentManager, null)
     }
 
     /** ユーザーを非表示にする */

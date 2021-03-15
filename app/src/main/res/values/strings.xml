@@ -153,8 +153,15 @@
     <string name="bookmark_report">通報する</string>
     <string name="bookmark_user_tags">ユーザータグ</string>
     <string name="bookmark_delete_star">スターを取り消す</string>
-
     <string name="msg_confirm_bookmark_deletion">ブックマークを削除します。よろしいですか？</string>
+
+    <!-- ブクマ「共有」ダイアログ -->
+    <string name="share_bookmark_title">ブックマークを共有</string>
+    <string name="msg_copy_to_clipboard">クリップボードにコピーしました: %s</string>
+    <string name="share_bookmark_copy_label">クリップボードにコピー</string>
+    <string name="share_bookmark_share_label">共有</string>
+    <string name="share_bookmark_open_browser_label">ブラウザで開く</string>
+    <string name="share_bookmark_failure">処理失敗しました</string>
 
     <!-- 「あとで読む」エントリを「読んだ」したときの挙動 -->
     <string name="entry_read_action_silent">無言ブクマ</string>
