@@ -159,6 +159,7 @@
                 android:id="@+id/divider"
                 android:foreground="@drawable/recycler_view_item_divider"
                 android:contentDescription="@null"
+                android:visibility="@{vm.bookmark.comment}"
                 app:layout_constraintTop_toBottomOf="@id/shareLinkScrollView"
                 android:layout_marginTop="8dp"
                 android:layout_width="match_parent"
@@ -169,6 +170,7 @@
                 android:src="@drawable/ic_baseline_bookmark"
                 app:tint="?textColor"
                 android:contentDescription="@null"
+                android:visibility="@{vm.bookmark.comment}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/divider"
                 android:layout_marginTop="8dp"
@@ -183,6 +185,7 @@
                 android:textSize="14sp"
                 android:singleLine="true"
                 android:ellipsize="end"
+                android:visibility="@{vm.bookmark.comment}"
                 app:layout_constraintTop_toBottomOf="@id/labelTextView"
                 app:layout_constraintTop_toTopOf="@id/shareCommentIcon"
                 app:layout_constraintBottom_toBottomOf="@id/shareCommentIcon"
@@ -195,6 +198,7 @@
 
         <HorizontalScrollView
                 android:id="@+id/shareCommentScrollView"
+                android:visibility="@{vm.bookmark.comment}"
                 app:layout_constraintTop_toBottomOf="@id/shareCommentIcon"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
