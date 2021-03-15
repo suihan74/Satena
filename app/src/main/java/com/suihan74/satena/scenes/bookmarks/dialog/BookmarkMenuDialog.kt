@@ -157,9 +157,7 @@ class BookmarkMenuDialog : DialogFragment() {
 
             buildList<Pair<Int, (BookmarkMenuDialog)->Unit>> {
                 add(R.string.bookmark_show_user_entries to { onShowEntries?.invoke(bookmark.user, it) })
-                if (bookmark.commentRaw.isNotBlank()) {
-                    add(R.string.bookmark_show_comment_entry to { onShowCommentEntry?.invoke(bookmark, it) })
-                }
+                add(R.string.bookmark_show_comment_entry to { onShowCommentEntry?.invoke(bookmark, it) })
                 add(R.string.bookmark_share_comment_page_url to { onShareCommentPageUrl?.invoke(bookmark, it) })
 
                 if (signedIn) {
