@@ -156,6 +156,8 @@ class EntriesActivity : AppCompatActivity() {
             }
         }
 
+        binding.drawerLayout.setGravity(viewModel.drawerGravity)
+
         // カテゴリリストのドロワ表示状態切り替えを監視する
         binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {

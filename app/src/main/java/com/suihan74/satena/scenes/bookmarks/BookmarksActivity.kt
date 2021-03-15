@@ -99,6 +99,8 @@ class BookmarksActivity :
                 .commitAllowingStateLoss()
         }
 
+        binding.drawerLayout.setGravity(contentsViewModel.drawerGravity)
+
         binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {}
             override fun onDrawerClosed(drawerView: View) {}
