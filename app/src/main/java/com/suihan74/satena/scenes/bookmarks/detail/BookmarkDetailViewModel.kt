@@ -1,9 +1,13 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
 import androidx.lifecycle.*
+import android.content.Context
+import android.content.Intent
+import androidx.activity.result.contract.ActivityResultContracts
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
+import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -11,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class BookmarkDetailViewModel(
+    val fragment: BookmarkDetailFragment,
     val repository : BookmarksRepository,
     bookmark : Bookmark
 ) : ViewModel() {
@@ -85,6 +90,13 @@ class BookmarkDetailViewModel(
      * ブクマが言及している他のブクマ
      */
     val mentionsFromUser = MutableLiveData<List<StarRelation>>()
+
+    // ------ //
+
+    /** ブクマ投稿画面遷移用ランチャ */
+    private val postBookmarkLauncher = fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        // TODO
+    }
 
     // ------ //
 
@@ -181,5 +193,15 @@ class BookmarkDetailViewModel(
                 }
             }
         }
+    }
+
+    // ------ //
+
+    fun openPostBookmarkDialog(context: Context) {
+        val intent = Intent(context, BookmarkPostActivity::class.java).also {
+            val url = bookmark.value!!.getCommentPageUrl(repository.entry.value!!)
+            it.putExtra(BookmarkPostActivity.EXTRA_URL, url)
+        }
+        postBookmarkLauncher.launch(intent)
     }
 }
