@@ -72,6 +72,11 @@ class BookmarkDetailViewModel(
     val starsMenuOpened = MutableLiveData<Boolean>()
 
     /**
+     * ブクマにつけられたブコメ
+     */
+    val bookmarksToUser = MutableLiveData<List<StarRelation>>()
+
+    /**
      * ブクマにつけられたスター
      */
     val starsToUser = MutableLiveData<List<StarRelation>>()
@@ -116,6 +121,7 @@ class BookmarkDetailViewModel(
 
     private suspend fun reload() {
         runCatching {
+            updateList(DetailTabAdapter.TabType.BOOKMARKS_TO_USER)
             updateList(DetailTabAdapter.TabType.STARS_TO_USER, true)
             updateList(DetailTabAdapter.TabType.STARS_FROM_USER, true)
             updateList(DetailTabAdapter.TabType.MENTION_TO_USER, true)
@@ -126,6 +132,8 @@ class BookmarkDetailViewModel(
     /** タブに対応するリストを取得する */
     fun getList(tabType: DetailTabAdapter.TabType) : LiveData<List<StarRelation>> {
         return when (tabType) {
+            DetailTabAdapter.TabType.BOOKMARKS_TO_USER -> bookmarksToUser
+
             DetailTabAdapter.TabType.STARS_TO_USER -> starsToUser
 
             DetailTabAdapter.TabType.STARS_FROM_USER -> starsFromUser
@@ -147,6 +155,21 @@ class BookmarkDetailViewModel(
     ) = withContext(Dispatchers.Default) {
         val bookmark = bookmark.value!!
         when (tabType) {
+            DetailTabAdapter.TabType.BOOKMARKS_TO_USER -> {
+                if (forceUpdate || bookmarksToUser.value == null) {
+                    val bookmarks = repository.getBookmarksToBookmark(bookmark)
+                    val relations = bookmarks.map {
+                        StarRelation(
+                            sender = it.user,
+                            receiver = bookmark.user,
+                            senderBookmark = it,
+                            receiverBookmark = bookmark
+                        )
+                    }
+                    bookmarksToUser.postValue(relations)
+                }
+            }
+
             DetailTabAdapter.TabType.STARS_TO_USER -> {
                 if (forceUpdate || starsToUser.value == null) {
                     starsToUser.postValue(

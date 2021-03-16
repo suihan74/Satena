@@ -742,11 +742,10 @@
     <string name="star_with_count">★%d</string>
     <string name="bookmark_detail_quote_comment">"%s"</string>
 
-    <string name="bookmark_detail_tab_stars_from">(%1$d) from %2$s</string>
-    <string name="bookmark_detail_tab_stars_to">(%1$d) to %2$s</string>
-    <string name="bookmark_detail_tab_mentions_from">(%1$d) from %2$s</string>
-    <string name="bookmark_detail_tab_mentions_to">(%1$d) to %2$s</string>
+    <string name="bookmark_detail_tab_from">(%1$d) from %2$s</string>
+    <string name="bookmark_detail_tab_to">(%1$d) to %2$s</string>
 
+    <string name="bookmark_detail_tab_tooltip_bookmarks_to">id:%sのブクマにつけられたブコメ</string>
     <string name="bookmark_detail_tab_tooltip_stars_from">id:%sがスターをつけた他のブコメ</string>
     <string name="bookmark_detail_tab_tooltip_stars_to">id:%sにスターをつけたユーザーとそのブコメ</string>
     <string name="bookmark_detail_tab_tooltip_mentions_from">id:%sが言及した他のブコメ</string>

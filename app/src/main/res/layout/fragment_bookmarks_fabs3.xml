@@ -186,7 +186,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="30dp"
                 android:layout_marginBottom="20dp"
-                app:text="B!"
+                app:text="@string/post_bookmark_button_text"
                 app:textColor="#fff"
                 app:tooltipText="@{@string/bookmark_fab_post_bookmark_tooltip}"
                 app:layout_dodgeInsetEdges="bottom"

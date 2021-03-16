@@ -36,6 +36,7 @@ class DetailTabAdapter(
 
     override fun getTitle(context: Context, position: Int, textId: Int): CharSequence {
         val count = when (tabs[position]) {
+            TabType.BOOKMARKS_TO_USER -> bookmarksToUserCount
             TabType.STARS_TO_USER -> starsToUserCount
             TabType.STARS_FROM_USER -> starsFromUserCount
             TabType.MENTION_TO_USER -> mentionsToUserCount
@@ -49,6 +50,8 @@ class DetailTabAdapter(
     }
 
     // ------ //
+
+    private var bookmarksToUserCount = 0
 
     private var starsToUserCount = 0
 
@@ -64,6 +67,14 @@ class DetailTabAdapter(
         val lifecycleOwner = fragment.viewLifecycleOwner
         val lifecycleScope = fragment.lifecycleScope
         lifecycleScope.launch(Dispatchers.Main.immediate) {
+            viewModel.bookmarksToUser.observe(lifecycleOwner, { list ->
+                if (!list.isNullOrEmpty() && !tabs.contains(TabType.BOOKMARKS_TO_USER)) {
+                    tabs = listOf(TabType.BOOKMARKS_TO_USER).plus(tabs)
+                }
+                bookmarksToUserCount = list.size
+                notifyDataSetChanged()
+            })
+
             viewModel.starsToUser.observe(lifecycleOwner, { list ->
                 lifecycleScope.launch(Dispatchers.Default) {
                     starsToUserCount = list.sumOf { it.star?.count ?: 0 }
@@ -108,30 +119,37 @@ class DetailTabAdapter(
         @StringRes val tooltipTextId: Int,
         val createFragment : ()->Fragment
     ) {
+        BOOKMARKS_TO_USER(
+            R.drawable.ic_baseline_bookmark,
+            R.string.bookmark_detail_tab_to,
+            R.string.bookmark_detail_tab_tooltip_bookmarks_to,
+            { StarRelationsTabFragment.createInstance(BOOKMARKS_TO_USER) }
+        ),
+
         STARS_TO_USER(
             R.drawable.ic_star,
-            R.string.bookmark_detail_tab_stars_to,
+            R.string.bookmark_detail_tab_to,
             R.string.bookmark_detail_tab_tooltip_stars_to,
             { StarRelationsTabFragment.createInstance(STARS_TO_USER) }
         ),
 
         STARS_FROM_USER(
             R.drawable.ic_star,
-            R.string.bookmark_detail_tab_stars_from,
+            R.string.bookmark_detail_tab_from,
             R.string.bookmark_detail_tab_tooltip_stars_from,
             { StarRelationsTabFragment.createInstance(STARS_FROM_USER) }
         ),
 
         MENTION_TO_USER(
             R.drawable.ic_baseline_chat_bubble,
-            R.string.bookmark_detail_tab_mentions_to,
+            R.string.bookmark_detail_tab_to,
             R.string.bookmark_detail_tab_tooltip_mentions_to,
             { StarRelationsTabFragment.createInstance(MENTION_TO_USER) }
         ),
 
         MENTION_FROM_USER(
             R.drawable.ic_baseline_chat_bubble,
-            R.string.bookmark_detail_tab_mentions_from,
+            R.string.bookmark_detail_tab_from,
             R.string.bookmark_detail_tab_tooltip_mentions_from,
             { StarRelationsTabFragment.createInstance(MENTION_FROM_USER) }
         )
