@@ -67,6 +67,14 @@ class BookmarkMenuDialog : DialogFragment() {
         viewModel.onShowEntries = listener
     }
 
+    fun setOnShowCommentEntry(listener: DialogListener<Bookmark>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onShowCommentEntry = listener
+    }
+
+    fun setOnShareCommentPageUrl(listener: DialogListener<Bookmark>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onShareCommentPageUrl = listener
+    }
+
     fun setOnIgnoreUser(listener: DialogListener<String>?) = lifecycleScope.launchWhenCreated {
         viewModel.onIgnoreUser = listener
     }
@@ -115,6 +123,12 @@ class BookmarkMenuDialog : DialogFragment() {
         /** ユーザーが最近ブクマしたエントリ一覧を表示する */
         var onShowEntries: DialogListener<String>? = null
 
+        /** ブコメへのブックマークページを開く */
+        var onShowCommentEntry: DialogListener<Bookmark>? = null
+
+        /** ブコメのコメントページURLを「共有」する */
+        var onShareCommentPageUrl: DialogListener<Bookmark>? = null
+
         /** ユーザーを非表示にする */
         var onIgnoreUser: DialogListener<String>? = null
 
@@ -143,6 +157,9 @@ class BookmarkMenuDialog : DialogFragment() {
 
             buildList<Pair<Int, (BookmarkMenuDialog)->Unit>> {
                 add(R.string.bookmark_show_user_entries to { onShowEntries?.invoke(bookmark.user, it) })
+                add(R.string.bookmark_show_comment_entry to { onShowCommentEntry?.invoke(bookmark, it) })
+//                add(R.string.bookmark_share_comment_page_url to { onShareCommentPageUrl?.invoke(bookmark, it) })
+
                 if (signedIn) {
                     if (ignored) {
                         add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) })

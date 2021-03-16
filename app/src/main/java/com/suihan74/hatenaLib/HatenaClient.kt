@@ -725,26 +725,36 @@ object HatenaClient : BaseClient(), CoroutineScope {
                         Jsoup.parse(bodyBytes.inputStream(), charsetName, url)
                     }
 
-                val title = doc.allElements
-                    .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:title" }
-                    ?.attr("content")
-                    ?: doc.select("title").html().let { title ->
+                // コメントページの"og:url"には元のエントリページのURLが入っているため，分けて処理する
+                val isCommentPage = Regex("""^$B_BASE_URL/entry/\d+/comment/\S+$""").matches(url)
+
+                val allElements = doc.allElements
+
+                val pageTitle =
+                    doc.select("title").html().let { title ->
                         if (title.isNullOrEmpty()) url
                         else title
                     }
 
-                val description = doc.allElements
-                    .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:description" }
+                val title =
+                    if (isCommentPage) pageTitle
+                    else allElements.firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:title" }
+                        ?.attr("content")
+                        ?: pageTitle
+
+                val description =
+                    allElements.firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:description" }
                     ?.attr("content")
                     ?: ""
 
-                val actualUrl = doc.allElements
-                    .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:url" }
-                    ?.attr("content")
-                    ?: url
+                val actualUrl =
+                    if (isCommentPage) url
+                    else allElements.firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:url" }
+                        ?.attr("content")
+                        ?: url
 
-                val imageUrl = doc.allElements
-                    .firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:image" }
+                val imageUrl =
+                    allElements.firstOrNull { it.tagName() == "meta" && it.attr("property") == "og:image" }
                     ?.attr("content")
                     ?: ""
 

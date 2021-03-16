@@ -145,6 +145,8 @@
 
     <!-- ブックマークに対する操作メニュー -->
     <string name="bookmark_show_user_entries">最近のブックマークを見る</string>
+    <string name="bookmark_show_comment_entry">ブクマへのブックマークを見る</string>
+    <string name="bookmark_share_comment_page_url">共有</string>
     <string name="bookmark_delete">ブックマークを削除</string>
     <string name="bookmark_ignore">ユーザーを非表示</string>
     <string name="bookmark_unignore">ユーザー非表示を解除</string>
