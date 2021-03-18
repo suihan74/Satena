@@ -123,8 +123,10 @@ class BookmarkMenuActionsImpl(
      */
     private fun openIgnoreUserDialog(bookmark: Bookmark, coroutineScope: CoroutineScope, fragmentManager: FragmentManager) {
         if (repository.prefs.getBoolean(PreferenceKey.USING_IGNORE_USER_DIALOG)) {
+            val context = SatenaApplication.instance
             AlertDialogFragment.Builder()
                 .setTitle(R.string.confirm_dialog_title_simple)
+                .setMessage(context.getString(R.string.ignore_user_confirm_msg, bookmark.user))
                 .setNegativeButton(R.string.dialog_cancel)
                 .setPositiveButton(R.string.dialog_ok) {
                     ignoreUser(bookmark.user, coroutineScope)
