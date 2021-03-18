@@ -338,6 +338,7 @@
     <string name="pref_bookmarks_showing_stars_of_ignored_users_desc">ブクマ詳細画面で非表示対象のスターを表示する</string>
     <string name="pref_bookmarks_hiding_toolbar_by_scrolling">スクロールでツールバーを隠す</string>
     <string name="pref_bookmarks_using_post_star_dialog_desc">スターをつける前に確認する</string>
+    <string name="pref_bookmarks_using_ignore_user_dialog_desc">ユーザーを非表示にする前に確認する</string>
     <string name="pref_bookmarks_using_add_star_popup_menu_desc">ブクマ一覧画面でスターをつけるポップアップを使用する</string>
     <string name="pref_bookmark_link_single_tap_action_desc">ブコメ内のリンクをタップしたときの動作</string>
     <string name="pref_bookmark_link_long_tap_action_desc">ブコメ内のリンクを長押ししたときの動作</string>

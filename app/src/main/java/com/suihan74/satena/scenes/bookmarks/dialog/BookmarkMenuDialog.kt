@@ -75,7 +75,7 @@ class BookmarkMenuDialog : DialogFragment() {
         viewModel.onShareCommentPageUrl = listener
     }
 
-    fun setOnIgnoreUser(listener: DialogListener<String>?) = lifecycleScope.launchWhenCreated {
+    fun setOnIgnoreUser(listener: DialogListener<Bookmark>?) = lifecycleScope.launchWhenCreated {
         viewModel.onIgnoreUser = listener
     }
 
@@ -130,7 +130,7 @@ class BookmarkMenuDialog : DialogFragment() {
         var onShareCommentPageUrl: DialogListener<Bookmark>? = null
 
         /** ユーザーを非表示にする */
-        var onIgnoreUser: DialogListener<String>? = null
+        var onIgnoreUser: DialogListener<Bookmark>? = null
 
         /** ユーザーの非表示を解除する */
         var onUnignoreUser: DialogListener<String>? = null
@@ -164,7 +164,7 @@ class BookmarkMenuDialog : DialogFragment() {
                         add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) })
                     }
                     else {
-                        add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark.user, it) })
+                        add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark, it) })
                     }
 
                     if (!isBookmarkDummy && (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty())) {

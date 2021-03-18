@@ -11,6 +11,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.dialog.*
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
@@ -55,7 +56,7 @@ class BookmarkMenuActionsImpl(
 
         dialog.setOnShareCommentPageUrl { b, f -> shareCommentPageUrl(entry, b, f.parentFragmentManager) }
 
-        dialog.setOnIgnoreUser { user, f -> ignoreUser(user, f.requireActivity().lifecycleScope) }
+        dialog.setOnIgnoreUser { b, f -> openIgnoreUserDialog(b, f.requireActivity().lifecycleScope, f.parentFragmentManager) }
 
         dialog.setOnUnignoreUser { user, f -> unIgnoreUser(user, f.requireActivity().lifecycleScope) }
 
@@ -115,6 +116,25 @@ class BookmarkMenuActionsImpl(
     private fun shareCommentPageUrl(entry: Entry, bookmark: Bookmark, fragmentManager: FragmentManager) {
         ShareBookmarkDialog.createInstance(entry, bookmark)
             .show(fragmentManager, null)
+    }
+
+    /**
+     * ユーザーを非表示にするか確認するダイアログを表示する
+     */
+    private fun openIgnoreUserDialog(bookmark: Bookmark, coroutineScope: CoroutineScope, fragmentManager: FragmentManager) {
+        if (repository.prefs.getBoolean(PreferenceKey.USING_IGNORE_USER_DIALOG)) {
+            AlertDialogFragment.Builder()
+                .setTitle(R.string.confirm_dialog_title_simple)
+                .setNegativeButton(R.string.dialog_cancel)
+                .setPositiveButton(R.string.dialog_ok) {
+                    ignoreUser(bookmark.user, coroutineScope)
+                }
+                .create()
+                .show(fragmentManager, null)
+        }
+        else {
+            ignoreUser(bookmark.user, coroutineScope)
+        }
     }
 
     /** ユーザーを非表示にする */
