@@ -15,6 +15,8 @@ enum class TapEntryAction(
 
     SHOW_PAGE_IN_BROWSER(2, R.string.entry_action_show_page_in_browser),
 
+    SHARE(5, R.string.entry_action_share),
+
     SHOW_MENU(3, R.string.entry_action_show_menu);
 
     companion object {

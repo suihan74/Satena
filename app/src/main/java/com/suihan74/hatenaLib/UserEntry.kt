@@ -45,7 +45,7 @@ data class UserEntry (
         count = entry.totalBookmarks,
         url = entry.url,
         faviconUrl = entry.faviconUrl ?: "",
-        imageUrl = entry.imageUrl ?: "",
+        _imageUrl = entry.imageUrl ?: "",
         rootUrl = Uri.parse(entry.url).let { it.scheme!! + "://" + it.host!! },
         bookmarkedData = BookmarkResult(
             user = userName,

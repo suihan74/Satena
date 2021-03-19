@@ -24,7 +24,7 @@ class Entry (
     faviconUrl : String?,
 
     @SerializedName("image", alternate = ["image_url"])
-    val imageUrl : String = "https://b.st-hatena.com/images/v4/public/common/noimage.png",
+    private val _imageUrl : String? = null,
 
     val ampUrl : String? = null,
 
@@ -57,6 +57,10 @@ class Entry (
         }
     }
 
+    @delegate:Transient
+    val imageUrl : String by lazy {
+        _imageUrl ?: "https://b.st-hatena.com/images/v4/public/common/noimage.png"
+    }
 
     @SerializedName("root_url")
     private var mRootUrl : String? = rootUrl
@@ -104,7 +108,7 @@ class Entry (
         url = url,
         rootUrl = rootUrl,
         faviconUrl = faviconUrl,
-        imageUrl = imageUrl,
+        _imageUrl = imageUrl,
         ampUrl = ampUrl,
         bookmarkedData = bookmarkedData,
         myHotEntryComments = myhotentryComments,

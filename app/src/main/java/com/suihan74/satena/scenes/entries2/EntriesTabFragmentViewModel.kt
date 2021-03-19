@@ -1,6 +1,6 @@
 package com.suihan74.satena.scenes.entries2
 
-import android.app.Activity
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -261,7 +261,7 @@ class EntriesTabFragmentViewModel(
 
     /** エントリをシングルクリックしたときの処理 */
     fun onClickEntry(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager
     ) {
@@ -276,7 +276,7 @@ class EntriesTabFragmentViewModel(
 
     /** エントリを複数回クリックしたときの処理 */
     fun onMultipleClickEntry(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager
     ) {
@@ -291,7 +291,7 @@ class EntriesTabFragmentViewModel(
 
     /** エントリを長押ししたときの処理 */
     fun onLongClickEntry(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager
     ) {
