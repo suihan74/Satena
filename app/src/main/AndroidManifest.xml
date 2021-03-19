@@ -12,6 +12,14 @@
             android:largeScreens="true"
             android:xlargeScreens="true"/>
 
+    <queries>
+        <package android:name="com.suihan74.satena"/>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
+    </queries>
+
     <application
             android:name=".SatenaApplication"
             android:allowBackup="true"
