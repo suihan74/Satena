@@ -58,6 +58,8 @@
 
         <HorizontalScrollView
                 android:id="@+id/shareLinkScrollView"
+                android:scrollbarThumbHorizontal="@drawable/scrollbar_thumb"
+                android:scrollbarSize="3dp"
                 app:layout_constraintTop_toBottomOf="@id/shareLinkIcon"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -203,6 +205,8 @@
         <HorizontalScrollView
                 android:id="@+id/shareCommentScrollView"
                 android:visibility="@{vm.bookmark.comment}"
+                android:scrollbarThumbHorizontal="@drawable/scrollbar_thumb"
+                android:scrollbarSize="3dp"
                 app:layout_constraintTop_toBottomOf="@id/shareCommentIcon"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
