@@ -1,10 +1,10 @@
 package com.suihan74.satena.scenes.entries2;
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Entry
@@ -14,6 +14,7 @@ import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
+import com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -37,7 +38,7 @@ interface EntryMenuActions {
      *  項目(シングル/マルチ/ロング)クリックに対して、ユーザーが設定した処理を実行する
      */
     fun invokeEntryClickedAction(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         entryAction: TapEntryAction,
         fragmentManager: FragmentManager,
@@ -48,10 +49,11 @@ interface EntryMenuActions {
 
             TapEntryAction.SHOW_PAGE -> showPage(activity, entry)
 
-            TapEntryAction.SHOW_PAGE_IN_BROWSER -> sharePage(activity, entry)
+            TapEntryAction.SHOW_PAGE_IN_BROWSER -> showPageInBrowser(activity, entry)
 
-            TapEntryAction.SHOW_MENU ->
-                openMenuDialog(activity, entry, fragmentManager, coroutineScope)
+            TapEntryAction.SHARE -> sharePage(activity, entry)
+
+            TapEntryAction.SHOW_MENU -> openMenuDialog(activity, entry, fragmentManager, coroutineScope)
 
             TapEntryAction.NOTHING -> {}
         }
@@ -61,7 +63,7 @@ interface EntryMenuActions {
      * エントリ項目に対するメニューダイアログを開く
      */
     fun openMenuDialog(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager,
         coroutineScope: CoroutineScope
@@ -72,6 +74,9 @@ interface EntryMenuActions {
             }
             setShowPageListener { entry, f->
                 showPage(f.requireActivity(), entry)
+            }
+            setShowPageInBrowserListener { entry, f ->
+                showPageInBrowser(f.requireActivity(), entry)
             }
             setSharePageListener { entry, f ->
                 sharePage(f.requireActivity(), entry)
@@ -110,16 +115,19 @@ interface EntryMenuActions {
     // ------ //
 
     /** ブクマ一覧画面を開く */
-    fun showComments(activity: Activity, entry: Entry)
+    fun showComments(activity: FragmentActivity, entry: Entry)
 
     /** 内部ブラウザでページを開く */
-    fun showPage(activity: Activity, entry: Entry)
+    fun showPage(activity: FragmentActivity, entry: Entry)
 
-    /** 外部ブラウザでページを開く(一般にいう「共有」) */
-    fun sharePage(activity: Activity, entry: Entry)
+    /** 外部ブラウザでページを開く */
+    fun showPageInBrowser(activity: FragmentActivity, entry: Entry)
+
+    /** エントリを「共有」 */
+    fun sharePage(activity: FragmentActivity, entry: Entry)
 
     /** サイトのエントリ一覧を開く */
-    fun showEntries(activity: Activity, entry: Entry)
+    fun showEntries(activity: FragmentActivity, entry: Entry)
 
     /** サイトをお気に入りに追加する */
     fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope)
@@ -129,7 +137,7 @@ interface EntryMenuActions {
 
     /** 非表示設定を追加するダイアログを開く */
     fun openIgnoreEntryDialog(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager,
         coroutineScope: CoroutineScope
@@ -137,21 +145,21 @@ interface EntryMenuActions {
 
     /** あとで読む */
     fun readLaterEntry(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         coroutineScope: CoroutineScope
     )
 
     /** 「あとで読む」エントリを「読んだ」 */
     fun readEntry(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         coroutineScope: CoroutineScope
     )
 
     /** ブクマを削除する */
     fun deleteEntryBookmark(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         coroutineScope: CoroutineScope
     )
@@ -162,18 +170,18 @@ interface EntryMenuActions {
 /** 画面に依らない共通の処理の実装 */
 
 abstract class EntryMenuActionsImplBasic : EntryMenuActions {
-    override fun showComments(activity: Activity, entry: Entry) {
+    override fun showComments(activity: FragmentActivity, entry: Entry) {
         val intent = Intent(activity, BookmarksActivity::class.java).also {
             it.putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry)
         }
         activity.startActivity(intent)
     }
 
-    override fun showPage(activity: Activity, entry: Entry) {
+    override fun showPage(activity: FragmentActivity, entry: Entry) {
         activity.startInnerBrowser(entry)
     }
 
-    override fun sharePage(activity: Activity, entry: Entry) {
+    override fun showPageInBrowser(activity: FragmentActivity, entry: Entry) {
         try {
             val intent = Intent().let {
                 it.action = Intent.ACTION_VIEW
@@ -194,8 +202,13 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
         }
     }
 
+    override fun sharePage(activity: FragmentActivity, entry: Entry) {
+        ShareEntryDialog.createInstance(entry)
+            .show(activity.supportFragmentManager, null)
+    }
+
     override fun openIgnoreEntryDialog(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager,
         coroutineScope: CoroutineScope
@@ -216,7 +229,7 @@ class EntryMenuActionsImplForEntries(
     private val repository: EntriesRepository
 ) : EntryMenuActionsImplBasic() {
 
-    override fun showEntries(activity: Activity, entry: Entry) {
+    override fun showEntries(activity: FragmentActivity, entry: Entry) {
         activity.alsoAs<EntriesActivity> { a ->
             a.showSiteEntries(entry.rootUrl)
         }
@@ -247,7 +260,7 @@ class EntryMenuActionsImplForEntries(
         }
     }
 
-    override fun readLaterEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
+    override fun readLaterEntry(activity: FragmentActivity, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
             val result = runCatching {
                 repository.readLaterEntry(entry)
@@ -266,7 +279,7 @@ class EntryMenuActionsImplForEntries(
         }
     }
 
-    override fun readEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
+    override fun readEntry(activity: FragmentActivity, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
             val result = runCatching {
                 repository.readEntry(entry)
@@ -311,7 +324,7 @@ class EntryMenuActionsImplForEntries(
     }
 
     override fun deleteEntryBookmark(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         coroutineScope: CoroutineScope
     ) {

@@ -50,6 +50,7 @@
     <string name="scroll_to_top">一番上までスクロール</string>
     <string name="search_button_tooltip">検索</string>
     <string name="minutes">分</string>
+    <string name="msg_copy_to_clipboard">クリップボードにコピーしました: %s</string>
 
     <!-- TODO: 英語用の文字列リソースを用意してそっちでplural設定する -->
     <plurals name="user">
@@ -131,6 +132,7 @@
     <string name="entry_action_show_comments">ブックマークを見る</string>
     <string name="entry_action_show_page">ページを開く</string>
     <string name="entry_action_show_page_in_browser">ページを外部ブラウザで開く</string>
+    <string name="entry_action_share">共有</string>
     <string name="entry_action_show_menu">メニューダイアログを開く</string>
     <string name="entry_action_favorite">お気に入りに追加</string>
     <string name="entry_action_unfavorite">お気に入りから除外</string>
@@ -157,11 +159,20 @@
 
     <!-- ブクマ「共有」ダイアログ -->
     <string name="share_bookmark_title">ブックマークを共有</string>
-    <string name="msg_copy_to_clipboard">クリップボードにコピーしました: %s</string>
     <string name="share_bookmark_copy_label">クリップボードにコピー</string>
     <string name="share_bookmark_share_label">共有</string>
     <string name="share_bookmark_open_browser_label">ブラウザで開く</string>
     <string name="share_bookmark_failure">処理失敗しました</string>
+
+    <!-- エントリ「共有」ダイアログ -->
+    <string name="share_entry_title">エントリを共有</string>
+    <string name="share_entry_copy_label">クリップボードにコピー</string>
+    <string name="share_entry_share_label">共有</string>
+    <string name="share_entry_open_browser_label">ブラウザで開く</string>
+    <string name="share_entry_url_copy_label">ブコメページURLをクリップボードにコピー</string>
+    <string name="share_entry_url_share_label">ブコメページを共有</string>
+    <string name="share_entry_url_open_browser_label">ブコメページをブラウザで開く</string>
+    <string name="share_entry_failure">処理失敗しました</string>
 
     <!-- 「あとで読む」エントリを「読んだ」したときの挙動 -->
     <string name="entry_read_action_silent">無言ブクマ</string>
