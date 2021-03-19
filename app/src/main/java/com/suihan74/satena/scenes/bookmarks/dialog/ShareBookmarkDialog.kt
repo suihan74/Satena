@@ -1,15 +1,10 @@
 package com.suihan74.satena.scenes.bookmarks.dialog
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.suihan74.hatenaLib.Bookmark
@@ -17,8 +12,8 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentDialogShareBookmarkBinding
+import com.suihan74.satena.dialogs.ShareDialogViewModel
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
-import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
 import com.suihan74.utilities.lazyProvideViewModel
 
 class ShareBookmarkDialog : BottomSheetDialogFragment() {
@@ -54,7 +49,7 @@ class ShareBookmarkDialog : BottomSheetDialogFragment() {
 
     // ------ //
 
-    class DialogViewModel : ViewModel() {
+    class DialogViewModel : ShareDialogViewModel() {
         val entry = MutableLiveData<Entry>()
 
         val bookmark = MutableLiveData<Bookmark>()
@@ -72,6 +67,7 @@ class ShareBookmarkDialog : BottomSheetDialogFragment() {
         fun shareLinkUrlString(fragment: ShareBookmarkDialog) {
             runCatching {
                 shareText(fragment, commentPageUrl)
+                fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_bookmark_failure)
             }
@@ -80,6 +76,7 @@ class ShareBookmarkDialog : BottomSheetDialogFragment() {
         fun shareComment(fragment: ShareBookmarkDialog) {
             runCatching {
                 shareText(fragment, bookmark.value!!.comment)
+                fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_bookmark_failure)
             }
@@ -91,6 +88,7 @@ class ShareBookmarkDialog : BottomSheetDialogFragment() {
         fun copyLinkUrlToClipboard(fragment: ShareBookmarkDialog) {
             runCatching {
                 copyTextToClipboard(fragment, commentPageUrl)
+                fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_bookmark_failure)
             }
@@ -102,6 +100,7 @@ class ShareBookmarkDialog : BottomSheetDialogFragment() {
         fun copyCommentToClipboard(fragment: ShareBookmarkDialog) {
             runCatching {
                 copyTextToClipboard(fragment, bookmark.value!!.comment)
+                fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_bookmark_failure)
             }
@@ -112,40 +111,7 @@ class ShareBookmarkDialog : BottomSheetDialogFragment() {
          */
         fun openLink(fragment: ShareBookmarkDialog) {
             runCatching {
-                val url = commentPageUrl
-                val context = fragment.requireContext()
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                fragment.startActivity(
-                    intent.createIntentWithoutThisApplication(context, url)
-                )
-                fragment.dismiss()
-            }.onFailure {
-                SatenaApplication.instance.showToast(R.string.share_bookmark_failure)
-            }
-        }
-
-        // ------ //
-
-        private fun shareText(fragment: ShareBookmarkDialog, text: CharSequence) {
-            runCatching {
-                val intent = Intent(Intent.ACTION_SEND).also {
-                    it.putExtra(Intent.EXTRA_TEXT, text)
-                    it.type = "text/plain"
-                }
-                fragment.startActivity(
-                    Intent.createChooser(intent, text)
-                )
-                fragment.dismiss()
-            }.onFailure {
-                SatenaApplication.instance.showToast(R.string.share_bookmark_failure)
-            }
-        }
-
-        private fun copyTextToClipboard(fragment: ShareBookmarkDialog, text: CharSequence) {
-            runCatching {
-                val cm = fragment.requireContext().getSystemService(ClipboardManager::class.java)!!
-                cm.setPrimaryClip(ClipData.newPlainText("", text))
-                fragment.showToast(R.string.msg_copy_to_clipboard, text)
+                openLinkInBrowser(fragment, commentPageUrl)
                 fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_bookmark_failure)

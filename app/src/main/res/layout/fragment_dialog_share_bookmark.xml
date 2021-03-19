@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout>
     <data>
         <variable
                 name="vm"
@@ -12,6 +12,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools"
             android:paddingVertical="12dp"
             android:paddingHorizontal="12dp"
@@ -92,7 +93,8 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         android:layout_width="80dp"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/openLinkButton"
@@ -121,7 +123,8 @@
                         android:layout_marginHorizontal="24dp"
                         android:maxWidth="80dp"
                         android:layout_width="80dp"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/shareLinkButton"
@@ -150,7 +153,8 @@
                         android:layout_marginHorizontal="24dp"
                         android:maxWidth="80dp"
                         android:layout_width="80dp"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </HorizontalScrollView>
@@ -180,7 +184,7 @@
 
         <TextView
                 android:id="@+id/shareCommentDesc"
-                encodedUrl="@{vm.bookmark.comment}"
+                android:text="@{vm.bookmark.comment}"
                 tools:text="ブコメ"
                 android:textSize="14sp"
                 android:singleLine="true"
@@ -234,7 +238,8 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         android:layout_width="80dp"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/shareCommentButton"
@@ -263,7 +268,8 @@
                         android:layout_marginHorizontal="24dp"
                         android:maxWidth="80dp"
                         android:layout_width="80dp"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </HorizontalScrollView>
