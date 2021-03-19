@@ -59,6 +59,11 @@ class BookmarkViewModel(
         PreferenceKey.USING_POST_STAR_DIALOG
     )
 
+    /** ユーザー非表示前に確認ダイアログを表示する */
+    private val confirmIgnoreUser = createLiveData<Boolean>(
+        PreferenceKey.USING_IGNORE_USER_DIALOG
+    )
+
     /** ブクマ一覧画面の項目に対してスターを付けられるようにする */
     private val useAddStarPopupMenu = createLiveData<Boolean>(
         PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU
@@ -222,6 +227,7 @@ class BookmarkViewModel(
         // --- //
 
         addSection(R.string.pref_bookmark_section_ignoring)
+        addPrefToggleItem(fragment, confirmIgnoreUser, R.string.pref_bookmarks_using_ignore_user_dialog_desc)
         addPrefToggleItem(fragment, displayMutedBookmarksInAllBookmarksTab, R.string.pref_bookmarks_showing_ignored_users_in_all_bookmarks_desc)
         addPrefToggleItem(fragment, displayMutedBookmarksInMention, R.string.pref_bookmarks_showing_ignored_users_with_calling_desc)
         addPrefToggleItem(fragment, displayIgnoredUsersStar, R.string.pref_bookmarks_showing_stars_of_ignored_users_desc)

@@ -211,6 +211,9 @@ enum class PreferenceKey(
     /** スターを付ける前に確認ダイアログを表示する */
     USING_POST_STAR_DIALOG(typeInfo<Boolean>(), true),
 
+    /** ユーザーを非表示にする前に確認ダイアログを表示する */
+    USING_IGNORE_USER_DIALOG(typeInfo<Boolean>(), true),
+
     /** ブコメ中のリンクをシングルタップしたときの挙動 */
     BOOKMARK_LINK_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_PAGE.id),
 

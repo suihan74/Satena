@@ -1,8 +1,8 @@
 package com.suihan74.satena.scenes.bookmarks
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import androidx.fragment.app.FragmentActivity
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.models.EntryReadActionType
@@ -23,7 +23,7 @@ class EntryMenuActionsImplForBookmarks(
     private val favoriteSitesRepo: FavoriteSitesRepository
 ) : EntryMenuActionsImplBasic() {
 
-    override fun showEntries(activity: Activity, entry: Entry) {
+    override fun showEntries(activity: FragmentActivity, entry: Entry) {
         val intent = Intent(activity, EntriesActivity::class.java).also {
             it.putExtra(EntriesActivity.EXTRA_SITE_URL, entry.rootUrl)
         }
@@ -52,7 +52,7 @@ class EntryMenuActionsImplForBookmarks(
         }
     }
 
-    override fun readLaterEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
+    override fun readLaterEntry(activity: FragmentActivity, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
             val result = runCatching {
                 bookmarksRepo.readLater(entry)
@@ -67,7 +67,7 @@ class EntryMenuActionsImplForBookmarks(
         }
     }
 
-    override fun readEntry(activity: Activity, entry: Entry, coroutineScope: CoroutineScope) {
+    override fun readEntry(activity: FragmentActivity, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
             val result = runCatching {
                 bookmarksRepo.read(entry)
@@ -107,7 +107,7 @@ class EntryMenuActionsImplForBookmarks(
     }
 
     override fun deleteEntryBookmark(
-        activity: Activity,
+        activity: FragmentActivity,
         entry: Entry,
         coroutineScope: CoroutineScope
     ) {

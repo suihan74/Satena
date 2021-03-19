@@ -35,7 +35,6 @@ class EntryMenuDialog2 : DialogFragment() {
     private val viewModel by lazyProvideViewModel {
         val entry = requireArguments().getObject<Entry>(ARG_ENTRY)!!
         DialogViewModel(
-            requireContext(),
             entry,
             SatenaApplication.instance.favoriteSitesRepository
         )
@@ -56,7 +55,7 @@ class EntryMenuDialog2 : DialogFragment() {
         return createBuilder()
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setItems(viewModel.labels) { _, which ->
+            .setItems(viewModel.labels(requireContext())) { _, which ->
                 viewModel.invokeAction(which, this)
             }
             .create()
@@ -64,63 +63,63 @@ class EntryMenuDialog2 : DialogFragment() {
 
     // ------ //
 
-    fun setShowCommentsListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+    fun setShowCommentsListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.showComments = l
     }
 
-    fun setShowPageListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+    fun setShowPageListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.showPage = l
     }
 
-    fun setSharePageListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
-        viewModel.sharePage= l
+    fun setShowPageInBrowserListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+        viewModel.showPageInBrowser = l
     }
 
-    fun setShowEntriesListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+    fun setSharePageListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+        viewModel.sharePage = l
+    }
+
+    fun setShowEntriesListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.showEntries = l
     }
 
-    fun setFavoriteEntryListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+    fun setFavoriteEntryListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.favorite = l
     }
 
-    fun setUnfavoriteEntryListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+    fun setUnfavoriteEntryListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.unfavorite = l
     }
 
-    fun setIgnoreEntryListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+    fun setIgnoreEntryListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.ignore = l
     }
 
-    fun setReadLaterListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+    fun setReadLaterListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.readLater = l
     }
 
-    fun setReadListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+    fun setReadListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.read = l
     }
 
-    fun setDeleteBookmarkListener(l : DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+    fun setDeleteBookmarkListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.deleteBookmark = l
     }
 
     // ------ //
 
     class DialogViewModel(
-        val context: Context,
         val entry : Entry,
-        val favoriteSitesRepo: FavoriteSitesRepository
+        val favoriteSitesRepo : FavoriteSitesRepository
     ) : ViewModel() {
 
         /** メニュー項目と対応する処理 */
-        val items by lazy {
-            createItems()
-        }
+        val items by lazy { createItems() }
 
         /** メニュー項目のラベル */
-        val labels by lazy {
+        fun labels(context: Context) : Array<String> =
             items.map { context.getString(it.first) }.toTypedArray()
-        }
 
         // ------ //
 
@@ -129,6 +128,9 @@ class EntryMenuDialog2 : DialogFragment() {
 
         /** ページを内部ブラウザで開く */
         var showPage : DialogListener<Entry>? = null
+
+        /** ページを外部ブラウザで開く */
+        var showPageInBrowser : DialogListener<Entry>? = null
 
         /** ページを外部ブラウザで開く(ページを共有する) */
         var sharePage : DialogListener<Entry>? = null
@@ -164,7 +166,8 @@ class EntryMenuDialog2 : DialogFragment() {
         fun createItems() = buildList {
             add(TapEntryAction.SHOW_COMMENTS.textId to showComments)
             add(TapEntryAction.SHOW_PAGE.textId to showPage)
-            add(TapEntryAction.SHOW_PAGE_IN_BROWSER.textId to sharePage)
+            add(TapEntryAction.SHOW_PAGE_IN_BROWSER.textId to showPageInBrowser)
+            add(TapEntryAction.SHARE.textId to sharePage)
             add(R.string.entry_action_show_entries to showEntries)
 
             val alreadyFavorite = favoriteSitesRepo.favoriteSites.value?.any {

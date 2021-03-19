@@ -50,6 +50,7 @@
     <string name="scroll_to_top">一番上までスクロール</string>
     <string name="search_button_tooltip">検索</string>
     <string name="minutes">分</string>
+    <string name="msg_copy_to_clipboard">クリップボードにコピーしました: %s</string>
 
     <!-- TODO: 英語用の文字列リソースを用意してそっちでplural設定する -->
     <plurals name="user">
@@ -131,6 +132,7 @@
     <string name="entry_action_show_comments">ブックマークを見る</string>
     <string name="entry_action_show_page">ページを開く</string>
     <string name="entry_action_show_page_in_browser">ページを外部ブラウザで開く</string>
+    <string name="entry_action_share">共有</string>
     <string name="entry_action_show_menu">メニューダイアログを開く</string>
     <string name="entry_action_favorite">お気に入りに追加</string>
     <string name="entry_action_unfavorite">お気に入りから除外</string>
@@ -153,8 +155,24 @@
     <string name="bookmark_report">通報する</string>
     <string name="bookmark_user_tags">ユーザータグ</string>
     <string name="bookmark_delete_star">スターを取り消す</string>
-
     <string name="msg_confirm_bookmark_deletion">ブックマークを削除します。よろしいですか？</string>
+
+    <!-- ブクマ「共有」ダイアログ -->
+    <string name="share_bookmark_title">ブックマークを共有</string>
+    <string name="share_bookmark_copy_label">クリップボードにコピー</string>
+    <string name="share_bookmark_share_label">共有</string>
+    <string name="share_bookmark_open_browser_label">ブラウザで開く</string>
+    <string name="share_bookmark_failure">処理失敗しました</string>
+
+    <!-- エントリ「共有」ダイアログ -->
+    <string name="share_entry_title">エントリを共有</string>
+    <string name="share_entry_copy_label">クリップボードにコピー</string>
+    <string name="share_entry_share_label">共有</string>
+    <string name="share_entry_open_browser_label">ブラウザで開く</string>
+    <string name="share_entry_url_copy_label">ブコメページURLをクリップボードにコピー</string>
+    <string name="share_entry_url_share_label">ブコメページを共有</string>
+    <string name="share_entry_url_open_browser_label">ブコメページをブラウザで開く</string>
+    <string name="share_entry_failure">処理失敗しました</string>
 
     <!-- 「あとで読む」エントリを「読んだ」したときの挙動 -->
     <string name="entry_read_action_silent">無言ブクマ</string>
@@ -331,6 +349,7 @@
     <string name="pref_bookmarks_showing_stars_of_ignored_users_desc">ブクマ詳細画面で非表示対象のスターを表示する</string>
     <string name="pref_bookmarks_hiding_toolbar_by_scrolling">スクロールでツールバーを隠す</string>
     <string name="pref_bookmarks_using_post_star_dialog_desc">スターをつける前に確認する</string>
+    <string name="pref_bookmarks_using_ignore_user_dialog_desc">ユーザーを非表示にする前に確認する</string>
     <string name="pref_bookmarks_using_add_star_popup_menu_desc">ブクマ一覧画面でスターをつけるポップアップを使用する</string>
     <string name="pref_bookmark_link_single_tap_action_desc">ブコメ内のリンクをタップしたときの動作</string>
     <string name="pref_bookmark_link_long_tap_action_desc">ブコメ内のリンクを長押ししたときの動作</string>
@@ -555,6 +574,7 @@
     <string name="custom_bookmarks_ignored_user_active">非表示ユーザーを表示</string>
     <string name="custom_bookmarks_no_user_tags_active">タグ無しユーザーを表示</string>
     <string name="additional_loading_desc">続きを読み込む</string>
+    <string name="ignore_user_confirm_msg">id:%sを非表示にします。よろしいですか？</string>
 
     <string name="msg_bookmark_comments_are_hidden">サイト管理者によってブコメが非表示にされています</string>
     <string name="msg_get_entry_failed">エントリ取得失敗</string>

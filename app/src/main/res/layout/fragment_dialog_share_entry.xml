@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog.DialogViewModel"/>
+
+        <variable
+                name="fragment"
+                type="com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:paddingVertical="12dp"
+            android:paddingHorizontal="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <TextView
+                android:id="@+id/labelTextView"
+                android:text="@string/share_entry_title"
+                android:textSize="20sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ImageView
+                android:id="@+id/shareLinkIcon"
+                android:src="@drawable/ic_baseline_link"
+                app:tint="?textColor"
+                android:contentDescription="@null"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/labelTextView"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/shareLinkDesc"
+                encodedUrl="@{vm.entry.url}"
+                tools:text="https://localhost/"
+                android:textSize="14sp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                app:layout_constraintTop_toBottomOf="@id/labelTextView"
+                app:layout_constraintTop_toTopOf="@id/shareLinkIcon"
+                app:layout_constraintBottom_toBottomOf="@id/shareLinkIcon"
+                app:layout_constraintStart_toEndOf="@id/shareLinkIcon"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginStart="4dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <HorizontalScrollView
+                android:id="@+id/shareLinkScrollView"
+                android:scrollbarThumbHorizontal="@drawable/scrollbar_thumb"
+                android:scrollbarSize="3dp"
+                app:layout_constraintTop_toBottomOf="@id/shareLinkIcon"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/copyLinkButton"
+                        android:src="@drawable/ic_baseline_content_copy"
+                        app:backgroundTint="?colorPrimary"
+                        app:tint="@color/colorPrimaryText"
+                        android:contentDescription="@string/share_entry_copy_label"
+                        android:onClick="@{() -> vm.copyUrlToClipboard(fragment)}"
+                        android:layout_marginVertical="8dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/copyLinkLabel"
+                        app:layout_constraintStart_toStartOf="@id/copyLinkLabel"
+                        app:layout_constraintEnd_toEndOf="@id/copyLinkLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <TextView
+                        android:id="@+id/copyLinkLabel"
+                        android:text="@string/share_entry_copy_label"
+                        android:textSize="11sp"
+                        android:textAlignment="center"
+                        android:lines="2"
+                        app:layout_constraintTop_toBottomOf="@id/copyLinkButton"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/openLinkButton"
+                        android:src="@drawable/ic_baseline_open_in_new"
+                        app:backgroundTint="?colorPrimary"
+                        app:tint="@color/colorPrimaryText"
+                        android:contentDescription="@string/share_entry_open_browser_label"
+                        android:onClick="@{() -> vm.openUrl(fragment)}"
+                        android:layout_marginVertical="8dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/openLinkLabel"
+                        app:layout_constraintStart_toStartOf="@id/openLinkLabel"
+                        app:layout_constraintEnd_toEndOf="@id/openLinkLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <TextView
+                        android:id="@+id/openLinkLabel"
+                        android:text="@string/share_entry_open_browser_label"
+                        android:textSize="11sp"
+                        android:textAlignment="center"
+                        android:lines="2"
+                        app:layout_constraintTop_toBottomOf="@id/openLinkButton"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/copyLinkLabel"
+                        android:layout_marginHorizontal="24dp"
+                        android:maxWidth="80dp"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/shareLinkButton"
+                        android:src="@drawable/ic_baseline_share"
+                        app:backgroundTint="?colorPrimary"
+                        app:tint="@color/colorPrimaryText"
+                        android:contentDescription="@string/share_entry_share_label"
+                        android:onClick="@{() -> vm.shareUrl(fragment)}"
+                        android:layout_marginVertical="8dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/shareLinkLabel"
+                        app:layout_constraintStart_toStartOf="@id/shareLinkLabel"
+                        app:layout_constraintEnd_toEndOf="@id/shareLinkLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <TextView
+                        android:id="@+id/shareLinkLabel"
+                        android:text="@string/share_entry_share_label"
+                        android:textSize="11sp"
+                        android:textAlignment="center"
+                        android:lines="2"
+                        app:layout_constraintTop_toBottomOf="@id/shareLinkButton"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/openLinkLabel"
+                        android:layout_marginHorizontal="24dp"
+                        android:maxWidth="80dp"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
+
+                <View
+                        android:id="@+id/linkVerticalDivider"
+                        android:foreground="@drawable/recycler_view_item_divider"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/shareLinkLabel"
+                        android:layout_marginHorizontal="24dp"
+                        android:layout_marginVertical="12dp"
+                        android:layout_width="2dp"
+                        android:layout_height="0dp"/>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/copyEntryLinkButton"
+                        android:src="@drawable/ic_baseline_content_copy"
+                        app:backgroundTint="?colorPrimary"
+                        app:tint="@color/colorPrimaryText"
+                        android:contentDescription="@string/share_entry_url_copy_label"
+                        android:onClick="@{() -> vm.copyEntryUrlToClipboard(fragment)}"
+                        android:layout_marginVertical="8dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/copyEntryLinkLabel"
+                        app:layout_constraintStart_toStartOf="@id/copyEntryLinkLabel"
+                        app:layout_constraintEnd_toEndOf="@id/copyEntryLinkLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <TextView
+                        android:id="@+id/copyEntryLinkLabel"
+                        android:text="@string/share_entry_url_copy_label"
+                        android:textSize="11sp"
+                        android:textAlignment="center"
+                        android:lines="2"
+                        app:layout_constraintTop_toBottomOf="@id/copyEntryLinkButton"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/linkVerticalDivider"
+                        android:layout_marginHorizontal="24dp"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/openEntryLinkButton"
+                        android:src="@drawable/ic_baseline_open_in_new"
+                        app:backgroundTint="?colorPrimary"
+                        app:tint="@color/colorPrimaryText"
+                        android:contentDescription="@string/share_entry_url_open_browser_label"
+                        android:onClick="@{() -> vm.openEntryUrl(fragment)}"
+                        android:layout_marginVertical="8dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/openEntryLinkLabel"
+                        app:layout_constraintStart_toStartOf="@id/openEntryLinkLabel"
+                        app:layout_constraintEnd_toEndOf="@id/openEntryLinkLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <TextView
+                        android:id="@+id/openEntryLinkLabel"
+                        android:text="@string/share_entry_url_open_browser_label"
+                        android:textSize="11sp"
+                        android:textAlignment="center"
+                        android:lines="2"
+                        app:layout_constraintTop_toBottomOf="@id/openEntryLinkButton"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/copyEntryLinkLabel"
+                        android:layout_marginHorizontal="24dp"
+                        android:maxWidth="80dp"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/shareEntryLinkButton"
+                        android:src="@drawable/ic_baseline_share"
+                        app:backgroundTint="?colorPrimary"
+                        app:tint="@color/colorPrimaryText"
+                        android:contentDescription="@string/share_entry_url_share_label"
+                        android:onClick="@{() -> vm.shareEntryUrl(fragment)}"
+                        android:layout_marginVertical="8dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/shareEntryLinkLabel"
+                        app:layout_constraintStart_toStartOf="@id/shareEntryLinkLabel"
+                        app:layout_constraintEnd_toEndOf="@id/shareEntryLinkLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <TextView
+                        android:id="@+id/shareEntryLinkLabel"
+                        android:text="@string/share_entry_url_share_label"
+                        android:textSize="11sp"
+                        android:textAlignment="center"
+                        android:lines="2"
+                        app:layout_constraintTop_toBottomOf="@id/shareEntryLinkButton"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/openEntryLinkLabel"
+                        android:layout_marginHorizontal="24dp"
+                        android:maxWidth="80dp"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </HorizontalScrollView>
+
+        <ImageView
+                android:id="@+id/divider"
+                android:foreground="@drawable/recycler_view_item_divider"
+                android:contentDescription="@null"
+                app:layout_constraintTop_toBottomOf="@id/shareLinkScrollView"
+                android:layout_marginTop="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"/>
+
+        <ImageView
+                android:id="@+id/shareTitleIcon"
+                android:src="@drawable/ic_title"
+                app:tint="?textColor"
+                android:contentDescription="@null"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/shareTitleDesc"
+                android:text="@{vm.text}"
+                tools:text="エントリタイトル"
+                android:textSize="14sp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                app:layout_constraintTop_toBottomOf="@id/labelTextView"
+                app:layout_constraintTop_toTopOf="@id/shareTitleIcon"
+                app:layout_constraintBottom_toBottomOf="@id/shareTitleIcon"
+                app:layout_constraintStart_toEndOf="@id/shareTitleIcon"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginStart="4dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <HorizontalScrollView
+                android:id="@+id/shareTitleScrollView"
+                android:scrollbarThumbHorizontal="@drawable/scrollbar_thumb"
+                android:scrollbarSize="3dp"
+                app:layout_constraintTop_toBottomOf="@id/shareTitleIcon"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/copyTitleButton"
+                        android:src="@drawable/ic_baseline_content_copy"
+                        app:backgroundTint="?colorPrimary"
+                        app:tint="@color/colorPrimaryText"
+                        android:contentDescription="@string/share_entry_copy_label"
+                        android:onClick="@{() -> vm.copyTitleToClipboard(fragment)}"
+                        android:layout_marginVertical="8dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/copyTitleLabel"
+                        app:layout_constraintStart_toStartOf="@id/copyTitleLabel"
+                        app:layout_constraintEnd_toEndOf="@id/copyTitleLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <TextView
+                        android:id="@+id/copyTitleLabel"
+                        android:text="@string/share_entry_copy_label"
+                        android:textSize="11sp"
+                        android:textAlignment="center"
+                        android:lines="2"
+                        app:layout_constraintTop_toBottomOf="@id/copyTitleButton"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/shareTitleButton"
+                        android:src="@drawable/ic_baseline_share"
+                        app:backgroundTint="?colorPrimary"
+                        app:tint="@color/colorPrimaryText"
+                        android:contentDescription="@string/share_entry_share_label"
+                        android:onClick="@{() -> vm.shareTitle(fragment)}"
+                        android:layout_marginVertical="8dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/shareTitleLabel"
+                        app:layout_constraintStart_toStartOf="@id/shareTitleLabel"
+                        app:layout_constraintEnd_toEndOf="@id/shareTitleLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <TextView
+                        android:id="@+id/shareTitleLabel"
+                        android:text="@string/share_entry_share_label"
+                        android:textSize="11sp"
+                        android:textAlignment="center"
+                        android:lines="2"
+                        app:layout_constraintTop_toBottomOf="@id/shareTitleButton"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/copyTitleLabel"
+                        android:layout_marginHorizontal="24dp"
+                        android:maxWidth="80dp"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        tools:ignore="SmallSp" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </HorizontalScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
