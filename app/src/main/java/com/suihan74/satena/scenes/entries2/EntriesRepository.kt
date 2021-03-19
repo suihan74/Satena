@@ -478,6 +478,7 @@ class EntriesRepository(
                     }
                 }
                 catch (e: Throwable) {
+                    Log.i("test", Log.getStackTraceString(e))
                     null
                 }
             }.groupBy { it.id }

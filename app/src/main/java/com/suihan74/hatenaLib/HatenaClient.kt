@@ -565,7 +565,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     url = entryUrl,
                     rootUrl = rootUrl,
                     faviconUrl = faviconUrl,
-                    imageUrl = imageUrl,
+                    _imageUrl = imageUrl,
                     date = date
                 )
             }
@@ -767,7 +767,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     url = actualUrl,
                     rootUrl = getTemporaryRootUrl(uri),
                     faviconUrl = getFaviconUrl(uri),
-                    imageUrl = imageUrl)
+                    _imageUrl = imageUrl)
             }
             else {
                 val uri = Uri.parse(url)
@@ -779,7 +779,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     url = url,
                     rootUrl = getTemporaryRootUrl(uri),
                     faviconUrl = getFaviconUrl(uri),
-                    imageUrl = "")
+                    _imageUrl = "")
             }
         }
     }
@@ -889,7 +889,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 url = entryUrl,
                 rootUrl = rootUrl,
                 faviconUrl = faviconUrl,
-                imageUrl = imageUrl,
+                _imageUrl = imageUrl,
                 bookmarkedData = bookmarkedData
             )
         }
@@ -1674,7 +1674,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                         url = entryUrl,
                         rootUrl = rootUrl,
                         faviconUrl = faviconUrl,
-                        imageUrl = imageUrl,
+                        _imageUrl = imageUrl,
                         bookmarkedData = reaction
                     )
                 }
