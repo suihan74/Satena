@@ -1386,6 +1386,16 @@ object HatenaClient : BaseClient(), CoroutineScope {
             )
         }
 
+
+    /**
+     * ブコメページのURL
+     *
+     * TODO: `CommentPage`(ブコメ一覧ページ), `BookmarkComment`(ブコメ)が紛らわしい
+     */
+    fun getBookmarkCommentUrl(eid: Long, user: String) : String {
+        return "$B_BASE_URL/entry/$eid/comment/$user"
+    }
+
     /**
      * 障害情報を取得する
      */
