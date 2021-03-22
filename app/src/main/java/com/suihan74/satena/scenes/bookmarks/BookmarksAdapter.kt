@@ -10,9 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -126,7 +124,8 @@ class BookmarksAdapter(
                             parent,
                             false
                         ),
-                        this
+                        this,
+                        lifecycleOwner
                     )
 
                 RecyclerType.FOOTER ->
@@ -220,8 +219,11 @@ class BookmarksAdapter(
     /** ブクマリストアイテム */
     class ViewHolder(
         private val binding: ListviewItemBookmarksBinding,
-        private val bookmarksAdapter: BookmarksAdapter
+        private val bookmarksAdapter: BookmarksAdapter,
+        private val lifecycleOwner: LifecycleOwner
     ) : RecyclerView.ViewHolder(binding.root) {
+        private var bookmarkCountObserver: Observer<Int>? = null
+
         var bookmark: Entity? = null
             set(value) {
                 field = value
@@ -337,6 +339,25 @@ class BookmarksAdapter(
 
             // スターを付けるボタンを設定
             bookmarksAdapter.addStarButtonBinder?.invoke(binding.addStarButton, bookmark)
+
+            // ブクマへのブクマ数の表示
+            bookmarkCountObserver?.let {
+                entity.bookmarkCount.removeObserver(it)
+            }
+            bookmarkCountObserver = Observer { count ->
+                if (count != null && count > 0) {
+                    binding.bookmarksCount.text = "%d user%s".format(
+                        count,
+                        if (count == 1) "" else "s"
+                    )
+                    binding.bookmarksCount.visibility = View.VISIBLE
+                }
+                else {
+                    binding.bookmarksCount.text = ""
+                    binding.bookmarksCount.visibility = View.GONE
+                }
+            }
+            entity.bookmarkCount.observe(lifecycleOwner, bookmarkCountObserver!!)
 
             // ユーザータグ
             if (userTags.isNullOrEmpty()) {
