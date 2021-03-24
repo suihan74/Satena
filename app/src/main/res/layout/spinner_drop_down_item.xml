@@ -5,9 +5,7 @@
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:ellipsize="end"
-        android:textSize="16sp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
+        android:textSize="@dimen/spinner_text_size"
+        android:paddingVertical="@dimen/spinner_padding_vertical"
+        android:paddingHorizontal="@dimen/spinner_padding_horizontal"
         android:textColor="?attr/textColor" />
