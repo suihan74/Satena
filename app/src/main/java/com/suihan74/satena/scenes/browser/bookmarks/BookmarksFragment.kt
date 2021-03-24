@@ -195,7 +195,7 @@ class BookmarksFragment :
             val labels = tabs.map { getText(it.textId) }
             spinner.adapter = object : ArrayAdapter<CharSequence>(
                 requireContext(),
-                R.layout.spinner_browser_bookmarks_tabs,
+                R.layout.spinner_drop_down_item,
                 labels
             ) {
                 override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
