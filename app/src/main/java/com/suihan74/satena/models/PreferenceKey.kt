@@ -138,7 +138,9 @@ enum class PreferenceKey(
     ENTRIES_INITIAL_TAB(typeInfo<Int>(), 0),
 
     /** 各カテゴリで最初に表示するタブ(の位置) */
-    ENTRIES_DEFAULT_TABS(typeInfo<EntriesDefaultTabSettings>(), EntriesDefaultTabSettings()),
+    ENTRIES_DEFAULT_TABS(typeInfo<EntriesDefaultTabSettings>(), EntriesDefaultTabSettings().apply {
+        put(Category.Memorial15th, 0)
+    }),
 
     /** カテゴリリストの表示形式 */
     ENTRIES_CATEGORIES_MODE(typeInfo<Int>(), CategoriesMode.LIST.ordinal),
