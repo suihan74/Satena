@@ -6,6 +6,7 @@ import android.view.Gravity
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.entries2.CategoriesMode
+import com.suihan74.satena.scenes.entries2.EntriesDefaultTabSettings
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.utilities.SafeSharedPreferences
@@ -14,7 +15,7 @@ import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
 
-@SharedPreferencesKey(fileName = "default", version = 7, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 8, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -133,7 +134,11 @@ enum class PreferenceKey(
     ENTRIES_HOME_CATEGORY(typeInfo<Int>(), Category.All.id),
 
     /** 最初に表示するタブ(の位置) */
+    @Deprecated("migrate to ENTRIES_DEFAULT_TABS")
     ENTRIES_INITIAL_TAB(typeInfo<Int>(), 0),
+
+    /** 各カテゴリで最初に表示するタブ(の位置) */
+    ENTRIES_DEFAULT_TABS(typeInfo<EntriesDefaultTabSettings>(), EntriesDefaultTabSettings()),
 
     /** カテゴリリストの表示形式 */
     ENTRIES_CATEGORIES_MODE(typeInfo<Int>(), CategoriesMode.LIST.ordinal),
@@ -267,6 +272,8 @@ object PreferenceKeyMigration {
                 5 -> migrateFromVersion5(context)
 
                 6 -> migrateFromVersion6(context)
+
+                7 -> migrateFromVersion7(context)
 
                 else -> break
             }
@@ -414,6 +421,31 @@ object PreferenceKeyMigration {
                 runCatching {
                     remove(PreferenceKey.DRAWER_GRAVITY)
                 }
+            }
+        }
+    }
+
+    /**
+     * v7 -> v8
+     *
+     * `ENTRIES_INITIAL_TAB`を`ENTRIES_DEFAULT_TABS`に移行
+     */
+    private fun migrateFromVersion7(context: Context) {
+        runCatching {
+            val oldKey = PreferenceKey.ENTRIES_INITIAL_TAB
+            val newKey = PreferenceKey.ENTRIES_DEFAULT_TABS
+
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val homeCategory = Category.fromId(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
+            val initialTab = prefs.getInt(oldKey)
+            val defaultTabs =
+                prefs.getObject<EntriesDefaultTabSettings>(newKey)
+                    ?: EntriesDefaultTabSettings()
+            defaultTabs[homeCategory] = initialTab
+
+            prefs.edit {
+                putObject(newKey, defaultTabs)
+                remove(oldKey)
             }
         }
     }

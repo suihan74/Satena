@@ -144,13 +144,15 @@ enum class Category(
     ),
 
     Site(id = 18,
-        0, 0,
+        R.string.category_site,
+        0,
         displayInList = false,
         willBeHome = false
     ),
 
     User(id = 19,
-        0, 0,
+        R.string.category_user,
+        0,
         displayInList = false,
         willBeHome = false
     ),
