@@ -55,9 +55,7 @@ abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
                 val binding = DataBindingUtil.inflate<BindingT>(
                     inflater,
                     itemLayoutId, parent, false
-                ).also {
-                    it.lifecycleOwner = lifecycleOwner
-                }
+                )
 
                 ViewHolder(binding).also { vh ->
                     vh.itemView.setOnClickListener {
@@ -84,6 +82,7 @@ abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
             RecyclerType.BODY.id -> {
                 holder as ViewHolder<BindingT>
                 bind(currentList[position].body, holder.binding)
+                holder.binding.lifecycleOwner = lifecycleOwner
             }
         }
     }

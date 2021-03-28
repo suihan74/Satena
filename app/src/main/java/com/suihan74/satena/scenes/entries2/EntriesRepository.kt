@@ -745,4 +745,30 @@ class EntriesRepository(
             }
         }
     }
+
+    // ------ //
+
+    val changeHomeByLongTap : Boolean
+        get() = prefs.getBoolean(PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB)
+
+    /**
+     * ホームカテゴリを更新する
+     */
+    fun updateHomeCategory(category: Category) {
+        prefs.edit {
+            put(PreferenceKey.ENTRIES_HOME_CATEGORY, category.id)
+        }
+    }
+
+    /**
+     * カテゴリの初期表示タブを更新する
+     */
+    fun updateDefaultTab(category: Category, tabPosition: Int) {
+        val key = PreferenceKey.ENTRIES_DEFAULT_TABS
+        val settings = prefs.getObject<EntriesDefaultTabSettings>(key) ?: EntriesDefaultTabSettings()
+        settings[category] = tabPosition
+        prefs.edit {
+            putObject(key, settings)
+        }
+    }
 }

@@ -90,6 +90,8 @@
     <string name="entries_tab_15th_user">あなたの歴史</string>
     <string name="entries_tab_15th">%d年</string>
     <string name="desc_memorial_entries_mode">モード選択</string>
+    <!-- 設定表示用 -->
+    <string name="entries_tab_maintain">位置を維持</string>
 
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
@@ -116,6 +118,8 @@
     <string name="category_maintenance">障害・メンテナンス情報</string>
     <string name="category_history">ブクマ閲覧履歴</string>
     <string name="category_memorial15">タイムカプセル</string>
+    <string name="category_user">ユーザーのブクマ</string>
+    <string name="category_site">サイトのエントリ</string>
 
     <!-- メニュー -->
     <string name="notices_desc">通知</string>
@@ -329,6 +333,9 @@
     <!-- カテゴリリストの表示形式 -->
     <string name="pref_categories_mode_list">リスト</string>
     <string name="pref_categories_mode_grid">グリッド</string>
+
+    <!-- カテゴリごとのデフォルト表示タブ -->
+    <string name="pref_entries_default_tabs_desc">各カテゴリの初期表示タブ</string>
 
     <!-- bookmarks -->
     <string name="pref_bookmark_section_posting">ブクマ投稿</string>
@@ -545,6 +552,10 @@
     <string name="desc_search_type">検索対象</string>
     <string name="desc_search_order">検索順</string>
     <string name="desc_favorite_sites_settings">表示サイトを選択</string>
+
+    <string name="entries_change_home_category_tab_title">設定</string>
+    <string name="entries_change_home_category">ホームカテゴリを「%s」に変更</string>
+    <string name="entries_change_default_tab">「%1$s」カテゴリの初期表示タブを「%2$s」に変更</string>
 
     <string name="msg_get_categories_failed">カテゴリ・特集情報の取得に失敗しました</string>
     <string name="msg_update_entries_failed">エントリーリスト取得失敗</string>
