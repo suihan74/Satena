@@ -433,22 +433,23 @@ object PreferenceKeyMigration {
      * `ENTRIES_INITIAL_TAB`を`ENTRIES_DEFAULT_TABS`に移行
      */
     private fun migrateFromVersion7(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         runCatching {
             val oldKey = PreferenceKey.ENTRIES_INITIAL_TAB
             val newKey = PreferenceKey.ENTRIES_DEFAULT_TABS
 
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
             val homeCategory = Category.fromId(prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY))
             val initialTab = prefs.getInt(oldKey)
             val defaultTabs =
-                prefs.getObject<EntriesDefaultTabSettings>(newKey)
-                    ?: EntriesDefaultTabSettings()
+                prefs.getObject<EntriesDefaultTabSettings>(newKey)!!
             defaultTabs[homeCategory] = initialTab
 
             prefs.edit {
                 putObject(newKey, defaultTabs)
                 remove(oldKey)
             }
+        }.onFailure {
+            prefs.edit {}
         }
     }
 }
