@@ -88,7 +88,7 @@ enum class Category(
 
     FavoriteSites(id = 22,
         R.string.category_favorite_sites,
-        R.drawable.ic_user_tag
+        R.drawable.ic_category_favorite_sites
     ),
 
     @Deprecated("`MyTags` is integrated into `MyBookmarks`")
@@ -145,7 +145,7 @@ enum class Category(
 
     Site(id = 18,
         R.string.category_site,
-        0,
+        R.drawable.ic_category_site,
         displayInList = false,
         willBeHome = false
     ),
