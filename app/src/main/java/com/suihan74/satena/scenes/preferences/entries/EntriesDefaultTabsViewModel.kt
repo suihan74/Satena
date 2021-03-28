@@ -22,7 +22,7 @@ class EntriesDefaultTabsViewModel(private val prefs : SafeSharedPreferences<Pref
     init {
         val categories = Category.values()
         settings = categories
-            .filterNot { it.singleColumns && it != Category.Memorial15th }
+            .filterNot { it.singleColumns || it == Category.Memorial15th }
             .filter {
                 it.declaringClass.getField(it.name).getAnnotation(Deprecated::class.java) == null
             }
