@@ -48,9 +48,8 @@ class EntriesDefaultTabsViewModel(private val prefs : SafeSharedPreferences<Pref
         val selectedTabOrdinal = tabsMap.getOrDefault(category)
         val checkedItem = items.indexOfFirst { it.tabOrdinal == selectedTabOrdinal }
 
-        // TODO
         AlertDialogFragment.Builder()
-            .setTitle("Test")
+            .setTitle(category.textId)
             .setSingleChoiceItems(labels, checkedItem) { _, which ->
                 val tabOrdinal = items[which].tabOrdinal
                 settings.first { it.category == category }

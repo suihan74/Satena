@@ -1,6 +1,8 @@
 package com.suihan74.satena.scenes.entries2
 
+import android.content.Context
 import android.view.View
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,6 +11,7 @@ import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.isImmediateUpdateAllowed
 import com.suihan74.satena.R
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.utilities.OnError
@@ -187,5 +190,40 @@ class EntriesViewModel(
     /** アプリのアップデートを開始する */
     private fun resumeAppUpdate(activity: EntriesActivity, info: AppUpdateInfo, requestCode: Int) {
         repository.resumeAppUpdate(activity, info, requestCode)
+    }
+
+    // ------ //
+
+    /**
+     * ホームカテゴリ・初期表示タブの設定ダイアログを開く
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    fun openDefaultTabSettingDialog(context: Context, category: Category, tab: EntriesTabType, fragmentManager: FragmentManager) {
+        val categoryText = context.getText(category.textId)
+        val tabText = context.getText(tab.textId)
+        val items = buildList {
+            if (category != repository.homeCategory && category.willBeHome && category.displayInList) {
+                add(context.getString(R.string.entries_change_home_category, categoryText) to { repository.updateHomeCategory(category) })
+            }
+            add(context.getString(R.string.entries_change_default_tab, categoryText, tabText) to { repository.updateDefaultTab(category, tab.tabOrdinal) })
+        }
+        val labels = items.map { it.first }
+        val states = BooleanArray(items.size) { true }
+
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.entries_change_home_category_tab_title)
+            .setMultipleChoiceItems(labels, states) { _, which, state ->
+                states[which] = state
+            }
+            .setPositiveButton(R.string.dialog_register) {
+                states.forEachIndexed { index, b ->
+                    if (b) {
+                        items[index].second.invoke()
+                    }
+                }
+            }
+            .setNegativeButton(R.string.dialog_cancel)
+            .create()
+            .show(fragmentManager, null)
     }
 }

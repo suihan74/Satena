@@ -10,12 +10,10 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentEntries2Binding
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.setOnTabLongClickListener
 import kotlin.math.min
@@ -139,28 +137,11 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
 
         // タブを長押しで最初に表示するタブを変更
         val longClickListener : (Int)->Boolean = l@ { idx ->
+            if (!activityViewModel.repository.changeHomeByLongTap) return@l false
+
             val category = viewModel.category.value!!
-            if (!category.displayInList || !category.willBeHome) return@l false
-
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-            val isOn = prefs.getBoolean(PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB)
-            if (!isOn) return@l false
-
-            val homeCategoryInt = prefs.getInt(PreferenceKey.ENTRIES_HOME_CATEGORY)
-            val initialTab = prefs.getInt(PreferenceKey.ENTRIES_INITIAL_TAB)
-
-            if (category.id != homeCategoryInt || initialTab != idx) {
-                val tabText = viewModel.getTabTitle(requireContext(), idx)
-                prefs.edit {
-                    put(PreferenceKey.ENTRIES_HOME_CATEGORY, category.id)
-                    put(PreferenceKey.ENTRIES_INITIAL_TAB, idx)
-                }
-                activity.showToast(
-                    R.string.msg_entries_initial_tab_changed,
-                    getString(category.textId),
-                    tabText
-                )
-            }
+            val tab = EntriesTabType.fromTabOrdinal(idx, category)
+            activityViewModel.openDefaultTabSettingDialog(requireContext(), category, tab, childFragmentManager)
             return@l true
         }
 
