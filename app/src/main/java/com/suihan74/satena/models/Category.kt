@@ -153,6 +153,7 @@ enum class Category(
     User(id = 19,
         R.string.category_user,
         0,
+        singleColumns = true,
         displayInList = false,
         willBeHome = false
     ),
