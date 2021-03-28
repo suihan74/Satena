@@ -11,6 +11,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.databinding.FragmentEntries2Binding
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.SafeSharedPreferences
@@ -140,6 +141,8 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
             if (!activityViewModel.repository.changeHomeByLongTap) return@l false
 
             val category = viewModel.category.value!!
+            if (category == Category.Memorial15th) return@l false
+
             val tab = EntriesTabType.fromTabOrdinal(idx, category)
             activityViewModel.openDefaultTabSettingDialog(requireContext(), category, tab, childFragmentManager)
             return@l true
