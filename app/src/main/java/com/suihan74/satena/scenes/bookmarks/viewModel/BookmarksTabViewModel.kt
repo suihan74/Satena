@@ -61,7 +61,8 @@ class BookmarksTabViewModel(
                 analyzedComment = analyzedComment,
                 isIgnored = ignoredUsers.contains(bookmark.user),
                 mentions = repo.getMentionsFrom(bookmark, analyzedComment),
-                userTags = taggedUsers.firstOrNull { t -> t.user.name == bookmark.user }?.tags ?: emptyList()
+                userTags = taggedUsers.firstOrNull { t -> t.user.name == bookmark.user }?.tags ?: emptyList(),
+                repo.getBookmarkCounts(bookmark)
             )
         })
     }
@@ -74,7 +75,8 @@ data class Entity (
     val analyzedComment: AnalyzedBookmarkComment,
     val isIgnored: Boolean,
     val mentions: List<Bookmark>,
-    val userTags: List<Tag>
+    val userTags: List<Tag>,
+    val bookmarkCount: LiveData<Int>
 ) {
     override fun equals(other: Any?): Boolean {
         if (other !is Entity) return false
