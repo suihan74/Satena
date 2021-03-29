@@ -240,7 +240,9 @@ class SatenaApplication : Application() {
 
     /** 各種設定のバージョン移行が必要か確認 */
     fun updatePreferencesVersion() {
-        PreferenceKeyMigration.check(applicationContext)
+        runCatching {
+            PreferenceKeyMigration.check(applicationContext)
+        }
     }
 
     // ------ //

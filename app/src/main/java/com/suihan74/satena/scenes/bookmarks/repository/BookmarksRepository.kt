@@ -16,6 +16,7 @@ import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepositoryInterface
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.TaskFailureException
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.updateFirstOrPlusAhead
 import kotlinx.coroutines.*
@@ -739,6 +740,9 @@ class BookmarksRepository(
             }
         }
 
+        // ブクマへのブクマ数を取得する
+        loadBookmarkCountsToBookmarks(bookmarks)
+
         // スター情報を取得する
         loadStarsEntriesForBookmarks(bookmarks)
     }
@@ -792,6 +796,9 @@ class BookmarksRepository(
         response.bookmarks.forEach {
             loadUserTags(it.user)
         }
+
+        // ブクマへのブクマ数を取得する
+        loadBookmarkCountsToBookmarksWithStarCount(response.bookmarks)
 
         // スター情報を取得する
         loadStarsEntriesForBookmarksWithStarCount(response.bookmarks)
@@ -878,6 +885,53 @@ class BookmarksRepository(
         }
 
         return result.getOrNull()!!
+    }
+
+    private val bookmarkCounts = HashMap<String, LiveData<Int>>()
+    private val bookmarkCountsMutex = Mutex()
+
+    private suspend fun loadBookmarkCountsToBookmarksWithStarCount(bookmarks: List<BookmarkWithStarCount>) {
+        loadBookmarkCountsToBookmarksImpl(bookmarks.map { it.user })
+    }
+
+    private suspend fun loadBookmarkCountsToBookmarks(bookmarks: List<Bookmark>) {
+        loadBookmarkCountsToBookmarksImpl(bookmarks.map { it.user })
+    }
+
+    /**
+     * ブクマへのブクマ数を取得する
+     */
+    private suspend fun loadBookmarkCountsToBookmarksImpl(users: List<String>) = withContext(Dispatchers.Default) {
+        val entry = entry.value ?: return@withContext
+        if (entry.id == 0L) return@withContext
+        val bookmarkUrls = users.map { user ->
+            bookmarkCountsMutex.withLock {
+                bookmarkCounts.getOrPut(user) { MutableLiveData() }
+            }
+            HatenaClient.getBookmarkCommentUrl(entry.id, user)
+        }
+
+        launch {
+            runCatching {
+                val map = HatenaClient.getBookmarkCountsAsync(bookmarkUrls).await()
+                bookmarkCountsMutex.withLock {
+                    users.forEach { user ->
+                        val url = HatenaClient.getBookmarkCommentUrl(entry.id, user)
+                        bookmarkCounts[user].alsoAs<MutableLiveData<Int>> { liveData ->
+                            map[url]?.let {
+                                liveData.postValue(it)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun getBookmarkCounts(bookmark: Bookmark) : LiveData<Int> = withContext(Dispatchers.Main) {
+        return@withContext bookmarkCountsMutex.withLock {
+            bookmarkCounts.getOrPut(bookmark.user) { MutableLiveData() }
+        }
     }
 
     /**

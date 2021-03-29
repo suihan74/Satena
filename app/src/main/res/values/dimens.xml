@@ -36,4 +36,9 @@
     <!-- 設定画面共通のアイテムパディング -->
     <dimen name="pref_item_horizontal_padding">12dp</dimen>
     <dimen name="pref_item_vertical_padding">12dp</dimen>
+
+    <!-- Spinner -->
+    <dimen name="spinner_padding_vertical">12dp</dimen>
+    <dimen name="spinner_padding_horizontal">12dp</dimen>
+    <dimen name="spinner_text_size">16sp</dimen>
 </resources>

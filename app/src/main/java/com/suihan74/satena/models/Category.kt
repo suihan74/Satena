@@ -88,7 +88,7 @@ enum class Category(
 
     FavoriteSites(id = 22,
         R.string.category_favorite_sites,
-        R.drawable.ic_user_tag
+        R.drawable.ic_category_favorite_sites
     ),
 
     @Deprecated("`MyTags` is integrated into `MyBookmarks`")
@@ -104,7 +104,7 @@ enum class Category(
     Search(id = 13,
         R.string.category_search,
         R.drawable.ic_category_search,
-        singleColumns = true),
+        singleColumns = false),
 
     Stars(id = 14,
         R.string.category_mystars,
@@ -144,13 +144,16 @@ enum class Category(
     ),
 
     Site(id = 18,
-        0, 0,
+        R.string.category_site,
+        R.drawable.ic_category_site,
         displayInList = false,
         willBeHome = false
     ),
 
     User(id = 19,
-        0, 0,
+        R.string.category_user,
+        0,
+        singleColumns = true,
         displayInList = false,
         willBeHome = false
     ),

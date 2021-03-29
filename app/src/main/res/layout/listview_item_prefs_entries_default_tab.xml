@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <import type="com.suihan74.satena.R"/>
+        <import type="com.suihan74.utilities.bindings.Attrs"/>
+        <variable
+                name="data"
+                type="com.suihan74.satena.scenes.preferences.entries.EntriesDefaultTabSetting" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:background="?android:selectableItemBackground"
+            android:paddingVertical="@dimen/pref_item_vertical_padding"
+            android:paddingHorizontal="@dimen/pref_item_horizontal_padding"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/categoryIcon"
+                android:contentDescription="categoryIcon"
+                android:src="@{data.category.iconId}"
+                app:tint="@{Attrs.colorTint(context, R.attr.textColor)}"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/categoryNameTextView"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        <TextView
+                android:id="@+id/categoryNameTextView"
+                android:text="@{data.category.textId}"
+                tools:text="総合"
+                android:textSize="16sp"
+                android:textColor="?textColor"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:layout_marginHorizontal="8dp"
+                app:layout_constraintStart_toEndOf="@id/categoryIcon"
+                app:layout_constraintEnd_toStartOf="@id/tabTextView"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/tabTextView"
+                android:text="@{data.tab.textId}"
+                tools:text="人気"
+                android:textSize="13sp"
+                android:textColor="?tagTextColor"
+                android:singleLine="true"
+                android:ellipsize="end"
+                app:layout_constraintStart_toEndOf="@id/categoryNameTextView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

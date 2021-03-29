@@ -85,6 +85,10 @@ class AlertDialogFragment : DialogFragment() {
         viewModel.onClickItem = listener
     }
 
+    fun setOnSelectItem(listener: ((AlertDialogFragment, Int, Boolean)->Unit)?) = lifecycleScope.launchWhenStarted {
+        viewModel.onSelectItem = listener
+    }
+
     // ------ //
 
     class DialogViewModel(args: Bundle) : ViewModel() {
@@ -152,6 +156,9 @@ class AlertDialogFragment : DialogFragment() {
         /** リスト項目のクリック時処理 */
         var onClickItem : ((AlertDialogFragment, Int)->Unit)? = null
 
+        /** 複数選択リスト項目の選択状態変更時処理 */
+        var onSelectItem : ((AlertDialogFragment, Int, Boolean)->Unit)? = null
+
         // ------ //
 
         fun createDialog(fragment: AlertDialogFragment) : AlertDialog {
@@ -211,27 +218,31 @@ class AlertDialogFragment : DialogFragment() {
                 }
             }
 
-            dialog.listView?.setOnItemClickListener { _, _, i, _ ->
-                onClickItem?.invoke(fragment, i)
-                if (false != dismissOnClickItem) {
-                    fragment.dismiss()
-                }
-            }
-
-            dialog.listView?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    adapterView: AdapterView<*>?,
-                    viwe: View?,
-                    i: Int,
-                    l: Long
-                ) {
-                    checkedItem = i
+            if (itemsMode != ItemsMode.MULTI_CHOICE) {
+                dialog.listView?.setOnItemClickListener { _, _, i, _ ->
                     onClickItem?.invoke(fragment, i)
-                    if (true == dismissOnClickItem) {
+                    if (false != dismissOnClickItem) {
                         fragment.dismiss()
                     }
                 }
-                override fun onNothingSelected(p0: AdapterView<*>?) {}
+
+                dialog.listView?.onItemSelectedListener =
+                    object : AdapterView.OnItemSelectedListener {
+                        override fun onItemSelected(
+                            adapterView: AdapterView<*>?,
+                            viwe: View?,
+                            i: Int,
+                            l: Long
+                        ) {
+                            checkedItem = i
+                            onClickItem?.invoke(fragment, i)
+                            if (true == dismissOnClickItem) {
+                                fragment.dismiss()
+                            }
+                        }
+
+                        override fun onNothingSelected(p0: AdapterView<*>?) {}
+                    }
             }
 
             return dialog
@@ -247,7 +258,7 @@ class AlertDialogFragment : DialogFragment() {
             when (itemsMode) {
                 ItemsMode.SINGLE_CLICK -> initializeSingleClickItems(builder, labels)
                 ItemsMode.SINGLE_CHOICE -> initializeSingleChoiceItems(builder, labels)
-                ItemsMode.MULTI_CHOICE -> initializeMultiChoiceItems(builder, labels)
+                ItemsMode.MULTI_CHOICE -> initializeMultiChoiceItems(fragment, builder, labels)
             }
         }
 
@@ -266,10 +277,14 @@ class AlertDialogFragment : DialogFragment() {
         }
 
         private fun initializeMultiChoiceItems(
+            fragment: AlertDialogFragment,
             builder: AlertDialog.Builder,
             labels: Array<out CharSequence>
         ) {
-            builder.setMultiChoiceItems(labels, checkedItems, null)
+            builder.setMultiChoiceItems(labels, checkedItems) { _, which, state ->
+                onSelectItem?.invoke(fragment, which, state)
+            }
+            dismissOnClickItem = dismissOnClickItem ?: false
         }
     }
 
@@ -427,6 +442,49 @@ class AlertDialogFragment : DialogFragment() {
             args.putCharSequenceArray(ARG_ITEM_LABELS, labels.toTypedArray())
             args.putInt(ARG_SINGLE_CHECKED_ITEM, checkedItem)
             dialog.setOnClickItem(listener)
+            return this
+        }
+
+        // ------ //
+
+        inline fun <reified T> setMultipleChoiceItems(
+            labels: List<T>,
+            states: BooleanArray,
+            noinline listener: ((dialog: AlertDialogFragment, which: Int, state: Boolean)->Unit)? = null
+        ) : Builder {
+            when (T::class) {
+                Int::class -> {
+                    setMultipleChoiceItemsWithLabelIds(labels as List<Int>, states, listener)
+                }
+
+                String::class -> {
+                    setMultipleChoiceItemsWithLabels(labels as List<String>, states, listener)
+                }
+            }
+            return this
+        }
+
+        fun setMultipleChoiceItemsWithLabelIds(
+            labelIds: List<Int>,
+            states: BooleanArray,
+            listener: ((dialog: AlertDialogFragment, which: Int, state: Boolean)->Unit)? = null
+        ) : Builder {
+            args.putEnum(ARG_ITEMS_MODE, ItemsMode.SINGLE_CHOICE)
+            args.putIntArray(ARG_ITEM_LABEL_IDS, labelIds.toIntArray())
+            args.putBooleanArray(ARG_MULTI_CHECKED_ITEMS, states)
+            dialog.setOnSelectItem(listener)
+            return this
+        }
+
+        fun setMultipleChoiceItemsWithLabels(
+            labels: List<CharSequence>,
+            states: BooleanArray,
+            listener: ((dialog: AlertDialogFragment, which: Int, state: Boolean)->Unit)? = null
+        ) : Builder {
+            args.putEnum(ARG_ITEMS_MODE, ItemsMode.MULTI_CHOICE)
+            args.putCharSequenceArray(ARG_ITEM_LABELS, labels.toTypedArray())
+            args.putBooleanArray(ARG_MULTI_CHECKED_ITEMS, states)
+            dialog.setOnSelectItem(listener)
             return this
         }
     }
