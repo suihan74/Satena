@@ -104,7 +104,7 @@ enum class Category(
     Search(id = 13,
         R.string.category_search,
         R.drawable.ic_category_search,
-        singleColumns = true),
+        singleColumns = false),
 
     Stars(id = 14,
         R.string.category_mystars,
