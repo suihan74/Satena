@@ -17,15 +17,13 @@ import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.saveHistory
-import com.suihan74.satena.scenes.bookmarks.AddStarPopupMenu
-import com.suihan74.satena.scenes.bookmarks.BookmarksAdapter
-import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
-import com.suihan74.satena.scenes.bookmarks.EntryMenuActionsImplForBookmarks
+import com.suihan74.satena.scenes.bookmarks.*
 import com.suihan74.satena.scenes.bookmarks.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.post.BookmarkEditData
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
+import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.OnSuccess
 import com.suihan74.utilities.bindings.setVisibility
@@ -594,6 +592,34 @@ class BookmarksViewModel(
             }
 
             dialog.showAllowingStateLoss(fragmentManager)
+        }
+    }
+
+    // ------ //
+
+    /**
+     * ツールバータップ時の処理
+     *
+     * エントリをアプリ内ブラウザで開く
+     */
+    fun onClickToolbar(activity: BookmarksActivity) {
+        entry.value?.let { entry ->
+            activity.startInnerBrowser(entry)
+        }
+    }
+
+    /**
+     * ツールバーロングタップ時の処理
+     *
+     * エントリメニューダイアログを開く
+     */
+    fun onLongClickToolbar(activity: BookmarksActivity) {
+        entry.value?.let { entry ->
+            val handler = EntryMenuActionsImplForBookmarks(
+                repository,
+                SatenaApplication.instance.favoriteSitesRepository
+            )
+            handler.openMenuDialog(activity, entry, activity.supportFragmentManager, activity.lifecycleScope)
         }
     }
 
