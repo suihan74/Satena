@@ -26,9 +26,6 @@
                     app:title="@{bookmarksViewModel.entry.title}"
                     app:subtitle="@{bookmarksViewModel.subtitle}"
                     android:background="?android:selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
 
