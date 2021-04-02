@@ -158,6 +158,8 @@
 
     <string name="bookmark_confirm_browsing_dialog_desc">アプリ内ブラウザでページを開きます。よろしいですか？</string>
     <string name="bookmark_confirm_browsing_dialog_not_show_again">次回から確認しない</string>
+    <string name="bookmark_confirm_browsing_dialog_positive_action">開く</string>
+    <string name="bookmark_confirm_browsing_dialog_negative_action">何もしない</string>
 
     <!-- ブックマークに対する操作メニュー -->
     <string name="bookmark_show_user_entries">最近のブックマークを見る</string>

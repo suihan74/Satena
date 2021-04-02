@@ -44,10 +44,10 @@ class ConfirmBrowsingDialog : DialogFragment() {
         return AlertDialog.Builder(requireContext())
             .setTitle(R.string.confirm_dialog_title_simple)
             .setView(binding.root)
-            .setPositiveButton(R.string.dialog_open) { _, _ ->
+            .setPositiveButton(R.string.bookmark_confirm_browsing_dialog_positive_action) { _, _ ->
                 viewModel.onPositiveListener?.invoke(viewModel.notShowAgain.value == true, this)
             }
-            .setNegativeButton(R.string.dialog_close) { _, _ ->
+            .setNegativeButton(R.string.bookmark_confirm_browsing_dialog_negative_action) { _, _ ->
                 viewModel.onNegativeListener?.invoke(viewModel.notShowAgain.value == true, this)
             }
             .create()
