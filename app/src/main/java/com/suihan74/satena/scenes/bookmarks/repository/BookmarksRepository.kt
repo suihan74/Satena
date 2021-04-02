@@ -11,6 +11,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
+import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepositoryInterface
@@ -230,6 +231,20 @@ class BookmarksRepository(
     /** リンクを長押ししたときの処理 */
     val linkLongTapEntryAction by lazy {
         TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
+    }
+
+    // ------ //
+
+    val titleBarSingleClickBehavior by lazy {
+        PreferenceLiveData(prefs, PreferenceKey.BOOKMARKS_TITLE_SINGLE_CLICK_BEHAVIOR) { p, key ->
+            TapTitleBarAction.fromId(p.getInt(key))
+        }
+    }
+
+    val titleBarLongClickBehavior by lazy {
+        PreferenceLiveData(prefs, PreferenceKey.BOOKMARKS_TITLE_LONG_CLICK_BEHAVIOR) { p, key ->
+            TapTitleBarAction.fromId(p.getInt(key))
+        }
     }
 
     // ------ //

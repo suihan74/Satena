@@ -18,24 +18,27 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.scenes.bookmarks.*
+import com.suihan74.satena.scenes.bookmarks.dialog.ConfirmBrowsingDialog
 import com.suihan74.satena.scenes.bookmarks.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog
 import com.suihan74.satena.scenes.post.BookmarkEditData
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.startInnerBrowser
-import com.suihan74.utilities.Listener
-import com.suihan74.utilities.OnSuccess
+import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.ToastTag
 import com.suihan74.utilities.extensions.getObjectExtra
-import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.*
 
 class BookmarksViewModel(
     val repository: BookmarksRepository
-) : ViewModel() {
+) :
+    ViewModel(),
+    TitleBarClickHandler by TitleBarClickHandlerImpl(repository)
+{
 
     /** サインイン状態 */
     val signedIn = repository.signedIn
@@ -597,34 +600,6 @@ class BookmarksViewModel(
 
     // ------ //
 
-    /**
-     * ツールバータップ時の処理
-     *
-     * エントリをアプリ内ブラウザで開く
-     */
-    fun onClickToolbar(activity: BookmarksActivity) {
-        entry.value?.let { entry ->
-            activity.startInnerBrowser(entry)
-        }
-    }
-
-    /**
-     * ツールバーロングタップ時の処理
-     *
-     * エントリメニューダイアログを開く
-     */
-    fun onLongClickToolbar(activity: BookmarksActivity) {
-        entry.value?.let { entry ->
-            val handler = EntryMenuActionsImplForBookmarks(
-                repository,
-                SatenaApplication.instance.favoriteSitesRepository
-            )
-            handler.openMenuDialog(activity, entry, activity.supportFragmentManager, activity.lifecycleScope)
-        }
-    }
-
-    // ------ //
-
     /** BookmarkPostActivityの結果を反映させる */
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         // ブクマ投稿結果をentryに反映して、次回以降の編集時に投稿内容を最初から入力した状態でダイアログを表示する
@@ -650,5 +625,110 @@ class BookmarksViewModel(
                 }
             }
         }
+    }
+}
+
+// ------ //
+
+/**
+ * タイトルバーのクリック処理
+ */
+interface TitleBarClickHandler {
+    fun onClickToolbar(activity: BookmarksActivity)
+    fun onLongClickToolbar(activity: BookmarksActivity)
+}
+
+/**
+ * タイトルバーのクリック処理（実装）
+ */
+class TitleBarClickHandlerImpl(private val repository: BookmarksRepository) : TitleBarClickHandler {
+    /**
+     * ツールバータップ時の処理
+     *
+     * エントリをアプリ内ブラウザで開く
+     */
+    override fun onClickToolbar(activity: BookmarksActivity) {
+        val entry = repository.entry.value ?: return
+        handleTitleBarClickBehavior(
+            activity,
+            entry,
+            repository.titleBarSingleClickBehavior
+        )
+    }
+
+    /**
+     * ツールバーロングタップ時の処理
+     *
+     * エントリメニューダイアログを開く
+     */
+    override fun onLongClickToolbar(activity: BookmarksActivity) {
+        val entry = repository.entry.value ?: return
+        handleTitleBarClickBehavior(
+            activity,
+            entry,
+            repository.titleBarLongClickBehavior
+        )
+    }
+
+    // ------ //
+
+    private fun handleTitleBarClickBehavior(
+        activity: BookmarksActivity,
+        entry: Entry,
+        liveData: PreferenceLiveData<SafeSharedPreferences<PreferenceKey>, PreferenceKey, TapTitleBarAction>
+    ) {
+        when (liveData.value) {
+            TapTitleBarAction.SHOW_PAGE -> showEntryOnInnerBrowser(activity, entry)
+
+            TapTitleBarAction.SHOW_PAGE_WITH_DIALOG -> showEntryOnInnerBrowserAfterConfirmation(activity, entry, liveData)
+
+            TapTitleBarAction.SHARE -> shareEntry(activity, entry)
+
+            TapTitleBarAction.SHOW_MENU -> showEntryMenuDialog(activity, entry)
+
+            else -> {}
+        }
+    }
+
+    // ------ //
+
+    private fun showEntryOnInnerBrowser(activity: BookmarksActivity, entry: Entry) {
+        activity.startInnerBrowser(entry)
+    }
+
+    private fun showEntryOnInnerBrowserAfterConfirmation(
+        activity: BookmarksActivity,
+        entry: Entry,
+        liveData: PreferenceLiveData<SafeSharedPreferences<PreferenceKey>, PreferenceKey, TapTitleBarAction>
+    ) {
+        val dialog = ConfirmBrowsingDialog.createInstance(entry)
+
+        dialog.setPositiveButtonListener { notShowAgain, f ->
+            if (notShowAgain) {
+                liveData.setValue(TapTitleBarAction.SHOW_PAGE) { it.id }
+            }
+            showEntryOnInnerBrowser(f.requireActivity() as BookmarksActivity, entry)
+        }
+
+        dialog.setNegativeButtonListener { notShowAgain, f ->
+            if (notShowAgain) {
+                liveData.setValue(TapTitleBarAction.NOTHING) { it.id }
+            }
+        }
+
+        dialog.show(activity.supportFragmentManager, null)
+    }
+
+    private fun shareEntry(activity: BookmarksActivity, entry: Entry) {
+        ShareEntryDialog.createInstance(entry)
+            .show(activity.supportFragmentManager, null)
+    }
+
+    private fun showEntryMenuDialog(activity: BookmarksActivity, entry: Entry) {
+        val handler = EntryMenuActionsImplForBookmarks(
+            repository,
+            SatenaApplication.instance.favoriteSitesRepository
+        )
+        handler.openMenuDialog(activity, entry, activity.supportFragmentManager, activity.lifecycleScope)
     }
 }

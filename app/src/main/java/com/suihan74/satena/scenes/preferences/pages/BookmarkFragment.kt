@@ -13,6 +13,7 @@ import com.suihan74.satena.databinding.ListviewItemPrefsPostBookmarkAccountState
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
+import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -111,6 +112,20 @@ class BookmarkViewModel(
     /** タブ長押しで初期タブを変更する */
     private val changeHomeByLongTapping = createLiveData<Boolean>(
         PreferenceKey.BOOKMARKS_CHANGE_HOME_BY_LONG_TAPPING_TAB
+    )
+
+    /** タイトルバーをタップしたときの動作 */
+    private val titleSingleClickBehavior = createLiveDataEnum(
+        PreferenceKey.BOOKMARKS_TITLE_SINGLE_CLICK_BEHAVIOR,
+        { it.id },
+        { TapTitleBarAction.fromId(it) }
+    )
+
+    /** タイトルバーをロングタップしたときの動作 */
+    private val titleLongClickBehavior = createLiveDataEnum(
+        PreferenceKey.BOOKMARKS_TITLE_LONG_CLICK_BEHAVIOR,
+        { it.id },
+        { TapTitleBarAction.fromId(it) }
     )
 
     /** 投稿時のSNS連携状態を引き継ぐ */
@@ -215,6 +230,26 @@ class BookmarkViewModel(
             )
         }
         addPrefToggleItem(fragment, changeHomeByLongTapping, R.string.pref_bookmarks_change_home_by_long_tapping_desc)
+
+        // --- //
+
+        addSection(R.string.pref_bookmark_section_title_bar)
+        addPrefItem(fragment, titleSingleClickBehavior, R.string.pref_bookmarks_title_single_click_behavior_desc) {
+            openEnumSelectionDialog(
+                TapTitleBarAction.values(),
+                titleSingleClickBehavior,
+                R.string.pref_bookmarks_title_single_click_behavior_desc,
+                fragmentManager
+            )
+        }
+        addPrefItem(fragment, titleLongClickBehavior, R.string.pref_bookmarks_title_long_click_behavior_desc) {
+            openEnumSelectionDialog(
+                TapTitleBarAction.values(),
+                titleLongClickBehavior,
+                R.string.pref_bookmarks_title_long_click_behavior_desc,
+                fragmentManager
+            )
+        }
 
         // --- //
 

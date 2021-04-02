@@ -149,6 +149,16 @@
     <string name="msg_show_page_failed">アプリ内ブラウザを開けませんでした。外部ブラウザを開きます</string>
     <string name="msg_show_page_in_browser_failed">外部ブラウザを開けませんでした</string>
 
+    <!-- ブクマ画面タイトルバータップ時アクション -->
+    <string name="bookmark_title_action_nothing">何もしない</string>
+    <string name="bookmark_title_action_show_page">ページを開く</string>
+    <string name="bookmark_title_action_show_page_dialog">ページを開く(確認ダイアログ)</string>
+    <string name="bookmark_title_action_share">共有</string>
+    <string name="bookmark_title_action_show_menu">メニューダイアログを開く</string>
+
+    <string name="bookmark_confirm_browsing_dialog_desc">アプリ内ブラウザでページを開きます。よろしいですか？</string>
+    <string name="bookmark_confirm_browsing_dialog_not_show_again">次回から確認しない</string>
+
     <!-- ブックマークに対する操作メニュー -->
     <string name="bookmark_show_user_entries">最近のブックマークを見る</string>
     <string name="bookmark_show_comment_entry">ブクマへのブックマークを見る</string>
@@ -340,6 +350,7 @@
     <!-- bookmarks -->
     <string name="pref_bookmark_section_posting">ブクマ投稿</string>
     <string name="pref_bookmark_section_tab">タブ</string>
+    <string name="pref_bookmark_section_title_bar">タイトルバー</string>
     <string name="pref_bookmark_section_behavior">振る舞い</string>
     <string name="pref_bookmark_section_ignoring">非表示</string>
     <string name="pref_bookmark_section_link">リンク</string>
@@ -361,6 +372,8 @@
     <string name="pref_bookmark_link_single_tap_action_desc">ブコメ内のリンクをタップしたときの動作</string>
     <string name="pref_bookmark_link_long_tap_action_desc">ブコメ内のリンクを長押ししたときの動作</string>
     <string name="pref_bookmarks_change_home_by_long_tapping_desc">タブ長押しで初期タブを変更する</string>
+    <string name="pref_bookmarks_title_single_click_behavior_desc">タイトル部分をタップしたときの動作</string>
+    <string name="pref_bookmarks_title_long_click_behavior_desc">タイトル部分をロングタップしたときの動作</string>
     <!-- ignored users -->
     <string name="ignored_user">非表示ユーザー</string>
     <string name="pref_ignored_users_show_entries">@string/bookmark_show_user_entries</string>
