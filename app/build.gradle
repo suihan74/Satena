@@ -59,7 +59,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation "androidx.fragment:fragment-ktx:1.3.1"
+    implementation "androidx.fragment:fragment-ktx:1.3.2"
 
     // Firebase
     // Import the Firebase BoM
@@ -68,14 +68,14 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
 
     // AppUpdateManager
-    implementation 'com.google.android.play:core:1.9.1'
+    implementation 'com.google.android.play:core:1.10.0'
     implementation 'com.google.android.play:core-ktx:1.8.1'
 
     // ViewModel and LiveData
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
 //   kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-common-java8:2.3.0"
+    implementation "androidx.lifecycle:lifecycle-common-java8:2.3.1"
     testImplementation "androidx.arch.core:core-testing:2.1.0"
 
     // room; database access
@@ -96,7 +96,7 @@ dependencies {
 
     // recyclerview
     implementation 'com.google.android.material:material:1.3.0'
-    implementation 'androidx.recyclerview:recyclerview:1.2.0-beta02'
+    implementation 'androidx.recyclerview:recyclerview:1.2.0-rc01'
 
     // coroutines
     def coroutines_version = '1.3.9'
