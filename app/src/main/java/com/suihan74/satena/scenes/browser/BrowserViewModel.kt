@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.webkit.*
@@ -384,7 +385,7 @@ class BrowserViewModel(
                 // 画像リンク
                 WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
                     // リンクアドレスは別途入手する必要がある
-                    val msg = Handler().obtainMessage()
+                    val msg = Handler(Looper.getMainLooper()).obtainMessage()
                     wv.requestFocusNodeHref(msg)
 
                     // リンクアドレスが取得できたら専用のメニューを開く
