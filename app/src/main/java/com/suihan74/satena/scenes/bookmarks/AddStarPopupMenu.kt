@@ -66,8 +66,15 @@ class AddStarPopupMenu(context: Context) : PopupWindow() {
         }
 
         contentView = binding.root
-        width = context.dp2px(18 * 4 + 24 * 2 + 24 * 3)
-        height = context.dp2px(18 * 2 + 18) + context.sp2px(13.5f)
+
+        val resources = context.resources
+        val wvPadding = resources.getDimensionPixelSize(R.dimen.add_star_popup_vertical_padding)
+        val whPadding = resources.getDimensionPixelSize(R.dimen.add_star_popup_horizontal_padding)
+        val buttonSize = resources.getDimensionPixelSize(R.dimen.add_star_button_size)
+        val buttonsMargin = resources.getDimensionPixelSize(R.dimen.add_star_button_margin)
+        val buttonsCount = 4
+        width = buttonSize * buttonsCount + whPadding * 2 + buttonsMargin * (buttonsCount - 1)
+        height = wvPadding * 2 + buttonSize + context.sp2px(13.5f)
         isFocusable = true
         isTouchable = true
         elevation = context.dp2px(8).toFloat()
