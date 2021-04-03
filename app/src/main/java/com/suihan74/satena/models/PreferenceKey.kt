@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
+import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
 import com.suihan74.satena.scenes.browser.BrowserMode
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.EntriesDefaultTabSettings
@@ -229,6 +230,12 @@ enum class PreferenceKey(
 
     /** タブ部分をロングタップして最初に表示するタブを変更できるようにする */
     BOOKMARKS_CHANGE_HOME_BY_LONG_TAPPING_TAB(typeInfo<Boolean>(), true),
+
+    /** タイトル部分クリック時の挙動 */
+    BOOKMARKS_TITLE_SINGLE_CLICK_BEHAVIOR(typeInfo<Int>(), TapTitleBarAction.SHOW_PAGE_WITH_DIALOG.id),
+
+    /** タイトル部分ロングクリック時の挙動 */
+    BOOKMARKS_TITLE_LONG_CLICK_BEHAVIOR(typeInfo<Int>(), TapTitleBarAction.SHOW_MENU.id),
 
     ////////////////////////////////////////
     // custom bookmarks tab
