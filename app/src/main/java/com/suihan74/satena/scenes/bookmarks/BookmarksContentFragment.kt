@@ -64,6 +64,16 @@ class BookmarksContentFragment : Fragment() {
                 .commitAllowingStateLoss()
         }
 
+        // ツールバータップ
+        binding.toolbar.setOnClickListener {
+            bookmarksViewModel.onClickToolbar(bookmarksActivity)
+        }
+        // ツールバーロングタップ
+        binding.toolbar.setOnLongClickListener {
+            bookmarksViewModel.onLongClickToolbar(bookmarksActivity)
+            true
+        }
+
         return binding.root
     }
 

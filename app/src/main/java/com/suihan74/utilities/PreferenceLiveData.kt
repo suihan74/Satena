@@ -47,4 +47,22 @@ class PreferenceLiveData<PrefT, KeyT, ValueT> : SingleUpdateMutableLiveData<Valu
             put(key, value)
         }
     }
+
+    // ----- //s
+
+    @MainThread
+    fun <DataT> setValue(value: ValueT, converter: (ValueT)->DataT) {
+        super.setValue(value)
+        prefs.edit {
+            put(key, converter(value))
+        }
+    }
+
+    @WorkerThread
+    fun <DataT> postValue(value: ValueT, converter: (ValueT)->DataT) {
+        super.postValue(value)
+        prefs.edit {
+            put(key, converter(value))
+        }
+    }
 }
