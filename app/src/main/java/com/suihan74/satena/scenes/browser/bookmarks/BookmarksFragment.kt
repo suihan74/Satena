@@ -58,7 +58,7 @@ class ContentsViewModel(
     fun onCreateView(owner: LifecycleOwner, browserViewModel: BrowserViewModel) {
         browserViewModel.url.observe(owner, Observer { url ->
             viewModelScope.launch {
-                loadBookmarksEntry(url)
+                loadBookmarksEntry(url.orEmpty())
             }
         })
     }

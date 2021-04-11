@@ -123,19 +123,13 @@ class BookmarksRepository(
         private set
 
     /** エントリ情報 */
-    val entry by lazy {
-        MutableLiveData<Entry?>()
-    }
+    val entry = MutableLiveData<Entry?>()
 
     /** ブクマを含むエントリ情報 */
-    val bookmarksEntry by lazy {
-        MutableLiveData<BookmarksEntry?>()
-    }
+    val bookmarksEntry = MutableLiveData<BookmarksEntry?>()
 
     /** エントリのスター情報 */
-    val entryStarsEntry by lazy {
-        MutableLiveData<StarsEntry?>()
-    }
+    val entryStarsEntry = MutableLiveData<StarsEntry?>()
 
     // 各タブでの表示用のブクマリスト
 

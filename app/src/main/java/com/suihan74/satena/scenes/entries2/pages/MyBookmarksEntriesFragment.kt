@@ -207,7 +207,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
 
         // 横幅を最大化
         if (bottomAppBar == null) {
-            stretchWidth(requireActivity(), menu)
+            stretchWidth(menu)
         }
     }
 

@@ -74,10 +74,11 @@ class BrowserViewModel(
     }
 
     /** 表示中のページURL */
-    val url = SingleUpdateMutableLiveData<String>().apply {
+    val url = SingleUpdateMutableLiveData<String?>().apply {
         observeForever {
-            addressText.value = Uri.decode(it)
-            isUrlFavorite.value = favoriteSitesRepo.contains(it)
+            val url = it.orEmpty()
+            addressText.value = Uri.decode(url)
+            isUrlFavorite.value = favoriteSitesRepo.contains(url)
         }
     }
 

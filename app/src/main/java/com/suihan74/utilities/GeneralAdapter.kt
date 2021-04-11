@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.databinding.FooterRecyclerViewBinding
+import com.suihan74.utilities.extensions.alsoAs
 
 abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
     private val lifecycleOwner : LifecycleOwner,
@@ -79,10 +80,9 @@ abstract class GeneralAdapter<ModelT, BindingT : ViewDataBinding>(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder.itemViewType) {
-            RecyclerType.BODY.id -> {
-                holder as ViewHolder<BindingT>
-                bind(currentList[position].body, holder.binding)
-                holder.binding.lifecycleOwner = lifecycleOwner
+            RecyclerType.BODY.id -> holder.alsoAs<ViewHolder<BindingT>> {
+                bind(currentList[position].body, it.binding)
+                it.binding.lifecycleOwner = lifecycleOwner
             }
         }
     }
