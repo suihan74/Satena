@@ -133,6 +133,9 @@ class ContentsViewModel(
         }
 
         currentTabFragmentSelector = { adapter.currentFragment(viewPager) }
+
+        // 初期タブを設定
+        viewPager.setCurrentItem(selectedTab.value?.ordinal ?: 0 , false)
     }
 
     /** ツールバーやボタンをスクロールで隠す設定を反映する */

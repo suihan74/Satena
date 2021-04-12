@@ -41,7 +41,6 @@
         <!-- ブクマリストを表示するための領域 -->
         <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/tab_pager"
-                currentTab="@{contentsViewModel.selectedTab}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
