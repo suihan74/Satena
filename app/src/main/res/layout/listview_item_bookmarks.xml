@@ -104,11 +104,12 @@
             android:textSize="14sp"
             android:textColor="?attr/tagTextColor"
             android:layout_marginTop="2dp"
+            android:layout_marginEnd="6dp"
             app:layout_constraintTop_toBottomOf="@id/bookmarks_count"
             app:layout_constraintStart_toStartOf="@id/bookmark_comment"
             app:layout_constraintEnd_toStartOf="@id/add_star_button"
             app:layout_constraintHorizontal_bias="0"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content" />
 
     <ImageButton
