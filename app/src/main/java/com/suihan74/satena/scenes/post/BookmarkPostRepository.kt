@@ -17,6 +17,8 @@ import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZoneOffset
 import kotlin.math.ceil
 
 class BookmarkPostRepository(
@@ -283,6 +285,18 @@ class BookmarkPostRepository(
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun insertTagToUsedTagsList(tag: String) : List<Tag> {
+        val existingTags = tags.value.orEmpty()
+        return if (existingTags.none { it.text == tag }) {
+            buildList {
+                add(Tag(tag, 0, 0, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)))
+                addAll(existingTags)
+            }
+        }
+        else existingTags
+    }
+
     /**
      * 現在のコメントにタグを挿入/削除したものを返す
      *
@@ -290,6 +304,8 @@ class BookmarkPostRepository(
      * @throws TooManyTagsException タグが多すぎる
      */
     fun insertTagToComment(prevComment: String, tag: String) : String {
+        tags.value = insertTagToUsedTagsList(tag)
+
         val tagText = "[$tag]"
         val tagsArea = tagsRegex.find(prevComment)
         val tagsText = tagsArea?.value ?: ""
