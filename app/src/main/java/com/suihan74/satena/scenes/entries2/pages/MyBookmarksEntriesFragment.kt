@@ -172,7 +172,6 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             viewModel.isSearchViewExpanded = false
         }
 
-
         // ツールバーアイコン長押しで説明を表示する
         findViewById<ImageView>(androidx.appcompat.R.id.search_button)?.let {
             TooltipCompat.setTooltipText(it, getString(R.string.desc_search_mybookmarks))
