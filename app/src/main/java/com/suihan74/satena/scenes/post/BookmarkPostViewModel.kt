@@ -4,6 +4,7 @@ import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.View
 import android.widget.EditText
 import androidx.annotation.MainThread
 import androidx.fragment.app.FragmentManager
@@ -21,6 +22,7 @@ import com.suihan74.satena.models.TootVisibility
 import com.suihan74.satena.scenes.post.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
 import com.suihan74.satena.scenes.post.exceptions.MultiplePostException
+import com.suihan74.satena.scenes.post.exceptions.TagAlreadyExistsException
 import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -112,7 +114,7 @@ class BookmarkPostViewModel(
     @MainThread
     fun restore(editData : BookmarkEditData) {
         editData.entry?.let { e ->
-             repository.entry.value = e
+            repository.entry.value = e
         }
         comment.value = editData.comment
         private.value = editData.private
@@ -276,6 +278,84 @@ class BookmarkPostViewModel(
 
     // ------ //
 
+    private fun createMaintainSelectionTextWatcher(comment: EditText) : TextWatcher {
+        return object : TextWatcher {
+            private var before: Int = 0
+            private var countDiff: Int = 0
+            private var tagsEnd: Int = 0
+
+            override fun afterTextChanged(s: Editable?) {
+                val after = comment.selectionStart
+                if (after == 0) {
+                    val selecting =
+                        if (before < tagsEnd) repository.getTagsEnd(s)
+                        else before + countDiff
+                    comment.setSelection(selecting)
+                }
+                comment.removeTextChangedListener(this)
+            }
+
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+                this.tagsEnd = repository.getTagsEnd(s)
+                this.before = comment.selectionStart
+                this.countDiff = after - count
+            }
+
+            override fun onTextChanged(
+                s: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+            }
+        }
+    }
+
+    /**
+     * 指定タグをON/OFFする
+     */
+    @MainThread
+    private fun toggleTag(context: Context, tag: String, comment: EditText) {
+        val maintainSelectionTextWatcher = createMaintainSelectionTextWatcher(comment)
+
+        try {
+            comment.addTextChangedListener(maintainSelectionTextWatcher)
+            val commentText = this.comment.value.orEmpty()
+            this.comment.value = repository.toggleCommentTag(commentText, tag)
+        }
+        catch (e: TooManyTagsException) {
+            context.showToast(R.string.msg_post_too_many_tags, e.limitCount)
+            comment.removeTextChangedListener(maintainSelectionTextWatcher)
+        }
+    }
+
+    /**
+     * 指定タグを挿入する（入力済みのコメントに含まれない場合のみ）
+     */
+    @MainThread
+    private fun addTag(context: Context, tag: String, comment: EditText) {
+        val maintainSelectionTextWatcher = createMaintainSelectionTextWatcher(comment)
+
+        try {
+            val commentText = this.comment.value.orEmpty()
+            comment.addTextChangedListener(maintainSelectionTextWatcher)
+            this.comment.value = repository.insertTagToComment(commentText, tag)
+        }
+        catch (e: TagAlreadyExistsException) {
+            context.showToast(R.string.msg_post_tag_already_exists, e.tag)
+            comment.removeTextChangedListener(maintainSelectionTextWatcher)
+        }
+        catch (e: TooManyTagsException) {
+            context.showToast(R.string.msg_post_too_many_tags, e.limitCount)
+            comment.removeTextChangedListener(maintainSelectionTextWatcher)
+        }
+    }
+
     /** タグリストを作成する */
     fun createTagsListAdapter(
         context: Context,
@@ -284,51 +364,7 @@ class BookmarkPostViewModel(
     ) : TagsListAdapter {
         val adapter = TagsListAdapter()
         adapter.setOnItemClickedListener { tag ->
-            val watcher = object : TextWatcher {
-                private var before: Int = 0
-                private var countDiff: Int = 0
-                private var tagsEnd: Int = 0
-
-                override fun afterTextChanged(s: Editable?) {
-                    val after = comment.selectionStart
-                    if (after == 0) {
-                        val selecting =
-                            if (before < tagsEnd) repository.getTagsEnd(s)
-                            else before + countDiff
-                        comment.setSelection(selecting)
-                    }
-                    comment.removeTextChangedListener(this)
-                }
-
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
-                ) {
-                    this.tagsEnd = repository.getTagsEnd(s)
-                    this.before = comment.selectionStart
-                    this.countDiff = after - count
-                }
-
-                override fun onTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    before: Int,
-                    count: Int
-                ) {
-                }
-            }
-
-            try {
-                comment.addTextChangedListener(watcher)
-                val commentText = this.comment.value.orEmpty()
-                this.comment.value = repository.toggleTag(commentText, tag)
-            }
-            catch (e: TooManyTagsException) {
-                context.showToast(R.string.msg_post_too_many_tags, e.limitCount)
-                comment.removeTextChangedListener(watcher)
-            }
+            toggleTag(context, tag, comment)
         }
 
         // 使ったことがあるタグを入力するボタンを表示する
@@ -340,6 +376,18 @@ class BookmarkPostViewModel(
         }
 
         return adapter
+    }
+
+    // ------ //
+
+    fun openNewTagDialog(context: Context, anchorView: View, commentEditText: EditText) {
+        AddingTagPopup(context)
+            .setOnCompleteListener { tag ->
+                if (tag.isNotBlank()) {
+                    addTag(context, tag, commentEditText)
+                }
+            }
+            .showAsDropDown(anchorView)
     }
 
     // ------ //

@@ -10,7 +10,7 @@ import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.suihan74.satena.databinding.FragmentBookmarkPostBinding
+import com.suihan74.satena.databinding.FragmentBookmarkPost2Binding
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
@@ -59,8 +59,10 @@ class BookmarkPostFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentBookmarkPostBinding.inflate(inflater, container, false).also {
+        val binding = FragmentBookmarkPost2Binding.inflate(inflater, container, false).also {
             it.vm = viewModel
+            it.addTagPopupAnchor = it.addNewTagTextView
+            it.commentEditText = it.comment
             it.lifecycleOwner = viewLifecycleOwner
         }
 
@@ -157,7 +159,7 @@ class BookmarkPostFragment : Fragment() {
     }
 
     /** タグリストを初期化 */
-    private fun setupTagsList(binding: FragmentBookmarkPostBinding) {
+    private fun setupTagsList(binding: FragmentBookmarkPost2Binding) {
         val comment = binding.comment
         val tagsList = binding.tagsList
 

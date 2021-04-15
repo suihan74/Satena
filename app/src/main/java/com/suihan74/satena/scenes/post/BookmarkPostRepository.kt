@@ -9,6 +9,7 @@ import com.suihan74.satena.models.TootVisibility
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
 import com.suihan74.satena.scenes.post.exceptions.PostingMastodonFailureException
+import com.suihan74.satena.scenes.post.exceptions.TagAlreadyExistsException
 import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
@@ -264,39 +265,59 @@ class BookmarkPostRepository(
      *
      * @throws TooManyTagsException
      */
-    fun toggleTag(prevComment: String, tag: String) : String {
+    fun toggleCommentTag(prevComment: String, tag: String) : String {
         val tagText = "[$tag]"
-
         val tagsArea = tagsRegex.find(prevComment)
         val tagsText = tagsArea?.value ?: ""
-
         return when {
-            tagsText.contains(tagText) -> {
-                buildString {
-                    append(
-                        tagsText.replace(tagText, ""),
-                        prevComment.substring(tagsText.length)
-                    )
-                }
+            tagsText.contains(tagText) -> buildString {
+                append(
+                    tagsText.replace(tagText, ""),
+                    prevComment.substring(tagsText.length)
+                )
             }
 
-            tagsText.contains("[]") -> {
-                prevComment.replaceFirst("[]", tagText)
-            }
+            tagsText.contains("[]") -> prevComment.replaceFirst("[]", tagText)
 
-            else -> {
-                if (!checkTagsCount(tagsText)) {
-                    throw TooManyTagsException(MAX_TAGS_COUNT)
-                }
+            else -> insertTagToCommentImpl(prevComment, tagText, tagsText)
+        }
+    }
 
-                buildString {
-                    append(
-                        tagsText,
-                        tagText,
-                        prevComment.substring(tagsText.length)
-                    )
-                }
-            }
+    /**
+     * 現在のコメントにタグを挿入/削除したものを返す
+     *
+     * @throws TagAlreadyExistsException タグが既にコメント中に存在する
+     * @throws TooManyTagsException タグが多すぎる
+     */
+    fun insertTagToComment(prevComment: String, tag: String) : String {
+        val tagText = "[$tag]"
+        val tagsArea = tagsRegex.find(prevComment)
+        val tagsText = tagsArea?.value ?: ""
+        return when {
+            tagsText.contains(tagText) -> throw TagAlreadyExistsException(tag)
+
+            tagsText.contains("[]") -> prevComment.replaceFirst("[]", tagText)
+
+            else -> insertTagToCommentImpl(prevComment, tagText, tagsText)
+        }
+    }
+
+    /**
+     * コメントの先頭にタグを追加する
+     *
+     * @throws TooManyTagsException
+     */
+    private fun insertTagToCommentImpl(prevComment: String, newTag: String, existingTags: String) : String {
+        if (!checkTagsCount(existingTags)) {
+            throw TooManyTagsException(MAX_TAGS_COUNT)
+        }
+
+        return buildString {
+            append(
+                existingTags,
+                newTag,
+                prevComment.substring(existingTags.length)
+            )
         }
     }
 
