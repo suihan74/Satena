@@ -4,7 +4,6 @@ import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.View
 import android.widget.EditText
 import androidx.annotation.MainThread
 import androidx.fragment.app.FragmentManager
@@ -19,6 +18,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TootVisibility
+import com.suihan74.satena.scenes.post.dialog.AddingTagDialog
 import com.suihan74.satena.scenes.post.dialog.ConfirmPostBookmarkDialog
 import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
 import com.suihan74.satena.scenes.post.exceptions.MultiplePostException
@@ -380,14 +380,14 @@ class BookmarkPostViewModel(
 
     // ------ //
 
-    fun openNewTagDialog(context: Context, anchorView: View, commentEditText: EditText) {
-        AddingTagPopup(context)
+    fun openNewTagDialog(context: Context, commentEditText: EditText, fragmentManager: FragmentManager) {
+        AddingTagDialog.createInstance()
             .setOnCompleteListener { tag ->
                 if (tag.isNotBlank()) {
                     addTag(context, tag, commentEditText)
                 }
             }
-            .showAsDropDown(anchorView)
+            .show(fragmentManager, null)
     }
 
     // ------ //

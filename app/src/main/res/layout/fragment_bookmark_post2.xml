@@ -6,8 +6,8 @@
                 name="vm"
                 type="com.suihan74.satena.scenes.post.BookmarkPostViewModel" />
         <variable
-                name="addTagPopupAnchor"
-                type="View" />
+                name="fm"
+                type="androidx.fragment.app.FragmentManager" />
         <variable
                 name="commentEditText"
                 type="android.widget.EditText" />
@@ -71,7 +71,7 @@
                 android:src="@drawable/ic_add_new_tag"
                 android:tint="@color/add_new_tag_tint"
                 android:background="@drawable/button_background_add_new_tag"
-                android:onClick="@{() -> vm.openNewTagDialog(context, addTagPopupAnchor, commentEditText)}"
+                android:onClick="@{() -> vm.openNewTagDialog(context, commentEditText, fm)}"
                 android:contentDescription="@string/description_add_new_tag_button"
                 android:paddingVertical="8dp"
                 android:paddingHorizontal="16dp"

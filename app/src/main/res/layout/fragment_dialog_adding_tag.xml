@@ -2,7 +2,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:background="?panelBackground"
+        android:background="@android:color/transparent"
+        android:paddingTop="12dp"
         android:padding="4dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -14,9 +15,13 @@
             android:imeOptions="actionDone"
             android:focusable="true"
             android:focusableInTouchMode="true"
+            android:textIsSelectable="true"
+            android:importantForAutofill="no"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/positiveButton"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_width="200dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"/>
 
     <ImageButton
@@ -26,7 +31,9 @@
             android:backgroundTint="?colorPrimary"
             android:contentDescription="@null"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/editText"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_width="64dp"
             android:layout_height="46dp"/>
 

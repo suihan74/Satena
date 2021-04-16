@@ -61,7 +61,7 @@ class BookmarkPostFragment : Fragment() {
     ): View {
         val binding = FragmentBookmarkPost2Binding.inflate(inflater, container, false).also {
             it.vm = viewModel
-            it.addTagPopupAnchor = it.addNewTagTextView
+            it.fm = childFragmentManager
             it.commentEditText = it.comment
             it.lifecycleOwner = viewLifecycleOwner
         }
