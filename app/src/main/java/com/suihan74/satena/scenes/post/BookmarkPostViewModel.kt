@@ -326,7 +326,7 @@ class BookmarkPostViewModel(
                 this.comment.value = repository.toggleTag(commentText, tag)
             }
             catch (e: TooManyTagsException) {
-                context.showToast(R.string.msg_post_too_many_tags)
+                context.showToast(R.string.msg_post_too_many_tags, e.limitCount)
                 comment.removeTextChangedListener(watcher)
             }
         }

@@ -85,7 +85,7 @@ class BookmarksActivity :
         }
         setContentView(binding.root)
 
-        bookmarksViewModel.onCreate(this)
+        bookmarksViewModel.onCreate()
 
         if (savedInstanceState == null) {
             // コンテンツフラグメントを生成

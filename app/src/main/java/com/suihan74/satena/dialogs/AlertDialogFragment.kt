@@ -414,8 +414,8 @@ class AlertDialogFragment : DialogFragment() {
                     setSingleChoiceItemsWithLabelIds(labels as List<Int>, checkedItem, listener)
                 }
 
-                String::class -> {
-                    setSingleChoiceItemsWithLabels(labels as List<String>, checkedItem, listener)
+                CharSequence::class -> {
+                    setSingleChoiceItemsWithLabels(labels as List<CharSequence>, checkedItem, listener)
                 }
             }
             return this
@@ -447,6 +447,7 @@ class AlertDialogFragment : DialogFragment() {
 
         // ------ //
 
+        @Suppress("unchecked_cast")
         inline fun <reified T> setMultipleChoiceItems(
             labels: List<T>,
             states: BooleanArray,
@@ -457,8 +458,8 @@ class AlertDialogFragment : DialogFragment() {
                     setMultipleChoiceItemsWithLabelIds(labels as List<Int>, states, listener)
                 }
 
-                String::class -> {
-                    setMultipleChoiceItemsWithLabels(labels as List<String>, states, listener)
+                CharSequence::class -> {
+                    setMultipleChoiceItemsWithLabels(labels as List<CharSequence>, states, listener)
                 }
             }
             return this

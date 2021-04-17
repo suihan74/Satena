@@ -143,6 +143,11 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
         if (bottomAppBar == null) {
             // デフォルトでアイコン化する
             setIconifiedByDefault(true)
+            findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)?.run {
+                val color = context.getColor(R.color.colorPrimaryText)
+                setTextColor(color)
+                setHintTextColor(color)
+            }
             if (query.isNullOrBlank()) {
                 isIconified = true
             }
@@ -155,10 +160,9 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             viewModel.isSearchViewExpanded = !isIconified
         }
         else {
-            val color = context.getThemeColor(R.attr.textColor)
-            val editText =
-                findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)
-            editText?.setTextColor(color)
+            findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)?.run {
+                setTextColor(context.getThemeColor(R.attr.textColor))
+            }
 
             if (!query.isNullOrBlank()) {
                 // 画面遷移や回転ごとにキーボードを表示しないようにする
@@ -167,7 +171,6 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             }
             viewModel.isSearchViewExpanded = false
         }
-
 
         // ツールバーアイコン長押しで説明を表示する
         findViewById<ImageView>(androidx.appcompat.R.id.search_button)?.let {
@@ -207,7 +210,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
 
         // 横幅を最大化
         if (bottomAppBar == null) {
-            stretchWidth(requireActivity(), menu)
+            stretchWidth(menu)
         }
     }
 
