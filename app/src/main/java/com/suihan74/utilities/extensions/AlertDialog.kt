@@ -1,6 +1,7 @@
 package com.suihan74.utilities.extensions
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.DialogInterface
 import android.view.View
 import android.view.WindowManager
@@ -29,7 +30,7 @@ fun AlertDialog.setButtonsEnabled(enabled: Boolean) {
  * 初期状態でIMEを表示し、画面回転などで閉じないようにする
  */
 @MainThread
-fun AlertDialog.showSoftInputMethod(activity: Activity, target: View) {
+fun Dialog.showSoftInputMethod(activity: Activity, target: View) {
     runCatching {
         window?.run {
             clearFlags(FLAG_NOT_FOCUSABLE or FLAG_ALT_FOCUSABLE_IM)

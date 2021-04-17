@@ -47,4 +47,7 @@
     <dimen name="add_star_popup_horizontal_padding">18dp</dimen>
     <dimen name="add_star_button_size">48dp</dimen>
     <dimen name="add_star_button_margin">12dp</dimen>
+
+    <!-- タグリストの文字サイズ -->
+    <dimen name="tag_text_size">14sp</dimen>
 </resources>

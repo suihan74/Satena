@@ -6,6 +6,9 @@
         <variable
                 name="vm"
                 type="com.suihan74.satena.scenes.post.BookmarkPostViewModel" />
+        <variable
+                name="fm"
+                type="androidx.fragment.app.FragmentManager" />
     </data>
 
     <RelativeLayout
