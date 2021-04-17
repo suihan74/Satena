@@ -329,7 +329,7 @@ class EntriesActivity : AppCompatActivity() {
             it.hideOnScroll = viewModel.isBottomLayoutMode && viewModel.hideBottomAppBarByScroll
         }
         binding.bottomSearchView.let {
-            it.visibility = viewModel.isBottomLayoutMode.toVisibility()
+            it.visibility = (it.visibility == View.VISIBLE && viewModel.isBottomLayoutMode).toVisibility()
         }
 
         // ツールバーを隠す設定を反映
