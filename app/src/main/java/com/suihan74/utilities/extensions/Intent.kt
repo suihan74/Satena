@@ -4,35 +4,24 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 
 /**
  * URLを開くために"共有先リストからこのアプリを除いた"Intentを作成する
  */
 fun Intent.createIntentWithoutThisApplication(context: Context, title: CharSequence = "Choose a browser") : Intent {
-    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-        return Intent.createChooser(this, title).apply {
-            putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, arrayOf(context.packageName))
-        }
-    }
-    else {
-        val packageManager = context.packageManager
-        val dummyIntent = Intent(this.action, Uri.parse("https://dummy"))
-        val intentActivities =
-            packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
-                .plus(packageManager.queryIntentActivities(this, PackageManager.MATCH_ALL))
-                .distinctBy { it.activityInfo.name }
+    val packageManager = context.packageManager
+    val dummyIntent = Intent(this.action, Uri.parse("https://dummy"))
 
-        val intents = intentActivities
-            .filterNot { it.activityInfo.packageName == context.packageName }
-            .map { Intent(this).apply { setPackage(it.activityInfo.packageName) } }
+    val intents =
+        packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
+        .filterNot { it.activityInfo.packageName == context.packageName }
+        .map { Intent(this).apply { setPackage(it.activityInfo.packageName) } }
 
-        return when (intents.size) {
-            0 -> this
-            1 -> intents.first()
-            else -> Intent.createChooser(Intent(), title).apply {
-                putExtra(Intent.EXTRA_INITIAL_INTENTS, intents.toTypedArray())
-            }
+    return when (intents.size) {
+        0 -> this
+        1 -> intents.first()
+        else -> Intent.createChooser(this, title).apply {
+            putExtra(Intent.EXTRA_ALTERNATE_INTENTS, intents.toTypedArray())
         }
     }
 }
