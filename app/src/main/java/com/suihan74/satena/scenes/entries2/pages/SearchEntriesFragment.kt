@@ -185,11 +185,11 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         // クエリ文字列の変更を監視する
         setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
-                viewModel.searchQuery.value = newText
                 return true
             }
             // 検索ボタン押下時にロードを行う
             override fun onQueryTextSubmit(query: String?): Boolean {
+                viewModel.searchQuery.value = query
                 activity.alsoAs<EntriesActivity> { activity ->
                     activity.toolbar.subtitle = viewModel.searchQuery.value
                 }
