@@ -165,10 +165,16 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         val fragment = this@SearchEntriesFragment
 
         // 文字色をテーマに合わせて調整する
-        if (bottomAppBar != null) {
-            val color = context.getThemeColor(R.attr.textColor)
-            val editText = findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)
-            editText?.setTextColor(color)
+        findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)?.also { editText ->
+            if (bottomAppBar == null) {
+                val color = context.getColor(R.color.colorPrimaryText)
+                editText.setTextColor(color)
+                editText.setHintTextColor(color)
+            }
+            else {
+                val color = context.getThemeColor(R.attr.textColor)
+                editText.setTextColor(color)
+            }
         }
 
         // クエリの設定
