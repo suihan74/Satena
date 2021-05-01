@@ -17,6 +17,7 @@
 
         <com.google.android.material.appbar.AppBarLayout
                 android:id="@+id/appbar_layout"
+                android:background="?toolbarBackground"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -34,7 +35,7 @@
                     style="@style/TabLayoutStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/tabBackground"/>
+                    android:background="?tabBackground"/>
 
         </com.google.android.material.appbar.AppBarLayout>
 
