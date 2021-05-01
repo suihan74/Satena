@@ -45,6 +45,10 @@ class AddingTagDialog : BottomSheetDialogFragment() {
         }
         dialog?.showSoftInputMethod(requireActivity(), binding.editText)
 
+        binding.addButton.setOnClickListener {
+            addTag()
+        }
+
         binding.positiveButton.setOnClickListener {
             complete()
         }
@@ -73,10 +77,17 @@ class AddingTagDialog : BottomSheetDialogFragment() {
     }
 
     private fun complete() {
-        binding.editText.text?.toString().orEmpty().let { tag ->
-            onCompleteListener?.invoke(tag)
-        }
+        addTag()
         dismiss()
+    }
+
+    private fun addTag() {
+        binding.editText.text?.toString().orEmpty().let { tag ->
+            runCatching {
+                onCompleteListener?.invoke(tag)
+            }
+            binding.editText.text?.clear()
+        }
     }
 
     // ------ //
