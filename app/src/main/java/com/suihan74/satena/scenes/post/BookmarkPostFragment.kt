@@ -3,10 +3,10 @@ package com.suihan74.satena.scenes.post
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.inputmethod.EditorInfo
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,18 +14,22 @@ import com.suihan74.satena.databinding.FragmentBookmarkPost2Binding
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
+import com.suihan74.satena.scenes.post.dialog.AddingTagDialog
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.scopedObserver
 import com.suihan74.utilities.extensions.showSoftInputMethod
+import kotlinx.coroutines.delay
 
 /**
  * 投稿ダイアログ本体
  *
  * 配置先のActivityはBookmarkPostViewModelOwnerである必要がある
  */
-class BookmarkPostFragment : Fragment() {
+class BookmarkPostFragment : Fragment(), AddingTagDialog.OnDismissListener {
     companion object {
         fun createInstance() = BookmarkPostFragment()
+
+        private const val IME_REOPEN_DELAY = 200L
     }
 
     // ------ //
@@ -44,6 +48,9 @@ class BookmarkPostFragment : Fragment() {
     private val viewModel : BookmarkPostViewModel
         get() = (requireActivity() as BookmarkPostViewModelOwner).bookmarkPostViewModel
 
+    private var _binding : FragmentBookmarkPost2Binding? = null
+    private val binding get() = _binding!!
+
     // ------ //
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +66,7 @@ class BookmarkPostFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentBookmarkPost2Binding.inflate(inflater, container, false).also {
+        _binding = FragmentBookmarkPost2Binding.inflate(inflater, container, false).also {
             it.vm = viewModel
             it.fm = childFragmentManager
             it.commentEditText = it.comment
@@ -178,4 +185,45 @@ class BookmarkPostFragment : Fragment() {
 
         tagsList.adapter = adapter
     }
+
+    // ------ //
+
+    /** `AddingTagDialog`が閉じた際に`BookmarkPostFragment`用にIMEを開き直す */
+    override fun onDismiss(dialog: AddingTagDialog) {
+        lifecycleScope.launchWhenResumed {
+            delay(IME_REOPEN_DELAY)
+            WindowInsetsControllerCompat(requireActivity().window, binding.comment).also { controller ->
+                controller.show(WindowInsetsCompat.Type.ime())
+            }
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

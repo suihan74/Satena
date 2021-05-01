@@ -18,21 +18,36 @@
             android:textIsSelectable="true"
             android:importantForAutofill="no"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/positiveButton"
+            app:layout_constraintEnd_toStartOf="@id/addButton"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"/>
 
     <ImageButton
-            android:id="@+id/positiveButton"
-            android:src="@drawable/ic_add_new_tag_check"
-            android:textColor="@color/colorPrimaryText"
-            android:backgroundTint="?colorPrimary"
+            android:id="@+id/addButton"
+            android:src="@drawable/ic_baseline_add"
+            android:tint="?textColor"
+            android:background="?selectableItemBackgroundBorderless"
             android:contentDescription="@null"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/editText"
+            app:layout_constraintEnd_toStartOf="@id/positiveButton"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"/>
+
+    <ImageButton
+            android:id="@+id/positiveButton"
+            android:src="@drawable/ic_add_new_tag_check"
+            android:tint="@color/colorPrimaryText"
+            android:backgroundTint="?colorPrimary"
+            android:contentDescription="@null"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/addButton"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_width="64dp"
             android:layout_height="46dp"/>

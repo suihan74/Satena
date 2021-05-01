@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.post.dialog
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -44,6 +45,10 @@ class AddingTagDialog : BottomSheetDialogFragment() {
         }
         dialog?.showSoftInputMethod(requireActivity(), binding.editText)
 
+        binding.addButton.setOnClickListener {
+            addTag()
+        }
+
         binding.positiveButton.setOnClickListener {
             complete()
         }
@@ -56,6 +61,12 @@ class AddingTagDialog : BottomSheetDialogFragment() {
         _binding = null
     }
 
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        val listener = parentFragment as? OnDismissListener ?: requireActivity() as? OnDismissListener
+        listener?.onDismiss(this)
+    }
+
     // ------ //
 
     private var onCompleteListener : Listener<String>? = null
@@ -66,7 +77,22 @@ class AddingTagDialog : BottomSheetDialogFragment() {
     }
 
     private fun complete() {
-        onCompleteListener?.invoke(binding.editText.text?.toString().orEmpty())
+        addTag()
         dismiss()
+    }
+
+    private fun addTag() {
+        binding.editText.text?.toString().orEmpty().let { tag ->
+            runCatching {
+                onCompleteListener?.invoke(tag)
+            }
+            binding.editText.text?.clear()
+        }
+    }
+
+    // ------ //
+
+    interface OnDismissListener {
+        fun onDismiss(dialog: AddingTagDialog)
     }
 }
