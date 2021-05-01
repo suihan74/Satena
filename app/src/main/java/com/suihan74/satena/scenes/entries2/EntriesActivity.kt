@@ -15,6 +15,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
@@ -130,6 +131,7 @@ class EntriesActivity : AppCompatActivity() {
         setTheme(Theme.themeId(prefs))
 
         viewModel.initialize(
+            lifecycleScope,
             forceUpdate = false,
             onFinally = {
                 if (savedInstanceState == null) {
@@ -243,6 +245,7 @@ class EntriesActivity : AppCompatActivity() {
             if (state == NetworkReceiver.State.CONNECTED) {
                 val needToSignIn = viewModel.signedIn.value != true
                 viewModel.initialize(
+                    lifecycleScope,
                     forceUpdate = false,
                     onSuccess = {
                         if (needToSignIn) {
@@ -325,6 +328,9 @@ class EntriesActivity : AppCompatActivity() {
             // 下部バー利用中の場合、設定によってはスクロールで隠す
             it.hideOnScroll = viewModel.isBottomLayoutMode && viewModel.hideBottomAppBarByScroll
         }
+        binding.bottomSearchView.let {
+            it.visibility = (it.visibility == View.VISIBLE && viewModel.isBottomLayoutMode).toVisibility()
+        }
 
         // ツールバーを隠す設定を反映
         binding.toolbar.let {
@@ -367,6 +373,7 @@ class EntriesActivity : AppCompatActivity() {
         super.onRestart()
         // アカウントの状態を更新する
         viewModel.initialize(
+            lifecycleScope,
             forceUpdate = false,
             onError = { e ->
                 showToast(R.string.msg_auth_failed)

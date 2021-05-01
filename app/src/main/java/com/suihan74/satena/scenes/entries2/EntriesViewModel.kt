@@ -5,7 +5,6 @@ import android.view.View
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.install.model.UpdateAvailability
@@ -18,6 +17,7 @@ import com.suihan74.utilities.OnError
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.OnSuccess
 import com.suihan74.utilities.extensions.getThemeColor
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 class EntriesViewModel(
@@ -120,11 +120,12 @@ class EntriesViewModel(
 
     /** 初期化処理 */
     fun initialize(
+        coroutineScope: CoroutineScope,
         forceUpdate: Boolean,
         onSuccess: OnSuccess<Unit>? = null,
         onError: OnError? = null,
         onFinally: OnFinally? = null
-    ) = viewModelScope.launch {
+    ) = coroutineScope.launch {
         try {
             repository.initialize(forceUpdate)
             onSuccess?.invoke(Unit)

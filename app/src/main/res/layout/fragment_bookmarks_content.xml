@@ -17,6 +17,7 @@
 
         <com.google.android.material.appbar.AppBarLayout
                 android:id="@+id/appbar_layout"
+                android:background="?toolbarBackground"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -34,14 +35,13 @@
                     style="@style/TabLayoutStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/tabBackground"/>
+                    android:background="?tabBackground"/>
 
         </com.google.android.material.appbar.AppBarLayout>
 
         <!-- ブクマリストを表示するための領域 -->
         <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/tab_pager"
-                currentTab="@{contentsViewModel.selectedTab}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"/>

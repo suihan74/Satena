@@ -187,7 +187,7 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
                 it.action = Intent.ACTION_VIEW
                 it.data = Uri.parse(entry.url)
 
-                it.createIntentWithoutThisApplication(activity)
+                it.createIntentWithoutThisApplication(activity, entry.url)
             }
 
             checkNotNull(intent.resolveActivity(activity.packageManager)) {

@@ -11,19 +11,17 @@ import android.net.Uri
 fun Intent.createIntentWithoutThisApplication(context: Context, title: CharSequence = "Choose a browser") : Intent {
     val packageManager = context.packageManager
     val dummyIntent = Intent(this.action, Uri.parse("https://dummy"))
-    val intentActivities = packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
-        .plus(packageManager.queryIntentActivities(this, PackageManager.MATCH_ALL))
-        .distinctBy { it.activityInfo.name }
 
-    val intents = intentActivities
+    val intents =
+        packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
         .filterNot { it.activityInfo.packageName == context.packageName }
         .map { Intent(this).apply { setPackage(it.activityInfo.packageName) } }
 
     return when (intents.size) {
         0 -> this
         1 -> intents.first()
-        else -> Intent.createChooser(Intent(), title).apply {
-            putExtra(Intent.EXTRA_INITIAL_INTENTS, intents.toTypedArray())
+        else -> Intent.createChooser(this, title).apply {
+            putExtra(Intent.EXTRA_ALTERNATE_INTENTS, intents.toTypedArray())
         }
     }
 }

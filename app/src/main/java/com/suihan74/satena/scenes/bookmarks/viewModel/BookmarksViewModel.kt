@@ -160,7 +160,7 @@ class BookmarksViewModel(
 
     // ------ //
 
-    fun onCreate(owner: LifecycleOwner) {
+    fun onCreate() {
         viewModelScope.launch {
             runCatching {
                 repository.signIn()
@@ -710,7 +710,7 @@ class TitleBarClickHandlerImpl(private val repository: BookmarksRepository) : Ti
             showEntryOnInnerBrowser(f.requireActivity() as BookmarksActivity, entry)
         }
 
-        dialog.setNegativeButtonListener { notShowAgain, f ->
+        dialog.setNegativeButtonListener { notShowAgain, _ ->
             if (notShowAgain) {
                 liveData.setValue(TapTitleBarAction.NOTHING) { it.id }
             }

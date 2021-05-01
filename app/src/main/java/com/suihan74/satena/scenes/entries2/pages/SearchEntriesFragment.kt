@@ -165,10 +165,16 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         val fragment = this@SearchEntriesFragment
 
         // 文字色をテーマに合わせて調整する
-        if (bottomAppBar != null) {
-            val color = context.getThemeColor(R.attr.textColor)
-            val editText = findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)
-            editText?.setTextColor(color)
+        findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)?.also { editText ->
+            if (bottomAppBar == null) {
+                val color = context.getColor(R.color.colorPrimaryText)
+                editText.setTextColor(color)
+                editText.setHintTextColor(color)
+            }
+            else {
+                val color = context.getThemeColor(R.attr.textColor)
+                editText.setTextColor(color)
+            }
         }
 
         // クエリの設定
@@ -179,11 +185,11 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         // クエリ文字列の変更を監視する
         setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
-                viewModel.searchQuery.value = newText
                 return true
             }
             // 検索ボタン押下時にロードを行う
             override fun onQueryTextSubmit(query: String?): Boolean {
+                viewModel.searchQuery.value = query
                 activity.alsoAs<EntriesActivity> { activity ->
                     activity.toolbar.subtitle = viewModel.searchQuery.value
                 }
@@ -214,7 +220,7 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
 
         // 横幅を最大化
         if (bottomAppBar == null) {
-            stretchWidth(requireActivity(), menu)
+            stretchWidth(menu)
         }
     }
 }

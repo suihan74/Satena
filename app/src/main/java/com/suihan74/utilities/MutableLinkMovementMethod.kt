@@ -1,6 +1,7 @@
 package com.suihan74.utilities
 
 import android.os.Handler
+import android.os.Looper
 import android.text.Selection
 import android.text.Spannable
 import android.text.method.LinkMovementMethod
@@ -10,7 +11,7 @@ import android.view.ViewConfiguration
 import android.widget.TextView
 
 open class MutableLinkMovementMethod : LinkMovementMethod() {
-    private val mHandler = Handler()
+    private val mHandler = Handler(Looper.getMainLooper())
     private val mLongPressedRunnable = Runnable {
         if (!mHandled) {
             mHandled = true
