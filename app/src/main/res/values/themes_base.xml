@@ -68,6 +68,7 @@
         <item name="textColorHint">@color/textColorHint</item>
         <item name="dividerColor">@color/dividerColor</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
+        <item name="bookmarkDialogBackgroundColor">@color/bookmarkDialogBackground</item>
         <item name="bookmarkDialogBackground">@color/tabBackground</item>
         <item name="entryCommentBackground">@color/entryCommentBackground</item>
         <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackground</item>
@@ -98,6 +99,7 @@
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
+        <item name="bookmarkDialogBackgroundColor">@color/bookmarkDialogBackgroundDark</item>
         <item name="bookmarkDialogBackground">@color/tabBackgroundDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
         <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackgroundDark</item>
@@ -144,6 +146,7 @@
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundExDark</item>
+        <item name="bookmarkDialogBackgroundColor">@color/bookmarkDialogBackgroundExDark</item>
         <item name="bookmarkDialogBackground">@color/tabBackgroundExDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundExDark</item>
         <item name="bookmarkDetailTopBackground">@color/panelBackgroundExDark</item>
@@ -207,6 +210,7 @@
         <item name="textColorHint">@color/textColorHint</item>
         <item name="dividerColor">@color/dividerColor</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
+        <item name="bookmarkDialogBackgroundColor">@color/bookmarkDialogBackground</item>
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
         <item name="entryCommentBackground">@color/entryCommentBackground</item>
         <item name="tagTextColor">@color/tagColor</item>
@@ -228,6 +232,7 @@
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
+        <item name="bookmarkDialogBackgroundColor">@color/bookmarkDialogBackgroundDark</item>
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
@@ -251,6 +256,7 @@
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundExDark</item>
+        <item name="bookmarkDialogBackgroundColor">@color/bookmarkDialogBackgroundExDark</item>
         <item name="bookmarkDialogBackground">@drawable/dialog_background_ex_dark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundExDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>

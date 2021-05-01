@@ -2,7 +2,7 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <gradient android:angle="360" android:endColor="@android:color/transparent" android:startColor="?bookmarkDialogBackground" />
+            <gradient android:angle="360" android:endColor="@android:color/transparent" android:startColor="?bookmarkDialogBackgroundColor" />
         </shape>
     </item>
 </selector>
