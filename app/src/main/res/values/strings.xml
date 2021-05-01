@@ -403,6 +403,14 @@
     <string name="pref_user_tags_user_menu_show_entries">@string/bookmark_show_user_entries</string>
     <string name="pref_user_tags_user_menu_remove">ユーザーを除外</string>
 
+    <string name="bookmark_fab_post_bookmark_tooltip">ブックマークする</string>
+    <string name="bookmark_fab_scroll_menu_tooltip">ショートカット</string>
+    <string name="bookmark_fab_my_bookmark_tooltip">自分のブクマを見る</string>
+    <string name="bookmark_fab_scroll_to_top_tooltip">一番上までスクロールする</string>
+    <string name="bookmark_fab_scroll_to_bottom_tooltip">一番下までスクロールする</string>
+    <string name="bookmark_fab_filter_tooltip">ブクマを抽出する</string>
+    <string name="bookmark_fab_settings_for_custom_tooltip">表示対象を設定</string>
+
     <!-- 内部ブラウザ -->
     <string name="pref_browser_section_browser">ブラウザ</string>
     <string name="pref_browser_section_display">表示</string>
