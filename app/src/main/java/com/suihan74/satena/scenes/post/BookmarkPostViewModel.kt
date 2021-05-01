@@ -380,6 +380,7 @@ class BookmarkPostViewModel(
 
     // ------ //
 
+    /** タグ入力ダイアログを開く */
     fun openNewTagDialog(context: Context, commentEditText: EditText, fragmentManager: FragmentManager) {
         AddingTagDialog.createInstance()
             .setOnCompleteListener { tag ->

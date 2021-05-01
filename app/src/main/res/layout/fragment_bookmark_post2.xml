@@ -119,7 +119,7 @@
                 android:layout_width="8dp"
                 android:layout_height="0dp"/>
 
-        <EditText
+        <com.suihan74.utilities.views.ImeEnhancedEditText
                 android:id="@+id/comment"
                 android:text="@={vm.comment}"
 
