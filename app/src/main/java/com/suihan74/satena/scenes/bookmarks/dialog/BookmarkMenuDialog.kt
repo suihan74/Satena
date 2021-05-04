@@ -25,18 +25,21 @@ class BookmarkMenuDialog : DialogFragment() {
         fun createInstance(
             bookmark: Bookmark,
             starsEntry: StarsEntry?,
-            ignored: Boolean,
+            following: Boolean,
+            ignoring: Boolean,
             userSignedIn: String?
         ) = BookmarkMenuDialog().withArguments {
             putObject(ARG_BOOKMARK, bookmark)
             putObject(ARG_STARS_ENTRY, starsEntry)
-            putBoolean(ARG_IGNORED, ignored)
+            putBoolean(ARG_FOLLOWING, following)
+            putBoolean(ARG_IGNORING, ignoring)
             putString(ARG_USER_SIGNED_IN, userSignedIn)
         }
 
         private const val ARG_BOOKMARK = "ARG_BOOKMARK"
         private const val ARG_STARS_ENTRY = "ARG_STARS_ENTRY"
-        private const val ARG_IGNORED = "ARG_IGNORED"
+        private const val ARG_FOLLOWING = "ARG_FOLLOWED"
+        private const val ARG_IGNORING = "ARG_IGNORED"
         private const val ARG_USER_SIGNED_IN = "ARG_USER_SIGNED_IN"
     }
 
@@ -75,6 +78,14 @@ class BookmarkMenuDialog : DialogFragment() {
         viewModel.onShareCommentPageUrl = listener
     }
 
+    fun setOnFollowUser(listener: DialogListener<String>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onFollowUser = listener
+    }
+
+    fun setOnUnfollowUser(listener: DialogListener<String>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onUnfollowUser = listener
+    }
+
     fun setOnIgnoreUser(listener: DialogListener<Bookmark>?) = lifecycleScope.launchWhenCreated {
         viewModel.onIgnoreUser = listener
     }
@@ -104,7 +115,9 @@ class BookmarkMenuDialog : DialogFragment() {
     class DialogViewModel(args: Bundle) : ViewModel() {
         val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
 
-        val ignored = args.getBoolean(ARG_IGNORED, false)
+        val following = args.getBoolean(ARG_FOLLOWING, false)
+
+        val ignoring = args.getBoolean(ARG_IGNORING, false)
 
         val userSignedIn = args.getString(ARG_USER_SIGNED_IN)
 
@@ -128,6 +141,12 @@ class BookmarkMenuDialog : DialogFragment() {
 
         /** ブコメのコメントページURLを「共有」する */
         var onShareCommentPageUrl: DialogListener<Bookmark>? = null
+
+        /** ユーザーをフォローする */
+        var onFollowUser: DialogListener<String>? = null
+
+        /** ユーザーのフォローを解除する */
+        var onUnfollowUser: DialogListener<String>? = null
 
         /** ユーザーを非表示にする */
         var onIgnoreUser: DialogListener<Bookmark>? = null
@@ -160,7 +179,14 @@ class BookmarkMenuDialog : DialogFragment() {
                 add(R.string.bookmark_share_comment_page_url to { onShareCommentPageUrl?.invoke(bookmark, it) })
 
                 if (signedIn) {
-                    if (ignored) {
+                    if (following) {
+                        add(R.string.bookmark_unfollow to { onUnfollowUser?.invoke(bookmark.user, it) })
+                    }
+                    else {
+                        add(R.string.bookmark_follow to { onFollowUser?.invoke(bookmark.user, it) })
+                    }
+
+                    if (ignoring) {
                         add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) })
                     }
                     else {

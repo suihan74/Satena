@@ -86,6 +86,11 @@ enum class Category(
         R.drawable.ic_category_mybookmarks,
         requireSignedIn = true),
 
+    Followings(id = 23,
+        R.string.category_followings,
+        R.drawable.ic_star,
+        requireSignedIn = true),
+
     FavoriteSites(id = 22,
         R.string.category_favorite_sites,
         R.drawable.ic_category_favorite_sites

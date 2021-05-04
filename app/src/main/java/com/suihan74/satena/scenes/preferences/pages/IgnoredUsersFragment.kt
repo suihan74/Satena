@@ -11,8 +11,9 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesIgnoredUsersBinding
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersViewModel
+import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
+import com.suihan74.utilities.MastodonClientHolder
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +25,7 @@ class IgnoredUsersFragment : Fragment() {
     }
 
     private val viewModel by lazyProvideViewModel {
-        val repository = IgnoredUsersRepository(
+        val repository = UserRelationRepository(
             SatenaApplication.instance.accountLoader
         )
         IgnoredUsersViewModel(repository)

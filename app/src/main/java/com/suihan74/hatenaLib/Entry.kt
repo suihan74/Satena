@@ -127,3 +127,34 @@ internal data class EntriesWithIssue(
     // for Gson
     private constructor() : this(Issue(), emptyList())
 }
+
+/**
+ * お気に入りユーザー情報に含まれるエントリ
+ */
+data class FollowingEntry(
+    @SerializedName("entry_id")
+    val id : Long,
+
+    val title : String,
+
+    val content : String,
+
+    @SerializedName("total_bookmarks")
+    val count : Int,
+
+    val url : String,
+
+    val ampUrl : String?,
+
+    val faviconUrl: String,
+
+    val imageUrl : String?,
+
+    @SerializedName("created_at")
+    @JsonAdapter(TimestampDeserializer::class)
+    val timestamp: LocalDateTime
+
+    // val bookmarkByVisitor
+) {
+    internal constructor() : this(0, "", "", 0, "", null, "", null, LocalDateTime.MIN)
+}
