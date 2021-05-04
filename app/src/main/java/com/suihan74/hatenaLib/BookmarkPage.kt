@@ -74,7 +74,7 @@ data class FollowingBookmark (
         url = entry.url,
         rootUrl = Uri.parse(entry.url).authority,
         faviconUrl = entry.faviconUrl,
-        imageUrl = entry.imageUrl ?: Entry.DEFAULT_IMAGE_URL,
+        _imageUrl = entry.imageUrl,
         ampUrl = entry.ampUrl,
         date = timestamp,
         bookmarkedData = BookmarkResult(

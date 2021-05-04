@@ -49,7 +49,6 @@ class BookmarkMenuActionsImpl(
         val dialog = BookmarkMenuDialog.createInstance(
             bookmark,
             starsEntry,
-            repository.checkIgnoredUser(bookmark.user),
             following,
             ignoring,
             repository.userSignedIn
