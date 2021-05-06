@@ -221,6 +221,7 @@
     <string name="pref_title_browser">アプリ内ブラウザ</string>
     <string name="pref_title_ignored_entries">非表示URL/TEXT</string>
     <string name="pref_title_ignored_users">非表示ユーザー</string>
+    <string name="pref_title_followed_users">お気に入りユーザー</string>
     <string name="pref_title_user_tags">ユーザータグ</string>
     <string name="pref_title_fonts">フォント</string>
     <!-- information -->

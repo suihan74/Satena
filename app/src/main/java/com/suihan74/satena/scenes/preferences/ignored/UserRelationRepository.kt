@@ -59,6 +59,13 @@ interface UserRelationRepositoryInterface {
      *
      * @throws TaskFailureException
      */
+    suspend fun getFollowings() : List<String>
+
+    /**
+     * お気に入られユーザーリストを取得する
+     *
+     * @throws TaskFailureException
+     */
     suspend fun getFollowers() : List<String>
 
     /**
@@ -194,14 +201,29 @@ class UserRelationRepository(
      *
      * @throws TaskFailureException
      */
+    override suspend fun getFollowings() : List<String> {
+        val result = runCatching {
+            signIn().let { client ->
+                if (client.signedIn()) client.getFollowingsAsync().await()
+                else emptyList()
+            }
+        }
+
+        return result.getOrElse {
+            throw TaskFailureException(cause = result.exceptionOrNull())
+        }
+    }
+
+    /**
+     * お気に入られユーザーリストを取得する
+     *
+     * @throws TaskFailureException
+     */
     override suspend fun getFollowers() : List<String> {
         val result = runCatching {
-            val client = signIn()
-            if (client.signedIn()) {
-                client.getFollowersAsync().await()
-            }
-            else {
-                emptyList()
+            signIn().let { client ->
+                if (client.signedIn()) client.getFollowersAsync().await()
+                else emptyList()
             }
         }
 
