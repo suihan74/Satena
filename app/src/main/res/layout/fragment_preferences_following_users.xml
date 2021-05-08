@@ -3,12 +3,13 @@
     <data>
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.preferences.ignored.PreferencesIgnoredUsersViewModel" />
+                type="com.suihan74.satena.scenes.preferences.ignored.FollowingUsersViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -18,7 +19,7 @@
                 android:layout_height="match_parent">
 
             <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/ignored_users_list"
+                    android:id="@+id/users_list"
                     style="@style/RecyclerView.Linear"
                     divider="@{@drawable/recycler_view_item_divider}"
                     ignoredUsers="@{vm.users}"
@@ -26,6 +27,30 @@
                     android:layout_height="match_parent"/>
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/mode_toggle_button"
+                android:background="?panelBackground"
+                android:layout_gravity="center_horizontal|bottom"
+                android:layout_marginBottom="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <Button
+                    android:id="@+id/followings_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pref_followings_tab_followings"
+                    style="?attr/materialButtonOutlinedStyle"/>
+
+            <Button
+                    android:id="@+id/followers_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pref_followings_tab_followers"
+                    style="?attr/materialButtonOutlinedStyle"/>
+
+        </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <com.suihan74.utilities.views.ImeEnhancedEditText
                 android:id="@+id/search_text"
@@ -42,6 +67,7 @@
                 android:background="@drawable/rounded_search_text_view"
 
                 android:visibility="@{vm.isFilterTextVisible}"
+                tools:visibility="gone"
                 android:gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="40dp"
@@ -54,9 +80,11 @@
                 android:layout_height="40dp"
         />
 
+        <!-- TODO: いい感じにできるまで封印 -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/search_button"
                 android:src="@drawable/ic_baseline_search"
+                android:visibility="gone"
                 app:fabSize="mini"
                 app:backgroundTint="?colorPrimary"
                 android:layout_gravity="bottom|end"

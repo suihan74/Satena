@@ -15,8 +15,8 @@ import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class IgnoredUsersViewModel(
-    private val repository: IgnoredUsersRepository
+class PreferencesIgnoredUsersViewModel(
+    private val repository: UserRelationRepository
 ) : ViewModel() {
     /** (フィルタ前の)非表示ユーザーリスト */
     private val allUsers = repository.ignoredUsers
@@ -67,6 +67,13 @@ class IgnoredUsersViewModel(
     suspend fun loadList() {
         runCatching {
             repository.loadIgnoredUsers()
+        }
+    }
+
+    /** ロード済みの内容をクリアする */
+    suspend fun clear() {
+        runCatching {
+            repository.clearIgnoredUsers()
         }
     }
 

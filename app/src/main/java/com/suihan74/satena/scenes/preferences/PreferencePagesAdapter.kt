@@ -76,12 +76,17 @@ enum class PreferencesTabMode(
         R.drawable.ic_preferences_ignored_users,
         { IgnoredUsersFragment.createInstance() }),
 
-    USER_TAGS(10,
+    FOLLOWED_USERS(10,
+        R.string.pref_title_followings,
+        R.drawable.ic_user_tag,
+        { FollowingUsersFragment.createInstance() }),
+
+    USER_TAGS(11,
         R.string.pref_title_user_tags,
         R.drawable.ic_preferences_user_tags,
         { UserTagsFragment.createInstance() }),
 
-    DUMMY_TAIL(11);
+    DUMMY_TAIL(12);
 
     companion object {
         fun fromId(i: Int) = values().firstOrNull { it.int == i } ?: INFORMATION
