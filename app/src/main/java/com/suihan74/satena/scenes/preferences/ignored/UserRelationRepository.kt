@@ -66,7 +66,7 @@ interface UserRelationRepositoryInterface {
      *
      * @throws TaskFailureException
      */
-    suspend fun getFollowers() : List<String>
+    suspend fun getFollowers() : List<Follower>
 
     /**
      *  ブコメを通報する
@@ -103,6 +103,13 @@ class UserRelationRepository(
     override val ignoredUsers: LiveData<List<String>>
         get() = _ignoredUsers
 
+    /** 読み込み済みの内容をクリアする */
+    suspend fun clearIgnoredUsers() = withContext(Dispatchers.Main) {
+        _ignoredUsersCache.clear()
+        _ignoredUsers.value = emptyList()
+    }
+
+    /** 非表示ユーザーリストを読み込む */
     override suspend fun loadIgnoredUsers() = withContext(Dispatchers.Default) {
         val result = runCatching {
             val client = signIn()
@@ -219,7 +226,7 @@ class UserRelationRepository(
      *
      * @throws TaskFailureException
      */
-    override suspend fun getFollowers() : List<String> {
+    override suspend fun getFollowers() : List<Follower> {
         val result = runCatching {
             signIn().let { client ->
                 if (client.signedIn()) client.getFollowersAsync().await()

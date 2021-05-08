@@ -110,7 +110,7 @@
     <string name="category_fun">おもしろ</string>
     <string name="category_myhotentries">マイホットエントリ</string>
     <string name="category_mybookmarks">マイブックマーク</string>
-    <string name="category_followings">お気に入りユーザー</string>
+    <string name="category_followings">フォロー中ユーザー</string>
     <string name="category_favorite_sites">お気に入りサイト</string>
     <!-- deprecated --><string name="category_mytags">タグ</string>
     <string name="category_search">検索</string>
@@ -167,8 +167,8 @@
     <string name="bookmark_show_comment_entry">ブクマへのブックマークを見る</string>
     <string name="bookmark_share_comment_page_url">共有</string>
     <string name="bookmark_delete">ブックマークを削除</string>
-    <string name="bookmark_follow">ユーザーをお気に入りに追加</string>
-    <string name="bookmark_unfollow">ユーザーをお気に入り解除</string>
+    <string name="bookmark_follow">ユーザーをフォロー</string>
+    <string name="bookmark_unfollow">ユーザーをフォロー解除</string>
     <string name="bookmark_ignore">ユーザーを非表示</string>
     <string name="bookmark_unignore">ユーザー非表示を解除</string>
     <string name="bookmark_report">通報する</string>
@@ -221,7 +221,7 @@
     <string name="pref_title_browser">アプリ内ブラウザ</string>
     <string name="pref_title_ignored_entries">非表示URL/TEXT</string>
     <string name="pref_title_ignored_users">非表示ユーザー</string>
-    <string name="pref_title_followed_users">お気に入りユーザー</string>
+    <string name="pref_title_followings">フォロー/フォロワー</string>
     <string name="pref_title_user_tags">ユーザータグ</string>
     <string name="pref_title_fonts">フォント</string>
     <!-- information -->
@@ -389,6 +389,11 @@
     <!-- ignored entries -->
     <string name="pref_ignored_entries_menu_edit">編集</string>
     <string name="pref_ignored_entries_menu_remove">項目を削除</string>
+    <!-- followings/followers -->
+    <string name="pref_followings_tab_followings">フォロー</string>
+    <string name="pref_followings_tab_followers">フォロワー</string>
+    <string name="pref_followings_menu_follow">フォローする</string>
+    <string name="pref_followings_menu_unfollow">フォロー解除する</string>
     <!-- user tags -->
     <string name="pref_user_tags_back_button_desc">ユーザータグ一覧に戻る</string>
     <string name="user_tag_dialog_name_hint">ユーザータグ名</string>

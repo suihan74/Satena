@@ -9,6 +9,7 @@ import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Account
 import com.suihan74.satena.R
@@ -81,8 +82,8 @@ class AccountViewModel(
         addSection(R.string.pref_accounts_service_name_hatena)
         if (accountHatena.value == null) {
             addButton(fragment, R.string.sign_in) {
-                val context = fragment.requireContext()
-                openHatenaAuthenticationActivity(context)
+                val activity = fragment.requireActivity() as PreferencesActivity
+                openHatenaAuthenticationActivity(activity)
             }
         }
         else {
@@ -117,9 +118,9 @@ class AccountViewModel(
     /**
      * はてな認証画面を開く
      */
-    private fun openHatenaAuthenticationActivity(context: Context) {
-        val intent = Intent(context, HatenaAuthenticationActivity::class.java)
-        context.startActivity(intent)
+    private fun openHatenaAuthenticationActivity(activity: PreferencesActivity) {
+        val intent = Intent(activity, HatenaAuthenticationActivity::class.java)
+        activity.hatenaAuthenticationLauncher.launch(intent)
     }
 
     /**
@@ -140,9 +141,15 @@ class AccountViewModel(
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(R.string.pref_accounts_delete_hatena_message)
             .setNegativeButton(R.string.dialog_cancel)
-            .setPositiveButton(R.string.dialog_ok) {
-                viewModelScope.launch {
-                    accountLoader.deleteHatenaAccount()
+            .setPositiveButton(R.string.dialog_ok) { fragment ->
+                val activity = fragment.requireActivity() as PreferencesActivity
+                activity.lifecycleScope.launch {
+                    runCatching {
+                        accountLoader.deleteHatenaAccount()
+                    }.onSuccess {
+                        activity.ignoredUsersViewModel.clear()
+                        activity.followingsViewModel.clear()
+                    }
                 }
             }
             .create()
@@ -181,8 +188,8 @@ class AccountViewModel(
             binding.alsoAs<ListviewItemPrefsSignInHatenaBinding> {
                 it.vm = viewModel
 
-                it.root.setOnClickListener { v ->
-                    viewModel.openHatenaAuthenticationActivity(v.context)
+                it.root.setOnClickListener {
+                    viewModel.openHatenaAuthenticationActivity(fragment.requireActivity() as PreferencesActivity)
                 }
 
                 it.deleteButton.setOnClickListener {

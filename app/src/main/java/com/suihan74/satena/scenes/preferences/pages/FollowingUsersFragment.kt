@@ -8,13 +8,11 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesFollowingUsersBinding
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.ignored.FollowingUsersViewModel
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
-import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
 import com.suihan74.utilities.extensions.getThemeColor
-import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -28,12 +26,11 @@ class FollowingUsersFragment : Fragment() {
 
     // ------ //
 
-    private val viewModel by lazyProvideViewModel {
-        val repository = UserRelationRepository(
-            SatenaApplication.instance.accountLoader
-        )
-        FollowingUsersViewModel(repository)
-    }
+    private val preferencesActivity
+        get() = requireActivity() as PreferencesActivity
+
+    private val viewModel
+        get() = preferencesActivity.followingsViewModel
 
     // ------ //
 
@@ -65,7 +62,7 @@ class FollowingUsersFragment : Fragment() {
         val ignoredUsersAdapter = IgnoredUsersAdapter(viewLifecycleOwner).also { adapter ->
             adapter.setOnClickItemListener { binding ->
                 binding.user?.let { user ->
-                    viewModel.openMenuDialog(activity, user, childFragmentManager)
+                    viewModel.openMenuDialog(user, childFragmentManager)
                 }
             }
         }
@@ -91,6 +88,18 @@ class FollowingUsersFragment : Fragment() {
             }
         }
 
+        binding.modeToggleButton.apply {
+            lifecycleScope.launchWhenResumed {
+                check(modeToCheckedId(viewModel.mode))
+            }
+            isSingleSelection = true
+            isSelectionRequired = true
+            addOnButtonCheckedListener { group, checkedId, isChecked ->
+                if (!isChecked) return@addOnButtonCheckedListener
+                viewModel.setMode(checkedIdToMode(checkedId), viewLifecycleOwner)
+            }
+        }
+
         // 戻るボタンで検索部分を閉じる
         val onBackCallback = activity.onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
@@ -104,5 +113,17 @@ class FollowingUsersFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    private fun checkedIdToMode(checkedId: Int) = when(checkedId) {
+        R.id.followings_button -> FollowingUsersViewModel.Mode.FOLLOWINGS
+        R.id.followers_button -> FollowingUsersViewModel.Mode.FOLLOWERS
+        else -> throw IllegalStateException()
+    }
+
+    private fun modeToCheckedId(mode: FollowingUsersViewModel.Mode) = when(mode) {
+        FollowingUsersViewModel.Mode.FOLLOWINGS -> R.id.followings_button
+        FollowingUsersViewModel.Mode.FOLLOWERS -> R.id.followers_button
+        else -> throw IllegalStateException()
     }
 }

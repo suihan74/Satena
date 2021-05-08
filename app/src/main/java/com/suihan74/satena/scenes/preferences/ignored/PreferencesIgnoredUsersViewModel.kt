@@ -70,6 +70,13 @@ class PreferencesIgnoredUsersViewModel(
         }
     }
 
+    /** ロード済みの内容をクリアする */
+    suspend fun clear() {
+        runCatching {
+            repository.clearIgnoredUsers()
+        }
+    }
+
     // ------ //
 
     private val DIALOG_MENU by lazy { "DIALOG_MENU" }

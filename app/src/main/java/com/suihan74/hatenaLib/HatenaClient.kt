@@ -1015,14 +1015,14 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getFollowingsAsync(user: String) : Deferred<List<String>> = async {
         val url = "$B_BASE_URL/$user/follow.json?${cacheAvoidance()}"
-        val response = getJson<FollowUserResponse>(url)
+        val response = getJson<FollowingsResponse>(url)
         return@async response.followings.map { it.name }
     }
 
     /**
      * フォロワーリストを取得する
      */
-    fun getFollowersAsync() : Deferred<List<String>> {
+    fun getFollowersAsync() : Deferred<List<Follower>> {
         require (signedIn()) { "need to sign-in to get followers" }
         return getFollowersAsync(account!!.name)
     }
@@ -1030,10 +1030,10 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * 指定ユーザーのフォロワーリストを取得する
      */
-    fun getFollowersAsync(user: String) : Deferred<List<String>> = async {
+    fun getFollowersAsync(user: String) : Deferred<List<Follower>> = async {
         val url = "$B_BASE_URL/api/internal/cambridge/user/$user/followers?${cacheAvoidance()}"
-        val response = getJson<FollowUserResponse>(url)
-        return@async response.followings.map { it.name }
+        val response = getJson<FollowersResponse>(url)
+        return@async response.followers
     }
 
     /**

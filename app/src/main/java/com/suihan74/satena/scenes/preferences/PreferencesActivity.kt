@@ -23,6 +23,9 @@ import com.suihan74.satena.databinding.ActivityPreferencesBinding
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.backup.Credentials
+import com.suihan74.satena.scenes.preferences.ignored.FollowingUsersViewModel
+import com.suihan74.satena.scenes.preferences.ignored.PreferencesIgnoredUsersViewModel
+import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
 import com.suihan74.satena.scenes.tools.RestartActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -54,6 +57,43 @@ class PreferencesActivity : AppCompatActivity() {
     }
 
     val viewModel by lazyProvideViewModel { ActivityViewModel() }
+
+    /** ユーザー関係のリポジトリ */
+    private val userRelationRepository by lazy {
+        UserRelationRepository(SatenaApplication.instance.accountLoader)
+    }
+
+    private val followingsViewModelDelegate = lazyProvideViewModel {
+        FollowingUsersViewModel(userRelationRepository)
+    }
+    /** フォロー/フォロワー用ViewModel */
+    val followingsViewModel by followingsViewModelDelegate
+
+    private val ignoredUsersViewModelDelegate = lazyProvideViewModel {
+        PreferencesIgnoredUsersViewModel(userRelationRepository)
+    }
+    /** 非表示ユーザー用ViewModel */
+    val ignoredUsersViewModel by ignoredUsersViewModelDelegate
+
+    // ------ //
+
+    /** はてなにサインイン完了した際にユーザー情報を再読み込みする */
+    val hatenaAuthenticationLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            if (followingsViewModelDelegate.isInitialized()) {
+                lifecycleScope.launch {
+                    followingsViewModel.loadList(refreshAll = true)
+                }
+            }
+            if (ignoredUsersViewModelDelegate.isInitialized()) {
+                lifecycleScope.launch {
+                    ignoredUsersViewModel.loadList()
+                }
+            }
+        }
+    }
 
     // ------ //
 

@@ -77,7 +77,7 @@ enum class PreferencesTabMode(
         { IgnoredUsersFragment.createInstance() }),
 
     FOLLOWED_USERS(10,
-        R.string.pref_title_followed_users,
+        R.string.pref_title_followings,
         R.drawable.ic_user_tag,
         { FollowingUsersFragment.createInstance() }),
 
