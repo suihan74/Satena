@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.databinding.FragmentPrefsEntriesDefaultTabsBinding
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.satena.scenes.preferences.PreferencesTabMode
+import com.suihan74.satena.scenes.preferences.PreferencesTab
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.lazyProvideViewModel
@@ -76,7 +76,7 @@ class EntriesDefaultTabsFragment : Fragment() {
         }
 
         preferencesActivity.viewModel.currentTab.observe(viewLifecycleOwner, {
-            callback.isEnabled = it == PreferencesTabMode.ENTRIES
+            callback.isEnabled = it == PreferencesTab.ENTRIES
         })
 
         binding.backButton.setOnClickListener {

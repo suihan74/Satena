@@ -146,5 +146,5 @@
 -keepnames class com.suihan74.*.** { *; }
 -keep class com.suihan74.utilities.CryptUtility$EncryptedData { *; }
 -keep class com.suihan74.utilities.SerializableMastodonAccessToken { *; }
--keepclassmembers class com.suihan74.satena.scenes.preferences.PreferencesTabMode { *; }
+-keepclassmembers class com.suihan74.satena.scenes.preferences.PreferencesTab { *; }
 -keep class com.suihan74.satena.models.Category { *; }

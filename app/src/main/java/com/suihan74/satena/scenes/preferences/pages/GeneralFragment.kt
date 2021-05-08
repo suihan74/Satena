@@ -267,7 +267,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
 
             putObjectExtra(
                 PreferencesActivity.EXTRA_CURRENT_TAB,
-                PreferencesTabMode.GENERALS
+                PreferencesTab.GENERALS
             )
             putExtra(PreferencesActivity.EXTRA_THEME_CHANGED, true)
         }
