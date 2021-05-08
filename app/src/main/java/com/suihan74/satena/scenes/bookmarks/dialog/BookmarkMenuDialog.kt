@@ -178,12 +178,12 @@ class BookmarkMenuDialog : DialogFragment() {
                 add(R.string.bookmark_show_comment_entry to { onShowCommentEntry?.invoke(bookmark, it) })
                 add(R.string.bookmark_share_comment_page_url to { onShareCommentPageUrl?.invoke(bookmark, it) })
 
-                if (signedIn) {
+                if (signedIn && bookmark.user != userSignedIn) {
                     if (following) {
                         add(R.string.bookmark_unfollow to { onUnfollowUser?.invoke(bookmark.user, it) })
                     }
                     else {
-                        add(R.string.bookmark_follow to { onFollowUser?.invoke(bookmark.user, it) })
+                        add(R.string.bookmark_follow to {onFollowUser?.invoke(bookmark.user, it) })
                     }
 
                     if (ignoring) {
@@ -197,6 +197,7 @@ class BookmarkMenuDialog : DialogFragment() {
                         add(R.string.bookmark_report to { onReportBookmark?.invoke(bookmark, it) })
                     }
                 }
+
                 add(R.string.bookmark_user_tags to { onSetUserTag?.invoke(bookmark.user, it) })
 
                 if (userStars.isNotEmpty()) {
