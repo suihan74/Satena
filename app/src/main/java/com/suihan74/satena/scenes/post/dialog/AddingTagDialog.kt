@@ -85,14 +85,26 @@ class AddingTagDialog : BottomSheetDialogFragment() {
                 val behavior = params.behavior as BottomSheetBehavior
                 // コンパクト表示中に表示する高さ(最上端からeditText部分まで)
                 behavior.peekHeight = binding.tagsTitleTextView.y.toInt()
-                // 最初の全画面化時に既存のタグリストをロードする
-                // onCreate時に表示しているとボトムシート表示時に一瞬チラつくため
                 behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                     override fun onSlide(bottomSheet: View, slideOffset: Float) {}
                     override fun onStateChanged(bottomSheet: View, newState: Int) {
-                        if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                        // ダイアログのサイズ変更したときIMEの高さの分だけダイアログがずれるので、IMEを一度閉じて開き直す
+                        when (newState) {
+                            BottomSheetBehavior.STATE_EXPANDED,
+                            BottomSheetBehavior.STATE_COLLAPSED -> {
+                                val editTextFocused = binding.editText.hasFocus()
+                                binding.editText.hideSoftInputMethod(binding.root)
+                                if (editTextFocused) {
+                                    dialog.showSoftInputMethod(requireActivity(), binding.editText)
+                                }
+                            }
+                            else -> {}
+                        }
+
+                        // 最初の全画面化時に既存のタグリストをロードする
+                        // onCreate時に表示しているとボトムシート表示時に一瞬チラつくため
+                        if (newState == BottomSheetBehavior.STATE_EXPANDED && binding.tagsList.adapter == null) {
                             initializeTagsList()
-                            behavior.removeBottomSheetCallback(this)
                         }
                     }
                 })
