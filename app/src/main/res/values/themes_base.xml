@@ -228,6 +228,7 @@
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Light</item>
+        <item name="bottomSheetDialogHandleColor">@color/tagColor</item>
     </style>
 
     <!-- Dark Theme -->
@@ -250,6 +251,7 @@
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Dark</item>
+        <item name="bottomSheetDialogHandleColor">@color/tagColorDark</item>
     </style>
 
     <!-- Extreme Dark Theme -->
@@ -274,6 +276,7 @@
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
+        <item name="bottomSheetDialogHandleColor">@color/colorPrimaryExDark</item>
     </style>
 
     <!-- ========= -->

@@ -16,80 +16,84 @@ import com.suihan74.satena.databinding.ListviewItemPreferencesMenuBinding
 import com.suihan74.satena.scenes.preferences.pages.*
 import com.suihan74.utilities.Listener
 
-enum class PreferencesTabMode(
-    val int : Int,
+enum class PreferencesTab(
     @StringRes val titleId : Int = 0,
     @DrawableRes val iconId : Int = 0,
     val createFragment : () -> Fragment = { Fragment() }
 ) {
     // 環状スクロールできるように細工
-    DUMMY_HEAD(0),
+    DUMMY_HEAD,
 
-    INFORMATION(1,
+    INFORMATION(
         R.string.pref_title_information,
         R.drawable.ic_baseline_info,
         { InformationFragment() }
     ),
 
-    ACCOUNT(2,
+    ACCOUNT(
         R.string.pref_title_account,
         R.drawable.ic_preferences_accounts,
         { AccountFragment() }
     ),
 
-    GENERALS(3,
+    GENERALS(
         R.string.pref_title_generals,
         R.drawable.ic_preferences_generals,
         { GeneralFragment() }
     ),
 
-    ENTRIES(4,
+    ENTRIES(
         R.string.pref_title_entries,
         R.drawable.ic_preferences_entries,
         { EntryFragment() }
     ),
 
-    BOOKMARKS(5,
+    BOOKMARKS(
         R.string.pref_title_bookmarks,
         R.drawable.ic_preferences_bookmarks,
         { BookmarkFragment() }
     ),
 
-    BROWSER(6,
+    BROWSER(
         R.string.pref_title_browser,
         R.drawable.ic_world,
         { BrowserFragment() }
     ),
 
-    FAVORITE_SITES(7,
+    FAVORITE_SITES(
         R.string.category_favorite_sites,
         R.drawable.ic_star,
-        { FavoriteSitesFragment.createInstance() }),
+        { FavoriteSitesFragment.createInstance() }
+    ),
 
-    IGNORED_ENTRIES(8,
+    IGNORED_ENTRIES(
         R.string.pref_title_ignored_entries,
         R.drawable.ic_preferences_filters,
-        { IgnoredEntriesFragment.createInstance() }),
+        { IgnoredEntriesFragment.createInstance() }
+    ),
 
-    IGNORED_USERS(9,
+    IGNORED_USERS(
         R.string.pref_title_ignored_users,
         R.drawable.ic_preferences_ignored_users,
-        { IgnoredUsersFragment.createInstance() }),
+        { IgnoredUsersFragment.createInstance() }
+    ),
 
-    FOLLOWED_USERS(10,
+    FOLLOWED_USERS(
         R.string.pref_title_followings,
         R.drawable.ic_user_tag,
-        { FollowingUsersFragment.createInstance() }),
+        { FollowingUsersFragment.createInstance() }
+    ),
 
-    USER_TAGS(11,
+    USER_TAGS(
         R.string.pref_title_user_tags,
         R.drawable.ic_preferences_user_tags,
-        { UserTagsFragment.createInstance() }),
+        { UserTagsFragment.createInstance() }
+    ),
 
-    DUMMY_TAIL(12);
+    DUMMY_TAIL;
 
     companion object {
-        fun fromId(i: Int) = values().firstOrNull { it.int == i } ?: INFORMATION
+        fun fromOrdinal(idx: Int) = values().getOrElse(idx) { INFORMATION }
     }
 }
 
@@ -101,15 +105,15 @@ enum class PreferencesTabMode(
 class PreferencesTabAdapter(private val activity: FragmentActivity) : FragmentStateAdapter(activity) {
 
     override fun createFragment(position: Int): Fragment =
-        PreferencesTabMode.fromId(position).createFragment.invoke()
+        PreferencesTab.fromOrdinal(position).createFragment.invoke()
 
     fun getIconId(fixedPosition: Int) =
-        PreferencesTabMode.fromId(fixedPosition + 1).iconId
+        PreferencesTab.fromOrdinal(fixedPosition + 1).iconId
 
     fun getIndexFromIconId(iconId : Int) =
-        PreferencesTabMode.values().firstOrNull { iconId == getIconId(it.int - 1) }?.int ?: 0
+        PreferencesTab.values().firstOrNull { iconId == getIconId(it.ordinal - 1) }?.ordinal ?: 0
 
-    override fun getItemCount(): Int = PreferencesTabMode.values().size
+    override fun getItemCount(): Int = PreferencesTab.values().size
     fun getActualCount() = itemCount - 2
 
     fun findFragment(position: Int) : Fragment? = activity.supportFragmentManager.findFragmentByTag("f$position")
@@ -124,7 +128,7 @@ class PreferencesMenuAdapter(
     private val lifecycleOwner: LifecycleOwner
 ) : RecyclerView.Adapter<PreferencesMenuAdapter.ViewHolder>() {
 
-    private val items = PreferencesTabMode.values()
+    private val items = PreferencesTab.values()
         .filter { it.iconId != 0 }
         .map { Item(it, MutableLiveData(false)) }
 
@@ -156,7 +160,7 @@ class PreferencesMenuAdapter(
 
     // ------ //
 
-    fun selectTab(tab: PreferencesTabMode) {
+    fun selectTab(tab: PreferencesTab) {
         items.forEach {
             it.selected.value = it.tab == tab
         }
@@ -164,9 +168,9 @@ class PreferencesMenuAdapter(
 
     // ------ //
 
-    private var onClick :Listener<PreferencesTabMode>? = null
+    private var onClick :Listener<PreferencesTab>? = null
 
-    fun setOnClickListener(listener: Listener<PreferencesTabMode>?) {
+    fun setOnClickListener(listener: Listener<PreferencesTab>?) {
         onClick = listener
     }
 
@@ -177,7 +181,7 @@ class PreferencesMenuAdapter(
     ) : RecyclerView.ViewHolder(binding.root)
 
     data class Item(
-        val tab : PreferencesTabMode,
+        val tab : PreferencesTab,
         val selected : MutableLiveData<Boolean>
     )
 }

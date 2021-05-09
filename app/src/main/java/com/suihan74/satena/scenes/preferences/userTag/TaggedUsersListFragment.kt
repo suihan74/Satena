@@ -13,7 +13,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentTaggedUsersListBinding
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.satena.scenes.preferences.PreferencesTabMode
+import com.suihan74.satena.scenes.preferences.PreferencesTab
 import com.suihan74.satena.scenes.preferences.pages.UserTagsFragment
 import com.suihan74.utilities.bindings.setDivider
 
@@ -92,7 +92,7 @@ class TaggedUsersListFragment : Fragment() {
             remove()
         }
         activityViewModel.currentTab.observe(viewLifecycleOwner, {
-            callback.isEnabled = it == PreferencesTabMode.USER_TAGS
+            callback.isEnabled = it == PreferencesTab.USER_TAGS
         })
 
         return binding.root
