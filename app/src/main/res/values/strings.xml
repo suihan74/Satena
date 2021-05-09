@@ -527,13 +527,15 @@
     <string name="hint_twitter_toggle">Twitterに投稿します</string>
     <string name="hint_facebook_toggle">Facebookに投稿します</string>
     <string name="hint_private_toggle">非公開でブクマします</string>
+    <string name="msg_post_tag_added">タグ[%s]を挿入しました</string>
     <string name="msg_post_tag_already_exists">タグ[%s]は既に挿入されています</string>
     <string name="msg_post_too_many_tags">使用できるタグは最大%d個です</string>
     <string name="msg_fetch_tags_failed">タグリストを取得できませんでした</string>
     <string name="msg_hatena_not_signed_in">はてなアカウントが登録されていません</string>
     <string name="msg_need_to_sign_in_hatena">ブックマーク機能使用にはサインインが必要です</string>
-
-    <!-- hints -->
+    <string name="add_new_tag_tags_list_title">あなたのタグ</string>
+    <string name="add_new_tag_button_description">タグを追加してタグ入力を続行する</string>
+    <string name="add_new_tag_complete_button_description">タグを追加してダイアログを閉じる</string>
     <string name="search_query_hint">検索キーワード</string>
     <string name="add_new_tag_hint">タグを追加</string>
 

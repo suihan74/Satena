@@ -27,6 +27,9 @@
         <attr name="snackBarBackgroundColor" format="color"/>
         <attr name="snackBarTextColor" format="color"/>
         <attr name="snackBarActionTextColor" format="color"/>
+
+        <!-- BottomSheetDialog -->
+        <attr name="bottomSheetDialogHandleColor" format="color"/>
     </declare-styleable>
 
     <declare-styleable name="TextFloatingActionButton">

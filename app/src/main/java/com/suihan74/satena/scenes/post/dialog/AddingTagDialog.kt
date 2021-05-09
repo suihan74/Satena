@@ -6,8 +6,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.updateLayoutParams
+import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogAddingTagBinding
+import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner
+import com.suihan74.satena.scenes.post.TagsListAdapter
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.showSoftInputMethod
 
@@ -19,8 +27,15 @@ class AddingTagDialog : BottomSheetDialogFragment() {
 
     // ------ //
 
+    private val bookmarkPostViewModel
+        get() = (requireActivity() as BookmarkPostViewModelOwner).bookmarkPostViewModel
+
+    // ------ //
+
     private var _binding : FragmentDialogAddingTagBinding? = null
     private val binding get() = _binding!!
+
+    // ------ //
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,11 +64,40 @@ class AddingTagDialog : BottomSheetDialogFragment() {
             addTag()
         }
 
-        binding.positiveButton.setOnClickListener {
+        binding.completeButton.setOnClickListener {
             complete()
         }
 
         return binding.root
+    }
+
+    /** コンパクト表示を有効にする */
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        dialog?.setOnShowListener {
+            val dialog = it as BottomSheetDialog
+            val bottomSheetInternal = dialog.findViewById<View>(R.id.design_bottom_sheet)
+            bottomSheetInternal?.updateLayoutParams {
+                height = ViewGroup.LayoutParams.MATCH_PARENT
+            }
+            view.post {
+                val parent = view.parent as View
+                val params = parent.layoutParams as CoordinatorLayout.LayoutParams
+                val behavior = params.behavior as BottomSheetBehavior
+                // コンパクト表示中に表示する高さ(最上端からeditText部分まで)
+                behavior.peekHeight = binding.tagsTitleTextView.y.toInt()
+                // 最初の全画面化時に既存のタグリストをロードする
+                // onCreate時に表示しているとボトムシート表示時に一瞬チラつくため
+                behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                    override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+                    override fun onStateChanged(bottomSheet: View, newState: Int) {
+                        if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                            initializeTagsList()
+                            behavior.removeBottomSheetCallback(this)
+                        }
+                    }
+                })
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -69,10 +113,33 @@ class AddingTagDialog : BottomSheetDialogFragment() {
 
     // ------ //
 
-    private var onCompleteListener : Listener<String>? = null
+    /** ユーザーのタグリストを用意する */
+    private fun initializeTagsList() {
+        binding.tagsList.apply {
+            layoutManager = ChipsLayoutManager.newBuilder(requireContext())
+                .setRowStrategy(ChipsLayoutManager.STRATEGY_DEFAULT)
+                .build()
 
-    fun setOnCompleteListener(l : Listener<String>) : AddingTagDialog {
-        onCompleteListener = l
+            adapter = TagsListAdapter().also { adapter ->
+                bookmarkPostViewModel.repository.tags.observe(viewLifecycleOwner) { tags ->
+                    adapter.setTags(tags.map { t -> t.text })
+                }
+                adapter.setOnItemClickedListener { tag ->
+                    binding.editText.text?.let { editable ->
+                        editable.clear()
+                        editable.append(tag)
+                    }
+                }
+            }
+        }
+    }
+
+    // ------ //
+
+    private var onAddingTagListener : Listener<String>? = null
+
+    fun setOnAddingTagListener(l : Listener<String>) : AddingTagDialog {
+        onAddingTagListener = l
         return this
     }
 
@@ -84,7 +151,7 @@ class AddingTagDialog : BottomSheetDialogFragment() {
     private fun addTag() {
         binding.editText.text?.toString().orEmpty().let { tag ->
             runCatching {
-                onCompleteListener?.invoke(tag)
+                onAddingTagListener?.invoke(tag)
             }
             binding.editText.text?.clear()
         }

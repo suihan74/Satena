@@ -345,14 +345,15 @@ class BookmarkPostViewModel(
             val commentText = this.comment.value.orEmpty()
             comment.addTextChangedListener(maintainSelectionTextWatcher)
             this.comment.value = repository.insertTagToComment(commentText, tag)
+            context.showToast(R.string.msg_post_tag_added, tag)
         }
         catch (e: TagAlreadyExistsException) {
-            context.showToast(R.string.msg_post_tag_already_exists, e.tag)
             comment.removeTextChangedListener(maintainSelectionTextWatcher)
+            context.showToast(R.string.msg_post_tag_already_exists, e.tag)
         }
         catch (e: TooManyTagsException) {
-            context.showToast(R.string.msg_post_too_many_tags, e.limitCount)
             comment.removeTextChangedListener(maintainSelectionTextWatcher)
+            context.showToast(R.string.msg_post_too_many_tags, e.limitCount)
         }
     }
 
@@ -383,7 +384,7 @@ class BookmarkPostViewModel(
     /** タグ入力ダイアログを開く */
     fun openNewTagDialog(context: Context, commentEditText: EditText, fragmentManager: FragmentManager) {
         AddingTagDialog.createInstance()
-            .setOnCompleteListener { tag ->
+            .setOnAddingTagListener { tag ->
                 if (tag.isNotBlank()) {
                     addTag(context, tag, commentEditText)
                 }
