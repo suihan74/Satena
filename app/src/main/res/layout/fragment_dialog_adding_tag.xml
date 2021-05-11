@@ -4,7 +4,8 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:background="@android:color/transparent"
         android:paddingTop="12dp"
-        android:padding="4dp"
+        android:paddingBottom="4dp"
+        android:paddingHorizontal="4dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -42,7 +43,7 @@
             android:tint="?textColor"
             android:background="?selectableItemBackgroundBorderless"
             android:contentDescription="@string/add_new_tag_button_description"
-            app:tooltipText="@string/add_new_tag_button_description"
+            app:tooltipText="@{@string/add_new_tag_button_description}"
             app:layout_constraintTop_toTopOf="@id/editText"
             app:layout_constraintBottom_toBottomOf="@id/editText"
             app:layout_constraintStart_toEndOf="@id/editText"
@@ -58,7 +59,7 @@
             android:tint="@color/colorPrimaryText"
             android:backgroundTint="?colorPrimary"
             android:contentDescription="@string/add_new_tag_complete_button_description"
-            app:tooltipText="@string/add_new_tag_complete_button_description"
+            app:tooltipText="@{@string/add_new_tag_complete_button_description}"
             app:layout_constraintTop_toTopOf="@id/editText"
             app:layout_constraintBottom_toBottomOf="@id/editText"
             app:layout_constraintStart_toEndOf="@id/addButton"
