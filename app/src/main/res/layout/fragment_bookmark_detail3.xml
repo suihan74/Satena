@@ -13,6 +13,7 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="?attr/panelBackground"
@@ -36,6 +37,7 @@
                 <ImageView
                         android:id="@+id/user_icon"
                         src="@{vm.bookmark.userIconUrl}"
+                        tools:foreground="#FF00FF"
                         android:contentDescription="@null"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="16dp"
@@ -59,6 +61,7 @@
 
                 <TextView
                         android:id="@+id/user_name"
+                        tools:text="username"
                         userName="@{vm.bookmark.user}"
                         userTags="@{vm.userTags}"
 
@@ -77,6 +80,7 @@
 
                 <com.suihan74.utilities.views.SelectableTextView
                         android:id="@+id/comment"
+                        tools:text="comment"
                         comment="@{vm.bookmark}"
                         android:visibility="@{vm.bookmark.comment}"
                         onLinkClick="@{bookmarksViewModel.onLinkClicked}"
@@ -98,6 +102,7 @@
                         android:id="@+id/tags"
                         tagLinks="@{vm.bookmark}"
                         onTagClick="@{bookmarksViewModel.onTagClicked}"
+                        tools:text="tag0, tag1, tag2"
                         android:textSize="14sp"
                         android:textColor="?attr/tagTextColor"
                         android:textColorLink="?attr/tagTextColor"
