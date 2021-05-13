@@ -82,7 +82,7 @@ class ReleaseNotesDialogFragment : DialogFragment() {
         }
 
         // 履歴の読み込み
-        lifecycleScope.launch(Dispatchers.Main) {
+        lifecycleScope.launch {
             try {
                 viewModel.loadReleaseNotes(resources)
             }
@@ -165,14 +165,13 @@ class ReleaseNotesDialogFragment : DialogFragment() {
                     val text = when (lastVersionName) {
                         null -> reader.readText()
                         else -> buildString {
-                            reader.useLines { it.forEach { line ->
-                                if (line.contains("[ version $lastVersionName ]")) {
-                                    return@useLines
+                            val lastVersionText = "[ version $lastVersionName ]"
+                            reader.useLines { lines ->
+                                lines.forEach { line ->
+                                    if (line.contains(lastVersionText)) return@useLines
+                                    else append(line, "\n")
                                 }
-                                else {
-                                    append(line, "\n")
-                                }
-                            } }
+                            }
                         }
                     }
 
