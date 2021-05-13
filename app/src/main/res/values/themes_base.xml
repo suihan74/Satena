@@ -86,6 +86,7 @@
         <item name="editTextStyle">@style/EditTextStyle.Light</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Light</item>
+        <item name="bottomSheetDialogHandleColor">@color/tagColor</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
         <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackground</item>
@@ -119,6 +120,7 @@
         <item name="editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Dark</item>
+        <item name="bottomSheetDialogHandleColor">@color/tagColorDark</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
         <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundDark</item>
@@ -170,6 +172,7 @@
         <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
+        <item name="bottomSheetDialogHandleColor">@color/colorPrimaryExDark</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
         <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundExDark</item>
