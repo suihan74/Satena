@@ -364,7 +364,7 @@
 
     <!-- BottomSheetDialogのテーマ -->
     <style name="Base.BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
-        <item name="colorPrimary">@color/colorPrimaryDark</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorPrimary</item>
     </style>
