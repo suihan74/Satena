@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks.bindingAdapter
 
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
@@ -114,10 +115,10 @@ object TextViewBindingAdapters {
     fun bindStarRelationText(textView: TextView, item: StarRelationsAdapter.Item?) {
         textView.text = buildString {
             item?.star?.quote?.let {
-                if (it.isNotBlank()) append("\"$it\"\n")
+                if (it.isNotBlank()) append("\"${Uri.decode(it)}\"\n")
             }
             item?.comment?.let {
-                append(it)
+                append(Uri.decode(it))
             }
         }
     }
