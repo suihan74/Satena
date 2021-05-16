@@ -190,6 +190,9 @@ fun TextView.setBookmarkResultUser(user: String?, private: Boolean?) {
         compoundDrawablePadding = 4
         setCompoundDrawablesRelative(null, null, icon, null)
     }
+    else {
+        setCompoundDrawablesRelative(null, null, null, null)
+    }
 }
 
 /** エントリリストでのブコメ表示 */
