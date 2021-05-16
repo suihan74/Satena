@@ -1326,10 +1326,12 @@ object HatenaClient : BaseClient(), CoroutineScope {
      * 4) https://b.hatena.ne.jp/entry?url=https~~~
      * 5) https://b.hatena.ne.jp/entry?eid=1234
      * 6) https://b.hatena.ne.jp/entry/{eid}
+     * 7) https://b.hatena.ne.jp/entry.touch/s/~~~
+     * 8) https://b.hatena.ne.jp/entry/panel/?url=~~~
      */
     fun getEntryUrlFromCommentPageUrl(url: String) : String {
-        if (url.startsWith("$B_BASE_URL/entry?url=")) {
-            // 4)
+        if (url.startsWith("$B_BASE_URL/entry?url=") || url.startsWith("$B_BASE_URL/entry/panel/?url=")) {
+            // 4, 8)
             return Uri.parse(url).getQueryParameter("url") ?: throw RuntimeException("invalid comment page url: $url")
         }
         else if (url.startsWith("$B_BASE_URL/entry?eid=")) {
@@ -1345,16 +1347,16 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 return "$B_BASE_URL/entry/${commentUrlMatch.groups[1]!!.value}"
             }
             else {
-                val regex = Regex("""https?://b\.hatena\.ne\.jp/entry/(https://|s/)?(.+)""")
+                val regex = Regex("""https?://b\.hatena\.ne\.jp/entry(\.touch)?/(https://|s/)?(.+)""")
                 val matches =
                     regex.matchEntire(url)
                         ?: throw RuntimeException("invalid comment page url: $url")
 
                 val path =
-                    matches.groups[2]?.value
+                    matches.groups[3]?.value
                         ?: throw RuntimeException("invalid comment page url: $url")
 
-                return if (matches.groups[1]?.value.isNullOrEmpty()) {
+                return if (matches.groups[2]?.value.isNullOrEmpty()) {
                     if (path.startsWith("http://")) {
                         // 2)
                         path
