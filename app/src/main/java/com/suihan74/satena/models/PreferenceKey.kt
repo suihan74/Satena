@@ -195,6 +195,9 @@ enum class PreferenceKey(
     /** 最後に開いた投稿ダイアログでのプライベート選択状態 */
     POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
 
+    /** 投稿ダイアログの表示位置(Y) */
+    POST_BOOKMARK_VERTICAL_GRAVITY(typeInfo<Int>(), BookmarkPostActivityGravity.DEFAULT.ordinal),
+
     /** 最初に表示するタブ */
     BOOKMARKS_INITIAL_TAB(typeInfo<Int>(), BookmarksTabType.POPULAR.ordinal),
 

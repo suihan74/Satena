@@ -365,6 +365,12 @@
     <string name="pref_bookmarks_default_accounts_states">デフォルトの投稿設定</string>
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
     <string name="msg_pref_bookmarks_fetching_accounts_failed">連携SNS情報取得失敗</string>
+    <string name="pref_bookmarks_post_dialog_vertical_gravity_desc">投稿ダイアログの表示位置</string>
+
+    <string name="pref_post_dialog_gravity_default">デフォルト</string>
+    <string name="pref_post_dialog_gravity_top">上</string>
+    <string name="pref_post_dialog_gravity_center">中央</string>
+    <string name="pref_post_dialog_gravity_bottom">下</string>
 
     <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>
     <string name="pref_bookmarks_hiding_buttons_with_scrolling_desc">スクロールにあわせて画面下部のボタンを隠す</string>

@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsPostBookmarkAccountStatesBinding
+import com.suihan74.satena.models.BookmarkPostActivityGravity
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
@@ -164,6 +165,13 @@ class BookmarkViewModel(
         prefs.contains(PreferenceKey.HATENA_RK)
     )
 
+    /** ダイアログの縦位置 */
+    private val verticalGravity = createLiveDataEnum(
+        PreferenceKey.POST_BOOKMARK_VERTICAL_GRAVITY,
+        { it.ordinal },
+        { BookmarkPostActivityGravity.fromOrdinal(it) }
+    )
+
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
@@ -208,6 +216,14 @@ class BookmarkViewModel(
         if (signedInHatena.value == true) {
             addSection(R.string.pref_bookmark_section_posting)
             addPrefToggleItem(fragment, confirmPostBookmark, R.string.pref_bookmarks_using_post_dialog_desc)
+            addPrefItem(fragment, verticalGravity, R.string.pref_bookmarks_post_dialog_vertical_gravity_desc) {
+                openEnumSelectionDialog(
+                    BookmarkPostActivityGravity.values(),
+                    verticalGravity,
+                    R.string.pref_bookmarks_post_dialog_vertical_gravity_desc,
+                    fragmentManager
+                )
+            }
             addPrefToggleItem(fragment, saveAccountStates, R.string.pref_bookmarks_save_states)
             if (saveAccountStates.value == false) {
                 add(
