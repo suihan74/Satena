@@ -14,7 +14,8 @@ data class Bookmark (
     val comment : String,
     val tags : List<String> = emptyList(),
     val timestamp : LocalDateTime = LocalDateTime.MIN,
-    val starCount : List<Star>? = null
+    val starCount : List<Star>? = null,
+    val private: Boolean = false
 ) {
     // for Gson
     internal constructor() : this("", "")
@@ -25,14 +26,17 @@ data class Bookmark (
             comment = src.comment,
             tags = src.tags,
             timestamp = src.timestamp,
-            starCount = src.starCount.map { it.toStar() })
+            starCount = src.starCount.map { it.toStar() },
+            private = src.isPrivate
+        )
 
         fun create(src: BookmarkResult) = Bookmark(
             user = src.user,
             comment = src.comment,
             tags = src.tags,
             timestamp = src.timestamp,
-            starCount = src.starsCount
+            starCount = src.starsCount,
+            private = src.private ?: false
         )
     }
 
@@ -125,4 +129,14 @@ data class BookmarkResult (
 ) {
     // for Gson
     private constructor() : this("", "", emptyList(), LocalDateTime.MIN, "", "", "")
+
+    fun toBookmarkWithStarCount() = BookmarkWithStarCount(
+        mUser = BookmarkWithStarCount.User(user, userIconUrl),
+        comment = comment,
+        isPrivate = private ?: false,
+        link = permalink,
+        tags = tags,
+        timestamp = timestamp,
+        starCount = starsCount.orEmpty().map { StarCount(it.color, it.count) }
+    )
 }
