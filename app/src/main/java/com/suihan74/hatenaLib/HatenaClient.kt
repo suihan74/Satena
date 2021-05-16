@@ -870,13 +870,16 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
                     userBookmarkPageResult.getOrNull()?.let { page ->
                         BookmarkResult(
-                            page.user,
-                            page.comment.body,
-                            page.comment.tags,
-                            page.timestamp,
-                            getUserIconUrl(page.user),
-                            page.comment.raw,
-                            page.permalink
+                            user = page.user,
+                            comment = page.comment.body,
+                            tags = page.comment.tags,
+                            timestamp = page.timestamp,
+                            userIconUrl = getUserIconUrl(page.user),
+                            commentRaw = page.comment.raw,
+                            permalink = page.permalink,
+                            success = true,
+                            private = page.status == "private",
+                            eid = eid
                         )
                     }
                 }
