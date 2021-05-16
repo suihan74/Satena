@@ -7,7 +7,7 @@ import com.suihan74.satena.R
 
 @Suppress("unused")
 enum class Category(
-    @IntRange(from = 1, to = 22) val id: Int,
+    @IntRange(from = 1, to = 23) val id: Int,
     @StringRes override val textId: Int,
     @DrawableRes val iconId: Int,
     val categoryInApi: com.suihan74.hatenaLib.Category? = null,
@@ -20,76 +20,90 @@ enum class Category(
     All(id = 0,
         R.string.category_all,
         R.drawable.ic_category_all,
-        categoryInApi = com.suihan74.hatenaLib.Category.All),
+        categoryInApi = com.suihan74.hatenaLib.Category.All
+    ),
 
     General(id = 1,
         R.string.category_general,
         R.drawable.ic_category_general,
-        categoryInApi = com.suihan74.hatenaLib.Category.General),
+        categoryInApi = com.suihan74.hatenaLib.Category.General
+    ),
 
     Social(id = 2,
         R.string.category_social,
         R.drawable.ic_category_social,
         categoryInApi = com.suihan74.hatenaLib.Category.Social,
-        hasIssues = true),
+        hasIssues = true
+    ),
 
     Economics(id = 3,
         R.string.category_economics,
         R.drawable.ic_category_economics,
         categoryInApi = com.suihan74.hatenaLib.Category.Economics,
-        hasIssues = true),
+        hasIssues = true
+    ),
 
     Life(id = 4,
         R.string.category_life,
         R.drawable.ic_category_life,
         categoryInApi = com.suihan74.hatenaLib.Category.Life,
-        hasIssues = true),
+        hasIssues = true
+    ),
 
     Knowledge(id = 5,
         R.string.category_knowledge,
         R.drawable.ic_category_knowledge,
         categoryInApi = com.suihan74.hatenaLib.Category.Knowledge,
-        hasIssues = true),
+        hasIssues = true
+    ),
 
     It(id = 6,
         R.string.category_it,
         R.drawable.ic_category_it,
         categoryInApi = com.suihan74.hatenaLib.Category.It,
-        hasIssues = true),
+        hasIssues = true
+    ),
 
     Entertainment(id = 7,
         R.string.category_entertainment,
         R.drawable.ic_category_entertainment,
         categoryInApi = com.suihan74.hatenaLib.Category.Entertainment,
-        hasIssues = true),
+        hasIssues = true
+    ),
 
     Game(id = 8,
         R.string.category_game,
         R.drawable.ic_category_game,
         categoryInApi = com.suihan74.hatenaLib.Category.Game,
-        hasIssues = true),
+        hasIssues = true
+    ),
 
     Fun(id = 9,
         R.string.category_fun,
         R.drawable.ic_category_fun,
         categoryInApi = com.suihan74.hatenaLib.Category.Fun,
-        hasIssues = true),
+        hasIssues = true
+    ),
 
     MyHotEntries(id = 10,
         R.string.category_myhotentries,
         R.drawable.ic_category_myhotentries,
         requireSignedIn = true,
-        singleColumns = true),
+        singleColumns = true
+    ),
 
     MyBookmarks(id = 11,
         R.string.category_mybookmarks,
         R.drawable.ic_category_mybookmarks,
-        requireSignedIn = true),
+        requireSignedIn = true
+    ),
 
     Followings(id = 23,
         R.string.category_followings,
         R.drawable.ic_star,
-        requireSignedIn = true),
+        requireSignedIn = true,
+        singleColumns = true
+    ),
 
     FavoriteSites(id = 22,
         R.string.category_favorite_sites,
@@ -109,12 +123,14 @@ enum class Category(
     Search(id = 13,
         R.string.category_search,
         R.drawable.ic_category_search,
-        singleColumns = false),
+        singleColumns = false
+    ),
 
     Stars(id = 14,
         R.string.category_mystars,
         R.drawable.ic_star,
-        requireSignedIn = true),
+        requireSignedIn = true
+    ),
 
     // 消さないで
     @Deprecated("`MyStars` & `StarsReport` is integrated into `Stars`")
