@@ -125,4 +125,14 @@ data class BookmarkResult (
 ) {
     // for Gson
     private constructor() : this("", "", emptyList(), LocalDateTime.MIN, "", "", "")
+
+    fun toBookmarkWithStarCount() = BookmarkWithStarCount(
+        mUser = BookmarkWithStarCount.User(user, userIconUrl),
+        comment = comment,
+        isPrivate = private ?: false,
+        link = permalink,
+        tags = tags,
+        timestamp = timestamp,
+        starCount = starsCount.orEmpty().map { StarCount(it.color, it.count) }
+    )
 }

@@ -428,7 +428,9 @@ class BookmarksRepository(
     suspend fun loadBookmarksEntry(url: String) {
         loadingBookmarksEntryMutex.withLock {
             val result = runCatching {
-                client.getBookmarksEntryAsync(url).await()
+                insertMyBookmark(
+                    client.getBookmarksEntryAsync(url).await()
+                )
             }
 
             val e = result.getOrElse {
@@ -439,6 +441,30 @@ class BookmarksRepository(
                 bookmarksEntry.value = e
             }
         }
+    }
+
+    /**
+     * ブクマエントリにユーザーの非公開ブクマを挿入する
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun insertMyBookmark(bookmarksEntry: BookmarksEntry) : BookmarksEntry {
+        val bookmarkData = entry.value?.bookmarkedData ?: return bookmarksEntry
+        val user = bookmarkData.user
+        return if (bookmarksEntry.bookmarks.none { it.user == user }) {
+            val bookmarks = buildList {
+                if (bookmarksEntry.bookmarks.isEmpty()) {
+                    add(Bookmark.create(bookmarkData))
+                }
+                else {
+                    val timestamp = bookmarkData.timestamp
+                    val insertIdx = bookmarksEntry.bookmarks.indexOfFirst { it.timestamp <= timestamp }
+                    addAll(bookmarksEntry.bookmarks)
+                    add(insertIdx, Bookmark.create(bookmarkData))
+                }
+            }
+            bookmarksEntry.copy(bookmarks = bookmarks)
+        }
+        else bookmarksEntry
     }
 
     /**
@@ -763,6 +789,7 @@ class BookmarksRepository(
      * @throws TimeoutException
      * @throws ForbiddenException
      */
+    @OptIn(ExperimentalStdlibApi::class)
     suspend fun loadRecentBookmarks(
         additionalLoading: Boolean = false
     ) = withContext(Dispatchers.Default) {
@@ -790,27 +817,48 @@ class BookmarksRepository(
         if (additionalLoading || bookmarksRecentCache.isEmpty()) {
             recentCursor = response.cursor
         }
+
+        // 非公開ブクマを適切な位置に挿入
+        val myBookmark = entry.value?.bookmarkedData
+
+        val cacheTail = bookmarksRecentCache.lastOrNull()
+        val myBookmarkNotCached =
+            myBookmark != null && (cacheTail == null || cacheTail.timestamp > myBookmark.timestamp)
+
+        val fetchedTail = response.bookmarks.lastOrNull()
+        val myBookmarkFetched =
+            myBookmark != null && (fetchedTail == null || response.bookmarks.none { it.user == myBookmark.user } && fetchedTail.timestamp < myBookmark.timestamp)
+
+        val bookmarks =
+            if (myBookmark != null && myBookmarkNotCached && myBookmarkFetched) buildList {
+                if (response.bookmarks.isEmpty()) {
+                    add(myBookmark.toBookmarkWithStarCount())
+                }
+                else {
+                    val insertIdx = response.bookmarks.indexOfFirst { it.timestamp < myBookmark.timestamp }
+                    addAll(response.bookmarks)
+                    add(insertIdx, myBookmark.toBookmarkWithStarCount())
+                }
+            }
+            else response.bookmarks
+
         // キャッシュに追加
         // 重複がある場合は新しい方に更新する
         bookmarksRecentCache = bookmarksRecentCache
-            .filterNot { existed ->
-                response.bookmarks.any { b ->
-                    existed.user == b.user
-                }
-            }
-            .plus(response.bookmarks)
+            .filterNot { existed -> bookmarks.any { b -> existed.user == b.user } }
+            .plus(bookmarks)
             .sortedByDescending { it.timestamp }
 
         // ユーザータグを更新
-        response.bookmarks.forEach {
+        bookmarks.forEach {
             loadUserTags(it.user)
         }
 
         // ブクマへのブクマ数を取得する
-        loadBookmarkCountsToBookmarksWithStarCount(response.bookmarks)
+        loadBookmarkCountsToBookmarksWithStarCount(bookmarks)
 
         // スター情報を取得する
-        loadStarsEntriesForBookmarksWithStarCount(response.bookmarks)
+        loadStarsEntriesForBookmarksWithStarCount(bookmarks)
 
         // 各表示用リストに変更を通知する
         updateRecentBookmarksLiveData(bookmarksRecentCache)
@@ -819,9 +867,9 @@ class BookmarksRepository(
             // BookmarksEntryのブクマリストにも追加しておく
             bookmarksEntry.value?.let { bEntry ->
                 val exists = bEntry.bookmarks.filter { existed ->
-                    response.bookmarks.none { it.user == existed.user }
+                    bookmarks.none { it.user == existed.user }
                 }
-                val new = response.bookmarks.map { Bookmark.create(it) }
+                val new = bookmarks.map { Bookmark.create(it) }
 
                 bookmarksEntry.postValue(
                     bEntry.copy(bookmarks = exists.plus(new).sortedByDescending { it.timestamp })
