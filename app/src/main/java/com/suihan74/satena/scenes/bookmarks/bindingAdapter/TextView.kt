@@ -20,10 +20,7 @@ import com.suihan74.satena.scenes.bookmarks.detail.tabs.StarRelationsAdapter
 import com.suihan74.utilities.BookmarkCommentDecorator
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.MutableLinkMovementMethod2
-import com.suihan74.utilities.extensions.append
-import com.suihan74.utilities.extensions.appendDrawable
-import com.suihan74.utilities.extensions.appendStarSpan
-import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -133,14 +130,18 @@ object TextViewBindingAdapters {
     @BindingAdapter(value = ["starsEntry", "timestamp"], requireAll = false)
     fun bindStarsEntry(textView: TextView, starsEntry: StarsEntry?, timestamp: LocalDateTime?) {
         val builder = SpannableStringBuilder()
+        val stars = starsEntry?.allStars
 
         timestamp?.let {
             val formatter = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
-            builder.append(it.format(formatter))
-            builder.append("\u2002\u2002") // margin
+            builder.append(
+                it.toSystemZonedDateTime("Asia/Tokyo").format(formatter)
+            )
+            if (!stars.isNullOrEmpty()) {
+                builder.append("\u2002\u2002") // margin
+            }
         }
 
-        val stars = starsEntry?.allStars
         if (!stars.isNullOrEmpty()) {
             stars.let { star ->
                 val yellowStarCount = star.filter { it.color == StarColor.Yellow }.sumBy { it.count }
