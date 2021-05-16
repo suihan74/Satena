@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.MotionEvent
 import android.webkit.URLUtil
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,6 +13,8 @@ import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.databinding.ActivityBookmarkPostBinding
+import com.suihan74.satena.models.BookmarkPostActivityGravity
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner.Companion.VIEW_MODEL_BOOKMARK_POST
@@ -89,8 +92,11 @@ class BookmarkPostActivity :
             signInLauncher.launch(intent)
         }
 
+        initializeVerticalGravity(prefs)
+
         setTheme(bookmarkPostViewModel.themeId)
-        setContentView(R.layout.activity_bookmark_post)
+        val binding = ActivityBookmarkPostBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if (supportFragmentManager.findFragmentById(R.id.main_layout) == null) {
             initializeViewModel()
@@ -99,6 +105,18 @@ class BookmarkPostActivity :
             supportFragmentManager.beginTransaction()
                 .replace(R.id.main_layout, fragment)
                 .commitAllowingStateLoss()
+        }
+    }
+
+    /** ダイアログの縦位置を変更する */
+    private fun initializeVerticalGravity(prefs: SafeSharedPreferences<PreferenceKey>) {
+        when (val setting = BookmarkPostActivityGravity.fromOrdinal(prefs.getInt(PreferenceKey.POST_BOOKMARK_VERTICAL_GRAVITY))) {
+            BookmarkPostActivityGravity.DEFAULT -> return
+            else -> {
+                window.attributes = window.attributes.also {
+                    it.gravity = (Gravity.VERTICAL_GRAVITY_MASK and setting.gravity) or Gravity.CENTER_HORIZONTAL
+                }
+            }
         }
     }
 
