@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks.bindingAdapter
 
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
@@ -19,10 +20,7 @@ import com.suihan74.satena.scenes.bookmarks.detail.tabs.StarRelationsAdapter
 import com.suihan74.utilities.BookmarkCommentDecorator
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.MutableLinkMovementMethod2
-import com.suihan74.utilities.extensions.append
-import com.suihan74.utilities.extensions.appendDrawable
-import com.suihan74.utilities.extensions.appendStarSpan
-import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.*
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -114,10 +112,10 @@ object TextViewBindingAdapters {
     fun bindStarRelationText(textView: TextView, item: StarRelationsAdapter.Item?) {
         textView.text = buildString {
             item?.star?.quote?.let {
-                if (it.isNotBlank()) append("\"$it\"\n")
+                if (it.isNotBlank()) append("\"${Uri.decode(it)}\"\n")
             }
             item?.comment?.let {
-                append(it)
+                append(Uri.decode(it))
             }
         }
     }
@@ -132,14 +130,18 @@ object TextViewBindingAdapters {
     @BindingAdapter(value = ["starsEntry", "timestamp"], requireAll = false)
     fun bindStarsEntry(textView: TextView, starsEntry: StarsEntry?, timestamp: LocalDateTime?) {
         val builder = SpannableStringBuilder()
+        val stars = starsEntry?.allStars
 
         timestamp?.let {
             val formatter = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
-            builder.append(it.format(formatter))
-            builder.append("\u2002\u2002") // margin
+            builder.append(
+                it.toSystemZonedDateTime("Asia/Tokyo").format(formatter)
+            )
+            if (!stars.isNullOrEmpty()) {
+                builder.append("\u2002\u2002") // margin
+            }
         }
 
-        val stars = starsEntry?.allStars
         if (!stars.isNullOrEmpty()) {
             stars.let { star ->
                 val yellowStarCount = star.filter { it.color == StarColor.Yellow }.sumBy { it.count }
