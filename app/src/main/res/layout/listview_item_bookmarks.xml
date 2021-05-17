@@ -11,6 +11,7 @@
 
     <ImageView
             android:id="@+id/bookmark_user_icon"
+            android:contentDescription="@string/description_bookmark_user_icon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_width="48dp"
@@ -24,6 +25,7 @@
             app:tint="?attr/tagTextColor"
             android:visibility="gone"
             tools:visibility="visible"
+            android:contentDescription="@string/description_private_mark"
             app:layout_constraintTop_toBottomOf="@id/bookmark_user_icon"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/bookmark_user_icon"
@@ -38,6 +40,7 @@
             app:tint="?attr/tagTextColor"
             android:visibility="gone"
             tools:visibility="visible"
+            android:contentDescription="@string/description_ignored_mark"
             app:layout_constraintTop_toBottomOf="@id/bookmark_user_icon"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/private_mark"
