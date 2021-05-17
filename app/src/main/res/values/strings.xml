@@ -746,7 +746,7 @@
     <string name="browser_bookmarks_confirmation_title">確認</string>
     <string name="browser_bookmarks_confirmation_description">表示中のページのURLをHatenaに送信してブックマーク情報を取得します。よろしいですか？</string>
     <string name="browser_bookmarks_confirmation_enter">実行</string>
-    <string name="browser_bookmarks_confirmation_not_show_again">次回から自動で読み込む</string>
+    <string name="browser_bookmarks_confirmation_not_show_again">今後確認画面を使用しない</string>
 
     <!-- エントリ画面からブラウザを開く際のショートカット選択ダイアログ -->
     <string name="dialog_browser_shortcut_title">アプリ内ブラウザを開く</string>
