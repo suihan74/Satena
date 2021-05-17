@@ -20,4 +20,5 @@
     <string name="description_bookmark_user_icon">ユーザーアイコン</string>
     <string name="description_ignored_mark">非表示ユーザー</string>
     <string name="description_private_mark">非公開ブクマ</string>
+    <string name="description_select_posting_star">スターを選択する</string>
 </resources>

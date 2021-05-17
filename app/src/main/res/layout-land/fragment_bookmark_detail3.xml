@@ -400,7 +400,8 @@
                 app:backgroundTint="?colorPrimary"
                 app:layout_anchor="@id/bookmark_detail_layout"
                 app:layout_anchorGravity="bottom|end|right"
-                android:contentDescription="@null"
+                app:tooltipText="@{@string/description_select_posting_star}"
+                android:contentDescription="@string/description_select_posting_star"
                 android:layout_marginEnd="24dp"
                 android:layout_marginBottom="24dp"/>
 
