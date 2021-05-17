@@ -400,7 +400,7 @@ class EntriesRepository(
 
         // ブクマ自体のページを取得する
         var tasks: List<Deferred<BookmarkPage?>>? = null
-        var myBookmarks: List<Deferred<BookmarkPage?>>? = null
+        val myBookmarks = HashMap<Long, Deferred<BookmarkPage?>>()
         coroutineScope {
             tasks = data.map { async {
                 try {
@@ -414,21 +414,28 @@ class EntriesRepository(
 
             // 自分のブクマを取得する(StarReportでは無視)
             val accountUser = client.account?.name ?: ""
-            myBookmarks = data.map { async {
-                if (it.user == accountUser) null
-                else {
-                    try {
-                        client.getBookmarkPageAsync(it.eid, accountUser).await()
+            data
+                .groupBy { it.eid }
+                .forEach {
+                    if (myBookmarks.containsKey(it.key)) return@forEach
+                    val task = async {
+                        if (it.value.any { b -> b.user == accountUser }) null
+                        else {
+                            try {
+                                client.getBookmarkPageAsync(it.key, accountUser).await()
+                            }
+                            catch (e: Throwable) {
+                                Log.i("not_bookmarked", Log.getStackTraceString(e))
+                                null
+                            }
+                        }
                     }
-                    catch (e: Throwable) {
-                        Log.i("not_bookmarked", Log.getStackTraceString(e))
-                        null
-                    }
+                    myBookmarks[it.key] = task
                 }
-            } }
         }
 
-        return (tasks ?: emptyList()).mapIndexedNotNull { index, deferred ->
+        return (tasks ?: emptyList())
+            .mapIndexedNotNull { index, deferred ->
                 if (deferred.isCancelled) return@mapIndexedNotNull null
 
                 val eid = data[index].eid
@@ -454,25 +461,8 @@ class EntriesRepository(
                         )
                     }
                     else {
-                        val myBookmark = myBookmarks?.get(index)?.await()?.let { my ->
-                            BookmarkResult(
-                                user = my.user,
-                                comment = my.comment.body,
-                                tags = my.comment.tags,
-                                timestamp = my.timestamp,
-                                userIconUrl = client.getUserIconUrl(my.user),
-                                commentRaw = my.comment.raw,
-                                permalink = data[index].url,
-                                success = true,
-                                private = false,
-                                eid = eid,
-                                starsCount = null
-                            )
-                        }
-
                         bookmark.entry.copy(
                             rootUrl = Uri.parse(bookmark.entry.url)?.encodedPath ?: bookmark.entry.url,
-                            bookmarkedData = myBookmark,
                             myhotentryComments = listOf(bookmarkedData)
                         )
                     }
@@ -481,8 +471,30 @@ class EntriesRepository(
                     Log.i("test", Log.getStackTraceString(e))
                     null
                 }
-            }.groupBy { it.id }
-            .map { it.value.first() }
+            }
+            .groupBy { it.url }
+            .map {
+                val entries = it.value
+                val entry = entries.first()
+                entry.copy(
+                    bookmarkedData = entry.bookmarkedData ?: myBookmarks[entry.id]?.await()?.let { my ->
+                        BookmarkResult(
+                            user = my.user,
+                            comment = my.comment.body,
+                            tags = my.comment.tags,
+                            timestamp = my.timestamp,
+                            userIconUrl = client.getUserIconUrl(my.user),
+                            commentRaw = my.comment.raw,
+                            permalink = client.getBookmarkCommentUrl(entry.id, my.user),
+                            success = true,
+                            private = false,
+                            eid = entry.id,
+                            starsCount = null
+                        )
+                    },
+                    myhotentryComments = entries.flatMap { it.myHotEntryComments.orEmpty() }
+                )
+            }
     }
 
     /** エントリを検索する */

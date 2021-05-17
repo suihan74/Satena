@@ -87,8 +87,8 @@ internal class TimestampDeserializer(
         LocalDateTime.parse(json!!.asString, dateTimeFormatter)
 }
 
-internal class EpochTimeDeserializer(
-    private val zoneId: ZoneId = ZoneId.systemDefault()
+internal open class EpochTimeDeserializer(
+    private val zoneId: ZoneId = ZoneId.of("Asia/Tokyo")
 ) : JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
 
     override fun serialize(
