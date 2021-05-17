@@ -38,7 +38,7 @@
                         android:id="@+id/user_icon"
                         src="@{vm.bookmark.userIconUrl}"
                         tools:foreground="#FF00FF"
-                        android:contentDescription="@null"
+                        android:contentDescription="@string/description_bookmark_user_icon"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="16dp"
@@ -50,14 +50,28 @@
 
                 <ImageView
                         android:id="@+id/ignored_user_mark"
-                        android:contentDescription="@string/ignored_user"
-                        android:visibility="@{vm.ignored}"
-                        app:tooltipText="@{@string/ignored_user}"
                         app:srcCompat="@drawable/bookmark_detail_ignored_user_mark"
+                        app:tooltipText="@{@string/description_ignored_mark}"
+                        android:contentDescription="@string/description_ignored_mark"
+                        android:visibility="@{vm.ignored}"
                         app:layout_constraintBottom_toBottomOf="@id/user_icon"
                         app:layout_constraintEnd_toEndOf="@id/user_icon"
                         android:layout_width="24dp"
                         android:layout_height="24dp"/>
+
+                <ImageView
+                        android:id="@+id/private_mark"
+                        app:srcCompat="@drawable/ic_baseline_lock"
+                        app:tint="?attr/tagTextColor"
+                        app:tooltipText="@{@string/description_private_mark}"
+                        android:contentDescription="@string/description_private_mark"
+                        android:visibility="@{vm.bookmark.private}"
+                        tools:visibility="visible"
+                        android:layout_marginTop="4dp"
+                        app:layout_constraintTop_toBottomOf="@id/user_icon"
+                        app:layout_constraintStart_toStartOf="@id/user_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"/>
 
                 <TextView
                         android:id="@+id/user_name"
@@ -392,7 +406,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
-                android:contentDescription="@null"
+                app:tooltipText="@{@string/description_select_posting_star}"
+                android:contentDescription="@string/description_select_posting_star"
                 android:src="@drawable/ic_add_star_filled"
                 android:tint="@android:color/white"
                 app:backgroundTint="?colorPrimary"
