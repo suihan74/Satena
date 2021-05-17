@@ -10,14 +10,12 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.databinding.FragmentBookmarksFabs3Binding
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
-import kotlinx.coroutines.launch
 
 /** 画面下部FAB部分のFragment */
 class FloatingActionButtonsFragment : Fragment() {
@@ -68,12 +66,6 @@ class FloatingActionButtonsFragment : Fragment() {
 
         // FAB初期化
         initFABs(binding)
-
-        bookmarksViewModel.filteringText.observe(viewLifecycleOwner) {
-            lifecycleScope.launch {
-                bookmarksViewModel.repository.refreshBookmarks()
-            }
-        }
 
         // 戻るボタンを監視
         onBackPressedCallbackForKeyword = requireActivity().onBackPressedDispatcher.addCallback(
