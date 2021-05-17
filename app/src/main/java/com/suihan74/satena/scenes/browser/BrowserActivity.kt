@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.browser
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.webkit.WebView
 import androidx.annotation.MainThread
@@ -10,6 +11,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -27,6 +29,7 @@ import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.touchSlop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -323,7 +326,20 @@ class BrowserActivity :
             else closeDrawer()
         })
 
+        setDrawerViewPagerSensitivity(drawerViewPager)
         setDrawerSwipeClosable(drawerTabLayout.selectedTabPosition)
+    }
+
+    /**
+     * ドロワタブの遷移感度を下げる
+     * TODO: ユーザーが感度を設定できるようにする
+     */
+    private fun setDrawerViewPagerSensitivity(viewPager: ViewPager2) {
+        runCatching {
+            viewPager.touchSlop = viewPager.touchSlop * 4
+        }.onFailure {
+            Log.e("viewPager2", Log.getStackTraceString(it))
+        }
     }
 
     @SuppressLint("RtlHardcoded")
