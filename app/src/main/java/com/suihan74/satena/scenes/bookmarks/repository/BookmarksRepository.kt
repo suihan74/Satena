@@ -23,6 +23,9 @@ import com.suihan74.utilities.extensions.updateFirstOrPlusAhead
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 /**
  * ブクマ画面用のリポジトリ
@@ -585,11 +588,11 @@ class BookmarksRepository(
         val keywordsRaw = filteringText.value
         if (keywordsRaw.isNullOrBlank()) return src
 
-        val keywords = keywordsRaw.split(Regex("""\s+"""))
+        val keywords = keywordsRaw.toLowerCase(Locale.JAPANESE).split(Regex("""\s+"""))
         val keywordsRegex = Regex(keywords.joinToString(separator = "|") { Regex.escape(it) })
 
         return src.filter { b ->
-            keywordsRegex.containsMatchIn(b.string)
+            keywordsRegex.containsMatchIn(b.string.toLowerCase(Locale.JAPANESE))
         }
     }
 
