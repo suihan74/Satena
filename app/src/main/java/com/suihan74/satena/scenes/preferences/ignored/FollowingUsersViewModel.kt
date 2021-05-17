@@ -184,7 +184,9 @@ class FollowingUsersViewModel(
         }
 
         if (result.isSuccess) {
-            allFollowings.value = allFollowings.value?.plus(user)
+            allFollowings.postValue(
+                allFollowings.value?.plus(user)
+            )
             activity.showToast(R.string.msg_follow_user_succeeded, user)
         }
         else {
@@ -201,7 +203,9 @@ class FollowingUsersViewModel(
         }
 
         if (result.isSuccess) {
-            allFollowings.value = allFollowings.value?.filterNot { it == user }
+            allFollowings.postValue(
+                allFollowings.value?.filterNot { it == user }
+            )
             activity.showToast(R.string.msg_unfollow_user_succeeded, user)
         }
         else {
