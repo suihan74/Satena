@@ -711,6 +711,7 @@
 
     <string name="browser_menu_back_stack">戻る/進む</string>
     <string name="browser_menu_bookmarks">ブクマ画面を表示</string>
+    <string name="browser_menu_web_gyotaku">web魚拓</string>
     <string name="browser_menu_share">共有</string>
     <string name="browser_menu_add_blocking">ブロック設定を追加</string>
     <string name="browser_menu_adblock">AdBlock</string>

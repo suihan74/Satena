@@ -536,6 +536,13 @@ class BrowserViewModel(
             true
         }
 
+        R.id.web_gyotaku -> {
+            url.value?.let { url ->
+                goAddress("https://gyo.tc/$url")
+            }
+            true
+        }
+
         R.id.share -> {
             share(url.value!!, activity)
             true
