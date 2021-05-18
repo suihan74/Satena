@@ -32,6 +32,7 @@ import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.browser.keyword.HatenaKeywordPopup
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteRegistrationDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.Listener
@@ -417,7 +418,7 @@ class BrowserViewModel(
                 R.string.browser_link_menu_open_bookmarks,
             )) { _, which -> when(which) {
                 0 -> goAddress(url)
-                1 -> share(url, activity)
+                1 -> share(url, null, activity)
                 2 -> openBookmarksActivity(url, activity)
             } }
             .setNegativeButton(R.string.dialog_close)
@@ -466,7 +467,7 @@ class BrowserViewModel(
                 R.string.browser_link_menu_save_image
             )) { _, which -> when(which) {
                 0 -> goAddress(linkUrl)
-                1 -> share(linkUrl, activity)
+                1 -> share(linkUrl, null, activity)
                 2 -> openBookmarksActivity(linkUrl, activity)
                 3 -> goAddress(imageUrl)
                 4 -> shareImage(imageUrl, activity)
@@ -544,7 +545,7 @@ class BrowserViewModel(
         }
 
         R.id.share -> {
-            share(url.value!!, activity)
+            share(url.value!!, title.value, activity)
             true
         }
 
@@ -618,15 +619,9 @@ class BrowserViewModel(
     }
 
     /** リンクを共有 */
-    private fun share(url: String, activity: BrowserActivity) {
-        val intent = Intent().also {
-            it.action = Intent.ACTION_SEND
-            it.type = "text/plain"
-            it.putExtra(Intent.EXTRA_TEXT, url)
-        }
-        runCatching {
-            activity.startActivity(intent)
-        }
+    private fun share(url: String, title: String?, activity: BrowserActivity) {
+        ShareEntryDialog.createInstance(url, title)
+            .show(activity.supportFragmentManager, "")
     }
 
     /** 画像を共有 */

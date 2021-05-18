@@ -184,7 +184,7 @@
     <string name="share_bookmark_failure">処理失敗しました</string>
 
     <!-- エントリ「共有」ダイアログ -->
-    <string name="share_entry_title">エントリを共有</string>
+    <string name="share_entry_title">ページを共有</string>
     <string name="share_entry_copy_label">クリップボードにコピー</string>
     <string name="share_entry_share_label">共有</string>
     <string name="share_entry_open_browser_label">ブラウザで開く</string>
