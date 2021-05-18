@@ -26,10 +26,7 @@ import com.suihan74.satena.scenes.post.BookmarkPostViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
-import com.suihan74.utilities.extensions.alsoAs
-import com.suihan74.utilities.extensions.getThemeColor
-import com.suihan74.utilities.extensions.hideSoftInputMethod
-import com.suihan74.utilities.extensions.touchSlop
+import com.suihan74.utilities.extensions.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -326,17 +323,23 @@ class BrowserActivity :
             else closeDrawer()
         })
 
-        setDrawerViewPagerSensitivity(drawerViewPager)
+        val defaultTouchSlop = drawerViewPager.touchSlop
+        setDrawerViewPagerSensitivity(drawerViewPager, defaultTouchSlop)
         setDrawerSwipeClosable(drawerTabLayout.selectedTabPosition)
+
+        viewModel.drawerPagerTouchSlopScale.observe(this, observerForOnlyUpdates {
+            setDrawerViewPagerSensitivity(drawerViewPager, defaultTouchSlop)
+        })
     }
 
     /**
      * ドロワタブの遷移感度を下げる
      * TODO: ユーザーが感度を設定できるようにする
      */
-    private fun setDrawerViewPagerSensitivity(viewPager: ViewPager2) {
+    private fun setDrawerViewPagerSensitivity(viewPager: ViewPager2, defaultTouchSlop: Int) {
         runCatching {
-            viewPager.touchSlop = viewPager.touchSlop * 4
+            val scale = 1 / (viewModel.drawerPagerTouchSlopScale.value ?: 1f)
+            viewPager.touchSlop = (defaultTouchSlop * scale).toInt()
         }.onFailure {
             Log.e("viewPager2", Log.getStackTraceString(it))
         }

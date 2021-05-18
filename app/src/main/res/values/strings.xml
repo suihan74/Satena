@@ -430,6 +430,7 @@
     <string name="pref_browser_section_browser">ブラウザ</string>
     <string name="pref_browser_section_display">表示</string>
     <string name="pref_browser_section_features">機能</string>
+    <string name="pref_browser_section_behavior">振る舞い</string>
     <string name="pref_browser_section_bookmarks">ブックマーク</string>
     <string name="pref_browser_section_refresh">キャッシュ・クッキー</string>
     <string name="pref_browser_section_optimize">最適化</string>
@@ -482,6 +483,8 @@
 
     <string name="pref_browser_initial_bookmarks_list_desc">最初に表示するブクマリスト</string>
     <string name="browser_bookmarks_list_same_as_bookmarks">ブクマ画面の初期表示タブと同じ</string>
+
+    <string name="pref_browser_drawer_pager_touch_slop_desc">ドロワタブ切替えのスワイプ感度</string>
 
     <!-- お気に入りサイト -->
     <string name="dialog_favorite_sites_open">開く</string>

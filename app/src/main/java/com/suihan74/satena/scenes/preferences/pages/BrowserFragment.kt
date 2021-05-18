@@ -71,6 +71,8 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     private val initialBookmarksList get() = browserRepo.initialBookmarksList
 
+    private val drawerPagerTouchSlopScale get() = browserRepo.drawerPagerTouchSlopScale
+
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
@@ -165,6 +167,23 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         }
         addPrefItem(fragment, userAgent, R.string.pref_browser_user_agent_desc) {
             openUserAgentEditingDialog(fragmentManager)
+        }
+
+        // --- //
+
+        addSection(R.string.pref_browser_section_behavior)
+        addButton(fragment, R.string.pref_browser_drawer_pager_touch_slop_desc) {
+            SliderDialog.createInstance(
+                titleId = R.string.pref_browser_drawer_pager_touch_slop_desc,
+                messageId = null,
+                min = 1/10f,
+                max = 1f,
+                value = drawerPagerTouchSlopScale.value ?: 1f
+            )
+                .setOnCompleteListener { value, _ ->
+                    drawerPagerTouchSlopScale.value = value
+                }
+                .show(fragmentManager, "")
         }
 
         // --- //

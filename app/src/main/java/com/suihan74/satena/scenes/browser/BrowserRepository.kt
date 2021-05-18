@@ -130,6 +130,12 @@ class BrowserRepository(
             }
         }
 
+    /** ドロワページャのスワイプ感度 */
+    val drawerPagerTouchSlopScale =
+        createBrowserSettingsLiveData(BrowserSettingsKey.DRAWER_PAGER_TOUCH_SLAP_SCALE) { p, key ->
+            p.getFloat(key)
+        }
+
     private var _blockUrlsRegex : Regex? = null
 
     /** ブロックするURL判別用の正規表現 */
