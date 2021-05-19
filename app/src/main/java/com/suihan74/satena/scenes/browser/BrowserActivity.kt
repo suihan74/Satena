@@ -334,7 +334,6 @@ class BrowserActivity :
 
     /**
      * ドロワタブの遷移感度を下げる
-     * TODO: ユーザーが感度を設定できるようにする
      */
     private fun setDrawerViewPagerSensitivity(viewPager: ViewPager2, defaultTouchSlop: Int) {
         runCatching {

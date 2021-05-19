@@ -120,6 +120,11 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         PreferenceKey.ENTRIES_HIDING_TOOLBAR_BY_SCROLLING
     )
 
+    /** タブ移動のスワイプ感度 */
+    private val pagerScrollSensitivity = createLiveData<Float>(
+        PreferenceKey.ENTRIES_PAGER_SCROLL_SENSITIVITY
+    )
+
     /** ブクマ閲覧履歴の最大保存数 */
     val historyMaxSize = createLiveData<EntriesHistoryKey, Int>(
         historyPrefs,
@@ -252,6 +257,18 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         addSection(R.string.pref_entry_section_behavior)
         addPrefToggleItem(fragment, menuTapGuard, R.string.pref_entries_menu_tap_guard_desc)
         addPrefToggleItem(fragment, hideToolbarWithScroll, R.string.pref_entries_hiding_toolbar_by_scrolling_desc)
+        addButton(fragment, R.string.pref_pager_scroll_sensitivity_desc) {
+            SliderDialog.createInstance(
+                titleId = R.string.pref_pager_scroll_sensitivity_desc,
+                messageId = null,
+                min = 0.1f,
+                max = 1f,
+                value = pagerScrollSensitivity.value ?: 1f
+            ).setOnCompleteListener { value, _ ->
+                pagerScrollSensitivity.value = value
+            }
+                .show(fragmentManager, "")
+        }
 
         // --- //
 

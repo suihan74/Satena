@@ -81,6 +81,11 @@ class BookmarkViewModel(
         PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING
     )
 
+    /** タブのスワイプ感度 */
+    private val pagerScrollSensitivity = createLiveData<Float>(
+        PreferenceKey.BOOKMARKS_PAGER_SCROLL_SENSITIVITY
+    )
+
     /** 「すべて」タブでは非表示ブクマを表示する */
     private val displayMutedBookmarksInAllBookmarksTab = createLiveData<Boolean>(
         PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS
@@ -274,6 +279,18 @@ class BookmarkViewModel(
         addPrefToggleItem(fragment, useAddStarPopupMenu, R.string.pref_bookmarks_using_add_star_popup_menu_desc)
         addPrefToggleItem(fragment, toggleToolbarByScrolling, R.string.pref_bookmarks_hiding_toolbar_by_scrolling)
         addPrefToggleItem(fragment, toggleButtonsByScrolling, R.string.pref_bookmarks_hiding_buttons_with_scrolling_desc)
+        addButton(fragment, R.string.pref_pager_scroll_sensitivity_desc) {
+            SliderDialog.createInstance(
+                titleId = R.string.pref_pager_scroll_sensitivity_desc,
+                messageId = null,
+                min = 0.1f,
+                max = 1f,
+                value = pagerScrollSensitivity.value ?: 1f
+            ).setOnCompleteListener { value, _ ->
+                pagerScrollSensitivity.value = value
+            }
+            .show(fragmentManager, "")
+        }
 
         // --- //
 

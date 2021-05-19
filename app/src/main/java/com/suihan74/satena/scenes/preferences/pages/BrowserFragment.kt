@@ -176,7 +176,7 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
             SliderDialog.createInstance(
                 titleId = R.string.pref_browser_drawer_pager_touch_slop_desc,
                 messageId = null,
-                min = 1/10f,
+                min = 0.1f,
                 max = 1f,
                 value = drawerPagerTouchSlopScale.value ?: 1f
             )

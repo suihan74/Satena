@@ -163,6 +163,10 @@ class EntriesRepository(
     val hideBottomAppBarByScroll : Boolean
         get() = prefs.getBoolean(PreferenceKey.ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING)
 
+    /** タブページャのスワイプ感度 */
+    val pagerScrollSensitivity : Float
+        get() = prefs.getFloat(PreferenceKey.ENTRIES_PAGER_SCROLL_SENSITIVITY)
+
     /** カテゴリリストの表示形式 */
     val categoriesMode : CategoriesMode
         get() = CategoriesMode.fromOrdinal(prefs.getInt(PreferenceKey.ENTRIES_CATEGORIES_MODE))

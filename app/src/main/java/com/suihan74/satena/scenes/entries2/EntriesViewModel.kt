@@ -99,6 +99,10 @@ class EntriesViewModel(
     val hideBottomAppBarByScroll : Boolean
         get() = repository.hideBottomAppBarByScroll
 
+    /** タブページャのスワイプ感度 */
+    val pagerScrollSensitivity : Float
+        get() = repository.pagerScrollSensitivity
+
     /** カテゴリリストの表示形式 */
     val categoriesMode : CategoriesMode
         get() = repository.categoriesMode
