@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.preferences
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import androidx.annotation.StringRes
@@ -10,6 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogSliderBinding
+import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.extensions.getIntOrNull
 import com.suihan74.utilities.extensions.withArguments
@@ -47,8 +48,8 @@ class SliderDialog : DialogFragment() {
     // ------ //
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = AlertDialog.Builder(requireContext())
-        val binding = FragmentDialogSliderBinding.inflate(layoutInflater, null, false).also {
+        val builder = createBuilder()
+        val binding = FragmentDialogSliderBinding.inflate(localLayoutInflater(), null, false).also {
             it.vm = viewModel
             it.lifecycleOwner = this
         }
