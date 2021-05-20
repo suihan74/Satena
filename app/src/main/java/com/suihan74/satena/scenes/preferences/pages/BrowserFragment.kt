@@ -175,7 +175,7 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         addButton(fragment, R.string.pref_browser_drawer_pager_touch_slop_desc) {
             SliderDialog.createInstance(
                 titleId = R.string.pref_browser_drawer_pager_touch_slop_desc,
-                messageId = null,
+                messageId = R.string.pref_pager_scroll_sensitivity_dialog_message,
                 min = 0.1f,
                 max = 1f,
                 value = drawerPagerTouchSlopScale.value ?: 1f

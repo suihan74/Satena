@@ -282,7 +282,7 @@ class BookmarkViewModel(
         addButton(fragment, R.string.pref_pager_scroll_sensitivity_desc) {
             SliderDialog.createInstance(
                 titleId = R.string.pref_pager_scroll_sensitivity_desc,
-                messageId = null,
+                messageId = R.string.pref_pager_scroll_sensitivity_dialog_message,
                 min = 0.1f,
                 max = 1f,
                 value = pagerScrollSensitivity.value ?: 1f

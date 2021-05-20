@@ -213,6 +213,7 @@
     <string name="msg_pref_information_load_failed">設定の読み込みに失敗しました</string>
 
     <string name="pref_pager_scroll_sensitivity_desc">タブ移動のスクロール感度</string>
+    <string name="pref_pager_scroll_sensitivity_dialog_message">スライダーを左に移動するとスクロール感度が低くなります</string>
 
     <!-- 設定項目の説明 -->
     <string name="pref_title_information">情報</string>
