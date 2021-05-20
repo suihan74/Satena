@@ -100,7 +100,7 @@ enum class Category(
 
     Followings(id = 23,
         R.string.category_followings,
-        R.drawable.ic_star,
+        R.drawable.ic_category_followings,
         requireSignedIn = true,
         singleColumns = true
     ),

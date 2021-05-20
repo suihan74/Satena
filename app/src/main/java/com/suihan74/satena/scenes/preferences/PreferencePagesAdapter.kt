@@ -80,7 +80,7 @@ enum class PreferencesTab(
 
     FOLLOWED_USERS(
         R.string.pref_title_followings,
-        R.drawable.ic_user_tag,
+        R.drawable.ic_category_followings,
         { FollowingUsersFragment.createInstance() }
     ),
 
