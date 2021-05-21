@@ -131,8 +131,8 @@ class BrowserRepository(
         }
 
     /** ドロワページャのスワイプ感度 */
-    val drawerPagerTouchSlopScale =
-        createBrowserSettingsLiveData(BrowserSettingsKey.DRAWER_PAGER_TOUCH_SLAP_SCALE) { p, key ->
+    val drawerPagerScrollSensitivity =
+        createBrowserSettingsLiveData(BrowserSettingsKey.DRAWER_PAGER_SCROLL_SENSITIVITY) { p, key ->
             p.getFloat(key)
         }
 

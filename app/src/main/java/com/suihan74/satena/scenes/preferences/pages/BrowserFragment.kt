@@ -71,7 +71,7 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     private val initialBookmarksList get() = browserRepo.initialBookmarksList
 
-    private val drawerPagerTouchSlopScale get() = browserRepo.drawerPagerTouchSlopScale
+    private val drawerPagerTouchSlopScale get() = browserRepo.drawerPagerScrollSensitivity
 
     // ------ //
 

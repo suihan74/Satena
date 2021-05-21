@@ -52,7 +52,7 @@ enum class BrowserSettingsKey (
     USE_URL_BLOCKING(typeInfo<Boolean>(), true),
 
     /** ドロワタブページャのスワイプ感度のデフォルトからの相対的な値 */
-    DRAWER_PAGER_TOUCH_SLAP_SCALE(typeInfo<Float>(), 1f),
+    DRAWER_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
 
     /** ブロックURLリスト */
     @Suppress("SpellCheckingInspection")
