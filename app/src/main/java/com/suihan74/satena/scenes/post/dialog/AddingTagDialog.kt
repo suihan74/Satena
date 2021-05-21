@@ -14,6 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogAddingTagBinding
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner
 import com.suihan74.satena.scenes.post.TagsListAdapter
 import com.suihan74.utilities.Listener
@@ -47,7 +48,7 @@ class AddingTagDialog : BottomSheetDialogFragment() {
             return null
         }
 
-        _binding = FragmentDialogAddingTagBinding.inflate(inflater, container, false)
+        _binding = FragmentDialogAddingTagBinding.inflate(localLayoutInflater(), container, false)
 
         binding.editText.setOnEditorActionListener { _, i, _ ->
             when (i) {
