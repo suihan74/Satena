@@ -155,6 +155,9 @@ enum class PreferenceKey(
     /** タブ部分をロングタップしてホームカテゴリ・ホームタブを変更できるようにする */
     ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB(typeInfo<Boolean>(), true),
 
+    /** タブのスワイプ感度 */
+    ENTRIES_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
+
     /** 「あとで読む」エントリを「読んだ」したときの挙動 */
     ENTRY_READ_ACTION_TYPE(typeInfo<Int>(), EntryReadActionType.SILENT_BOOKMARK.ordinal),
 
@@ -195,6 +198,9 @@ enum class PreferenceKey(
     /** 最後に開いた投稿ダイアログでのプライベート選択状態 */
     POST_BOOKMARK_PRIVATE_DEFAULT_CHECKED(typeInfo<Boolean>(), false),
 
+    /** 投稿ダイアログの表示位置(Y) */
+    POST_BOOKMARK_VERTICAL_GRAVITY(typeInfo<Int>(), BookmarkPostActivityGravity.DEFAULT.ordinal),
+
     /** 最初に表示するタブ */
     BOOKMARKS_INITIAL_TAB(typeInfo<Int>(), BookmarksTabType.POPULAR.ordinal),
 
@@ -212,6 +218,9 @@ enum class PreferenceKey(
 
     /** リストスクロールにあわせてツールバーを隠す */
     BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING(typeInfo<Boolean>(), false),
+
+    /** タブのスワイプ感度 */
+    BOOKMARKS_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
 
     /** ブクマ一覧画面のリスト項目から直接スターを付けられるようにする */
     BOOKMARKS_USE_ADD_STAR_POPUP_MENU(typeInfo<Boolean>(), true),

@@ -23,6 +23,9 @@ import com.suihan74.satena.databinding.ActivityPreferencesBinding
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.backup.Credentials
+import com.suihan74.satena.scenes.preferences.ignored.FollowingUsersViewModel
+import com.suihan74.satena.scenes.preferences.ignored.PreferencesIgnoredUsersViewModel
+import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
 import com.suihan74.satena.scenes.tools.RestartActivity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -48,12 +51,49 @@ class PreferencesActivity : AppCompatActivity() {
     // ------ //
 
     class ActivityViewModel : ViewModel() {
-        val currentTab : MutableLiveData<PreferencesTabMode> by lazy {
-            MutableLiveData(PreferencesTabMode.INFORMATION)
+        val currentTab : MutableLiveData<PreferencesTab> by lazy {
+            MutableLiveData(PreferencesTab.INFORMATION)
         }
     }
 
     val viewModel by lazyProvideViewModel { ActivityViewModel() }
+
+    /** ユーザー関係のリポジトリ */
+    private val userRelationRepository by lazy {
+        UserRelationRepository(SatenaApplication.instance.accountLoader)
+    }
+
+    private val followingsViewModelDelegate = lazyProvideViewModel {
+        FollowingUsersViewModel(userRelationRepository)
+    }
+    /** フォロー/フォロワー用ViewModel */
+    val followingsViewModel by followingsViewModelDelegate
+
+    private val ignoredUsersViewModelDelegate = lazyProvideViewModel {
+        PreferencesIgnoredUsersViewModel(userRelationRepository)
+    }
+    /** 非表示ユーザー用ViewModel */
+    val ignoredUsersViewModel by ignoredUsersViewModelDelegate
+
+    // ------ //
+
+    /** はてなにサインイン完了した際にユーザー情報を再読み込みする */
+    val hatenaAuthenticationLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            if (followingsViewModelDelegate.isInitialized()) {
+                lifecycleScope.launch {
+                    followingsViewModel.loadList(refreshAll = true)
+                }
+            }
+            if (ignoredUsersViewModelDelegate.isInitialized()) {
+                lifecycleScope.launch {
+                    ignoredUsersViewModel.loadList()
+                }
+            }
+        }
+    }
 
     // ------ //
 
@@ -75,7 +115,7 @@ class PreferencesActivity : AppCompatActivity() {
         themeChanged = intent.getBooleanExtra(EXTRA_THEME_CHANGED, false)
 
         // 初期タブが指定されている場合
-        intent.getObjectExtra<PreferencesTabMode>(EXTRA_CURRENT_TAB)?.let {
+        intent.getObjectExtra<PreferencesTab>(EXTRA_CURRENT_TAB)?.let {
             viewModel.currentTab.value = it
         }
 
@@ -99,7 +139,7 @@ class PreferencesActivity : AppCompatActivity() {
         // アイコンメニュー
         binding.menuRecyclerView.adapter = PreferencesMenuAdapter(this).also { adapter ->
             adapter.setOnClickListener {
-                binding.preferencesViewPager.setCurrentItem(it.int, false)
+                binding.preferencesViewPager.setCurrentItem(it.ordinal, false)
             }
 
             viewModel.currentTab.observe(this, {
@@ -119,22 +159,22 @@ class PreferencesActivity : AppCompatActivity() {
                     super.onPageSelected(position)
 
                     jumpPosition = when (position) {
-                        PreferencesTabMode.DUMMY_HEAD.int -> tabAdapter.getActualCount()
-                        PreferencesTabMode.DUMMY_TAIL.int -> 1
+                        PreferencesTab.DUMMY_HEAD.ordinal -> tabAdapter.getActualCount()
+                        PreferencesTab.DUMMY_TAIL.ordinal -> 1
                         else -> position
                     }
 
-                    val prevTabId = viewModel.currentTab.value?.int
+                    val prevTabId = viewModel.currentTab.value?.ordinal
                     if (prevTabId != null) {
                         tabAdapter.findFragment(prevTabId).alsoAs<TabItem> { fragment ->
                             fragment.onTabUnselected()
                         }
                     }
 
-                    val tab = PreferencesTabMode.fromId(jumpPosition)
+                    val tab = PreferencesTab.fromOrdinal(jumpPosition)
                     viewModel.currentTab.value = tab
 
-                    tabAdapter.findFragment(tab.int).alsoAs<TabItem> { fragment ->
+                    tabAdapter.findFragment(tab.ordinal).alsoAs<TabItem> { fragment ->
                         fragment.onTabSelected()
                     }
 
@@ -152,7 +192,7 @@ class PreferencesActivity : AppCompatActivity() {
 
         val tab = viewModel.currentTab.value!!
 
-        val position = tab.int
+        val position = tab.ordinal
         binding.preferencesViewPager.setCurrentItem(position, false)
         title = getString(R.string.pref_toolbar_title, getString(tab.titleId))
     }

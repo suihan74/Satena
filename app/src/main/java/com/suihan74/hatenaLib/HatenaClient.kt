@@ -977,6 +977,33 @@ object HatenaClient : BaseClient(), CoroutineScope {
         return@async getDigestBookmarksAsync(url, limit).await()
     }
 
+    /**
+     * ユーザーをお気に入りに追加する
+     */
+    suspend fun follow(user: String) = withContext(Dispatchers.IO) {
+        require (signedIn()) { "need to sign-in to follow an user" }
+        val userSignedIn = account!!.name
+        val url = "$B_BASE_URL/$userSignedIn/api.follow.json"
+        val params = mapOf(
+            "username" to user,
+            "rks" to account!!.rks
+        )
+        post(url, params)
+    }
+
+    /**
+     * ユーザーのお気に入りを解除する
+     */
+    suspend fun unfollow(user: String) = withContext(Dispatchers.IO) {
+        require (signedIn()) { "need to sign-in to unfollow an user" }
+        val userSignedIn = account!!.name
+        val url = "$B_BASE_URL/$userSignedIn/api.unfollow.json"
+        val params = mapOf(
+            "username" to user,
+            "rks" to account!!.rks
+        )
+        post(url, params)
+    }
 
     /**
      * お気に入りユーザーの一覧を取得する
@@ -991,14 +1018,14 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun getFollowingsAsync(user: String) : Deferred<List<String>> = async {
         val url = "$B_BASE_URL/$user/follow.json?${cacheAvoidance()}"
-        val response = getJson<FollowUserResponse>(url)
+        val response = getJson<FollowingsResponse>(url)
         return@async response.followings.map { it.name }
     }
 
     /**
      * フォロワーリストを取得する
      */
-    fun getFollowersAsync() : Deferred<List<String>> {
+    fun getFollowersAsync() : Deferred<List<Follower>> {
         require (signedIn()) { "need to sign-in to get followers" }
         return getFollowersAsync(account!!.name)
     }
@@ -1006,18 +1033,28 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * 指定ユーザーのフォロワーリストを取得する
      */
-    fun getFollowersAsync(user: String) : Deferred<List<String>> = async {
+    fun getFollowersAsync(user: String) : Deferred<List<Follower>> = async {
         val url = "$B_BASE_URL/api/internal/cambridge/user/$user/followers?${cacheAvoidance()}"
-        val response = getJson<FollowUserResponse>(url)
-        return@async response.followings.map { it.name }
+        val response = getJson<FollowersResponse>(url)
+        return@async response.followers
     }
 
     /**
      * お気に入りユーザーの最近のブクマを取得する
      */
-    fun getFollowingBookmarksAsync(includeAmpUrls: Boolean = true) : Deferred<List<BookmarkPage>> = async {
+    fun getFollowingBookmarksAsync(
+        includeAmpUrls: Boolean = true,
+        limit: Int? = null,
+        offset: Int? = null
+    ) : Deferred<List<FollowingBookmark>> = async {
         require (signedIn()) { "need to sign-in to get bookmarks of followings" }
-        val url = "$B_BASE_URL/api/internal/cambridge/user/my/feed/following/bookmarks?${cacheAvoidance()}&include_amp_urls=${includeAmpUrls.int}"
+        val url = buildString {
+            append("$B_BASE_URL/api/internal/cambridge/user/my/feed/following/bookmarks?")
+            append(cacheAvoidance())
+            append("&include_amp_urls=${includeAmpUrls.int}")
+            limit?.let { append("&limit=$it") }
+            offset?.let { append("&of=$it") }
+        }
         val response = getJson<FollowingBookmarksResponse>(url)
         return@async response.bookmarks
     }

@@ -22,7 +22,15 @@ class ShareEntryDialog : BottomSheetDialogFragment() {
     companion object {
         fun createInstance(entry: Entry) = ShareEntryDialog().also { f ->
             f.lifecycleScope.launchWhenCreated {
-                f.viewModel.entry.value = entry
+                f.viewModel.url.value = entry.url
+                f.viewModel.title.value = entry.title
+            }
+        }
+
+        fun createInstance(url: String, title: String?) = ShareEntryDialog().also { f ->
+            f.lifecycleScope.launchWhenCreated {
+                f.viewModel.url.value = url
+                f.viewModel.title.value = title
             }
         }
     }
@@ -51,13 +59,14 @@ class ShareEntryDialog : BottomSheetDialogFragment() {
     // ------ //
 
     class DialogViewModel : ShareDialogViewModel() {
-        var entry = MutableLiveData<Entry>()
+        val url = MutableLiveData<String>()
+        val title = MutableLiveData<String?>()
 
         // ------ //
 
         fun copyUrlToClipboard(fragment: DialogFragment) {
             runCatching {
-                copyTextToClipboard(fragment, entry.value!!.url)
+                copyTextToClipboard(fragment, url.value!!)
                 fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_entry_failure)
@@ -66,7 +75,7 @@ class ShareEntryDialog : BottomSheetDialogFragment() {
 
         fun openUrl(fragment: DialogFragment) {
             runCatching {
-                openLinkInBrowser(fragment, entry.value!!.url)
+                openLinkInBrowser(fragment, url.value!!)
                 fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_entry_failure)
@@ -75,7 +84,7 @@ class ShareEntryDialog : BottomSheetDialogFragment() {
 
         fun shareUrl(fragment: DialogFragment) {
             runCatching {
-                shareText(fragment, entry.value!!.url)
+                shareText(fragment, url.value!!)
                 fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_entry_failure)
@@ -84,8 +93,8 @@ class ShareEntryDialog : BottomSheetDialogFragment() {
 
         // ------ //
 
-        val entryUrl
-            get() = HatenaClient.getCommentPageUrlFromEntryUrl(entry.value!!.url)
+        private val entryUrl
+            get() = HatenaClient.getCommentPageUrlFromEntryUrl(url.value!!)
 
         fun copyEntryUrlToClipboard(fragment: DialogFragment) {
             runCatching {
@@ -117,7 +126,7 @@ class ShareEntryDialog : BottomSheetDialogFragment() {
         // ------ //
 
         val text
-            get() = entry.value!!.let { it.title + " " + it.url }
+            get() = title.value?.let { it + " " + url.value!! }.orEmpty()
 
         fun copyTitleToClipboard(fragment: DialogFragment) {
             runCatching {

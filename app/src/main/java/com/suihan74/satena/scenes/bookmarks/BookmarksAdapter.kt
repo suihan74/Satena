@@ -287,7 +287,8 @@ class BookmarksAdapter(
                 }
             }
 
-            binding.ignoredUserMark.visibility = entity.isIgnored.toVisibility(View.GONE)
+            binding.privateMark.visibility = entity.bookmark.private.toVisibility()
+            binding.ignoredUserMark.visibility = entity.isIgnored.toVisibility()
 
             // タグ
             binding.bookmarkTags.also { tagsTextView ->

@@ -163,6 +163,10 @@ class EntriesRepository(
     val hideBottomAppBarByScroll : Boolean
         get() = prefs.getBoolean(PreferenceKey.ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING)
 
+    /** タブページャのスワイプ感度 */
+    val pagerScrollSensitivity : Float
+        get() = prefs.getFloat(PreferenceKey.ENTRIES_PAGER_SCROLL_SENSITIVITY)
+
     /** カテゴリリストの表示形式 */
     val categoriesMode : CategoriesMode
         get() = CategoriesMode.fromOrdinal(prefs.getInt(PreferenceKey.ENTRIES_CATEGORIES_MODE))
@@ -231,6 +235,8 @@ class EntriesRepository(
             Category.User -> loadUserEntries(offset, params!!)
 
             Category.Memorial15th -> loadHistoricalEntries(tabPosition, params)
+
+            Category.Followings -> loadFollowingsEntries(offset)
 
             Category.FavoriteSites -> {
                 val page = params?.get<Int>(LoadEntryParameter.PAGE) ?: 0
@@ -538,6 +544,12 @@ class EntriesRepository(
             client.getUserHistoricalEntriesAsync(2005 + tabPosition, 30).await()
         else
             client.getHistoricalEntriesAsync(2005 + tabPosition).await()
+
+    /** お気に入りユーザーのエントリリストを読み込む */
+    private suspend fun loadFollowingsEntries(offset: Int? = null) : List<Entry> {
+        val bookmarks = client.getFollowingBookmarksAsync(offset = offset).await()
+        return bookmarks.map { it.toEntry() }
+    }
 
     /** お気に入りサイトのエントリリストを読み込む */
     private suspend fun loadFavoriteSitesEntries(tabPosition: Int, page: Int? = null) : List<Entry> {

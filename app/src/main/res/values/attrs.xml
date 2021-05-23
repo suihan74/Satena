@@ -3,6 +3,7 @@
     <declare-styleable name="AppTheme">
         <attr name="dividerColor" format="color"/>
         <attr name="swipeRefreshBackground" format="color"/>
+        <attr name="bookmarkDialogBackgroundColor" format="color"/>
         <attr name="bookmarkDialogBackground" format="color|reference"/>
         <attr name="entryCommentBackground" format="color"/>
         <attr name="textColorHint" format="color"/>
@@ -26,6 +27,9 @@
         <attr name="snackBarBackgroundColor" format="color"/>
         <attr name="snackBarTextColor" format="color"/>
         <attr name="snackBarActionTextColor" format="color"/>
+
+        <!-- BottomSheetDialog -->
+        <attr name="bottomSheetDialogHandleColor" format="color"/>
     </declare-styleable>
 
     <declare-styleable name="TextFloatingActionButton">

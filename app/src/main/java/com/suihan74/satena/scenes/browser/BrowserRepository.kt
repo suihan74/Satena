@@ -130,6 +130,12 @@ class BrowserRepository(
             }
         }
 
+    /** ドロワページャのスワイプ感度 */
+    val drawerPagerScrollSensitivity =
+        createBrowserSettingsLiveData(BrowserSettingsKey.DRAWER_PAGER_SCROLL_SENSITIVITY) { p, key ->
+            p.getFloat(key)
+        }
+
     private var _blockUrlsRegex : Regex? = null
 
     /** ブロックするURL判別用の正規表現 */

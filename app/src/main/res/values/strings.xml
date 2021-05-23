@@ -110,6 +110,7 @@
     <string name="category_fun">おもしろ</string>
     <string name="category_myhotentries">マイホットエントリ</string>
     <string name="category_mybookmarks">マイブックマーク</string>
+    <string name="category_followings">お気に入りユーザー</string>
     <string name="category_favorite_sites">お気に入りサイト</string>
     <!-- deprecated --><string name="category_mytags">タグ</string>
     <string name="category_search">検索</string>
@@ -166,6 +167,8 @@
     <string name="bookmark_show_comment_entry">ブクマへのブックマークを見る</string>
     <string name="bookmark_share_comment_page_url">共有</string>
     <string name="bookmark_delete">ブックマークを削除</string>
+    <string name="bookmark_follow">ユーザーをフォロー</string>
+    <string name="bookmark_unfollow">ユーザーをフォロー解除</string>
     <string name="bookmark_ignore">ユーザーを非表示</string>
     <string name="bookmark_unignore">ユーザー非表示を解除</string>
     <string name="bookmark_report">通報する</string>
@@ -181,7 +184,7 @@
     <string name="share_bookmark_failure">処理失敗しました</string>
 
     <!-- エントリ「共有」ダイアログ -->
-    <string name="share_entry_title">エントリを共有</string>
+    <string name="share_entry_title">ページを共有</string>
     <string name="share_entry_copy_label">クリップボードにコピー</string>
     <string name="share_entry_share_label">共有</string>
     <string name="share_entry_open_browser_label">ブラウザで開く</string>
@@ -209,6 +212,9 @@
     <string name="msg_pref_information_load_succeeded">設定を%sから読み込みました</string>
     <string name="msg_pref_information_load_failed">設定の読み込みに失敗しました</string>
 
+    <string name="pref_pager_scroll_sensitivity_desc">タブ移動のスクロール感度</string>
+    <string name="pref_pager_scroll_sensitivity_dialog_message">スライダーを左に移動するとスクロール感度が低くなります</string>
+
     <!-- 設定項目の説明 -->
     <string name="pref_title_information">情報</string>
     <string name="pref_title_account">アカウント</string>
@@ -218,6 +224,7 @@
     <string name="pref_title_browser">アプリ内ブラウザ</string>
     <string name="pref_title_ignored_entries">非表示URL/TEXT</string>
     <string name="pref_title_ignored_users">非表示ユーザー</string>
+    <string name="pref_title_followings">フォロー/フォロワー</string>
     <string name="pref_title_user_tags">ユーザータグ</string>
     <string name="pref_title_fonts">フォント</string>
     <!-- information -->
@@ -361,6 +368,12 @@
     <string name="pref_bookmarks_default_accounts_states">デフォルトの投稿設定</string>
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
     <string name="msg_pref_bookmarks_fetching_accounts_failed">連携SNS情報取得失敗</string>
+    <string name="pref_bookmarks_post_dialog_vertical_gravity_desc">投稿ダイアログの表示位置</string>
+
+    <string name="pref_post_dialog_gravity_default">デフォルト</string>
+    <string name="pref_post_dialog_gravity_top">上</string>
+    <string name="pref_post_dialog_gravity_center">中央</string>
+    <string name="pref_post_dialog_gravity_bottom">下</string>
 
     <string name="pref_bookmarks_initial_tab_desc">最初に表示するタブ</string>
     <string name="pref_bookmarks_hiding_buttons_with_scrolling_desc">スクロールにあわせて画面下部のボタンを隠す</string>
@@ -385,6 +398,11 @@
     <!-- ignored entries -->
     <string name="pref_ignored_entries_menu_edit">編集</string>
     <string name="pref_ignored_entries_menu_remove">項目を削除</string>
+    <!-- followings/followers -->
+    <string name="pref_followings_tab_followings">フォロー</string>
+    <string name="pref_followings_tab_followers">フォロワー</string>
+    <string name="pref_followings_menu_follow">フォローする</string>
+    <string name="pref_followings_menu_unfollow">フォロー解除する</string>
     <!-- user tags -->
     <string name="pref_user_tags_back_button_desc">ユーザータグ一覧に戻る</string>
     <string name="user_tag_dialog_name_hint">ユーザータグ名</string>
@@ -403,10 +421,19 @@
     <string name="pref_user_tags_user_menu_show_entries">@string/bookmark_show_user_entries</string>
     <string name="pref_user_tags_user_menu_remove">ユーザーを除外</string>
 
+    <string name="bookmark_fab_post_bookmark_tooltip">ブックマークする</string>
+    <string name="bookmark_fab_scroll_menu_tooltip">ショートカット</string>
+    <string name="bookmark_fab_my_bookmark_tooltip">自分のブクマを見る</string>
+    <string name="bookmark_fab_scroll_to_top_tooltip">一番上までスクロールする</string>
+    <string name="bookmark_fab_scroll_to_bottom_tooltip">一番下までスクロールする</string>
+    <string name="bookmark_fab_filter_tooltip">ブクマを抽出する</string>
+    <string name="bookmark_fab_settings_for_custom_tooltip">表示対象を設定</string>
+
     <!-- 内部ブラウザ -->
     <string name="pref_browser_section_browser">ブラウザ</string>
     <string name="pref_browser_section_display">表示</string>
     <string name="pref_browser_section_features">機能</string>
+    <string name="pref_browser_section_behavior">振る舞い</string>
     <string name="pref_browser_section_bookmarks">ブックマーク</string>
     <string name="pref_browser_section_refresh">キャッシュ・クッキー</string>
     <string name="pref_browser_section_optimize">最適化</string>
@@ -460,6 +487,8 @@
     <string name="pref_browser_initial_bookmarks_list_desc">最初に表示するブクマリスト</string>
     <string name="browser_bookmarks_list_same_as_bookmarks">ブクマ画面の初期表示タブと同じ</string>
 
+    <string name="pref_browser_drawer_pager_touch_slop_desc">ドロワタブ切替えのスワイプ感度</string>
+
     <!-- お気に入りサイト -->
     <string name="dialog_favorite_sites_open">開く</string>
     <string name="dialog_favorite_sites_open_entries">このサイトのエントリを探す</string>
@@ -500,6 +529,7 @@
 
     <!-- ブックマーク投稿ダイアログ -->
     <string name="post_bookmark_button_text">B!</string>
+    <string name="post_bookmark_button_tooltip">投稿する</string>
     <string name="bookmark_comment_edit_text_hint">ブコメ(任意)</string>
     <string name="confirm_post_bookmark">ブックマークします。よろしいですか？</string>
     <string name="msg_comment_too_long">コメントが長すぎます。%d文字以下にしてください</string>
@@ -510,13 +540,17 @@
     <string name="hint_twitter_toggle">Twitterに投稿します</string>
     <string name="hint_facebook_toggle">Facebookに投稿します</string>
     <string name="hint_private_toggle">非公開でブクマします</string>
+    <string name="msg_post_tag_added">タグ[%s]を挿入しました</string>
+    <string name="msg_post_tag_already_exists">タグ[%s]は既に挿入されています</string>
     <string name="msg_post_too_many_tags">使用できるタグは最大%d個です</string>
     <string name="msg_fetch_tags_failed">タグリストを取得できませんでした</string>
     <string name="msg_hatena_not_signed_in">はてなアカウントが登録されていません</string>
     <string name="msg_need_to_sign_in_hatena">ブックマーク機能使用にはサインインが必要です</string>
-
-    <!-- hints -->
+    <string name="add_new_tag_tags_list_title">あなたのタグ</string>
+    <string name="add_new_tag_button_description">タグを追加してタグ入力を続行する</string>
+    <string name="add_new_tag_complete_button_description">タグを追加してダイアログを閉じる</string>
     <string name="search_query_hint">検索キーワード</string>
+    <string name="add_new_tag_hint">タグを追加</string>
 
     <!-- ブコメ通報ダイアログ -->
     <string name="report_bookmark_dialog_title">ブコメを通報</string>
@@ -607,6 +641,10 @@
     <string name="msg_fetch_ignored_users_failed">非表示ユーザーリスト取得失敗</string>
     <string name="msg_update_bookmarks_failed">ブクマリスト更新失敗</string>
     <string name="msg_no_bookmarks">まだ誰もブクマしていません</string>
+    <string name="msg_follow_user_succeeded">id:%sをフォローしました</string>
+    <string name="msg_follow_user_failed">id:%sのフォローに失敗しました</string>
+    <string name="msg_unfollow_user_succeeded">id:%sをフォロー解除しました</string>
+    <string name="msg_unfollow_user_failed">id:%sのフォロー解除に失敗しました</string>
     <string name="msg_ignore_user_succeeded">id:%sを非表示にしました</string>
     <string name="msg_ignore_user_failed">id:%sの非表示に失敗しました</string>
     <string name="msg_unignore_user_succeeded">id:%sの非表示を解除しました</string>
@@ -679,6 +717,7 @@
 
     <string name="browser_menu_back_stack">戻る/進む</string>
     <string name="browser_menu_bookmarks">ブクマ画面を表示</string>
+    <string name="browser_menu_web_gyotaku">web魚拓</string>
     <string name="browser_menu_share">共有</string>
     <string name="browser_menu_add_blocking">ブロック設定を追加</string>
     <string name="browser_menu_adblock">AdBlock</string>
@@ -714,7 +753,7 @@
     <string name="browser_bookmarks_confirmation_title">確認</string>
     <string name="browser_bookmarks_confirmation_description">表示中のページのURLをHatenaに送信してブックマーク情報を取得します。よろしいですか？</string>
     <string name="browser_bookmarks_confirmation_enter">実行</string>
-    <string name="browser_bookmarks_confirmation_not_show_again">次回から自動で読み込む</string>
+    <string name="browser_bookmarks_confirmation_not_show_again">今後確認画面を使用しない</string>
 
     <!-- エントリ画面からブラウザを開く際のショートカット選択ダイアログ -->
     <string name="dialog_browser_shortcut_title">アプリ内ブラウザを開く</string>

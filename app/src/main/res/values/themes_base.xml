@@ -68,13 +68,16 @@
         <item name="textColorHint">@color/textColorHint</item>
         <item name="dividerColor">@color/dividerColor</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
-        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
+        <item name="bookmarkDialogBackgroundColor">@color/tabBackground</item>
+        <item name="bookmarkDialogBackground">@color/tabBackground</item>
         <item name="entryCommentBackground">@color/entryCommentBackground</item>
         <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackground</item>
         <item name="tagTextColor">@color/tagColor</item>
         <item name="bookmarkCountColor">@color/bookmarkUsersCountText</item>
         <!-- オプションメニュー背景色 -->
         <item name="colorSurface">@color/panelBackground</item>
+        <!-- (フォロー/フォロワー画面の)非選択トグルボタン文字色で使用 -->
+        <item name="colorOnSurface">@color/textColor</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Light</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
@@ -83,6 +86,7 @@
         <item name="editTextStyle">@style/EditTextStyle.Light</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Light</item>
+        <item name="bottomSheetDialogHandleColor">@color/tagColor</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
         <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackground</item>
@@ -98,13 +102,16 @@
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
-        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
+        <item name="bookmarkDialogBackgroundColor">@color/tabBackgroundDark</item>
+        <item name="bookmarkDialogBackground">@color/tabBackgroundDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
         <item name="bookmarkDetailTopBackground">@color/BookmarkDetailTopBackgroundDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
         <item name="bookmarkCountColor">@color/bookmarkUsersCountTextDark</item>
         <!-- オプションメニュー背景色 -->
         <item name="colorSurface">@color/panelBackgroundDark</item>
+        <!-- (フォロー/フォロワー画面の)非選択トグルボタン文字色で使用 -->
+        <item name="colorOnSurface">@color/textColorDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
@@ -113,6 +120,7 @@
         <item name="editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Dark</item>
+        <item name="bottomSheetDialogHandleColor">@color/tagColorDark</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
         <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundDark</item>
@@ -144,13 +152,16 @@
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundExDark</item>
-        <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundExDark</item>
+        <item name="bookmarkDialogBackgroundColor">@color/tabBackgroundExDark</item>
+        <item name="bookmarkDialogBackground">@color/tabBackgroundExDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundExDark</item>
         <item name="bookmarkDetailTopBackground">@color/panelBackgroundExDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
         <item name="bookmarkCountColor">@color/bookmarkUsersCountTextDark</item>
         <!-- オプションメニュー背景色 -->
         <item name="colorSurface">@color/panelBackgroundDark</item>
+        <!-- (フォロー/フォロワー画面の)非選択トグルボタン文字色で使用 -->
+        <item name="colorOnSurface">@color/textColorExDark</item>
         <!-- ポップアップ背景 -->
         <item name="popupMenuBackground">@drawable/dialog_background_ex_dark</item>
 
@@ -161,6 +172,7 @@
         <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
+        <item name="bottomSheetDialogHandleColor">@color/colorPrimaryExDark</item>
 
         <!-- ブラウザ画面ボトムシート「戻る/進む」履歴の現在表示中ページ項目の背景色 -->
         <item name="browserBackStackCurrentPageBackground">@color/browserBackStackCurrentPageBackgroundExDark</item>
@@ -207,6 +219,7 @@
         <item name="textColorHint">@color/textColorHint</item>
         <item name="dividerColor">@color/dividerColor</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackground</item>
+        <item name="bookmarkDialogBackgroundColor">@color/bookmarkDialogBackground</item>
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackground</item>
         <item name="entryCommentBackground">@color/entryCommentBackground</item>
         <item name="tagTextColor">@color/tagColor</item>
@@ -217,6 +230,8 @@
         <item name="editTextStyle">@style/EditTextStyle.Light</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Light</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Light</item>
+        <item name="bottomSheetDialogHandleColor">@color/tagColor</item>
     </style>
 
     <!-- Dark Theme -->
@@ -227,6 +242,7 @@
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundDark</item>
+        <item name="bookmarkDialogBackgroundColor">@color/bookmarkDialogBackgroundDark</item>
         <item name="bookmarkDialogBackground">@color/bookmarkDialogBackgroundDark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
@@ -237,6 +253,8 @@
         <item name="editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.Dark</item>
+        <item name="bottomSheetDialogHandleColor">@color/tagColorDark</item>
     </style>
 
     <!-- Extreme Dark Theme -->
@@ -249,6 +267,7 @@
         <item name="textColorHint">@color/textColorHintDark</item>
         <item name="dividerColor">@color/dividerColorDark</item>
         <item name="swipeRefreshBackground">@color/swipeRefreshBackgroundExDark</item>
+        <item name="bookmarkDialogBackgroundColor">@color/bookmarkDialogBackgroundExDark</item>
         <item name="bookmarkDialogBackground">@drawable/dialog_background_ex_dark</item>
         <item name="entryCommentBackground">@color/entryCommentBackgroundExDark</item>
         <item name="tagTextColor">@color/tagColorDark</item>
@@ -259,6 +278,8 @@
         <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
+        <item name="bottomSheetDialogHandleColor">@color/colorPrimaryExDark</item>
     </style>
 
     <!-- ========= -->
@@ -343,7 +364,7 @@
 
     <!-- BottomSheetDialogのテーマ -->
     <style name="Base.BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
-        <item name="colorPrimary">@color/colorPrimaryDark</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorPrimary</item>
     </style>

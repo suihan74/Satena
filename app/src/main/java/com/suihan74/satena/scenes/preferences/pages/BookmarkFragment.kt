@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsPostBookmarkAccountStatesBinding
+import com.suihan74.satena.models.BookmarkPostActivityGravity
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
@@ -78,6 +79,11 @@ class BookmarkViewModel(
     /** スクロールでボタンの表示状態を変化させる */
     private val toggleButtonsByScrolling = createLiveData<Boolean>(
         PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING
+    )
+
+    /** タブのスワイプ感度 */
+    private val pagerScrollSensitivity = createLiveData<Float>(
+        PreferenceKey.BOOKMARKS_PAGER_SCROLL_SENSITIVITY
     )
 
     /** 「すべて」タブでは非表示ブクマを表示する */
@@ -164,6 +170,13 @@ class BookmarkViewModel(
         prefs.contains(PreferenceKey.HATENA_RK)
     )
 
+    /** ダイアログの縦位置 */
+    private val verticalGravity = createLiveDataEnum(
+        PreferenceKey.POST_BOOKMARK_VERTICAL_GRAVITY,
+        { it.ordinal },
+        { BookmarkPostActivityGravity.fromOrdinal(it) }
+    )
+
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
@@ -208,6 +221,14 @@ class BookmarkViewModel(
         if (signedInHatena.value == true) {
             addSection(R.string.pref_bookmark_section_posting)
             addPrefToggleItem(fragment, confirmPostBookmark, R.string.pref_bookmarks_using_post_dialog_desc)
+            addPrefItem(fragment, verticalGravity, R.string.pref_bookmarks_post_dialog_vertical_gravity_desc) {
+                openEnumSelectionDialog(
+                    BookmarkPostActivityGravity.values(),
+                    verticalGravity,
+                    R.string.pref_bookmarks_post_dialog_vertical_gravity_desc,
+                    fragmentManager
+                )
+            }
             addPrefToggleItem(fragment, saveAccountStates, R.string.pref_bookmarks_save_states)
             if (saveAccountStates.value == false) {
                 add(
@@ -258,6 +279,18 @@ class BookmarkViewModel(
         addPrefToggleItem(fragment, useAddStarPopupMenu, R.string.pref_bookmarks_using_add_star_popup_menu_desc)
         addPrefToggleItem(fragment, toggleToolbarByScrolling, R.string.pref_bookmarks_hiding_toolbar_by_scrolling)
         addPrefToggleItem(fragment, toggleButtonsByScrolling, R.string.pref_bookmarks_hiding_buttons_with_scrolling_desc)
+        addButton(fragment, R.string.pref_pager_scroll_sensitivity_desc) {
+            SliderDialog.createInstance(
+                titleId = R.string.pref_pager_scroll_sensitivity_desc,
+                messageId = R.string.pref_pager_scroll_sensitivity_dialog_message,
+                min = 0.1f,
+                max = 1f,
+                value = pagerScrollSensitivity.value ?: 1f
+            ).setOnCompleteListener { value, _ ->
+                pagerScrollSensitivity.value = value
+            }
+            .show(fragmentManager, "")
+        }
 
         // --- //
 

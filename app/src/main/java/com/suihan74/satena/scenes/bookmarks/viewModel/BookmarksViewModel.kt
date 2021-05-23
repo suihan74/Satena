@@ -40,6 +40,12 @@ class BookmarksViewModel(
     TitleBarClickHandler by TitleBarClickHandlerImpl(repository)
 {
 
+    companion object {
+        private const val APPLYING_FILTER_DELAY = 450L
+    }
+
+    // ------ //
+
     /** サインイン状態 */
     val signedIn = repository.signedIn
 
@@ -160,12 +166,23 @@ class BookmarksViewModel(
 
     // ------ //
 
-    fun onCreate() {
+    fun onCreate(lifecycleOwner: LifecycleOwner) {
         viewModelScope.launch {
             runCatching {
                 repository.signIn()
             }
         }
+
+        // ディレイを考慮したフィルタリング適用
+        var applyingFilterJob : Job? = null
+        filteringText.observe(lifecycleOwner, Observer {
+            applyingFilterJob?.cancel()
+            applyingFilterJob = viewModelScope.launch(Dispatchers.Default) {
+                delay(APPLYING_FILTER_DELAY)
+                repository.refreshBookmarks()
+                applyingFilterJob = null
+            }
+        })
     }
 
     fun loadEntryFromIntent(

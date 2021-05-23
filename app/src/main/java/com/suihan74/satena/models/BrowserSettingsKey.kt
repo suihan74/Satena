@@ -51,6 +51,9 @@ enum class BrowserSettingsKey (
     /** ブロックURL設定を使用する */
     USE_URL_BLOCKING(typeInfo<Boolean>(), true),
 
+    /** ドロワタブページャのスワイプ感度のデフォルトからの相対的な値 */
+    DRAWER_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
+
     /** ブロックURLリスト */
     @Suppress("SpellCheckingInspection")
     BLOCK_URLS(typeInfo<List<BlockUrlSetting>>(), listOf(

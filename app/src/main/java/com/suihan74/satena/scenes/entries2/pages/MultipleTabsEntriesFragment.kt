@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +18,7 @@ import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.setOnTabLongClickListener
+import com.suihan74.utilities.extensions.touchSlop
 import kotlin.math.min
 
 abstract class MultipleTabsEntriesFragment : EntriesFragment() {
@@ -55,30 +57,7 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
         }
 
         // タブ設定
-        val tabAdapter = EntriesTabAdapter(this)
-        binding.entriesTabPager.adapter = tabAdapter
-        binding.entriesTabPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                activityViewModel.currentTabPosition.value = position
-            }
-        })
-
-        // タブ初期選択
-        if (savedInstanceState == null) {
-            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-            prefs.getObject<EntriesDefaultTabSettings>(PreferenceKey.ENTRIES_DEFAULT_TABS)!!.also { settings ->
-                val category = viewModel.category.value!!
-                val setting = settings.getOrDefault(category)
-                val tabPosition =
-                    if (setting == EntriesDefaultTabSettings.MAINTAIN) activityViewModel.currentTabPosition.value
-                        ?: 0
-                    else setting
-                binding.entriesTabPager.setCurrentItem(
-                    min(tabPosition, tabAdapter.itemCount - 1),
-                    false
-                )
-            }
-        }
+        initializeTabPager(binding.entriesTabPager, savedInstanceState == null)
 
         return binding.root
     }
@@ -86,12 +65,52 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     override fun onResume() {
         super.onResume()
         activityViewModel.currentTabPosition.value = binding.entriesTabPager.currentItem
+        resetPagerSensitivity(binding.entriesTabPager)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
+    private fun initializeTabPager(pager: ViewPager2, firstLaunched: Boolean) {
+        val tabAdapter = EntriesTabAdapter(this)
+        pager.adapter = tabAdapter
+        pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                activityViewModel.currentTabPosition.value = position
+            }
+        })
+
+        // タブ初期選択
+        if (firstLaunched) {
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            prefs.getObject<EntriesDefaultTabSettings>(PreferenceKey.ENTRIES_DEFAULT_TABS)!!.also { settings ->
+                val category = viewModel.category.value!!
+                val setting = settings.getOrDefault(category)
+                val tabPosition =
+                    if (setting == EntriesDefaultTabSettings.MAINTAIN) activityViewModel.currentTabPosition.value ?: 0
+                    else setting
+                pager.setCurrentItem(
+                    min(tabPosition, tabAdapter.itemCount - 1),
+                    false
+                )
+            }
+        }
+    }
+
+    private var defaultTouchSlop : Int? = null
+    private fun resetPagerSensitivity(pager: ViewPager2) {
+        runCatching {
+            if (defaultTouchSlop == null) defaultTouchSlop = pager.touchSlop
+            val scale = 1 / (activityViewModel.pagerScrollSensitivity)
+            pager.touchSlop = (defaultTouchSlop!! * scale).toInt()
+        }.onFailure {
+            Log.e("viewPager2", Log.getStackTraceString(it))
+        }
+    }
+
+    // ------ //
 
     /** 全てのタブのリストを再構成する */
     override fun reloadLists() {

@@ -13,8 +13,8 @@ import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepositoryInterface
+import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
+import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepositoryInterface
 import com.suihan74.utilities.*
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.alsoAs
@@ -23,6 +23,9 @@ import com.suihan74.utilities.extensions.updateFirstOrPlusAhead
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 /**
  * ブクマ画面用のリポジトリ
@@ -33,8 +36,8 @@ class BookmarksRepository(
     val ignoredEntriesRepo : IgnoredEntriesRepository,
     private val userTagDao: UserTagDao,
 ) :
-        // ユーザー非表示
-        IgnoredUsersRepositoryInterface by IgnoredUsersRepository(accountLoader),
+        // ユーザー関係
+        UserRelationRepositoryInterface by UserRelationRepository(accountLoader),
         // ユーザータグ
         UserTagsRepositoryInterface by UserTagsRepository(userTagDao),
         // スター
@@ -585,11 +588,11 @@ class BookmarksRepository(
         val keywordsRaw = filteringText.value
         if (keywordsRaw.isNullOrBlank()) return src
 
-        val keywords = keywordsRaw.split(Regex("""\s+"""))
+        val keywords = keywordsRaw.toLowerCase(Locale.JAPANESE).split(Regex("""\s+"""))
         val keywordsRegex = Regex(keywords.joinToString(separator = "|") { Regex.escape(it) })
 
         return src.filter { b ->
-            keywordsRegex.containsMatchIn(b.string)
+            keywordsRegex.containsMatchIn(b.string.toLowerCase(Locale.JAPANESE))
         }
     }
 

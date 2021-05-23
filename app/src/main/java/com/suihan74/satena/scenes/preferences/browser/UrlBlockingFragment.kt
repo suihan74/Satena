@@ -14,7 +14,7 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserRepository
 import com.suihan74.satena.scenes.browser.DrawerTab
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
-import com.suihan74.satena.scenes.preferences.PreferencesTabMode
+import com.suihan74.satena.scenes.preferences.PreferencesTab
 import com.suihan74.satena.scenes.preferences.pages.BrowserFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.letAs
@@ -103,7 +103,7 @@ class UrlBlockingFragment : Fragment() {
                 .commit()
         }
         preferencesActivity?.viewModel?.currentTab?.observe(viewLifecycleOwner, {
-            callback.isEnabled = it == PreferencesTabMode.BROWSER
+            callback.isEnabled = it == PreferencesTab.BROWSER
         })
         browserActivity?.viewModel?.let { vm ->
             vm.currentDrawerTab.observe(viewLifecycleOwner, {

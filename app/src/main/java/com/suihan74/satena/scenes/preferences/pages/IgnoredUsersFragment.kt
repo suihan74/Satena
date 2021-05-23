@@ -8,13 +8,10 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentPreferencesIgnoredUsersBinding
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersRepository
-import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersViewModel
 import com.suihan74.utilities.extensions.getThemeColor
-import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -23,12 +20,15 @@ class IgnoredUsersFragment : Fragment() {
         fun createInstance() = IgnoredUsersFragment()
     }
 
-    private val viewModel by lazyProvideViewModel {
-        val repository = IgnoredUsersRepository(
-            SatenaApplication.instance.accountLoader
-        )
-        IgnoredUsersViewModel(repository)
-    }
+    // ------ //
+
+    private val preferencesActivity
+        get() = requireActivity() as PreferencesActivity
+
+    private val viewModel
+        get() = preferencesActivity.ignoredUsersViewModel
+
+    // ------ //
 
     override fun onCreateView(
         inflater: LayoutInflater,

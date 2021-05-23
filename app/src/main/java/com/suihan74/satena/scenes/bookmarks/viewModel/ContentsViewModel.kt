@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks.viewModel
 
 import android.content.Context
+import android.util.Log
 import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -29,6 +30,7 @@ import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.setOnTabLongClickListener
+import com.suihan74.utilities.extensions.touchSlop
 
 /**
  * タブ制御など画面の状態管理用のViewModel
@@ -70,6 +72,11 @@ class ContentsViewModel(
     /** スクロールで画面下部ボタンを隠す */
     private val hideButtonsByScrolling by lazy {
         prefs.getBoolean(PreferenceKey.BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING)
+    }
+
+    /** タブページャのスワイプ感度 */
+    private val pagerScrollSensitivity by lazy {
+        prefs.getFloat(PreferenceKey.BOOKMARKS_PAGER_SCROLL_SENSITIVITY)
     }
 
     /** ドロワーの配置 */
@@ -136,6 +143,20 @@ class ContentsViewModel(
 
         // 初期タブを設定
         viewPager.setCurrentItem(selectedTab.value?.ordinal ?: 0 , false)
+
+        // スクロール感度を設定
+        resetPagerScrollSensitivity(viewPager)
+    }
+
+    private var defaultPagerTouchSlop : Int? = null
+    private fun resetPagerScrollSensitivity(pager: ViewPager2) {
+        runCatching {
+            if (defaultPagerTouchSlop == null) defaultPagerTouchSlop = pager.touchSlop
+            val scale = 1 / pagerScrollSensitivity
+            pager.touchSlop = (defaultPagerTouchSlop!! * scale).toInt()
+        }.onFailure {
+            Log.e("viewPager2", Log.getStackTraceString(it))
+        }
     }
 
     /** ツールバーやボタンをスクロールで隠す設定を反映する */

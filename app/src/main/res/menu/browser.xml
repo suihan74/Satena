@@ -10,6 +10,10 @@
             android:title="@string/browser_menu_bookmarks"/>
 
     <item
+            android:id="@+id/web_gyotaku"
+            android:title="@string/browser_menu_web_gyotaku"/>
+
+    <item
             android:id="@+id/share"
             android:title="@string/browser_menu_share"/>
 
