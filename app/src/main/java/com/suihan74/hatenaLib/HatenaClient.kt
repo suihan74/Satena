@@ -929,7 +929,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             if (limit != null) append("&limit=$limit")
         }
         return@async try {
-            getJson<BookmarksDigest>(apiUrl, withCookie = false)
+            getJson<BookmarksDigest>(apiUrl, withCookie = true)
         }
         catch (e: NotFoundException) {
             // まだブクマされていない場合
