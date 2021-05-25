@@ -71,7 +71,7 @@
     <string name="msg_hatena_sign_in_failed">ログイン失敗</string>
 
     <!-- ブコメリストタブ -->
-    <string name="bookmarks_tab_popular">人気</string>
+    <string name="bookmarks_tab_popular">注目</string>
     <string name="bookmarks_tab_recent">新着</string>
     <string name="bookmarks_tab_custom">カスタム</string>
     <string name="bookmarks_tab_all">すべて</string>
