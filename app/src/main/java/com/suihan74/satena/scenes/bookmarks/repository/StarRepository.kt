@@ -139,11 +139,11 @@ class StarRepository(
     /**
      * 所持カラースター数を取得する
      */
-    override suspend fun loadUserColorStarsCount() {
+    override suspend fun loadUserColorStarsCount() = withContext(Dispatchers.Default) {
         signIn()
 
         if (!client.signedIn()) {
-            return
+            return@withContext
         }
 
         val result = runCatching {
@@ -159,6 +159,7 @@ class StarRepository(
      * カラースターを使用できるかチェックする
      */
     override suspend fun checkColorStarAvailability(color: StarColor) : Boolean {
+        if (color == StarColor.Yellow) return client.signedIn()
         if (_userColorStarsCount.value == null) {
             loadUserColorStarsCount()
         }
