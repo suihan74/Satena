@@ -4,12 +4,15 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.DiffUtil
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.BookmarksDigest
+import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.utilities.AnalyzedBookmarkComment
 import com.suihan74.utilities.BookmarkCommentDecorator
 import com.suihan74.utilities.RecyclerState
+import com.suihan74.utilities.RecyclerType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,11 +38,24 @@ class BookmarksTabViewModel(
         bookmarks = liveData.also { ld ->
             ld.observe(owner, Observer { rawList ->
                 viewModelScope.launch(Dispatchers.Main) {
-                    displayBookmarks.value = rawList?.let { createDisplayBookmarks(it) } ?: emptyList()
+                    displayBookmarks.value = rawList?.let {
+                        createDisplayBookmarks(it).plus(RecyclerState(type = RecyclerType.FOOTER))
+                    } ?: emptyList()
                 }
             })
         }
         _bookmarksTabType.value = tabType
+    }
+
+    fun setPopularBookmarksLiveData(owner: LifecycleOwner) {
+        repo.bookmarksDigest.observe(owner, Observer { digest ->
+            viewModelScope.launch(Dispatchers.Main) {
+                displayBookmarks.value = digest?.let {
+                    createDisplayBookmarks(it)
+                } ?: emptyList()
+            }
+        })
+        _bookmarksTabType.value = BookmarksTabType.POPULAR
     }
 
     // ------ //
@@ -54,17 +70,34 @@ class BookmarksTabViewModel(
         }
         val ignoredUsers = repo.ignoredUsersCache
 
-        return@withContext RecyclerState.makeStatesWithFooter(bookmarks.map { bookmark ->
+        return@withContext bookmarks.map { bookmark ->
             val analyzedComment = BookmarkCommentDecorator.convert(bookmark.comment)
-            Entity(
-                bookmark = bookmark,
-                analyzedComment = analyzedComment,
-                isIgnored = ignoredUsers.contains(bookmark.user),
-                mentions = repo.getMentionsFrom(bookmark, analyzedComment),
-                userTags = taggedUsers.firstOrNull { t -> t.user.name == bookmark.user }?.tags ?: emptyList(),
-                repo.getBookmarkCounts(bookmark)
+            RecyclerState(
+                type = RecyclerType.BODY,
+                body = Entity(
+                    bookmark = bookmark,
+                    analyzedComment = analyzedComment,
+                    isIgnored = ignoredUsers.contains(bookmark.user),
+                    mentions = repo.getMentionsFrom(bookmark, analyzedComment),
+                    userTags = taggedUsers.firstOrNull { t -> t.user.name == bookmark.user }?.tags ?: emptyList(),
+                    repo.getBookmarkCounts(bookmark)
+                )
             )
-        })
+        }
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    private suspend fun createDisplayBookmarks(digest: BookmarksDigest) : List<RecyclerState<Entity>> = withContext(Dispatchers.Default) {
+        buildList {
+            if (digest.favoriteBookmarks.isNotEmpty()) {
+                add(RecyclerState(type = RecyclerType.SECTION, extra = R.string.bookmarks_digest_section_followings))
+                addAll(createDisplayBookmarks(repo.followingsBookmarks))
+            }
+            add(RecyclerState(type = RecyclerType.SECTION, extra = R.string.bookmarks_digest_section_scored))
+            addAll(createDisplayBookmarks(repo.popularBookmarks))
+            add(RecyclerState(type = RecyclerType.FOOTER))
+            Unit
+        }
     }
 }
 

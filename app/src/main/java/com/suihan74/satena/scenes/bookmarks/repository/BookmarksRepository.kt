@@ -141,9 +141,6 @@ class BookmarksRepository(
             MutableLiveData<List<Bookmark>>()
         }
 
-    /** 人気ブクマ */
-    val popularBookmarks by lazyBookmarksList
-
     /** 新着ブクマ */
     val recentBookmarks by lazyBookmarksList
 
@@ -156,7 +153,22 @@ class BookmarksRepository(
     // 取得したブクマデータのキャッシュ
 
     /** 人気ブクマ、関連記事、お気に入りユーザーのブクマ */
-    private var bookmarksDigestCache : BookmarksDigest? = null
+    private val _bookmarksDigest = MutableLiveData<BookmarksDigest?>()
+    val bookmarksDigest : LiveData<BookmarksDigest?> = _bookmarksDigest
+
+    val popularBookmarks : List<Bookmark>
+        get() = filterIgnored(
+            wordFilter(
+                bookmarksDigest.value?.scoredBookmarks.orEmpty()
+            )
+        )
+
+    val followingsBookmarks : List<Bookmark>
+        get() = filterIgnored(
+            wordFilter(
+                bookmarksDigest.value?.favoriteBookmarks.orEmpty()
+            )
+        )
 
     /** 非表示対象、無言を含むすべての新着ブクマ */
     private var bookmarksRecentCache : List<BookmarkWithStarCount> = emptyList()
@@ -267,8 +279,7 @@ class BookmarksRepository(
             bookmarksEntry.value = null
             entryStarsEntry.value = null
             bookmarksRecentCache = emptyList()
-            bookmarksDigestCache = null
-            popularBookmarks.value = null
+            _bookmarksDigest.value = null
             recentBookmarks.value = null
             allBookmarks.value = null
             customBookmarks.value = null
@@ -289,7 +300,6 @@ class BookmarksRepository(
         val modifiedUrl = modifyResult.getOrNull() ?: url
         this@BookmarksRepository.url = modifiedUrl
 
-        bookmarksDigestCache = null
         bookmarksRecentCache = emptyList()
 
         try {
@@ -658,15 +668,6 @@ class BookmarksRepository(
 
     /** 読み込み済みの各種リストを再生成する */
     suspend fun refreshBookmarks() = withContext(Dispatchers.Default) {
-        // 人気ブクマリストを再生成
-        popularBookmarks.postValue(
-            filterIgnored(
-                wordFilter(
-                    bookmarksDigestCache?.scoredBookmarks.orEmpty()
-                )
-            )
-        )
-
         // 新着ブクマリストを再生成
         updateRecentBookmarksLiveData(bookmarksRecentCache)
     }
@@ -676,7 +677,7 @@ class BookmarksRepository(
         loadIgnoredUsers()
         loadUserTags()
 
-        val users = bookmarksDigestCache?.scoredBookmarks?.map { it.user }
+        val users = bookmarksDigest.value?.scoredBookmarks?.map { it.user }
             ?.plus(
                 bookmarksRecentCache.map { it.user }
             )
@@ -729,15 +730,16 @@ class BookmarksRepository(
         }
         bookmarksEntry.postValue(bEntry)
 
-        bookmarksDigestCache = BookmarksDigest(
-            bookmarksDigestCache?.referedBlogEntries.orEmpty(),
-            bookmarksDigestCache?.scoredBookmarks?.map {
+        val digest = bookmarksDigest.value
+        _bookmarksDigest.postValue(BookmarksDigest(
+            digest?.referedBlogEntries.orEmpty(),
+            digest?.scoredBookmarks?.map {
                 if (it.user == user) bookmark else it
             }.orEmpty(),
-            bookmarksDigestCache?.favoriteBookmarks?.map {
+            digest?.favoriteBookmarks?.map {
                 if (it.user == user) bookmark else it
             }.orEmpty()
-        )
+        ))
 
         bookmarksRecentCache =
             bookmarksRecentCache.updateFirstOrPlusAhead(bookmark) { it.user == user }
@@ -757,17 +759,7 @@ class BookmarksRepository(
             client.getDigestBookmarksAsync(url).await()
         }
 
-        val digest = result.getOrElse { bookmarksDigestCache }
-
-        bookmarksDigestCache = digest
-        val bookmarks = filterIgnored(digest?.scoredBookmarks.orEmpty())
-        bookmarks.forEach {
-            loadUserTags(it.user)
-        }
-
-        popularBookmarks.postValue(bookmarks)
-
-        result.onFailure {
+        val digest = result.getOrElse {
             when (it) {
                 is TimeoutException,
                 is ForbiddenException ->
@@ -776,6 +768,13 @@ class BookmarksRepository(
                 else ->
                     throw ConnectionFailureException(it)
             }
+        }
+
+        _bookmarksDigest.postValue(digest)
+        val bookmarks = filterIgnored(digest.favoriteBookmarks.plus(digest.scoredBookmarks).distinctBy { it.user })
+
+        bookmarks.forEach {
+            loadUserTags(it.user)
         }
 
         // ブクマへのブクマ数を取得する
@@ -1097,11 +1096,12 @@ class BookmarksRepository(
         }
         bookmarksEntry.postValue(bEntry)
 
-        bookmarksDigestCache = BookmarksDigest(
-            bookmarksDigestCache?.referedBlogEntries.orEmpty(),
-            bookmarksDigestCache?.scoredBookmarks?.filterNot { it.user == user }.orEmpty(),
-            bookmarksDigestCache?.favoriteBookmarks?.filterNot { it.user == user }.orEmpty()
-        )
+        val digest = bookmarksDigest.value
+        _bookmarksDigest.postValue(BookmarksDigest(
+            digest?.referedBlogEntries.orEmpty(),
+            digest?.scoredBookmarks?.filterNot { it.user == user }.orEmpty(),
+            digest?.favoriteBookmarks?.filterNot { it.user == user }.orEmpty()
+        ))
 
         bookmarksRecentCache =
             bookmarksRecentCache.filterNot { it.user == user }
