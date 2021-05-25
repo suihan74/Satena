@@ -19,9 +19,11 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FooterRecyclerViewLoadableBinding
 import com.suihan74.satena.databinding.ListviewItemBookmarksBinding
+import com.suihan74.satena.databinding.ListviewSectionBookmarkBinding
 import com.suihan74.satena.scenes.bookmarks.viewModel.Entity
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.appendStarSpan
 import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.extensions.toVisibility
@@ -128,6 +130,15 @@ class BookmarksAdapter(
                         lifecycleOwner
                     )
 
+                RecyclerType.SECTION ->
+                    SectionViewHolder(
+                        ListviewSectionBookmarkBinding.inflate(
+                            inflater,
+                            parent,
+                            false
+                        )
+                    )
+
                 RecyclerType.FOOTER ->
                     LoadableFooterViewHolder(
                         FooterRecyclerViewLoadableBinding.inflate(
@@ -149,11 +160,12 @@ class BookmarksAdapter(
             }
         }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) =
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val item = currentList[position]
         when (RecyclerType.fromId(holder.itemViewType)) {
             RecyclerType.BODY -> {
                 (holder as ViewHolder).run {
-                    val entity = currentList[position].body!!
+                    val entity = item.body!!
                     bookmark = entity
 
                     itemView.setOnClickListener {
@@ -168,8 +180,17 @@ class BookmarksAdapter(
                 }
             }
 
+            RecyclerType.SECTION -> holder.alsoAs<SectionViewHolder> { vh ->
+                vh.binding.alsoAs<ListviewSectionBookmarkBinding> { binding ->
+                    item.extra.alsoAs<Int> {
+                        binding.textView.text = binding.root.context.getString(it)
+                    }
+                }
+            }
+
             else -> Unit
         }
+    }
 
     /**
      * フッタのローディングアニメを表示する
