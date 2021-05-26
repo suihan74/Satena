@@ -334,7 +334,10 @@ class BookmarksFragment :
             swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
             swipeLayout.setOnRefreshListener {
                 lifecycleScope.launchWhenResumed {
-                    viewModel.loadRecentBookmarks(requireContext())
+                    when (bookmarksTabViewModel.bookmarksTabType.value) {
+                        BookmarksTabType.POPULAR -> viewModel.loadPopularBookmarks(requireContext())
+                        else -> viewModel.loadRecentBookmarks(requireContext())
+                    }
                     swipeLayout.isRefreshing = false
                 }
             }

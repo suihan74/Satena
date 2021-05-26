@@ -668,6 +668,7 @@ class BookmarksRepository(
 
     /** 読み込み済みの各種リストを再生成する */
     suspend fun refreshBookmarks() = withContext(Dispatchers.Default) {
+        _bookmarksDigest.postValue(_bookmarksDigest.value)
         // 新着ブクマリストを再生成
         updateRecentBookmarksLiveData(bookmarksRecentCache)
     }
