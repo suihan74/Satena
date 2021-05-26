@@ -33,8 +33,30 @@ class BookmarksTabViewModel(
 
     /** 表示対象のブクマリストを変更する */
     @MainThread
-    fun setBookmarksLiveData(owner: LifecycleOwner, liveData: LiveData<List<Bookmark>>, tabType: BookmarksTabType) {
+    fun setBookmarksLiveData(owner: LifecycleOwner, liveData: LiveData<List<Bookmark>>?, tabType: BookmarksTabType) {
         bookmarks?.removeObservers(owner)
+        repo.bookmarksDigest.removeObservers(owner)
+        when (tabType) {
+            BookmarksTabType.POPULAR -> setPopularBookmarksLiveData(owner)
+            else -> setRecentBookmarksLiveData(owner, liveData!!, tabType)
+        }
+        _bookmarksTabType.value = tabType
+    }
+
+    /**
+     * 「注目」タブの表示内容をセットする
+     */
+    @MainThread
+    private fun setPopularBookmarksLiveData(owner: LifecycleOwner) {
+        repo.bookmarksDigest.observe(owner, Observer {
+            viewModelScope.launch(Dispatchers.Main) {
+                displayBookmarks.value = createDisplayBookmarksDigest()
+            }
+        })
+    }
+
+    @MainThread
+    private fun setRecentBookmarksLiveData(owner: LifecycleOwner, liveData: LiveData<List<Bookmark>>, tabType: BookmarksTabType) {
         bookmarks = liveData.also { ld ->
             ld.observe(owner, Observer { rawList ->
                 viewModelScope.launch(Dispatchers.Main) {
@@ -44,16 +66,6 @@ class BookmarksTabViewModel(
                 }
             })
         }
-        _bookmarksTabType.value = tabType
-    }
-
-    fun setPopularBookmarksLiveData(owner: LifecycleOwner) {
-        repo.bookmarksDigest.observe(owner, Observer { digest ->
-            viewModelScope.launch(Dispatchers.Main) {
-                displayBookmarks.value = createDisplayBookmarksDigest()
-            }
-        })
-        _bookmarksTabType.value = BookmarksTabType.POPULAR
     }
 
     // ------ //

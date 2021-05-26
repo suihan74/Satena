@@ -65,7 +65,7 @@ class PopularBookmarksTabFragment :
             it.lifecycleOwner = viewLifecycleOwner
         }
 
-        viewModel.setPopularBookmarksLiveData(viewLifecycleOwner)
+        viewModel.setBookmarksLiveData(viewLifecycleOwner, null, BookmarksTabType.POPULAR)
         initializeRecyclerView(binding)
 
         return binding.root
