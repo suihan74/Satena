@@ -293,8 +293,8 @@ class BookmarksViewModel(
     /**
      * ブクマリストタイプに合致するブクマリストのLiveDataを取得する
      */
-    fun bookmarksLiveData(tab: BookmarksTabType) : LiveData<List<Bookmark>> = when(tab) {
-        BookmarksTabType.POPULAR -> popularBookmarks
+    fun bookmarksLiveData(tab: BookmarksTabType) : LiveData<List<Bookmark>>? = when(tab) {
+        BookmarksTabType.POPULAR -> null
         BookmarksTabType.RECENT -> recentBookmarks
         BookmarksTabType.ALL -> allBookmarks
         BookmarksTabType.CUSTOM -> customBookmarks
