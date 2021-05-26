@@ -379,6 +379,8 @@
         <item name="bottomSheetStyle">@style/BottomSheet.Dark</item>
     </style>
     <style name="Base.BottomSheetDialogTheme.ExDark">
+        <item name="colorPrimary">@color/colorPrimaryExDark</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkExDark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="bottomSheetStyle">@style/BottomSheet.ExDark</item>
