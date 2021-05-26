@@ -35,3 +35,26 @@ inline fun <T> List<T>.updateFirstOrPlusAhead(value: T, predicate: (T)->Boolean)
         addAll(prevList.subList(idx + 1, prevList.size))
     }
 }
+
+// ------ //
+
+/** Collectionが空のときだけactionを実行する */
+inline fun <T> Collection<T>?.onEmpty(crossinline action: (Collection<T>)->Unit) {
+    if (this != null && this.isEmpty()) {
+        action.invoke(this)
+    }
+}
+
+/** Collectionがnullか空のときだけactionを実行する */
+inline fun <T> Collection<T>?.onNullOrEmpty(crossinline action: (Collection<T>?)->Unit) {
+    if (this.isNullOrEmpty()) {
+        action.invoke(this)
+    }
+}
+
+/** Collectionが空ではないときだけactionを実行する */
+inline fun <T> Collection<T>?.onNotEmpty(crossinline action: (Collection<T>)->Unit) {
+    if (!this.isNullOrEmpty()) {
+        action.invoke(this)
+    }
+}
