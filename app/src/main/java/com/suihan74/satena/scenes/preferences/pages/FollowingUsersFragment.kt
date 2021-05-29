@@ -46,18 +46,6 @@ class FollowingUsersFragment : Fragment() {
 
         val activity = requireActivity()
 
-        // ID検索ボタン
-        binding.searchButton.setOnClickListener {
-            viewModel.isFilterTextVisible.value =
-                viewModel.isFilterTextVisible.value != true
-        }
-
-        viewModel.isFilterTextVisible.observe(viewLifecycleOwner) {
-            if (it != true) {
-                binding.searchText.text?.clear()
-            }
-        }
-
         // ユーザーリスト
         val ignoredUsersAdapter = IgnoredUsersAdapter(viewLifecycleOwner).also { adapter ->
             adapter.setOnClickItemListener { binding ->

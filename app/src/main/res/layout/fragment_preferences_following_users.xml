@@ -6,17 +6,20 @@
                 type="com.suihan74.satena.scenes.preferences.ignored.FollowingUsersViewModel" />
     </data>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                 android:id="@+id/swipe_layout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="0dp"
+                android:layout_height="0dp">
 
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/users_list"
@@ -28,10 +31,20 @@
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+        <View
+                android:background="?panelBackground"
+                app:layout_constraintTop_toTopOf="@id/mode_toggle_button"
+                app:layout_constraintBottom_toBottomOf="@id/mode_toggle_button"
+                app:layout_constraintStart_toStartOf="@id/mode_toggle_button"
+                app:layout_constraintEnd_toEndOf="@id/mode_toggle_button"
+                android:layout_width="0dp"
+                android:layout_height="0dp"/>
+
         <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/mode_toggle_button"
-                android:background="?panelBackground"
-                android:layout_gravity="center_horizontal|bottom"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginBottom="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
@@ -52,47 +65,5 @@
 
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <com.suihan74.utilities.views.ImeEnhancedEditText
-                android:id="@+id/search_text"
-                android:text="@={vm.filterText}"
-                android:hint="@string/pref_ignored_users_filter_text_hint"
-
-                android:textSize="18sp"
-                android:singleLine="true"
-                android:inputType="textNoSuggestions"
-                android:importantForAutofill="no"
-
-                android:textColor="@color/colorPrimaryText"
-                android:textColorHint="#dfdfdf"
-                android:background="@drawable/rounded_search_text_view"
-
-                android:visibility="@{vm.isFilterTextVisible}"
-                tools:visibility="gone"
-                android:gravity="center_vertical"
-                android:paddingStart="16dp"
-                android:paddingEnd="40dp"
-                android:layout_gravity="bottom|end"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
-                android:layout_marginTop="18dp"
-                android:layout_marginBottom="24dp"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-        />
-
-        <!-- TODO: いい感じにできるまで封印 -->
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/search_button"
-                android:src="@drawable/ic_baseline_search"
-                android:visibility="gone"
-                app:fabSize="mini"
-                app:backgroundTint="?colorPrimary"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="24dp"
-                android:layout_marginTop="18dp"
-                android:layout_marginBottom="24dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
