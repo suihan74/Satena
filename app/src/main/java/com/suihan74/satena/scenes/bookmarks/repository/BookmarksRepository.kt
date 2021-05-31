@@ -262,11 +262,11 @@ class BookmarksRepository(
     /** 画面を停止して行うべき読み込みの発生状態 */
     val staticLoading : LiveData<Boolean> = _staticLoading
 
-    private suspend fun startLoading() = withContext(Dispatchers.Main) {
+    suspend fun startLoading() = withContext(Dispatchers.Main) {
         _staticLoading.value = true
     }
 
-    private suspend fun stopLoading() = withContext(Dispatchers.Main) {
+    suspend fun stopLoading() = withContext(Dispatchers.Main) {
         _staticLoading.value = false
     }
 
@@ -746,6 +746,34 @@ class BookmarksRepository(
             bookmarksRecentCache.updateFirstOrPlusAhead(bookmark) { it.user == user }
 
         refreshBookmarks()
+    }
+
+    /**
+     * 指定ブクマのスター数を更新する
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    suspend fun updateStarCounts(bookmark: Bookmark) {
+        val starsEntry = getStarsEntry(bookmark).value ?: return
+        val user = bookmark.user
+        val bookmarkWithStarCount = bookmarksRecentCache.firstOrNull { it.user == user }
+            ?.copy(
+                starCount = buildList {
+                    appendStarCount(starsEntry, StarColor.Yellow)
+                    appendStarCount(starsEntry, StarColor.Red)
+                    appendStarCount(starsEntry, StarColor.Green)
+                    appendStarCount(starsEntry, StarColor.Blue)
+                    appendStarCount(starsEntry, StarColor.Purple)
+                }
+            )
+            ?: return
+        updateBookmark(bookmarkWithStarCount)
+    }
+
+    private fun MutableList<StarCount>.appendStarCount(starsEntry: StarsEntry, color: StarColor) {
+        val count = starsEntry.getStarsCount(color)
+        if (count > 0) {
+            this.add(StarCount(color, count))
+        }
     }
 
     /**

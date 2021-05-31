@@ -42,6 +42,7 @@ class BookmarkMenuActionsImpl(
         bookmark: Bookmark,
         starsEntry: StarsEntry?,
         fragmentManager: FragmentManager,
+        starDeletingTarget: Bookmark? = null
     ) = withContext(Dispatchers.Main) {
         val ignoring = repository.checkIgnoredUser(bookmark.user)
         val following = repository.getFollowings().contains(bookmark.user)
@@ -81,7 +82,7 @@ class BookmarkMenuActionsImpl(
         dialog.setOnDeleteStar { (b, stars), f ->
             openDeleteStarDialog(
                 entry,
-                b,
+                starDeletingTarget ?: b,
                 stars,
                 f.parentFragmentManager
             )
@@ -365,7 +366,7 @@ class BookmarkMenuActionsImpl(
                 // スター表示の更新
                 runCatching {
                     repository.getStarsEntry(bookmark, forceUpdate = true)
-                    repository.refreshBookmarks()
+                    repository.updateStarCounts(bookmark)
                 }
             }
         }
