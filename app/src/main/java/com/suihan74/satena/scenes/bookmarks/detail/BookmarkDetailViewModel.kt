@@ -1,9 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
@@ -91,17 +88,26 @@ class BookmarkDetailViewModel(
 
     init {
         this._bookmark.value = bookmark
-        viewModelScope.launch {
-            runCatching {
-                updateList(DetailTabAdapter.TabType.STARS_TO_USER)
-                updateList(DetailTabAdapter.TabType.STARS_FROM_USER)
-                updateList(DetailTabAdapter.TabType.MENTION_TO_USER)
-                updateList(DetailTabAdapter.TabType.MENTION_FROM_USER)
+    }
+
+    fun onCreateView(owner: LifecycleOwner) {
+        repository.recentBookmarks.observe(owner, Observer {
+            viewModelScope.launch {
+                reload()
             }
-        }
+        })
     }
 
     // ------ //
+
+    private suspend fun reload() {
+        runCatching {
+            updateList(DetailTabAdapter.TabType.STARS_TO_USER, true)
+            updateList(DetailTabAdapter.TabType.STARS_FROM_USER, true)
+            updateList(DetailTabAdapter.TabType.MENTION_TO_USER, true)
+            updateList(DetailTabAdapter.TabType.MENTION_FROM_USER, true)
+        }
+    }
 
     /** タブに対応するリストを取得する */
     fun getList(tabType: DetailTabAdapter.TabType) : LiveData<List<StarRelation>> {
