@@ -402,7 +402,7 @@ class BookmarksViewModel(
             context.showToast(R.string.msg_post_star_succeeded, bookmark.user)
 
             // 表示を更新する
-            repository.refreshBookmarks()
+            repository.updateStarCounts(bookmark)
         }
         else result.exceptionOrNull().let { e ->
             Log.w("postStar", Log.getStackTraceString(e))

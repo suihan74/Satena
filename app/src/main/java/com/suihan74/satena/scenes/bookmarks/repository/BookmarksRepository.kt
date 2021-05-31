@@ -749,6 +749,34 @@ class BookmarksRepository(
     }
 
     /**
+     * 指定ブクマのスター数を更新する
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    suspend fun updateStarCounts(bookmark: Bookmark) {
+        val starsEntry = getStarsEntry(bookmark).value ?: return
+        val user = bookmark.user
+        val bookmarkWithStarCount = bookmarksRecentCache.firstOrNull { it.user == user }
+            ?.copy(
+                starCount = buildList {
+                    appendStarCount(starsEntry, StarColor.Yellow)
+                    appendStarCount(starsEntry, StarColor.Red)
+                    appendStarCount(starsEntry, StarColor.Green)
+                    appendStarCount(starsEntry, StarColor.Blue)
+                    appendStarCount(starsEntry, StarColor.Purple)
+                }
+            )
+            ?: return
+        updateBookmark(bookmarkWithStarCount)
+    }
+
+    private fun MutableList<StarCount>.appendStarCount(starsEntry: StarsEntry, color: StarColor) {
+        val count = starsEntry.getStarsCount(color)
+        if (count > 0) {
+            this.add(StarCount(color, count))
+        }
+    }
+
+    /**
      * 人気ブクマリストを取得する
      *
      * @throws ConnectionFailureException

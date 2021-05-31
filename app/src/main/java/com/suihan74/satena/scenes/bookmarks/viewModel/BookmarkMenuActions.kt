@@ -365,7 +365,7 @@ class BookmarkMenuActionsImpl(
                 // スター表示の更新
                 runCatching {
                     repository.getStarsEntry(bookmark, forceUpdate = true)
-                    repository.refreshBookmarks()
+                    repository.updateStarCounts(bookmark)
                 }
             }
         }
