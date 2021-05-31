@@ -9,7 +9,6 @@ import android.view.*
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
@@ -92,6 +91,8 @@ class BookmarkDetailFragment : Fragment() {
             it.lifecycleOwner = viewLifecycleOwner
         }
 
+        viewModel.onCreateView(viewLifecycleOwner)
+
         // タブの設定
         viewModel.bookmark.observe(viewLifecycleOwner) { bookmark ->
             val adapter = DetailTabAdapter(this, viewModel, bookmark)
@@ -161,13 +162,7 @@ class BookmarkDetailFragment : Fragment() {
                 color,
                 viewModel.selectedText.value,
                 childFragmentManager
-            ) {
-                viewModel.viewModelScope.launch {
-                    runCatching {
-                        viewModel.updateList(DetailTabAdapter.TabType.STARS_TO_USER, forceUpdate = true)
-                    }
-                }
-            }
+            )
         }
 
         binding.yellowStarButton.setOnClickListener(postStar(StarColor.Yellow))
