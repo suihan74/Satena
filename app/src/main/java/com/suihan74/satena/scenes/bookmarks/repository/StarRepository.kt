@@ -29,6 +29,8 @@ interface StarRepositoryInterface {
     /** 確認ダイアログを表示するかどうか */
     val useConfirmPostingStarDialog : Boolean
 
+    val starPosting : LiveData<Boolean>
+
     /** ユーザーが所持しているカラースター数を取得する */
     suspend fun loadUserColorStarsCount()
 
@@ -127,6 +129,10 @@ class StarRepository(
     override val useConfirmPostingStarDialog: Boolean =
         prefs.getBoolean(PreferenceKey.USING_POST_STAR_DIALOG)
 
+    private val _starPosting = MutableLiveData<Boolean>()
+
+    override val starPosting: LiveData<Boolean> = _starPosting
+
     /**
      * 取得したスター情報のキャッシュ
      *
@@ -135,6 +141,14 @@ class StarRepository(
     private val starsEntriesCache = HashMap<String, MutableLiveData<StarsEntry>>()
 
     private val starsEntriesLock = Mutex()
+
+    private suspend fun startPosting() = withContext(Dispatchers.Main) {
+        _starPosting.value = true
+    }
+
+    private suspend fun stopPosting() = withContext(Dispatchers.Main) {
+        _starPosting.value = false
+    }
 
     /**
      * 所持カラースター数を取得する
@@ -219,7 +233,10 @@ class StarRepository(
         quote: String,
         updateCacheImmediately: Boolean
     ) = withContext(Dispatchers.Default) {
+        startPosting()
+
         if (!checkColorStarAvailability(color)) {
+            stopPosting()
             throw StarExhaustedException(color)
         }
 
@@ -232,6 +249,7 @@ class StarRepository(
         }
 
         if (result.isFailure) {
+            stopPosting()
             throw ConnectionFailureException(cause = result.exceptionOrNull())
         }
 
@@ -250,6 +268,8 @@ class StarRepository(
                 getStarsEntry(url, forceUpdate = true)
             }
         }
+
+        stopPosting()
     }
 
 
@@ -264,8 +284,9 @@ class StarRepository(
         star: Star,
         updateCacheImmediately: Boolean
     ) {
-        val url = bookmark.getBookmarkUrl(entry)
+        startPosting()
 
+        val url = bookmark.getBookmarkUrl(entry)
         val result = runCatching {
             signIn()
             repeat(star.count) {
@@ -277,6 +298,7 @@ class StarRepository(
         }
 
         if (result.isFailure) {
+            stopPosting()
             throw ConnectionFailureException(cause = result.exceptionOrNull())
         }
 
@@ -285,6 +307,8 @@ class StarRepository(
                 getStarsEntry(url, forceUpdate = true)
             }
         }
+
+        stopPosting()
     }
 
     private suspend fun signIn() {

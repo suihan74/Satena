@@ -262,11 +262,11 @@ class BookmarksRepository(
     /** 画面を停止して行うべき読み込みの発生状態 */
     val staticLoading : LiveData<Boolean> = _staticLoading
 
-    private suspend fun startLoading() = withContext(Dispatchers.Main) {
+    suspend fun startLoading() = withContext(Dispatchers.Main) {
         _staticLoading.value = true
     }
 
-    private suspend fun stopLoading() = withContext(Dispatchers.Main) {
+    suspend fun stopLoading() = withContext(Dispatchers.Main) {
         _staticLoading.value = false
     }
 

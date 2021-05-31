@@ -21,6 +21,7 @@ import com.suihan74.satena.scenes.bookmarks.*
 import com.suihan74.satena.scenes.bookmarks.dialog.ConfirmBrowsingDialog
 import com.suihan74.satena.scenes.bookmarks.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
+import com.suihan74.satena.scenes.bookmarks.repository.StarExhaustedException
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog
 import com.suihan74.satena.scenes.post.BookmarkEditData
@@ -181,6 +182,14 @@ class BookmarksViewModel(
                 delay(APPLYING_FILTER_DELAY)
                 repository.refreshBookmarks()
                 applyingFilterJob = null
+            }
+        })
+
+        // スター投稿中に操作を禁止する
+        repository.starPosting.observe(lifecycleOwner, Observer {
+            viewModelScope.launch {
+                if (it) repository.startLoading()
+                else repository.stopLoading()
             }
         })
     }
@@ -350,15 +359,16 @@ class BookmarksViewModel(
                 .setTitle(R.string.confirm_dialog_title_simple)
                 .setMessage(context.getString(R.string.msg_post_star_dialog, color.name))
                 .setNegativeButton(R.string.dialog_cancel) { it.dismiss() }
-                .setPositiveButton(R.string.dialog_ok) {
+                .setPositiveButton(R.string.dialog_ok) { f ->
                     viewModelScope.launch(Dispatchers.Main) {
                         runCatching {
-                            postStarToBookmarkImpl(context, entry, bookmark, color, quote)
+                            val c = f.requireContext()
+                            f.dismiss()
+                            postStarToBookmarkImpl(c, entry, bookmark, color, quote)
                         }
                         .onSuccess {
                             onSuccess?.invoke(Unit)
                         }
-                        it.dismiss()
                     }
                 }
                 .dismissOnClickButton(false)
@@ -384,31 +394,22 @@ class BookmarksViewModel(
         color: StarColor,
         quote: String?
     ) = withContext(Dispatchers.Main) {
-        val starAvailable = repository.checkColorStarAvailability(color)
-        if (!starAvailable) {
-            context.showToast(R.string.msg_no_color_stars, color.name)
-            return@withContext
-        }
-
         val result = runCatching {
             repository.postStar(entry, bookmark, color, quote.orEmpty())
         }
 
         if (result.isSuccess) {
-            context.showToast(
-                R.string.msg_post_star_succeeded,
-                bookmark.user
-            )
+            context.showToast(R.string.msg_post_star_succeeded, bookmark.user)
 
             // 表示を更新する
             repository.refreshBookmarks()
         }
-        else {
-            Log.w("postStar", Log.getStackTraceString(result.exceptionOrNull()))
-            context.showToast(
-                R.string.msg_post_star_failed,
-                bookmark.user
-            )
+        else result.exceptionOrNull().let { e ->
+            Log.w("postStar", Log.getStackTraceString(e))
+            when (e) {
+                is StarExhaustedException -> context.showToast(R.string.msg_no_color_stars, color.name)
+                else -> context.showToast(R.string.msg_post_star_failed, bookmark.user)
+            }
         }
     }
 
