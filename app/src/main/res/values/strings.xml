@@ -46,6 +46,8 @@
     <string name="dialog_close">閉じる</string>
 
     <!-- 未分類の汎用 -->
+    <string name="select_all">すべて選択</string>
+    <string name="clear_selection">選択解除</string>
     <string name="invalid_url_error">無効なURLです</string>
     <string name="scroll_to_top">一番上までスクロール</string>
     <string name="search_button_tooltip">検索</string>

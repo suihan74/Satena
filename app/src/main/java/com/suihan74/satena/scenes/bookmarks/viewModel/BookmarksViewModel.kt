@@ -567,7 +567,7 @@ class BookmarksViewModel(
                 val liveData = runCatching { repository.getStarsEntry(bookmark) }.getOrNull()
                 val userStarred = liveData?.value?.allStars?.any { it.user == user } ?: false
 
-                lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                button.post {
                     if (userStarred) {
                         button.setImageResource(R.drawable.ic_add_star_filled)
 

@@ -12,7 +12,6 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.annotation.MainThread
-import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
@@ -31,7 +30,6 @@ import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostFragment
 import com.suihan74.satena.scenes.post.BookmarkPostViewModel
 import com.suihan74.utilities.*
-import com.suihan74.utilities.bindings.setIconId
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
@@ -40,6 +38,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 class ContentsViewModel(
     private val bookmarksRepo: BookmarksRepository
@@ -52,10 +51,19 @@ class ContentsViewModel(
 
     private val loadingJobMutex = Mutex()
 
+    private val _openEditorButtonIconId = MutableLiveData<Int>()
+    /** エディタを開く/閉じるボタンのアイコンID */
+    val openEditorButtonIconId : LiveData<Int> = _openEditorButtonIconId
+
+    private val _openEditorButtonTooltipTextId = MutableLiveData<Int>()
+    /** エディタを開く/閉じるボタンのツールチップテキスト */
+    val openEditorButtonTooltipTextId : LiveData<Int> = _openEditorButtonTooltipTextId
+
     // ------ //
 
     @MainThread
     fun onCreateView(owner: LifecycleOwner, browserViewModel: BrowserViewModel) {
+        setOpenEditorButtonState(false)
         browserViewModel.url.observe(owner, Observer { url ->
             viewModelScope.launch {
                 loadBookmarksEntry(url.orEmpty())
@@ -70,17 +78,33 @@ class ContentsViewModel(
         loadingJobMutex.withLock {
             loadBookmarksEntryJob?.cancel()
             if (!URLUtil.isNetworkUrl(url)) return@withLock
-            loadBookmarksEntryJob = viewModelScope.launch(Dispatchers.Main) {
+            loadBookmarksEntryJob = viewModelScope.launch {
                 runCatching {
-                    loadingBookmarksEntry.value = true
+                    bookmarksRepo.loadUserColorStarsCount()
+                    withContext(Dispatchers.Main) {
+                        loadingBookmarksEntry.value = true
+                    }
                     bookmarksRepo.loadBookmarks(url)
                 }
                 loadingJobMutex.withLock {
                     loadBookmarksEntryJob = null
-                    loadingBookmarksEntry.value = false
+                    withContext(Dispatchers.Main) {
+                        loadingBookmarksEntry.value = false
+                    }
                 }
             }
         }
+    }
+
+    /** ブクマエディタを開く/閉じるボタンの表示を切り替える */
+    fun setOpenEditorButtonState(opened: Boolean) = viewModelScope.launch(Dispatchers.Main) {
+        _openEditorButtonIconId.value =
+            if (opened) R.drawable.ic_baseline_close
+            else R.drawable.ic_add_comment
+
+        _openEditorButtonTooltipTextId.value =
+            if (opened) R.string.browser_close_post_bookmark_frame
+            else R.string.browser_open_post_bookmark_frame
     }
 }
 
@@ -356,16 +380,7 @@ class BookmarksFragment :
             bookmarkPostViewModel.repository.saveStates()
         }
 
-        binding.openPostAreaButton.setIconId(
-            if (opened) R.drawable.ic_baseline_close
-            else R.drawable.ic_add_comment
-        )
-
-        TooltipCompat.setTooltipText(
-            binding.openPostAreaButton,
-            if (opened) context?.getString(R.string.browser_close_post_bookmark_frame)
-            else context?.getString(R.string.browser_open_post_bookmark_frame)
-        )
+        contentsViewModel.setOpenEditorButtonState(opened)
 
         TransitionManager.beginDelayedTransition(
             binding.bookmarkPostFrameLayout,
