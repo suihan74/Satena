@@ -40,6 +40,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 class ContentsViewModel(
     private val bookmarksRepo: BookmarksRepository
@@ -70,14 +71,19 @@ class ContentsViewModel(
         loadingJobMutex.withLock {
             loadBookmarksEntryJob?.cancel()
             if (!URLUtil.isNetworkUrl(url)) return@withLock
-            loadBookmarksEntryJob = viewModelScope.launch(Dispatchers.Main) {
+            loadBookmarksEntryJob = viewModelScope.launch {
                 runCatching {
-                    loadingBookmarksEntry.value = true
+                    bookmarksRepo.loadUserColorStarsCount()
+                    withContext(Dispatchers.Main) {
+                        loadingBookmarksEntry.value = true
+                    }
                     bookmarksRepo.loadBookmarks(url)
                 }
                 loadingJobMutex.withLock {
                     loadBookmarksEntryJob = null
-                    loadingBookmarksEntry.value = false
+                    withContext(Dispatchers.Main) {
+                        loadingBookmarksEntry.value = false
+                    }
                 }
             }
         }
