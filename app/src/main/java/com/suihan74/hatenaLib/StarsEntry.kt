@@ -29,7 +29,7 @@ data class StarsEntry (
             if (coloredStars == null) stars
             else stars.plus(coloredStars.flatMap { it.stars })
 
-        stars.groupBy { "${it.user},${it.color.name}" }
+        stars.groupBy { "${it.user},${it.color.name},${it.quote}" }
             .map {
                 val count = it.value.sumBy { s -> s.count }
                 val star = it.value[0]
