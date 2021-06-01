@@ -338,13 +338,21 @@ class BookmarkMenuActionsImpl(
     }
 
     /** 自分がつけたスターを取り消すダイアログを開く */
+    @OptIn(ExperimentalStdlibApi::class)
     fun openDeleteStarDialog(
         entry: Entry,
         bookmark: Bookmark,
         stars: List<Star>,
         fragmentManager: FragmentManager
     ) {
-        val dialog = StarDeletionDialog.createInstance(stars)
+        val fixedStars = buildList {
+            stars.forEach { star ->
+                for (i in 0 until star.count) {
+                    add(star.copy(count = 1))
+                }
+            }
+        }
+        val dialog = StarDeletionDialog.createInstance(fixedStars)
 
         dialog.setOnDeleteStars { selectedStars, f ->
             val activity = f.requireActivity()

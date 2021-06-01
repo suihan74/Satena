@@ -4,7 +4,7 @@ import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 
 @JsonAdapter(StarDeserializer::class)
-class Star(
+data class Star(
     @SerializedName("name") val user: String,
     val quote: String,
 
