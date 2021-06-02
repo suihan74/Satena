@@ -72,22 +72,28 @@ class SafeSharedPreferences<KeyT> private constructor (
         /** インスタンスを生成 */
         inline fun <reified KeyT> create(context: Context?)
                 where KeyT: Key, KeyT: Enum<KeyT> =
-            create(context, KeyT::class.java)
+            create(context, KeyT::class.java, null)
+
+        /** インスタンスを生成 */
+        inline fun <reified KeyT> create(context: Context?, fileName: String)
+                where KeyT: Key, KeyT: Enum<KeyT> =
+            create(context, KeyT::class.java, fileName)
 
         fun <KeyT> create(
             context: Context?,
-            keyClass: Class<KeyT>
+            keyClass: Class<KeyT>,
+            explicitFileName: String? = null
         ) : SafeSharedPreferences<KeyT> where KeyT: Key, KeyT: Enum<KeyT> {
-            val cacheKey = "${keyClass.name},${context!!.hashCode()}"
+            val keyAnnotation = keyClass.getAnnotation(SharedPreferencesKey::class.java)
+            val fileName = explicitFileName ?: "preferences_${keyAnnotation?.fileName ?: "default"}"
+            val keyVersion = keyAnnotation?.version ?: 0
+
+            val cacheKey = "${fileName},${context!!.hashCode()}"
             val cacheValue = instancesCache[cacheKey]
             if (cacheValue != null) {
                 @Suppress("UNCHECKED_CAST")
                 return cacheValue as SafeSharedPreferences<KeyT>
             }
-
-            val keyAnnotation = keyClass.annotations.firstOrNull { it is SharedPreferencesKey } as? SharedPreferencesKey
-            val fileName = "preferences_${keyAnnotation?.fileName ?: "default"}"
-            val keyVersion = keyAnnotation?.version ?: 0
 
             val instance = SafeSharedPreferences<KeyT>(
                 fileName,
@@ -104,12 +110,13 @@ class SafeSharedPreferences<KeyT> private constructor (
 
         fun <KeyT> delete(
             context: Context?,
-            keyClass: Class<KeyT>
+            keyClass: Class<KeyT>,
+            explicitFileName: String? = null
         ) where KeyT: Key, KeyT: Enum<KeyT> {
-
-            val keyAnnotation = keyClass.annotations.firstOrNull { it is SharedPreferencesKey } as? SharedPreferencesKey
-            val fileName = "preferences_${keyAnnotation?.fileName ?: "default"}"
-
+            val fileName = explicitFileName ?: let {
+                val keyAnnotation = keyClass.getAnnotation(SharedPreferencesKey::class.java)
+                "preferences_${keyAnnotation?.fileName ?: "default"}"
+            }
             delete(context, fileName, keyClass.name)
         }
 
@@ -139,10 +146,10 @@ class SafeSharedPreferences<KeyT> private constructor (
         ) where OldKeyT: Key, OldKeyT: Enum<OldKeyT>,
                 LatestKeyT: Key, LatestKeyT: Enum<LatestKeyT> {
 
-            val oldAnnotation = OldKeyT::class.java.annotations.firstOrNull { it is SharedPreferencesKey } as? SharedPreferencesKey
+            val oldAnnotation = OldKeyT::class.java.getAnnotation(SharedPreferencesKey::class.java)
             val oldKeyVersion = oldAnnotation!!.version
 
-            val latestAnnotation = LatestKeyT::class.java.annotations.firstOrNull { it is SharedPreferencesKey } as? SharedPreferencesKey
+            val latestAnnotation = LatestKeyT::class.java.getAnnotation(SharedPreferencesKey::class.java)
             val latestKeyVersion = latestAnnotation!!.version
             require(latestAnnotation.latest) { "the migration destination PreferencesKey is not latest version" }
 
