@@ -113,9 +113,8 @@ class BookmarkPostActivity :
         when (val setting = BookmarkPostActivityGravity.fromOrdinal(prefs.getInt(PreferenceKey.POST_BOOKMARK_VERTICAL_GRAVITY))) {
             BookmarkPostActivityGravity.DEFAULT -> return
             else -> {
-                window.attributes = window.attributes.also {
-                    it.gravity = (Gravity.VERTICAL_GRAVITY_MASK and setting.gravity) or Gravity.CENTER_HORIZONTAL
-                }
+                window.attributes.gravity =
+                    (Gravity.VERTICAL_GRAVITY_MASK and setting.gravity) or Gravity.CENTER_HORIZONTAL
             }
         }
     }
