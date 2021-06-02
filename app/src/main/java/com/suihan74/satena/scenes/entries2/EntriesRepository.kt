@@ -100,11 +100,6 @@ class EntriesRepository(
         SafeSharedPreferences.create<EntriesHistoryKey>(context)
     }
 
-    /** 通知 */
-    private val noticesPrefs by lazy {
-        SafeSharedPreferences.create<NoticesKey>(context)
-    }
-
     /** サインイン状態 */
     val signedIn : Boolean
         get() = client.signedIn()
@@ -313,6 +308,7 @@ class EntriesRepository(
             putObject(PreferenceKey.NOTICES_LAST_SEEN, LocalDateTime.now())
         }
 
+        val noticesPrefs = SafeSharedPreferences.create<NoticesKey>(context, NoticesKey.fileName(client.account!!.name))
         val savedNotices = noticesPrefs.get<List<Notice>>(NoticesKey.NOTICES)
         val noticesSize = noticesPrefs.getInt(NoticesKey.NOTICES_SIZE)
         val removedNotices = noticesPrefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
@@ -620,6 +616,17 @@ class EntriesRepository(
     /** ブクマを削除する */
     suspend fun deleteBookmark(entry: Entry) {
         client.deleteBookmarkAsync(entry.url).await()
+    }
+
+    /** 通知を削除する */
+    fun deleteNotice(notice: Notice) {
+        val prefs = SafeSharedPreferences.create<NoticesKey>(context, NoticesKey.fileName(client.account!!.name))
+        val removedNotices = prefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
+            .plus(NoticeTimestamp(notice.created, notice.modified))
+
+        prefs.edit {
+            put(NoticesKey.REMOVED_NOTICE_TIMESTAMPS, removedNotices)
+        }
     }
 
     // ------ //

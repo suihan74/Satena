@@ -139,6 +139,12 @@ class SafeSharedPreferences<KeyT> private constructor (
             return prefs.version
         }
 
+        /** 設定セットのバージョンを取得 */
+        inline fun <reified KeyT> version(context: Context?, fileName: String) : Int where KeyT: Key, KeyT: Enum<KeyT> {
+            val prefs = create<KeyT>(context, fileName)
+            return prefs.version
+        }
+
         /** 設定セットのバージョン移行 */
         inline fun <reified OldKeyT, reified LatestKeyT> migrate(
             context: Context?,

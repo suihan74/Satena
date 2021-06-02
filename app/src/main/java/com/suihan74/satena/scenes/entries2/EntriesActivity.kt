@@ -76,7 +76,7 @@ class EntriesActivity : AppCompatActivity() {
     val viewModel by lazyProvideViewModel {
         val app = SatenaApplication.instance
         val repository = EntriesRepository(
-            context = this,
+            context = app,
             client = HatenaClient,
             accountLoader = app.accountLoader,
             ignoredEntriesRepo = app.ignoredEntriesRepository,

@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.entries2.dialog
 
 import android.app.Dialog
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.DialogFragment
@@ -15,8 +14,6 @@ import com.suihan74.satena.databinding.DialogTitleUserBinding
 import com.suihan74.satena.databinding.ListviewItemNotices2Binding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
-import com.suihan74.satena.models.NoticeTimestamp
-import com.suihan74.satena.models.NoticesKey
 import com.suihan74.satena.scenes.bookmarks.dialog.ReportDialog
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.*
@@ -63,7 +60,7 @@ class NoticeMenuDialog : DialogFragment() {
                 }
             }
             .plus(
-                getString(R.string.menu_notice_remove) to { viewModel.removeNotice(requireContext()) }
+                getString(R.string.menu_notice_delete) to { viewModel.onDeleteNoticeListener?.invoke(notice) }
             )
 
         return createBuilder()
@@ -78,8 +75,8 @@ class NoticeMenuDialog : DialogFragment() {
     // ------ //
 
     /** 通知削除時のイベントリスナを設定 */
-    fun setOnNoticeRemovedListener(listener: Listener<Notice>?) = lifecycleScope.launchWhenCreated {
-        viewModel.onNoticeRemovedListener = listener
+    fun setOnDeleteNoticeListener(listener: Listener<Notice>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onDeleteNoticeListener = listener
     }
 
     // ------ //
@@ -89,20 +86,7 @@ class NoticeMenuDialog : DialogFragment() {
         val notice by lazy { args.getObject<Notice>(ARG_NOTICE)!! }
 
         /** 通知削除時の処理 */
-        var onNoticeRemovedListener: Listener<Notice>? = null
-
-        /** 通知を削除 */
-        fun removeNotice(context: Context) {
-            val prefs = SafeSharedPreferences.create<NoticesKey>(context)
-            val removedNotices = prefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
-                .plus(NoticeTimestamp(notice.created, notice.modified))
-
-            prefs.edit {
-                put(NoticesKey.REMOVED_NOTICE_TIMESTAMPS, removedNotices)
-            }
-
-            onNoticeRemovedListener?.invoke(notice)
-        }
+        var onDeleteNoticeListener: Listener<Notice>? = null
     }
 
     // ------ //
