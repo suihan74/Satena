@@ -630,7 +630,7 @@
     <string name="msg_start_checking_notifications_failed">通知確認の常駐に失敗しました</string>
 
     <string name="menu_notice_report">%sを通報</string>
-    <string name="menu_notice_remove">通知を削除</string>
+    <string name="menu_notice_delete">通知を削除</string>
 
     <!-- ブクマ画面 -->
     <string name="toolbar_subtitle_bookmarks">"%1$d users (%2$d comments)"</string>

@@ -100,11 +100,6 @@ class EntriesRepository(
         SafeSharedPreferences.create<EntriesHistoryKey>(context)
     }
 
-    /** 通知 */
-    private val noticesPrefs by lazy {
-        SafeSharedPreferences.create<NoticesKey>(context)
-    }
-
     /** サインイン状態 */
     val signedIn : Boolean
         get() = client.signedIn()
@@ -184,13 +179,11 @@ class EntriesRepository(
         get() = ExtraBottomItemsAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT))
 
     /** 初期化処理 */
-    suspend fun initialize(forceUpdate: Boolean = false) {
-        runCatching {
-            accountLoader.signInAccounts(forceUpdate)
-            signedInLiveData.post(client.signedIn())
-            categoriesLiveData.post(client.signedIn())
-            ignoredEntriesRepo.loadIgnoredEntriesForEntries()
-        }
+    suspend fun initialize(forceUpdate: Boolean = false) = withContext(Dispatchers.Default) {
+        accountLoader.signInAccounts(forceUpdate)
+        signedInLiveData.post(client.signedIn())
+        categoriesLiveData.post(client.signedIn())
+        ignoredEntriesRepo.loadIgnoredEntriesForEntries()
     }
 
     /** 最新のエントリーリストを読み込む */
@@ -315,6 +308,7 @@ class EntriesRepository(
             putObject(PreferenceKey.NOTICES_LAST_SEEN, LocalDateTime.now())
         }
 
+        val noticesPrefs = SafeSharedPreferences.create<NoticesKey>(context, NoticesKey.fileName(client.account!!.name))
         val savedNotices = noticesPrefs.get<List<Notice>>(NoticesKey.NOTICES)
         val noticesSize = noticesPrefs.getInt(NoticesKey.NOTICES_SIZE)
         val removedNotices = noticesPrefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
@@ -622,6 +616,17 @@ class EntriesRepository(
     /** ブクマを削除する */
     suspend fun deleteBookmark(entry: Entry) {
         client.deleteBookmarkAsync(entry.url).await()
+    }
+
+    /** 通知を削除する */
+    fun deleteNotice(notice: Notice) {
+        val prefs = SafeSharedPreferences.create<NoticesKey>(context, NoticesKey.fileName(client.account!!.name))
+        val removedNotices = prefs.get<List<NoticeTimestamp>>(NoticesKey.REMOVED_NOTICE_TIMESTAMPS)
+            .plus(NoticeTimestamp(notice.created, notice.modified))
+
+        prefs.edit {
+            put(NoticesKey.REMOVED_NOTICE_TIMESTAMPS, removedNotices)
+        }
     }
 
     // ------ //

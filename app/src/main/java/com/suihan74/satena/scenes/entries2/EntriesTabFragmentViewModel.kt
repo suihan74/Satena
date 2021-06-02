@@ -259,6 +259,16 @@ class EntriesTabFragmentViewModel(
 
     // ------ //
 
+    /** 通知を削除する */
+    fun deleteNotice(notice: Notice, onError: OnError? = null) {
+        runCatching {
+            repository.deleteNotice(notice)
+        }
+        reloadLists(onError = onError)
+    }
+
+    // ------ //
+
     /** エントリをシングルクリックしたときの処理 */
     fun onClickEntry(
         activity: FragmentActivity,
