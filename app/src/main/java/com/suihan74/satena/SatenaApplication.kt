@@ -215,12 +215,18 @@ class SatenaApplication : Application() {
 
     /** ネットワークの接続状態を監視する */
     private fun registerNetworkCallback() {
-        val request = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-            .build()
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        cm.registerNetworkCallback(request, networkReceiver.networkCallback)
+        val result = runCatching {
+            val request = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                .build()
+            val cm = getSystemService(ConnectivityManager::class.java)
+            cm.registerNetworkCallback(request, networkReceiver.networkCallback)
+        }
+        result.onFailure {
+            // 調査のために例外情報を送信する
+            FirebaseCrashlytics.getInstance().recordException(it)
+        }
     }
 
     private fun unregisterNetworkCallback() {
