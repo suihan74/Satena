@@ -48,8 +48,8 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
 
             setOnItemLongClickedListener { notice ->
                 NoticeMenuDialog.createInstance(notice).also { dialog ->
-                    dialog.setOnNoticeRemovedListener {
-                        viewModel.reloadLists(onError = onErrorRefreshEntries)
+                    dialog.setOnDeleteNoticeListener {
+                        viewModel.deleteNotice(it, onErrorRefreshEntries)
                     }
                     dialog.showAllowingStateLoss(childFragmentManager, DIALOG_NOTICE_MENU)
                 }
