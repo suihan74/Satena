@@ -18,6 +18,7 @@ import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.OnSuccess
 import com.suihan74.utilities.extensions.getThemeColor
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class EntriesViewModel(
@@ -129,17 +130,15 @@ class EntriesViewModel(
         onSuccess: OnSuccess<Unit>? = null,
         onError: OnError? = null,
         onFinally: OnFinally? = null
-    ) = coroutineScope.launch {
-        try {
+    ) = coroutineScope.launch(Dispatchers.Main) {
+        runCatching {
             repository.initialize(forceUpdate)
+        }.onSuccess {
             onSuccess?.invoke(Unit)
+        }.onFailure {
+            onError?.invoke(it)
         }
-        catch (e: Throwable) {
-            onError?.invoke(e)
-        }
-        finally {
-            onFinally?.invoke()
-        }
+        onFinally?.invoke()
     }
 
     /** アプリアップデートを確認する */

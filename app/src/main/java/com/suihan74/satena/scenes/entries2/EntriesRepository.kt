@@ -184,13 +184,11 @@ class EntriesRepository(
         get() = ExtraBottomItemsAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT))
 
     /** 初期化処理 */
-    suspend fun initialize(forceUpdate: Boolean = false) {
-        runCatching {
-            accountLoader.signInAccounts(forceUpdate)
-            signedInLiveData.post(client.signedIn())
-            categoriesLiveData.post(client.signedIn())
-            ignoredEntriesRepo.loadIgnoredEntriesForEntries()
-        }
+    suspend fun initialize(forceUpdate: Boolean = false) = withContext(Dispatchers.Default) {
+        accountLoader.signInAccounts(forceUpdate)
+        signedInLiveData.post(client.signedIn())
+        categoriesLiveData.post(client.signedIn())
+        ignoredEntriesRepo.loadIgnoredEntriesForEntries()
     }
 
     /** 最新のエントリーリストを読み込む */
