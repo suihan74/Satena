@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesIgnoredUsersBinding
+import com.suihan74.satena.databinding.ListviewItemIgnoredUsersBinding
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
 import com.suihan74.utilities.extensions.getThemeColor
@@ -56,11 +57,14 @@ class IgnoredUsersFragment : Fragment() {
 
         // ユーザーリスト
         val ignoredUsersAdapter = IgnoredUsersAdapter(viewLifecycleOwner).also { adapter ->
-            adapter.setOnClickItemListener { binding ->
+            val listener = { binding: ListviewItemIgnoredUsersBinding ->
                 binding.user?.let { user ->
                     viewModel.openMenuDialog(activity, user, childFragmentManager)
                 }
+                Unit
             }
+            adapter.setOnClickItemListener(listener)
+            adapter.setOnLongLickItemListener(listener)
         }
 
         binding.ignoredUsersList.also { list ->

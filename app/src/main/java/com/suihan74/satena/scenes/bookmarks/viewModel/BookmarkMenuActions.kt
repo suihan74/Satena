@@ -44,8 +44,8 @@ class BookmarkMenuActionsImpl(
         fragmentManager: FragmentManager,
         starDeletingTarget: Bookmark? = null
     ) = withContext(Dispatchers.Main) {
-        val ignoring = repository.checkIgnoredUser(bookmark.user)
-        val following = repository.getFollowings().contains(bookmark.user)
+        val ignoring = runCatching { repository.checkIgnoredUser(bookmark.user) }.getOrNull()
+        val following = runCatching { repository.getFollowings().contains(bookmark.user) }.getOrNull()
 
         val dialog = BookmarkMenuDialog.createInstance(
             bookmark,

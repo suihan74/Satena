@@ -384,7 +384,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             max = 100,
             default = historyMaxSize.value!!,
             titleId = R.string.pref_entries_history_max_size_dialog_title,
-            messageId = R.string.pref_browser_clear_history_dialog_message
+            messageId = R.string.pref_entries_history_max_size_dialog_msg
         ) { value ->
             historyMaxSize.value = value
         }

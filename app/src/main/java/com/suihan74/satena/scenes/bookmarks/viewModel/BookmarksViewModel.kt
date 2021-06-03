@@ -185,13 +185,19 @@ class BookmarksViewModel(
             }
         })
 
-        // スター投稿中に操作を禁止する
-        repository.starPosting.observe(lifecycleOwner, Observer {
+        // 操作を禁止してプログレスバーを表示する
+        val loadingObserver = Observer<Boolean> {
             viewModelScope.launch {
                 if (it) repository.startLoading()
                 else repository.stopLoading()
             }
-        })
+        }
+
+        // スター投稿中に操作を禁止する
+        repository.starPosting.observe(lifecycleOwner, loadingObserver)
+
+        // 通報処理中に操作を禁止する
+        repository.reporting.observe(lifecycleOwner, loadingObserver)
     }
 
     fun loadEntryFromIntent(

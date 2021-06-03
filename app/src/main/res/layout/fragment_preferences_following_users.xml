@@ -49,14 +49,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                     android:id="@+id/followings_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/pref_followings_tab_followings"
                     style="?attr/materialButtonOutlinedStyle"/>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                     android:id="@+id/followers_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

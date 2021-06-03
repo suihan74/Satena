@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import com.suihan74.hatenaLib.Follower
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -111,6 +112,10 @@ class FollowingUsersViewModel(
         withContext(Dispatchers.Default) {
             runCatching {
                 allFollowings.postValue(repository.getFollowings())
+            }.onFailure {
+                withContext(Dispatchers.Main) {
+                    SatenaApplication.instance.showToast(R.string.msg_pref_followings_load_failed)
+                }
             }
         }
     }
@@ -120,6 +125,10 @@ class FollowingUsersViewModel(
         withContext(Dispatchers.Default) {
             runCatching {
                 allFollowers.postValue(repository.getFollowers())
+            }.onFailure {
+                withContext(Dispatchers.Main) {
+                    SatenaApplication.instance.showToast(R.string.msg_pref_followers_load_failed)
+                }
             }
         }
     }

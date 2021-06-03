@@ -409,6 +409,8 @@
     <string name="pref_followings_tab_followers">フォロワー</string>
     <string name="pref_followings_menu_follow">フォローする</string>
     <string name="pref_followings_menu_unfollow">フォロー解除する</string>
+    <string name="msg_pref_followings_load_failed">フォローリスト読み込み失敗</string>
+    <string name="msg_pref_followers_load_failed">フォロワーリスト読み込み失敗</string>
     <!-- user tags -->
     <string name="pref_user_tags_back_button_desc">ユーザータグ一覧に戻る</string>
     <string name="user_tag_dialog_name_hint">ユーザータグ名</string>
