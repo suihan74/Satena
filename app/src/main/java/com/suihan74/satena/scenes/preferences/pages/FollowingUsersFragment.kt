@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentPreferencesFollowingUsersBinding
+import com.suihan74.satena.databinding.ListviewItemIgnoredUsersBinding
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.ignored.FollowingUsersViewModel
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
@@ -48,11 +49,14 @@ class FollowingUsersFragment : Fragment() {
 
         // ユーザーリスト
         val ignoredUsersAdapter = IgnoredUsersAdapter(viewLifecycleOwner).also { adapter ->
-            adapter.setOnClickItemListener { binding ->
+            val listener = { binding : ListviewItemIgnoredUsersBinding ->
                 binding.user?.let { user ->
                     viewModel.openMenuDialog(user, childFragmentManager)
                 }
+                Unit
             }
+            adapter.setOnClickItemListener(listener)
+            adapter.setOnLongLickItemListener(listener)
         }
 
         binding.usersList.also { list ->
