@@ -25,14 +25,14 @@ class BookmarkMenuDialog : DialogFragment() {
         fun createInstance(
             bookmark: Bookmark,
             starsEntry: StarsEntry?,
-            following: Boolean,
-            ignoring: Boolean,
+            following: Boolean?,
+            ignoring: Boolean?,
             userSignedIn: String?
         ) = BookmarkMenuDialog().withArguments {
             putObject(ARG_BOOKMARK, bookmark)
             putObject(ARG_STARS_ENTRY, starsEntry)
-            putBoolean(ARG_FOLLOWING, following)
-            putBoolean(ARG_IGNORING, ignoring)
+            following?.let { putBoolean(ARG_FOLLOWING, it) }
+            ignoring?.let { putBoolean(ARG_IGNORING, it) }
             putString(ARG_USER_SIGNED_IN, userSignedIn)
         }
 
@@ -115,9 +115,9 @@ class BookmarkMenuDialog : DialogFragment() {
     class DialogViewModel(args: Bundle) : ViewModel() {
         val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
 
-        val following = args.getBoolean(ARG_FOLLOWING, false)
+        val following = if (args.containsKey(ARG_FOLLOWING)) args.getBoolean(ARG_FOLLOWING, false) else null
 
-        val ignoring = args.getBoolean(ARG_IGNORING, false)
+        val ignoring = if (args.containsKey(ARG_IGNORING)) args.getBoolean(ARG_IGNORING, false) else null
 
         val userSignedIn = args.getString(ARG_USER_SIGNED_IN)
 
@@ -179,18 +179,16 @@ class BookmarkMenuDialog : DialogFragment() {
                 add(R.string.bookmark_share_comment_page_url to { onShareCommentPageUrl?.invoke(bookmark, it) })
 
                 if (signedIn && bookmark.user != userSignedIn) {
-                    if (following) {
-                        add(R.string.bookmark_unfollow to { onUnfollowUser?.invoke(bookmark.user, it) })
-                    }
-                    else {
-                        add(R.string.bookmark_follow to {onFollowUser?.invoke(bookmark.user, it) })
+                    when (following) {
+                        true -> add(R.string.bookmark_unfollow to { onUnfollowUser?.invoke(bookmark.user, it) })
+                        false -> add(R.string.bookmark_follow to { onFollowUser?.invoke(bookmark.user, it) })
+                        else -> {}
                     }
 
-                    if (ignoring) {
-                        add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) })
-                    }
-                    else {
-                        add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark, it) })
+                    when (ignoring) {
+                        true -> add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) })
+                        false -> add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark, it) })
+                        else -> {}
                     }
 
                     if (!isBookmarkDummy && (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty())) {
