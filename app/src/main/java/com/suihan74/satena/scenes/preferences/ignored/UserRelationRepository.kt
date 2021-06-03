@@ -23,6 +23,9 @@ interface UserRelationRepositoryInterface {
     /** 非表示ユーザーリストのLiveData */
     val ignoredUsers : LiveData<List<String>>
 
+    /** 通報処理中 */
+    val reporting : LiveData<Boolean>
+
     /** リストを初期化する */
     suspend fun loadIgnoredUsers()
 
@@ -102,6 +105,9 @@ class UserRelationRepository(
 
     override val ignoredUsers: LiveData<List<String>>
         get() = _ignoredUsers
+
+    private val _reporting = MutableLiveData<Boolean>()
+    override val reporting: LiveData<Boolean> = _reporting
 
     /** 読み込み済みの内容をクリアする */
     suspend fun clearIgnoredUsers() = withContext(Dispatchers.Main) {
@@ -239,6 +245,11 @@ class UserRelationRepository(
         }
     }
 
+    /** 通報処理開始 */
+    private suspend fun startReporting() = withContext(Dispatchers.Main) { _reporting.value = true }
+    /** 通報処理終了 */
+    private suspend fun stopReporting() = withContext(Dispatchers.Main) { _reporting.value = false }
+
     /**
      *  ブコメを通報する
      *
@@ -251,18 +262,28 @@ class UserRelationRepository(
         category: ReportCategory,
         model: ReportDialog.Model
     ) {
+        startReporting()
+
         val result = runCatching {
             val client = signIn()
             client.reportAsync(entry, bookmark, category, model.comment).await()
         }
 
         if (result.isFailure) {
+            stopReporting()
             throw TaskFailureException(cause = result.exceptionOrNull())
         }
 
         if (model.ignoreAfterReporting) {
-            ignoreUser(model.user)
+            runCatching {
+                ignoreUser(model.user)
+            }.onFailure {
+                stopReporting()
+                throw it
+            }
         }
+
+        stopReporting()
     }
 
     /**
