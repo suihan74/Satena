@@ -11,6 +11,7 @@ import com.suihan74.satena.scenes.post.exceptions.CommentTooLongException
 import com.suihan74.satena.scenes.post.exceptions.PostingMastodonFailureException
 import com.suihan74.satena.scenes.post.exceptions.TagAlreadyExistsException
 import com.suihan74.satena.scenes.post.exceptions.TooManyTagsException
+import com.suihan74.satena.scenes.preferences.createLiveDataEnum
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.exceptions.InvalidUrlException
@@ -108,6 +109,12 @@ class BookmarkPostRepository(
     /** 確認ダイアログを使用する */
     val useConfirmDialog =
         prefs.getBoolean(PreferenceKey.USING_POST_BOOKMARK_DIALOG)
+
+    /** タグリストの並び順 */
+    val tagsListOrder = createLiveDataEnum(prefs, PreferenceKey.POST_BOOKMARK_TAGS_LIST_ORDER,
+        { v -> v.ordinal },
+        { i -> TagsListOrder.fromOrdinal(i) }
+    )
 
     // ------ //
 
@@ -255,11 +262,19 @@ class BookmarkPostRepository(
         }
 
         if (result.isSuccess) {
-            tags.postValue(result.getOrDefault(emptyList()))
+            result.getOrDefault(emptyList())
+                .let { list -> tags.postValue(sortTagsList(list)) }
         }
         else {
             throw ConnectionFailureException(cause = result.exceptionOrNull())
         }
+    }
+
+    /** タグリストを並べ替える */
+    private fun sortTagsList(list: List<Tag>) : List<Tag> = when(tagsListOrder.value) {
+        TagsListOrder.INDEX -> list.sortedBy { it.index }
+        TagsListOrder.COUNT -> list.sortedByDescending { it.count }
+        else -> list
     }
 
     /**

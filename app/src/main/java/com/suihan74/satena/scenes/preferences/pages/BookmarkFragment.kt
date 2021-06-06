@@ -15,6 +15,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
+import com.suihan74.satena.scenes.post.TagsListOrder
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -177,6 +178,12 @@ class BookmarkViewModel(
         { BookmarkPostActivityGravity.fromOrdinal(it) }
     )
 
+    /** タグリストの並び順 */
+    val tagsListOrder = createLiveDataEnum(prefs, PreferenceKey.POST_BOOKMARK_TAGS_LIST_ORDER,
+        { v -> v.ordinal },
+        { i -> TagsListOrder.fromOrdinal(i) }
+    )
+
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
@@ -237,6 +244,14 @@ class BookmarkViewModel(
                         this@BookmarkViewModel,
                         fragmentManager
                     )
+                )
+            }
+            addPrefItem(fragment, tagsListOrder, R.string.pref_post_bookmarks_tags_list_order) {
+                openEnumSelectionDialog(
+                    TagsListOrder.values(),
+                    tagsListOrder,
+                    R.string.pref_post_bookmarks_tags_list_order,
+                    fragmentManager
                 )
             }
         }

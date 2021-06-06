@@ -375,6 +375,7 @@
     <string name="pref_bookmarks_using_post_dialog_desc">ブックマークする前に確認する</string>
     <string name="msg_pref_bookmarks_fetching_accounts_failed">連携SNS情報取得失敗</string>
     <string name="pref_bookmarks_post_dialog_vertical_gravity_desc">投稿ダイアログの表示位置</string>
+    <string name="pref_post_bookmarks_tags_list_order">タグリストの並び順</string>
 
     <string name="pref_post_dialog_gravity_default">デフォルト</string>
     <string name="pref_post_dialog_gravity_top">上</string>
@@ -395,6 +396,9 @@
     <string name="pref_bookmarks_change_home_by_long_tapping_desc">タブ長押しで初期タブを変更する</string>
     <string name="pref_bookmarks_title_single_click_behavior_desc">タイトル部分をタップしたときの動作</string>
     <string name="pref_bookmarks_title_long_click_behavior_desc">タイトル部分をロングタップしたときの動作</string>
+
+    <string name="post_bookmark_tags_list_order_index">名前順</string>
+    <string name="post_bookmark_tags_list_order_count">使用回数順</string>
     <!-- ignored users -->
     <string name="ignored_user">非表示ユーザー</string>
     <string name="pref_ignored_users_show_entries">@string/bookmark_show_user_entries</string>

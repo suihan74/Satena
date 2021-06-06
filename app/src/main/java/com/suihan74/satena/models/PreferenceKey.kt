@@ -10,6 +10,7 @@ import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.EntriesDefaultTabSettings
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
+import com.suihan74.satena.scenes.post.TagsListOrder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -200,6 +201,15 @@ enum class PreferenceKey(
 
     /** 投稿ダイアログの表示位置(Y) */
     POST_BOOKMARK_VERTICAL_GRAVITY(typeInfo<Int>(), BookmarkPostActivityGravity.DEFAULT.ordinal),
+
+    /** タグ入力ダイアログを最初から最大展開する */
+    POST_BOOKMARK_EXPAND_ADDING_TAGS_DIALOG_BY_DEFAULT(typeInfo<Boolean>(), false),
+
+    /** 投稿ダイアログのタグリストの並び順 */
+    POST_BOOKMARK_TAGS_LIST_ORDER(typeInfo<Int>(), TagsListOrder.INDEX.ordinal),
+
+    /** 過去の使用回数がn件以下のタグを表示しない(0=無効) */
+//    POST_BOOKMARK_TAGS_LIST_LIMIT(typeInfo<Int>(), 0),
 
     /** 最初に表示するタブ */
     BOOKMARKS_INITIAL_TAB(typeInfo<Int>(), BookmarksTabType.POPULAR.ordinal),
