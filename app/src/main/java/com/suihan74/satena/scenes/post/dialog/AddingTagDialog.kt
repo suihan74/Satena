@@ -69,6 +69,10 @@ class AddingTagDialog : BottomSheetDialogFragment() {
             complete()
         }
 
+        binding.closeButton.setOnClickListener {
+            dismiss()
+        }
+
         return binding.root
     }
 

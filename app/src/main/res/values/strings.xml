@@ -564,6 +564,7 @@
     <string name="add_new_tag_complete_button_description">タグを追加してダイアログを閉じる</string>
     <string name="search_query_hint">検索キーワード</string>
     <string name="add_new_tag_hint">タグを追加</string>
+    <string name="adding_tag_dialog_close_button_text">閉じる</string>
 
     <!-- ブコメ通報ダイアログ -->
     <string name="report_bookmark_dialog_title">ブコメを通報</string>
