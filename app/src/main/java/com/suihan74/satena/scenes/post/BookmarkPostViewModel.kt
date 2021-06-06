@@ -79,6 +79,11 @@ class BookmarkPostViewModel(
      */
     val displayEntryTitle = MutableLiveData<Boolean>(false)
 
+    /**
+     * タグ入力ダイアログを最初から最大展開する
+     */
+    val expandAddingTagsDialogByDefault = repository.expandAddingTagsDialogByDefault
+
     // ------ //
 
     /** 投稿完了時の追加処理 */
@@ -361,11 +366,15 @@ class BookmarkPostViewModel(
     fun createTagsListAdapter(
         context: Context,
         lifecycleOwner: LifecycleOwner,
+        fragmentManager: FragmentManager,
         comment: EditText,
     ) : TagsListAdapter {
         val adapter = TagsListAdapter()
         adapter.setOnItemClickedListener { tag ->
             toggleTag(context, tag, comment)
+        }
+        adapter.setOnItemLongClickedListener {
+            openChangingTagsListOrderDialog(fragmentManager)
         }
 
         // 使ったことがあるタグを入力するボタンを表示する
@@ -374,6 +383,13 @@ class BookmarkPostViewModel(
             adapter.setTags(
                 it.map { t -> t.text }
             )
+        }
+
+        // タグリストの並び順が変更されたら表示を更新する
+        repository.tagsListOrder.observe(lifecycleOwner) {
+            viewModelScope.launch {
+                repository.updateTagsList()
+            }
         }
 
         return adapter
@@ -417,6 +433,22 @@ class BookmarkPostViewModel(
             }
             .setNegativeButton(R.string.dialog_cancel)
             .dismissOnClickItem(true)
+            .create()
+            .show(fragmentManager, null)
+    }
+
+    /** タグリストの並び順を変更するダイアログを表示する */
+    private fun openChangingTagsListOrderDialog(fragmentManager: FragmentManager) {
+        val items = TagsListOrder.values()
+        val labelIds = items.map { it.textId }
+        val selectedItem = items.indexOf(repository.tagsListOrder.value)
+
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_post_bookmarks_tags_list_order_desc)
+            .setSingleChoiceItems(labelIds, selectedItem) { f, which ->
+                repository.tagsListOrder.value = items[which]
+            }
+            .setNegativeButton(R.string.dialog_cancel)
             .create()
             .show(fragmentManager, null)
     }
