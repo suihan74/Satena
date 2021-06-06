@@ -170,7 +170,7 @@ class BookmarkPostFragment : Fragment(), AddingTagDialog.OnDismissListener {
         val comment = binding.comment
         val tagsList = binding.tagsList
 
-        val adapter = viewModel.createTagsListAdapter(requireContext(), viewLifecycleOwner, comment)
+        val adapter = viewModel.createTagsListAdapter(requireContext(), viewLifecycleOwner, childFragmentManager, comment)
         // タッチイベントを他に伝播させない
         // このフラグメントが属するタブやドロワのタッチ処理を防止して
         // タグリストのスクロールだけを行うようにする
