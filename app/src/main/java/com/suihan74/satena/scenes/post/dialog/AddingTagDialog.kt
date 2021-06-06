@@ -86,6 +86,10 @@ class AddingTagDialog : BottomSheetDialogFragment() {
                 val behavior = params.behavior as BottomSheetBehavior
                 // コンパクト表示中に表示する高さ(最上端からeditText部分まで)
                 behavior.peekHeight = binding.tagsTitleTextView.y.toInt()
+                // デフォルトで最大展開する
+                if (bookmarkPostViewModel.expandAddingTagsDialogByDefault) {
+                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                }
                 behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                     override fun onSlide(bottomSheet: View, slideOffset: Float) {}
                     override fun onStateChanged(bottomSheet: View, newState: Int) {

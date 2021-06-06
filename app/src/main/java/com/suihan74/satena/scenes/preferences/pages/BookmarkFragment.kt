@@ -178,8 +178,13 @@ class BookmarkViewModel(
         { BookmarkPostActivityGravity.fromOrdinal(it) }
     )
 
+    /** タグ入力ダイアログを最初から最大展開する */
+    private val expandAddingTagsDialogByDefault = createLiveData<Boolean>(
+        PreferenceKey.POST_BOOKMARK_EXPAND_ADDING_TAGS_DIALOG_BY_DEFAULT
+    )
+
     /** タグリストの並び順 */
-    val tagsListOrder = createLiveDataEnum(prefs, PreferenceKey.POST_BOOKMARK_TAGS_LIST_ORDER,
+    private val tagsListOrder = createLiveDataEnum(prefs, PreferenceKey.POST_BOOKMARK_TAGS_LIST_ORDER,
         { v -> v.ordinal },
         { i -> TagsListOrder.fromOrdinal(i) }
     )
@@ -246,14 +251,15 @@ class BookmarkViewModel(
                     )
                 )
             }
-            addPrefItem(fragment, tagsListOrder, R.string.pref_post_bookmarks_tags_list_order) {
+            addPrefItem(fragment, tagsListOrder, R.string.pref_post_bookmarks_tags_list_order_desc) {
                 openEnumSelectionDialog(
                     TagsListOrder.values(),
                     tagsListOrder,
-                    R.string.pref_post_bookmarks_tags_list_order,
+                    R.string.pref_post_bookmarks_tags_list_order_desc,
                     fragmentManager
                 )
             }
+            addPrefToggleItem(fragment, expandAddingTagsDialogByDefault, R.string.pref_post_bookmarks_expand_adding_tags_dialog_by_default_desc)
         }
 
         addSection(R.string.pref_bookmark_section_tab)

@@ -79,6 +79,11 @@ class BookmarkPostViewModel(
      */
     val displayEntryTitle = MutableLiveData<Boolean>(false)
 
+    /**
+     * タグ入力ダイアログを最初から最大展開する
+     */
+    val expandAddingTagsDialogByDefault = repository.expandAddingTagsDialogByDefault
+
     // ------ //
 
     /** 投稿完了時の追加処理 */

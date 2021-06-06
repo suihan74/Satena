@@ -110,6 +110,10 @@ class BookmarkPostRepository(
     val useConfirmDialog =
         prefs.getBoolean(PreferenceKey.USING_POST_BOOKMARK_DIALOG)
 
+    /** タグ入力ダイアログを最初から最大展開する */
+    val expandAddingTagsDialogByDefault =
+        prefs.getBoolean(PreferenceKey.POST_BOOKMARK_EXPAND_ADDING_TAGS_DIALOG_BY_DEFAULT)
+
     /** タグリストの並び順 */
     val tagsListOrder = createLiveDataEnum(prefs, PreferenceKey.POST_BOOKMARK_TAGS_LIST_ORDER,
         { v -> v.ordinal },
