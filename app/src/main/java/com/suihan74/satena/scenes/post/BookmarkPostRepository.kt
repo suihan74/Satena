@@ -281,6 +281,11 @@ class BookmarkPostRepository(
         else -> list
     }
 
+    /** タグリストの表示を更新する */
+    suspend fun updateTagsList() = withContext(Dispatchers.Default) {
+        tags.postValue(sortTagsList(tags.value.orEmpty()))
+    }
+
     /**
      * 現在のコメントにタグを挿入/削除したものを返す
      *
