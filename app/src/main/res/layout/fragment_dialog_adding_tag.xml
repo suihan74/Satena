@@ -84,10 +84,32 @@
             android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
             android:scrollbars="vertical"
             app:layout_constraintTop_toBottomOf="@id/tagsTitleTextView"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/closeButtonSeparator"
             app:layout_constraintStart_toStartOf="@id/editText"
             app:layout_constraintEnd_toEndOf="@id/completeButton"
             android:layout_width="0dp"
             android:layout_height="0dp"/>
+
+    <View
+            android:id="@+id/closeButtonSeparator"
+            android:background="?bottomSheetDialogHandleColor"
+            app:layout_constraintBottom_toTopOf="@id/closeButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginHorizontal="8dp"
+            android:layout_width="0dp"
+            android:layout_height="2dp"/>
+
+    <Button
+            android:id="@+id/closeButton"
+            android:text="@string/adding_tag_dialog_close_button_text"
+            android:textColor="?bottomSheetDialogHandleColor"
+            android:textSize="16sp"
+            android:background="?selectableItemBackground"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="0dp"
+            android:layout_height="48dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

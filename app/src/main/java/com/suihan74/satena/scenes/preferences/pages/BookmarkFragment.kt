@@ -15,6 +15,7 @@ import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
+import com.suihan74.satena.scenes.post.TagsListOrder
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -177,6 +178,17 @@ class BookmarkViewModel(
         { BookmarkPostActivityGravity.fromOrdinal(it) }
     )
 
+    /** タグ入力ダイアログを最初から最大展開する */
+    private val expandAddingTagsDialogByDefault = createLiveData<Boolean>(
+        PreferenceKey.POST_BOOKMARK_EXPAND_ADDING_TAGS_DIALOG_BY_DEFAULT
+    )
+
+    /** タグリストの並び順 */
+    private val tagsListOrder = createLiveDataEnum(prefs, PreferenceKey.POST_BOOKMARK_TAGS_LIST_ORDER,
+        { v -> v.ordinal },
+        { i -> TagsListOrder.fromOrdinal(i) }
+    )
+
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
@@ -239,6 +251,15 @@ class BookmarkViewModel(
                     )
                 )
             }
+            addPrefItem(fragment, tagsListOrder, R.string.pref_post_bookmarks_tags_list_order_desc) {
+                openEnumSelectionDialog(
+                    TagsListOrder.values(),
+                    tagsListOrder,
+                    R.string.pref_post_bookmarks_tags_list_order_desc,
+                    fragmentManager
+                )
+            }
+            addPrefToggleItem(fragment, expandAddingTagsDialogByDefault, R.string.pref_post_bookmarks_expand_adding_tags_dialog_by_default_desc)
         }
 
         addSection(R.string.pref_bookmark_section_tab)
