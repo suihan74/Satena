@@ -17,6 +17,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Deprecated("use HatenaAuthenticationActivity2")
 class HatenaAuthenticationActivity : AppCompatActivity() {
     companion object {
         /** 初回起動時の呼び出しかを判別する */

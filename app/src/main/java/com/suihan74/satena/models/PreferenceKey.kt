@@ -17,7 +17,7 @@ import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
 
-@SharedPreferencesKey(fileName = "default", version = 8, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 9, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -31,15 +31,18 @@ enum class PreferenceKey(
     ID(typeInfo<String>(), ""),
 
     /** はてなのログインID */
+    @Deprecated("use only RK")
     HATENA_USER_NAME(typeInfo<String>(), ""),
 
     /** はてなのパスワード */
+    @Deprecated("use only RK")
     HATENA_PASSWORD(typeInfo<String>(), ""),
 
     /** はてなのクッキー */
     HATENA_RK(typeInfo<String>(), ""),
 
     /** ID/Passwordを保存してクッキー失効時に自動的に再ログインする */
+    @Deprecated("use only RK")
     SAVE_HATENA_USER_ID_PASSWORD(typeInfo<Boolean>(), false),
 
     /** Mastodonのアクセストークン(暗号化) */
@@ -303,6 +306,8 @@ object PreferenceKeyMigration {
 
                 7 -> migrateFromVersion7(context)
 
+                8 -> migrateFromVersion8(context)
+
                 else -> break
             }
         }
@@ -476,6 +481,17 @@ object PreferenceKeyMigration {
             }
         }.onFailure {
             prefs.edit {}
+        }
+    }
+
+    private fun migrateFromVersion8(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        runCatching {
+            prefs.edit {
+                remove(PreferenceKey.HATENA_USER_NAME)
+                remove(PreferenceKey.HATENA_PASSWORD)
+                remove(PreferenceKey.SAVE_HATENA_USER_ID_PASSWORD)
+            }
         }
     }
 }

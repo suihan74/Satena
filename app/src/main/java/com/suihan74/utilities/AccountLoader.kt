@@ -63,60 +63,24 @@ class AccountLoader(
 
             // クッキーを使用してログイン状態復元を試行
             val userRkEncryptedStr = prefs.getString(PreferenceKey.HATENA_RK)
-            if (userRkEncryptedStr.isNullOrEmpty().not()) {
+            if (userRkEncryptedStr.isNullOrEmpty()) {
+                sharedHatenaFlow.emit(null)
+                return@async null
+            }
+            else {
                 val result = runCatching {
-                    val userRkEncryptedData = serializer.deserialize(userRkEncryptedStr!!)
+                    val userRkEncryptedData = serializer.deserialize(userRkEncryptedStr)
                     val rk = CryptUtility.decrypt(userRkEncryptedData, key)
                     client.signIn(rk)
+                }.onFailure {
+                    Log.d("HatenaLoginWithCookie", Log.getStackTraceString(it))
+                    sharedHatenaFlow.emit(null)
+                    throw HatenaSignInException(it.message)
                 }
 
-                if (result.isFailure) {
-                    Log.d(
-                        "HatenaLoginWithCookie",
-                        Log.getStackTraceString(result.exceptionOrNull())
-                    )
-                }
-                else {
-                    val account = result.getOrNull()
-                    sharedHatenaFlow.emit(account)
-                    return@async result.getOrNull()
-                }
-            }
-
-            // ID・パスワードを使用して再ログイン
-            val autoRetryBasicSignIn = prefs.getBoolean(PreferenceKey.SAVE_HATENA_USER_ID_PASSWORD)
-            if (!autoRetryBasicSignIn) {
-                sharedHatenaFlow.emit(null)
-                return@async null
-            }
-            val userNameEncryptedStr = prefs.getString(PreferenceKey.HATENA_USER_NAME)
-            val userPasswordEncryptedStr = prefs.getString(PreferenceKey.HATENA_PASSWORD)
-            if (userNameEncryptedStr?.isEmpty() != false || userPasswordEncryptedStr?.isEmpty() != false) {
-                sharedHatenaFlow.emit(null)
-                return@async null
-            }
-
-            try {
-                val userNameEncryptedData = serializer.deserialize(userNameEncryptedStr)
-                val name = CryptUtility.decrypt(userNameEncryptedData, key)
-
-                val passwordEncryptedData = serializer.deserialize(userPasswordEncryptedStr)
-                val password = CryptUtility.decrypt(passwordEncryptedData, key)
-
-                val account = client.signInAsync(name, password).await()
-
-                client.rkStr?.let { rk ->
-                    saveHatenaCookie(rk)
-                }
-
+                val account = result.getOrNull()
                 sharedHatenaFlow.emit(account)
-
-                return@async account
-            }
-            catch (e: Throwable) {
-                sharedHatenaFlow.emit(null)
-                Log.d("HatenaLogin", Log.getStackTraceString(e))
-                throw HatenaSignInException(e.message)
+                return@async result.getOrNull()
             }
         }
     }
@@ -167,12 +131,28 @@ class AccountLoader(
 
     // ------ //
 
+    @Deprecated("use only RK")
     suspend fun signInHatena(name: String, password: String) : Account {
         hatenaMutex.withLock {
             try {
                 val account = client.signInAsync(name, password).await()
                 sharedHatenaFlow.emit(account)
                 saveHatenaAccount(name, password, client.rkStr!!)
+
+                return account
+            }
+            catch (e: Throwable) {
+                throw TaskFailureException(cause = e)
+            }
+        }
+    }
+
+    suspend fun signInHatena(rk: String) : Account {
+        hatenaMutex.withLock {
+            try {
+                val account = client.signIn(rk)
+                sharedHatenaFlow.emit(account)
+                saveHatenaCookie(rk)
 
                 return account
             }
@@ -204,6 +184,7 @@ class AccountLoader(
 
     // ------ //
 
+    @Deprecated("user only RK")
     private fun saveHatenaAccount(name: String, password: String, rk: String) {
         val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
         val key = createKey(context)
