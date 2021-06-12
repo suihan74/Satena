@@ -118,7 +118,10 @@ class HatenaAuthenticationActivity2 : AppCompatActivity() {
             error: WebResourceError?
         ) {
             super.onReceivedError(view, request, error)
-            onError()
+            // TODO: 以下の条件なしだとプロキシ利用などでリソース読み込み拒否した場合でも終了してしまうので、あとでなんとかする
+            if (request?.url?.toString() == SIGN_IN_PAGE_URL) {
+                onError()
+            }
         }
 
         override fun shouldInterceptRequest(
