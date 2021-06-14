@@ -39,8 +39,12 @@ data class Notice (
     @delegate:Transient
     val eid : Long by lazy {
         if (verb == VERB_STAR) {
-            val idx = link.lastIndexOf('-') + 1
-            link.substring(idx).toLong()
+            runCatching {
+                val idx = link.lastIndexOf('-') + 1
+                link.substring(idx).toLong()
+            }.getOrElse {
+                throw IllegalArgumentException("notice's verb: $verb", it)
+            }
         }
         else {
             throw IllegalArgumentException("notice's verb: $verb")

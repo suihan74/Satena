@@ -133,34 +133,60 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
         var actions : List<NotificationCompat.Action>? = null
         val intent = when (notice.verb) {
             Notice.VERB_STAR -> {
-                val openEntryIntent = Intent(context, BookmarksActivity::class.java).apply {
-                    putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
-                }
+                runCatching {
+                    val openEntryIntent = Intent(context, BookmarksActivity::class.java).apply {
+                        putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
+                    }
 
-                val openBookmarkIntent = Intent(context, BookmarksActivity::class.java).apply {
-                    putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
-                    putExtra(BookmarksActivity.EXTRA_TARGET_USER, HatenaClient.account!!.name)
-                }
+                    val openBookmarkIntent = Intent(context, BookmarksActivity::class.java).apply {
+                        putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
+                        putExtra(BookmarksActivity.EXTRA_TARGET_USER, HatenaClient.account!!.name)
+                    }
 
-                val openNoticesIntent = Intent(context, EntriesActivity::class.java).apply {
-                    putExtra(EntriesActivity.EXTRA_OPEN_NOTICES, true)
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                }
+                    val openNoticesIntent = Intent(context, EntriesActivity::class.java).apply {
+                        putExtra(EntriesActivity.EXTRA_OPEN_NOTICES, true)
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
 
-                actions = listOf(
-                    NotificationCompat.Action(
-                        0, context.getString(R.string.notice_action_open_entry), PendingIntent.getActivity(context, 1, openEntryIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-                    ),
-                    NotificationCompat.Action(
-                        0, context.getString(R.string.notice_action_open_bookmark), PendingIntent.getActivity(context, 2, openBookmarkIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-                    ),
-                    NotificationCompat.Action(
-                        0, context.getString(R.string.notice_action_open_notices), PendingIntent.getActivity(context, 3, openNoticesIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+                    actions = listOf(
+                        NotificationCompat.Action(
+                            0,
+                            context.getString(R.string.notice_action_open_entry),
+                            PendingIntent.getActivity(
+                                context,
+                                1,
+                                openEntryIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                            )
+                        ),
+                        NotificationCompat.Action(
+                            0,
+                            context.getString(R.string.notice_action_open_bookmark),
+                            PendingIntent.getActivity(
+                                context,
+                                2,
+                                openBookmarkIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                            )
+                        ),
+                        NotificationCompat.Action(
+                            0,
+                            context.getString(R.string.notice_action_open_notices),
+                            PendingIntent.getActivity(
+                                context,
+                                3,
+                                openNoticesIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                            )
+                        )
                     )
-                )
 
-                // デフォルトで開くのはブコメ詳細
-                openBookmarkIntent
+                    // デフォルトで開くのはブコメ詳細
+                    openBookmarkIntent
+                }.getOrElse {
+                    actions = null
+                    Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
+                }
             }
 
             Notice.VERB_ADD_FAVORITE -> {
