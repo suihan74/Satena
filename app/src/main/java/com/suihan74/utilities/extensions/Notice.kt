@@ -45,7 +45,12 @@ fun Notice.message(context: Context) : String {
     return when (verb) {
         Notice.VERB_STAR -> {
             val starColor = ContextCompat.getColor(context, R.color.starYellow)
-            "${usersStr}があなたのブコメ($sourceComment)に<font color=\"$starColor\">★</font>をつけました"
+            if (link.startsWith("https://b.hatena.ne.jp/")) {
+                "${usersStr}があなたのブコメ($sourceComment)に<font color=\"$starColor\">★</font>をつけました"
+            }
+            else {
+                "${usersStr}があなたの($sourceComment)に<font color=\"$starColor\">★</font>をつけました"
+            }
         }
 
         Notice.VERB_ADD_FAVORITE ->
