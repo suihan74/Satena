@@ -12,6 +12,7 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.satena.scenes.entries2.NoticesAdapter
 import com.suihan74.satena.scenes.entries2.dialog.NoticeMenuDialog
+import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.putEnum
@@ -83,14 +84,19 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
 
     /** スターが付けられたときの通知をクリックしたときの処理 */
     private fun onClickedForStar(notice: Notice) {
-        val intent = Intent(requireContext(), BookmarksActivity::class.java).apply {
-            putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
-            putExtra(
-                BookmarksActivity.EXTRA_TARGET_USER,
-                notice.user
-            )
+        runCatching {
+            Intent(requireContext(), BookmarksActivity::class.java).apply {
+                putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
+                putExtra(
+                    BookmarksActivity.EXTRA_TARGET_USER,
+                    notice.user
+                )
+            }
+        }.onSuccess { intent ->
+            startActivity(intent)
+        }.onFailure {
+            requireContext().startInnerBrowser(url = notice.link)
         }
-        startActivity(intent)
     }
 
     /** お気に入りユーザーに追加されたときの通知をクリックしたときの処理 */
