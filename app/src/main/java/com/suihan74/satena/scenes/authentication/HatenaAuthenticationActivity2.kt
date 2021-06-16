@@ -144,5 +144,14 @@ class HatenaAuthenticationActivity2 : AppCompatActivity() {
                 return super.shouldInterceptRequest(view, request)
             }
         }
+
+        override fun onPageFinished(view: WebView?, url: String?) {
+            super.onPageFinished(view, url)
+            if (url == SIGN_IN_PAGE_URL) {
+                lifecycleScope.launchWhenCreated {
+                    runCatching { loading.value = false }
+                }
+            }
+        }
     }
 }
