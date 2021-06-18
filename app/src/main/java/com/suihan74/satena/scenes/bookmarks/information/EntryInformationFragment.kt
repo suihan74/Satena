@@ -116,6 +116,15 @@ class EntryInformationFragment : Fragment() {
         bookmarksActivity.closeDrawer()
         val intent = Intent(bookmarksActivity, BookmarksActivity::class.java).apply {
             putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
+            bookmarksViewModel.entry.value?.let { entry ->
+                Regex("""(\S+)\s*のブックマーク\s*/\s*はてなブックマーク$""")
+                    .find(entry.title)
+                    ?.groupValues
+                    ?.get(1)
+                    ?.let { userName ->
+                        putExtra(BookmarksActivity.EXTRA_TARGET_USER, userName)
+                    }
+            }
         }
         startActivity(intent)
     }
