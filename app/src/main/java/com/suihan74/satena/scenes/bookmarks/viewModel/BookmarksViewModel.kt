@@ -402,15 +402,11 @@ class BookmarksViewModel(
     ) = withContext(Dispatchers.Main) {
         val result = runCatching {
             repository.postStar(entry, bookmark, color, quote.orEmpty())
-        }
-
-        if (result.isSuccess) {
+        }.onSuccess {
             context.showToast(R.string.msg_post_star_succeeded, bookmark.user)
-
             // 表示を更新する
             repository.updateStarCounts(bookmark)
-        }
-        else result.exceptionOrNull().let { e ->
+        }.onFailure { e ->
             Log.w("postStar", Log.getStackTraceString(e))
             when (e) {
                 is StarExhaustedException -> context.showToast(R.string.msg_no_color_stars, color.name)
