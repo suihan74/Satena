@@ -360,7 +360,13 @@ class BookmarksAdapter(
             binding.bookmarkTimestamp.text = builder
 
             // スターを付けるボタンを設定
-            bookmarksAdapter.addStarButtonBinder?.invoke(binding.addStarButton, bookmark)
+            if (bookmark.commentRaw.isNotBlank()) {
+                binding.addStarButton.visibility = View.VISIBLE
+                bookmarksAdapter.addStarButtonBinder?.invoke(binding.addStarButton, bookmark)
+            }
+            else {
+                binding.addStarButton.visibility = View.GONE
+            }
 
             // ブクマへのブクマ数の表示
             bookmarkCountObserver?.let {
