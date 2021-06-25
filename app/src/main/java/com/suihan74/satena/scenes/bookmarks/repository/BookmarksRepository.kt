@@ -745,7 +745,8 @@ class BookmarksRepository(
         bookmarksRecentCache =
             bookmarksRecentCache.updateFirstOrPlusAhead(bookmark) { it.user == user }
 
-        refreshBookmarks()
+        updateRecentBookmarksLiveData(bookmarksRecentCache)
+        // refreshBookmarks()
     }
 
     /**
@@ -755,17 +756,19 @@ class BookmarksRepository(
     suspend fun updateStarCounts(bookmark: Bookmark) {
         val starsEntry = getStarsEntry(bookmark).value ?: return
         val user = bookmark.user
-        val bookmarkWithStarCount = bookmarksRecentCache.firstOrNull { it.user == user }
-            ?.copy(
-                starCount = buildList {
-                    appendStarCount(starsEntry, StarColor.Yellow)
-                    appendStarCount(starsEntry, StarColor.Red)
-                    appendStarCount(starsEntry, StarColor.Green)
-                    appendStarCount(starsEntry, StarColor.Blue)
-                    appendStarCount(starsEntry, StarColor.Purple)
-                }
-            )
+        val predicate : (BookmarkWithStarCount)->Boolean = { it.user == user }
+        val targetBookmark = bookmarksDigest.value?.scoredBookmarks?.firstOrNull(predicate)
+            ?: bookmarksDigest.value?.favoriteBookmarks?.firstOrNull(predicate)
+            ?: bookmarksRecentCache.firstOrNull(predicate)
             ?: return
+
+        val bookmarkWithStarCount = targetBookmark.copy(starCount = buildList {
+            appendStarCount(starsEntry, StarColor.Yellow)
+            appendStarCount(starsEntry, StarColor.Red)
+            appendStarCount(starsEntry, StarColor.Green)
+            appendStarCount(starsEntry, StarColor.Blue)
+            appendStarCount(starsEntry, StarColor.Purple)
+        })
         updateBookmark(bookmarkWithStarCount)
     }
 
