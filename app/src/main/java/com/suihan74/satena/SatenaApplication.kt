@@ -257,7 +257,7 @@ class SatenaApplication : Application() {
     fun startCheckingNotificationsWorker(context: Context, forceReplace: Boolean = false) {
         val result = runCatching {
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-            val signedIn = prefs.contains(PreferenceKey.HATENA_USER_NAME)
+            val signedIn = prefs.contains(PreferenceKey.HATENA_RK)
             val enabled = prefs.getBoolean(PreferenceKey.BACKGROUND_CHECKING_NOTICES)
             val interval = prefs.getLong(PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS)
 
