@@ -66,7 +66,7 @@ class DetailTabAdapter(
         lifecycleScope.launch(Dispatchers.Main.immediate) {
             viewModel.starsToUser.observe(lifecycleOwner, { list ->
                 lifecycleScope.launch(Dispatchers.Default) {
-                    starsToUserCount = list.sumBy { it.star?.count ?: 0 }
+                    starsToUserCount = list.sumOf { it.star?.count ?: 0 }
                     withContext(Dispatchers.Main) {
                         notifyDataSetChanged()
                     }
@@ -75,7 +75,7 @@ class DetailTabAdapter(
 
             viewModel.starsFromUser.observe(lifecycleOwner, { list ->
                 lifecycleScope.launch(Dispatchers.Default) {
-                    starsFromUserCount = list.sumBy { it.star?.count ?: 0 }
+                    starsFromUserCount = list.sumOf { it.star?.count ?: 0 }
                     withContext(Dispatchers.Main) {
                         notifyDataSetChanged()
                     }

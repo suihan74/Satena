@@ -342,11 +342,11 @@ class BookmarksAdapter(
 
             if (!bookmark.starCount.isNullOrEmpty()) {
                 bookmark.starCount.let { stars ->
-                    val yellowStarCount = stars.filter { it.color == StarColor.Yellow }.sumBy { it.count }
-                    val redStarCount = stars.filter { it.color == StarColor.Red }.sumBy { it.count }
-                    val greenStarCount = stars.filter { it.color == StarColor.Green }.sumBy { it.count }
-                    val blueStarCount = stars.filter { it.color == StarColor.Blue }.sumBy { it.count }
-                    val purpleStarCount = stars.filter { it.color == StarColor.Purple }.sumBy { it.count }
+                    val yellowStarCount = stars.filter { it.color == StarColor.Yellow }.sumOf { it.count }
+                    val redStarCount = stars.filter { it.color == StarColor.Red }.sumOf { it.count }
+                    val greenStarCount = stars.filter { it.color == StarColor.Green }.sumOf { it.count }
+                    val blueStarCount = stars.filter { it.color == StarColor.Blue }.sumOf { it.count }
+                    val purpleStarCount = stars.filter { it.color == StarColor.Purple }.sumOf { it.count }
 
                     builder.appendStarSpan(purpleStarCount, context, R.style.StarSpan_Purple)
                     builder.appendStarSpan(blueStarCount, context, R.style.StarSpan_Blue)

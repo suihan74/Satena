@@ -361,7 +361,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         require (signedIn()) { "need to sign-in to search user's bookmarked entries" }
 
         val url = buildString {
-            append("$B_BASE_URL/api/ipad.mysearch/${searchType.name.toLowerCase(Locale.ROOT)}?${cacheAvoidance()}&q=$query")
+            append("$B_BASE_URL/api/ipad.mysearch/${searchType.name.lowercase()}?${cacheAvoidance()}&q=$query")
             if (limit != null) append("&limit=$limit")
             if (of != null) append("&of=$of")
         }
@@ -635,9 +635,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
         val url = buildString {
             append(
-                "$B_BASE_URL/api/ipad.search/${searchType.name.toLowerCase(Locale.ROOT)}?${cacheAvoidance()}",
+                "$B_BASE_URL/api/ipad.search/${searchType.name.lowercase()}?${cacheAvoidance()}",
                 "&q=${Uri.encode(query)}",
-                "&sort=${entriesType.name.toLowerCase(Locale.ROOT)}",
+                "&sort=${entriesType.name.lowercase()}",
                 "&include_bookmarked_data=1"
             )
             if (limit != null) append("&limit=$limit")
@@ -663,16 +663,14 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 val bodyBytes = response.body!!.use { it.bytes() }
 
                 // 文字コードを判別してからHTMLを読む
-                val defaultCharsetName = Charset.defaultCharset().name().toLowerCase(Locale.ROOT)
+                val defaultCharsetName = Charset.defaultCharset().name().lowercase()
                 var charsetName = defaultCharsetName
                 var charsetDetected = false
 
                 val charsetRegex = Regex("""charset=([a-zA-Z0-9_\-]+)""")
                 fun parseCharset(src: String): String {
                     val matchResult = charsetRegex.find(src)
-                    return if (matchResult?.groups?.size ?: 0 >= 2) matchResult!!.groups[1]!!.value.toLowerCase(
-                        Locale.ROOT
-                    )
+                    return if (matchResult?.groups?.size ?: 0 >= 2) matchResult!!.groups[1]!!.value.lowercase()
                     else ""
                 }
 
@@ -695,14 +693,14 @@ object HatenaClient : BaseClient(), CoroutineScope {
                         // <meta charset="???">
                         val charsetMeta = elem.firstOrNull { it.hasAttr("charset") }
                         if (charsetMeta != null) {
-                            charsetName = charsetMeta.attr("charset").toLowerCase(Locale.ROOT)
+                            charsetName = charsetMeta.attr("charset").lowercase()
                             charsetDetected = true
                             return@let
                         }
 
                         // <meta http-equiv="Content-Type" content="text/html; charset=???">
                         val meta =
-                            elem.firstOrNull { it.attr("http-equiv")?.toLowerCase(Locale.ROOT) == "content-type" }
+                            elem.firstOrNull { it.attr("http-equiv")?.lowercase() == "content-type" }
                         meta?.attr("content")?.let {
                             val parsed = parseCharset(it)
                             if (parsed.isNotEmpty()) {
@@ -1141,7 +1139,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
             val data = mapOf(
                 "uri" to url,
-                "color" to color.name.toLowerCase(Locale.ROOT),
+                "color" to color.name.lowercase(),
                 "token" to palette.token
             )
 
@@ -1198,7 +1196,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 "&uri=${Uri.encode(url)}" +
                 "&rks=$mRksForStar" +
                 "&name=${star.user}" +
-                "&color=${star.color.name.toLowerCase(Locale.ROOT)}" +
+                "&color=${star.color.name.lowercase()}" +
                 "&quote=${Uri.encode(star.quote)}"
 
         get(apiUrl).use { response ->
@@ -1508,7 +1506,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             "rks" to account!!.rks,
             "url" to entry.url,
             "user_name" to bookmark.user,
-            "category" to category.name.toLowerCase(Locale.ROOT),
+            "category" to category.name.lowercase(),
             "text" to text
         )
 

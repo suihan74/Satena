@@ -86,7 +86,7 @@ class FollowingUsersFragment : Fragment() {
             }
             isSingleSelection = true
             isSelectionRequired = true
-            addOnButtonCheckedListener { group, checkedId, isChecked ->
+            addOnButtonCheckedListener { _, checkedId, isChecked ->
                 if (!isChecked) return@addOnButtonCheckedListener
                 viewModel.setMode(checkedIdToMode(checkedId), viewLifecycleOwner)
             }
@@ -116,6 +116,5 @@ class FollowingUsersFragment : Fragment() {
     private fun modeToCheckedId(mode: FollowingUsersViewModel.Mode) = when(mode) {
         FollowingUsersViewModel.Mode.FOLLOWINGS -> R.id.followings_button
         FollowingUsersViewModel.Mode.FOLLOWERS -> R.id.followers_button
-        else -> throw IllegalStateException()
     }
 }

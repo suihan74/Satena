@@ -25,5 +25,5 @@ class ColorStars (
     }
 
     @delegate:Transient
-    val starsCount : Int by lazy { stars.sumBy { it.count } }
+    val starsCount : Int by lazy { stars.sumOf { it.count } }
 }
