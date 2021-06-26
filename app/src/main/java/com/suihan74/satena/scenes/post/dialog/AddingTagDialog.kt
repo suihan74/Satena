@@ -6,21 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.updateLayoutParams
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogAddingTagBinding
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner
 import com.suihan74.satena.scenes.post.TagsListAdapter
+import com.suihan74.utilities.ExpandableBottomSheetDialogFragment
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.showSoftInputMethod
 
-class AddingTagDialog : BottomSheetDialogFragment() {
+class AddingTagDialog : ExpandableBottomSheetDialogFragment() {
 
     companion object {
         fun createInstance() = AddingTagDialog()
@@ -35,6 +31,12 @@ class AddingTagDialog : BottomSheetDialogFragment() {
 
     private var _binding : FragmentDialogAddingTagBinding? = null
     private val binding get() = _binding!!
+
+    override val hiddenTopView: View
+        get() = binding.tagsTitleTextView
+
+    override val expandBottomSheetByDefault: Boolean
+        get() = bookmarkPostViewModel.expandAddingTagsDialogByDefault
 
     // ------ //
 
@@ -76,51 +78,6 @@ class AddingTagDialog : BottomSheetDialogFragment() {
         return binding.root
     }
 
-    /** コンパクト表示を有効にする */
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        dialog?.setOnShowListener {
-            val dialog = it as BottomSheetDialog
-            val bottomSheetInternal = dialog.findViewById<View>(R.id.design_bottom_sheet)
-            bottomSheetInternal?.updateLayoutParams {
-                height = ViewGroup.LayoutParams.MATCH_PARENT
-            }
-            view.post {
-                val parent = view.parent as View
-                val params = parent.layoutParams as CoordinatorLayout.LayoutParams
-                val behavior = params.behavior as BottomSheetBehavior
-                // コンパクト表示中に表示する高さ(最上端からeditText部分まで)
-                behavior.peekHeight = binding.tagsTitleTextView.y.toInt()
-                // デフォルトで最大展開する
-                if (bookmarkPostViewModel.expandAddingTagsDialogByDefault) {
-                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                }
-                behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-                    override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-                    override fun onStateChanged(bottomSheet: View, newState: Int) {
-                        // ダイアログのサイズ変更したときIMEの高さの分だけダイアログがずれるので、IMEを一度閉じて開き直す
-                        when (newState) {
-                            BottomSheetBehavior.STATE_EXPANDED,
-                            BottomSheetBehavior.STATE_COLLAPSED -> {
-                                val editTextFocused = binding.editText.hasFocus()
-                                binding.editText.hideSoftInputMethod(binding.root)
-                                if (editTextFocused) {
-                                    dialog.showSoftInputMethod(requireActivity(), binding.editText)
-                                }
-                            }
-                            else -> {}
-                        }
-
-                        // 最初の全画面化時に既存のタグリストをロードする
-                        // onCreate時に表示しているとボトムシート表示時に一瞬チラつくため
-                        if (newState == BottomSheetBehavior.STATE_EXPANDED && binding.tagsList.adapter == null) {
-                            initializeTagsList()
-                        }
-                    }
-                })
-            }
-        }
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -130,6 +87,29 @@ class AddingTagDialog : BottomSheetDialogFragment() {
         super.onDismiss(dialog)
         val listener = parentFragment as? OnDismissListener ?: requireActivity() as? OnDismissListener
         listener?.onDismiss(this)
+    }
+
+    // ------ //
+
+    override fun onStateChanged(bottomSheet: View, newState: Int) {
+        // ダイアログのサイズ変更したときIMEの高さの分だけダイアログがずれるので、IMEを一度閉じて開き直す
+        when (newState) {
+            BottomSheetBehavior.STATE_EXPANDED,
+            BottomSheetBehavior.STATE_COLLAPSED -> {
+                val editTextFocused = binding.editText.hasFocus()
+                binding.editText.hideSoftInputMethod(binding.root)
+                if (editTextFocused) {
+                    dialog?.showSoftInputMethod(requireActivity(), binding.editText)
+                }
+            }
+            else -> {}
+        }
+
+        // 最初の全画面化時に既存のタグリストをロードする
+        // onCreate時に表示しているとボトムシート表示時に一瞬チラつくため
+        if (newState == BottomSheetBehavior.STATE_EXPANDED && binding.tagsList.adapter == null) {
+            initializeTagsList()
+        }
     }
 
     // ------ //

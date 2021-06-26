@@ -144,11 +144,11 @@ object TextViewBindingAdapters {
 
         if (!stars.isNullOrEmpty()) {
             stars.let { star ->
-                val yellowStarCount = star.filter { it.color == StarColor.Yellow }.sumBy { it.count }
-                val redStarCount = star.filter { it.color == StarColor.Red }.sumBy { it.count }
-                val greenStarCount = star.filter { it.color == StarColor.Green }.sumBy { it.count }
-                val blueStarCount = star.filter { it.color == StarColor.Blue }.sumBy { it.count }
-                val purpleStarCount = star.filter { it.color == StarColor.Purple }.sumBy { it.count }
+                val yellowStarCount = star.filter { it.color == StarColor.Yellow }.sumOf { it.count }
+                val redStarCount = star.filter { it.color == StarColor.Red }.sumOf { it.count }
+                val greenStarCount = star.filter { it.color == StarColor.Green }.sumOf { it.count }
+                val blueStarCount = star.filter { it.color == StarColor.Blue }.sumOf { it.count }
+                val purpleStarCount = star.filter { it.color == StarColor.Purple }.sumOf { it.count }
 
                 val context = textView.context
                 builder.appendStarSpan(purpleStarCount, context, R.style.StarSpan_Purple)

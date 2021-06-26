@@ -598,11 +598,11 @@ class BookmarksRepository(
         val keywordsRaw = filteringText.value
         if (keywordsRaw.isNullOrBlank()) return src
 
-        val keywords = keywordsRaw.toLowerCase(Locale.JAPANESE).split(Regex("""\s+"""))
+        val keywords = keywordsRaw.lowercase().split(Regex("""\s+"""))
         val keywordsRegex = Regex(keywords.joinToString(separator = "|") { Regex.escape(it) })
 
         return src.filter { b ->
-            keywordsRegex.containsMatchIn(b.string.toLowerCase(Locale.JAPANESE))
+            keywordsRegex.containsMatchIn(b.string.lowercase())
         }
     }
 

@@ -43,13 +43,13 @@ class BookmarkPostRepository(
          * タグは判定外で、その他部分はバイト数から判定している模様
          */
         fun calcCommentLength(commentRaw: String) : Int =
-            ceil(commentRaw.replace(tagRegex, "").sumBy { c ->
-                val code = c.toInt()
+            ceil(commentRaw.replace(tagRegex, "").sumOf { c ->
+                val code = c.code
                 when (code / 0xff) {
                     0 -> 1
                     1 -> if (code <= 0xc3bf) 1 else 3
                     else -> 3
-                }
+                }.toLong()
             } / 3f).toInt()
 
         /**

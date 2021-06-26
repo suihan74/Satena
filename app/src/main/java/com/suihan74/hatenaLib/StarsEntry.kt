@@ -12,14 +12,14 @@ data class StarsEntry (
     private constructor() : this("", emptyList(), null)
 
     fun getStarsCount(color : StarColor) : Int = when (color) {
-        StarColor.Yellow -> stars.sumBy { it.count }
+        StarColor.Yellow -> stars.sumOf { it.count }
         else -> coloredStars?.find { it.color == color } ?.starsCount ?: 0
     }
 
 
     @delegate:Transient
     val totalStarsCount: Int by lazy {
-        stars.sumBy { it.count } + (coloredStars?.sumBy { it.starsCount } ?: 0)
+        stars.sumOf { it.count } + (coloredStars?.sumOf { it.starsCount } ?: 0)
     }
 
 
@@ -31,7 +31,7 @@ data class StarsEntry (
 
         stars.groupBy { "${it.user},${it.color.name},${it.quote}" }
             .map {
-                val count = it.value.sumBy { s -> s.count }
+                val count = it.value.sumOf { s -> s.count }
                 val star = it.value[0]
                 Star(
                     user = star.user,
