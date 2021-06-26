@@ -2,10 +2,10 @@ package com.suihan74.satena.scenes.entries2.dialog
 
 import android.app.Activity
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,8 +14,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.transition.Slide
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentDialogBrowserShortcutBinding
@@ -26,16 +25,18 @@ import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteRegistra
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesAdapter
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.startInnerBrowser
+import com.suihan74.utilities.ExpandableBottomSheetDialogFragment
 import com.suihan74.utilities.exceptions.EmptyException
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.showSoftInputMethod
 import com.suihan74.utilities.lazyProvideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
 
 /**
  * エントリ画面からブラウザを開く際の追加機能ショートカット
  */
-class BrowserShortcutDialog : BottomSheetDialogFragment() {
+class BrowserShortcutDialog : ExpandableBottomSheetDialogFragment() {
     companion object {
         fun createInstance() = BrowserShortcutDialog()
     }
@@ -48,12 +49,22 @@ class BrowserShortcutDialog : BottomSheetDialogFragment() {
 
     // ------ //
 
+    private var _binding : FragmentDialogBrowserShortcutBinding? = null
+    private val binding get() = _binding!!
+
+    override val hiddenTopView: View
+        get() = binding.favoriteSitesHeader
+
+    override val expandBottomSheetByDefault = false
+
+    // ------ //
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentDialogBrowserShortcutBinding.inflate(
+        _binding = FragmentDialogBrowserShortcutBinding.inflate(
             layoutInflater,
             container,
             false
@@ -97,7 +108,39 @@ class BrowserShortcutDialog : BottomSheetDialogFragment() {
             }
         }
 
+        binding.closeButton.setOnClickListener {
+            dismiss()
+        }
+
         return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        activity?.hideSoftInputMethod()
+        super.onDismiss(dialog)
+    }
+
+
+    // ------ //
+
+    override fun onStateChanged(bottomSheet: View, newState: Int) {
+        // ダイアログのサイズ変更したときIMEの高さの分だけダイアログがずれるので、IMEを一度閉じて開き直す
+        when (newState) {
+            BottomSheetBehavior.STATE_EXPANDED,
+            BottomSheetBehavior.STATE_COLLAPSED -> {
+                val editTextFocused = binding.searchText.hasFocus()
+                binding.searchText.hideSoftInputMethod(binding.root)
+                if (editTextFocused) {
+                    dialog?.showSoftInputMethod(requireActivity(), binding.searchText)
+                }
+            }
+            else -> {}
+        }
     }
 
     // ------ //
@@ -129,24 +172,6 @@ class BrowserShortcutDialog : BottomSheetDialogFragment() {
         val favoriteSites : LiveData<List<FavoriteSite>> by lazy { _favoriteSites }
         private val _favoriteSites = favoriteSitesRepo.favoriteSites
 
-        /** お気に入りサイトリストの表示状態 */
-        val areFavoriteSitesVisible by lazy { _areFavoriteSitesVisible }
-        private val _areFavoriteSitesVisible = MutableLiveData<Boolean>(false)
-
-        /** お気に入りサイトリストの表示状態を示すアロー */
-        val favoriteSitesListStateArrow = MutableLiveData<Int>().also { arrowLiveData ->
-            _areFavoriteSitesVisible.observeForever {
-                arrowLiveData.value =
-                    if (it) R.drawable.ic_baseline_keyboard_arrow_up
-                    else R.drawable.ic_baseline_keyboard_arrow_down
-            }
-        }
-
-        /** お気に入りサイトリストの表示状態を変更するときの遷移アニメーション */
-        val favoriteSitesListTransition = Slide(Gravity.BOTTOM).also {
-            it.duration = 200
-        }
-
         // ------ //
 
         /**
@@ -167,13 +192,6 @@ class BrowserShortcutDialog : BottomSheetDialogFragment() {
                 throw EmptyException()
             }
             activity.startInnerBrowser(q)
-        }
-
-        /**
-         * お気に入りサイトリストの表示状態を切り替える
-         */
-        fun toggleFavoriteSitesVisibility() {
-            _areFavoriteSitesVisible.value = _areFavoriteSitesVisible.value != true
         }
 
         /**

@@ -12,37 +12,47 @@
             xmlns:tools="http://schemas.android.com/tools"
             tools:background="?attr/panelBackground"
             android:id="@+id/main_layout"
-            android:paddingTop="22dp"
-            android:paddingBottom="8dp"
+            android:paddingTop="12dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/topBar"
+                android:src="@drawable/bottom_sheet_dialog_handle_bar"
+                android:contentDescription="@null"
+                android:paddingVertical="6dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
         <TextView
                 android:id="@+id/title"
                 android:text="@string/dialog_browser_shortcut_title"
                 android:textSize="18sp"
-                app:layout_constraintTop_toTopOf="@id/open_button"
-                app:layout_constraintBottom_toBottomOf="@id/open_button"
+                app:layout_constraintTop_toBottomOf="@id/topBar"
                 app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="12dp"
                 android:layout_marginHorizontal="@dimen/browser_shortcut_horizontal_padding"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
         <ImageButton
-                android:id="@+id/open_button"
+                android:id="@+id/openButton"
                 android:src="@drawable/ic_baseline_open_in_new"
                 android:tint="?textColor"
                 android:background="?actionBarItemBackground"
                 tooltipText="@{@string/dialog_browser_shortcut_open_start_page}"
                 android:contentDescription="@null"
-                app:layout_constraintBaseline_toBaselineOf="@id/title"
+                app:layout_constraintBaseline_toBaselineOf="@id/topBar"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginEnd="@dimen/browser_shortcut_horizontal_padding"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
-        <EditText
-                android:id="@+id/search_text"
+        <com.suihan74.utilities.views.ImeEnhancedEditText
+                android:id="@+id/searchText"
                 style="?editTextStyle"
                 android:text="@={vm.searchQuery}"
                 android:hint="@string/browser_address_bar_hint"
@@ -55,36 +65,37 @@
                 android:nextFocusRight="@id/search_button"
                 android:nextFocusDown="@id/search_button"
 
-                app:layout_constraintTop_toBottomOf="@id/open_button"
+                app:layout_constraintTop_toBottomOf="@id/title"
                 app:layout_constraintStart_toStartOf="@id/title"
-                app:layout_constraintEnd_toStartOf="@id/search_button"
+                app:layout_constraintEnd_toStartOf="@id/searchButton"
                 android:layout_marginEnd="8dp"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="10dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
 
         <ImageButton
-                android:id="@+id/search_button"
+                android:id="@+id/searchButton"
                 android:src="@drawable/ic_baseline_search"
                 android:tint="?colorPrimary"
                 android:background="?actionBarItemBackground"
                 tooltipText="@{@string/search_button_tooltip}"
                 android:contentDescription="@null"
-                app:layout_constraintTop_toTopOf="@id/search_text"
-                app:layout_constraintBottom_toBottomOf="@id/search_text"
-                app:layout_constraintEnd_toEndOf="@id/open_button"
+                app:layout_constraintTop_toTopOf="@id/searchText"
+                app:layout_constraintBottom_toBottomOf="@id/searchText"
+                app:layout_constraintEnd_toEndOf="@id/openButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
         <com.suihan74.utilities.bindings.TextViewWithDrawable
-                android:id="@+id/favorite_sites_header"
+                android:id="@+id/favoriteSitesHeader"
                 android:text="@string/category_favorite_sites"
                 android:textSize="15sp"
                 android:background="?selectableItemBackground"
-                android:onClick="@{()-> vm.toggleFavoriteSitesVisibility()}"
-                drawableStart="@{vm.favoriteSitesListStateArrow}"
+                android:drawableStart="@drawable/ic_baseline_keyboard_arrow_down"
+                android:drawableTint="?textColor"
 
-                app:layout_constraintTop_toBottomOf="@id/search_text"
+                app:layout_constraintTop_toBottomOf="@id/searchText"
+                app:layout_constraintBottom_toTopOf="@id/favoriteSitesList"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
 
@@ -94,20 +105,39 @@
                 android:layout_height="wrap_content"/>
 
         <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/favorite_sites_list"
+                android:id="@+id/favoriteSitesList"
                 style="@style/RecyclerView.Linear"
                 divider="@{@drawable/recycler_view_item_divider}"
                 items="@{vm.favoriteSites}"
 
-                android:visibility="@{vm.areFavoriteSitesVisible}"
-                transition="@{vm.favoriteSitesListTransition}"
-                container="@{mainLayout}"
-
-                app:layout_constraintTop_toBottomOf="@id/favorite_sites_header"
+                app:layout_constraintTop_toBottomOf="@id/favoriteSitesHeader"
+                app:layout_constraintBottom_toTopOf="@id/closeButtonSeparator"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
+                android:layout_height="0dp"/>
+
+        <View
+                android:id="@+id/closeButtonSeparator"
+                android:background="?bottomSheetDialogHandleColor"
+                app:layout_constraintBottom_toTopOf="@id/closeButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginHorizontal="8dp"
+                android:layout_width="0dp"
+                android:layout_height="2dp"/>
+
+        <Button
+                android:id="@+id/closeButton"
+                android:text="@string/adding_tag_dialog_close_button_text"
+                android:textColor="?bottomSheetDialogHandleColor"
+                android:textSize="16sp"
+                android:background="?selectableItemBackground"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="0dp"
+                android:layout_height="48dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
