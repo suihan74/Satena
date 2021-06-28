@@ -5,7 +5,6 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.0-beta04'
@@ -25,7 +24,6 @@ allprojects {
 
         maven { url 'https://jitpack.io' }
         mavenCentral()
-        jcenter()
     }
 
     // experimentalApiを使用する
