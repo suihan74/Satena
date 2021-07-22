@@ -89,6 +89,10 @@ class BookmarkMenuDialog : DialogFragment() {
         viewModel.onUnignoreUser = listener
     }
 
+    fun setOnAddIgnoredWord(listener: DialogListener<String>?) = lifecycleScope.launchWhenCreated {
+        viewModel.onAddIgnoredWord = listener
+    }
+
     fun setOnReportBookmark(listener: DialogListener<Bookmark>?) = lifecycleScope.launchWhenCreated {
         viewModel.onReportBookmark = listener
     }
@@ -149,6 +153,9 @@ class BookmarkMenuDialog : DialogFragment() {
         /** ユーザーの非表示を解除する */
         var onUnignoreUser: DialogListener<String>? = null
 
+        /** NGワードを追加 */
+        var onAddIgnoredWord: DialogListener<String>? = null
+
         /** ブクマを通報する */
         var onReportBookmark: DialogListener<Bookmark>? = null
 
@@ -182,9 +189,14 @@ class BookmarkMenuDialog : DialogFragment() {
                         .whenTrue { add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) }) }
                         .whenFalse { add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark, it) }) }
 
+                    add(R.string.bookmark_add_ignored_word to { onAddIgnoredWord?.invoke(bookmark.commentRaw, it) })
+
                     if (!isBookmarkDummy && (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty())) {
                         add(R.string.bookmark_report to { onReportBookmark?.invoke(bookmark, it) })
                     }
+                }
+                else {
+                    add(R.string.bookmark_add_ignored_word to { onAddIgnoredWord?.invoke(bookmark.commentRaw, it) })
                 }
 
                 add(R.string.bookmark_user_tags to { onSetUserTag?.invoke(bookmark.user, it) })
