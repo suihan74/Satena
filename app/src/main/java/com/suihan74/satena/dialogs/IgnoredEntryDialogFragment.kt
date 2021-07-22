@@ -19,14 +19,17 @@ import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
-import com.suihan74.utilities.Listener
+import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.exceptions.AlreadyExistedException
+import com.suihan74.utilities.exceptions.EmptyException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.math.max
 
 class IgnoredEntryDialogFragment : DialogFragment() {
     companion object {
@@ -38,8 +41,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
 
         fun createInstance(
             url: String = "",
-            title: String = "",
-            onCompleted: Listener<IgnoredEntry>? = null
+            title: String = ""
         ) = IgnoredEntryDialogFragment().withArguments {
             val editingUrl =
                 Regex("""^https?://""").find(url)?.let { r ->
@@ -49,25 +51,22 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             putString(ARG_EDITING_URL, editingUrl)
             putString(ARG_EDITING_TEXT, title)
             putBoolean(ARG_EDIT_MODE, false)
-        }.also {
-            it.lifecycleScope.launchWhenCreated {
-                it.viewModel.onCompleted = onCompleted
-            }
         }
 
-        fun createInstance(
-            ignoredEntry: IgnoredEntry,
-            onCompleted: Listener<IgnoredEntry>? = null
-        ) = IgnoredEntryDialogFragment().withArguments {
-            putString(ARG_EDITING_URL, ignoredEntry.query)
-            putString(ARG_EDITING_TEXT, ignoredEntry.query)
+        fun createInstance(ignoredEntry: IgnoredEntry) = IgnoredEntryDialogFragment().withArguments {
+            when (ignoredEntry.type) {
+                IgnoredEntryType.URL -> {
+                    putString(ARG_EDITING_URL, ignoredEntry.query)
+                    putString(ARG_EDITING_TEXT, "")
+                }
+                IgnoredEntryType.TEXT -> {
+                    putString(ARG_EDITING_URL, "")
+                    putString(ARG_EDITING_TEXT, ignoredEntry.query)
+                }
+            }
             putObject(ARG_MODIFYING_ENTRY, ignoredEntry)
             putEnum(ARG_INITIAL_TARGET, ignoredEntry.target) { it.id }
-            putBoolean(ARG_EDIT_MODE, true)
-        }.also {
-            it.lifecycleScope.launchWhenCreated {
-                it.viewModel.onCompleted = onCompleted
-            }
+            putBoolean(ARG_EDIT_MODE, ignoredEntry.id >= 0)
         }
     }
 
@@ -98,7 +97,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         }
 
         val queryText = binding.queryText.apply {
-            setText(viewModel.editingUrl.value)
+            setText(viewModel.text)
             setHorizontallyScrolling(false)
             maxLines = Int.MAX_VALUE
 
@@ -114,7 +113,6 @@ class IgnoredEntryDialogFragment : DialogFragment() {
         val descText = binding.descText
 
         // タブが切り替わったときの表示内容更新
-        // ここで他のフラグメントのようにthisではなくviewLifecycleOwner使うと落ちる
         viewModel.selectedTab.observe(this) { tab ->
             queryText.setHint(tab.textId)
             when (tab) {
@@ -190,45 +188,32 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                     }
 
                     button.setOnClickListener {
-                        if (queryText.text.isNullOrBlank()) {
-                            showToast(R.string.msg_ignored_entry_dialog_empty_query)
-                            return@setOnClickListener
-                        }
-
                         lifecycleScope.launch(Dispatchers.Main) {
-                            val result = runCatching {
-                                viewModel.register(modifyingEntry)
-                            }
-
-                            val ignoredEntry = result.getOrNull()
-
-                            if (ignoredEntry != null) {
-                                showToast(
-                                    R.string.msg_ignored_entry_dialog_succeeded,
-                                    ignoredEntry.query
-                                )
-
-                                viewModel.onCompleted?.invoke(ignoredEntry)
-
-                                runCatching {
-                                    dismiss()
-                                }
-                            }
-                            else {
-                                when (result.exceptionOrNull()) {
-                                    is AlreadyExistedException -> {
-                                        showToast(R.string.msg_ignored_entry_dialog_already_existed)
-                                    }
-
-                                    else -> {
-                                        showToast(R.string.msg_ignored_entry_dialog_failed)
-                                    }
-                                }
-                            }
+                            onClickPositiveButton(modifyingEntry)
                         }
                     }
                 }
             }
+    }
+
+    /**
+     * 「登録」ボタン押下時の処理
+     */
+    private suspend fun onClickPositiveButton(modifyingEntry: IgnoredEntry?) {
+        runCatching {
+            viewModel.register(modifyingEntry, this@IgnoredEntryDialogFragment)
+        }.onFailure {
+            when (it) {
+                is EmptyException -> showToast(R.string.msg_ignored_entry_dialog_empty_query)
+                is AlreadyExistedException -> showToast(R.string.msg_ignored_entry_dialog_already_existed)
+                else -> showToast(R.string.msg_ignored_entry_dialog_failed)
+            }
+        }.onSuccess { ignoredEntry ->
+            showToast(R.string.msg_ignored_entry_dialog_succeeded, ignoredEntry.query)
+            runCatching {
+                dismiss()
+            }
+        }
     }
 
     private fun switchIgnoredTargetAreaVisibility(binding: FragmentDialogIgnoredEntryBinding, visibility: Int) {
@@ -257,6 +242,15 @@ class IgnoredEntryDialogFragment : DialogFragment() {
     private fun setIgnoreTarget(binding: FragmentDialogIgnoredEntryBinding, target: IgnoreTarget) {
         binding.targetEntryCheckbox.isChecked = target.contains(IgnoreTarget.ENTRY)
         binding.targetBookmarkCheckbox.isChecked = target.contains(IgnoreTarget.BOOKMARK)
+    }
+
+    // ------ //
+
+    fun setOnCompleteListener(listener: DialogListener<IgnoredEntry>?) : IgnoredEntryDialogFragment {
+        lifecycleScope.launchWhenCreated {
+            viewModel.onCompleted = listener
+        }
+        return this
     }
 
     // ------ //
@@ -298,9 +292,18 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             MutableLiveData(args.getEnum<IgnoreTarget>(ARG_INITIAL_TARGET) { it.id } ?: IgnoreTarget.ENTRY)
         }
 
+        // ------ //
+
+        /** 登録処理完了後に呼び出すリスナ */
+        var onCompleted : DialogListener<IgnoredEntry>? = null
+
+        // ------ //
+
         init {
             ignoreTarget.value = IgnoreTarget.ENTRY
         }
+
+        // ------ //
 
         fun createIgnoredEntry(id: Int) = IgnoredEntry(
             type = when (selectedTab.value) {
@@ -310,7 +313,7 @@ class IgnoredEntryDialogFragment : DialogFragment() {
             },
             query = text,
             target = ignoreTarget.value!!,
-            id = id
+            id = max(id, 0)
         )
 
         @MainThread
@@ -333,31 +336,36 @@ class IgnoredEntryDialogFragment : DialogFragment() {
                 else -> Unit
             }
 
-        var onCompleted : Listener<IgnoredEntry>? = null
-
         /**
          * 登録処理
          *
-         * @throws AlreadyExistedException
-         * @throws TaskFailureException
+         * @throws EmptyException クエリ文字列が空
+         * @throws AlreadyExistedException 重複する設定
+         * @throws TaskFailureException 登録処理中に何らかのエラー
          */
-        suspend fun register(modifyingEntry: IgnoredEntry?) : IgnoredEntry {
-            val ignoredEntry = createIgnoredEntry(modifyingEntry?.id ?: 0)
-            val modifyMode = modifyingEntry != null
+        suspend fun register(modifyingEntry: IgnoredEntry?, dialogFragment: IgnoredEntryDialogFragment) : IgnoredEntry {
+            if (text.isBlank()) {
+                throw EmptyException()
+            }
 
-            val result = runCatching {
+            val ignoredEntry = createIgnoredEntry(modifyingEntry?.id ?: 0)
+            val modifyMode = modifyingEntry != null && modifyingEntry.id >= 0
+
+            runCatching {
                 if (modifyMode) {
                     repository.updateIgnoredEntry(ignoredEntry)
                 }
                 else {
                     repository.addIgnoredEntry(ignoredEntry)
                 }
-            }
 
-            if (result.isFailure) {
-                throw when (val e = result.exceptionOrNull()) {
+                withContext(Dispatchers.Main) {
+                    onCompleted?.invoke(ignoredEntry, dialogFragment)
+                }
+            }.onFailure { e ->
+                throw when (e) {
                     is AlreadyExistedException -> e
-                    else -> TaskFailureException(cause = result.exceptionOrNull())
+                    else -> TaskFailureException(cause = e)
                 }
             }
 
