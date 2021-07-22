@@ -10,13 +10,12 @@ import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
+import com.suihan74.satena.databinding.DialogTitleBookmarkBinding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.utilities.DialogListener
-import com.suihan74.utilities.extensions.getObject
-import com.suihan74.utilities.extensions.putObject
-import com.suihan74.utilities.extensions.withArguments
+import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.lazyProvideViewModel
 import org.threeten.bp.LocalDateTime
 
@@ -49,16 +48,12 @@ class BookmarkMenuDialog : DialogFragment() {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val inflater = localLayoutInflater()
-        val titleView = inflater.inflate(
-            R.layout.dialog_title_bookmark,
-            null
-        ).also {
-            it.setCustomTitle(viewModel.bookmark)
+        val titleViewBinding = DialogTitleBookmarkBinding.inflate(localLayoutInflater()).also {
+            it.root.setCustomTitle(viewModel.bookmark)
         }
 
         return createBuilder()
-            .setCustomTitle(titleView)
+            .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
             .setItems(viewModel.createLabels(requireContext())) { _, which ->
                 viewModel.invokeAction(which, this)
@@ -179,17 +174,13 @@ class BookmarkMenuDialog : DialogFragment() {
                 add(R.string.bookmark_share_comment_page_url to { onShareCommentPageUrl?.invoke(bookmark, it) })
 
                 if (signedIn && bookmark.user != userSignedIn) {
-                    when (following) {
-                        true -> add(R.string.bookmark_unfollow to { onUnfollowUser?.invoke(bookmark.user, it) })
-                        false -> add(R.string.bookmark_follow to { onFollowUser?.invoke(bookmark.user, it) })
-                        else -> {}
-                    }
+                    following
+                        .whenTrue { add(R.string.bookmark_unfollow to { onUnfollowUser?.invoke(bookmark.user, it) }) }
+                        .whenFalse { add(R.string.bookmark_follow to { onFollowUser?.invoke(bookmark.user, it) }) }
 
-                    when (ignoring) {
-                        true -> add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) })
-                        false -> add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark, it) })
-                        else -> {}
-                    }
+                    ignoring
+                        .whenTrue { add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) }) }
+                        .whenFalse { add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark, it) }) }
 
                     if (!isBookmarkDummy && (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty())) {
                         add(R.string.bookmark_report to { onReportBookmark?.invoke(bookmark, it) })
