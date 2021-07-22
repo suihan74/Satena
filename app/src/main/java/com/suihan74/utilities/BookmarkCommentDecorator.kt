@@ -18,8 +18,8 @@ data class AnalyzedBookmarkComment(
 
 object BookmarkCommentDecorator {
     private val urlRegex = Regex("""http(s)?://([\w-]+\.)+[\w-]+(/[a-zA-Z0-9_\-+./!?%&=|^~#@*;:,<>()\[\]{}]*)?""")
-    private val entryIdRegex = Regex("""(b:)?id:entry:([0-9]+)""")
-    private val idRegex = Regex("""(b:)?id:(?!entry:)([a-zA-Z0-9_-]+)""")
+    private val entryIdRegex = Regex("""(b:)?id:entry:([0-9]+)""", RegexOption.IGNORE_CASE)
+    private val idRegex = Regex("""(b\s*:\s*)?id\s*:\s*(?!entry\s*:\s*)([a-zA-Z0-9_-]+)""", RegexOption.IGNORE_CASE)
     private val tagRegex = Regex("""<.+>""")
 
     fun convert(str: String) : AnalyzedBookmarkComment {
