@@ -10,8 +10,12 @@ import com.suihan74.hatenaLib.*
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.dialogs.UserTagDialogFragment
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.ignoredEntry.IgnoreTarget
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
+import com.suihan74.satena.models.ignoredEntry.IgnoredEntryType
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.dialog.*
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
@@ -20,10 +24,7 @@ import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 interface BookmarkMenuActions {
 
@@ -68,6 +69,8 @@ class BookmarkMenuActionsImpl(
         dialog.setOnIgnoreUser { b, f -> openIgnoreUserDialog(b, f.requireActivity().lifecycleScope, f.parentFragmentManager) }
 
         dialog.setOnUnignoreUser { user, f -> unIgnoreUser(user, f.requireActivity().lifecycleScope) }
+
+        dialog.setOnAddIgnoredWord { comment, f -> addIgnoredWord(comment, f.requireActivity().supportFragmentManager) }
 
         dialog.setOnReportBookmark { b, f -> reportBookmark(entry, b, f.parentFragmentManager) }
 
@@ -208,6 +211,24 @@ class BookmarkMenuActionsImpl(
         else {
             app.showToast(R.string.msg_unignore_user_failed, user)
         }
+    }
+
+    private fun addIgnoredWord(comment: String, fragmentManager: FragmentManager) {
+        val dummyEntry = IgnoredEntry.createDummy(
+            type = IgnoredEntryType.TEXT,
+            query = comment,
+            target = IgnoreTarget.ALL
+        )
+
+        IgnoredEntryDialogFragment.createInstance(dummyEntry)
+            .setOnCompleteListener { ignoredEntry, f ->
+                if (ignoredEntry.type == IgnoredEntryType.TEXT && ignoredEntry.target.contains(IgnoreTarget.BOOKMARK)) {
+                    f.requireActivity().lifecycleScope.launch {
+                        repository.refreshBookmarks()
+                    }
+                }
+            }
+            .show(fragmentManager, null)
     }
 
     /** ブクマを通報する */

@@ -80,7 +80,7 @@
 
     <!-- 注目タブのセクション -->
     <string name="bookmarks_digest_section_followings">お気に入りユーザー</string>
-    <string name="bookmarks_digest_section_scored">人気</string>
+    <string name="bookmarks_digest_section_scored">ダイジェスト</string>
 
     <!-- エントリリストタブ -->
     <string name="entries_tab_hot">人気</string>
@@ -177,6 +177,7 @@
     <string name="bookmark_unfollow">ユーザーをフォロー解除</string>
     <string name="bookmark_ignore">ユーザーを非表示</string>
     <string name="bookmark_unignore">ユーザー非表示を解除</string>
+    <string name="bookmark_add_ignored_word">NGワード追加</string>
     <string name="bookmark_report">通報する</string>
     <string name="bookmark_user_tags">ユーザータグ</string>
     <string name="bookmark_delete_star">スターを取り消す</string>

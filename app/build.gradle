@@ -12,8 +12,8 @@ android {
         applicationId "com.suihan74.satena"
         // バージョン情報
         // major(1桁)-minor(2桁)-fix(3桁)-dev(3桁)
-        versionCode 1_08_013_000
-        versionName "1.8.13"
+        versionCode 1_08_014_000
+        versionName "1.8.14"
 
         minSdkVersion 23
         targetSdkVersion 30
@@ -43,25 +43,25 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.20"
     implementation 'androidx.core:core-ktx:1.6.0-rc01'
     implementation 'androidx.media:media:1.3.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0-beta02'
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
-    implementation "androidx.fragment:fragment-ktx:1.3.3"
+    implementation "androidx.fragment:fragment-ktx:1.3.5"
 
     // Firebase
     // Import the Firebase BoM
@@ -98,7 +98,7 @@ dependencies {
 
     // recyclerview
     implementation 'com.google.android.material:material:1.3.0'
-    implementation 'androidx.recyclerview:recyclerview:1.2.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
 
     // coroutines
     def coroutines_version = '1.3.9'
@@ -127,7 +127,7 @@ dependencies {
     kapt 'com.github.bumptech.glide:compiler:4.11.0'
 
     // using autofit gridlayout
-    implementation 'com.beloo.widget:ChipsLayoutManager:0.3.7@aar'
+    implementation 'com.github.beloos:ChipsLayoutManager:v0.3.7'
 
     // for using LocalDateTime
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
