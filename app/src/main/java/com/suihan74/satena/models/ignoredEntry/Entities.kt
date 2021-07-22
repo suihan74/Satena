@@ -21,6 +21,17 @@ data class IgnoredEntry (
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
 ) {
+    companion object {
+        /** 登録前のダミーデータを作成する */
+        fun createDummy(
+            type: IgnoredEntryType = IgnoredEntryType.URL,
+            query: String = "",
+            target: IgnoreTarget = IgnoreTarget.ALL
+        ) : IgnoredEntry =
+            IgnoredEntry(type, query, target, id = -1)
+    }
+
+    // ------ //
 
     fun isMatched(entry: Entry) = when (type) {
         IgnoredEntryType.URL -> entry.url.startsWith("https://$query") || entry.url.startsWith("http://$query")
