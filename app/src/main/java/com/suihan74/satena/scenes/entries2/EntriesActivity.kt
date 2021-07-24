@@ -3,7 +3,6 @@ package com.suihan74.satena.scenes.entries2
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.ColorStateList
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -36,18 +35,16 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
-import com.suihan74.satena.scenes.entries2.dialog.BrowserShortcutDialog
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
-import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.views.CustomBottomAppBar
 import com.suihan74.utilities.views.bindMenuItemsGravity
 
-class EntriesActivity : AppCompatActivity() {
+class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     companion object {
         /** String: アクティビティ生成時にCategory.Siteに遷移、表示するURL */
         const val EXTRA_SITE_URL = "EntriesActivity.EXTRA_SITE_URL"
@@ -418,55 +415,41 @@ class EntriesActivity : AppCompatActivity() {
     }
 
     /** (カテゴリメニューから遷移できる)カテゴリを選択 */
-    private fun showCategory(category: Category) {
-        showContentFragment(category) {
-            category.createFragment()
-        }
-    }
+    private fun showCategory(category: Category) = viewModel.showCategory(this, category)
 
     /** Category.Siteに遷移 */
-    fun showSiteEntries(siteUrl: String) {
-        showContentFragment(Category.Site) {
-            Category.Site.createSiteFragment(siteUrl)
-        }
-    }
+    fun showSiteEntries(siteUrl: String) = viewModel.showSiteEntries(this, siteUrl)
 
     /** Category.Userに遷移 */
-    fun showUserEntries(user: String) {
-        showContentFragment(Category.User) {
-            Category.User.createUserFragment(user)
-        }
-    }
+    fun showUserEntries(user: String) = viewModel.showUserEntries(this, user)
 
     /** Category.Search */
-    fun showSearchEntries(query: String, searchType: SearchType) {
-        showContentFragment(Category.Search) {
-            Category.Search.createSearchFragment(query, searchType)
-        }
-    }
-
-    /** EntriesFragment遷移処理 */
-    private fun showContentFragment(category: Category, fragmentGenerator: ()->EntriesFragment) {
-        // 現在トップにある画面と同じカテゴリには連続して遷移しない
-        if (supportFragmentManager.topBackStackEntry?.name == category.name) return
-
-        // 既に一度表示されているカテゴリの場合再利用する
-        val existed = supportFragmentManager.findFragmentByTag(category.name)
-        val fragment = existed ?: fragmentGenerator()
-
-        supportFragmentManager.beginTransaction().run {
-            replace(R.id.main_layout, fragment, category.name)
-            addToBackStack(category.name)
-            commitAllowingStateLoss()
-        }
-    }
+    fun showSearchEntries(query: String, searchType: SearchType) = viewModel.showSearchEntries(this, query, searchType)
 
     /** AppBarを強制的に表示する */
     fun showAppBar() {
-        binding.appbarLayout.setExpanded(true, true)
-        if (viewModel.isBottomLayoutMode) {
-            binding.bottomAppBar.performShow()
+        runCatching {
+            binding.appbarLayout.setExpanded(true, true)
+            if (viewModel.isBottomLayoutMode) {
+                binding.bottomAppBar.performShow()
+            }
         }
+    }
+
+    /** カテゴリリストドロワを表示する */
+    fun openDrawer() {
+        runCatching {
+            binding.drawerLayout.openDrawer(binding.drawerArea)
+        }
+    }
+
+    /**
+     * 表示中のフラグメントの内容を一番上までスクロールする
+     */
+    override fun scrollToTop() {
+        val fragment = supportFragmentManager.get<EntriesFragment>()
+        fragment?.scrollToTop()
+        showAppBar()
     }
 
     /** エントリリストを再構成する */
@@ -578,7 +561,9 @@ class EntriesActivity : AppCompatActivity() {
             true
         }
 
-        setOnBottomMenuItemClickListener(::onBasicBottomMenuItemClicked)
+        setOnBottomMenuItemClickListener { item ->
+            viewModel.onBasicBottomMenuItemClicked(this, item)
+        }
     }
 
     /**
@@ -597,7 +582,7 @@ class EntriesActivity : AppCompatActivity() {
             }
 
             setOnLongClickListener {
-                onBasicBottomMenuItemLongClicked(item)
+                viewModel.onBottomMenuItemLongClicked(this@EntriesActivity, item)
                 true
             }
 
@@ -610,63 +595,6 @@ class EntriesActivity : AppCompatActivity() {
     fun initializeBottomAppBar() : BottomAppBar? =
         if (viewModel.isBottomLayoutMode) binding.bottomAppBar.also { clearBottomAppBarState(it) }
         else null
-
-    /** (基本の)ボトムバーアイテムを選択した際の処理 */
-    private fun onBasicBottomMenuItemClicked(item: UserBottomItem) = when (item) {
-        UserBottomItem.SCROLL_TO_TOP -> {
-            val fragment = supportFragmentManager.get<EntriesFragment>()
-            fragment?.scrollToTop()
-            showAppBar()
-        }
-
-        UserBottomItem.MYBOOKMARKS -> showCategory(Category.MyBookmarks)
-
-        UserBottomItem.NOTICE -> showCategory(Category.Notices)
-
-        UserBottomItem.INNER_BROWSER -> startInnerBrowser()
-
-        UserBottomItem.SEARCH -> showCategory(Category.Search)
-
-        UserBottomItem.HOME -> showCategory(viewModel.homeCategory)
-
-        UserBottomItem.PREFERENCES -> {
-            val intent = Intent(this, PreferencesActivity::class.java)
-            startActivity(intent)
-        }
-
-        UserBottomItem.OPEN_OFFICIAL_TOP -> {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://b.hatena.ne.jp/"))
-            startActivity(intent)
-        }
-
-        UserBottomItem.OPEN_OFFICIAL_HATENA -> {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.hatena.ne.jp/"))
-            startActivity(intent)
-        }
-
-        UserBottomItem.OPEN_ANONYMOUS_DIARY -> {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://anond.hatelabo.jp/"))
-            startActivity(intent)
-        }
-
-        UserBottomItem.CATEGORIES -> {
-            binding.drawerLayout.openDrawer(binding.drawerArea)
-        }
-    }
-
-    /**
-     * ボトムバーアイテムをロングタップしたときの処理
-     *
-     * `UserBottomItem#longClickable`が`true`に設定されてるアイテムのみ呼ばれる
-     */
-    private fun onBasicBottomMenuItemLongClicked(item: UserBottomItem) = when (item) {
-        UserBottomItem.INNER_BROWSER -> {
-            val dialog = BrowserShortcutDialog.createInstance()
-            dialog.showAllowingStateLoss(supportFragmentManager)
-        }
-
-        else -> {}
-    }
 
     /** ボトムバーにメニューアイテムを追加する */
     fun inflateExtraBottomMenu(@MenuRes menuId: Int) {

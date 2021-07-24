@@ -1,7 +1,10 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,14 +12,19 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.isImmediateUpdateAllowed
+import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.scenes.entries2.dialog.BrowserShortcutDialog
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
+import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.OnSuccess
 import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.topBackStackEntry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -123,6 +131,8 @@ class EntriesViewModel(
     /** 表示中画面のタブ位置 */
     val currentTabPosition = MutableLiveData<Int>()
 
+    // ------ //
+
     /** 初期化処理 */
     fun initialize(
         coroutineScope: CoroutineScope,
@@ -194,6 +204,107 @@ class EntriesViewModel(
     /** アプリのアップデートを開始する */
     private fun resumeAppUpdate(activity: EntriesActivity, info: AppUpdateInfo, requestCode: Int) {
         repository.resumeAppUpdate(activity, info, requestCode)
+    }
+
+    // ------ //
+
+    /** (基本の)ボトムバーアイテムを選択した際の処理 */
+    fun onBasicBottomMenuItemClicked(activity: EntriesActivity, item: UserBottomItem) = when (item) {
+        UserBottomItem.SCROLL_TO_TOP -> activity.scrollToTop()
+
+        UserBottomItem.MYBOOKMARKS -> showCategory(activity, Category.MyBookmarks)
+
+        UserBottomItem.NOTICE -> showCategory(activity, Category.Notices)
+
+        UserBottomItem.INNER_BROWSER -> activity.startInnerBrowser()
+
+        UserBottomItem.SEARCH -> showCategory(activity, Category.Search)
+
+        UserBottomItem.HOME -> showCategory(activity, homeCategory)
+
+        UserBottomItem.PREFERENCES -> {
+            val intent = Intent(activity, PreferencesActivity::class.java)
+            activity.startActivity(intent)
+        }
+
+        UserBottomItem.OPEN_OFFICIAL_TOP -> {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://b.hatena.ne.jp/"))
+            activity.startActivity(intent)
+        }
+
+        UserBottomItem.OPEN_OFFICIAL_HATENA -> {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.hatena.ne.jp/"))
+            activity.startActivity(intent)
+        }
+
+        UserBottomItem.OPEN_ANONYMOUS_DIARY -> {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://anond.hatelabo.jp/"))
+            activity.startActivity(intent)
+        }
+
+        UserBottomItem.CATEGORIES -> activity.openDrawer()
+    }
+
+    /**
+     * ボトムバーアイテムをロングタップしたときの処理
+     *
+     * `UserBottomItem#longClickable`が`true`に設定されてるアイテムのみ呼ばれる
+     */
+    fun onBottomMenuItemLongClicked(
+        activity: AppCompatActivity,
+        item: UserBottomItem,
+        tag: String? = null
+    ) = when (item) {
+        UserBottomItem.INNER_BROWSER -> {
+            val dialog = BrowserShortcutDialog.createInstance()
+            dialog.show(activity.supportFragmentManager, tag)
+        }
+
+        else -> {}
+    }
+
+    /** (カテゴリメニューから遷移できる)カテゴリを選択 */
+    fun showCategory(activity: AppCompatActivity, category: Category) {
+        showContentFragment(activity, category) {
+            category.createFragment()
+        }
+    }
+
+    /** Category.Siteに遷移 */
+    fun showSiteEntries(activity: AppCompatActivity, siteUrl: String) {
+        showContentFragment(activity, Category.Site) {
+            Category.Site.createSiteFragment(siteUrl)
+        }
+    }
+
+    /** Category.Userに遷移 */
+    fun showUserEntries(activity: AppCompatActivity, user: String) {
+        showContentFragment(activity, Category.User) {
+            Category.User.createUserFragment(user)
+        }
+    }
+
+    /** Category.Search */
+    fun showSearchEntries(activity: AppCompatActivity, query: String, searchType: SearchType) {
+        showContentFragment(activity, Category.Search) {
+            Category.Search.createSearchFragment(query, searchType)
+        }
+    }
+
+    /** EntriesFragment遷移処理 */
+    private fun showContentFragment(activity: AppCompatActivity, category: Category, fragmentGenerator: ()->EntriesFragment) {
+        // 現在トップにある画面と同じカテゴリには連続して遷移しない
+        if (activity.supportFragmentManager.topBackStackEntry?.name == category.name) return
+
+        // 既に一度表示されているカテゴリの場合再利用する
+        val existed = activity.supportFragmentManager.findFragmentByTag(category.name)
+        val fragment = existed ?: fragmentGenerator()
+
+        activity.supportFragmentManager.beginTransaction().run {
+            replace(R.id.main_layout, fragment, category.name)
+            addToBackStack(category.name)
+            commitAllowingStateLoss()
+        }
     }
 
     // ------ //
