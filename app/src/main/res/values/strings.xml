@@ -61,16 +61,12 @@
     </plurals>
 
     <!-- ログイン画面 -->
-    <string name="cancel">キャンセル</string>
     <string name="sign_in">ログイン</string>
-    <string name="hatena_title">はてなブックマーク</string>
-    <string name="hint_id">はてなID/メールアドレス</string>
-    <string name="hint_password">パスワード</string>
     <string name="hint_mastodon_instance">インスタンス名 (e.g. mstdn.jp)</string>
-    <string name="sign_up"><a href="https://www.hatena.ne.jp/register">アカウントを新規作成</a></string>
     <string name="msg_hatena_sign_in_info_is_blank">ユーザー名とパスワードを入力してください</string>
     <string name="msg_hatena_sign_in_succeeded">id:%s でログインしました</string>
     <string name="msg_hatena_sign_in_failed">ログイン失敗</string>
+    <string name="msg_hatena_sign_in_warning_on_creating">注意:現在，Satenaから「Googleでログイン」はご利用いただけません</string>
 
     <!-- ブコメリストタブ -->
     <string name="bookmarks_tab_popular">注目</string>

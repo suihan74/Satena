@@ -11,6 +11,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityHatenaAuthenticationBinding
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.finish
 import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,7 +19,8 @@ import java.io.ByteArrayInputStream
 
 class HatenaAuthenticationActivity : AppCompatActivity() {
     companion object {
-        private const val SIGN_IN_PAGE_URL = "https://www.hatena.ne.jp/login"
+        private const val BASE_URL = "https://www.hatena.ne.jp"
+        private const val SIGN_IN_PAGE_URL = "$BASE_URL/login"
     }
 
     // ------ //
@@ -26,11 +28,11 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
     private val cookieManager = CookieManager.getInstance()
 
     private val rk : String? get() {
-        val cookies = cookieManager.getCookie("https://www.hatena.ne.jp")
+        val cookies = cookieManager.getCookie(BASE_URL)
         if (cookies.isNullOrBlank()) return null
         val regex = Regex("""rk=(.+);""")
         val matches = regex.find(cookies)
-        return matches?.groupValues?.get(1)
+        return matches?.groupValues?.getOrNull(1)
     }
 
     private var finished = false
@@ -53,7 +55,7 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
             binding.progressBar.visibility = it.toVisibility()
         })
 
-        showToast("注意:現在，Satenaから「Googleでログイン」はご利用いただけません")
+        showToast(R.string.msg_hatena_sign_in_warning_on_creating)
     }
 
     private fun initializeWebView(webView: WebView) {
@@ -72,7 +74,7 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
     }
 
     override fun finish() {
-        binding.webView.loadUrl("about:blank")
+        binding.webView.finish()
         super.finish()
     }
 
