@@ -131,22 +131,6 @@ class AccountLoader(
 
     // ------ //
 
-    @Deprecated("use only RK")
-    suspend fun signInHatena(name: String, password: String) : Account {
-        hatenaMutex.withLock {
-            try {
-                val account = client.signInAsync(name, password).await()
-                sharedHatenaFlow.emit(account)
-                saveHatenaAccount(name, password, client.rkStr!!)
-
-                return account
-            }
-            catch (e: Throwable) {
-                throw TaskFailureException(cause = e)
-            }
-        }
-    }
-
     suspend fun signInHatena(rk: String) : Account {
         hatenaMutex.withLock {
             try {
@@ -184,23 +168,6 @@ class AccountLoader(
 
     // ------ //
 
-    @Deprecated("user only RK")
-    private fun saveHatenaAccount(name: String, password: String, rk: String) {
-        val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
-        val key = createKey(context)
-
-        val encryptedName = CryptUtility.encrypt(name, key)
-        val encryptedPassword = CryptUtility.encrypt(password, key)
-        val encryptedRk = CryptUtility.encrypt(rk, key)
-
-        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
-        prefs.edit {
-            putString(PreferenceKey.HATENA_USER_NAME, serializer.serialize(encryptedName))
-            putString(PreferenceKey.HATENA_PASSWORD, serializer.serialize(encryptedPassword))
-            putString(PreferenceKey.HATENA_RK, serializer.serialize(encryptedRk))
-        }
-    }
-
     private fun saveHatenaCookie(rk: String) {
         val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
         val key = createKey(context)
@@ -233,8 +200,6 @@ class AccountLoader(
             sharedHatenaFlow.emit(null)
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
             prefs.edit {
-                remove(PreferenceKey.HATENA_USER_NAME)
-                remove(PreferenceKey.HATENA_PASSWORD)
                 remove(PreferenceKey.HATENA_RK)
             }
             client.signOut()

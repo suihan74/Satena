@@ -1,101 +1,157 @@
 package com.suihan74.satena.scenes.authentication
 
-import android.content.Intent
 import android.os.Bundle
-import android.text.method.LinkMovementMethod
-import android.util.Log
+import android.view.View
+import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityHatenaAuthenticationBinding
-import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.io.ByteArrayInputStream
 
-@Deprecated("use HatenaAuthenticationActivity2")
 class HatenaAuthenticationActivity : AppCompatActivity() {
     companion object {
-        /** 初回起動時の呼び出しかを判別する */
-        const val EXTRA_FIRST_LAUNCH = "EXTRA_FIRST_LAUNCH"
-
-        val REQUEST_CODE
-            get() = hashCode() and 0x0000ffff
+        private const val SIGN_IN_PAGE_URL = "https://www.hatena.ne.jp/login"
     }
+
+    // ------ //
+
+    private val cookieManager = CookieManager.getInstance()
+
+    private val rk : String? get() {
+        val cookies = cookieManager.getCookie("https://www.hatena.ne.jp")
+        if (cookies.isNullOrBlank()) return null
+        val regex = Regex("""rk=(.+);""")
+        val matches = regex.find(cookies)
+        return matches?.groupValues?.get(1)
+    }
+
+    private var finished = false
+
+    private val loading = MutableLiveData<Boolean>()
+
+    private lateinit var binding : ActivityHatenaAuthenticationBinding
+
+    // ------ //
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityHatenaAuthenticationBinding.inflate(layoutInflater)
+        binding = ActivityHatenaAuthenticationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // ログイン
-        binding.authButton.setOnClickListener {
-            val name = binding.userName.text.toString()
-            val password = binding.password.text.toString()
+        initializeWebView(binding.webView)
 
-            if (name.isBlank() || password.length < 5) {
-                showToast(R.string.msg_hatena_sign_in_info_is_blank)
-            }
-            else {
-                GlobalScope.launch {
-                    signIn(name, password)
-                }
-            }
-        }
+        loading.observe(this, {
+            binding.clickGuard.visibility = it.toVisibility()
+            binding.progressBar.visibility = it.toVisibility()
+        })
 
-        // 新規登録
-        binding.signUpTextView.apply {
-            movementMethod = LinkMovementMethod.getInstance()
-            setLinkTextColor(ContextCompat.getColor(this@HatenaAuthenticationActivity, R.color.colorPrimary))
-        }
+        showToast("注意:現在，Satenaから「Googleでログイン」はご利用いただけません")
     }
 
-    override fun onBackPressed() {
-        finish(RESULT_CANCELED)
+    private fun initializeWebView(webView: WebView) {
+        cookieManager.acceptCookie()
+        cookieManager.removeAllCookies {}
+        cookieManager.setAcceptThirdPartyCookies(webView, true)
+        webView.settings.javaScriptEnabled = true
+        webView.settings.loadWithOverviewMode = true
+        webView.settings.useWideViewPort = true
+        webView.setInitialScale(1)
+        webView.scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
+    //        webView.settings.userAgentString = "Mozilla/5.0 (Linux; Android 4.0.3; SC-02C Build/IML74K) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.58 Mobile Safari/537.31"
+
+        webView.webViewClient = WebViewClient()
+        webView.loadUrl(SIGN_IN_PAGE_URL)
     }
 
-    fun finish(result: Int) {
-        if (intent.getBooleanExtra(EXTRA_FIRST_LAUNCH, false)) {
-            val intent = Intent(this, EntriesActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            }
-            startActivity(intent)
+    override fun finish() {
+        binding.webView.loadUrl("about:blank")
+        super.finish()
+    }
+
+    // ------ //
+
+    private fun onFinishAuthentication() {
+        val rkStr = rk
+        if (rkStr.isNullOrBlank()) {
+            setResult(RESULT_CANCELED)
         }
         else {
-            setResult(result)
-            super.finish()
+            lifecycleScope.launch(Dispatchers.Main) {
+                runCatching {
+                    val accountLoader = SatenaApplication.instance.accountLoader
+                    accountLoader.signInHatena(rkStr)
+                }.onSuccess {
+                    showToast(R.string.msg_hatena_sign_in_succeeded, HatenaClient.account!!.name)
+                    setResult(RESULT_OK)
+                }.onFailure {
+                    showToast(R.string.msg_hatena_sign_in_failed)
+                    setResult(RESULT_CANCELED)
+                }
+                finish()
+            }
         }
     }
 
-    private suspend fun signIn(name: String, password: String) = withContext(Dispatchers.Main) {
-        val app = SatenaApplication.instance
-        try {
-            val account = app.accountLoader.signInHatena(name, password)
+    private fun onError() {
+        showToast(R.string.msg_hatena_sign_in_failed)
+        setResult(RESULT_CANCELED)
+        finish()
+    }
 
-            app.showToast(R.string.msg_hatena_sign_in_succeeded, account.name)
+    // ------ //
 
-            app.startCheckingNotificationsWorker(this@HatenaAuthenticationActivity)
+    inner class WebViewClient : android.webkit.WebViewClient() {
+        private val emptyResourceRequest : WebResourceResponse =
+            WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream("".toByteArray()))
 
-            // 前の画面に戻る
-            lifecycleScope.launch {
-                finish(RESULT_OK)
+        override fun onReceivedError(
+            view: WebView?,
+            request: WebResourceRequest?,
+            error: WebResourceError?
+        ) {
+            super.onReceivedError(view, request, error)
+            // TODO: 以下の条件なしだとプロキシ利用などでリソース読み込み拒否した場合でも終了してしまうので、あとでなんとかする
+            if (request?.url?.toString() == SIGN_IN_PAGE_URL) {
+                onError()
             }
         }
-        catch (e: Throwable) {
-            Log.d("Hatena", e.message ?: "")
-            app.showToast(R.string.msg_hatena_sign_in_failed)
+
+        override fun shouldInterceptRequest(
+            view: WebView?,
+            request: WebResourceRequest?
+        ): WebResourceResponse? {
+            synchronized(this) {
+                if (finished) return emptyResourceRequest
+                if (request == null) return emptyResourceRequest
+                if (request.url.toString() == SIGN_IN_PAGE_URL && request.method == "POST") {
+                    lifecycleScope.launchWhenCreated {
+                        runCatching { loading.value = true }
+                    }
+                }
+                if (!finished && !rk.isNullOrBlank()) {
+                    finished = true
+                    onFinishAuthentication()
+                    return emptyResourceRequest
+                }
+                return super.shouldInterceptRequest(view, request)
+            }
         }
 
-        // 現在のアカウントがある場合、ログイン状態を復元する
-        try {
-            app.accountLoader.signInHatenaAsync()
-        }
-        catch (e: Throwable) {
-            Log.e("Hatena", e.message ?: "")
+        override fun onPageFinished(view: WebView?, url: String?) {
+            super.onPageFinished(view, url)
+            if (url == SIGN_IN_PAGE_URL) {
+                lifecycleScope.launchWhenCreated {
+                    runCatching { loading.value = false }
+                }
+            }
         }
     }
 }

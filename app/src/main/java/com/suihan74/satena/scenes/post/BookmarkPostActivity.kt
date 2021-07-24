@@ -16,7 +16,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityBookmarkPostBinding
 import com.suihan74.satena.models.BookmarkPostActivityGravity
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity2
+import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner.Companion.VIEW_MODEL_BOOKMARK_POST
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -88,7 +88,7 @@ class BookmarkPostActivity :
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         if (!prefs.contains(PreferenceKey.HATENA_RK)) {
             showToast(R.string.msg_need_to_sign_in_hatena)
-            val intent = Intent(this, HatenaAuthenticationActivity2::class.java)
+            val intent = Intent(this, HatenaAuthenticationActivity::class.java)
             signInLauncher.launch(intent)
         }
 

@@ -35,7 +35,7 @@ import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
-import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity2
+import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.entries2.dialog.BrowserShortcutDialog
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
@@ -204,7 +204,7 @@ class EntriesActivity : AppCompatActivity() {
             }
             else {
                 // サインイン画面に遷移
-                val intent = Intent(this, HatenaAuthenticationActivity2::class.java)
+                val intent = Intent(this, HatenaAuthenticationActivity::class.java)
                 startActivity(intent)
             }
         }
