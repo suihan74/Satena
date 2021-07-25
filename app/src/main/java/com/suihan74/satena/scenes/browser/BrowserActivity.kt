@@ -57,6 +57,7 @@ class BrowserActivity :
         val bookmarksRepo = BookmarksRepository(
             app.accountLoader,
             prefs,
+            SafeSharedPreferences.create(this),
             app.ignoredEntriesRepository,
             app.userTagDao
         )

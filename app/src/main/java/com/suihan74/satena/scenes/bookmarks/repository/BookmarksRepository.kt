@@ -6,6 +6,7 @@ import android.webkit.URLUtil
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.models.CustomDigestSettingsKey
 import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
@@ -33,6 +34,7 @@ import kotlin.collections.HashMap
 class BookmarksRepository(
     val accountLoader: AccountLoader,
     val prefs : SafeSharedPreferences<PreferenceKey>,
+    val customDigestSettings : SafeSharedPreferences<CustomDigestSettingsKey>,
     val ignoredEntriesRepo : IgnoredEntriesRepository,
     private val userTagDao: UserTagDao,
 ) :
@@ -195,6 +197,30 @@ class BookmarksRepository(
     }
 
     // ------ //
+    // ダイジェスト抽出設定
+
+    /** カスタムダイジェストを使用する */
+    val useCustomDigest by lazy {
+        PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.USE_CUSTOM_DIGEST) { p, key ->
+            p.getBoolean(key)
+        }
+    }
+
+    /** 非表示ユーザーのスターを無視する */
+    val ignoreStarsByIgnoredUsers by lazy {
+        PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.IGNORE_STARS_BY_IGNORED_USERS) { p, key ->
+            p.getBoolean(key)
+        }
+    }
+
+    /** 同じユーザーが複数つけた同色のスターを1個だけと数える */
+    val deduplicateStars by lazy {
+        PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.DEDUPLICATE_STARS) { p, key ->
+            p.getBoolean(key)
+        }
+    }
+
+    // ------ //
     // カスタムタブの設定
 
     /** 「カスタム」タブのリストに表示するユーザータグ(ID) */
@@ -324,12 +350,9 @@ class BookmarksRepository(
                         }
                     }
                 },
-                // 全ブクマ情報を含むエントリ
+                // 全ブクマ情報を含むエントリとダイジェスト
                 async {
                     loadBookmarksEntry(modifiedUrl)
-                },
-                // 人気ブクマ
-                async {
                     try {
                         loadPopularBookmarks()
                     }
@@ -800,6 +823,13 @@ class BookmarksRepository(
                 else ->
                     throw ConnectionFailureException(it)
             }
+        }.let {
+            // TODO : experimental
+            if (useCustomDigest.value == true) {
+                val userScoredBookmarks = loadUserCustomizedDigest()
+                it.copy(scoredBookmarks = userScoredBookmarks)
+            }
+            else it
         }
 
         _bookmarksDigest.postValue(digest)
@@ -958,6 +988,78 @@ class BookmarksRepository(
             bookmarks = bookmarks,
             cursor = cursor
         )
+    }
+
+    /**
+     * ユーザー定義のブックマークダイジェストを生成する
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    suspend fun loadUserCustomizedDigest() : List<BookmarkWithStarCount> {
+        val minStarsCount = 3
+        val bookmarks = bookmarksEntry.value?.bookmarks.orEmpty()
+            .filterNot { it.comment.isBlank() }
+            .filterNot { checkIgnored(it) }
+        loadStarsEntriesForBookmarks(bookmarks)
+        val stars = bookmarks.map { getStarsEntry(it).value }
+
+        val targetBookmarks = bookmarks
+            .mapIndexedNotNull { idx, b ->
+                val s = stars[idx] ?: return@mapIndexedNotNull null
+                if (s.totalStarsCount < minStarsCount) return@mapIndexedNotNull null
+                b.copy(starCount = s.allStars)
+            }
+        val targetStars = stars.filterNotNull().filterNot { it.totalStarsCount < minStarsCount }
+
+        val maxStarsCount =
+            runCatching {
+                targetStars.maxOf { it.totalStarsCount }
+            }.onFailure {
+                Log.e("maxStarsCount", targetStars.size.toString())
+                Log.e("stars", stars.size.toString())
+                Log.e("stars(not null)", stars.filterNotNull().size.toString())
+                Log.e("bookmarks", bookmarks.size.toString())
+            }.getOrDefault(0)
+
+        val scores = targetBookmarks.mapIndexed { idx, b ->  scoreBookmark(b, targetStars[idx], maxStarsCount) }
+
+        val scoredBookmarks = targetBookmarks.zip(scores)
+            .sortedByDescending { it.second }
+            .take(10)
+            .map { it.first.toBookmarkWithStarCount(entry.value!!) }
+
+        return scoredBookmarks
+    }
+
+    fun scoreBookmark(
+        bookmark: Bookmark,
+        starsEntry: StarsEntry,
+        maxStarsCount: Int
+    ) : Double {
+        val deduplicateStars = deduplicateStars.value == true
+        val ignoreStarsByIgnoredUsers = ignoreStarsByIgnoredUsers.value == true
+        val colorStarsWeight = 1.0
+        val commentScoreWeight = 0  // TODO: コメントそのものを評価するか検討
+
+        val fixedStarsEntry =
+            if (ignoreStarsByIgnoredUsers) starsEntry.copy(
+                    stars = starsEntry.stars.filterNot { checkIgnoredUser(it.user) },
+                    coloredStars = starsEntry.coloredStars?.map { group -> ColorStars(group.stars.filterNot { checkIgnoredUser(it.user) }, group.color) }
+                )
+            else starsEntry
+
+        val yellowStarsCount =
+            if (deduplicateStars) fixedStarsEntry.stars.distinctBy { it.user }.count()
+            else fixedStarsEntry.getStarsCount(StarColor.Yellow)
+        val colorStarsCount =
+            if (deduplicateStars) fixedStarsEntry.coloredStars?.flatMap { it.stars }?.distinctBy { it.user }?.count() ?: 0
+            else fixedStarsEntry.coloredStars?.sumOf { it.starsCount } ?: 0
+
+        val commentLength = bookmark.comment.length
+
+        val starScore = (yellowStarsCount + colorStarsCount * colorStarsWeight) / maxStarsCount
+        val commentScore = 1.0 / commentLength
+
+        return starScore + commentScore * commentScoreWeight
     }
 
     // ------ //

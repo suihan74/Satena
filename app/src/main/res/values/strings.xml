@@ -438,6 +438,7 @@
     <string name="bookmark_fab_scroll_to_bottom_tooltip">一番下までスクロールする</string>
     <string name="bookmark_fab_filter_tooltip">ブクマを抽出する</string>
     <string name="bookmark_fab_settings_for_custom_tooltip">表示対象を設定</string>
+    <string name="bookmark_fab_settings_for_popular_tooltip">ダイジェスト抽出設定</string>
 
     <!-- 内部ブラウザ -->
     <string name="pref_browser_section_browser">ブラウザ</string>
@@ -708,6 +709,12 @@
     <string name="star_item_menu_remove">スターを削除する</string>
     <!-- 言及ブクマ項目に対する操作メニュー -->
     <string name="mentioned_item_menu_show_user_entries">@string/bookmark_show_user_entries</string>
+
+    <!-- ダイジェスト抽出方法設定ダイアログ -->
+    <string name="digest_bookmarks_settings_dialog_title">ダイジェスト抽出方法の設定</string>
+    <string name="digest_bookmarks_use_custom_digest_desc">アプリ独自のダイジェスト抽出を利用する</string>
+    <string name="digest_bookmarks_deduplicate_stars_desc">同じユーザーがつけた同色の複数スターは1個だけ数える</string>
+    <string name="digest_bookmarks_ignore_users_desc">非表示ユーザーのスターは除外する</string>
 
     <!-- 内部ブラウザ -->
     <string name="inner_browser">アプリ内ウェブブラウザ</string>
