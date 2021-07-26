@@ -19,6 +19,7 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.saveHistory
 import com.suihan74.satena.scenes.bookmarks.*
 import com.suihan74.satena.scenes.bookmarks.dialog.ConfirmBrowsingDialog
+import com.suihan74.satena.scenes.bookmarks.dialog.CustomDigestSettingsDialog
 import com.suihan74.satena.scenes.bookmarks.dialog.CustomTabSettingsDialog
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.repository.StarExhaustedException
@@ -598,6 +599,19 @@ class BookmarksViewModel(
     }
 
     // ------ //
+
+    /**
+     * アプリ独自のダイジェスト抽出機能の設定ダイアログを開く
+     */
+    fun openCustomDigestSettingsDialog(fragmentManager: FragmentManager) {
+        CustomDigestSettingsDialog.createInstance()
+            .setOnCompleteListener {
+                viewModelScope.launch {
+                    repository.loadPopularBookmarks()
+                }
+            }
+            .show(fragmentManager, null)
+    }
 
     /** 「カスタム」タブの表示対象を設定するダイアログを開く */
     fun openCustomTabSettingsDialog(fragmentManager: FragmentManager) {

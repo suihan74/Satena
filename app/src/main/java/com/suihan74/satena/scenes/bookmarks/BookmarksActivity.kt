@@ -55,6 +55,7 @@ class BookmarksActivity :
         val repository = BookmarksRepository(
             app.accountLoader,
             SafeSharedPreferences.create(this),
+            SafeSharedPreferences.create(this),
             app.ignoredEntriesRepository,
             app.userTagDao
         )

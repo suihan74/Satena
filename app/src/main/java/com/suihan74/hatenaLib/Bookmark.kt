@@ -98,6 +98,18 @@ data class Bookmark (
         starCount.all { i ->
             other.firstOrNull { o -> o.user == i.user && o.color == i.color }?.count == i.count
         }
+
+    fun toBookmarkWithStarCount(entry: Entry, stars: List<Star>? = null) = BookmarkWithStarCount(
+        mUser = BookmarkWithStarCount.User(user, userIconUrl),
+        comment = comment,
+        isPrivate = private,
+        link = getCommentPageUrl(entry),
+        tags = tags,
+        timestamp = timestamp,
+        starCount = (stars ?: starCount)?.groupBy { it.color }
+            ?.map { group -> StarCount(group.key, group.value.sumOf { it.count }) }
+            .orEmpty()
+    )
 }
 
 /**

@@ -29,12 +29,12 @@
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/custom_settings_button"
-                    isShown="@{contentsViewModel.selectedTab == BookmarksTabType.CUSTOM}"
+                    isShown="@{contentsViewModel.selectedTab == BookmarksTabType.CUSTOM || contentsViewModel.selectedTab == BookmarksTabType.POPULAR}"
                     android:src="@drawable/ic_baseline_settings"
                     android:contentDescription="@null"
                     app:fabSize="mini"
                     app:backgroundTint="?colorPrimary"
-                    app:tooltipText="@{@string/bookmark_fab_settings_for_custom_tooltip}"
+                    app:tooltipText="@{contentsViewModel.selectedTab == BookmarksTabType.CUSTOM ? @string/bookmark_fab_settings_for_custom_tooltip : @string/bookmark_fab_settings_for_popular_tooltip}"
                     android:layout_gravity="bottom"
                     android:layout_marginStart="24dp"
                     android:layout_marginBottom="24dp"

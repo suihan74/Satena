@@ -195,7 +195,15 @@ class FloatingActionButtonsFragment : Fragment() {
 
         // カスタムタブ設定ボタン
         binding.customSettingsButton.setOnClickListener {
-            bookmarksViewModel.openCustomTabSettingsDialog(childFragmentManager)
+            when (contentsViewModel.selectedTab.value) {
+                BookmarksTabType.POPULAR ->
+                    bookmarksViewModel.openCustomDigestSettingsDialog(childFragmentManager)
+
+                BookmarksTabType.CUSTOM ->
+                    bookmarksViewModel.openCustomTabSettingsDialog(childFragmentManager)
+
+                else -> {}
+            }
         }
     }
 }
