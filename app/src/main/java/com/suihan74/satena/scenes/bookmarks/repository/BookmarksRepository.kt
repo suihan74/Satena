@@ -995,7 +995,7 @@ class BookmarksRepository(
      */
     @OptIn(ExperimentalStdlibApi::class)
     suspend fun loadUserCustomizedDigest() : List<BookmarkWithStarCount> {
-        val minStarsCount = 3
+        val minStarsCount = 1
         val bookmarks = bookmarksEntry.value?.bookmarks.orEmpty()
             .filterNot { it.comment.isBlank() }
             .filterNot { checkIgnored(it) }
@@ -1019,6 +1019,7 @@ class BookmarksRepository(
                 Log.e("stars(not null)", stars.filterNotNull().size.toString())
                 Log.e("bookmarks", bookmarks.size.toString())
             }.getOrDefault(0)
+        if (maxStarsCount == 0) return emptyList()
 
         val scores = targetBookmarks.mapIndexed { idx, b ->  scoreBookmark(b, targetStars[idx], maxStarsCount) }
 
