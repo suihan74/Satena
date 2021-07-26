@@ -59,7 +59,7 @@ class BookmarksRepository(
         // 内部的な設定
 
         /** 一度の新着ブクマ取得ごとのコメントありブクマの最低取得件数 */
-        const val LEAST_COMMENTS_NUM = 10
+        const val LEAST_COMMENTS_NUM = 3
     }
 
     /** はてなアクセス用クライアント */
