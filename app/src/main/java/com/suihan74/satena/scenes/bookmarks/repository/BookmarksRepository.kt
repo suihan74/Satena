@@ -1034,11 +1034,12 @@ class BookmarksRepository(
             }.getOrDefault(0)
         if (maxStarsCount == 0) return emptyList()
 
-        val scores = targetBookmarks.mapIndexedNotNull { idx, b ->
+        val scores = targetBookmarks.mapIndexed { idx, b ->
             scoreBookmark(b, targetStars[idx], maxStarsCount)
         }
 
         return targetBookmarks.zip(scores)
+            .filter { it.second != null }
             .sortedByDescending { it.second }
             .take(maxNumOfElements)
             .map { it.first.toBookmarkWithStarCount(entry.value!!) }
