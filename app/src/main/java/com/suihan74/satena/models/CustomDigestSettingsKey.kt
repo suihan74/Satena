@@ -15,6 +15,12 @@ enum class CustomDigestSettingsKey(
 
     // ダイジェスト抽出処理の設定
 
+    /** 最大要素数 */
+    MAX_NUM_OF_ELEMENTS(typeInfo<Int>(), 10),
+
+    /** 抽出対象になるスター数の閾値 */
+    STARS_COUNT_THRESHOLD(typeInfo<Int>(), 1),
+
     /** 非表示ユーザーのスターを無視する */
     IGNORE_STARS_BY_IGNORED_USERS(typeInfo<Boolean>(), true),
 
