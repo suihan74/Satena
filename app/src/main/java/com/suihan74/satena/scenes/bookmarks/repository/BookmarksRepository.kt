@@ -199,6 +199,20 @@ class BookmarksRepository(
     // ------ //
     // ダイジェスト抽出設定
 
+    /** 最大要素数 */
+    val maxNumOfElements by lazy {
+        PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS) { p, key ->
+            p.getInt(key)
+        }
+    }
+
+    /** 抽出対象になるスター数の閾値 */
+    val starsCountThreshold by lazy {
+        PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.STARS_COUNT_THRESHOLD) { p, key ->
+            p.getInt(key)
+        }
+    }
+
     /** カスタムダイジェストを使用する */
     val useCustomDigest by lazy {
         PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.USE_CUSTOM_DIGEST) { p, key ->
@@ -995,7 +1009,7 @@ class BookmarksRepository(
      */
     @OptIn(ExperimentalStdlibApi::class)
     suspend fun loadUserCustomizedDigest() : List<BookmarkWithStarCount> {
-        val minStarsCount = 1
+        val maxNumOfElements = maxNumOfElements.value ?: return emptyList()
         val bookmarks = bookmarksEntry.value?.bookmarks.orEmpty()
             .filterNot { it.comment.isBlank() }
             .filterNot { checkIgnored(it) }
@@ -1005,10 +1019,9 @@ class BookmarksRepository(
         val targetBookmarks = bookmarks
             .mapIndexedNotNull { idx, b ->
                 val s = stars[idx] ?: return@mapIndexedNotNull null
-                if (s.totalStarsCount < minStarsCount) return@mapIndexedNotNull null
                 b.copy(starCount = s.allStars)
             }
-        val targetStars = stars.filterNotNull().filterNot { it.totalStarsCount < minStarsCount }
+        val targetStars = stars.filterNotNull()
 
         val maxStarsCount =
             runCatching {
@@ -1021,46 +1034,59 @@ class BookmarksRepository(
             }.getOrDefault(0)
         if (maxStarsCount == 0) return emptyList()
 
-        val scores = targetBookmarks.mapIndexed { idx, b ->  scoreBookmark(b, targetStars[idx], maxStarsCount) }
+        val scores = targetBookmarks.mapIndexedNotNull { idx, b ->
+            scoreBookmark(b, targetStars[idx], maxStarsCount)
+        }
 
-        val scoredBookmarks = targetBookmarks.zip(scores)
+        return targetBookmarks.zip(scores)
             .sortedByDescending { it.second }
-            .take(10)
+            .take(maxNumOfElements)
             .map { it.first.toBookmarkWithStarCount(entry.value!!) }
-
-        return scoredBookmarks
     }
 
     fun scoreBookmark(
         bookmark: Bookmark,
         starsEntry: StarsEntry,
         maxStarsCount: Int
-    ) : Double {
+    ) : Double? {
         val deduplicateStars = deduplicateStars.value == true
         val ignoreStarsByIgnoredUsers = ignoreStarsByIgnoredUsers.value == true
         val colorStarsWeight = 1.0
-        val commentScoreWeight = 0  // TODO: コメントそのものを評価するか検討
+        val starsCountThreshold = starsCountThreshold.value ?: return null
+        //val commentScoreWeight = 0  // TODO: コメントそのものを評価するか検討
 
         val fixedStarsEntry =
             if (ignoreStarsByIgnoredUsers) starsEntry.copy(
                     stars = starsEntry.stars.filterNot { checkIgnoredUser(it.user) },
-                    coloredStars = starsEntry.coloredStars?.map { group -> ColorStars(group.stars.filterNot { checkIgnoredUser(it.user) }, group.color) }
+                    coloredStars = starsEntry.coloredStars?.map { group ->
+                        ColorStars(
+                            group.stars.filterNot { checkIgnoredUser(it.user) },
+                            group.color
+                        )
+                    }
                 )
             else starsEntry
 
         val yellowStarsCount =
-            if (deduplicateStars) fixedStarsEntry.stars.distinctBy { it.user }.count()
+            if (deduplicateStars) fixedStarsEntry.stars
+                .distinctBy { it.user }
+                .count()
             else fixedStarsEntry.getStarsCount(StarColor.Yellow)
+
         val colorStarsCount =
-            if (deduplicateStars) fixedStarsEntry.coloredStars?.flatMap { it.stars }?.distinctBy { it.user }?.count() ?: 0
+            if (deduplicateStars) fixedStarsEntry.coloredStars
+                ?.flatMap { it.stars }
+                ?.distinctBy { it.user }
+                ?.count() ?: 0
             else fixedStarsEntry.coloredStars?.sumOf { it.starsCount } ?: 0
 
-        val commentLength = bookmark.comment.length
+        return if (yellowStarsCount + colorStarsCount < starsCountThreshold) null
+            else (yellowStarsCount + colorStarsCount * colorStarsWeight) / maxStarsCount
 
-        val starScore = (yellowStarsCount + colorStarsCount * colorStarsWeight) / maxStarsCount
-        val commentScore = 1.0 / commentLength
-
-        return starScore + commentScore * commentScoreWeight
+//        val commentLength = bookmark.comment.length
+//        val starScore = (yellowStarsCount + colorStarsCount * colorStarsWeight) / maxStarsCount
+//        val commentScore = 1.0 / commentLength
+//        return starScore + commentScore * commentScoreWeight
     }
 
     // ------ //
