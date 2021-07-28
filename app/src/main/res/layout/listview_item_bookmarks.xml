@@ -138,7 +138,7 @@
     <ImageButton
             android:id="@+id/add_star_button"
             app:srcCompat="@drawable/ic_add_star"
-            android:tint="?attr/tagTextColor"
+            app:tint="?attr/tagTextColor"
             android:background="?attr/actionBarItemBackground"
             android:contentDescription="@null"
             android:layout_marginEnd="6dp"
