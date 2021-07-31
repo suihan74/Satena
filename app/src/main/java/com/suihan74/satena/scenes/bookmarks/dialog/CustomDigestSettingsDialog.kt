@@ -79,7 +79,9 @@ class CustomDigestSettingsDialog : BottomSheetDialogFragment() {
         val starsCountThreshold = MutableLiveData<Int>()
 
         var onComplete : Listener<DialogFragment>? = null
+
         private var fragmentManager : FragmentManager? = null
+        private var initialized : Boolean = false
 
         // ------ //
 
@@ -88,12 +90,16 @@ class CustomDigestSettingsDialog : BottomSheetDialogFragment() {
             fragmentManager: FragmentManager
         ) {
             this.fragmentManager = fragmentManager
+            if (initialized) {
+                return
+            }
             val repo = bookmarksViewModel.repository
             useCustomDigest.value = repo.useCustomDigest.value
             ignoreStarsByIgnoredUsers.value = repo.ignoreStarsByIgnoredUsers.value
             deduplicateStars.value = repo.deduplicateStars.value
             maxNumOfElements.value = repo.maxNumOfElements.value
             starsCountThreshold.value = repo.starsCountThreshold.value
+            initialized = true
         }
 
         fun finish(bookmarksViewModel: BookmarksViewModel, fragment: DialogFragment) {
