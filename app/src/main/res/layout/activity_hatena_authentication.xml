@@ -1,97 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:fitsSystemWindows="false"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?attr/panelBackground"
-        android:layout_gravity="center"
-        android:scrollbars="none"
-        android:theme="@style/AppTheme.Light">
+        android:background="?attr/panelBackground">
 
-    <RelativeLayout
+    <WebView
+            android:id="@+id/webView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="72dp">
+            android:layout_height="match_parent"/>
 
-        <TextView
-                android:id="@+id/title"
-                android:text="@string/hatena_title"
-                android:textColor="?attr/colorPrimary"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:textAlignment="center"
-                android:layout_marginBottom="40dp"/>
+    <View
+            android:id="@+id/clickGuard"
+            android:visibility="gone"
+            android:background="@color/clickGuard"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
-        <EditText
-                android:id="@+id/user_name"
-                android:hint="@string/hint_id"
-                style="@style/LoginEditTextStyle"
-                android:theme="@style/LoginEditTextStyle"
-                android:nextFocusDown="@id/password"
-                android:inputType="textNoSuggestions"
-                android:maxLines="1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/title"
-                android:layout_alignStart="@id/auth_button"
-                android:layout_alignEnd="@id/auth_button"
-                android:layout_marginBottom="16dp"/>
+    <ProgressBar
+            android:id="@+id/progressBar"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-        <EditText
-                android:id="@+id/password"
-                android:hint="@string/hint_password"
-                style="@style/LoginEditTextStyle"
-                android:theme="@style/LoginEditTextStyle"
-                android:nextFocusDown="@id/auth_button"
-                android:inputType="textPassword"
-                android:maxLines="1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/user_name"
-                android:layout_alignStart="@id/user_name"
-                android:layout_alignEnd="@id/user_name"
-                android:layout_marginBottom="32dp"/>
-
-        <com.google.android.material.button.MaterialButton
-                android:id="@+id/auth_button"
-                android:text="@string/sign_in"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                app:backgroundTint="?colorPrimary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/password"
-                android:layout_alignStart="@id/title"
-                android:layout_alignEnd="@id/title"/>
-
-        <!--
-        <com.google.android.gms.common.SignInButton
-                android:id="@+id/google_auth_button"
-                android:visibility="gone"
-                android:layout_below="@id/auth_button"
-                android:layout_alignStart="@id/auth_button"
-                android:layout_alignEnd="@id/auth_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:buttonSize="wide"
-                android:layout_marginTop="12dp"/>
-        -->
-
-        <TextView
-                android:id="@+id/sign_up_text_view"
-                android:text="@string/sign_up"
-                android:linksClickable="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_below="@id/auth_button"
-                android:layout_marginTop="24dp"/>
-    </RelativeLayout>
-</ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -366,6 +366,8 @@ class StarRepository(
                 if (forceUpdate) urls
                 else urls.filterNot { starsEntriesCache.containsKey(it) }
 
+            if (targetUrls.isEmpty()) return@withLock
+
             val result = runCatching {
                 client.getStarsEntryAsync(targetUrls).await()
             }.onFailure {
@@ -374,7 +376,7 @@ class StarRepository(
 
             val entries = result.getOrNull()!!
             entries.forEach { entry ->
-                val liveData = withContext(Dispatchers.Main) {
+                val liveData = withContext(Dispatchers.Main.immediate) {
                     starsEntriesCache[entry.url]?.also {
                         it.value = entry
                     } ?: MutableLiveData(entry)

@@ -4,14 +4,13 @@ import android.content.res.ColorStateList
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.DrawableRes
-import androidx.annotation.IntRange
 import androidx.annotation.StringRes
 import androidx.core.view.MenuItemCompat
 import com.suihan74.satena.R
 
 /** ボトムバーに表示する項目 */
 enum class UserBottomItem(
-    @IntRange(from=0, to=9) val id: Int,
+    val id: Int,
     @DrawableRes val iconId: Int,
     @StringRes val textId: Int,
     val requireSignedIn: Boolean = false,

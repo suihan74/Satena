@@ -57,6 +57,7 @@ class BrowserActivity :
         val bookmarksRepo = BookmarksRepository(
             app.accountLoader,
             prefs,
+            SafeSharedPreferences.create(this),
             app.ignoredEntriesRepository,
             app.userTagDao
         )
@@ -179,13 +180,7 @@ class BrowserActivity :
     }
 
     override fun finish() {
-        // リソースの読み込み、スクリプトの実行をすべて中断させる
-        // https://developer.android.com/reference/android/webkit/WebView.html#clearView()
-        binding.webview.run {
-            stopLoading()
-            loadUrl("about:blank")
-        }
-
+        binding.webview.finish()
         super.finish()
     }
 

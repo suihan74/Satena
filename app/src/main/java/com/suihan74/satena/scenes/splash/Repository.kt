@@ -3,7 +3,7 @@ package com.suihan74.satena.scenes.splash
 import android.content.Context
 import android.content.Intent
 import com.suihan74.satena.SatenaApplication
-import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity2
+import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.OnError
@@ -26,7 +26,7 @@ class Repository(
         return if (app.isFirstLaunch) {
             // 初回起動時
             app.isFirstLaunch = false
-            Intent(context, HatenaAuthenticationActivity2::class.java)
+            Intent(context, HatenaAuthenticationActivity::class.java)
         }
         else {
             // サインインしてエントリ画面を開く
