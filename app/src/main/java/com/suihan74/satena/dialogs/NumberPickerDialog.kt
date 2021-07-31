@@ -90,8 +90,11 @@ class NumberPickerDialog : DialogFragment() {
 
     // ------ //
 
-    fun setOnCompleteListener(listener: Listener<Int>?) = lifecycleScope.launchWhenCreated {
-        viewModel.onComplete = listener
+    fun setOnCompleteListener(listener: Listener<Int>?) : NumberPickerDialog{
+        lifecycleScope.launchWhenCreated {
+            viewModel.onComplete = listener
+        }
+        return this
     }
 
     // ------ //
