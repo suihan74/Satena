@@ -1,13 +1,19 @@
 package com.suihan74.satena.scenes.bookmarks.dialog
 
-import android.app.Dialog
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.suihan74.satena.R
-import com.suihan74.satena.dialogs.createBuilder
+import com.suihan74.satena.databinding.FragmentDialogCustomDigestSettingsBinding
+import com.suihan74.satena.dialogs.NumberPickerDialog
+import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.utilities.Listener
@@ -16,7 +22,7 @@ import com.suihan74.utilities.lazyProvideViewModel
 /**
  * ブクマリストのダイジェスト抽出方法の設定ダイアログ
  */
-class CustomDigestSettingsDialog : DialogFragment() {
+class CustomDigestSettingsDialog : BottomSheetDialogFragment() {
 
     companion object {
         fun createInstance() = CustomDigestSettingsDialog()
@@ -33,23 +39,25 @@ class CustomDigestSettingsDialog : DialogFragment() {
 
     // ------ //
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        viewModel.initialize(bookmarksViewModel)
-        val items = viewModel.items()
-        val labels = items.map { getString(it.first) }.toTypedArray()
-        val initialStates = items.map { it.second == true }.toBooleanArray()
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentDialogCustomDigestSettingsBinding.inflate(localLayoutInflater()).also {
+            it.vm = viewModel.apply { initialize(bookmarksViewModel, childFragmentManager) }
+            it.lifecycleOwner = this
+        }
 
-        return createBuilder()
-            .setTitle(R.string.digest_bookmarks_settings_dialog_title)
-            .setMultiChoiceItems(labels, initialStates) { _, which, b ->
-                items[which].third(b)
-            }
-            .setNegativeButton(R.string.dialog_cancel, null)
-            .setPositiveButton(R.string.dialog_ok) { _, _ ->
-                viewModel.finish(bookmarksViewModel, this)
-                dismiss()
-            }
-            .create()
+        binding.okButton.setOnClickListener {
+            viewModel.finish(bookmarksViewModel, this)
+            dismiss()
+        }
+        binding.cancelButton.setOnClickListener {
+            dismiss()
+        }
+
+        return binding.root
     }
 
     // ------ //
@@ -67,25 +75,25 @@ class CustomDigestSettingsDialog : DialogFragment() {
         val useCustomDigest = MutableLiveData<Boolean>()
         val ignoreStarsByIgnoredUsers = MutableLiveData<Boolean>()
         val deduplicateStars = MutableLiveData<Boolean>()
+        val maxNumOfElements = MutableLiveData<Int>()
+        val starsCountThreshold = MutableLiveData<Int>()
 
         var onComplete : Listener<DialogFragment>? = null
+        private var fragmentManager : FragmentManager? = null
 
         // ------ //
 
         fun initialize(
-            bookmarksViewModel: BookmarksViewModel
+            bookmarksViewModel: BookmarksViewModel,
+            fragmentManager: FragmentManager
         ) {
+            this.fragmentManager = fragmentManager
             val repo = bookmarksViewModel.repository
             useCustomDigest.value = repo.useCustomDigest.value
             ignoreStarsByIgnoredUsers.value = repo.ignoreStarsByIgnoredUsers.value
             deduplicateStars.value = repo.deduplicateStars.value
-        }
-
-        @OptIn(ExperimentalStdlibApi::class)
-        fun items() = buildList<Triple<Int, Boolean?, (Boolean)->Unit>> {
-            add(Triple(R.string.digest_bookmarks_use_custom_digest_desc, useCustomDigest.value, { b -> useCustomDigest.value = b }))
-            add(Triple(R.string.digest_bookmarks_ignore_users_desc, ignoreStarsByIgnoredUsers.value, { b -> ignoreStarsByIgnoredUsers.value = b }))
-            add(Triple(R.string.digest_bookmarks_deduplicate_stars_desc, deduplicateStars.value, { b -> deduplicateStars.value = b }))
+            maxNumOfElements.value = repo.maxNumOfElements.value
+            starsCountThreshold.value = repo.starsCountThreshold.value
         }
 
         fun finish(bookmarksViewModel: BookmarksViewModel, fragment: DialogFragment) {
@@ -93,7 +101,33 @@ class CustomDigestSettingsDialog : DialogFragment() {
             repo.useCustomDigest.value = useCustomDigest.value
             repo.ignoreStarsByIgnoredUsers.value = ignoreStarsByIgnoredUsers.value
             repo.deduplicateStars.value = deduplicateStars.value
+            repo.maxNumOfElements.value = maxNumOfElements.value
+            repo.starsCountThreshold.value = starsCountThreshold.value
             onComplete?.invoke(fragment)
+        }
+
+        // ------ //
+
+        fun openMaxNumOfElementsPickerDialog() {
+            fragmentManager?.let { fm ->
+                NumberPickerDialog.createInstance(
+                    min = 1, max = 30, default = maxNumOfElements.value ?: 10,
+                    titleId = R.string.digest_bookmarks_max_num_of_elements_picker_title
+                ).setOnCompleteListener { num ->
+                    maxNumOfElements.value = num
+                }.show(fm, null)
+            }
+        }
+
+        fun openStarsCountThresholdPickerDialog() {
+            fragmentManager?.let { fm ->
+                NumberPickerDialog.createInstance(
+                    min = 0, max = 100, default = starsCountThreshold.value ?: 1,
+                    titleId = R.string.digest_bookmarks_stars_count_threshold_picker_title
+                ).setOnCompleteListener { num ->
+                    starsCountThreshold.value = num
+                }.show(fm, null)
+            }
         }
     }
 }
