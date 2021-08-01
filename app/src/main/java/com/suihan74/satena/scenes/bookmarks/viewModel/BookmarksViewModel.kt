@@ -606,8 +606,9 @@ class BookmarksViewModel(
     fun openCustomDigestSettingsDialog(fragmentManager: FragmentManager) {
         CustomDigestSettingsDialog.createInstance()
             .setOnCompleteListener {
+                val context = SatenaApplication.instance.applicationContext
                 viewModelScope.launch {
-                    repository.loadPopularBookmarks()
+                    loadPopularBookmarks(context)
                 }
             }
             .show(fragmentManager, null)

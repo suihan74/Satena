@@ -152,9 +152,15 @@ class PopularBookmarksTabFragment :
     // ------ //
 
     fun reloadBookmarks() {
+        val context = requireActivity().applicationContext
         bookmarksViewModel.let { vm ->
             vm.viewModelScope.launch {
-                vm.loadPopularBookmarks(requireContext())
+                vm.loadPopularBookmarks(context)
+                // 取得失敗時には表示物がsubmitされないため、swipeLayoutの状態変更をここで行う
+                lifecycleScope.launchWhenCreated {
+                    binding.swipeLayout.isRefreshing = false
+                    binding.swipeLayout.isEnabled = true
+                }
             }
         }
     }
