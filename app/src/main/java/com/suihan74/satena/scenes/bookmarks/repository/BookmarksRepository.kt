@@ -825,7 +825,13 @@ class BookmarksRepository(
      */
     suspend fun loadPopularBookmarks() = withContext(Dispatchers.Default) {
         val result = runCatching {
-            client.getDigestBookmarksAsync(url).await()
+            client.getDigestBookmarksAsync(url).await().let { digest ->
+                if (useCustomDigest.value == true) {
+                    val userScoredBookmarks = loadUserCustomizedDigest()
+                    digest.copy(scoredBookmarks = userScoredBookmarks)
+                }
+                else digest
+            }
         }
 
         val digest = result.getOrElse {
@@ -834,16 +840,8 @@ class BookmarksRepository(
                 is ForbiddenException ->
                     throw it
 
-                else ->
-                    throw ConnectionFailureException(it)
+                else -> throw ConnectionFailureException(it)
             }
-        }.let {
-            // TODO : experimental
-            if (useCustomDigest.value == true) {
-                val userScoredBookmarks = loadUserCustomizedDigest()
-                it.copy(scoredBookmarks = userScoredBookmarks)
-            }
-            else it
         }
 
         _bookmarksDigest.postValue(digest)
@@ -1014,7 +1012,9 @@ class BookmarksRepository(
             .filterNot { it.comment.isBlank() }
             .filterNot { checkIgnored(it) }
         loadStarsEntriesForBookmarks(bookmarks)
-        val stars = bookmarks.map { getStarsEntry(it).value }
+        val stars = bookmarks.map {
+            runCatching { getStarsEntry(it).value }.getOrNull()
+        }
 
         val targetBookmarks = bookmarks
             .mapIndexedNotNull { idx, b ->
