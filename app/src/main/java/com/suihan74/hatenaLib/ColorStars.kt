@@ -1,11 +1,14 @@
 package com.suihan74.hatenaLib
 
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
 
 class ColorStars (
     // starsは取得して未加工の状態だとcolor=yellowなので注意
     @SerializedName("stars")
     private val _stars : List<Star>?,
+
+    @JsonAdapter(StarColorDeserializer::class)
     val color : StarColor
 ) {
 

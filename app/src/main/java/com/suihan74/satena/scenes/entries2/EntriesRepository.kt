@@ -292,7 +292,7 @@ class EntriesRepository(
     }
 
     /** 通知リストを取得する */
-    suspend fun loadNotices() : List<Notice> {
+    suspend fun loadNotices() : List<Notice> = coroutineScope {
         val fetchedNotices = client.getNoticesAsync().await().notices
 
         // 通知の既読状態を更新
@@ -338,8 +338,28 @@ class EntriesRepository(
             .sortedByDescending { it.modified }
             .take(noticesSize)
 
+        // コメント情報がない通知のブコメを取得する
+        val fixNoticesTasks = notices.map { notice ->
+            async {
+                runCatching {
+                    if (notice.verb == Notice.VERB_STAR && notice.metadata?.subjectTitle.isNullOrBlank()) {
+                        val md = NoticeMetadata(
+                            client.getBookmarkPageAsync(
+                                notice.eid,
+                                notice.user
+                            ).await().comment.body
+                        )
+                        notice.copy(metadata = md)
+                    }
+                    else notice
+                }.getOrDefault(notice)
+            }
+        }
+        fixNoticesTasks.awaitAll()
+        val fixedNotices = fixNoticesTasks.map { it.await() }
+
         noticesPrefs.edit {
-            put(NoticesKey.NOTICES, notices)
+            put(NoticesKey.NOTICES, fixedNotices)
 
             // 古い削除指定を消去する
             if (oldestMatched < LocalDateTime.MAX) {
@@ -349,7 +369,7 @@ class EntriesRepository(
             }
         }
 
-        return notices
+        return@coroutineScope fixedNotices
     }
 
     /** 障害情報を取得する */
