@@ -1192,15 +1192,35 @@ object HatenaClient : BaseClient(), CoroutineScope {
     )
     fun deleteStarAsync(url: String, star: Star) : Deferred<Any> = async {
         checkSignedInStar("need to sign-in to delete star")
-        val apiUrl = "$S_BASE_URL/star.delete.json?${cacheAvoidance()}" +
-                "&uri=${Uri.encode(url)}" +
-                "&rks=$mRksForStar" +
-                "&name=${star.user}" +
-                "&color=${star.color.name.lowercase()}" +
-                "&quote=${Uri.encode(star.quote)}"
+        val rkm = deleteStarConfirm(url, star)
+        val params = mapOf(
+            "uri" to url,
+            "rkm" to rkm,
+            "rks" to mRksForStar!!,
+            "name" to star.user,
+            "color" to star.color.name.lowercase(),
+            "quote" to star.quote,
+            "only" to "content",
+            "delete_star" to "on"
+        )
+        post("$S_BASE_URL/star.delete", params).use { response ->
+            if (!response.isSuccessful) throw ConnectionFailureException("failed to delete a star")
+        }
+    }
 
+    private suspend fun deleteStarConfirm(url: String, star: Star) : String {
+        val apiUrl = buildString {
+            append("$S_BASE_URL/star.deleteconfirm?")
+            append("color=${star.color}")
+            append("&name=${star.user}")
+            append("&uri=${Uri.encode(url)}")
+            append("&only=content")
+        }
         get(apiUrl).use { response ->
             if (!response.isSuccessful) throw ConnectionFailureException("failed to delete a star")
+            val doc = Jsoup.parse(response.body!!.byteStream(), "UTF-8", S_BASE_URL)
+            val rkmInputTag = doc.getElementsByAttributeValue("name", "rkm").first()
+            return rkmInputTag.attr("value")
         }
     }
 
