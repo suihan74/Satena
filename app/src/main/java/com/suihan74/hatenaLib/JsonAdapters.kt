@@ -44,7 +44,15 @@ internal class StarDeserializer : JsonDeserializer<Star> {
     }
 }
 
-internal class StarColorDeserializer : JsonDeserializer<StarColor> {
+internal class StarColorDeserializer : JsonSerializer<StarColor>, JsonDeserializer<StarColor> {
+    override fun serialize(
+        src: StarColor?,
+        typeOfSrc: Type?,
+        context: JsonSerializationContext?
+    ): JsonElement {
+        return JsonPrimitive(src?.name?.lowercase() ?: "yellow")
+    }
+
     override fun deserialize(
         json: JsonElement?,
         typeOfT: Type?,
