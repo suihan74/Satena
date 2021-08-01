@@ -1235,7 +1235,28 @@ object HatenaClient : BaseClient(), CoroutineScope {
     fun getNoticesAsync() : Deferred<NoticeResponse> = async {
         require(signedIn()) { "need to sign-in to get user's notices" }
         val url = "$W_BASE_URL/notify/api/pull?${cacheAvoidance()}"
-        return@async getJson<NoticeResponse>(url)
+        val response = getJson<NoticeResponse>(url)
+        // コメント情報がない通知のブコメを取得する
+        val fixNoticesTasks = response.notices.map { notice ->
+            async {
+                runCatching {
+                    if (notice.verb == Notice.VERB_STAR && notice.metadata?.subjectTitle.isNullOrBlank()) {
+                        val md = NoticeMetadata(
+                            getBookmarkPageAsync(
+                                notice.eid,
+                                notice.user
+                            ).await().comment.body
+                        )
+                        notice.copy(metadata = md)
+                    }
+                    else notice
+                }.getOrDefault(notice)
+            }
+        }
+        fixNoticesTasks.awaitAll()
+        val fixedNotices = fixNoticesTasks.map { it.await() }
+
+        return@async response.copy(notices = fixedNotices)
     }
 
     /**
