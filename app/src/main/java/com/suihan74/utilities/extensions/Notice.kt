@@ -25,31 +25,37 @@ val Notice.users get() =
  * 通知メッセージを作成する
  */
 fun Notice.message(context: Context) : String {
-    val nameColor = ContextCompat.getColor(context, R.color.colorPrimary)
-
-    val comment = (metadata?.subjectTitle ?: "").toCharArray()
+    val comment = metadata?.subjectTitle.orEmpty().toCharArray()
     val sourceComment = comment.joinToString(
         separator = "",
         limit = 9,
         truncated = "..."
     )
 
+    val nameColor = ContextCompat.getColor(context, R.color.colorPrimary)
     val users = this.users
-    val usersStr = this.users
-        .joinToString(
-            separator = "、",
-            limit = 3,
-            truncated = "ほか${users.count() - 3}人",
-            transform = { "<font color=\"$nameColor\">${it}</font>さん" })
+    val usersStr = this.users.joinToString(
+        separator = "、",
+        limit = 3,
+        truncated = "ほか${users.count() - 3}人",
+        transform = { "<font color=\"$nameColor\">${it}</font>さん" }
+    )
 
     return when (verb) {
         Notice.VERB_STAR -> {
-            val starColor = ContextCompat.getColor(context, R.color.starYellow)
-            if (link.startsWith("https://b.hatena.ne.jp/")) {
-                "${usersStr}があなたのブコメ($sourceComment)に<font color=\"$starColor\">★</font>をつけました"
+            val starsText =
+                this.objects.distinctBy { it.color }
+                    .reversed()
+                    .joinToString(separator = "") {
+                        val starColor = ContextCompat.getColor(context, it.color.colorId)
+                        "<font color=\"${starColor}\">★</font>"
+                    }
+
+            if (this.link.startsWith("https://b.hatena.ne.jp/")) {
+                "${usersStr}があなたのブコメ($sourceComment)に${starsText}をつけました"
             }
             else {
-                "${usersStr}があなたの($sourceComment)に<font color=\"$starColor\">★</font>をつけました"
+                "${usersStr}があなたの($sourceComment)に${starsText}をつけました"
             }
         }
 
@@ -60,6 +66,6 @@ fun Notice.message(context: Context) : String {
             "${usersStr}があなたのエントリをブックマークしました"
 
         else ->
-            "[sorry, not implemented notice] users: $usersStr , verb: $verb"
+            "[sorry, not implemented notice] users: $usersStr , verb: ${this.verb}"
     }
 }
