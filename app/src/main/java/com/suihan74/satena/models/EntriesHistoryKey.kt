@@ -22,7 +22,14 @@ enum class EntriesHistoryKey (
     /** エントリ履歴 */
     ENTRIES(typeInfo<List<Entry>>(), emptyList<Entry>()),
     /** 最大保存数 */
-    MAX_SIZE(typeInfo<Int>(), 20),
+    MAX_SIZE(typeInfo<Int>(), 20);
+
+    companion object {
+        /** 最大保存数の下限値 */
+        const val MAX_SIZE_LOWER_BOUND = 1
+        /** 最大保存数の上限値 */
+        const val MAX_SIZE_UPPER_BOUND = 100
+    }
 }
 
 // TODO: entry画面用のVM/Repositoryにて行うようにする

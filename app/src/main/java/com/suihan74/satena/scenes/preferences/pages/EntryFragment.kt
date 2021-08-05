@@ -274,7 +274,14 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         addSection(R.string.pref_entry_section_history)
         addPrefItem(fragment, historyMaxSize, R.string.pref_entries_history_max_size_desc, R.string.pref_entries_history_max_size_text) {
-            openHistorySizeSelectionDialog(fragmentManager)
+            openNumberPickerDialog(
+                historyMaxSize,
+                min = EntriesHistoryKey.MAX_SIZE_LOWER_BOUND,
+                max = EntriesHistoryKey.MAX_SIZE_UPPER_BOUND,
+                titleId = R.string.pref_entries_history_max_size_dialog_title,
+                messageId = R.string.pref_entries_history_max_size_dialog_msg,
+                fragmentManager = fragmentManager
+            )
         }
 
         // --- //
@@ -376,20 +383,6 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     }
 
     // ------ //
-
-    /** ブクマ閲覧履歴の最大保存件数を設定するダイアログを開く */
-    private fun openHistorySizeSelectionDialog(fragmentManager: FragmentManager) {
-        val dialog = NumberPickerDialog.createInstance(
-            min = 1,
-            max = 100,
-            default = historyMaxSize.value!!,
-            titleId = R.string.pref_entries_history_max_size_dialog_title,
-            messageId = R.string.pref_entries_history_max_size_dialog_msg
-        ) { value ->
-            historyMaxSize.value = value
-        }
-        dialog.show(fragmentManager, null)
-    }
 
     /**
      * 「読んだ」時に定型文を投稿する場合の文章を設定するダイアログを開く

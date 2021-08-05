@@ -281,6 +281,17 @@ enum class PreferenceKey(
 
     /** 使用する内部ブラウザ */
     BROWSER_MODE(typeInfo<Int>(), BrowserMode.WEB_VIEW.id),
+
+    ;
+
+    // ------- //
+
+    companion object {
+        /** バックグラウンド通知確認間隔の最小値 */
+        const val BACKGROUND_CHECKING_NOTICES_INTERVALS_LOWER_BOUND = 15L
+        /** バックグラウンド通知確認間隔の最大値 */
+        const val BACKGROUND_CHECKING_NOTICES_INTERVALS_UPPER_BOUND = 180L
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

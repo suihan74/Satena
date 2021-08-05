@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
+import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TextIdContainer
 import com.suihan74.satena.scenes.preferences.PreferencesAdapter
@@ -79,5 +80,52 @@ abstract class ListPreferencesViewModel(
             .setNegativeButton(R.string.dialog_cancel)
             .create()
             .show(fragmentManager, null)
+    }
+
+    /** 数値を選択するダイアログを開く */
+    fun openNumberPickerDialog(
+        liveData: MutableLiveData<Int>,
+        @StringRes titleId: Int,
+        @StringRes messageId: Int?,
+        fragmentManager: FragmentManager,
+        min: Int,
+        max: Int,
+        onComplete: ((value: Int)->Unit)? = null
+    ) {
+        val dialog = NumberPickerDialog.createInstance(
+            min = min,
+            max = max,
+            default = liveData.value!!,
+            titleId = titleId,
+            messageId = messageId
+        ) { value ->
+            liveData.value = value
+            onComplete?.invoke(value)
+        }
+        dialog.show(fragmentManager, null)
+    }
+
+    /** 数値を選択するダイアログを開く */
+    fun openNumberPickerDialog(
+        liveData: MutableLiveData<Long>,
+        @StringRes titleId: Int,
+        @StringRes messageId: Int?,
+        fragmentManager: FragmentManager,
+        min: Long,
+        max: Long,
+        onComplete: ((value: Long)->Unit)? = null
+    ) {
+        val dialog = NumberPickerDialog.createInstance(
+            min = min.toInt(),
+            max = max.toInt(),
+            default = liveData.value!!.toInt(),
+            titleId = titleId,
+            messageId = messageId
+        ) { value ->
+            val valueLong = value.toLong()
+            liveData.value = valueLong
+            onComplete?.invoke(valueLong)
+        }
+        dialog.show(fragmentManager, null)
     }
 }
