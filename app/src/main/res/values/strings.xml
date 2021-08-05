@@ -712,7 +712,7 @@
     <string name="mentioned_item_menu_show_user_entries">@string/bookmark_show_user_entries</string>
 
     <!-- ダイジェスト抽出方法設定ダイアログ -->
-    <string name="digest_bookmarks_settings_dialog_title">ダイジェスト抽出方法の設定(実験中)</string>
+    <string name="digest_bookmarks_settings_dialog_title">ダイジェスト抽出方法の設定</string>
     <string name="digest_bookmarks_use_custom_digest_desc">アプリ独自のダイジェスト抽出を利用する</string>
     <string name="digest_bookmarks_deduplicate_stars_desc">同じユーザーがつけた同色の複数スターは1個だけ数える</string>
     <string name="digest_bookmarks_exclude_ignored_users_desc">非表示ユーザーのスターは除外する</string>
