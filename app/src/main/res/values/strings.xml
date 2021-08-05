@@ -366,6 +366,7 @@
     <string name="pref_bookmark_section_behavior">振る舞い</string>
     <string name="pref_bookmark_section_ignoring">非表示</string>
     <string name="pref_bookmark_section_link">リンク</string>
+    <string name="pref_bookmark_section_custom_digest">「注目」タブ>ダイジェスト</string>
 
     <string name="pref_bookmarks_save_states">前回の投稿設定を引き継ぐ</string>
     <string name="pref_bookmarks_default_accounts_states">デフォルトの投稿設定</string>

@@ -14,6 +14,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogCustomDigestSettingsBinding
 import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.dialogs.localLayoutInflater
+import com.suihan74.satena.models.CustomDigestSettingsKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.utilities.Listener
@@ -117,7 +118,9 @@ class CustomDigestSettingsDialog : BottomSheetDialogFragment() {
         fun openMaxNumOfElementsPickerDialog() {
             fragmentManager?.let { fm ->
                 NumberPickerDialog.createInstance(
-                    min = 1, max = 30, default = maxNumOfElements.value ?: 10,
+                    min = CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS_LOWER_BOUND,
+                    max = CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS_UPPER_BOUND,
+                    default = maxNumOfElements.value ?: 10,
                     titleId = R.string.digest_bookmarks_max_num_of_elements_picker_title
                 ).setOnCompleteListener { num ->
                     maxNumOfElements.value = num
@@ -128,7 +131,9 @@ class CustomDigestSettingsDialog : BottomSheetDialogFragment() {
         fun openStarsCountThresholdPickerDialog() {
             fragmentManager?.let { fm ->
                 NumberPickerDialog.createInstance(
-                    min = 0, max = 100, default = starsCountThreshold.value ?: 1,
+                    min = CustomDigestSettingsKey.STARS_COUNT_THRESHOLD_LOWER_BOUND,
+                    max = CustomDigestSettingsKey.STARS_COUNT_THRESHOLD_UPPER_BOUND,
+                    default = starsCountThreshold.value ?: 1,
                     titleId = R.string.digest_bookmarks_stars_count_threshold_picker_title
                 ).setOnCompleteListener { num ->
                     starsCountThreshold.value = num
