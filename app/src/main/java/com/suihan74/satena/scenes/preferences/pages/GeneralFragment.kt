@@ -10,7 +10,6 @@ import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -185,7 +184,19 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         addSection(R.string.pref_generals_section_notices)
         addPrefToggleItem(fragment, checkNotices, R.string.pref_generals_background_checking_notices_desc)
         addPrefItem(fragment, checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc, R.string.minutes) {
-            openCheckingNoticesIntervalSelectionDialog(fragmentManager)
+            openNumberPickerDialog(
+                checkNoticesInterval,
+                min = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_LOWER_BOUND,
+                max = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_UPPER_BOUND,
+                titleId = R.string.pref_generals_checking_notices_intervals_desc,
+                messageId = R.string.pref_generals_notices_intervals_dialog_msg,
+                fragmentManager = fragmentManager
+            ) {
+                SatenaApplication.instance.startCheckingNotificationsWorker(
+                    SatenaApplication.instance,
+                    forceReplace = true
+                )
+            }
         }
         addPrefToggleItem(fragment, noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
         addPrefToggleItem(fragment, ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
@@ -272,24 +283,6 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
             putExtra(PreferencesActivity.EXTRA_THEME_CHANGED, true)
         }
         context.startActivity(intent)
-    }
-
-    /** 通知確認間隔を設定するダイアログを開く */
-    private fun openCheckingNoticesIntervalSelectionDialog(fragmentManager: FragmentManager) {
-        val dialog = NumberPickerDialog.createInstance(
-            min = 15,
-            max = 180,
-            default = checkNoticesInterval.value!!.toInt(),
-            titleId = R.string.pref_generals_checking_notices_intervals_desc,
-            messageId = R.string.pref_generals_notices_intervals_dialog_msg
-        ) { value ->
-            checkNoticesInterval.value = value.toLong()
-            SatenaApplication.instance.startCheckingNotificationsWorker(
-                SatenaApplication.instance,
-                forceReplace = true
-            )
-        }
-        dialog.show(fragmentManager, null)
     }
 
     // ------ //
