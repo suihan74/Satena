@@ -405,6 +405,8 @@
     <string name="pref_ignored_users_unignore">非表示を解除する</string>
     <string name="msg_pref_ignored_users_update_failed">非表示ユーザーリスト更新失敗</string>
     <!-- ignored entries -->
+    <string name="pref_ignored_entries_tab_urls">URL</string>
+    <string name="pref_ignored_entries_tab_words">NGワード</string>
     <string name="pref_ignored_entries_menu_edit">編集</string>
     <string name="pref_ignored_entries_menu_remove">項目を削除</string>
     <!-- followings/followers -->

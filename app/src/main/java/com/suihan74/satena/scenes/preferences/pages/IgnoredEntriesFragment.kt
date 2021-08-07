@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -92,9 +91,9 @@ class IgnoredEntriesFragment : Fragment() {
             dialog.showAllowingStateLoss(childFragmentManager, DIALOG_IGNORE_ENTRY)
         }
 
-        viewModel.entries.observe(viewLifecycleOwner, Observer {
-            ignoredEntriesAdapter.setItem(it)
-        })
+//        viewModel.entries.observe(viewLifecycleOwner, Observer {
+//            ignoredEntriesAdapter.setItem(it)
+//        })
 
         return binding.root
     }
