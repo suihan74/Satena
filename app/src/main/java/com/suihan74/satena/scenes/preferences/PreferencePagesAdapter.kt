@@ -69,7 +69,7 @@ enum class PreferencesTab(
     IGNORED_ENTRIES(
         R.string.pref_title_ignored_entries,
         R.drawable.ic_preferences_filters,
-        { IgnoredEntriesFragment2.createInstance() }
+        { IgnoredEntriesFragment.createInstance() }
     ),
 
     IGNORED_USERS(
