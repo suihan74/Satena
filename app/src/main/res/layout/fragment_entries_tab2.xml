@@ -1,26 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout>
     <data>
         <variable
             name="vm"
             type="com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel"/>
     </data>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_layout"
+    <androidx.constraintlayout.motion.widget.MotionLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/motion_layout"
+            app:layoutDescription="@xml/extra_scroll"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/entries_list"
-                style="@style/RecyclerView.Linear"
-                category="@{vm.category}"
-                entries="@{vm.filteredEntries}"
-                notices="@{vm.notices}"
-                information="@{vm.information}"
-                divider="@{@drawable/recycler_view_item_divider}"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/swipe_layout"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="0dp"
+                android:layout_height="0dp">
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/entries_list"
+                    style="@style/RecyclerView.Linear"
+                    category="@{vm.category}"
+                    entries="@{vm.filteredEntries}"
+                    notices="@{vm.notices}"
+                    information="@{vm.information}"
+                    divider="@{@drawable/recycler_view_item_divider}"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <View
+                android:id="@+id/extra_scroll_background"
+                android:background="@drawable/rounded_corner_text_view"
+                app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_top"
+                app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_bottom"
+                app:layout_constraintStart_toStartOf="@id/extra_scroll_dummy_bottom"
+                app:layout_constraintEnd_toEndOf="@id/extra_scroll_dummy_bottom"
+                android:focusable="true"
+                android:layout_width="0dp"
+                android:layout_height="0dp"/>
+
+        <View
+                android:id="@+id/extra_scroll_dummy_top"
+                android:layout_marginBottom="80dp"
+                app:layout_constraintBottom_toTopOf="@id/extra_scroll_dummy_bottom"
+                app:layout_constraintStart_toStartOf="@id/extra_scroll_dummy_bottom"
+                app:layout_constraintEnd_toEndOf="@id/extra_scroll_dummy_bottom"
+                android:layout_width="0dp"
+                android:layout_height="32dp"/>
+
+        <View
+                android:id="@+id/extra_scroll_dummy_bottom"
+                android:layout_marginBottom="136dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="@id/extra_scroll_thumb"
+                app:layout_constraintEnd_toEndOf="@id/extra_scroll_thumb"
+                android:layout_width="32dp"
+                android:layout_height="32dp"/>
+
+        <View
+                android:id="@+id/extra_scroll_guide"
+                android:layout_marginVertical="16dp"
+                app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_top"
+                app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_bottom"
+                app:layout_constraintStart_toStartOf="@id/extra_scroll_thumb"
+                app:layout_constraintEnd_toEndOf="@id/extra_scroll_thumb"
+                android:background="?colorPrimary"
+                android:layout_width="3dp"
+                android:layout_height="0dp"/>
+
+        <ImageView
+                android:id="@+id/extra_scroll_thumb"
+                android:src="@drawable/ic_circle"
+                app:tint="?colorPrimary"
+                android:contentDescription="@null"
+                android:focusable="true"
+                android:layout_marginEnd="48dp"
+                app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_top"
+                app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_top"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+    </androidx.constraintlayout.motion.widget.MotionLayout>
 </layout>

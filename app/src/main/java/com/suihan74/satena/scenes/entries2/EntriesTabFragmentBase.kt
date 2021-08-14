@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -93,6 +94,35 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             it.lifecycleOwner = viewLifecycleOwner
             it.vm = viewModel
         }
+
+        binding.motionLayout.addTransitionListener(object : MotionLayout.TransitionListener {
+            private val duration = 500L
+            override fun onTransitionChange(motionLayout: MotionLayout?, startId: Int, endId: Int, progress: Float) {}
+            override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
+                val bgView = binding.extraScrollBackground
+                bgView.animate()
+                    .withEndAction { bgView.visibility = View.GONE }
+                    .alpha(0.0f)
+                    .setDuration(duration)
+                    .start()
+            }
+            override fun onTransitionStarted(motionLayout: MotionLayout?, startId: Int, endId: Int) {
+                val bgView = binding.extraScrollBackground
+                bgView.animate()
+                    .withStartAction {
+                        bgView.alpha = 0.0f
+                        bgView.visibility = View.VISIBLE
+                    }
+                    .alpha(1.0f)
+                    .setDuration(duration)
+                    .start()
+            }
+            override fun onTransitionTrigger(motionLayout: MotionLayout?, triggerId: Int, positive: Boolean, progress: Float) {}
+
+            init {
+                onTransitionCompleted(binding.motionLayout, 0)
+            }
+        })
 
         // 通信状態の変更を監視
         // リスト未ロード状態なら再試行する
