@@ -15,6 +15,7 @@ import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -84,8 +85,8 @@ class HistoryViewModel(
         val states = buildList {
             var currentDate: LocalDate? = null
             histories.sortedByDescending { it.log.visitedAt }.forEach { item ->
-                val itemDate = item.log.visitedAt.toLocalDate()
-                if (currentDate != itemDate) {
+                val itemDate = item.log.visitedAt.toSystemZonedDateTime("UTC").toLocalDate()
+                if (currentDate?.equals(itemDate) != true) {
                     currentDate = itemDate
                     add(RecyclerState(
                         type = RecyclerType.SECTION,
