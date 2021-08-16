@@ -62,8 +62,8 @@ class HistoryRepository(
         if (inserted != null) {
             historiesCacheLock.withLock {
                 historiesCache.removeAll {
-                    it.log.visitedAt.toLocalDate() == today
-                            && it.page.url == decodedUrl
+                    it.log.visitedAt.toLocalDate().equals(today)
+                            && it.page.url == inserted.page.url
                 }
                 historiesCache.add(inserted)
                 histories.postValue(historiesCache)
