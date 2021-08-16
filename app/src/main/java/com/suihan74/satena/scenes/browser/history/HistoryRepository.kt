@@ -7,6 +7,7 @@ import com.suihan74.satena.models.browser.History
 import com.suihan74.satena.models.browser.HistoryLog
 import com.suihan74.satena.models.browser.HistoryPage
 import com.suihan74.utilities.extensions.faviconUrl
+import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -62,8 +63,8 @@ class HistoryRepository(
         if (inserted != null) {
             historiesCacheLock.withLock {
                 historiesCache.removeAll {
-                    it.log.visitedAt.toLocalDate() == today
-                            && it.page.url == decodedUrl
+                    it.log.visitedAt.toSystemZonedDateTime("UTC").toLocalDate().equals(today)
+                            && it.page.url == inserted.page.url
                 }
                 historiesCache.add(inserted)
                 histories.postValue(historiesCache)
@@ -106,7 +107,7 @@ class HistoryRepository(
 
         historiesCacheLock.withLock {
             historiesCache.removeAll { h ->
-                h.log.visitedAt.toLocalDate() == date
+                h.log.visitedAt.toSystemZonedDateTime("UTC").toLocalDate() == date
             }
             histories.postValue(historiesCache)
         }
