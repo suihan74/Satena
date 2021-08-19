@@ -844,7 +844,6 @@ class BookmarksRepository(
             }
         }
 
-        _bookmarksDigest.postValue(digest)
         val bookmarks = filterIgnored(digest.favoriteBookmarks.plus(digest.scoredBookmarks).distinctBy { it.user })
 
         bookmarks.forEach {
@@ -856,6 +855,8 @@ class BookmarksRepository(
 
         // スター情報を取得する
         loadStarsEntriesForBookmarks(bookmarks)
+
+        _bookmarksDigest.postValue(digest)
     }
 
     /**
