@@ -390,6 +390,7 @@
     <string name="pref_bookmarks_using_post_star_dialog_desc">スターをつける前に確認する</string>
     <string name="pref_bookmarks_using_ignore_user_dialog_desc">ユーザーを非表示にする前に確認する</string>
     <string name="pref_bookmarks_using_add_star_popup_menu_desc">ブクマ一覧画面でスターをつけるポップアップを使用する</string>
+    <string name="pref_bookmarks_using_add_star_edge_desc">スター付与ボタンのタップ判定領域をブクマ項目の右端全体に拡大する</string>
     <string name="pref_bookmark_link_single_tap_action_desc">ブコメ内のリンクをタップしたときの動作</string>
     <string name="pref_bookmark_link_long_tap_action_desc">ブコメ内のリンクを長押ししたときの動作</string>
     <string name="pref_bookmarks_change_home_by_long_tapping_desc">タブ長押しで初期タブを変更する</string>

@@ -552,7 +552,7 @@ class BookmarksViewModel(
             }
             else {
                 button.setVisibility(true)
-                edge.setVisibility(true)
+                edge.setVisibility(repository.useAddStarEdge)
                 TooltipCompat.setTooltipText(button, activity.getString(R.string.add_star_popup_desc))
             }
 

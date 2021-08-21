@@ -238,6 +238,9 @@ enum class PreferenceKey(
     /** ブクマ一覧画面のリスト項目から直接スターを付けられるようにする */
     BOOKMARKS_USE_ADD_STAR_POPUP_MENU(typeInfo<Boolean>(), true),
 
+    /** スター付与ボタンのタップ判定領域をブクマ項目右端部分に拡大する */
+    BOOKMARKS_USE_ADD_STAR_EDGE(typeInfo<Boolean>(), true),
+
     /** スターを付ける前に確認ダイアログを表示する */
     USING_POST_STAR_DIALOG(typeInfo<Boolean>(), true),
 

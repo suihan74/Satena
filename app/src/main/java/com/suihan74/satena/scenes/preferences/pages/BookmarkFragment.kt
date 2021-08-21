@@ -74,6 +74,11 @@ class BookmarkViewModel(
         PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU
     )
 
+    /** スター付与ボタンのタップ判定領域をブクマ項目右端部分に拡大する */
+    private val useAddStarEdge = createLiveData<Boolean>(
+        PreferenceKey.BOOKMARKS_USE_ADD_STAR_EDGE
+    )
+
     /** スクロールでツールバーの表示状態を変化させる */
     private val toggleToolbarByScrolling = createLiveData<Boolean>(
         PreferenceKey.BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING
@@ -255,11 +260,18 @@ class BookmarkViewModel(
             }
         }
 
+        // ------ //
+        // 値の変更によって他の設定項目の表示状態が変わるもの
+
         saveAccountStates.observe(fragment.viewLifecycleOwner, observerForOnlyUpdates {
             load(fragment)
         })
 
         useCustomDigest.observe(fragment.viewLifecycleOwner, observerForOnlyUpdates {
+            load(fragment)
+        })
+
+        useAddStarPopupMenu.observe(fragment.viewLifecycleOwner, observerForOnlyUpdates {
             load(fragment)
         })
     }
@@ -340,6 +352,9 @@ class BookmarkViewModel(
         addSection(R.string.pref_bookmark_section_behavior)
         addPrefToggleItem(fragment, confirmPostStar, R.string.pref_bookmarks_using_post_star_dialog_desc)
         addPrefToggleItem(fragment, useAddStarPopupMenu, R.string.pref_bookmarks_using_add_star_popup_menu_desc)
+        if (useAddStarPopupMenu.value == true) {
+            addPrefToggleItem(fragment, useAddStarEdge, R.string.pref_bookmarks_using_add_star_edge_desc)
+        }
         addPrefToggleItem(fragment, toggleToolbarByScrolling, R.string.pref_bookmarks_hiding_toolbar_by_scrolling)
         addPrefToggleItem(fragment, toggleButtonsByScrolling, R.string.pref_bookmarks_hiding_buttons_with_scrolling_desc)
         addButton(fragment, R.string.pref_pager_scroll_sensitivity_desc) {
