@@ -547,10 +547,12 @@ class BookmarksViewModel(
             if (user == null || !useAddStarPopupMenu) {
                 // ボタンを使用しない
                 button.setVisibility(false)
+                edge.setVisibility(false)
                 return@adapter
             }
             else {
                 button.setVisibility(true)
+                edge.setVisibility(true)
                 TooltipCompat.setTooltipText(button, activity.getString(R.string.add_star_popup_desc))
             }
 
