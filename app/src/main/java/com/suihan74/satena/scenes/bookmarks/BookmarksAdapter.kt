@@ -58,7 +58,7 @@ class BookmarksAdapter(
     private var onAdditionalLoading: Listener<Unit>? = null
 
     /** スターをつける処理をボタンに設定する */
-    private var addStarButtonBinder : ((button: ImageButton, bookmark: Bookmark)->Unit)? = null
+    private var addStarButtonBinder : ((button: ImageButton, edge: View, bookmark: Bookmark)->Unit)? = null
 
     // ------ //
 
@@ -99,7 +99,7 @@ class BookmarksAdapter(
     }
 
     /** スターをつける処理をボタンに設定する */
-    fun setAddStarButtonBinder(binder: ((button: ImageButton, bookmark: Bookmark)->Unit)?) {
+    fun setAddStarButtonBinder(binder: ((button: ImageButton, edge: View, bookmark: Bookmark)->Unit)?) {
         addStarButtonBinder = binder
     }
 
@@ -362,10 +362,12 @@ class BookmarksAdapter(
             // スターを付けるボタンを設定
             if (bookmark.commentRaw.isNotBlank()) {
                 binding.addStarButton.visibility = View.VISIBLE
-                bookmarksAdapter.addStarButtonBinder?.invoke(binding.addStarButton, bookmark)
+                binding.addStarEdge.visibility = View.VISIBLE
+                bookmarksAdapter.addStarButtonBinder?.invoke(binding.addStarButton, binding.addStarEdge, bookmark)
             }
             else {
                 binding.addStarButton.visibility = View.GONE
+                binding.addStarEdge.visibility = View.GONE
             }
 
             // ブクマへのブクマ数の表示
