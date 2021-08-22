@@ -93,6 +93,27 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         { TapEntryAction.fromId(it) }
     )
 
+    /** エントリ項目右端シングルタップの挙動 */
+    val edgeSingleTapAction = createLiveDataEnum(
+        PreferenceKey.ENTRY_EDGE_SINGLE_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromId(it) }
+    )
+
+    /** エントリ項目右端複数回タップの挙動 */
+    val edgeMultipleTapAction = createLiveDataEnum(
+        PreferenceKey.ENTRY_EDGE_MULTIPLE_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromId(it) }
+    )
+
+    /** エントリ項目右端ロングタップの挙動 */
+    val edgeLongTapAction = createLiveDataEnum(
+        PreferenceKey.ENTRY_EDGE_LONG_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromId(it) }
+    )
+
     /** エントリ項目タップ回数判定時間 */
     val multipleTapDuration = createLiveData<Long>(
         PreferenceKey.ENTRY_MULTIPLE_TAP_DURATION
@@ -217,6 +238,31 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
+        addPrefItem(fragment, edgeSingleTapAction, R.string.pref_entries_edge_single_tap_action_desc) {
+            openEnumSelectionDialog(
+                TapEntryAction.values(),
+                edgeSingleTapAction,
+                R.string.pref_entries_edge_single_tap_action_desc,
+                fragmentManager
+            )
+        }
+        addPrefItem(fragment, edgeMultipleTapAction, R.string.pref_entries_edge_multiple_tap_action_desc) {
+            openEnumSelectionDialog(
+                TapEntryAction.values(),
+                edgeMultipleTapAction,
+                R.string.pref_entries_edge_multiple_tap_action_desc,
+                fragmentManager
+            )
+        }
+        addPrefItem(fragment, edgeLongTapAction, R.string.pref_entries_edge_long_tap_action_desc) {
+            openEnumSelectionDialog(
+                TapEntryAction.values(),
+                edgeLongTapAction,
+                R.string.pref_entries_edge_long_tap_action_desc,
+                fragmentManager
+            )
+        }
+
         addPrefItem(fragment, multipleTapDuration, R.string.pref_entries_multiple_tap_duration_desc, R.string.pref_entries_multiple_tap_duration_unit) {
             openMultipleTapDurationDialog(fragmentManager)
         }
