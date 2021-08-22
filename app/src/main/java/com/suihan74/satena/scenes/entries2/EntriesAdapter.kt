@@ -223,7 +223,7 @@ class EntriesAdapter(
             itemView.setOnLongClickListener(longClickListener(entry, onItemLongClicked))
 
             // 右端 タップ/長押し/複数回
-            binding.edgeClickArea.setOnClickListener(clickListener(entry, onItemEdgeClicked, onItemMultipleClicked))
+            binding.edgeClickArea.setOnClickListener(clickListener(entry, onItemEdgeClicked, onItemEdgeMultipleClicked))
             binding.edgeClickArea.setOnLongClickListener(longClickListener(entry, onItemEdgeLongClicked))
         }
 
