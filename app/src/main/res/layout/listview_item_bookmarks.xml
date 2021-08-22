@@ -139,9 +139,8 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/bookmark_mentions"
-            app:layout_constraintStart_toStartOf="@id/add_star_button"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_width="0dp"
+            android:layout_width="56dp"
             android:layout_height="0dp"/>
 
     <ImageButton
