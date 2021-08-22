@@ -274,43 +274,76 @@ class EntriesTabFragmentViewModel(
         activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager
-    ) {
-        super.invokeEntryClickedAction(
-            activity,
-            entry,
-            repository.entryClickedAction,
-            fragmentManager,
-            viewModelScope
-        )
-    }
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
 
     /** エントリを複数回クリックしたときの処理 */
     fun onMultipleClickEntry(
         activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager
-    ) {
-        super.invokeEntryClickedAction(
-            activity,
-            entry,
-            repository.entryMultipleClickedAction,
-            fragmentManager,
-            viewModelScope
-        )
-    }
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryMultipleClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
 
     /** エントリを長押ししたときの処理 */
     fun onLongClickEntry(
         activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager
-    ) {
-        super.invokeEntryClickedAction(
-            activity,
-            entry,
-            repository.entryLongClickedAction,
-            fragmentManager,
-            viewModelScope
-        )
-    }
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryLongClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
+
+    /** エントリ右端をシングルクリックしたときの処理 */
+    fun onClickEntryEdge(
+        activity: FragmentActivity,
+        entry: Entry,
+        fragmentManager: FragmentManager
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryEdgeClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
+
+    /** エントリ右端を複数回クリックしたときの処理 */
+    fun onMultipleClickEntryEdge(
+        activity: FragmentActivity,
+        entry: Entry,
+        fragmentManager: FragmentManager
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryEdgeMultipleClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
+
+    /** エントリ右端を長押ししたときの処理 */
+    fun onLongClickEntryEdge(
+        activity: FragmentActivity,
+        entry: Entry,
+        fragmentManager: FragmentManager
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryEdgeLongClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
 }

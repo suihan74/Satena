@@ -142,6 +142,18 @@ class EntriesRepository(
     val entryLongClickedAction : TapEntryAction
         get() = TapEntryAction.fromId(prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
 
+    /** エントリ右端クリック時の挙動 */
+    val entryEdgeClickedAction : TapEntryAction
+        get() = TapEntryAction.fromId(prefs.getInt(PreferenceKey.ENTRY_EDGE_SINGLE_TAP_ACTION))
+
+    /** エントリ右端複数回クリック時の挙動 */
+    val entryEdgeMultipleClickedAction : TapEntryAction
+        get() = TapEntryAction.fromId(prefs.getInt(PreferenceKey.ENTRY_EDGE_MULTIPLE_TAP_ACTION))
+
+    /** エントリ右端長押し時の挙動 */
+    val entryEdgeLongClickedAction : TapEntryAction
+        get() = TapEntryAction.fromId(prefs.getInt(PreferenceKey.ENTRY_EDGE_LONG_TAP_ACTION))
+
     /** エントリ項目クリック回数判定時間 */
     val entryMultipleClickDuration: Long
         get() = prefs.getLong(PreferenceKey.ENTRY_MULTIPLE_TAP_DURATION)
