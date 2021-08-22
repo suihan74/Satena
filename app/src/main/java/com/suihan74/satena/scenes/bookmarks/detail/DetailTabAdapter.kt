@@ -69,7 +69,7 @@ class DetailTabAdapter(
         lifecycleScope.launch(Dispatchers.Main.immediate) {
             viewModel.bookmarksToUser.observe(lifecycleOwner, { list ->
                 if (!list.isNullOrEmpty() && !tabs.contains(TabType.BOOKMARKS_TO_USER)) {
-                    tabs = listOf(TabType.BOOKMARKS_TO_USER).plus(tabs)
+                    tabs = tabs.plus(TabType.BOOKMARKS_TO_USER)
                 }
                 bookmarksToUserCount = list.size
                 notifyDataSetChanged()
