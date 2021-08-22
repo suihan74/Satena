@@ -7,7 +7,7 @@
             android:id="@+id/extra_scroll"
             app:constraintSetStart="@id/start"
             app:constraintSetEnd="@id/end"
-            app:autoTransition="animateToStart"
+            app:autoTransition="none"
             app:layoutDuringTransition="honorRequest"
             app:duration="4000">
         <OnSwipe
