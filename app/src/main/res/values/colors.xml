@@ -26,7 +26,9 @@
     <color name="clickGuard">#a0000000</color>
 
     <!-- EX_DARKテーマでのビュー選択背景ripple -->
-    <color name="ripple_material_ex_dark">#1EBDBDBD</color>
+    <color name="rippleMaterial">#4D000000</color>
+    <color name="rippleMaterialDark">#4BFFFFFF</color>
+    <color name="rippleMaterialExDark">#4ACACACA</color>
 
     <!-- SnackBar -->
     <color name="snackBarBackgroundColor">#282829</color>
