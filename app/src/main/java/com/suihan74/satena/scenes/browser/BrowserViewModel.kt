@@ -86,6 +86,9 @@ class BrowserViewModel(
     /** 表示中のページタイトル */
     val title = MutableLiveData("")
 
+    /** ページの読み込み完了率 */
+    val loadingProgress : LiveData<Int> = browserRepo.loadingProgress
+
     /** ユーザーエージェント */
     private val userAgent = browserRepo.userAgent
 
@@ -175,7 +178,7 @@ class BrowserViewModel(
     @MainThread
     fun initializeWebView(wv: WebView, activity: BrowserActivity) {
         wv.webViewClient = BrowserWebViewClient(activity, this)
-        wv.webChromeClient = WebChromeClient()
+        wv.webChromeClient = BrowserWebChromeClient(browserRepo)
 
         // DOMストレージ使用
         wv.settings.domStorageEnabled = true
@@ -723,18 +726,20 @@ class BrowserViewModel(
     }
 
     /** ページ読み込み開始時の処理 */
-    fun onPageStarted(url: String) {
-        this.title.value = url
-        this.url.value = url
+    fun onPageStarted(url: String) = viewModelScope.launch(Dispatchers.Main) {
+        val vm = this@BrowserViewModel
+        vm.title.value = url
+        vm.url.value = url
         browserRepo.resourceUrls.clear()
     }
 
     /** ページ読み込み完了時の処理 */
-    @MainThread
-    fun onPageFinished(view: WebView?, url: String) {
+    fun onPageFinished(view: WebView?, url: String) = viewModelScope.launch(Dispatchers.Main) {
+        val vm = this@BrowserViewModel
+
         // TODO: タイトルがひとつ前のページから更新されていない場合がある
         val title = view?.title ?: url
-        this.title.value = title
+        vm.title.value = title
         browserRepo.resourceUrls.addUnique(ResourceUrl(url, false))
 
         val faviconUrl = Uri.parse(url).faviconUrl

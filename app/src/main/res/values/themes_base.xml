@@ -52,6 +52,9 @@
         <!-- for NumberPicker -->
         <item name="colorControlNormal">?colorPrimary</item>
 
+        <!-- 水平ProgressBarの色 -->
+        <item name="horizontalProgressBarPrimaryColor">@color/colorPrimaryDark</item>
+
         <!-- SnackBar -->
         <item name="snackBarBackgroundColor">@color/snackBarBackgroundColor</item>
         <item name="snackBarTextColor">@color/snackBarTextColor</item>
@@ -170,6 +173,9 @@
         <item name="colorOnSurface">@color/textColorExDark</item>
         <!-- ポップアップ背景 -->
         <item name="popupMenuBackground">@drawable/dialog_background_ex_dark</item>
+
+        <!-- 水平ProgressBarの色 -->
+        <item name="horizontalProgressBarPrimaryColor">@color/colorPrimaryExDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.ExDark</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>

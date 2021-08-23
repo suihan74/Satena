@@ -68,6 +68,17 @@
                     android:layout_width="0dp"
                     android:layout_height="0dp"/>
 
+            <ProgressBar
+                    android:id="@+id/progress_bar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:visibility="@{vm.loadingProgress &gt; 0 &amp;&amp; vm.loadingProgress &lt; 100}"
+                    android:progress="@{vm.loadingProgress}"
+                    android:max="100"
+                    android:progressDrawable="@drawable/browser_progress_bar"
+                    app:layout_constraintBottom_toTopOf="@id/bottom_bar_area"
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp"/>
+
             <androidx.coordinatorlayout.widget.CoordinatorLayout
                     android:id="@+id/bottom_bar_area"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -88,7 +99,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/drawer_area"
                 android:background="?attr/panelBackground"
                 android:focusable="true"
@@ -101,23 +112,22 @@
                     android:id="@+id/drawer_tab_layout"
                     android:background="?attr/tabBackground"
                     style="@style/TabLayoutStyle"
-                    android:layout_alignParentTop="true"
-                    android:layout_width="match_parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"/>
 
             <androidx.viewpager2.widget.ViewPager2
                     android:id="@+id/drawer_view_pager"
-                    android:layout_below="@id/drawer_tab_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
-
-            <FrameLayout
-                    android:id="@+id/bookmark_post_area"
-                    android:layout_alignParentBottom="true"
+                    app:layout_constraintTop_toBottomOf="@id/drawer_tab_layout"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:layout_width="0dp"
                     android:layout_height="0dp"/>
 
-        </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.suihan74.utilities.views.LockableDrawerLayout>
 </layout>

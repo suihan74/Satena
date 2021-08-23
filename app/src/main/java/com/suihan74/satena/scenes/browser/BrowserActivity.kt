@@ -7,6 +7,7 @@ import android.view.*
 import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
@@ -33,8 +34,7 @@ import kotlinx.coroutines.launch
 class BrowserActivity :
     AppCompatActivity(),
     BookmarkPostViewModelOwner,
-    DrawerOwner
-{
+    DrawerOwner {
     companion object {
         /** 最初に開くページのURL */
         const val EXTRA_URL = "BrowserActivity.EXTRA_URL"
@@ -42,7 +42,7 @@ class BrowserActivity :
 
     // ------ //
 
-    val viewModel : BrowserViewModel by lazyProvideViewModel {
+    val viewModel: BrowserViewModel by lazyProvideViewModel {
         val initialUrl = intent.getStringExtra(EXTRA_URL)
 
         val app = SatenaApplication.instance
@@ -84,9 +84,9 @@ class BrowserActivity :
 
     // ------ //
 
-    private lateinit var binding : ActivityBrowserBinding
+    private lateinit var binding: ActivityBrowserBinding
 
-    val webView : WebView
+    val webView: WebView
         get() = binding.webview
 
     // ------ //
@@ -228,7 +228,7 @@ class BrowserActivity :
     }
 
     /** ドロワが開かれている */
-    val drawerOpened : Boolean
+    val drawerOpened: Boolean
         get() = binding.drawerLayout.isDrawerOpen(binding.drawerArea)
 
     // ------ //
@@ -267,6 +267,7 @@ class BrowserActivity :
                     }
                 }
             }
+
             override fun onDrawerClosed(drawerView: View) {
                 viewModel.drawerOpened.value = false
                 // 閉じたことをドロワタブに通知する
@@ -277,6 +278,7 @@ class BrowserActivity :
                     }
                 }
             }
+
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {
                 // ドロワ開閉でIMEを閉じる
@@ -299,12 +301,14 @@ class BrowserActivity :
                     fragment.onTabSelected()
                 }
             }
+
             override fun onTabUnselected(tab: TabLayout.Tab?) {
                 val position = tab?.position ?: return
                 drawerTabAdapter.findFragment(position)?.alsoAs<TabItem> { fragment ->
                     fragment.onTabUnselected()
                 }
             }
+
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 val position = tab?.position ?: return
                 drawerTabAdapter.findFragment(position)?.alsoAs<TabItem> { fragment ->
@@ -393,6 +397,8 @@ class BrowserActivity :
 
             val toolbarBinding = toolbar.inflate(viewModel, this, appBar, true)
             setSupportActionBar(toolbarBinding.toolbar)
+
+            initializeProgressBar(it)
         }
 
         // クリック防止ビュー
@@ -400,6 +406,27 @@ class BrowserActivity :
             if (motionEvent.action != MotionEvent.ACTION_UP) return@setOnTouchListener false
             hideSoftInputMethod(binding.mainArea)
             return@setOnTouchListener true
+        }
+    }
+
+    /**
+     * ツールバーの位置にあわせてプログレスバーの配置を変える
+     */
+    private fun initializeProgressBar(useBottomAppBar: Boolean) {
+        binding.mainArea.post {
+            val barId = R.id.progress_bar
+            with(ConstraintSet()) {
+                clone(binding.mainArea)
+                if (useBottomAppBar) {
+                    clear(barId, ConstraintSet.TOP)
+                    connect(barId, ConstraintSet.BOTTOM, R.id.bottom_bar_area, ConstraintSet.TOP, 0)
+                }
+                else {
+                    clear(barId, ConstraintSet.BOTTOM)
+                    connect(barId, ConstraintSet.TOP, R.id.top_bar_area, ConstraintSet.BOTTOM, 0)
+                }
+                applyTo(binding.mainArea)
+            }
         }
     }
 }

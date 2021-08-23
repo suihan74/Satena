@@ -155,6 +155,9 @@ class BrowserRepository(
         HashMap<String, List<Keyword>>()
     }
 
+    /** ページのロード完了率 */
+    val loadingProgress = MutableLiveData<Int>()
+
     // ------ //
 
     val isForceDarkStrategySupported

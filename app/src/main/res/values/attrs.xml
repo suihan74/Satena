@@ -30,6 +30,9 @@
 
         <!-- BottomSheetDialog -->
         <attr name="bottomSheetDialogHandleColor" format="color"/>
+
+        <!-- 水平ProgressBarの色 -->
+        <attr name="horizontalProgressBarPrimaryColor" format="color"/>
     </declare-styleable>
 
     <declare-styleable name="TextFloatingActionButton">

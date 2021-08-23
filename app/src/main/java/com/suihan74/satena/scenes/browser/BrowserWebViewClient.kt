@@ -90,15 +90,12 @@ class BrowserWebViewClient(
             viewModel.useUrlBlocking.value == true &&
             viewModel.browserRepo.blockUrlsRegex.containsMatchIn(url)
 
-        val result =
-            if (!blocked) super.shouldInterceptRequest(view, request)
-            else emptyResourceRequest
-
         if (blocked) {
             viewModel.addResource(url, blocked = true)
         }
 
-        return result
+        return if (blocked) emptyResourceRequest
+        else super.shouldInterceptRequest(view, request)
     }
 
     /** ページ中のリソースURLをすべて記録する */
