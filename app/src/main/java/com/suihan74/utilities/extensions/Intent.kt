@@ -10,19 +10,38 @@ import android.net.Uri
  */
 fun Intent.createIntentWithoutThisApplication(context: Context, title: CharSequence = "Choose a browser") : Intent {
     val packageManager = context.packageManager
-    val dummyIntent = Intent(this.action, Uri.parse("https://dummy"))
+    val dummyIntent = Intent(this.action, Uri.parse("https://"))
 
     val intents =
-        packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
+        packageManager.queryIntentActivities(this, PackageManager.MATCH_ALL).plus(
+            packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
+        )
+        .distinctBy { it.activityInfo.name }
         .filterNot { it.activityInfo.packageName == context.packageName }
-        .map { Intent(this).apply { setPackage(it.activityInfo.packageName) } }
+        .map { Intent(this).apply {
+            setPackage(it.activityInfo.packageName) }
+        }
 
     return when (intents.size) {
         0 -> this
         1 -> intents.first()
-        else -> Intent.createChooser(this, title).apply {
+        else -> Intent.createChooser(Intent(), title).apply {
             putExtra(Intent.EXTRA_ALTERNATE_INTENTS, intents.toTypedArray())
         }
+    }
+}
+
+/**
+ * デフォルトアプリでURLを開くIntentを作成する
+ */
+fun Intent.createIntentWithDefaultBrowser(context: Context) : Intent? {
+    val packageManager = context.packageManager
+    val dummyIntent = Intent(this.action, Uri.parse("https://"))
+    val resolveInfo = packageManager.resolveActivity(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY)
+        ?: return null
+
+    return Intent(this).apply {
+        setPackage(resolveInfo.activityInfo.packageName)
     }
 }
 
