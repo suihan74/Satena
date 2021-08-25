@@ -381,24 +381,11 @@ class BrowserActivity :
             }
         }
 
+        val toolbarBinding = toolbar.inflate(viewModel, this, binding.appbarLayout, true)
+        setSupportActionBar(toolbarBinding.toolbar)
+
         viewModel.useBottomAppBar.observe(this) {
-            val appbarLayout = binding.appbarLayout
-            val bottomAppBar = binding.bottomAppBar
-
-            // 使わない方のツールバーをクリアしておく
-            val another =
-                if (it) appbarLayout
-                else bottomAppBar
-            another.removeAllViews()
-
-            val appBar =
-                if (it) bottomAppBar
-                else appbarLayout
-
-            val toolbarBinding = toolbar.inflate(viewModel, this, appBar, true)
-            setSupportActionBar(toolbarBinding.toolbar)
-
-            initializeProgressBar(it)
+            binding.addressBarArea.post { initializeAddressBar(it) }
         }
 
         // クリック防止ビュー
@@ -409,24 +396,24 @@ class BrowserActivity :
         }
     }
 
-    /**
-     * ツールバーの位置にあわせてプログレスバーの配置を変える
-     */
-    private fun initializeProgressBar(useBottomAppBar: Boolean) {
-        binding.mainArea.post {
-            val barId = R.id.progress_bar
-            with(ConstraintSet()) {
-                clone(binding.mainArea)
-                if (useBottomAppBar) {
-                    clear(barId, ConstraintSet.TOP)
-                    connect(barId, ConstraintSet.BOTTOM, R.id.bottom_bar_area, ConstraintSet.TOP, 0)
-                }
-                else {
-                    clear(barId, ConstraintSet.BOTTOM)
-                    connect(barId, ConstraintSet.TOP, R.id.top_bar_area, ConstraintSet.BOTTOM, 0)
-                }
-                applyTo(binding.mainArea)
-            }
+    private fun initializeAddressBar(useBottomAppBar: Boolean) {
+        val addressBar = R.id.address_bar_area
+        val swipeLayout = R.id.swipe_layout
+        val progressBar = R.id.progress_bar
+        val parent = ConstraintSet.PARENT_ID
+        val top = ConstraintSet.TOP
+        val bottom = ConstraintSet.BOTTOM
+        val (chain, progressSet) =
+            if (useBottomAppBar) intArrayOf(swipeLayout, addressBar) to intArrayOf(bottom, top)
+            else intArrayOf(addressBar, swipeLayout) to intArrayOf(top, bottom)
+
+        with(ConstraintSet()) {
+            clone(binding.mainArea)
+            clear(progressBar, top)
+            clear(progressBar, bottom)
+            createVerticalChain(parent, top, parent, bottom, chain, null, 0)
+            connect(progressBar, progressSet[0], addressBar, progressSet[1])
+            applyTo(binding.mainArea)
         }
     }
 }
