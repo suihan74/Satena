@@ -21,11 +21,13 @@
                 android:layout_height="match_parent">
 
             <androidx.coordinatorlayout.widget.CoordinatorLayout
-                    android:id="@+id/top_bar_area"
-                    app:layout_constraintTop_toTopOf="parent"
+                    android:id="@+id/address_bar_area"
                     android:elevation="24dp"
-                    android:visibility="@{!vm.useBottomAppBar}"
-                    android:layout_width="match_parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/swipe_layout"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content">
 
                 <com.google.android.material.appbar.AppBarLayout
@@ -38,11 +40,11 @@
 
             <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                     android:id="@+id/swipe_layout"
-                    app:layout_constraintTop_toBottomOf="@id/top_bar_area"
-                    app:layout_constraintBottom_toTopOf="@id/bottom_bar_area"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    android:layout_width="match_parent"
+                    app:layout_constraintTop_toTopOf="@id/address_bar_area"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_width="0dp"
                     android:layout_height="0dp">
 
                 <WebView
@@ -63,8 +65,8 @@
 
                     app:layout_constraintTop_toTopOf="@id/swipe_layout"
                     app:layout_constraintBottom_toBottomOf="@id/swipe_layout"
-                    app:layout_constraintLeft_toLeftOf="@id/swipe_layout"
-                    app:layout_constraintRight_toRightOf="@id/swipe_layout"
+                    app:layout_constraintStart_toStartOf="@id/swipe_layout"
+                    app:layout_constraintEnd_toEndOf="@id/swipe_layout"
                     android:layout_width="0dp"
                     android:layout_height="0dp"/>
 
@@ -75,27 +77,11 @@
                     android:progress="@{vm.loadingProgress}"
                     android:max="100"
                     android:progressDrawable="@drawable/browser_progress_bar"
-                    app:layout_constraintBottom_toTopOf="@id/bottom_bar_area"
-                    android:layout_width="match_parent"
-                    android:layout_height="5dp"/>
-
-            <androidx.coordinatorlayout.widget.CoordinatorLayout
-                    android:id="@+id/bottom_bar_area"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:elevation="24dp"
-                    android:visibility="@{vm.useBottomAppBar}"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                <com.google.android.material.bottomappbar.BottomAppBar
-                        android:id="@+id/bottom_app_bar"
-                        app:backgroundTint="?toolbarBackground"
-                        app:contentInsetLeft="8dp"
-                        app:contentInsetRight="8dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-
-            </androidx.coordinatorlayout.widget.CoordinatorLayout>
+                    app:layout_constraintTop_toBottomOf="@id/address_bar_area"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_width="0dp"
+                    android:layout_height="4dp"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
