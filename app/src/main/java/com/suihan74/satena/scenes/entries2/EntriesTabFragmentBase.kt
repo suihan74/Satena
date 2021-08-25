@@ -146,6 +146,19 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             true
         }
 
+        adapter.setOnItemEdgeClickedListener { entry ->
+            viewModel.onClickEntryEdge(entriesActivity, entry, childFragmentManager)
+        }
+
+        adapter.setOnItemEdgeMultipleClickedListener { entry, _ ->
+            viewModel.onMultipleClickEntryEdge(entriesActivity, entry, childFragmentManager)
+        }
+
+        adapter.setOnItemEdgeLongClickedListener { entry ->
+            viewModel.onLongClickEntryEdge(entriesActivity, entry, childFragmentManager)
+            true
+        }
+
         // コメント部分クリック時の挙動
         adapter.setOnCommentClickedListener { entry, bookmark ->
             val intent = Intent(context, BookmarksActivity::class.java).apply {
