@@ -17,7 +17,6 @@ import com.suihan74.satena.dialogs.setCustomTitle
 import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.lazyProvideViewModel
-import org.threeten.bp.LocalDateTime
 
 class BookmarkMenuDialog : DialogFragment() {
     companion object {
@@ -173,13 +172,12 @@ class BookmarkMenuDialog : DialogFragment() {
         /** メニュー項目 */
         @OptIn(ExperimentalStdlibApi::class)
         val items by lazy {
-            val isBookmarkDummy = bookmark.timestamp == LocalDateTime.MIN
-
             buildList<Pair<Int, (BookmarkMenuDialog)->Unit>> {
                 add(R.string.bookmark_show_user_entries to { onShowEntries?.invoke(bookmark.user, it) })
-                add(R.string.bookmark_show_comment_entry to { onShowCommentEntry?.invoke(bookmark, it) })
-                add(R.string.bookmark_share_comment_page_url to { onShareCommentPageUrl?.invoke(bookmark, it) })
-
+                if (!bookmark.isDummy) {
+                    add(R.string.bookmark_show_comment_entry to { onShowCommentEntry?.invoke(bookmark, it) })
+                    add(R.string.bookmark_share_comment_page_url to { onShareCommentPageUrl?.invoke(bookmark, it) })
+                }
                 if (signedIn && bookmark.user != userSignedIn) {
                     following
                         .whenTrue { add(R.string.bookmark_unfollow to { onUnfollowUser?.invoke(bookmark.user, it) }) }
@@ -189,9 +187,11 @@ class BookmarkMenuDialog : DialogFragment() {
                         .whenTrue { add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) }) }
                         .whenFalse { add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark, it) }) }
 
-                    add(R.string.bookmark_add_ignored_word to { onAddIgnoredWord?.invoke(bookmark.commentRaw, it) })
+                    if (!bookmark.isDummy) {
+                        add(R.string.bookmark_add_ignored_word to { onAddIgnoredWord?.invoke(bookmark.commentRaw, it) })
+                    }
 
-                    if (!isBookmarkDummy && (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty())) {
+                    if (!bookmark.isDummy && (bookmark.comment.isNotBlank() || bookmark.tags.isNotEmpty())) {
                         add(R.string.bookmark_report to { onReportBookmark?.invoke(bookmark, it) })
                     }
                 }
@@ -205,7 +205,7 @@ class BookmarkMenuDialog : DialogFragment() {
                     add(R.string.bookmark_delete_star to { onDeleteStar?.invoke(bookmark to userStars, it) })
                 }
 
-                if (userSignedIn == bookmark.user && !isBookmarkDummy) {
+                if (userSignedIn == bookmark.user && !bookmark.isDummy) {
                     add(R.string.bookmark_delete to { onDeleteBookmark?.invoke(bookmark, it) })
                 }
             }
