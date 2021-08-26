@@ -187,7 +187,10 @@ class BookmarkMenuDialog : DialogFragment() {
                         .whenTrue { add(R.string.bookmark_unignore to { onUnignoreUser?.invoke(bookmark.user, it) }) }
                         .whenFalse { add(R.string.bookmark_ignore to { onIgnoreUser?.invoke(bookmark, it) }) }
 
-                    if (!bookmark.isDummy) {
+                    if (bookmark.isDummy) {
+                        add(R.string.bookmark_add_ignored_word to { onAddIgnoredWord?.invoke(bookmark.user, it) })
+                    }
+                    else {
                         add(R.string.bookmark_add_ignored_word to { onAddIgnoredWord?.invoke(bookmark.commentRaw, it) })
                     }
 
