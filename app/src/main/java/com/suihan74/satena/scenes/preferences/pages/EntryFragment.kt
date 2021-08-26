@@ -72,6 +72,13 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         { ExtraBottomItemsAlignment.fromId(it) }
     )
 
+    /** エクストラスクロール機能のツマミの配置 */
+    private val extraScrollingAlignment = createLiveDataEnum(
+        PreferenceKey.ENTRIES_EXTRA_SCROLL_ALIGNMENT,
+        { it.id },
+        { ExtraScrollingAlignment.fromId(it) }
+    )
+
     /** エントリ項目シングルタップの挙動 */
     val singleTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_SINGLE_TAP_ACTION,
@@ -314,6 +321,14 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 pagerScrollSensitivity.value = value
             }
                 .show(fragmentManager, "")
+        }
+        addPrefItem(fragment, extraScrollingAlignment, R.string.pref_extra_scroll_align_desc) {
+            openEnumSelectionDialog(
+                ExtraScrollingAlignment.values(),
+                extraScrollingAlignment,
+                R.string.pref_extra_scroll_align_desc,
+                fragmentManager
+            )
         }
 
         // --- //

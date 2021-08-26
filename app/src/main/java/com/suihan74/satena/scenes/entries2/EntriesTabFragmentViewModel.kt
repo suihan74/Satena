@@ -96,6 +96,9 @@ class EntriesTabFragmentViewModel(
     /** ユーザーの歴史を取得する : Category.Memorial15th */
     var isUserMemorial : Boolean = false
 
+    val extraScrollingAlignment
+        get() = repository.extraScrollingAlignment
+
     /** フィルタリングを任意で実行する */
     fun filter() {
         entries.value = entries.value

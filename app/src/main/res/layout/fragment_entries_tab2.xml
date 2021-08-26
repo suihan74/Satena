@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
     <data>
+        <import type="com.suihan74.satena.models.ExtraScrollingAlignment"/>
         <variable
             name="vm"
             type="com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel"/>
@@ -39,6 +40,7 @@
 
         <View
                 android:id="@+id/extra_scroll_background"
+                android:visibility="@{vm.extraScrollingAlignment != ExtraScrollingAlignment.NONE}"
                 android:background="@drawable/rounded_corner_text_view"
                 app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_top"
                 app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_bottom"
@@ -50,6 +52,7 @@
 
         <View
                 android:id="@+id/extra_scroll_dummy_top"
+                android:visibility="@{vm.extraScrollingAlignment != ExtraScrollingAlignment.NONE}"
                 android:layout_marginBottom="80dp"
                 app:layout_constraintBottom_toTopOf="@id/extra_scroll_dummy_bottom"
                 app:layout_constraintStart_toStartOf="@id/extra_scroll_dummy_bottom"
@@ -59,6 +62,7 @@
 
         <View
                 android:id="@+id/extra_scroll_dummy_bottom"
+                android:visibility="@{vm.extraScrollingAlignment != ExtraScrollingAlignment.NONE}"
                 android:layout_marginBottom="136dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="@id/extra_scroll_thumb"
@@ -68,6 +72,7 @@
 
         <View
                 android:id="@+id/extra_scroll_guide"
+                android:visibility="@{vm.extraScrollingAlignment != ExtraScrollingAlignment.NONE}"
                 android:layout_marginVertical="16dp"
                 app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_top"
                 app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_bottom"
@@ -84,6 +89,7 @@
                 android:contentDescription="@null"
                 android:focusable="true"
                 android:layout_marginEnd="48dp"
+                android:visibility="@{vm.extraScrollingAlignment != ExtraScrollingAlignment.NONE}"
                 app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_top"
                 app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_top"
                 app:layout_constraintEnd_toEndOf="parent"

@@ -358,6 +358,12 @@
     <!-- 表示するボトムメニューアイテムを選択するダイアログ -->
     <string name="dialog_title_bottom_bar_item_selection">ボトムメニューアイテム選択</string>
 
+    <!-- エクストラスクロール機能のツマミの配置 -->
+    <string name="pref_extra_scroll_align_desc">エクストラスクロール機能</string>
+    <string name="pref_extra_scroll_align_none">使用しない</string>
+    <string name="pref_extra_scroll_align_left">ツマミを画面左に配置</string>
+    <string name="pref_extra_scroll_align_right">ツマミを画面右に配置</string>
+
     <!-- カテゴリリストの表示形式 -->
     <string name="pref_categories_mode_list">リスト</string>
     <string name="pref_categories_mode_grid">グリッド</string>

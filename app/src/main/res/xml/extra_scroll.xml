@@ -29,12 +29,29 @@
 
         <Constraint
                 android:id="@+id/extra_scroll_thumb"
+                app:visibilityMode="ignore"
                 android:layout_marginEnd="48dp"
                 app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_top"
                 app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_top"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_width="24dp"
                 android:layout_height="24dp"/>
+
+        <Constraint android:id="@+id/extra_scroll_guide">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/extra_scroll_background">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/extra_scroll_dummy_top">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/extra_scroll_dummy_bottom">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
     </ConstraintSet>
 
     <ConstraintSet android:id="@+id/end">
@@ -48,11 +65,28 @@
 
         <Constraint
                 android:id="@+id/extra_scroll_thumb"
+                app:visibilityMode="ignore"
                 android:layout_marginEnd="48dp"
                 app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_bottom"
                 app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_bottom"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_width="24dp"
                 android:layout_height="24dp"/>
+
+        <Constraint android:id="@+id/extra_scroll_guide">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/extra_scroll_background">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/extra_scroll_dummy_top">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/extra_scroll_dummy_bottom">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
     </ConstraintSet>
 </MotionScene>
