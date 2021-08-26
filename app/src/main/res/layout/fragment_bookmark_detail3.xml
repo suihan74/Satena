@@ -134,6 +134,8 @@
                         android:id="@+id/timestamp"
                         tools:text="2021年01月23日"
                         timestamp="@{vm.bookmark.timestamp}"
+                        android:visibility="@{!vm.bookmark.isDummy}"
+                        disabledDefaultVisibility="invisible"
                         android:textSize="14sp"
                         android:textColor="?attr/tagTextColor"
                         android:textColorLink="?attr/tagTextColor"
