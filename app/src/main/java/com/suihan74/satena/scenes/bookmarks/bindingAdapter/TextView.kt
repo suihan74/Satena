@@ -133,12 +133,16 @@ object TextViewBindingAdapters {
         val stars = starsEntry?.allStars
 
         timestamp?.let {
-            val formatter = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
-            builder.append(
-                it.toSystemZonedDateTime("Asia/Tokyo").format(formatter)
-            )
-            if (!stars.isNullOrEmpty()) {
-                builder.append("\u2002\u2002") // margin
+            runCatching {
+                val formatter = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
+                builder.append(
+                    it.toSystemZonedDateTime("Asia/Tokyo").format(formatter)
+                )
+                if (!stars.isNullOrEmpty()) {
+                    builder.append("\u2002\u2002") // margin
+                }
+            }.onFailure {
+                builder.clear()
             }
         }
 

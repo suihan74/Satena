@@ -40,6 +40,9 @@ data class Bookmark (
         )
     }
 
+    @delegate:Transient
+    val isDummy : Boolean by lazy { timestamp == LocalDateTime.MIN }
+
     @Expose(serialize = false, deserialize = false)
     var mUserIconUrl: String? = null
     val userIconUrl : String
