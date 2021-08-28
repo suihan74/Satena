@@ -98,6 +98,13 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             it.vm = viewModel
         }
 
+        binding.entriesList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                entriesActivity.updateScrollBehavior(dx, dy)
+            }
+        })
+
         binding.motionLayout.addTransitionListener(object : MotionLayout.TransitionListener {
             private val duration = 500L
             override fun onTransitionChange(motionLayout: MotionLayout?, startId: Int, endId: Int, progress: Float) {}

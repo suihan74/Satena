@@ -11,6 +11,8 @@ import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.ViewCompat
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
@@ -625,6 +627,30 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             }
 
             else -> throw NotImplementedError()
+        }
+    }
+
+    /** コンテンツ部分にMotionLayoutを導入したことでツールバー開閉が暗黙的に行えなくなったため、明示的に呼び出す */
+    fun updateScrollBehavior(dx: Int, dy: Int) {
+        // ツールバーを開閉
+        binding.appbarLayout.layoutParams.alsoAs<CoordinatorLayout.LayoutParams> { params ->
+            val behavior = params.behavior as? AppBarLayout.Behavior ?: return@alsoAs
+            behavior.onNestedPreScroll(
+                binding.mainContentLayout,
+                binding.appbarLayout,
+                binding.mainLayout,
+                dx, dy, IntArray(2), ViewCompat.TYPE_TOUCH
+            )
+        }
+        // ボトムバーを開閉
+        binding.bottomAppBar.layoutParams.alsoAs<CoordinatorLayout.LayoutParams> { params ->
+            val behavior = params.behavior as? BottomAppBar.Behavior ?: return@alsoAs
+            behavior.onNestedScroll(
+                binding.mainContentLayout,
+                binding.bottomAppBar,
+                binding.mainLayout,
+                dx, dy, dx, dy, ViewCompat.TYPE_TOUCH, IntArray(2)
+            )
         }
     }
 
