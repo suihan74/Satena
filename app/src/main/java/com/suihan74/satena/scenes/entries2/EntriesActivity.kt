@@ -11,6 +11,8 @@ import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.constraintlayout.motion.widget.MotionLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.updateLayoutParams
@@ -34,6 +36,7 @@ import com.suihan74.satena.databinding.ActivityEntries2Binding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.ExtraScrollingAlignment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
@@ -169,6 +172,9 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {}
         })
+
+        // エクストラスクロール機能を初期化
+        initializeExtraScrollBar()
 
         // --- Event listeners ---
 
@@ -358,6 +364,8 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                 }
             }
         }
+
+        updateExtraScrollBarLayout(binding.motionLayout, viewModel.extraScrollingAlignment)
 
         // 画面遷移後や復元後にツールバーを強制的に再表示する
         showAppBar()
@@ -652,6 +660,66 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                 dx, dy, dx, dy, ViewCompat.TYPE_TOUCH, IntArray(2)
             )
         }
+    }
+
+    private fun initializeExtraScrollBar() {
+        binding.motionLayout.addTransitionListener(object : MotionLayout.TransitionListener {
+            private val duration = 500L
+            override fun onTransitionChange(motionLayout: MotionLayout?, startId: Int, endId: Int, progress: Float) {
+                binding.mainLayout.updateLayoutParams<CoordinatorLayout.LayoutParams> {
+                    topMargin = (dp2px(350) * progress).toInt()
+                }
+            }
+            override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
+                binding.mainLayout.updateLayoutParams<CoordinatorLayout.LayoutParams> {
+                    topMargin = when (currentId) {
+                        R.id.end -> dp2px(350)
+                        else -> 0
+                    }
+                }
+
+                val bgView = binding.extraScrollBackground
+                bgView.animate()
+                    .withEndAction { bgView.visibility = View.GONE }
+                    .alpha(0.0f)
+                    .setDuration(duration)
+                    .start()
+            }
+            override fun onTransitionStarted(motionLayout: MotionLayout?, startId: Int, endId: Int) {
+                val bgView = binding.extraScrollBackground
+                bgView.animate()
+                    .withStartAction {
+                        bgView.alpha = 0.0f
+                        bgView.visibility = View.VISIBLE
+                    }
+                    .alpha(1.0f)
+                    .setDuration(duration)
+                    .start()
+            }
+            override fun onTransitionTrigger(motionLayout: MotionLayout?, triggerId: Int, positive: Boolean, progress: Float) {}
+
+            init {
+                onTransitionCompleted(binding.motionLayout, 0)
+            }
+        })
+    }
+
+    private fun updateExtraScrollBarLayout(motionLayout: MotionLayout, alignment: ExtraScrollingAlignment?) {
+        viewModel.updateExtraScrollBarVisibility()
+
+        val margin = dp2px(38)
+        val edge =
+            if (alignment == ExtraScrollingAlignment.LEFT) ConstraintSet.LEFT
+            else ConstraintSet.RIGHT
+
+        val horizontalInitializer : (ConstraintSet)->Unit = { set ->
+            set.clear(R.id.extra_scroll_thumb, ConstraintSet.LEFT)
+            set.clear(R.id.extra_scroll_thumb, ConstraintSet.RIGHT)
+            set.connect(R.id.extra_scroll_thumb, edge, ConstraintSet.PARENT_ID, edge, margin)
+        }
+        motionLayout.getConstraintSet(R.id.start).let(horizontalInitializer)
+        motionLayout.getConstraintSet(R.id.end).let(horizontalInitializer)
+        motionLayout.requestLayout()
     }
 
     // --- FAB表示アニメーション ---
