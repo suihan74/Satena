@@ -651,14 +651,16 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             )
         }
         // ボトムバーを開閉
-        binding.bottomAppBar.layoutParams.alsoAs<CoordinatorLayout.LayoutParams> { params ->
-            val behavior = params.behavior as? BottomAppBar.Behavior ?: return@alsoAs
-            behavior.onNestedScroll(
-                binding.mainContentLayout,
-                binding.bottomAppBar,
-                binding.mainLayout,
-                dx, dy, dx, dy, ViewCompat.TYPE_TOUCH, IntArray(2)
-            )
+        if (viewModel.hideBottomAppBarByScroll) {
+            binding.bottomAppBar.layoutParams.alsoAs<CoordinatorLayout.LayoutParams> { params ->
+                val behavior = params.behavior as? BottomAppBar.Behavior ?: return@alsoAs
+                behavior.onNestedScroll(
+                    binding.mainContentLayout,
+                    binding.bottomAppBar,
+                    binding.mainLayout,
+                    dx, dy, dx, dy, ViewCompat.TYPE_TOUCH, IntArray(2)
+                )
+            }
         }
     }
 
