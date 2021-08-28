@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.motion.widget.MotionLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -18,11 +19,13 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.ExtraScrollingAlignment
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.dp2px
 import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.provideViewModel
@@ -144,7 +147,9 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     override fun onResume() {
         super.onResume()
+        viewModel.onResume()
 
+        initializeExtraScrollBar(binding.motionLayout, viewModel.extraScrollingAlignment)
         setEntriesAdapterListeners()
 
         // エントリリストの初期ロード
@@ -155,6 +160,22 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         binding.entriesList.adapter.alsoAs<EntriesAdapter> {
             it.onResume()
         }
+    }
+
+    private fun initializeExtraScrollBar(motionLayout: MotionLayout, alignment: ExtraScrollingAlignment?) {
+        val margin = requireContext().dp2px(36)
+        val edge =
+            if (alignment == ExtraScrollingAlignment.LEFT) ConstraintSet.LEFT
+            else ConstraintSet.RIGHT
+
+        val horizontalInitializer : (ConstraintSet)->Unit = { set ->
+            set.clear(R.id.extra_scroll_thumb, ConstraintSet.LEFT)
+            set.clear(R.id.extra_scroll_thumb, ConstraintSet.RIGHT)
+            set.connect(R.id.extra_scroll_thumb, edge, ConstraintSet.PARENT_ID, edge, margin)
+        }
+        motionLayout.getConstraintSet(R.id.start).let(horizontalInitializer)
+        motionLayout.getConstraintSet(R.id.end).let(horizontalInitializer)
+        motionLayout.requestLayout()
     }
 
     /** エントリ項目用のリスナを設定する */

@@ -30,11 +30,11 @@
         <Constraint
                 android:id="@+id/extra_scroll_thumb"
                 app:visibilityMode="ignore"
-                android:layout_marginEnd="36dp"
+                android:layout_marginRight="36dp"
                 android:padding="12dp"
                 app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_top"
                 app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_top"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
                 android:layout_width="44dp"
                 android:layout_height="44dp"/>
 
@@ -67,11 +67,11 @@
         <Constraint
                 android:id="@+id/extra_scroll_thumb"
                 app:visibilityMode="ignore"
-                android:layout_marginEnd="36dp"
+                android:layout_marginRight="36dp"
                 android:padding="12dp"
                 app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_bottom"
                 app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_bottom"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
                 android:layout_width="44dp"
                 android:layout_height="44dp"/>
 

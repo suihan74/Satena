@@ -101,7 +101,15 @@ class EntriesTabFragmentViewModel(
         get() = repository.extraScrollingAlignment
 
     val extraScrollBarVisibility =
-        MutableLiveData(extraScrollingAlignment.value != ExtraScrollingAlignment.NONE)
+        MutableLiveData(extraScrollingAlignment != ExtraScrollingAlignment.NONE)
+
+    // ------ //
+
+    fun onResume() {
+        extraScrollBarVisibility.value = extraScrollingAlignment != ExtraScrollingAlignment.NONE
+    }
+
+    // ------ //
 
     /** フィルタリングを任意で実行する */
     fun filter() = viewModelScope.launch(Dispatchers.Main) {
