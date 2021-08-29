@@ -263,6 +263,7 @@
     <string name="pref_generals_section_theme">テーマ</string>
     <string name="pref_generals_section_notices">通知</string>
     <string name="pref_generals_section_update">アップデート通知</string>
+    <string name="pref_generals_section_intent">インテント</string>
     <string name="pref_generals_section_dialogs">ダイアログ</string>
     <string name="pref_generals_section_backup">バックアップ</string>
     <string name="pref_generals_section_clear_caches">キャッシュ</string>
@@ -300,6 +301,8 @@
     <string name="pref_generals_clear_image_cache_button">実行</string>
     <string name="msg_pref_generals_clear_image_cache_succeeded">画像キャッシュを削除しました</string>
     <string name="pref_generals_clear_image_cache_dialog_message">キャッシュを削除するとストレージ使用量を削減できる一方、一時的に通信量が増えて画像の読み込みが遅くなります。削除しますか？</string>
+
+    <string name="pref_generals_use_default_app_intent">外部アプリを開くインテント発行時にデフォルトアプリを優先する（OFFにすると毎回選択ダイアログを表示する）</string>
 
     <!-- entries -->
     <string name="pref_entry_section_bottom_menu">ボトムメニュー</string>

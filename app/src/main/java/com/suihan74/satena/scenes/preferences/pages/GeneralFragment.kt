@@ -102,6 +102,11 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         PreferenceKey.SHOW_RELEASE_NOTES_AFTER_UPDATE
     )
 
+    /** インテント発行時にデフォルトアプリを優先使用する */
+    private val useDefaultAppIntent = createLiveData<Boolean>(
+        PreferenceKey.USE_DEFAULT_OUTER_APP_INTENT
+    )
+
     /** 画像キャッシュサイズ */
     val imageCacheSize : LiveData<Long> by lazy { _imageCacheSize }
     private val _imageCacheSize = MutableLiveData<Long>()
@@ -200,6 +205,11 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         }
         addPrefToggleItem(fragment, noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
         addPrefToggleItem(fragment, ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
+
+        // --- //
+
+        addSection(R.string.pref_generals_section_intent)
+        addPrefToggleItem(fragment, useDefaultAppIntent, R.string.pref_generals_use_default_app_intent)
 
         // --- //
 

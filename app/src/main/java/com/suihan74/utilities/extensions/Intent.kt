@@ -4,29 +4,40 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.utilities.SafeSharedPreferences
 
 /**
  * URLを開くために"共有先リストからこのアプリを除いた"Intentを作成する
  */
-fun Intent.createIntentWithoutThisApplication(context: Context, title: CharSequence = "Choose a browser") : Intent {
+fun Intent.createIntentWithoutThisApplication(
+    context: Context,
+    title: CharSequence = "Choose a browser",
+) : Intent {
     val packageManager = context.packageManager
     val dummyIntent = Intent(this.action, Uri.parse("https://"))
+    val useDefault = SafeSharedPreferences.create<PreferenceKey>(context)
+        .getBoolean(PreferenceKey.USE_DEFAULT_OUTER_APP_INTENT)
 
-    val defaultApp =
-        packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY).firstOrNull()
+    if (useDefault) {
+        val defaultApp =
+            packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
+                .firstOrNull()
 
-    val defaultBrowser =
-        packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY).firstOrNull()
+        val defaultBrowser =
+            packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY)
+                .firstOrNull()
 
-    if (defaultApp != null && defaultApp.activityInfo.packageName != context.packageName) {
-        return Intent(this).apply {
-            setPackage(defaultApp.activityInfo.packageName)
+        if (defaultApp != null && defaultApp.activityInfo.packageName != context.packageName) {
+            return Intent(this).apply {
+                setPackage(defaultApp.activityInfo.packageName)
+            }
         }
-    }
 
-    if (defaultBrowser != null && defaultBrowser.activityInfo.packageName != context.packageName) {
-        return Intent(this).apply {
-            setPackage(defaultBrowser.activityInfo.packageName)
+        if (defaultBrowser != null && defaultBrowser.activityInfo.packageName != context.packageName) {
+            return Intent(this).apply {
+                setPackage(defaultBrowser.activityInfo.packageName)
+            }
         }
     }
 
