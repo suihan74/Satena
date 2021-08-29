@@ -12,6 +12,24 @@ fun Intent.createIntentWithoutThisApplication(context: Context, title: CharSeque
     val packageManager = context.packageManager
     val dummyIntent = Intent(this.action, Uri.parse("https://"))
 
+    val defaultApp =
+        packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY).firstOrNull()
+
+    val defaultBrowser =
+        packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY).firstOrNull()
+
+    if (defaultApp != null && defaultApp.activityInfo.packageName != context.packageName) {
+        return Intent(this).apply {
+            setPackage(defaultApp.activityInfo.packageName)
+        }
+    }
+
+    if (defaultBrowser != null && defaultBrowser.activityInfo.packageName != context.packageName) {
+        return Intent(this).apply {
+            setPackage(defaultBrowser.activityInfo.packageName)
+        }
+    }
+
     val intents =
         packageManager.queryIntentActivities(this, PackageManager.MATCH_ALL).plus(
             packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
