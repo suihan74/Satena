@@ -16,6 +16,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -673,18 +674,20 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     private fun initializeExtraScrollBar() {
         binding.motionLayout.addTransitionListener(object : MotionLayout.TransitionListener {
             private val duration = 500L
+            private val tileHeight = dp2px(112)
+            private val extraMargin : Int
+                get() = binding.mainLayout.measuredHeight - tileHeight * 3
+
             override fun onTransitionChange(motionLayout: MotionLayout?, startId: Int, endId: Int, progress: Float) {
-                binding.mainLayout.updateLayoutParams<CoordinatorLayout.LayoutParams> {
-                    topMargin = (dp2px(350) * progress).toInt()
-                }
+                binding.mainLayout.updatePadding(top = (extraMargin * progress).toInt())
             }
             override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
-                binding.mainLayout.updateLayoutParams<CoordinatorLayout.LayoutParams> {
-                    topMargin = when (currentId) {
-                        R.id.end -> dp2px(350)
+                binding.mainLayout.updatePadding(
+                    top = when (currentId) {
+                        R.id.end -> extraMargin.toInt()
                         else -> 0
                     }
-                }
+                )
 
                 val bgView = binding.extraScrollBackground
                 bgView.animate()
