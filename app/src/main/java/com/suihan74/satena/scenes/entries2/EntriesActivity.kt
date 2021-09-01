@@ -103,6 +103,10 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     /** FABメニューの開閉状態 */
     private var isFABMenuOpened : Boolean = false
 
+    /** エクストラスクロール状態 */
+    private val extraScrolling : Boolean
+        get() = binding.motionLayout.progress > 0
+
     /**
      * ボトムバーのSearchView
      *
@@ -395,6 +399,8 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             isDrawerOpened -> binding.drawerLayout.closeDrawer(binding.drawerArea)
 
             isFABMenuOpened -> closeFABMenu()
+
+            extraScrolling -> binding.motionLayout.transitionToStart()
 
             else -> finish()
         }

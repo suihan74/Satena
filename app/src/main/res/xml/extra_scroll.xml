@@ -9,7 +9,7 @@
             app:constraintSetEnd="@id/end"
             app:autoTransition="none"
             app:layoutDuringTransition="honorRequest"
-            app:duration="4000">
+            app:duration="400">
         <OnSwipe
                 app:touchRegionId="@id/extra_scroll_thumb"
                 app:touchAnchorId="@id/extra_scroll_thumb"
