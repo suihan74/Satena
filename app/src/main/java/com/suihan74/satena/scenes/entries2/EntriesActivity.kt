@@ -731,6 +731,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         motionLayout.getConstraintSet(R.id.start).let(horizontalInitializer)
         motionLayout.getConstraintSet(R.id.end).let(horizontalInitializer)
         motionLayout.requestLayout()
+        motionLayout.transitionToStart()
     }
 
     // --- FAB表示アニメーション ---
