@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Transition
+            android:id="@+id/extra_scroll"
+            app:constraintSetStart="@id/start"
+            app:constraintSetEnd="@id/end"
+            app:autoTransition="none"
+            app:layoutDuringTransition="honorRequest"
+            app:duration="400">
+        <OnSwipe
+                app:touchRegionId="@id/extra_scroll_thumb"
+                app:touchAnchorId="@id/extra_scroll_thumb"
+                app:touchAnchorSide="bottom"
+                app:dragDirection="dragUp"
+                app:moveWhenScrollAtTop="true"/>
+    </Transition>
+
+    <ConstraintSet android:id="@+id/start">
+        <Constraint
+                android:id="@id/extra_scroll_thumb"
+                app:visibilityMode="ignore"
+                android:layout_marginRight="36dp"
+                android:padding="12dp"
+                app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_top"
+                app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_top"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_width="44dp"
+                android:layout_height="44dp"/>
+
+        <Constraint android:id="@id/extra_scroll_guide">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@id/extra_scroll_background">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@id/extra_scroll_dummy_top">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@id/extra_scroll_dummy_bottom">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <!---->
+
+        <Constraint android:id="@+id/custom_settings_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/search_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmarks_scroll_top_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmarks_open_my_bookmark_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmarks_scroll_bottom_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmarks_scroll_menu_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmark_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmarks_search_text">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/end">
+        <Constraint
+                android:id="@id/extra_scroll_thumb"
+                app:visibilityMode="ignore"
+                android:layout_marginRight="36dp"
+                android:padding="12dp"
+                app:layout_constraintTop_toTopOf="@id/extra_scroll_dummy_bottom"
+                app:layout_constraintBottom_toBottomOf="@id/extra_scroll_dummy_bottom"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_width="44dp"
+                android:layout_height="44dp"/>
+
+        <Constraint android:id="@id/extra_scroll_guide">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@id/extra_scroll_background">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@id/extra_scroll_dummy_top">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@id/extra_scroll_dummy_bottom">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <!---->
+
+        <Constraint android:id="@+id/custom_settings_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/search_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmarks_scroll_top_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmarks_open_my_bookmark_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmarks_scroll_bottom_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmarks_scroll_menu_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmark_button">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+
+        <Constraint android:id="@+id/bookmarks_search_text">
+            <PropertySet app:visibilityMode="ignore"/>
+        </Constraint>
+    </ConstraintSet>
+</MotionScene>

@@ -17,6 +17,7 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.R
+import com.suihan74.satena.models.ExtraScrollingAlignment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
 import com.suihan74.satena.scenes.bookmarks.BookmarkDetailOpenable
@@ -83,6 +84,16 @@ class ContentsViewModel(
     val drawerGravity by lazy {
         prefs.getInt(PreferenceKey.DRAWER_GRAVITY)
     }
+
+    /** エクストラスクロール機能のツマミの配置 */
+    val extraScrollingAlignment
+        get() = ExtraScrollingAlignment.fromId(prefs.getInt(PreferenceKey.BOOKMARKS_EXTRA_SCROLL_ALIGNMENT))
+
+    /** エクストラスクロール機能のツマミの表示状態 */
+    val extraScrollBarVisibility =
+        MutableLiveData(extraScrollingAlignment != ExtraScrollingAlignment.NONE)
+
+    val extraScrollProgress = MutableLiveData(0f)
 
     // ------ //
 

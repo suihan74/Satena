@@ -250,6 +250,9 @@ enum class PreferenceKey(
     /** タブのスワイプ感度 */
     BOOKMARKS_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
 
+    /** エクストラスクロール機能のツマミの配置 */
+    BOOKMARKS_EXTRA_SCROLL_ALIGNMENT(typeInfo<Int>(), ExtraScrollingAlignment.RIGHT.id),
+
     /** ブクマ一覧画面のリスト項目から直接スターを付けられるようにする */
     BOOKMARKS_USE_ADD_STAR_POPUP_MENU(typeInfo<Boolean>(), true),
 

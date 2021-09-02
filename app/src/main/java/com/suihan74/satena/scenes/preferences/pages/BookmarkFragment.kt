@@ -10,10 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsPostBookmarkAccountStatesBinding
-import com.suihan74.satena.models.BookmarkPostActivityGravity
-import com.suihan74.satena.models.CustomDigestSettingsKey
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
 import com.suihan74.satena.scenes.post.TagsListOrder
@@ -92,6 +89,13 @@ class BookmarkViewModel(
     /** タブのスワイプ感度 */
     private val pagerScrollSensitivity = createLiveData<Float>(
         PreferenceKey.BOOKMARKS_PAGER_SCROLL_SENSITIVITY
+    )
+
+    /** エクストラスクロール機能のツマミの配置 */
+    private val extraScrollingAlignment = createLiveDataEnum(
+        PreferenceKey.BOOKMARKS_EXTRA_SCROLL_ALIGNMENT,
+        { it.id },
+        { ExtraScrollingAlignment.fromId(it) }
     )
 
     /** 「すべて」タブでは非表示ブクマを表示する */
@@ -368,6 +372,14 @@ class BookmarkViewModel(
                 pagerScrollSensitivity.value = value
             }
             .show(fragmentManager, "")
+        }
+        addPrefItem(fragment, extraScrollingAlignment, R.string.pref_extra_scroll_align_desc) {
+            openEnumSelectionDialog(
+                ExtraScrollingAlignment.values(),
+                extraScrollingAlignment,
+                R.string.pref_extra_scroll_align_desc,
+                fragmentManager
+            )
         }
 
         // --- //
