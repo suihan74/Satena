@@ -138,7 +138,7 @@
     <string name="entry_action_nothing">何もしない</string>
     <string name="entry_action_show_comments">ブックマークを見る</string>
     <string name="entry_action_show_page">ページを開く</string>
-    <string name="entry_action_show_page_in_browser">ページを外部ブラウザで開く</string>
+    <string name="entry_action_show_page_in_browser">ページを外部アプリで開く</string>
     <string name="entry_action_share">共有</string>
     <string name="entry_action_show_menu">メニューダイアログを開く</string>
     <string name="entry_action_favorite">お気に入りに追加</string>
@@ -149,8 +149,8 @@
     <string name="entry_action_delete_bookmark">ブックマークを削除する</string>
     <string name="entry_action_ignore">このサイトを非表示にする</string>
 
-    <string name="msg_show_page_failed">アプリ内ブラウザを開けませんでした。外部ブラウザを開きます</string>
-    <string name="msg_show_page_in_browser_failed">外部ブラウザを開けませんでした</string>
+    <string name="msg_show_page_failed">アプリ内ブラウザを開けませんでした。外部アプリを開きます</string>
+    <string name="msg_show_page_in_browser_failed">外部アプリを開けませんでした</string>
 
     <!-- ブクマ画面タイトルバータップ時アクション -->
     <string name="bookmark_title_action_nothing">何もしない</string>
