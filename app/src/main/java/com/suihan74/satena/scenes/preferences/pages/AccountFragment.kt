@@ -24,11 +24,14 @@ import com.suihan74.satena.scenes.authentication.MastodonAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonAccount
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 「アカウント」画面
@@ -68,7 +71,13 @@ class AccountViewModel(
             .launchIn(viewModelScope)
 
         viewModelScope.launch {
-            accountLoader.signInAccounts(reSignIn = false)
+            runCatching {
+                accountLoader.signInAccounts(reSignIn = false)
+            }.onFailure {
+                withContext(Dispatchers.Main) {
+                    SatenaApplication.instance.showToast(R.string.msg_hatena_sign_in_failed)
+                }
+            }
             load(fragment)
         }
     }
