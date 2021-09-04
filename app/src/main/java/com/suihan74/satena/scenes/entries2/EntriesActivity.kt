@@ -684,7 +684,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
                 binding.mainLayout.updatePadding(
                     top = when (currentId) {
-                        R.id.end -> extraMargin.toInt()
+                        R.id.end -> extraMargin
                         else -> 0
                     }
                 )
