@@ -25,7 +25,8 @@ class EntriesTabFragmentViewModel(
     private val tabPosition: Int
 ) :
     ViewModel(),
-    EntryMenuActions by EntryMenuActionsImplForEntries(repository)
+    EntryMenuActions by EntryMenuActionsImplForEntries(repository),
+    CommentMenuActions by CommentMenuActionsImpl(repository)
 {
     companion object {
         private const val TAB_POSITION_READ_LATER = 1
@@ -356,4 +357,24 @@ class EntriesTabFragmentViewModel(
         fragmentManager,
         viewModelScope
     )
+
+    /** コメント部分クリック時の処理 */
+    fun onClickComment(
+        activity: FragmentActivity,
+        entry: Entry,
+        bookmarkResult: BookmarkResult,
+        fragmentManager: FragmentManager
+    ) {
+        openComment(activity, entry, bookmarkResult)
+    }
+
+    /** コメント部分長押し時の処理 */
+    fun onLongClickComment(
+        activity: FragmentActivity,
+        entry: Entry,
+        bookmarkResult: BookmarkResult,
+        fragmentManager: FragmentManager
+    ) {
+        openCommentMenuDialog(entry, bookmarkResult, fragmentManager)
+    }
 }

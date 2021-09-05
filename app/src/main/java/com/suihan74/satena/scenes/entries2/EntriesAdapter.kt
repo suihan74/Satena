@@ -38,6 +38,9 @@ class EntriesAdapter(
     /** コメント部分クリック時の挙動 */
     private var onCommentClicked : ((Entry, BookmarkResult)->Unit)? = null
 
+    /** コメント部分長押し時の挙動 */
+    private var onCommentLongClicked : ((Entry, BookmarkResult)->Unit)? = null
+
     /** アイテム追加完了時の挙動 */
     private var onItemsSubmitted : Listener<List<Entry>?>? = null
 
@@ -87,6 +90,11 @@ class EntriesAdapter(
     /** エントリに含まれるコメントをクリックしたときの挙動をセットする */
     fun setOnCommentClickedListener(listener: ((Entry, BookmarkResult)->Unit)?) {
         onCommentClicked = listener
+    }
+
+    /** エントリに含まれるコメントを長押ししたときの挙動をセットする */
+    fun setOnCommentLongClickedListener(listener: ((Entry, BookmarkResult)->Unit)?) {
+        onCommentLongClicked = listener
     }
 
     /** アイテム追加完了時の挙動をセットする */
@@ -202,12 +210,28 @@ class EntriesAdapter(
 
         init {
             binding.commentsList.adapter = CommentsAdapter().apply {
-                setOnItemClickedListener listener@ { comment ->
+                setOnItemClickedListener { comment ->
                     if (!itemClicked) {
                         itemClicked = true
-                        val entry = entry ?: return@listener
+                        val entry = entry ?: return@setOnItemClickedListener
                         onCommentClicked?.invoke(entry, comment)
+                        lifecycleOwner.lifecycleScope.launch {
+                            delay(clickGuardRefreshDelay)
+                            itemClicked = false
+                        }
                     }
+                }
+                setOnItemLongClickedListener { comment ->
+                    if (!itemClicked) {
+                        itemClicked = true
+                        val entry = entry ?: return@setOnItemLongClickedListener false
+                        onCommentLongClicked?.invoke(entry, comment)
+                        lifecycleOwner.lifecycleScope.launch {
+                            delay(clickGuardRefreshDelay)
+                            itemClicked = false
+                        }
+                    }
+                    onCommentLongClicked != null
                 }
             }
         }

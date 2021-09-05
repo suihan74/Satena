@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.entries2
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,13 +16,11 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getEnum
-import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.provideViewModel
 
 abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
@@ -169,11 +166,11 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
         // コメント部分クリック時の挙動
         adapter.setOnCommentClickedListener { entry, bookmark ->
-            val intent = Intent(context, BookmarksActivity::class.java).apply {
-                putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry)
-                putExtra(BookmarksActivity.EXTRA_TARGET_USER, bookmark.user)
-            }
-            startActivity(intent)
+            viewModel.onClickComment(entriesActivity, entry, bookmark, childFragmentManager)
+        }
+
+        adapter.setOnCommentLongClickedListener { entry, bookmark ->
+            viewModel.onLongClickComment(entriesActivity, entry, bookmark, childFragmentManager)
         }
     }
 
