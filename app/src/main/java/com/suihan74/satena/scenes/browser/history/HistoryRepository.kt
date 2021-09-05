@@ -143,6 +143,7 @@ class HistoryRepository(
         runCatching {
             val threshold = now.toLocalDateTime().minusDays(lifeSpanDays.toLong())
             dao.deleteHistory(LocalDateTime.MIN, threshold)
+            dao.deleteHistoryPages(LocalDateTime.MIN, threshold)
         }
 
         prefs.editSync {
