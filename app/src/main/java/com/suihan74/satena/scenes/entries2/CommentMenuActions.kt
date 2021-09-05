@@ -109,10 +109,9 @@ class CommentMenuActionsImpl(
 
     /** 最近のブックマークを見る */
     override fun openCommentUserEntries(activity: FragmentActivity, bookmarkResult: BookmarkResult) {
-        val intent = Intent(activity, EntriesActivity::class.java).apply {
-            putExtra(EntriesActivity.EXTRA_USER, bookmarkResult.user)
+        activity.alsoAs<EntriesActivity> {
+            it.showUserEntries(bookmarkResult.user)
         }
-        activity.startActivity(intent)
     }
 
     /** ブコメを修正する */
