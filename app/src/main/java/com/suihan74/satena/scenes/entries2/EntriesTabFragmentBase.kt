@@ -94,6 +94,13 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             it.vm = viewModel
         }
 
+        binding.entriesList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                entriesActivity.updateScrollBehavior(dx, dy)
+            }
+        })
+
         // 通信状態の変更を監視
         // リスト未ロード状態なら再試行する
         SatenaApplication.instance.networkReceiver.state.observe(viewLifecycleOwner, { state ->
@@ -114,6 +121,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     override fun onResume() {
         super.onResume()
+        viewModel.onResume()
 
         setEntriesAdapterListeners()
 

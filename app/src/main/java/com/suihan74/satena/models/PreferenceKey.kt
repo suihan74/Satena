@@ -126,6 +126,9 @@ enum class PreferenceKey(
     /** ボトムバーの追加項目の表示位置 */
     ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT(typeInfo<Int>(), ExtraBottomItemsAlignment.DEFAULT.id),
 
+    /** エクストラスクロール機能のツマミの配置 */
+    ENTRIES_EXTRA_SCROLL_ALIGNMENT(typeInfo<Int>(), ExtraScrollingAlignment.RIGHT.id),
+
     /** エントリ項目シングルタップの挙動 */
     ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.id),
 
@@ -246,6 +249,9 @@ enum class PreferenceKey(
 
     /** タブのスワイプ感度 */
     BOOKMARKS_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
+
+    /** エクストラスクロール機能のツマミの配置 */
+    BOOKMARKS_EXTRA_SCROLL_ALIGNMENT(typeInfo<Int>(), ExtraScrollingAlignment.RIGHT.id),
 
     /** ブクマ一覧画面のリスト項目から直接スターを付けられるようにする */
     BOOKMARKS_USE_ADD_STAR_POPUP_MENU(typeInfo<Boolean>(), true),

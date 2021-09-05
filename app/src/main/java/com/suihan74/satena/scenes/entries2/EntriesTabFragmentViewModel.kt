@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.ExtraScrollingAlignment
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.OnSuccess
@@ -96,8 +97,22 @@ class EntriesTabFragmentViewModel(
     /** ユーザーの歴史を取得する : Category.Memorial15th */
     var isUserMemorial : Boolean = false
 
+    val extraScrollingAlignment
+        get() = repository.extraScrollingAlignment
+
+    val extraScrollBarVisibility =
+        MutableLiveData(extraScrollingAlignment != ExtraScrollingAlignment.NONE)
+
+    // ------ //
+
+    fun onResume() {
+        extraScrollBarVisibility.value = extraScrollingAlignment != ExtraScrollingAlignment.NONE
+    }
+
+    // ------ //
+
     /** フィルタリングを任意で実行する */
-    fun filter() {
+    fun filter() = viewModelScope.launch(Dispatchers.Main) {
         entries.value = entries.value
     }
 
@@ -132,25 +147,20 @@ class EntriesTabFragmentViewModel(
         onSuccess: OnSuccess<Unit>? = null,
         onError: OnError? = null,
         onFinally: OnFinally? = null
-    ) = viewModelScope.launch {
+    ) = viewModelScope.launch(Dispatchers.Main) {
         try {
             when (category) {
                 Category.Notices -> loadNotices()
                 Category.Maintenance -> loadInformation()
                 else -> loadEntries()
             }
-
             onSuccess?.invoke(Unit)
         }
         catch (e: Throwable) {
-            withContext(Dispatchers.Main) {
-                onError?.invoke(e)
-            }
+            onError?.invoke(e)
         }
         finally {
-            withContext(Dispatchers.Main) {
-                onFinally?.invoke()
-            }
+            onFinally?.invoke()
         }
     }
 

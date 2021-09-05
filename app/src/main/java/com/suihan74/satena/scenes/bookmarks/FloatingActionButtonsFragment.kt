@@ -9,8 +9,12 @@ import android.view.inputmethod.EditorInfo
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.constraintlayout.motion.widget.MotionLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
+import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksFabs3Binding
+import com.suihan74.satena.models.ExtraScrollingAlignment
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
@@ -42,6 +46,9 @@ class FloatingActionButtonsFragment : Fragment() {
     private var onBackPressedCallbackForKeyword : OnBackPressedCallback? = null
     private var onBackPressedCallbackForScroll : OnBackPressedCallback? = null
 
+    /** エクストラスクロール監視用コールバック */
+    private var onBackPressedCallbackForExtraScrolling : OnBackPressedCallback? = null
+
     /** ブクマ投稿画面遷移用ランチャ */
     private val postBookmarkLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         bookmarksViewModel.onActivityResult(BookmarkPostActivity.REQUEST_CODE, result.resultCode, result.data)
@@ -67,6 +74,9 @@ class FloatingActionButtonsFragment : Fragment() {
         // FAB初期化
         initFABs(binding)
 
+        // エクストラスクロールバー初期化
+        initializeExtraScrollBar(binding)
+
         // 戻るボタンを監視
         onBackPressedCallbackForKeyword = requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
@@ -86,6 +96,16 @@ class FloatingActionButtonsFragment : Fragment() {
             binding.bookmarksScrollTopButton.hide()
             binding.bookmarksScrollBottomButton.hide()
             binding.bookmarksOpenMyBookmarkButton.hide()
+            isEnabled = false
+        }
+
+        onBackPressedCallbackForExtraScrolling = requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            false
+        ) {
+            if (binding.mainLayout.progress > 0) {
+                binding.mainLayout.transitionToStart()
+            }
             isEnabled = false
         }
 
@@ -205,5 +225,67 @@ class FloatingActionButtonsFragment : Fragment() {
                 else -> {}
             }
         }
+    }
+
+    /** エクストラスクロールバー初期化 */
+    private fun initializeExtraScrollBar(binding: FragmentBookmarksFabs3Binding) {
+        binding.mainLayout.addTransitionListener(object : MotionLayout.TransitionListener {
+            private val duration = 500L
+            override fun onTransitionChange(motionLayout: MotionLayout?, startId: Int, endId: Int, progress: Float) {
+                contentsViewModel.extraScrollProgress.value = progress
+            }
+            override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
+                onBackPressedCallbackForExtraScrolling?.isEnabled = currentId != R.id.start
+
+                contentsViewModel.extraScrollProgress.value = when (currentId) {
+                    R.id.end -> 1f
+                    else -> 0f
+                }
+
+                val bgView = binding.extraScrollBackground
+                bgView.animate()
+                    .withEndAction { bgView.visibility = View.GONE }
+                    .alpha(0.0f)
+                    .setDuration(duration)
+                    .start()
+            }
+            override fun onTransitionStarted(motionLayout: MotionLayout?, startId: Int, endId: Int) {
+                val bgView = binding.extraScrollBackground
+                bgView.animate()
+                    .withStartAction {
+                        bgView.alpha = 0.0f
+                        bgView.visibility = View.VISIBLE
+                    }
+                    .alpha(1.0f)
+                    .setDuration(duration)
+                    .start()
+            }
+            override fun onTransitionTrigger(motionLayout: MotionLayout?, triggerId: Int, positive: Boolean, progress: Float) {
+                onBackPressedCallbackForExtraScrolling?.isEnabled = progress > 0
+            }
+
+            init {
+                onTransitionCompleted(binding.mainLayout, 0)
+            }
+        })
+
+        updateExtraScrollBarLayout(binding.mainLayout, contentsViewModel.extraScrollingAlignment)
+    }
+
+    private fun updateExtraScrollBarLayout(motionLayout: MotionLayout, alignment: ExtraScrollingAlignment?) {
+        val margin = requireContext().dp2px(38)
+        val edge =
+            if (alignment == ExtraScrollingAlignment.LEFT) ConstraintSet.LEFT
+            else ConstraintSet.RIGHT
+
+        val horizontalInitializer : (ConstraintSet)->Unit = { set ->
+            set.clear(R.id.extra_scroll_thumb, ConstraintSet.LEFT)
+            set.clear(R.id.extra_scroll_thumb, ConstraintSet.RIGHT)
+            set.connect(R.id.extra_scroll_thumb, edge, ConstraintSet.PARENT_ID, edge, margin)
+        }
+        motionLayout.getConstraintSet(R.id.start).let(horizontalInitializer)
+        motionLayout.getConstraintSet(R.id.end).let(horizontalInitializer)
+        motionLayout.requestLayout()
+        motionLayout.transitionToStart()
     }
 }

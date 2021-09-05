@@ -190,6 +190,10 @@ class EntriesRepository(
     val extraBottomItemsAlignment : ExtraBottomItemsAlignment
         get() = ExtraBottomItemsAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT))
 
+    /** エクストラスクロール機能のツマミの配置 */
+    val extraScrollingAlignment
+        get() = ExtraScrollingAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_SCROLL_ALIGNMENT))
+
     /** 初期化処理 */
     suspend fun initialize(forceUpdate: Boolean = false) = withContext(Dispatchers.Default) {
         accountLoader.signInAccounts(forceUpdate)
