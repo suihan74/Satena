@@ -94,14 +94,22 @@ class CommentMenuActionsImpl(
 
     /** アプリ内ブラウザで開く */
     override fun openCommentInnerBrowser(activity: FragmentActivity, bookmarkResult: BookmarkResult) {
-        activity.startInnerBrowser(url = bookmarkResult.permalink)
+        activity.startInnerBrowser(
+            bookmarkResult.eid?.let { eid ->
+                "${HatenaClient.B_BASE_URL}/entry/$eid/comment/${bookmarkResult.user}"
+            } ?: bookmarkResult.permalink
+        )
     }
 
     /** 外部アプリで開く */
     override fun openCommentIntent(activity: FragmentActivity, bookmarkResult: BookmarkResult) {
         val intent = Intent().let {
             it.action = Intent.ACTION_VIEW
-            it.data = Uri.parse(bookmarkResult.permalink)
+            it.data = Uri.parse(
+                bookmarkResult.eid?.let { eid ->
+                    "${HatenaClient.B_BASE_URL}/entry/$eid/comment/${bookmarkResult.user}"
+                } ?: bookmarkResult.permalink
+            )
             it.createIntentWithoutThisApplication(activity, title = bookmarkResult.permalink)
         }
         activity.startActivity(intent)
