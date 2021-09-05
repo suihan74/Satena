@@ -11,7 +11,10 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.TextInputDialogFragment
+import com.suihan74.satena.models.BrowserSettingsKey
+import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.browser.BookmarksListType
+import com.suihan74.satena.models.browser.BrowserHistoryLifeSpan
 import com.suihan74.satena.scenes.browser.*
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.*
@@ -73,6 +76,8 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     private val drawerPagerTouchSlopScale get() = browserRepo.drawerPagerScrollSensitivity
 
+    private val historyLifeSpan get() = browserRepo.historyLifeSpan
+
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
@@ -85,12 +90,11 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         }
         else if (!this::browserRepo.isInitialized) {
             val context = fragment.requireContext()
-            browserRepo = BrowserRepository(
-                HatenaClient,
-                SafeSharedPreferences.create(context),
-                SafeSharedPreferences.create(context)
-            )
-            historyRepo = HistoryRepository(SatenaApplication.instance.browserDao)
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val browserSettings = SafeSharedPreferences.create<BrowserSettingsKey>(context)
+
+            browserRepo = BrowserRepository(HatenaClient, prefs, browserSettings)
+            historyRepo = HistoryRepository(browserSettings, SatenaApplication.instance.browserDao)
         }
 
         super.onCreateView(fragment)
@@ -202,6 +206,14 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_browser_section_optimize)
+        addPrefItem(fragment, historyLifeSpan, R.string.pref_browser_history_lifespan_desc) {
+            openEnumSelectionDialog(
+                BrowserHistoryLifeSpan.values(),
+                historyLifeSpan,
+                R.string.pref_browser_history_lifespan_desc,
+                fragmentManager
+            )
+        }
         addButton(fragment, R.string.pref_browser_clear_cache_desc, textColorId = R.color.clearCache) {
             openClearCacheDialog(fragmentManager)
         }

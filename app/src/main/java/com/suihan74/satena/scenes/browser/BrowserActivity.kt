@@ -47,11 +47,12 @@ class BrowserActivity :
 
         val app = SatenaApplication.instance
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val browserSettings = SafeSharedPreferences.create<BrowserSettingsKey>(this)
 
         val browserRepo = BrowserRepository(
             HatenaClient,
             prefs,
-            SafeSharedPreferences.create<BrowserSettingsKey>(this)
+            browserSettings
         )
 
         val bookmarksRepo = BookmarksRepository(
@@ -62,7 +63,7 @@ class BrowserActivity :
             app.userTagDao
         )
 
-        val historyRepo = HistoryRepository(app.browserDao)
+        val historyRepo = HistoryRepository(browserSettings, app.browserDao)
 
         BrowserViewModel(
             browserRepo,
