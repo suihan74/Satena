@@ -138,8 +138,8 @@ class EntriesViewModel(
     val extraScrollBarVisibility =
         MutableLiveData(extraScrollingAlignment != ExtraScrollingAlignment.NONE)
 
-    fun updateExtraScrollBarVisibility() {
-        extraScrollBarVisibility.value = extraScrollingAlignment != ExtraScrollingAlignment.NONE
+    fun updateExtraScrollBarVisibility(visibility: Boolean) {
+        extraScrollBarVisibility.value = extraScrollingAlignment != ExtraScrollingAlignment.NONE && visibility
     }
 
     // ------ //

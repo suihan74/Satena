@@ -32,6 +32,14 @@ class BookmarksContentFragment : Fragment() {
 
     // ------ //
 
+    private val tileHeight : Int
+        get() = requireContext().dp2px(80)
+
+    private val extraMargin : Int
+        get() = binding.tabPager.measuredHeight - tileHeight * 3
+
+    // ------ //
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -79,10 +87,8 @@ class BookmarksContentFragment : Fragment() {
 
         // エクストラスクロールによる上部マージン設定
         contentsViewModel.extraScrollProgress.observe(viewLifecycleOwner, Observer {
-            val tileHeight = requireContext().dp2px(80)
-            val contentsHeight = binding.tabPager.measuredHeight - tileHeight * 3
             binding.tabPager.updatePadding(
-                top = (contentsHeight * it).toInt()
+                top = (extraMargin * it).toInt()
             )
         })
 
@@ -97,5 +103,10 @@ class BookmarksContentFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         binding.toolbar.startMarquee()
+        binding.tabPager.post {
+            contentsViewModel.updateExtraScrollBarVisibility(
+                extraMargin > tileHeight
+            )
+        }
     }
 }

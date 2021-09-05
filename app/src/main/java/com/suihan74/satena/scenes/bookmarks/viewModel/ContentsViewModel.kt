@@ -95,6 +95,10 @@ class ContentsViewModel(
 
     val extraScrollProgress = MutableLiveData(0f)
 
+    fun updateExtraScrollBarVisibility(visibility: Boolean) {
+        extraScrollBarVisibility.value = extraScrollingAlignment != ExtraScrollingAlignment.NONE && visibility
+    }
+
     // ------ //
 
     /** 現在アクティブなタブFragmentを取得する処理 */

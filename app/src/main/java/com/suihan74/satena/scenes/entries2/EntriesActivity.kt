@@ -370,7 +370,9 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             }
         }
 
-        updateExtraScrollBarLayout(binding.motionLayout, viewModel.extraScrollingAlignment)
+        binding.motionLayout.post {
+            updateExtraScrollBarLayout(binding.motionLayout, viewModel.extraScrollingAlignment)
+        }
 
         // 画面遷移後や復元後にツールバーを強制的に再表示する
         showAppBar()
@@ -671,12 +673,15 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         }
     }
 
+    private val extraScrollingTileHeight : Int
+        get() = dp2px(112)
+
+    private val extraMargin : Int
+        get() = binding.mainLayout.measuredHeight - extraScrollingTileHeight * 3
+
     private fun initializeExtraScrollBar() {
         binding.motionLayout.addTransitionListener(object : MotionLayout.TransitionListener {
             private val duration = 500L
-            private val tileHeight = dp2px(112)
-            private val extraMargin : Int
-                get() = binding.mainLayout.measuredHeight - tileHeight * 3
 
             override fun onTransitionChange(motionLayout: MotionLayout?, startId: Int, endId: Int, progress: Float) {
                 binding.mainLayout.updatePadding(top = (extraMargin * progress).toInt())
@@ -716,7 +721,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     }
 
     private fun updateExtraScrollBarLayout(motionLayout: MotionLayout, alignment: ExtraScrollingAlignment?) {
-        viewModel.updateExtraScrollBarVisibility()
+        viewModel.updateExtraScrollBarVisibility(extraMargin > extraScrollingTileHeight)
 
         val margin = dp2px(38)
         val edge =
