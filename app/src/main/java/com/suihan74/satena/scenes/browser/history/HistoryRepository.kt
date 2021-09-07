@@ -67,6 +67,7 @@ class HistoryRepository(
         val inserted = dao.getHistory(now)
 
         if (inserted != null) {
+            clearOldHistories()
             historiesCacheLock.withLock {
                 historiesCache.removeAll {
                     it.log.visitedAt.toSystemZonedDateTime("UTC").toLocalDate().equals(today)
@@ -91,7 +92,6 @@ class HistoryRepository(
     /** 履歴リストを更新 */
     suspend fun loadHistories() = withContext(Dispatchers.Default) {
         historiesCacheLock.withLock {
-            clearOldHistories()
             historiesCache.clear()
             historiesCache.addAll(
                 dao.findHistory(query = keyword.value.orEmpty())
@@ -141,11 +141,19 @@ class HistoryRepository(
         if (lastRefreshed != null && lastRefreshed.toLocalDate() >= today || lifeSpanDays == 0) {
             return
         }
+        val threshold = now.toLocalDateTime().minusDays(lifeSpanDays.toLong())
 
         runCatching {
-            val threshold = now.toLocalDateTime().minusDays(lifeSpanDays.toLong())
             dao.deleteHistory(LocalDateTime.MIN, threshold)
             dao.deleteHistoryPages(LocalDateTime.MIN, threshold)
+        }
+
+        historiesCacheLock.withLock {
+            val newItems = historiesCache.filter {
+                it.log.visitedAt >= threshold
+            }
+            historiesCache.clear()
+            historiesCache.addAll(newItems)
         }
 
         prefs.editSync {
