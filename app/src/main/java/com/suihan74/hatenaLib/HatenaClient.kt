@@ -139,6 +139,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
             mRk = cookie
             mSignedIn = true
             account = getAccountAsync().await()
+            if (account?.login != true) throw SignInFailureException()
         }
         catch (e: Throwable) {
             mRk = null
