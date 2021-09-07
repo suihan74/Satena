@@ -48,7 +48,9 @@ class HistoryRepository(
         val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
         val decodedUrl = Uri.decode(url)
 
-        val page = dao.getHistoryPage(decodedUrl) ?: HistoryPage(
+        val page = dao.getHistoryPage(decodedUrl)?.let {
+            it.copy(visitTimes = it.visitTimes + 1)
+        } ?: HistoryPage(
             url = decodedUrl,
             title = title,
             faviconUrl = favicon,
@@ -88,8 +90,8 @@ class HistoryRepository(
 
     /** 履歴リストを更新 */
     suspend fun loadHistories() = withContext(Dispatchers.Default) {
-        clearOldHistories()
         historiesCacheLock.withLock {
+            clearOldHistories()
             historiesCache.clear()
             historiesCache.addAll(
                 dao.findHistory(query = keyword.value.orEmpty())
@@ -148,6 +150,12 @@ class HistoryRepository(
 
         prefs.editSync {
             putObject(BrowserSettingsKey.HISTORY_LAST_REFRESHED, now)
+        }
+    }
+
+    fun clearLastRefreshed() {
+        prefs.edit {
+            remove(BrowserSettingsKey.HISTORY_LAST_REFRESHED)
         }
     }
 }

@@ -104,6 +104,10 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         browserMode.observe(owner, observerForOnlyUpdates {
             load(fragment)
         })
+
+        historyLifeSpan.observe(owner, observerForOnlyUpdates {
+            historyRepo.clearLastRefreshed()
+        })
     }
 
     @OptIn(ExperimentalStdlibApi::class)
