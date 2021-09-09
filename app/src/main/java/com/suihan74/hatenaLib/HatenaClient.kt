@@ -144,6 +144,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         catch (e: Throwable) {
             mRk = null
             mSignedIn = false
+            account = null
             throw SignInFailureException(e)
         }
 
