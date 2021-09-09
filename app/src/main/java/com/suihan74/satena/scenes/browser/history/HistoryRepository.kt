@@ -2,10 +2,12 @@ package com.suihan74.satena.scenes.browser.history
 
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
+import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.browser.BrowserDao
 import com.suihan74.satena.models.browser.History
 import com.suihan74.satena.models.browser.HistoryLog
 import com.suihan74.satena.models.browser.HistoryPage
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.faviconUrl
 import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import kotlinx.coroutines.Dispatchers
@@ -14,10 +16,12 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZonedDateTime
 import java.util.*
 import kotlin.collections.ArrayList
 
 class HistoryRepository(
+    private val prefs: SafeSharedPreferences<BrowserSettingsKey>,
     private val dao: BrowserDao
 ) {
 
@@ -44,7 +48,9 @@ class HistoryRepository(
         val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
         val decodedUrl = Uri.decode(url)
 
-        val page = dao.getHistoryPage(decodedUrl) ?: HistoryPage(
+        val page = dao.getHistoryPage(decodedUrl)?.let {
+            it.copy(visitTimes = it.visitTimes + 1)
+        } ?: HistoryPage(
             url = decodedUrl,
             title = title,
             faviconUrl = favicon,
@@ -61,6 +67,7 @@ class HistoryRepository(
         val inserted = dao.getHistory(now)
 
         if (inserted != null) {
+            clearOldHistories()
             historiesCacheLock.withLock {
                 historiesCache.removeAll {
                     it.log.visitedAt.toSystemZonedDateTime("UTC").toLocalDate().equals(today)
@@ -122,6 +129,41 @@ class HistoryRepository(
             historiesCache.addAll(additional)
             historiesCache.sortBy { it.log.visitedAt }
             histories.postValue(historiesCache)
+        }
+    }
+
+    /** 寿命切れの履歴を削除する */
+    private suspend fun clearOldHistories() {
+        val now = ZonedDateTime.now()
+        val today = now.toLocalDate()
+        val lifeSpanDays = prefs.getInt(BrowserSettingsKey.HISTORY_LIFESPAN)
+        val lastRefreshed = prefs.getObject<ZonedDateTime>(BrowserSettingsKey.HISTORY_LAST_REFRESHED)
+        if (lastRefreshed != null && lastRefreshed.toLocalDate() >= today || lifeSpanDays == 0) {
+            return
+        }
+        val threshold = now.toLocalDateTime().minusDays(lifeSpanDays.toLong())
+
+        runCatching {
+            dao.deleteHistory(LocalDateTime.MIN, threshold)
+            dao.deleteHistoryPages(LocalDateTime.MIN, threshold)
+        }
+
+        historiesCacheLock.withLock {
+            val newItems = historiesCache.filter {
+                it.log.visitedAt >= threshold
+            }
+            historiesCache.clear()
+            historiesCache.addAll(newItems)
+        }
+
+        prefs.editSync {
+            putObject(BrowserSettingsKey.HISTORY_LAST_REFRESHED, now)
+        }
+    }
+
+    fun clearLastRefreshed() {
+        prefs.edit {
+            remove(BrowserSettingsKey.HISTORY_LAST_REFRESHED)
         }
     }
 }

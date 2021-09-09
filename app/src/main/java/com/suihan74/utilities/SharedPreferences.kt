@@ -9,6 +9,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.lang.ref.WeakReference
 import java.lang.reflect.Type
@@ -439,9 +440,20 @@ class LocalDateTimeSerializer : JsonSerializer<LocalDateTime>, JsonDeserializer<
         formatter.parse(json!!.asString, LocalDateTime::from)
 }
 
+class ZonedDateTimeSerializer : JsonSerializer<ZonedDateTime>, JsonDeserializer<ZonedDateTime> {
+    private val formatter = DateTimeFormatter.ISO_ZONED_DATE_TIME
+
+    override fun serialize(src: ZonedDateTime?, typeOfSrc: Type?, context: JsonSerializationContext?) =
+        JsonPrimitive(formatter.format(src))
+
+    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?) : ZonedDateTime? =
+        formatter.parse(json!!.asString, ZonedDateTime::from)
+}
+
 private fun getSharedPreferencesGson() =
     GsonBuilder()
         .serializeNulls()
         .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
         .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeSerializer())
+        .registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeSerializer())
         .create()

@@ -151,6 +151,15 @@ interface BrowserDao {
     suspend fun __deleteHistoryPageImpl(page: HistoryPage)
 
     /**
+     * 最終訪問日時が指定した期間内の全てのページ情報を削除する
+     */
+    @Query("""
+        delete from browser_history_pages
+        where lastVisited>=:start and lastVisited<:end
+    """)
+    suspend fun deleteHistoryPages(start: LocalDateTime, end: LocalDateTime)
+
+    /**
      * ログを削除する
      */
     @Delete

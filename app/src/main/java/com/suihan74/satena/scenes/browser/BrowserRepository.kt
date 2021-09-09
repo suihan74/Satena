@@ -9,6 +9,7 @@ import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
 import com.suihan74.satena.models.browser.BookmarksListType
+import com.suihan74.satena.models.browser.BrowserHistoryLifeSpan
 import com.suihan74.satena.scenes.preferences.createLiveDataEnum
 import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
@@ -135,6 +136,14 @@ class BrowserRepository(
         createBrowserSettingsLiveData(BrowserSettingsKey.DRAWER_PAGER_SCROLL_SENSITIVITY) { p, key ->
             p.getFloat(key)
         }
+
+    /** 履歴の寿命 */
+    val historyLifeSpan = createLiveDataEnum(
+        browserSettings,
+        BrowserSettingsKey.HISTORY_LIFESPAN,
+        { it.days },
+        { i -> BrowserHistoryLifeSpan.fromDays(i) }
+    )
 
     private var _blockUrlsRegex : Regex? = null
 
