@@ -11,6 +11,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.*
+import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.putObjectExtra
@@ -105,6 +106,13 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     /** インテント発行時にデフォルトアプリを優先使用する */
     private val useDefaultAppIntent = createLiveData<Boolean>(
         PreferenceKey.USE_DEFAULT_OUTER_APP_INTENT
+    )
+
+    /** 画像キャッシュを消去する間隔 */
+    private val clearingImageCacheSpan = createLiveDataEnum(
+        PreferenceKey.CLEARING_IMAGE_CACHE_SPAN,
+        { it.days },
+        { ClearingImageCacheSpan.fromDays(it) }
     )
 
     /** 画像キャッシュサイズ */
@@ -231,6 +239,14 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_generals_section_clear_caches)
+        addPrefItem(fragment, clearingImageCacheSpan, R.string.pref_generals_clear_image_cache_span) {
+            openEnumSelectionDialog(
+                ClearingImageCacheSpan.values(),
+                clearingImageCacheSpan,
+                R.string.pref_generals_clear_image_cache_span,
+                fragmentManager
+            )
+        }
         addButton(
             fragment,
             text = MutableLiveData(fragment.getText(R.string.pref_generals_clear_image_cache_desc)),

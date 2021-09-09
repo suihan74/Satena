@@ -3,6 +3,7 @@ package com.suihan74.satena.models
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
+import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
 import com.suihan74.satena.scenes.browser.BrowserMode
@@ -13,8 +14,10 @@ import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.satena.scenes.post.TagsListOrder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
+import com.suihan74.utilities.extensions.ZonedDateTimeUtil
 import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZonedDateTime
 import java.lang.reflect.Type
 
 @SharedPreferencesKey(fileName = "default", version = 10, latest = true)
@@ -106,6 +109,12 @@ enum class PreferenceKey(
 
     /** アップデート後最初の起動時にリリースノートを表示する */
     SHOW_RELEASE_NOTES_AFTER_UPDATE(typeInfo<Boolean>(), true),
+
+    /** 画像キャッシュをクリアする間隔（日数） */
+    CLEARING_IMAGE_CACHE_SPAN(typeInfo<Int>(), ClearingImageCacheSpan.MONTH_1.days),
+
+    /** 最後に画像キャッシュをクリアした日時 */
+    IMAGE_CACHE_LAST_CLEARED(typeInfo<ZonedDateTime>(), ZonedDateTimeUtil.MIN),
 
     ////////////////////////////////////////
     // entries

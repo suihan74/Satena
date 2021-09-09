@@ -12,6 +12,8 @@ import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.GlideApp
+import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
@@ -19,9 +21,11 @@ import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesReposit
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.checkFromSpam
 import kotlinx.coroutines.*
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZonedDateTime
 
 /** エントリリストの取得時にカテゴリによっては必要な必要な追加パラメータ */
 class LoadEntryParameter {
@@ -196,10 +200,46 @@ class EntriesRepository(
 
     /** 初期化処理 */
     suspend fun initialize(forceUpdate: Boolean = false) = withContext(Dispatchers.Default) {
-        accountLoader.signInAccounts(forceUpdate)
-        signedInLiveData.post(client.signedIn())
-        categoriesLiveData.post(client.signedIn())
-        ignoredEntriesRepo.loadIgnoredEntriesForEntries()
+        runCatching {
+            accountLoader.signInAccounts(forceUpdate)
+            signedInLiveData.post(client.signedIn())
+            categoriesLiveData.post(client.signedIn())
+        }
+        runCatching {
+            ignoredEntriesRepo.loadIgnoredEntriesForEntries()
+        }
+
+        // 画像キャッシュをクリア
+        clearImageCache()
+    }
+
+    /** 画像キャッシュをクリア */
+    private suspend fun clearImageCache() {
+        val span = prefs.getInt(PreferenceKey.CLEARING_IMAGE_CACHE_SPAN)
+        val now = ZonedDateTime.now()
+        val lastCleared = prefs.getObject<ZonedDateTime>(PreferenceKey.IMAGE_CACHE_LAST_CLEARED) ?: let {
+            prefs.editSync {
+                putObject(PreferenceKey.IMAGE_CACHE_LAST_CLEARED, now)
+            }
+            now
+        }
+        if (span == 0 || now < lastCleared.plusDays(span.toLong())) {
+            return
+        }
+
+        GlobalScope.launch(Dispatchers.IO) {
+            runCatching {
+                GlideApp.get(SatenaApplication.instance).clearDiskCache()
+
+                prefs.editSync {
+                    putObject(PreferenceKey.IMAGE_CACHE_LAST_CLEARED, now)
+                }
+
+                withContext(Dispatchers.Main) {
+                    SatenaApplication.instance.showToast(R.string.msg_pref_generals_clear_image_cache_succeeded)
+                }
+            }
+        }
     }
 
     /** 最新のエントリーリストを読み込む */

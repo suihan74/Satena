@@ -32,3 +32,8 @@ enum class BrowserHistoryLifeSpan(
         fun fromDays(days: Int) = values().firstOrNull { it.days == days } ?: WEEK_3
     }
 }
+
+/**
+ * 画像キャッシュの自動消去間隔
+ */
+typealias ClearingImageCacheSpan = BrowserHistoryLifeSpan

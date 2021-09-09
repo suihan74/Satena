@@ -191,17 +191,17 @@
     <string name="share_bookmark_title">ブックマークを共有</string>
     <string name="share_bookmark_copy_label">クリップボードにコピー</string>
     <string name="share_bookmark_share_label">共有</string>
-    <string name="share_bookmark_open_browser_label">ブラウザで開く</string>
+    <string name="share_bookmark_open_browser_label">アプリで開く</string>
     <string name="share_bookmark_failure">処理失敗しました</string>
 
     <!-- エントリ「共有」ダイアログ -->
     <string name="share_entry_title">ページを共有</string>
     <string name="share_entry_copy_label">クリップボードにコピー</string>
     <string name="share_entry_share_label">共有</string>
-    <string name="share_entry_open_browser_label">ブラウザで開く</string>
+    <string name="share_entry_open_browser_label">アプリで開く</string>
     <string name="share_entry_url_copy_label">ブコメページURLをクリップボードにコピー</string>
     <string name="share_entry_url_share_label">ブコメページを共有</string>
-    <string name="share_entry_url_open_browser_label">ブコメページをブラウザで開く</string>
+    <string name="share_entry_url_open_browser_label">ブコメページをアプリで開く</string>
     <string name="share_entry_failure">処理失敗しました</string>
 
     <!-- 「あとで読む」エントリを「読んだ」したときの挙動 -->
@@ -309,8 +309,9 @@
     <string name="pref_generals_clear_image_cache_button">実行</string>
     <string name="msg_pref_generals_clear_image_cache_succeeded">画像キャッシュを削除しました</string>
     <string name="pref_generals_clear_image_cache_dialog_message">キャッシュを削除するとストレージ使用量を削減できる一方、一時的に通信量が増えて画像の読み込みが遅くなります。削除しますか？</string>
+    <string name="pref_generals_clear_image_cache_span">一定期間ごとに画像キャッシュをクリアする</string>
 
-    <string name="pref_generals_use_default_app_intent">外部アプリを開くインテント発行時にデフォルトアプリを優先する（OFFにすると毎回選択ダイアログを表示する）</string>
+    <string name="pref_generals_use_default_app_intent">外部アプリを開く際にデフォルトアプリを優先する</string>
 
     <!-- entries -->
     <string name="pref_entry_section_bottom_menu">ボトムメニュー</string>
