@@ -541,30 +541,29 @@ class BookmarksViewModel(
         lifecycleOwner: LifecycleOwner,
         fragmentManager: FragmentManager
     ) {
-        adapter.setAddStarButtonBinder adapter@ { button, bookmark ->
+        adapter.setAddStarButtonBinder adapter@ { button, edge, bookmark ->
             val useAddStarPopupMenu = repository.useAddStarPopupMenu
             val user = repository.userSignedIn
             if (user == null || !useAddStarPopupMenu) {
                 // ボタンを使用しない
                 button.setVisibility(false)
+                edge.setVisibility(false)
                 return@adapter
             }
             else {
                 button.setVisibility(true)
+                edge.setVisibility(repository.useAddStarEdge)
                 TooltipCompat.setTooltipText(button, activity.getString(R.string.add_star_popup_desc))
             }
 
-            button.setOnClickListener {
+            val clickListener : (View)->Unit = {
                 openAddStarPopup(activity, lifecycleOwner, button) { color ->
-                    postStarToBookmark(
-                        activity,
-                        bookmark,
-                        color,
-                        null,
-                        fragmentManager
-                    )
+                    postStarToBookmark(activity, bookmark, color, null, fragmentManager)
                 }
             }
+
+            edge.setOnClickListener(clickListener)
+            button.setOnClickListener(clickListener)
 
             viewModelScope.launch {
                 val liveData = runCatching { repository.getStarsEntry(bookmark) }.getOrNull()

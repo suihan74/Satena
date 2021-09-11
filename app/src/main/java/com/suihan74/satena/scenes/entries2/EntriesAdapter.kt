@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
@@ -13,6 +14,7 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.databinding.FooterRecyclerViewLoadableBinding
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
 import com.suihan74.utilities.*
+import com.suihan74.utilities.extensions.alsoAs
 import kotlinx.coroutines.*
 
 class EntriesAdapter(
@@ -25,8 +27,19 @@ class EntriesAdapter(
     private var onItemMultipleClicked : ItemMultipleClickedListener<Entry>? = null
     /** エントリ長押し時の挙動 */
     private var onItemLongClicked : ItemLongClickedListener<Entry>? = null
+
+    /** エントリ右端クリック時の挙動 */
+    private var onItemEdgeClicked : ItemClickedListener<Entry>? = null
+    /** エントリ右端複数回クリック時の挙動 */
+    private var onItemEdgeMultipleClicked : ItemMultipleClickedListener<Entry>? = null
+    /** エントリ右端長押し時の挙動 */
+    private var onItemEdgeLongClicked : ItemLongClickedListener<Entry>? = null
+
     /** コメント部分クリック時の挙動 */
     private var onCommentClicked : ((Entry, BookmarkResult)->Unit)? = null
+
+    /** コメント部分長押し時の挙動 */
+    private var onCommentLongClicked : ((Entry, BookmarkResult)->Unit)? = null
 
     /** アイテム追加完了時の挙動 */
     private var onItemsSubmitted : Listener<List<Entry>?>? = null
@@ -59,9 +72,29 @@ class EntriesAdapter(
         onItemLongClicked = listener
     }
 
+    /** 項目クリック時の挙動をセットする */
+    fun setOnItemEdgeClickedListener(listener: ItemClickedListener<Entry>?) {
+        onItemEdgeClicked = listener
+    }
+
+    /** 項目連続複数回クリック時の挙動をセットする */
+    fun setOnItemEdgeMultipleClickedListener(listener: ItemMultipleClickedListener<Entry>?) {
+        onItemEdgeMultipleClicked = listener
+    }
+
+    /** 項目長押し時の挙動をセットする */
+    fun setOnItemEdgeLongClickedListener(listener: ItemLongClickedListener<Entry>?) {
+        onItemEdgeLongClicked = listener
+    }
+
     /** エントリに含まれるコメントをクリックしたときの挙動をセットする */
     fun setOnCommentClickedListener(listener: ((Entry, BookmarkResult)->Unit)?) {
         onCommentClicked = listener
+    }
+
+    /** エントリに含まれるコメントを長押ししたときの挙動をセットする */
+    fun setOnCommentLongClickedListener(listener: ((Entry, BookmarkResult)->Unit)?) {
+        onCommentLongClicked = listener
     }
 
     /** アイテム追加完了時の挙動をセットする */
@@ -104,61 +137,8 @@ class EntriesAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder.itemViewType) {
-            RecyclerType.BODY.id -> {
-                holder as ViewHolder
-                val entry = currentList[position].body
-
-                holder.entry = entry
-                holder.itemView.apply {
-
-                    // 複数回クリックを雑に検出する
-                    var clickCount = 0
-                    val clickGuardRefreshDelay = 800L
-                    fun considerMultipleClick(entry: Entry?) {
-                        if (clickCount++ == 0) {
-                            val duration = multipleClickDuration
-                            lifecycleOwner.lifecycleScope.launch {
-                                delay(duration)
-                                val count = clickCount
-                                clickCount = 0
-                                if (entry != null && !itemClicked) {
-                                    itemClicked = true
-                                    withContext(Dispatchers.Main) {
-                                        if (count > 1) {
-                                            onItemMultipleClicked?.invoke(entry, count)
-                                        }
-                                        else {
-                                            onItemClicked?.invoke(entry)
-                                        }
-                                    }
-                                    delay(clickGuardRefreshDelay)
-                                    itemClicked = false
-                                }
-                            }
-                        }
-                    }
-
-                    setOnClickListener {
-                        if (multipleClickDuration == 0L) {
-                            if (entry != null && !itemClicked) {
-                                itemClicked = true
-                                onItemClicked?.invoke(entry)
-                                lifecycleOwner.lifecycleScope.launch {
-                                    delay(clickGuardRefreshDelay)
-                                    itemClicked = false
-                                }
-                            }
-                        }
-                        else {
-                            considerMultipleClick(entry)
-                        }
-                    }
-
-                    setOnLongClickListener {
-                        if (entry != null) onItemLongClicked?.invoke(entry) ?: false
-                        else true
-                    }
-                }
+            RecyclerType.BODY.id -> holder.alsoAs<ViewHolder> {
+                it.initialize(currentList[position].body)
             }
         }
     }
@@ -219,20 +199,110 @@ class EntriesAdapter(
     inner class ViewHolder(
         private val binding: ListviewItemEntries2Binding
     ) : RecyclerView.ViewHolder(binding.root) {
+        private var clickCount = 0
+        private val clickGuardRefreshDelay = 800L
+
         var entry: Entry? = null
-            set(value) {
+            private set(value) {
                 field = value
                 binding.entry = value
             }
 
         init {
             binding.commentsList.adapter = CommentsAdapter().apply {
-                setOnItemClickedListener listener@ { comment ->
+                setOnItemClickedListener { comment ->
                     if (!itemClicked) {
                         itemClicked = true
-                        val entry = entry ?: return@listener
+                        val entry = entry ?: return@setOnItemClickedListener
                         onCommentClicked?.invoke(entry, comment)
+                        lifecycleOwner.lifecycleScope.launch {
+                            delay(clickGuardRefreshDelay)
+                            itemClicked = false
+                        }
                     }
+                }
+                setOnItemLongClickedListener { comment ->
+                    if (!itemClicked) {
+                        itemClicked = true
+                        val entry = entry ?: return@setOnItemLongClickedListener false
+                        onCommentLongClicked?.invoke(entry, comment)
+                        lifecycleOwner.lifecycleScope.launch {
+                            delay(clickGuardRefreshDelay)
+                            itemClicked = false
+                        }
+                    }
+                    onCommentLongClicked != null
+                }
+            }
+        }
+
+        // ------ //
+
+        fun initialize(entry: Entry?) {
+            this.entry = entry
+            this.clickCount = 0
+
+            // 項目 タップ/長押し/複数回
+            itemView.setOnClickListener(clickListener(entry, onItemClicked, onItemMultipleClicked))
+            itemView.setOnLongClickListener(longClickListener(entry, onItemLongClicked))
+
+            // 右端 タップ/長押し/複数回
+            binding.edgeClickArea.setOnClickListener(clickListener(entry, onItemEdgeClicked, onItemEdgeMultipleClicked))
+            binding.edgeClickArea.setOnLongClickListener(longClickListener(entry, onItemEdgeLongClicked))
+        }
+
+        private fun clickListener(
+            entry: Entry?,
+            singleClickAction: ItemClickedListener<Entry>?,
+            multipleClickAction: ItemMultipleClickedListener<Entry>?
+        ) : (View)->Unit = {
+            if (multipleClickDuration == 0L) {
+                if (entry != null && !itemClicked) {
+                    itemClicked = true
+                    singleClickAction?.invoke(entry)
+                    lifecycleOwner.lifecycleScope.launch {
+                        delay(clickGuardRefreshDelay)
+                        itemClicked = false
+                    }
+                }
+            }
+            else {
+                considerMultipleClick(entry, singleClickAction, multipleClickAction)
+            }
+        }
+
+        private fun longClickListener(
+            entry: Entry?,
+            longClickAction: ItemLongClickedListener<Entry>?
+        ) : (View)->Boolean = {
+            if (entry != null) longClickAction?.invoke(entry) ?: false
+            else true
+        }
+
+        // 複数回クリックを雑に検出する
+        private fun considerMultipleClick(
+            entry: Entry?,
+            singleClickAction: ItemClickedListener<Entry>?,
+            multipleClickAction: ItemMultipleClickedListener<Entry>?
+        ) {
+            if (clickCount++ > 0) return
+            val duration = multipleClickDuration
+            lifecycleOwner.lifecycleScope.launch {
+                delay(duration)
+                val count = clickCount
+                clickCount = 0
+                if (entry != null && !itemClicked) {
+                    itemClicked = true
+                    withContext(Dispatchers.Main) {
+                        if (count > 1) {
+                            multipleClickAction?.invoke(entry, count)
+                        }
+                        else {
+                            singleClickAction?.invoke(entry)
+                        }
+                    }
+                    delay(clickGuardRefreshDelay)
+                    itemClicked = false
                 }
             }
         }

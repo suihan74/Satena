@@ -73,10 +73,13 @@ class BrowserWebViewClient(
         viewModel.onPageStarted(url)
     }
 
+    private var loadedUrl : String = ""
+
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
-        if (url != null) {
+        if (url != null && loadedUrl != url) {
             viewModel.onPageFinished(view, url)
+            loadedUrl = url
         }
     }
 
@@ -90,15 +93,12 @@ class BrowserWebViewClient(
             viewModel.useUrlBlocking.value == true &&
             viewModel.browserRepo.blockUrlsRegex.containsMatchIn(url)
 
-        val result =
-            if (!blocked) super.shouldInterceptRequest(view, request)
-            else emptyResourceRequest
-
         if (blocked) {
             viewModel.addResource(url, blocked = true)
         }
 
-        return result
+        return if (blocked) emptyResourceRequest
+        else super.shouldInterceptRequest(view, request)
     }
 
     /** ページ中のリソースURLをすべて記録する */

@@ -272,6 +272,11 @@ class BookmarksRepository(
         prefs.getBoolean(PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU)
     }
 
+    /** スター付与ボタンのタップ判定領域をブクマ項目右端部分に拡大する */
+    val useAddStarEdge : Boolean by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_USE_ADD_STAR_EDGE)
+    }
+
     /** リンクをクリックしたときの処理 */
     val linkSingleTapEntryAction by lazy {
         TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))

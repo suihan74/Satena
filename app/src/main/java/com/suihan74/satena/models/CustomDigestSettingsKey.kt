@@ -25,5 +25,14 @@ enum class CustomDigestSettingsKey(
     IGNORE_STARS_BY_IGNORED_USERS(typeInfo<Boolean>(), true),
 
     /** 同じユーザーが複数つけた同色のスターを1個だけと数える */
-    DEDUPLICATE_STARS(typeInfo<Boolean>(), true)
+    DEDUPLICATE_STARS(typeInfo<Boolean>(), true),
+
+    ;
+    companion object {
+        const val MAX_NUM_OF_ELEMENTS_LOWER_BOUND = 1
+        const val MAX_NUM_OF_ELEMENTS_UPPER_BOUND = 30
+
+        const val STARS_COUNT_THRESHOLD_LOWER_BOUND = 0
+        const val STARS_COUNT_THRESHOLD_UPPER_BOUND = 100
+    }
 }

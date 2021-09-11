@@ -1,12 +1,14 @@
 package com.suihan74.satena.models
 
 import com.suihan74.satena.models.browser.BookmarksListType
+import com.suihan74.satena.models.browser.BrowserHistoryLifeSpan
 import com.suihan74.satena.scenes.browser.BlockUrlSetting
 import com.suihan74.satena.scenes.browser.SearchEngineSetting
 import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
+import org.threeten.bp.ZonedDateTime
 import java.lang.reflect.Type
 
 /**
@@ -53,6 +55,12 @@ enum class BrowserSettingsKey (
 
     /** ドロワタブページャのスワイプ感度のデフォルトからの相対的な値 */
     DRAWER_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
+
+    /** 履歴情報の寿命（HISTORY_LIFESPAN日経過した履歴を削除する） */
+    HISTORY_LIFESPAN(typeInfo<Int>(), BrowserHistoryLifeSpan.MONTH_3.days),
+
+    /** 最後に寿命切れの履歴を削除した日 */
+    HISTORY_LAST_REFRESHED(typeInfo<ZonedDateTime>(), ZonedDateTime.now()),
 
     /** ブロックURLリスト */
     @Suppress("SpellCheckingInspection")

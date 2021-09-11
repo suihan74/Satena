@@ -52,6 +52,9 @@
         <!-- for NumberPicker -->
         <item name="colorControlNormal">?colorPrimary</item>
 
+        <!-- 水平ProgressBarの色 -->
+        <item name="horizontalProgressBarPrimaryColor">@color/colorPrimaryDark</item>
+
         <!-- SnackBar -->
         <item name="snackBarBackgroundColor">@color/snackBarBackgroundColor</item>
         <item name="snackBarTextColor">@color/snackBarTextColor</item>
@@ -78,6 +81,9 @@
         <item name="colorSurface">@color/panelBackground</item>
         <!-- (フォロー/フォロワー画面の)非選択トグルボタン文字色で使用 -->
         <item name="colorOnSurface">@color/textColor</item>
+
+        <!-- クリック時背景アニメーション色 -->
+        <item name="colorControlHighlight">@color/rippleMaterial</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Light</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
@@ -113,6 +119,9 @@
         <!-- (フォロー/フォロワー画面の)非選択トグルボタン文字色で使用 -->
         <item name="colorOnSurface">@color/textColorDark</item>
 
+        <!-- クリック時背景アニメーション色 -->
+        <item name="colorControlHighlight">@color/rippleMaterialDark</item>
+
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
@@ -133,7 +142,7 @@
         <item name="android:windowBackground">@drawable/dialog_background_ex_dark</item>
 
         <!-- クリック時背景アニメーション色 -->
-        <item name="colorControlHighlight">@color/ripple_material_ex_dark</item>
+        <item name="colorControlHighlight">@color/rippleMaterialExDark</item>
 
         <!-- Button -->
         <item name="buttonStyle">@style/ButtonStyle.ExDark</item>
@@ -164,6 +173,9 @@
         <item name="colorOnSurface">@color/textColorExDark</item>
         <!-- ポップアップ背景 -->
         <item name="popupMenuBackground">@drawable/dialog_background_ex_dark</item>
+
+        <!-- 水平ProgressBarの色 -->
+        <item name="horizontalProgressBarPrimaryColor">@color/colorPrimaryExDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.ExDark</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>
@@ -372,11 +384,15 @@
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="editTextStyle">@style/EditTextStyle.Light</item>
         <item name="bottomSheetStyle">@style/BottomSheet.Light</item>
+        <!-- クリック時背景アニメーション色 -->
+        <item name="colorControlHighlight">@color/rippleMaterial</item>
     </style>
     <style name="Base.BottomSheetDialogTheme.Dark">
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="editTextStyle">@style/EditTextStyle.Dark</item>
         <item name="bottomSheetStyle">@style/BottomSheet.Dark</item>
+        <!-- クリック時背景アニメーション色 -->
+        <item name="colorControlHighlight">@color/rippleMaterialDark</item>
     </style>
     <style name="Base.BottomSheetDialogTheme.ExDark">
         <item name="colorPrimary">@color/colorPrimaryExDark</item>
@@ -385,6 +401,6 @@
         <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="bottomSheetStyle">@style/BottomSheet.ExDark</item>
         <!-- クリック時背景アニメーション色 -->
-        <item name="colorControlHighlight">@color/ripple_material_ex_dark</item>
+        <item name="colorControlHighlight">@color/rippleMaterialExDark</item>
     </style>
 </resources>

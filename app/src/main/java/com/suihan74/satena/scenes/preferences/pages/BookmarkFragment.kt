@@ -10,14 +10,13 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsPostBookmarkAccountStatesBinding
-import com.suihan74.satena.models.BookmarkPostActivityGravity
-import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
 import com.suihan74.satena.scenes.post.TagsListOrder
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
@@ -72,6 +71,11 @@ class BookmarkViewModel(
         PreferenceKey.BOOKMARKS_USE_ADD_STAR_POPUP_MENU
     )
 
+    /** スター付与ボタンのタップ判定領域をブクマ項目右端部分に拡大する */
+    private val useAddStarEdge = createLiveData<Boolean>(
+        PreferenceKey.BOOKMARKS_USE_ADD_STAR_EDGE
+    )
+
     /** スクロールでツールバーの表示状態を変化させる */
     private val toggleToolbarByScrolling = createLiveData<Boolean>(
         PreferenceKey.BOOKMARKS_HIDING_TOOLBAR_BY_SCROLLING
@@ -85,6 +89,13 @@ class BookmarkViewModel(
     /** タブのスワイプ感度 */
     private val pagerScrollSensitivity = createLiveData<Float>(
         PreferenceKey.BOOKMARKS_PAGER_SCROLL_SENSITIVITY
+    )
+
+    /** エクストラスクロール機能のツマミの配置 */
+    private val extraScrollingAlignment = createLiveDataEnum(
+        PreferenceKey.BOOKMARKS_EXTRA_SCROLL_ALIGNMENT,
+        { it.id },
+        { ExtraScrollingAlignment.fromId(it) }
     )
 
     /** 「すべて」タブでは非表示ブクマを表示する */
@@ -190,6 +201,40 @@ class BookmarkViewModel(
     )
 
     // ------ //
+    /** アプリ独自のダイジェスト抽出機能用の設定ファイル */
+    private val customDigestPrefs = SafeSharedPreferences.create<CustomDigestSettingsKey>(context)
+
+    /** アプリ独自のダイジェスト抽出機能を使用する */
+    private val useCustomDigest = createLiveData<CustomDigestSettingsKey, Boolean>(
+        customDigestPrefs,
+        CustomDigestSettingsKey.USE_CUSTOM_DIGEST
+    )
+
+    /** 集計時に非表示ユーザーのスターを無視する */
+    private val customDigestIgnoreStarsByIgnoredUsers = createLiveData<CustomDigestSettingsKey, Boolean>(
+        customDigestPrefs,
+        CustomDigestSettingsKey.IGNORE_STARS_BY_IGNORED_USERS
+    )
+
+    /** 集計時に連打スターを1個だけ数える */
+    private val customDigestDeduplicateStars = createLiveData<CustomDigestSettingsKey, Boolean>(
+        customDigestPrefs,
+        CustomDigestSettingsKey.DEDUPLICATE_STARS
+    )
+
+    /** 最大抽出数 */
+    private val customDigestMaxNumOfElements = createLiveData<CustomDigestSettingsKey, Int>(
+        customDigestPrefs,
+        CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS
+    )
+
+    /** 抽出対象になる最小スター数 */
+    private val customDigestStarsCountThreshold = createLiveData<CustomDigestSettingsKey, Int>(
+        customDigestPrefs,
+        CustomDigestSettingsKey.STARS_COUNT_THRESHOLD
+    )
+
+    // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
         super.onCreateView(fragment)
@@ -219,7 +264,18 @@ class BookmarkViewModel(
             }
         }
 
+        // ------ //
+        // 値の変更によって他の設定項目の表示状態が変わるもの
+
         saveAccountStates.observe(fragment.viewLifecycleOwner, observerForOnlyUpdates {
+            load(fragment)
+        })
+
+        useCustomDigest.observe(fragment.viewLifecycleOwner, observerForOnlyUpdates {
+            load(fragment)
+        })
+
+        useAddStarPopupMenu.observe(fragment.viewLifecycleOwner, observerForOnlyUpdates {
             load(fragment)
         })
     }
@@ -262,6 +318,8 @@ class BookmarkViewModel(
             addPrefToggleItem(fragment, expandAddingTagsDialogByDefault, R.string.pref_post_bookmarks_expand_adding_tags_dialog_by_default_desc)
         }
 
+        // --- //
+
         addSection(R.string.pref_bookmark_section_tab)
         addPrefItem(fragment, initialTabPosition, R.string.pref_bookmarks_initial_tab_desc) {
             openEnumSelectionDialog(
@@ -298,6 +356,9 @@ class BookmarkViewModel(
         addSection(R.string.pref_bookmark_section_behavior)
         addPrefToggleItem(fragment, confirmPostStar, R.string.pref_bookmarks_using_post_star_dialog_desc)
         addPrefToggleItem(fragment, useAddStarPopupMenu, R.string.pref_bookmarks_using_add_star_popup_menu_desc)
+        if (useAddStarPopupMenu.value == true) {
+            addPrefToggleItem(fragment, useAddStarEdge, R.string.pref_bookmarks_using_add_star_edge_desc)
+        }
         addPrefToggleItem(fragment, toggleToolbarByScrolling, R.string.pref_bookmarks_hiding_toolbar_by_scrolling)
         addPrefToggleItem(fragment, toggleButtonsByScrolling, R.string.pref_bookmarks_hiding_buttons_with_scrolling_desc)
         addButton(fragment, R.string.pref_pager_scroll_sensitivity_desc) {
@@ -311,6 +372,14 @@ class BookmarkViewModel(
                 pagerScrollSensitivity.value = value
             }
             .show(fragmentManager, "")
+        }
+        addPrefItem(fragment, extraScrollingAlignment, R.string.pref_extra_scroll_align_desc) {
+            openEnumSelectionDialog(
+                ExtraScrollingAlignment.values(),
+                extraScrollingAlignment,
+                R.string.pref_extra_scroll_align_desc,
+                fragmentManager
+            )
         }
 
         // --- //
@@ -339,6 +408,35 @@ class BookmarkViewModel(
                 R.string.pref_bookmark_link_long_tap_action_desc,
                 fragmentManager
             )
+        }
+
+        // --- //
+
+        addSection(R.string.pref_bookmark_section_custom_digest)
+        addPrefToggleItem(fragment, useCustomDigest, R.string.digest_bookmarks_use_custom_digest_desc)
+        if (useCustomDigest.value == true) {
+            addPrefToggleItem(fragment, customDigestIgnoreStarsByIgnoredUsers, R.string.digest_bookmarks_exclude_ignored_users_desc)
+            addPrefToggleItem(fragment, customDigestDeduplicateStars, R.string.digest_bookmarks_deduplicate_stars_desc)
+            addPrefItem(fragment, customDigestMaxNumOfElements, R.string.digest_bookmarks_max_num_of_elements_picker_title) {
+                openNumberPickerDialog(
+                    customDigestMaxNumOfElements,
+                    min = CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS_LOWER_BOUND,
+                    max = CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS_UPPER_BOUND,
+                    titleId = R.string.digest_bookmarks_max_num_of_elements_picker_title,
+                    messageId = null,
+                    fragmentManager = fragmentManager
+                )
+            }
+            addPrefItem(fragment, customDigestStarsCountThreshold, R.string.digest_bookmarks_stars_count_threshold_picker_title) {
+                openNumberPickerDialog(
+                    customDigestStarsCountThreshold,
+                    min = CustomDigestSettingsKey.STARS_COUNT_THRESHOLD_LOWER_BOUND,
+                    max = CustomDigestSettingsKey.STARS_COUNT_THRESHOLD_UPPER_BOUND,
+                    titleId = R.string.digest_bookmarks_stars_count_threshold_picker_title,
+                    messageId = null,
+                    fragmentManager = fragmentManager
+                )
+            }
         }
     }
 

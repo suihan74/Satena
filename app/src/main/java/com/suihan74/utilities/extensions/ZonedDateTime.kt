@@ -2,6 +2,7 @@ package com.suihan74.utilities.extensions
 
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
+import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
 
 /**
@@ -12,4 +13,12 @@ import org.threeten.bp.ZonedDateTime
 fun LocalDateTime.toSystemZonedDateTime(fromId: String = "Asia/Tokyo") : ZonedDateTime {
     val src = this.atZone(ZoneId.of(fromId))
     return src.withZoneSameInstant(ZoneId.systemDefault())
+}
+
+// ------ //
+
+object ZonedDateTimeUtil {
+    val MIN = ZonedDateTime.ofLocal(LocalDateTime.MIN, ZoneId.of("UTC"), ZoneOffset.UTC)
+
+    val MAX = ZonedDateTime.ofLocal(LocalDateTime.MAX, ZoneId.of("UTC"), ZoneOffset.UTC)
 }

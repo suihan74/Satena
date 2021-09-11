@@ -7,6 +7,7 @@ import android.view.*
 import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
@@ -33,8 +34,7 @@ import kotlinx.coroutines.launch
 class BrowserActivity :
     AppCompatActivity(),
     BookmarkPostViewModelOwner,
-    DrawerOwner
-{
+    DrawerOwner {
     companion object {
         /** 最初に開くページのURL */
         const val EXTRA_URL = "BrowserActivity.EXTRA_URL"
@@ -42,16 +42,17 @@ class BrowserActivity :
 
     // ------ //
 
-    val viewModel : BrowserViewModel by lazyProvideViewModel {
+    val viewModel: BrowserViewModel by lazyProvideViewModel {
         val initialUrl = intent.getStringExtra(EXTRA_URL)
 
         val app = SatenaApplication.instance
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+        val browserSettings = SafeSharedPreferences.create<BrowserSettingsKey>(this)
 
         val browserRepo = BrowserRepository(
             HatenaClient,
             prefs,
-            SafeSharedPreferences.create<BrowserSettingsKey>(this)
+            browserSettings
         )
 
         val bookmarksRepo = BookmarksRepository(
@@ -62,7 +63,7 @@ class BrowserActivity :
             app.userTagDao
         )
 
-        val historyRepo = HistoryRepository(app.browserDao)
+        val historyRepo = HistoryRepository(browserSettings, app.browserDao)
 
         BrowserViewModel(
             browserRepo,
@@ -84,9 +85,9 @@ class BrowserActivity :
 
     // ------ //
 
-    private lateinit var binding : ActivityBrowserBinding
+    private lateinit var binding: ActivityBrowserBinding
 
-    val webView : WebView
+    val webView: WebView
         get() = binding.webview
 
     // ------ //
@@ -228,7 +229,7 @@ class BrowserActivity :
     }
 
     /** ドロワが開かれている */
-    val drawerOpened : Boolean
+    val drawerOpened: Boolean
         get() = binding.drawerLayout.isDrawerOpen(binding.drawerArea)
 
     // ------ //
@@ -267,6 +268,7 @@ class BrowserActivity :
                     }
                 }
             }
+
             override fun onDrawerClosed(drawerView: View) {
                 viewModel.drawerOpened.value = false
                 // 閉じたことをドロワタブに通知する
@@ -277,6 +279,7 @@ class BrowserActivity :
                     }
                 }
             }
+
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {
                 // ドロワ開閉でIMEを閉じる
@@ -299,12 +302,14 @@ class BrowserActivity :
                     fragment.onTabSelected()
                 }
             }
+
             override fun onTabUnselected(tab: TabLayout.Tab?) {
                 val position = tab?.position ?: return
                 drawerTabAdapter.findFragment(position)?.alsoAs<TabItem> { fragment ->
                     fragment.onTabUnselected()
                 }
             }
+
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 val position = tab?.position ?: return
                 drawerTabAdapter.findFragment(position)?.alsoAs<TabItem> { fragment ->
@@ -377,22 +382,11 @@ class BrowserActivity :
             }
         }
 
+        val toolbarBinding = toolbar.inflate(viewModel, this, binding.appbarLayout, true)
+        setSupportActionBar(toolbarBinding.toolbar)
+
         viewModel.useBottomAppBar.observe(this) {
-            val appbarLayout = binding.appbarLayout
-            val bottomAppBar = binding.bottomAppBar
-
-            // 使わない方のツールバーをクリアしておく
-            val another =
-                if (it) appbarLayout
-                else bottomAppBar
-            another.removeAllViews()
-
-            val appBar =
-                if (it) bottomAppBar
-                else appbarLayout
-
-            val toolbarBinding = toolbar.inflate(viewModel, this, appBar, true)
-            setSupportActionBar(toolbarBinding.toolbar)
+            binding.addressBarArea.post { initializeAddressBar(it) }
         }
 
         // クリック防止ビュー
@@ -400,6 +394,27 @@ class BrowserActivity :
             if (motionEvent.action != MotionEvent.ACTION_UP) return@setOnTouchListener false
             hideSoftInputMethod(binding.mainArea)
             return@setOnTouchListener true
+        }
+    }
+
+    private fun initializeAddressBar(useBottomAppBar: Boolean) {
+        val addressBar = R.id.address_bar_area
+        val swipeLayout = R.id.swipe_layout
+        val progressBar = R.id.progress_bar
+        val parent = ConstraintSet.PARENT_ID
+        val top = ConstraintSet.TOP
+        val bottom = ConstraintSet.BOTTOM
+        val (chain, progressSet) =
+            if (useBottomAppBar) intArrayOf(swipeLayout, addressBar) to intArrayOf(bottom, top)
+            else intArrayOf(addressBar, swipeLayout) to intArrayOf(top, bottom)
+
+        with(ConstraintSet()) {
+            clone(binding.mainArea)
+            clear(progressBar, top)
+            clear(progressBar, bottom)
+            createVerticalChain(parent, top, parent, bottom, chain, null, 0)
+            connect(progressBar, progressSet[0], addressBar, progressSet[1])
+            applyTo(binding.mainArea)
         }
     }
 }

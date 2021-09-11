@@ -6,8 +6,7 @@
         android:background="?android:attr/selectableItemBackground"
         android:descendantFocusability="blocksDescendants"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="6dp">
+        android:layout_height="wrap_content">
 
     <ImageView
             android:id="@+id/bookmark_user_icon"
@@ -135,6 +134,15 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
 
+    <View
+            android:id="@+id/add_star_edge"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/bookmark_mentions"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="56dp"
+            android:layout_height="0dp"/>
+
     <ImageButton
             android:id="@+id/add_star_button"
             app:srcCompat="@drawable/ic_add_star"
@@ -142,7 +150,7 @@
             android:background="?attr/actionBarItemBackground"
             android:contentDescription="@null"
             android:layout_marginEnd="6dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginBottom="6dp"
             app:layout_constraintTop_toTopOf="@id/bookmark_timestamp"
             app:layout_constraintBottom_toTopOf="@id/bookmark_mentions"
             app:layout_constraintEnd_toEndOf="@id/bookmark_comment"
@@ -154,6 +162,7 @@
             android:id="@+id/bookmark_mentions"
             android:background="?attr/entryCommentBackground"
             android:layout_marginTop="8dp"
+            android:layout_marginBottom="6dp"
             app:layout_constraintTop_toBottomOf="@id/bookmark_timestamp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/bookmark_comment"

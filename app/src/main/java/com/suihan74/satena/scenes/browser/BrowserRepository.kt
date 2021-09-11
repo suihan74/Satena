@@ -9,6 +9,7 @@ import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
 import com.suihan74.satena.models.browser.BookmarksListType
+import com.suihan74.satena.models.browser.BrowserHistoryLifeSpan
 import com.suihan74.satena.scenes.preferences.createLiveDataEnum
 import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
@@ -136,6 +137,14 @@ class BrowserRepository(
             p.getFloat(key)
         }
 
+    /** 履歴の寿命 */
+    val historyLifeSpan = createLiveDataEnum(
+        browserSettings,
+        BrowserSettingsKey.HISTORY_LIFESPAN,
+        { it.days },
+        { i -> BrowserHistoryLifeSpan.fromDays(i) }
+    )
+
     private var _blockUrlsRegex : Regex? = null
 
     /** ブロックするURL判別用の正規表現 */
@@ -154,6 +163,9 @@ class BrowserRepository(
     val keywordsCache by lazy {
         HashMap<String, List<Keyword>>()
     }
+
+    /** ページのロード完了率 */
+    val loadingProgress = MutableLiveData<Int>()
 
     // ------ //
 

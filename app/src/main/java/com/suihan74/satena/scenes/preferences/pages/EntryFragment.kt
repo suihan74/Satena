@@ -72,6 +72,13 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         { ExtraBottomItemsAlignment.fromId(it) }
     )
 
+    /** エクストラスクロール機能のツマミの配置 */
+    private val extraScrollingAlignment = createLiveDataEnum(
+        PreferenceKey.ENTRIES_EXTRA_SCROLL_ALIGNMENT,
+        { it.id },
+        { ExtraScrollingAlignment.fromId(it) }
+    )
+
     /** エントリ項目シングルタップの挙動 */
     val singleTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_SINGLE_TAP_ACTION,
@@ -89,6 +96,27 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     /** エントリ項目ロングタップの挙動 */
     val longTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_LONG_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromId(it) }
+    )
+
+    /** エントリ項目右端シングルタップの挙動 */
+    val edgeSingleTapAction = createLiveDataEnum(
+        PreferenceKey.ENTRY_EDGE_SINGLE_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromId(it) }
+    )
+
+    /** エントリ項目右端複数回タップの挙動 */
+    val edgeMultipleTapAction = createLiveDataEnum(
+        PreferenceKey.ENTRY_EDGE_MULTIPLE_TAP_ACTION,
+        { it.id },
+        { TapEntryAction.fromId(it) }
+    )
+
+    /** エントリ項目右端ロングタップの挙動 */
+    val edgeLongTapAction = createLiveDataEnum(
+        PreferenceKey.ENTRY_EDGE_LONG_TAP_ACTION,
         { it.id },
         { TapEntryAction.fromId(it) }
     )
@@ -217,6 +245,31 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
+        addPrefItem(fragment, edgeSingleTapAction, R.string.pref_entries_edge_single_tap_action_desc) {
+            openEnumSelectionDialog(
+                TapEntryAction.values(),
+                edgeSingleTapAction,
+                R.string.pref_entries_edge_single_tap_action_desc,
+                fragmentManager
+            )
+        }
+        addPrefItem(fragment, edgeMultipleTapAction, R.string.pref_entries_edge_multiple_tap_action_desc) {
+            openEnumSelectionDialog(
+                TapEntryAction.values(),
+                edgeMultipleTapAction,
+                R.string.pref_entries_edge_multiple_tap_action_desc,
+                fragmentManager
+            )
+        }
+        addPrefItem(fragment, edgeLongTapAction, R.string.pref_entries_edge_long_tap_action_desc) {
+            openEnumSelectionDialog(
+                TapEntryAction.values(),
+                edgeLongTapAction,
+                R.string.pref_entries_edge_long_tap_action_desc,
+                fragmentManager
+            )
+        }
+
         addPrefItem(fragment, multipleTapDuration, R.string.pref_entries_multiple_tap_duration_desc, R.string.pref_entries_multiple_tap_duration_unit) {
             openMultipleTapDurationDialog(fragmentManager)
         }
@@ -268,6 +321,14 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 pagerScrollSensitivity.value = value
             }
                 .show(fragmentManager, "")
+        }
+        addPrefItem(fragment, extraScrollingAlignment, R.string.pref_extra_scroll_align_desc) {
+            openEnumSelectionDialog(
+                ExtraScrollingAlignment.values(),
+                extraScrollingAlignment,
+                R.string.pref_extra_scroll_align_desc,
+                fragmentManager
+            )
         }
 
         // --- //

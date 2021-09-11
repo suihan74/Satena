@@ -4,9 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksContentBinding
+import com.suihan74.utilities.extensions.dp2px
 
 class BookmarksContentFragment : Fragment() {
     companion object {
@@ -26,6 +29,14 @@ class BookmarksContentFragment : Fragment() {
 
     private var _binding : FragmentBookmarksContentBinding? = null
     private val binding get() = _binding!!
+
+    // ------ //
+
+    private val tileHeight : Int
+        get() = requireContext().dp2px(80)
+
+    private val extraMargin : Int
+        get() = binding.tabPager.measuredHeight - tileHeight * 3
 
     // ------ //
 
@@ -74,6 +85,13 @@ class BookmarksContentFragment : Fragment() {
             true
         }
 
+        // エクストラスクロールによる上部マージン設定
+        contentsViewModel.extraScrollProgress.observe(viewLifecycleOwner, Observer {
+            binding.tabPager.updatePadding(
+                top = (extraMargin * it).toInt()
+            )
+        })
+
         return binding.root
     }
 
@@ -85,5 +103,10 @@ class BookmarksContentFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         binding.toolbar.startMarquee()
+        binding.tabPager.post {
+            contentsViewModel.updateExtraScrollBarVisibility(
+                extraMargin > tileHeight
+            )
+        }
     }
 }

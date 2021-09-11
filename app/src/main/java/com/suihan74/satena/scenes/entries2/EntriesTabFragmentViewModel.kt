@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.ExtraScrollingAlignment
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.OnFinally
 import com.suihan74.utilities.OnSuccess
@@ -24,7 +25,8 @@ class EntriesTabFragmentViewModel(
     private val tabPosition: Int
 ) :
     ViewModel(),
-    EntryMenuActions by EntryMenuActionsImplForEntries(repository)
+    EntryMenuActions by EntryMenuActionsImplForEntries(repository),
+    CommentMenuActions by CommentMenuActionsImpl(repository)
 {
     companion object {
         private const val TAB_POSITION_READ_LATER = 1
@@ -96,8 +98,22 @@ class EntriesTabFragmentViewModel(
     /** ユーザーの歴史を取得する : Category.Memorial15th */
     var isUserMemorial : Boolean = false
 
+    val extraScrollingAlignment
+        get() = repository.extraScrollingAlignment
+
+    val extraScrollBarVisibility =
+        MutableLiveData(extraScrollingAlignment != ExtraScrollingAlignment.NONE)
+
+    // ------ //
+
+    fun onResume() {
+        extraScrollBarVisibility.value = extraScrollingAlignment != ExtraScrollingAlignment.NONE
+    }
+
+    // ------ //
+
     /** フィルタリングを任意で実行する */
-    fun filter() {
+    fun filter() = viewModelScope.launch(Dispatchers.Main) {
         entries.value = entries.value
     }
 
@@ -132,25 +148,20 @@ class EntriesTabFragmentViewModel(
         onSuccess: OnSuccess<Unit>? = null,
         onError: OnError? = null,
         onFinally: OnFinally? = null
-    ) = viewModelScope.launch {
+    ) = viewModelScope.launch(Dispatchers.Main) {
         try {
             when (category) {
                 Category.Notices -> loadNotices()
                 Category.Maintenance -> loadInformation()
                 else -> loadEntries()
             }
-
             onSuccess?.invoke(Unit)
         }
         catch (e: Throwable) {
-            withContext(Dispatchers.Main) {
-                onError?.invoke(e)
-            }
+            onError?.invoke(e)
         }
         finally {
-            withContext(Dispatchers.Main) {
-                onFinally?.invoke()
-            }
+            onFinally?.invoke()
         }
     }
 
@@ -274,43 +285,96 @@ class EntriesTabFragmentViewModel(
         activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager
-    ) {
-        super.invokeEntryClickedAction(
-            activity,
-            entry,
-            repository.entryClickedAction,
-            fragmentManager,
-            viewModelScope
-        )
-    }
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
 
     /** エントリを複数回クリックしたときの処理 */
     fun onMultipleClickEntry(
         activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager
-    ) {
-        super.invokeEntryClickedAction(
-            activity,
-            entry,
-            repository.entryMultipleClickedAction,
-            fragmentManager,
-            viewModelScope
-        )
-    }
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryMultipleClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
 
     /** エントリを長押ししたときの処理 */
     fun onLongClickEntry(
         activity: FragmentActivity,
         entry: Entry,
         fragmentManager: FragmentManager
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryLongClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
+
+    /** エントリ右端をシングルクリックしたときの処理 */
+    fun onClickEntryEdge(
+        activity: FragmentActivity,
+        entry: Entry,
+        fragmentManager: FragmentManager
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryEdgeClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
+
+    /** エントリ右端を複数回クリックしたときの処理 */
+    fun onMultipleClickEntryEdge(
+        activity: FragmentActivity,
+        entry: Entry,
+        fragmentManager: FragmentManager
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryEdgeMultipleClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
+
+    /** エントリ右端を長押ししたときの処理 */
+    fun onLongClickEntryEdge(
+        activity: FragmentActivity,
+        entry: Entry,
+        fragmentManager: FragmentManager
+    ) = super.invokeEntryClickedAction(
+        activity,
+        entry,
+        repository.entryEdgeLongClickedAction,
+        fragmentManager,
+        viewModelScope
+    )
+
+    /** コメント部分クリック時の処理 */
+    fun onClickComment(
+        activity: FragmentActivity,
+        entry: Entry,
+        bookmarkResult: BookmarkResult,
+        fragmentManager: FragmentManager
     ) {
-        super.invokeEntryClickedAction(
-            activity,
-            entry,
-            repository.entryLongClickedAction,
-            fragmentManager,
-            viewModelScope
-        )
+        openComment(activity, entry, bookmarkResult)
+    }
+
+    /** コメント部分長押し時の処理 */
+    fun onLongClickComment(
+        activity: FragmentActivity,
+        entry: Entry,
+        bookmarkResult: BookmarkResult,
+        fragmentManager: FragmentManager
+    ) {
+        openCommentMenuDialog(entry, bookmarkResult, fragmentManager)
     }
 }

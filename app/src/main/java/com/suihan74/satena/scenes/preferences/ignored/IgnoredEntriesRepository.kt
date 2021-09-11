@@ -17,32 +17,28 @@ import kotlinx.coroutines.withContext
 class IgnoredEntriesRepository(
     private val dao: IgnoredEntryDao
 ) {
-    /** ブクマ用の非表示ワードリスト */
-    val ignoredWordsForBookmarks: List<String>
-        get() = _ignoredWordsForBookmarks
     private var _ignoredWordsForBookmarks : List<String> = emptyList()
+    /** ブクマ用の非表示ワードリスト */
+    val ignoredWordsForBookmarks: List<String> get() = _ignoredWordsForBookmarks
 
     // ------ //
 
-    val ignoredEntriesForEntries : LiveData<List<IgnoredEntry>>
-        get() = _ignoredEntriesForEntries
-    private var _ignoredEntriesForEntries = MutableLiveData<List<IgnoredEntry>>()
+    private val _ignoredEntriesForEntries = MutableLiveData<List<IgnoredEntry>>()
+    /** エントリミュート用の非表示設定リスト */
+    val ignoredEntriesForEntries : LiveData<List<IgnoredEntry>> = _ignoredEntriesForEntries
 
     // ------ //
 
     private var ignoredEntriesCache : ArrayList<IgnoredEntry> = ArrayList()
     private val ignoredEntriesCacheLock by lazy { Mutex() }
 
-    val ignoredEntries: LiveData<List<IgnoredEntry>>
-        get() = _ignoredEntries
     private val _ignoredEntries = MutableLiveData<List<IgnoredEntry>>()
+    val ignoredEntries: LiveData<List<IgnoredEntry>> = _ignoredEntries
 
     // ------ //
 
     /** 全ての非表示設定をロードする */
-    suspend fun loadAllIgnoredEntries(
-        forceUpdate: Boolean = false
-    ) = withContext(Dispatchers.IO) {
+    suspend fun loadAllIgnoredEntries(forceUpdate: Boolean = false) = withContext(Dispatchers.IO) {
         ignoredEntriesCacheLock.withLock {
             if (forceUpdate || ignoredEntriesCache.isEmpty()) {
                 val allEntries = dao.getAllEntries()
@@ -50,23 +46,24 @@ class IgnoredEntriesRepository(
                 ignoredEntriesCache.addAll(allEntries)
                 _ignoredEntries.postValue(ignoredEntriesCache)
 
-                _ignoredEntriesForEntries.postValue(allEntries.filter {
-                    it.target contains IgnoreTarget.ENTRY
-                })
-
-                _ignoredWordsForBookmarks = allEntries.filter {
-                    it.target contains IgnoreTarget.BOOKMARK
-                }.map {
-                    it.query
+                val forEntries = ArrayList<IgnoredEntry>()
+                val forBookmarks = ArrayList<String>()
+                for (entry in allEntries) {
+                    if (entry.target contains IgnoreTarget.ENTRY) {
+                        forEntries.add(entry)
+                    }
+                    if (entry.target contains IgnoreTarget.BOOKMARK){
+                        forBookmarks.add(entry.query)
+                    }
                 }
+                _ignoredEntriesForEntries.postValue(forEntries)
+                _ignoredWordsForBookmarks = forBookmarks
             }
         }
     }
 
     /** NGエントリをロードする */
-    suspend fun loadIgnoredEntriesForEntries(
-        forceUpdate: Boolean = false
-    ) = withContext(Dispatchers.IO) {
+    suspend fun loadIgnoredEntriesForEntries(forceUpdate: Boolean = false) = withContext(Dispatchers.IO) {
         ignoredEntriesCacheLock.withLock {
             if (_ignoredEntriesForEntries.value.isNullOrEmpty() || forceUpdate) {
                 _ignoredEntriesForEntries.postValue(dao.getEntriesForEntries())
@@ -75,9 +72,7 @@ class IgnoredEntriesRepository(
     }
 
     /** NGワードをロードする */
-    suspend fun loadIgnoredWordsForBookmarks(
-        forceUpdate: Boolean = false
-    ) = withContext(Dispatchers.IO) {
+    suspend fun loadIgnoredWordsForBookmarks(forceUpdate: Boolean = false) = withContext(Dispatchers.IO) {
         ignoredEntriesCacheLock.withLock {
             if (_ignoredWordsForBookmarks.isNullOrEmpty() || forceUpdate) {
                 _ignoredWordsForBookmarks = dao.getEntriesForBookmarks()
@@ -91,9 +86,7 @@ class IgnoredEntriesRepository(
      *
      * @throws AlreadyExistedException
      */
-    suspend fun addIgnoredEntry(
-        entry: IgnoredEntry
-    ) = withContext(Dispatchers.IO) {
+    suspend fun addIgnoredEntry(entry: IgnoredEntry) = withContext(Dispatchers.IO) {
         try {
             ignoredEntriesCacheLock.withLock {
                 dao.insert(entry)
@@ -123,9 +116,7 @@ class IgnoredEntriesRepository(
      *
      * @throws NotFoundException
      */
-    suspend fun deleteIgnoredEntry(
-        entry: IgnoredEntry
-    ) = withContext(Dispatchers.IO) {
+    suspend fun deleteIgnoredEntry(entry: IgnoredEntry) = withContext(Dispatchers.IO) {
         try {
             ignoredEntriesCacheLock.withLock {
                 dao.delete(entry)
@@ -155,9 +146,7 @@ class IgnoredEntriesRepository(
      *
      * @throws TaskFailureException
      */
-    suspend fun updateIgnoredEntry(
-        entry: IgnoredEntry
-    ) = withContext(Dispatchers.IO) {
+    suspend fun updateIgnoredEntry(entry: IgnoredEntry) = withContext(Dispatchers.IO) {
         try {
             ignoredEntriesCacheLock.withLock {
                 dao.update(entry)

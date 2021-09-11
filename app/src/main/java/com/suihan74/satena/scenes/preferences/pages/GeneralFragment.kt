@@ -11,6 +11,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.*
+import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.putObjectExtra
@@ -100,6 +101,18 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     /** アップデート後初回起動時にリリースノートを表示する */
     val displayReleaseNotes = createLiveData<Boolean>(
         PreferenceKey.SHOW_RELEASE_NOTES_AFTER_UPDATE
+    )
+
+    /** インテント発行時にデフォルトアプリを優先使用する */
+    private val useIntentChooser = createLiveData<Boolean>(
+        PreferenceKey.USE_INTENT_CHOOSER
+    )
+
+    /** 画像キャッシュを消去する間隔 */
+    private val clearingImageCacheSpan = createLiveDataEnum(
+        PreferenceKey.CLEARING_IMAGE_CACHE_SPAN,
+        { it.days },
+        { ClearingImageCacheSpan.fromDays(it) }
     )
 
     /** 画像キャッシュサイズ */
@@ -203,6 +216,11 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         // --- //
 
+        addSection(R.string.pref_generals_section_intent)
+        addPrefToggleItem(fragment, useIntentChooser, R.string.pref_generals_use_intent_chooser)
+
+        // --- //
+
         addSection(R.string.pref_generals_section_dialogs)
         addPrefToggleItem(fragment, closeDialogOnTouchOutside, R.string.pref_generals_close_dialog_touch_outside_desc)
         addPrefToggleItem(fragment, confirmTerminationDialog, R.string.pref_generals_using_termination_dialog_desc)
@@ -221,6 +239,14 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_generals_section_clear_caches)
+        addPrefItem(fragment, clearingImageCacheSpan, R.string.pref_generals_clear_image_cache_span) {
+            openEnumSelectionDialog(
+                ClearingImageCacheSpan.values(),
+                clearingImageCacheSpan,
+                R.string.pref_generals_clear_image_cache_span,
+                fragmentManager
+            )
+        }
         addButton(
             fragment,
             text = MutableLiveData(fragment.getText(R.string.pref_generals_clear_image_cache_desc)),

@@ -16,6 +16,7 @@ import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.ExtraScrollingAlignment
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.entries2.dialog.BrowserShortcutDialog
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
@@ -130,6 +131,16 @@ class EntriesViewModel(
 
     /** 表示中画面のタブ位置 */
     val currentTabPosition = MutableLiveData<Int>()
+
+    val extraScrollingAlignment
+        get() = repository.extraScrollingAlignment
+
+    val extraScrollBarVisibility =
+        MutableLiveData(extraScrollingAlignment != ExtraScrollingAlignment.NONE)
+
+    fun updateExtraScrollBarVisibility(visibility: Boolean) {
+        extraScrollBarVisibility.value = extraScrollingAlignment != ExtraScrollingAlignment.NONE && visibility
+    }
 
     // ------ //
 

@@ -3,6 +3,7 @@ package com.suihan74.satena.models
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
+import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
 import com.suihan74.satena.scenes.browser.BrowserMode
@@ -15,9 +16,10 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZonedDateTime
 import java.lang.reflect.Type
 
-@SharedPreferencesKey(fileName = "default", version = 9, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 10, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -71,6 +73,9 @@ enum class PreferenceKey(
     /** ドロワーの位置 */
     DRAWER_GRAVITY(typeInfo<Int>(), GravitySetting.END.gravity),
 
+    /** 外部アプリでインテントを開く際にデフォルトアプリを優先して使用する */
+    USE_INTENT_CHOOSER(typeInfo<Boolean>(), true),
+
     /** アプリ内アップデート通知 */
     APP_UPDATE_NOTICE_MODE(typeInfo<Int>(), AppUpdateNoticeMode.FIX.id),
 
@@ -104,6 +109,12 @@ enum class PreferenceKey(
     /** アップデート後最初の起動時にリリースノートを表示する */
     SHOW_RELEASE_NOTES_AFTER_UPDATE(typeInfo<Boolean>(), true),
 
+    /** 画像キャッシュをクリアする間隔（日数） */
+    CLEARING_IMAGE_CACHE_SPAN(typeInfo<Int>(), ClearingImageCacheSpan.MONTH_1.days),
+
+    /** 最後に画像キャッシュをクリアした日時 */
+    IMAGE_CACHE_LAST_CLEARED(typeInfo<ZonedDateTime>(), ZonedDateTime.now()),
+
     ////////////////////////////////////////
     // entries
     ////////////////////////////////////////
@@ -123,6 +134,9 @@ enum class PreferenceKey(
     /** ボトムバーの追加項目の表示位置 */
     ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT(typeInfo<Int>(), ExtraBottomItemsAlignment.DEFAULT.id),
 
+    /** エクストラスクロール機能のツマミの配置 */
+    ENTRIES_EXTRA_SCROLL_ALIGNMENT(typeInfo<Int>(), ExtraScrollingAlignment.RIGHT.id),
+
     /** エントリ項目シングルタップの挙動 */
     ENTRY_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.id),
 
@@ -131,6 +145,15 @@ enum class PreferenceKey(
 
     /** エントリ項目ロングタップの挙動 */
     ENTRY_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.id),
+
+    /** エントリ項目右端シングルタップの挙動 */
+    ENTRY_EDGE_SINGLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_COMMENTS.id),
+
+    /** エントリ項目右端複数回タップの挙動 */
+    ENTRY_EDGE_MULTIPLE_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_PAGE.id),
+
+    /** エントリ項目右端ロングタップの挙動 */
+    ENTRY_EDGE_LONG_TAP_ACTION(typeInfo<Int>(), TapEntryAction.SHOW_MENU.id),
 
     /** タップ回数判定時間 0L~500L */
     ENTRY_MULTIPLE_TAP_DURATION(typeInfo<Long>(), 250L),
@@ -235,8 +258,14 @@ enum class PreferenceKey(
     /** タブのスワイプ感度 */
     BOOKMARKS_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
 
+    /** エクストラスクロール機能のツマミの配置 */
+    BOOKMARKS_EXTRA_SCROLL_ALIGNMENT(typeInfo<Int>(), ExtraScrollingAlignment.RIGHT.id),
+
     /** ブクマ一覧画面のリスト項目から直接スターを付けられるようにする */
     BOOKMARKS_USE_ADD_STAR_POPUP_MENU(typeInfo<Boolean>(), true),
+
+    /** スター付与ボタンのタップ判定領域をブクマ項目右端部分に拡大する */
+    BOOKMARKS_USE_ADD_STAR_EDGE(typeInfo<Boolean>(), true),
 
     /** スターを付ける前に確認ダイアログを表示する */
     USING_POST_STAR_DIALOG(typeInfo<Boolean>(), true),
@@ -318,6 +347,8 @@ object PreferenceKeyMigration {
                 7 -> migrateFromVersion7(context)
 
                 8 -> migrateFromVersion8(context)
+
+                9 -> migrateFromVersion9(context)
 
                 else -> break
             }
@@ -495,6 +526,11 @@ object PreferenceKeyMigration {
         }
     }
 
+    /**
+     * v8 -> v9
+     *
+     * 鯖側の仕様変更に追従する際アプリ側で不要になったHatenaのID/パスワードを保存しないようにした
+     */
     private fun migrateFromVersion8(context: Context) {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
         runCatching {
@@ -503,6 +539,26 @@ object PreferenceKeyMigration {
                 remove(PreferenceKey.HATENA_PASSWORD)
                 remove(PreferenceKey.SAVE_HATENA_USER_ID_PASSWORD)
             }
+        }.onFailure {
+            prefs.edit {}
+        }
+    }
+
+    /**
+     * v9 -> v10
+     *
+     * エントリのタップアクショントリガを追加。既存ユーザーは挙動がこれまでと変わらないように初期設定する
+     */
+    private fun migrateFromVersion9(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        runCatching {
+            prefs.edit {
+                putInt(PreferenceKey.ENTRY_EDGE_SINGLE_TAP_ACTION, prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
+                putInt(PreferenceKey.ENTRY_EDGE_LONG_TAP_ACTION, prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
+                putInt(PreferenceKey.ENTRY_EDGE_MULTIPLE_TAP_ACTION, prefs.getInt(PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION))
+            }
+        }.onFailure {
+            prefs.edit {}
         }
     }
 }
