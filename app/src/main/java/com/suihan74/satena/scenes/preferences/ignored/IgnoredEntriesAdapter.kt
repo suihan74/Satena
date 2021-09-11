@@ -21,7 +21,11 @@ class IgnoredEntriesAdapter(lifecycleOwner: LifecycleOwner) : GeneralAdapter<Ign
             if (items == null) return
             view.adapter.alsoAs<IgnoredEntriesAdapter> { adapter ->
                 if (items.isEmpty()) adapter.setItems(null)
-                else adapter.setItems(items)
+                else {
+                    adapter.submitList(null) {
+                        adapter.setItems(items)
+                    }
+                }
             }
         }
     }
