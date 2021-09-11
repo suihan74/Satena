@@ -14,7 +14,6 @@ import com.suihan74.satena.scenes.entries2.UserBottomItem
 import com.suihan74.satena.scenes.post.TagsListOrder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
-import com.suihan74.utilities.extensions.ZonedDateTimeUtil
 import com.suihan74.utilities.typeInfo
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZonedDateTime
@@ -114,7 +113,7 @@ enum class PreferenceKey(
     CLEARING_IMAGE_CACHE_SPAN(typeInfo<Int>(), ClearingImageCacheSpan.MONTH_1.days),
 
     /** 最後に画像キャッシュをクリアした日時 */
-    IMAGE_CACHE_LAST_CLEARED(typeInfo<ZonedDateTime>(), ZonedDateTimeUtil.MIN),
+    IMAGE_CACHE_LAST_CLEARED(typeInfo<ZonedDateTime>(), ZonedDateTime.now()),
 
     ////////////////////////////////////////
     // entries

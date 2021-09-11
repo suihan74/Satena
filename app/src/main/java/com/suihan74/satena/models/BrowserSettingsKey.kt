@@ -7,7 +7,6 @@ import com.suihan74.satena.scenes.browser.SearchEngineSetting
 import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
-import com.suihan74.utilities.extensions.ZonedDateTimeUtil
 import com.suihan74.utilities.typeInfo
 import org.threeten.bp.ZonedDateTime
 import java.lang.reflect.Type
@@ -61,7 +60,7 @@ enum class BrowserSettingsKey (
     HISTORY_LIFESPAN(typeInfo<Int>(), BrowserHistoryLifeSpan.MONTH_3.days),
 
     /** 最後に寿命切れの履歴を削除した日 */
-    HISTORY_LAST_REFRESHED(typeInfo<ZonedDateTime>(), ZonedDateTimeUtil.MIN),
+    HISTORY_LAST_REFRESHED(typeInfo<ZonedDateTime>(), ZonedDateTime.now()),
 
     /** ブロックURLリスト */
     @Suppress("SpellCheckingInspection")
