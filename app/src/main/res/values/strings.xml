@@ -286,7 +286,7 @@
     <string name="pref_generals_dialog_theme_light">Light</string>
     <string name="pref_generals_dialog_theme_app">アプリテーマにあわせる</string>
 
-    <string name="pref_generals_close_dialog_touch_outside_desc">ダイアログの外側をタッチしたら閉じる</string>
+    <string name="pref_generals_close_dialog_touch_outside_desc">ダイアログの外側をタップしたら閉じる</string>
 
     <string name="pref_generals_save_settings_desc">設定ファイルをエクスポート</string>
     <string name="pref_generals_load_settings_desc">設定ファイルをインポート</string>
