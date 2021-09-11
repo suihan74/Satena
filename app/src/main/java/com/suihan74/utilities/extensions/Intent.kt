@@ -16,10 +16,10 @@ fun Intent.createIntentWithoutThisApplication(
 ) : Intent {
     val packageManager = context.packageManager
     val dummyIntent = Intent(this.action, Uri.parse("https://"))
-    val useDefault = SafeSharedPreferences.create<PreferenceKey>(context)
-        .getBoolean(PreferenceKey.USE_DEFAULT_OUTER_APP_INTENT)
+    val useChooser = SafeSharedPreferences.create<PreferenceKey>(context)
+        .getBoolean(PreferenceKey.USE_INTENT_CHOOSER)
 
-    if (useDefault) {
+    if (!useChooser) {
         val defaultApp =
             packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
                 .firstOrNull()

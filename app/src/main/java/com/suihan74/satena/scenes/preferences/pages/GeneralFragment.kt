@@ -104,8 +104,8 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     )
 
     /** インテント発行時にデフォルトアプリを優先使用する */
-    private val useDefaultAppIntent = createLiveData<Boolean>(
-        PreferenceKey.USE_DEFAULT_OUTER_APP_INTENT
+    private val useIntentChooser = createLiveData<Boolean>(
+        PreferenceKey.USE_INTENT_CHOOSER
     )
 
     /** 画像キャッシュを消去する間隔 */
@@ -217,7 +217,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_generals_section_intent)
-        addPrefToggleItem(fragment, useDefaultAppIntent, R.string.pref_generals_use_default_app_intent)
+        addPrefToggleItem(fragment, useIntentChooser, R.string.pref_generals_use_intent_chooser)
 
         // --- //
 

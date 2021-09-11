@@ -311,7 +311,7 @@
     <string name="pref_generals_clear_image_cache_dialog_message">キャッシュを削除するとストレージ使用量を削減できる一方、一時的に通信量が増えて画像の読み込みが遅くなります。削除しますか？</string>
     <string name="pref_generals_clear_image_cache_span">一定期間ごとに画像キャッシュをクリアする</string>
 
-    <string name="pref_generals_use_default_app_intent">外部アプリを開く際にデフォルトアプリを優先する</string>
+    <string name="pref_generals_use_intent_chooser">外部アプリを開く際に毎回アプリを選択する</string>
 
     <!-- entries -->
     <string name="pref_entry_section_bottom_menu">ボトムメニュー</string>

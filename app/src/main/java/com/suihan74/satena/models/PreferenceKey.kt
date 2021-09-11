@@ -75,7 +75,7 @@ enum class PreferenceKey(
     DRAWER_GRAVITY(typeInfo<Int>(), GravitySetting.END.gravity),
 
     /** 外部アプリでインテントを開く際にデフォルトアプリを優先して使用する */
-    USE_DEFAULT_OUTER_APP_INTENT(typeInfo<Boolean>(), false),
+    USE_INTENT_CHOOSER(typeInfo<Boolean>(), true),
 
     /** アプリ内アップデート通知 */
     APP_UPDATE_NOTICE_MODE(typeInfo<Int>(), AppUpdateNoticeMode.FIX.id),
