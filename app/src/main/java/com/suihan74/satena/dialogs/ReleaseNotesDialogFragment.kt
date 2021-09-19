@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
@@ -17,8 +16,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogReleaseNotes2Binding
 import com.suihan74.satena.databinding.ListviewItemReleaseNotesBinding
+import com.suihan74.satena.databinding.ListviewSeparatorReleaseNotesBinding
+import com.suihan74.utilities.SectionViewHolder
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
@@ -70,9 +72,8 @@ class ReleaseNotesDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = requireContext()
-        val inflater = LayoutInflater.from(context)
         val binding = DataBindingUtil.inflate<FragmentDialogReleaseNotes2Binding>(
-            inflater,
+            localLayoutInflater(),
             R.layout.fragment_dialog_release_notes2,
             null,
             false
@@ -91,7 +92,7 @@ class ReleaseNotesDialogFragment : DialogFragment() {
             }
         }
 
-        return AlertDialog.Builder(context, R.style.AlertDialogStyle)
+        return createBuilder()
             .setTitle(R.string.release_notes_dialog_title)
             .setNegativeButton(R.string.dialog_close, null)
             .setView(binding.root)
@@ -158,6 +159,7 @@ class ReleaseNotesDialogFragment : DialogFragment() {
          *
          * @throws TaskFailureException
          */
+        @OptIn(ExperimentalStdlibApi::class)
         suspend fun loadReleaseNotes(resources: Resources) = withContext(Dispatchers.Default) {
             try {
                 resources.openRawResource(R.raw.release_notes).bufferedReader().use { reader ->
@@ -178,15 +180,29 @@ class ReleaseNotesDialogFragment : DialogFragment() {
                     val historyRegex = Regex("""(\[\s*version\s*\S+\s*])(\r?\n)+([^\[]+)""")
                     val tailLineBreakRegex = Regex("""(\r?\n)+$""")
 
-                    val items = historyRegex.findAll(text).mapNotNull { match ->
-                        val result = runCatching {
-                            ReleaseNote(
-                                title = match.groupValues[1],
-                                body = match.groupValues[3].replace(tailLineBreakRegex, "")
-                            )
+                    val items =  buildList<ReleaseNote> {
+                        historyRegex.findAll(text).forEach { match ->
+                            runCatching {
+                                val body = match.groupValues[3].replace(tailLineBreakRegex, "")
+                                if (body.endsWith("---")) {
+                                    add(ReleaseNote(
+                                        title = match.groupValues[1],
+                                        body = body.replace(Regex("""(\r?\n)*---$"""),"")
+                                    ))
+                                    add(ReleaseNote(
+                                        title = "---",
+                                        body = ""
+                                    ))
+                                }
+                                else {
+                                    add(ReleaseNote(
+                                        title = match.groupValues[1],
+                                        body = body
+                                    ))
+                                }
+                            }
                         }
-                        result.getOrNull()
-                    }.toList()
+                    }
 
                     releaseNotes.postValue(items)
                 }
@@ -206,29 +222,57 @@ class ReleaseNotesDialogFragment : DialogFragment() {
      */
     class ReleaseNotesAdapter(
         val items: List<ReleaseNote>
-    ) : RecyclerView.Adapter<ReleaseNotesAdapter.ViewHolder>() {
+    ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
         override fun getItemCount() = items.size
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val binding = ListviewItemReleaseNotesBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-            return ViewHolder(binding)
+        override fun getItemViewType(position: Int): Int = when (items[position].title) {
+            "---" -> ViewHolderType.SEPARATOR.int
+            else -> ViewHolderType.CONTENT.int
         }
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.setModel(items[position])
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            return when (viewType) {
+                ViewHolderType.CONTENT.int -> {
+                    val binding = ListviewItemReleaseNotesBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    )
+                    ReleaseNoteViewHolder(binding)
+                }
+
+                ViewHolderType.SEPARATOR.int -> {
+                    SectionViewHolder(ListviewSeparatorReleaseNotesBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    ))
+                }
+
+                else -> throw NotImplementedError()
+            }
         }
 
-        class ViewHolder(private val binding : ListviewItemReleaseNotesBinding) : RecyclerView.ViewHolder(binding.root) {
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            holder.alsoAs<ReleaseNoteViewHolder> {
+                it.setModel(items[position])
+            }
+        }
+
+        class ReleaseNoteViewHolder(private val binding : ListviewItemReleaseNotesBinding) : RecyclerView.ViewHolder(binding.root) {
             fun setModel(model: ReleaseNote) {
                 binding.titleTextView.text = model.title
                 binding.bodyTextView.text = model.body
                 binding.root.setOnClickListener {}
             }
+        }
+
+        // ------ //
+
+        enum class ViewHolderType(val int : Int) {
+            CONTENT(0),
+            SEPARATOR(1)
         }
     }
 }

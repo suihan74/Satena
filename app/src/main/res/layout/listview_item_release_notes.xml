@@ -10,7 +10,7 @@
 
     <TextView
             android:id="@+id/title_text_view"
-            android:textColor="@color/colorPrimary"
+            android:textColor="?colorPrimary"
             android:textSize="16sp"
             android:textAllCaps="false"
             android:textStyle="bold"
@@ -19,7 +19,7 @@
 
     <TextView
             android:id="@+id/body_text_view"
-            android:textColor="@color/textColor"
+            android:textColor="?textColor"
             android:textSize="14sp"
             android:textAllCaps="false"
             android:layout_marginTop="4dp"

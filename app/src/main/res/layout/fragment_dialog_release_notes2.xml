@@ -17,7 +17,7 @@
                 lastVersionName="@{vm.lastVersionName}"
                 currentVersionName="@{vm.currentVersionName}"
                 android:visibility="@{vm.displayOnlyDiffs}"
-                android:textColor="@color/textColor"
+                android:textColor="?textColor"
                 android:textSize="14sp"
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp"
