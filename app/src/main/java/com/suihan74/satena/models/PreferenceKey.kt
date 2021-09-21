@@ -113,7 +113,7 @@ enum class PreferenceKey(
     CLEARING_IMAGE_CACHE_SPAN(typeInfo<Int>(), ClearingImageCacheSpan.MONTH_1.days),
 
     /** 最後に画像キャッシュをクリアした日時 */
-    IMAGE_CACHE_LAST_CLEARED(typeInfo<ZonedDateTime>(), ZonedDateTime.now()),
+    IMAGE_CACHE_LAST_CLEARED(typeInfo<ZonedDateTime>(), null),
 
     ////////////////////////////////////////
     // entries
