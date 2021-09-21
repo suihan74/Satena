@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.browser.history
 
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.browser.BrowserDao
 import com.suihan74.satena.models.browser.History
@@ -93,9 +94,17 @@ class HistoryRepository(
     suspend fun loadHistories() = withContext(Dispatchers.Default) {
         historiesCacheLock.withLock {
             historiesCache.clear()
-            historiesCache.addAll(
-                dao.findHistory(query = keyword.value.orEmpty())
-            )
+            runCatching {
+                historiesCache.addAll(
+                        dao.findHistory(query = keyword.value.orEmpty())
+                )
+            }.onFailure {
+                dao.restoreHistoryTable_v192()
+                FirebaseCrashlytics.getInstance().recordException(RuntimeException("v190 history issue has fixed"))
+                historiesCache.addAll(
+                        dao.findHistory(query = keyword.value.orEmpty())
+                )
+            }
             histories.postValue(historiesCache)
         }
     }
@@ -123,7 +132,13 @@ class HistoryRepository(
     /** 履歴リストの続きを取得 */
     suspend fun loadAdditional() = withContext(Dispatchers.Default) {
         historiesCacheLock.withLock {
-            val additional = dao.findHistory(query = keyword.value.orEmpty(), offset = historiesCache.size)
+            val additional = runCatching {
+                dao.findHistory(query = keyword.value.orEmpty(), offset = historiesCache.size)
+            }.getOrElse {
+                dao.restoreHistoryTable_v192()
+                FirebaseCrashlytics.getInstance().recordException(RuntimeException("v190 history issue has fixed"))
+                dao.findHistory(query = keyword.value.orEmpty(), offset = historiesCache.size)
+            }
             if (additional.isEmpty()) return@withContext
 
             historiesCache.addAll(additional)
@@ -138,7 +153,7 @@ class HistoryRepository(
         val today = now.toLocalDate()
         val lifeSpanDays = prefs.getInt(BrowserSettingsKey.HISTORY_LIFESPAN)
         val lastRefreshed = prefs.getObject<ZonedDateTime>(BrowserSettingsKey.HISTORY_LAST_REFRESHED)
-        if (lastRefreshed != null && lastRefreshed.toLocalDate() >= today || lifeSpanDays == 0) {
+        if (lifeSpanDays == 0 || lastRefreshed != null && lastRefreshed.toLocalDate() >= today) {
             return
         }
         val threshold = now.toLocalDateTime().minusDays(lifeSpanDays.toLong())

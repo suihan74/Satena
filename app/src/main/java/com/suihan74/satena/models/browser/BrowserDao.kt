@@ -31,6 +31,15 @@ interface BrowserDao {
     suspend fun getHistoryPage(url: String): HistoryPage?
 
     /**
+     * 最後に訪れたのが指定期間のページ情報を取得する
+     */
+    @Query("""
+        select * from browser_history_pages
+        where lastVisited>=:start and lastVisited<:end
+    """)
+    suspend fun findHistoryPages(start: LocalDateTime, end: LocalDateTime) : List<HistoryPage>
+
+    /**
      * 指定日時の閲覧履歴を取得する
      *
      * 完全に一致する時刻を指定する必要があるため、
@@ -151,13 +160,15 @@ interface BrowserDao {
     suspend fun __deleteHistoryPageImpl(page: HistoryPage)
 
     /**
-     * 最終訪問日時が指定した期間内の全てのページ情報を削除する
+     * 最終訪問日時が指定した期間内の全てのページ情報（とそれを参照する閲覧履歴）を削除する
      */
-    @Query("""
-        delete from browser_history_pages
-        where lastVisited>=:start and lastVisited<:end
-    """)
-    suspend fun deleteHistoryPages(start: LocalDateTime, end: LocalDateTime)
+    @Transaction
+    suspend fun deleteHistoryPages(start: LocalDateTime, end: LocalDateTime) {
+        findHistoryPages(start, end).forEach { page ->
+            deleteHistoryLogsWithPage(page.id)
+            deleteHistoryPage(page)
+        }
+    }
 
     /**
      * ログを削除する
@@ -210,4 +221,10 @@ interface BrowserDao {
     }
 
     // --------------- //
+
+    @Query("""
+        DELETE FROM browser_history_items 
+        WHERE NOT EXISTS (SELECT * FROM browser_history_pages p WHERE p.id = browser_history_items.pageId)
+    """)
+    suspend fun restoreHistoryTable_v192()
 }

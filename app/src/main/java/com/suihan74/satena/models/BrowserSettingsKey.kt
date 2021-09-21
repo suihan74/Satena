@@ -60,7 +60,7 @@ enum class BrowserSettingsKey (
     HISTORY_LIFESPAN(typeInfo<Int>(), BrowserHistoryLifeSpan.MONTH_3.days),
 
     /** 最後に寿命切れの履歴を削除した日 */
-    HISTORY_LAST_REFRESHED(typeInfo<ZonedDateTime>(), ZonedDateTime.now()),
+    HISTORY_LAST_REFRESHED(typeInfo<ZonedDateTime>(), null),
 
     /** ブロックURLリスト */
     @Suppress("SpellCheckingInspection")
