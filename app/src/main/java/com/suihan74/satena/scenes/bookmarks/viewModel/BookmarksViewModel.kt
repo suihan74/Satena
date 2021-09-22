@@ -86,9 +86,6 @@ class BookmarksViewModel(
     /** アクションバーに表示するサブタイトル */
     val subtitle = MutableLiveData<String>()
 
-    /** 人気ブクマリスト */
-    val popularBookmarks = repository.popularBookmarks
-
     /** 新着ブクマリスト */
     val recentBookmarks = repository.recentBookmarks
 
