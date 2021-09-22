@@ -7,6 +7,8 @@ import com.suihan74.satena.scenes.bookmarks.dialog.ReportDialog
 import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
@@ -18,7 +20,7 @@ import kotlinx.coroutines.withContext
  */
 interface UserRelationRepositoryInterface {
     /** はてなで設定した非表示ユーザー */
-    val ignoredUsersCache : List<String>
+//    val ignoredUsersCache : List<String>
 
     /** 非表示ユーザーリストのLiveData */
     val ignoredUsers : LiveData<List<String>>
@@ -42,6 +44,13 @@ interface UserRelationRepositoryInterface {
      * @throws FetchIgnoredUsersFailureException
      */
     suspend fun unIgnoreUser(user: String)
+
+    /**
+     * 指定ユーザーが非表示されているか確認する
+     */
+    suspend fun isIgnored(user: String) : Boolean
+
+    // ------ //
 
     /**
      * ユーザーをお気に入りにする
@@ -94,29 +103,28 @@ class UserRelationRepository(
     private val accountLoader: AccountLoader
 ) : UserRelationRepositoryInterface {
 
-    private val _ignoredUsersCache by lazy { ArrayList<String>() }
+    private val _ignoredUsersCache = ArrayList<String>()
 
-    private val _ignoredUsers by lazy {
-        MutableLiveData<List<String>>()
-    }
-
-    override val ignoredUsersCache: List<String>
-        get() = _ignoredUsersCache
-
-    override val ignoredUsers: LiveData<List<String>>
-        get() = _ignoredUsers
+    private val _ignoredUsers = MutableLiveData<List<String>>()
+    override val ignoredUsers: LiveData<List<String>> = _ignoredUsers
 
     private val _reporting = MutableLiveData<Boolean>()
     override val reporting: LiveData<Boolean> = _reporting
 
+    private val cacheMutex = Mutex()
+
+    // ------ //
+
     /** 読み込み済みの内容をクリアする */
-    suspend fun clearIgnoredUsers() = withContext(Dispatchers.Main) {
+    suspend fun clearIgnoredUsers() = cacheMutex.withLock {
         _ignoredUsersCache.clear()
-        _ignoredUsers.value = emptyList()
+        withContext(Dispatchers.Main) {
+            _ignoredUsers.value = emptyList()
+        }
     }
 
     /** 非表示ユーザーリストを読み込む */
-    override suspend fun loadIgnoredUsers() = withContext(Dispatchers.Default) {
+    override suspend fun loadIgnoredUsers() = cacheMutex.withLock {
         val result = runCatching {
             val client = signIn()
             client.getIgnoredUsersAsync().await()
@@ -125,7 +133,9 @@ class UserRelationRepository(
         if (result.isSuccess) {
             _ignoredUsersCache.clear()
             _ignoredUsersCache.addAll(result.getOrDefault(emptyList()).reversed())
-            _ignoredUsers.postValue(_ignoredUsersCache)
+            withContext(Dispatchers.Main) {
+                _ignoredUsers.value = _ignoredUsersCache
+            }
         }
     }
 
@@ -134,15 +144,19 @@ class UserRelationRepository(
      *
      * @throws FetchIgnoredUsersFailureException
      */
-    override suspend fun ignoreUser(user: String) = withContext(Dispatchers.Default) {
+    override suspend fun ignoreUser(user: String) {
         val result = runCatching {
             val client = signIn()
             client.ignoreUserAsync(user).await()
         }
 
         if (result.isSuccess) {
-            _ignoredUsersCache.add(user)
-            _ignoredUsers.postValue(_ignoredUsersCache)
+            cacheMutex.withLock {
+                _ignoredUsersCache.add(user)
+                withContext(Dispatchers.Main) {
+                    _ignoredUsers.value = _ignoredUsersCache
+                }
+            }
         }
         else {
             val e = result.exceptionOrNull()
@@ -158,15 +172,19 @@ class UserRelationRepository(
      *
      * @throws FetchIgnoredUsersFailureException
      */
-    override suspend fun unIgnoreUser(user: String) = withContext(Dispatchers.Default) {
+    override suspend fun unIgnoreUser(user: String) {
         val result = runCatching {
             val client = signIn()
             client.unignoreUserAsync(user).await()
         }
 
         if (result.isSuccess) {
-            _ignoredUsersCache.remove(user)
-            _ignoredUsers.postValue(_ignoredUsersCache)
+            cacheMutex.withLock {
+                _ignoredUsersCache.remove(user)
+                withContext(Dispatchers.Main) {
+                    _ignoredUsers.value = _ignoredUsersCache
+                }
+            }
         }
         else {
             val e = result.exceptionOrNull()
@@ -176,6 +194,15 @@ class UserRelationRepository(
             )
         }
     }
+
+    /**
+     * 指定ユーザーが非表示されているか確認する
+     */
+    override suspend fun isIgnored(user: String) : Boolean = cacheMutex.withLock {
+        return@withLock _ignoredUsersCache.contains(user)
+    }
+
+    // ------ //
 
     /**
      * ユーザーをお気に入りにする
