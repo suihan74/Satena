@@ -44,8 +44,8 @@ class BookmarkMenuActionsImpl(
         starsEntry: StarsEntry?,
         fragmentManager: FragmentManager,
         starDeletingTarget: Bookmark? = null
-    ) = withContext(Dispatchers.Main) {
-        val ignoring = runCatching { repository.checkIgnoredUser(bookmark.user) }.getOrNull()
+    ) {
+        val ignoring = runCatching { repository.isIgnored(bookmark.user) }.getOrNull()
         val following = runCatching { repository.getFollowings().contains(bookmark.user) }.getOrNull()
 
         val dialog = BookmarkMenuDialog.createInstance(
@@ -101,7 +101,9 @@ class BookmarkMenuActionsImpl(
             )
         }
 
-        dialog.showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
+        withContext(Dispatchers.Main) {
+            dialog.showAllowingStateLoss(fragmentManager, DIALOG_BOOKMARK_MENU)
+        }
     }
 
     /** ユーザーがブクマ済みのエントリ一覧画面を開く */

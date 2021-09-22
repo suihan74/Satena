@@ -158,19 +158,17 @@ class BookmarksRepository(
     private val _bookmarksDigest = MutableLiveData<BookmarksDigest?>()
     val bookmarksDigest : LiveData<BookmarksDigest?> = _bookmarksDigest
 
-    val popularBookmarks : List<Bookmark>
-        get() = filterIgnored(
-            wordFilter(
-                bookmarksDigest.value?.scoredBookmarks.orEmpty()
-            )
+    suspend fun popularBookmarks() : List<Bookmark> = filterIgnored(
+        wordFilter(
+            bookmarksDigest.value?.scoredBookmarks.orEmpty()
         )
+    )
 
-    val followingsBookmarks : List<Bookmark>
-        get() = filterIgnored(
-            wordFilter(
-                bookmarksDigest.value?.favoriteBookmarks.orEmpty()
-            )
+    suspend fun followingsBookmarks() : List<Bookmark> = filterIgnored(
+        wordFilter(
+            bookmarksDigest.value?.favoriteBookmarks.orEmpty()
         )
+    )
 
     /** 非表示対象、無言を含むすべての新着ブクマ */
     private var bookmarksRecentCache : List<BookmarkWithStarCount> = emptyList()
@@ -589,28 +587,19 @@ class BookmarksRepository(
     // ------ //
 
     /**
-     * ユーザーが非表示ユーザーであるかを判別する
-     *
-     * はてなの「非表示ユーザー」として登録されているかだけを判別する
-     */
-    fun checkIgnoredUser(user: String) : Boolean {
-        return ignoredUsersCache.contains(user)
-    }
-
-    /**
      * ユーザーが非表示対象かを判別する
      *
      * `checkIgnoredUser(user)`との違いは，非表示テキストにマッチするかも確認すること。
      * はてなの「非表示ユーザー」設定が有効かどうかを確認する場合には`checkIgnoredUser(user)`を使用する
      */
-    private fun checkIgnored(user: String) : Boolean {
-        if (ignoredUsersCache.contains(user)) return true
+    private suspend fun checkIgnored(user: String) : Boolean {
+        if (isIgnored(user)) return true
         return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w -> user.contains(w) }
     }
 
     /** ブクマが非表示対象かを判別する */
-    fun checkIgnored(bookmark: Bookmark) : Boolean {
-        if (ignoredUsersCache.any { bookmark.user == it }) return true
+    private suspend fun checkIgnored(bookmark: Bookmark) : Boolean {
+        if (isIgnored(bookmark.user)) return true
         return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
             bookmark.commentRaw.contains(w)
                     || bookmark.user.contains(w)
@@ -619,8 +608,8 @@ class BookmarksRepository(
     }
 
     /** ブクマが非表示対象かを判別する */
-    private fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean {
-        if (ignoredUsersCache.any { bookmark.user == it }) return true
+    private suspend fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean {
+        if (isIgnored(bookmark.user)) return true
         return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
             bookmark.comment.contains(w)
                     || bookmark.user.contains(w)
@@ -629,7 +618,7 @@ class BookmarksRepository(
     }
 
     /** 非表示対象を除外する */
-    private fun filterIgnored(src: List<BookmarkWithStarCount>) : List<Bookmark> {
+    private suspend fun filterIgnored(src: List<BookmarkWithStarCount>) : List<Bookmark> {
         return src
             .filterNot { b -> checkIgnored(b) }
             .map { Bookmark.create(it) }
@@ -1051,7 +1040,7 @@ class BookmarksRepository(
             .map { it.first.toBookmarkWithStarCount(entry.value!!) }
     }
 
-    fun scoreBookmark(
+    private suspend fun scoreBookmark(
         bookmark: Bookmark,
         starsEntry: StarsEntry,
         maxStarsCount: Int
@@ -1064,10 +1053,10 @@ class BookmarksRepository(
 
         val fixedStarsEntry =
             if (ignoreStarsByIgnoredUsers) starsEntry.copy(
-                    stars = starsEntry.stars.filterNot { checkIgnoredUser(it.user) },
+                    stars = starsEntry.stars.filterNot { isIgnored(it.user) },
                     coloredStars = starsEntry.coloredStars?.map { group ->
                         ColorStars(
-                            group.stars.filterNot { checkIgnoredUser(it.user) },
+                            group.stars.filterNot { isIgnored(it.user) },
                             group.color
                         )
                     }
@@ -1333,7 +1322,7 @@ class BookmarksRepository(
     // ------ //
 
     /** 指定ブクマに言及しているブクマを取得する */
-    fun getMentionsTo(bookmark: Bookmark) : List<Bookmark> {
+    suspend fun getMentionsTo(bookmark: Bookmark) : List<Bookmark> {
         val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
         val mentionRegex = Regex("""(id\s*:|>)\s*\Q${bookmark.user}\E""")
         val bookmarks = bookmarksEntry.value?.bookmarks?.filter { it.comment.contains(mentionRegex) }.orEmpty()
@@ -1343,7 +1332,7 @@ class BookmarksRepository(
     }
 
     /** 指定ブクマが言及しているブクマを取得する */
-    fun getMentionsFrom(bookmark: Bookmark, analyzedBookmarkComment: AnalyzedBookmarkComment? = null) : List<Bookmark> {
+    suspend fun getMentionsFrom(bookmark: Bookmark, analyzedBookmarkComment: AnalyzedBookmarkComment? = null) : List<Bookmark> {
         val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)
 
         val ids = analyzedBookmarkComment?.ids ?: let {

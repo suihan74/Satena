@@ -78,7 +78,7 @@ class BookmarksTabViewModel(
                 it.value.value
             }
         }
-        val ignoredUsers = repo.ignoredUsersCache
+        val ignoredUsers = repo.ignoredUsers.value.orEmpty()
 
         return@withContext bookmarks.map { bookmark ->
             val analyzedComment = BookmarkCommentDecorator.convert(bookmark.comment)
@@ -100,12 +100,12 @@ class BookmarksTabViewModel(
     private suspend fun createDisplayBookmarksDigest() : List<RecyclerState<Entity>> = withContext(Dispatchers.Default) {
         buildList {
 
-            createDisplayBookmarks(repo.followingsBookmarks).onNotEmpty { followingsBookmarks ->
+            createDisplayBookmarks(repo.followingsBookmarks()).onNotEmpty { followingsBookmarks ->
                 add(RecyclerState(type = RecyclerType.SECTION, extra = R.string.bookmarks_digest_section_followings))
                 addAll(followingsBookmarks)
             }
 
-            createDisplayBookmarks(repo.popularBookmarks).onNotEmpty { popularBookmarks ->
+            createDisplayBookmarks(repo.popularBookmarks()).onNotEmpty { popularBookmarks ->
                 add(RecyclerState(type = RecyclerType.SECTION, extra = R.string.bookmarks_digest_section_scored))
                 addAll(popularBookmarks)
             }
