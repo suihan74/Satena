@@ -45,7 +45,7 @@ fun Intent.createIntentWithoutThisApplication(
         packageManager.queryIntentActivities(this, PackageManager.MATCH_ALL).plus(
             packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
         )
-        .distinctBy { it.activityInfo.name }
+        .distinctBy { it.activityInfo.packageName }
         .filterNot { it.activityInfo.packageName == context.packageName }
         .map { Intent(this).apply {
             setPackage(it.activityInfo.packageName) }
