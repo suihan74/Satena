@@ -1,10 +1,15 @@
 package com.suihan74.utilities.extensions
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.SafeSharedPreferences
 
 /**
@@ -42,7 +47,6 @@ fun Intent.createIntentWithoutThisApplication(
     }
 
     val intents = packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
-        .distinctBy { it.activityInfo.packageName }
         .filterNot { it.activityInfo.packageName == context.packageName }
         .map { Intent(this).apply {
             setPackage(it.activityInfo.packageName) }
@@ -53,6 +57,13 @@ fun Intent.createIntentWithoutThisApplication(
         1 -> intents.first()
         else -> Intent.createChooser(this, title).apply {
             putExtra(Intent.EXTRA_ALTERNATE_INTENTS, intents.toTypedArray())
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, arrayOf(
+                    ComponentName(context, EntriesActivity::class.java),
+                    ComponentName(context, BookmarksActivity::class.java),
+                    ComponentName(context, BookmarkPostActivity::class.java)
+                ))
+            }
         }
     }
 }
