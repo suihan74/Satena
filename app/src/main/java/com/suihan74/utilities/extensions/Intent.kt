@@ -15,7 +15,7 @@ fun Intent.createIntentWithoutThisApplication(
     title: CharSequence = "Choose a browser",
 ) : Intent {
     val packageManager = context.packageManager
-    val dummyIntent = Intent(this.action, Uri.parse("https://"))
+    val dummyIntent = Intent(this.action, Uri.parse("https://dummy"))
     val useChooser = SafeSharedPreferences.create<PreferenceKey>(context)
         .getBoolean(PreferenceKey.USE_INTENT_CHOOSER)
 
@@ -24,15 +24,15 @@ fun Intent.createIntentWithoutThisApplication(
             packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
                 .firstOrNull()
 
-        val defaultBrowser =
-            packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY)
-                .firstOrNull()
-
         if (defaultApp != null && defaultApp.activityInfo.packageName != context.packageName) {
             return Intent(this).apply {
                 setPackage(defaultApp.activityInfo.packageName)
             }
         }
+
+        val defaultBrowser =
+            packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY)
+                .firstOrNull()
 
         if (defaultBrowser != null && defaultBrowser.activityInfo.packageName != context.packageName) {
             return Intent(this).apply {
@@ -41,10 +41,7 @@ fun Intent.createIntentWithoutThisApplication(
         }
     }
 
-    val intents =
-        packageManager.queryIntentActivities(this, PackageManager.MATCH_ALL).plus(
-            packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
-        )
+    val intents = packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
         .distinctBy { it.activityInfo.packageName }
         .filterNot { it.activityInfo.packageName == context.packageName }
         .map { Intent(this).apply {
@@ -54,7 +51,7 @@ fun Intent.createIntentWithoutThisApplication(
     return when (intents.size) {
         0 -> this
         1 -> intents.first()
-        else -> Intent.createChooser(Intent(), title).apply {
+        else -> Intent.createChooser(this, title).apply {
             putExtra(Intent.EXTRA_ALTERNATE_INTENTS, intents.toTypedArray())
         }
     }
@@ -65,7 +62,7 @@ fun Intent.createIntentWithoutThisApplication(
  */
 fun Intent.createIntentWithDefaultBrowser(context: Context) : Intent? {
     val packageManager = context.packageManager
-    val dummyIntent = Intent(this.action, Uri.parse("https://"))
+    val dummyIntent = Intent(this.action, Uri.parse("https://dummy"))
     val resolveInfo = packageManager.resolveActivity(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY)
         ?: return null
 
