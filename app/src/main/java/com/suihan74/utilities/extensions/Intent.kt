@@ -1,10 +1,15 @@
 package com.suihan74.utilities.extensions
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.SafeSharedPreferences
 
 /**
@@ -15,7 +20,7 @@ fun Intent.createIntentWithoutThisApplication(
     title: CharSequence = "Choose a browser",
 ) : Intent {
     val packageManager = context.packageManager
-    val dummyIntent = Intent(this.action, Uri.parse("https://"))
+    val dummyIntent = Intent(this.action, Uri.parse("https://dummy"))
     val useChooser = SafeSharedPreferences.create<PreferenceKey>(context)
         .getBoolean(PreferenceKey.USE_INTENT_CHOOSER)
 
@@ -24,15 +29,15 @@ fun Intent.createIntentWithoutThisApplication(
             packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
                 .firstOrNull()
 
-        val defaultBrowser =
-            packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY)
-                .firstOrNull()
-
         if (defaultApp != null && defaultApp.activityInfo.packageName != context.packageName) {
             return Intent(this).apply {
                 setPackage(defaultApp.activityInfo.packageName)
             }
         }
+
+        val defaultBrowser =
+            packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY)
+                .firstOrNull()
 
         if (defaultBrowser != null && defaultBrowser.activityInfo.packageName != context.packageName) {
             return Intent(this).apply {
@@ -41,11 +46,7 @@ fun Intent.createIntentWithoutThisApplication(
         }
     }
 
-    val intents =
-        packageManager.queryIntentActivities(this, PackageManager.MATCH_ALL).plus(
-            packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
-        )
-        .distinctBy { it.activityInfo.packageName }
+    val intents = packageManager.queryIntentActivities(dummyIntent, PackageManager.MATCH_ALL)
         .filterNot { it.activityInfo.packageName == context.packageName }
         .map { Intent(this).apply {
             setPackage(it.activityInfo.packageName) }
@@ -54,8 +55,15 @@ fun Intent.createIntentWithoutThisApplication(
     return when (intents.size) {
         0 -> this
         1 -> intents.first()
-        else -> Intent.createChooser(Intent(), title).apply {
+        else -> Intent.createChooser(this, title).apply {
             putExtra(Intent.EXTRA_ALTERNATE_INTENTS, intents.toTypedArray())
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, arrayOf(
+                    ComponentName(context, EntriesActivity::class.java),
+                    ComponentName(context, BookmarksActivity::class.java),
+                    ComponentName(context, BookmarkPostActivity::class.java)
+                ))
+            }
         }
     }
 }
@@ -65,7 +73,7 @@ fun Intent.createIntentWithoutThisApplication(
  */
 fun Intent.createIntentWithDefaultBrowser(context: Context) : Intent? {
     val packageManager = context.packageManager
-    val dummyIntent = Intent(this.action, Uri.parse("https://"))
+    val dummyIntent = Intent(this.action, Uri.parse("https://dummy"))
     val resolveInfo = packageManager.resolveActivity(dummyIntent, PackageManager.MATCH_DEFAULT_ONLY)
         ?: return null
 
