@@ -106,7 +106,7 @@ interface EntryMenuActions {
             }
             setDeleteBookmarkListener { entry, f ->
                 val a = f.requireActivity()
-                deleteEntryBookmark(a, entry, lifecycleScope)
+                deleteEntryBookmark(a, entry, a.lifecycleScope)
             }
         }
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_ENTRY_MENU)
