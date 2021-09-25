@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.databinding.ViewDataBinding
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemAppInfoBinding
@@ -26,15 +27,16 @@ class InformationFragment : ListPreferencesFragment() {
 
 // ------ //
 
-class InformationViewModel(private val context: Context) : ListPreferencesViewModel(context) {
+class InformationViewModel(context: Context) : ListPreferencesViewModel(context) {
     @OptIn(ExperimentalStdlibApi::class)
     override fun createList(fragment: ListPreferencesFragment) = buildList {
         val fragmentManager = fragment.childFragmentManager
+        val context = fragment.requireContext()
 
         addSection(R.string.pref_information_section_app)
         add(AppInfoHeaderItem())
         addButton(fragment, R.string.pref_information_open_play_store_desc) {
-            runCatching {
+            kotlin.runCatching {
                 val intent = Intent(Intent.ACTION_VIEW).apply {
                     data = Uri.parse(context.getString(R.string.play_store))
                     `package` = "com.android.vending"
@@ -50,11 +52,11 @@ class InformationViewModel(private val context: Context) : ListPreferencesViewMo
         // --- //
 
         addSection(R.string.pref_information_section_developer)
-        addButton(fragment, R.string.developer) { openUrl(R.string.developer_hatena) }
-        addButton(fragment, R.string.pref_information_developer_website) { openUrl(R.string.developer_website) }
-        addButton(fragment, R.string.pref_information_developer_twitter) { openUrl(R.string.developer_twitter) }
+        addButton(fragment, R.string.developer) { openUrl(context, R.string.developer_hatena) }
+        addButton(fragment, R.string.pref_information_developer_website) { openUrl(context, R.string.developer_website) }
+        addButton(fragment, R.string.pref_information_developer_twitter) { openUrl(context, R.string.developer_twitter) }
         addButton(fragment, R.string.pref_information_developer_email) {
-            runCatching {
+            kotlin.runCatching {
                 val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")).also {
                     it.putExtra(
                         Intent.EXTRA_EMAIL,
@@ -68,10 +70,10 @@ class InformationViewModel(private val context: Context) : ListPreferencesViewMo
         // --- //
 
         addSection(R.string.pref_information_section_info)
-        addButton(fragment, R.string.pref_information_hatena_rules) { openUrl(R.string.hatena_rule) }
-        addButton(fragment, R.string.pref_information_privacy_policy) { openUrl(R.string.privacy_policy) }
+        addButton(fragment, R.string.pref_information_hatena_rules) { openUrl(context, R.string.hatena_rule) }
+        addButton(fragment, R.string.pref_information_privacy_policy) { openUrl(context, R.string.privacy_policy) }
         addButton(fragment, R.string.pref_information_licenses_desc) {
-            runCatching {
+            kotlin.runCatching {
                 val intent = Intent(context, OssLicensesMenuActivity::class.java).apply {
                     putExtra("title", "Licenses")
                 }
@@ -83,14 +85,15 @@ class InformationViewModel(private val context: Context) : ListPreferencesViewMo
     /**
      * URLを開くIntentを発行する
      */
-    private fun openUrl(url: String) {
+    private fun openUrl(context: Context, url: String) {
         runCatching {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             context.startActivity(intent)
         }
     }
 
-    private fun openUrl(@StringRes textId: Int) = openUrl(context.getString(textId))
+    private fun openUrl(context: Context, @StringRes textId: Int) =
+        openUrl(context, context.getString(textId))
 
     // ------ //
 
