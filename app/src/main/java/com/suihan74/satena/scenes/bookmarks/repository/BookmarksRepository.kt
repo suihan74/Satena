@@ -334,18 +334,20 @@ class BookmarksRepository(
      *
      * @throws TaskFailureException
      */
-    suspend fun loadBookmarks(url: String) = withContext(Dispatchers.Default) {
-        startLoading()
-
-        val modifyResult = runCatching {
-            modifySpecificUrls(url)
-        }
-        val modifiedUrl = modifyResult.getOrNull() ?: url
-        this@BookmarksRepository.url = modifiedUrl
-
-        bookmarksRecentCache = emptyList()
-
+    suspend fun loadBookmarks(url: String, isUrlModified: Boolean = false) = withContext(Dispatchers.Default) {
         try {
+            val modifiedUrl =
+                if (isUrlModified) url
+                else runCatching { modifySpecificUrls(url) }.getOrDefault(url) ?: url
+
+            if (this@BookmarksRepository.url == modifiedUrl) {
+                return@withContext
+            }
+            startLoading()
+
+            this@BookmarksRepository.url = modifiedUrl
+            bookmarksRecentCache = emptyList()
+
             val loadingIgnoresTasks = listOf(
                 async { ignoredEntriesRepo.loadIgnoredWordsForBookmarks() },
                 async { loadIgnoredUsers() }
