@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksContentBinding
 import com.suihan74.utilities.extensions.dp2px
@@ -103,10 +104,13 @@ class BookmarksContentFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         binding.toolbar.startMarquee()
-        binding.tabPager.post {
-            contentsViewModel.updateExtraScrollBarVisibility(
-                extraMargin > tileHeight
-            )
+
+        lifecycleScope.launchWhenCreated {
+            runCatching {
+                contentsViewModel.updateExtraScrollBarVisibility(
+                    extraMargin > tileHeight
+                )
+            }
         }
     }
 }
