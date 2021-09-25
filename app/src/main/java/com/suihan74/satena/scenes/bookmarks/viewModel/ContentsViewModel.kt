@@ -32,6 +32,8 @@ import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.setOnTabLongClickListener
 import com.suihan74.utilities.extensions.touchSlop
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * タブ制御など画面の状態管理用のViewModel
@@ -95,7 +97,7 @@ class ContentsViewModel(
 
     val extraScrollProgress = MutableLiveData(0f)
 
-    fun updateExtraScrollBarVisibility(visibility: Boolean) {
+    suspend fun updateExtraScrollBarVisibility(visibility: Boolean) = withContext(Dispatchers.Main) {
         extraScrollBarVisibility.value = extraScrollingAlignment != ExtraScrollingAlignment.NONE && visibility
     }
 
