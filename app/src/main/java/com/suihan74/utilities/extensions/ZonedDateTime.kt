@@ -1,9 +1,9 @@
 package com.suihan74.utilities.extensions
 
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZoneId
-import org.threeten.bp.ZoneOffset
-import org.threeten.bp.ZonedDateTime
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 /**
  * `LocalDateTime`をシステムのタイムゾーンの値に変換する

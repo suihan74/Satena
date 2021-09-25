@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.databinding.ViewDataBinding
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemAppInfoBinding
@@ -14,7 +13,7 @@ import com.suihan74.satena.scenes.preferences.PreferencesAdapter
 import com.suihan74.satena.scenes.preferences.addButton
 import com.suihan74.satena.scenes.preferences.addSection
 import com.suihan74.utilities.extensions.alsoAs
-import org.threeten.bp.LocalDateTime
+import java.time.LocalDateTime
 
 /**
  * 「情報」画面

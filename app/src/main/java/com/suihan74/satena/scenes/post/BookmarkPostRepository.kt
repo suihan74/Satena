@@ -18,8 +18,8 @@ import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.sys1yagi.mastodon4j.api.method.Statuses
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZoneOffset
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import kotlin.math.ceil
 
 class BookmarkPostRepository(

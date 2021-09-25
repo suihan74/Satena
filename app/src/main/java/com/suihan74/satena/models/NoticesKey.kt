@@ -5,8 +5,8 @@ import com.suihan74.hatenaLib.Notice
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
-import org.threeten.bp.LocalDateTime
 import java.lang.reflect.Type
+import java.time.LocalDateTime
 
 data class NoticeTimestamp(
     val created: LocalDateTime,

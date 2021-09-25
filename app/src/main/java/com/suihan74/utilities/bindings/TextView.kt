@@ -20,8 +20,8 @@ import com.suihan74.hatenaLib.Star
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.utilities.extensions.*
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.format.DateTimeFormatter
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * 画面の向きごとに最大表示行数を設定する

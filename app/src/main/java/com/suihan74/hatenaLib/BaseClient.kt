@@ -3,12 +3,12 @@ package com.suihan74.hatenaLib
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import okhttp3.*
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZoneOffset
 import java.lang.reflect.Type
 import java.net.CookieManager
 import java.net.CookiePolicy
 import java.net.SocketTimeoutException
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 open class BaseClient {
     protected val cookieManager = CookieManager().apply {

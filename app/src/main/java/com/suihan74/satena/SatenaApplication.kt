@@ -15,7 +15,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.work.*
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.*
 import com.suihan74.satena.notices.NotificationWorker
@@ -148,9 +147,6 @@ class SatenaApplication : Application() {
             )
 
         instance = this
-
-        // initialize the timezone information
-        AndroidThreeTen.init(applicationContext)
 
         // 設定ロード
         val prefs = SafeSharedPreferences.create<PreferenceKey>(applicationContext)

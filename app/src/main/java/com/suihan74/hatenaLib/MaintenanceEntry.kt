@@ -1,6 +1,6 @@
 package com.suihan74.hatenaLib
 
-import org.threeten.bp.LocalDateTime
+import java.time.LocalDateTime
 
 data class MaintenanceEntry (
     val id: String,

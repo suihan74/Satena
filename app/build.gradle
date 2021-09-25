@@ -43,6 +43,7 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
@@ -129,8 +130,8 @@ dependencies {
     // using autofit gridlayout
     implementation 'com.github.beloos:ChipsLayoutManager:v0.3.7'
 
-    // for using LocalDateTime
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
+    // for using DateTime
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
     // testing
     testImplementation 'junit:junit:4.13.1'

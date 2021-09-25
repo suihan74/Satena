@@ -11,7 +11,7 @@ import com.suihan74.satena.databinding.ListviewSectionHistoryBinding
 import com.suihan74.satena.models.browser.History
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.alsoAs
-import org.threeten.bp.LocalDate
+import java.time.LocalDate
 
 class HistoryAdapter(
     val viewModel: HistoryViewModel,

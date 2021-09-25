@@ -28,7 +28,7 @@ import com.suihan74.utilities.extensions.appendStarSpan
 import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.coroutines.*
-import org.threeten.bp.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter
 
 class BookmarksAdapter(
     private val lifecycleOwner: LifecycleOwner
