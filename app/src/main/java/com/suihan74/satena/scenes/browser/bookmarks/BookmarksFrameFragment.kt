@@ -5,14 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBrowserBookmarksFrameBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.extensions.alsoAs
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * ブラウザのドロワタブ上のブクマ画面か，それを表示するか確認する画面の表示領域
@@ -46,13 +47,18 @@ class BookmarksFrameFragment : Fragment(), ScrollableToTop, TabItem {
         }
 
         var firstObservingSkipped = false
-        browserViewModel.url.observe(viewLifecycleOwner, {
+        browserViewModel.entryUrl.observe(viewLifecycleOwner, { entryUrl ->
             if (browserViewModel.autoFetchBookmarks.value == true) return@observe
             if (firstObservingSkipped) {
-                browserViewModel.viewModelScope.launch {
-                    browserViewModel.bookmarksRepo.clear()
+                val prevUrl = browserViewModel.bookmarksRepo.url
+                lifecycleScope.launchWhenCreated {
+                    if (entryUrl != prevUrl) {
+                        browserViewModel.bookmarksRepo.clear()
+                        withContext(Dispatchers.Main) {
+                            startConfirmFragment()
+                        }
+                    }
                 }
-                startConfirmFragment()
             }
             firstObservingSkipped = true
         })

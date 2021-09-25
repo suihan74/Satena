@@ -33,12 +33,12 @@ import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.scopedObserver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 
 class ContentsViewModel(
     private val bookmarksRepo: BookmarksRepository
@@ -47,7 +47,7 @@ class ContentsViewModel(
     private var loadBookmarksEntryJob : Job? = null
 
     /** ローディング状態を通知する */
-    val loadingBookmarksEntry = MutableLiveData<Boolean>()
+    val loadingBookmarksEntry = bookmarksRepo.staticLoading
 
     private val loadingJobMutex = Mutex()
 
@@ -64,9 +64,14 @@ class ContentsViewModel(
     @MainThread
     fun onCreateView(owner: LifecycleOwner, browserViewModel: BrowserViewModel) {
         setOpenEditorButtonState(false)
-        browserViewModel.url.observe(owner, Observer { url ->
-            viewModelScope.launch {
-                loadBookmarksEntry(url.orEmpty())
+        browserViewModel.entryUrl.observe(owner, scopedObserver { entryUrl ->
+            if (browserViewModel.autoFetchBookmarks.value != true) {
+                browserViewModel.entryUrl.removeObserver(this)
+            }
+            if (entryUrl != bookmarksRepo.url) {
+                viewModelScope.launch {
+                    loadBookmarksEntry(entryUrl)
+                }
             }
         })
     }
@@ -74,23 +79,17 @@ class ContentsViewModel(
     // ------ //
 
     /** BookmarksEntryを更新 */
-    private suspend fun loadBookmarksEntry(url: String) {
+    private suspend fun loadBookmarksEntry(entryUrl: String) {
         loadingJobMutex.withLock {
             loadBookmarksEntryJob?.cancel()
-            if (!URLUtil.isNetworkUrl(url)) return@withLock
+            if (!URLUtil.isNetworkUrl(entryUrl)) return@withLock
             loadBookmarksEntryJob = viewModelScope.launch {
                 runCatching {
                     bookmarksRepo.loadUserColorStarsCount()
-                    withContext(Dispatchers.Main) {
-                        loadingBookmarksEntry.value = true
-                    }
-                    bookmarksRepo.loadBookmarks(url)
+                    bookmarksRepo.loadBookmarks(entryUrl, true)
                 }
                 loadingJobMutex.withLock {
                     loadBookmarksEntryJob = null
-                    withContext(Dispatchers.Main) {
-                        loadingBookmarksEntry.value = false
-                    }
                 }
             }
         }

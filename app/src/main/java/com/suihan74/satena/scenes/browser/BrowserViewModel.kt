@@ -21,11 +21,9 @@ import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.suihan74.satena.GlideApp
+import com.suihan74.satena.*
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.getEntryRootUrl
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
@@ -80,8 +78,13 @@ class BrowserViewModel(
             val url = it.orEmpty()
             addressText.value = Uri.decode(url)
             isUrlFavorite.value = favoriteSitesRepo.contains(url)
+            viewModelScope.launch {
+                entryUrl.value = modifySpecificUrls(url) ?: url
+            }
         }
     }
+    /** 表示中ページのエントリURL */
+    val entryUrl = SingleUpdateMutableLiveData<String>()
 
     /** 表示中のページタイトル */
     val title = MutableLiveData("")

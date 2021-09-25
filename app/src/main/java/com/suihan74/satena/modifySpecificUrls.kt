@@ -18,6 +18,7 @@ suspend fun modifySpecificUrls(url: String?) : String? {
 
     val result = runCatching {
         when (val modifiedTemp = modifySpecificUrlsWithoutConnection(url)) {
+            "about:blank" -> modifiedTemp
             url -> runCatching { modifySpecificUrlsForEntry(url) }.getOrNull()
             else -> modifiedTemp
         }
@@ -32,6 +33,8 @@ suspend fun modifySpecificUrls(url: String?) : String? {
  * (OGP検証など通信を必要とする補正は行わない)
  */
 private fun modifySpecificUrlsWithoutConnection(url: String) : String = when {
+    url == "about:blank" -> url
+
     url.startsWith("https://m.youtube.com/") ->
         Regex("""https://m\.youtube\.com/(.*)""").replace(url) { m ->
             "https://www.youtube.com/${m.groupValues.last()}"
