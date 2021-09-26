@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks.repository
 
 import android.content.Intent
-import android.util.Log
 import android.webkit.URLUtil
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -334,29 +333,21 @@ class BookmarksRepository(
      *
      * @throws TaskFailureException
      */
-    suspend fun loadBookmarks(url: String, isUrlModified: Boolean = false) = withContext(Dispatchers.Default) {
+    suspend fun loadBookmarks(modifiedUrl: String) = withContext(Dispatchers.Default) {
+        if (this@BookmarksRepository.url == modifiedUrl) return@withContext
         try {
-            val modifiedUrl =
-                if (isUrlModified) url
-                else runCatching { modifySpecificUrls(url) }.getOrDefault(url) ?: url
-
-            if (this@BookmarksRepository.url == modifiedUrl) {
-                return@withContext
-            }
             startLoading()
 
             this@BookmarksRepository.url = modifiedUrl
             bookmarksRecentCache = emptyList()
 
-            val loadingIgnoresTasks = listOf(
+            listOf(
                 async { ignoredEntriesRepo.loadIgnoredWordsForBookmarks() },
                 async { loadIgnoredUsers() }
-            )
-            loadingIgnoresTasks.awaitAll()
-            loadEntry(modifiedUrl)
+            ).awaitAll()
 
             var forbiddenException: ForbiddenException? = null
-            val loadingContentsTasks = listOf(
+            listOf(
                 // エントリにつけられたスター
                 async {
                     runCatching {
@@ -388,15 +379,10 @@ class BookmarksRepository(
                         forbiddenException = e
                     }
                 }
-            )
-            loadingContentsTasks.awaitAll()
-
-            forbiddenException?.let {
-                throw it
-            }
+            ).awaitAll()
+            forbiddenException?.let { throw it }
         }
         catch (e: Throwable) {
-            Log.e("BookmarksRepo", Log.getStackTraceString(e))
             throw TaskFailureException(cause = e)
         }
         finally {
@@ -414,18 +400,12 @@ class BookmarksRepository(
      *
      * @throws ConnectionFailureException
      */
-    private suspend fun loadEntry(url: String) : Entry {
-        val result = runCatching {
-            getEntry(url)
-        }
-
-        val e = result.getOrThrow()
-
+    suspend fun loadEntry(url: String) : Entry {
+        val response = runCatching { getEntry(url) }.getOrThrow()
         withContext(Dispatchers.Main) {
-            entry.value = e
+            entry.value = response
         }
-
-        return e
+        return response
     }
 
     /**
@@ -434,17 +414,11 @@ class BookmarksRepository(
      * @throws ConnectionFailureException
      */
     private suspend fun loadEntry(eid: Long) : Entry {
-        val result = runCatching {
-            getEntry(eid)
-        }
-
-        val e = result.getOrThrow()
-
+        val response = runCatching { getEntry(eid) }.getOrThrow()
         withContext(Dispatchers.Main) {
-            entry.value = e
+            entry.value = response
         }
-
-        return e
+        return response
     }
 
     /**
@@ -563,20 +537,23 @@ class BookmarksRepository(
             return
         }
 
-        val url = intent.getStringExtra(EXTRA_ENTRY_URL) ?: when (intent.action) {
-            Intent.ACTION_VIEW -> {
-                HatenaClient.getEntryUrlFromCommentPageUrl(intent.dataString.orEmpty())
+        val url = runCatching {
+            intent.getStringExtra(EXTRA_ENTRY_URL) ?: when (intent.action) {
+                Intent.ACTION_VIEW -> {
+                    HatenaClient.getEntryUrlFromCommentPageUrl(intent.dataString.orEmpty())
+                }
+
+                Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)
+
+                else -> null
             }
+        }.getOrNull()
 
-            Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)
-
-            else -> null
-        }
         if (url != null && URLUtil.isNetworkUrl(url)) {
-            val modifiedUrl = modifySpecificUrls(url) ?: url
-            val e = loadEntry(modifiedUrl)
             runCatching {
-                loadBookmarks(e.url)
+                val modifiedUrl = modifySpecificUrls(url) ?: url
+                loadEntry(modifiedUrl)
+                loadBookmarks(modifiedUrl)
             }
             .onFailure(onLoadBookmarksFailure)
 
@@ -1006,15 +983,15 @@ class BookmarksRepository(
     suspend fun loadUserCustomizedDigest() : List<BookmarkWithStarCount> {
         val maxNumOfElements = maxNumOfElements.value ?: return emptyList()
         val bookmarks = bookmarksEntry.value?.bookmarks.orEmpty()
-            .filterNot { it.comment.isBlank() }
-            .filterNot { checkIgnored(it) }
+            .filterNot { it.comment.isBlank() || checkIgnored(it) }
         loadStarsEntriesForBookmarks(bookmarks)
-        val stars = bookmarks.map {
-            runCatching { getStarsEntry(it).value }.getOrNull()
-        }
+        val stars =
+            bookmarks.map {
+                runCatching { getStarsEntry(it).value }.getOrNull()
+            }
 
-        val targetBookmarks = bookmarks
-            .mapIndexedNotNull { idx, b ->
+        val targetBookmarks =
+            bookmarks.mapIndexedNotNull { idx, b ->
                 val s = stars[idx] ?: return@mapIndexedNotNull null
                 b.copy(starCount = s.allStars)
             }
@@ -1023,17 +1000,13 @@ class BookmarksRepository(
         val maxStarsCount =
             runCatching {
                 targetStars.maxOf { it.totalStarsCount }
-            }.onFailure {
-                Log.e("maxStarsCount", targetStars.size.toString())
-                Log.e("stars", stars.size.toString())
-                Log.e("stars(not null)", stars.filterNotNull().size.toString())
-                Log.e("bookmarks", bookmarks.size.toString())
             }.getOrDefault(0)
         if (maxStarsCount == 0) return emptyList()
 
-        val scores = targetBookmarks.mapIndexed { idx, b ->
-            scoreBookmark(b, targetStars[idx], maxStarsCount)
-        }
+        val scores =
+            targetBookmarks.mapIndexed { idx, b ->
+                scoreBookmark(b, targetStars[idx], maxStarsCount)
+            }
 
         return targetBookmarks.zip(scores)
             .filter { it.second != null }

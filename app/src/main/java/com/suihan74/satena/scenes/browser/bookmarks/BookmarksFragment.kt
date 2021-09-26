@@ -85,8 +85,11 @@ class ContentsViewModel(
             if (!URLUtil.isNetworkUrl(entryUrl)) return@withLock
             loadBookmarksEntryJob = viewModelScope.launch {
                 runCatching {
-                    bookmarksRepo.loadUserColorStarsCount()
-                    bookmarksRepo.loadBookmarks(entryUrl, true)
+                    bookmarksRepo.run {
+                        loadUserColorStarsCount()
+                        loadEntry(entryUrl)
+                        loadBookmarks(entryUrl)
+                    }
                 }
                 loadingJobMutex.withLock {
                     loadBookmarksEntryJob = null
