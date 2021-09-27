@@ -344,20 +344,13 @@ class BookmarksAdapter(
             )
             builder.append("　")
 
-            if (!bookmark.starCount.isNullOrEmpty()) {
-                bookmark.starCount.let { stars ->
-                    val yellowStarCount = stars.filter { it.color == StarColor.Yellow }.sumOf { it.count }
-                    val redStarCount = stars.filter { it.color == StarColor.Red }.sumOf { it.count }
-                    val greenStarCount = stars.filter { it.color == StarColor.Green }.sumOf { it.count }
-                    val blueStarCount = stars.filter { it.color == StarColor.Blue }.sumOf { it.count }
-                    val purpleStarCount = stars.filter { it.color == StarColor.Purple }.sumOf { it.count }
-
-                    builder.appendStarSpan(purpleStarCount, context, R.style.StarSpan_Purple)
-                    builder.appendStarSpan(blueStarCount, context, R.style.StarSpan_Blue)
-                    builder.appendStarSpan(redStarCount, context, R.style.StarSpan_Red)
-                    builder.appendStarSpan(greenStarCount, context, R.style.StarSpan_Green)
-                    builder.appendStarSpan(yellowStarCount, context, R.style.StarSpan_Yellow)
-                }
+            val starCounts = entity.starCounts
+            if (!starCounts.isNullOrEmpty()) {
+                builder.appendStarSpan(starCounts[StarColor.Purple], context, R.style.StarSpan_Purple)
+                builder.appendStarSpan(starCounts[StarColor.Blue], context, R.style.StarSpan_Blue)
+                builder.appendStarSpan(starCounts[StarColor.Red], context, R.style.StarSpan_Red)
+                builder.appendStarSpan(starCounts[StarColor.Green], context, R.style.StarSpan_Green)
+                builder.appendStarSpan(starCounts[StarColor.Yellow], context, R.style.StarSpan_Yellow)
             }
 
             // タイムスタンプ部分テキストを設定
