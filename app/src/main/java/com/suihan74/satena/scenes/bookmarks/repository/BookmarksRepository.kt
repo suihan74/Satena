@@ -180,7 +180,7 @@ class BookmarksRepository(
         get() = recentCursor != null
 
     /** 「すべて」ブクマリストでは非表示対象を表示する */
-    private val showIgnoredUsersInAllBookmarks by lazy {
+    val showIgnoredUsersInAllBookmarks by lazy {
         prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS)
     }
 
@@ -587,14 +587,20 @@ class BookmarksRepository(
     }
 
     /** ブクマが非表示対象かを判別する */
-    private suspend fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean {
-        if (isIgnored(bookmark.user)) return true
-        return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
-            bookmark.comment.contains(w)
-                    || bookmark.user.contains(w)
-                    || bookmark.tags.any { t -> t.contains(w) }
+    private suspend fun checkIgnored(bookmark: BookmarkWithStarCount) : Boolean =
+        if (isIgnored(bookmark.user)) true
+        else containsNGWords(bookmark)
+
+    fun containsNGWords(bookmark: BookmarkWithStarCount) : Boolean =
+        containsNGWords(bookmark.comment, bookmark.user, bookmark.tags)
+
+    fun containsNGWords(bookmark: Bookmark) : Boolean =
+        containsNGWords(bookmark.comment, bookmark.user, bookmark.tags)
+
+    private fun containsNGWords(comment: String, user: String, tags: List<String>) : Boolean =
+        ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
+            comment.contains(w) || user.contains(w) || tags.any { t -> t.contains(w) }
         }
-    }
 
     /** 非表示対象を除外する */
     private suspend fun filterIgnored(src: List<BookmarkWithStarCount>) : List<Bookmark> {
