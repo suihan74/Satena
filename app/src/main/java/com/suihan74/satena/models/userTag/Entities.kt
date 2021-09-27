@@ -13,7 +13,7 @@ import androidx.room.*
     ]
 )
 data class Tag (
-    var name: String,
+    val name: String,
 
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
@@ -30,7 +30,7 @@ data class Tag (
     ]
 )
 data class User (
-    var name: String,
+    val name: String,
 
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
