@@ -1,5 +1,18 @@
 package com.suihan74.utilities.extensions
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+
+/**
+ * 並行map
+ */
+suspend fun <T, R> Iterable<T>.parallelMap(transform: suspend (T)->R): List<R> = coroutineScope {
+    map { async { transform(it) } }.awaitAll()
+}
+
+// ------ //
+
 /**
  * 最初に見つかる同一の項目を新しいvalueで更新するか、項目が未だ無い場合は新たに追加する
  *
