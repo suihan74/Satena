@@ -79,6 +79,11 @@ class BookmarksTabViewModel(
             }
         }
         val ignoredUsers = repo.ignoredUsers.value.orEmpty()
+        val mutedBookmarksShown = when (bookmarksTabType.value) {
+            BookmarksTabType.ALL -> repo.showIgnoredUsersInAllBookmarks
+            BookmarksTabType.CUSTOM -> repo.showMutedUsersInCustomBookmarks.value == true
+            else -> false
+        }
 
         return@withContext bookmarks.map { bookmark ->
             val analyzedComment = BookmarkCommentDecorator.convert(bookmark.comment)
@@ -87,7 +92,8 @@ class BookmarksTabViewModel(
                 body = Entity(
                     bookmark = bookmark,
                     analyzedComment = analyzedComment,
-                    isIgnored = ignoredUsers.contains(bookmark.user),
+                    isIgnored = mutedBookmarksShown && ignoredUsers.contains(bookmark.user),
+                    containsNGWords = mutedBookmarksShown && repo.containsNGWords(bookmark),
                     mentions = repo.getMentionsFrom(bookmark, analyzedComment),
                     userTags = taggedUsers.firstOrNull { t -> t.user.name == bookmark.user }?.tags ?: emptyList(),
                     repo.getBookmarkCounts(bookmark)
@@ -122,6 +128,7 @@ data class Entity (
     val bookmark: Bookmark,
     val analyzedComment: AnalyzedBookmarkComment,
     val isIgnored: Boolean,
+    val containsNGWords: Boolean,
     val mentions: List<Bookmark>,
     val userTags: List<Tag>,
     val bookmarkCount: LiveData<Int>

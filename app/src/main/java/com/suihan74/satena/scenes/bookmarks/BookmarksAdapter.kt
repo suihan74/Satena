@@ -25,7 +25,6 @@ import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setDivider
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.appendStarSpan
-import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.coroutines.*
 import org.threeten.bp.format.DateTimeFormatter
@@ -237,8 +236,12 @@ class BookmarksAdapter(
         }
     }
 
+    // ------ //
+
+    private val bookmarkTimestampFormat = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
+
     /** ブクマリストアイテム */
-    class ViewHolder(
+    inner class ViewHolder(
         private val binding: ListviewItemBookmarksBinding,
         private val bookmarksAdapter: BookmarksAdapter,
         private val lifecycleOwner: LifecycleOwner
@@ -310,6 +313,7 @@ class BookmarksAdapter(
 
             binding.privateMark.visibility = entity.bookmark.private.toVisibility()
             binding.ignoredUserMark.visibility = entity.isIgnored.toVisibility()
+            binding.containsNgWordsMark.visibility = entity.containsNGWords.toVisibility()
 
             // タグ
             binding.bookmarkTags.also { tagsTextView ->
@@ -336,7 +340,7 @@ class BookmarksAdapter(
             builder.append(
                 bookmark.timestamp
                     .toSystemZonedDateTime("Asia/Tokyo")
-                    .format(DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm"))
+                    .format(bookmarkTimestampFormat)
             )
             builder.append("　")
 
