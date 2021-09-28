@@ -88,6 +88,7 @@
             app:layout_constraintStart_toEndOf="@id/bookmark_user_icon"
             app:layout_constraintEnd_toStartOf="@id/user_tags"
             app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintVertical_bias="0"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
