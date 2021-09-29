@@ -3,7 +3,7 @@ package com.suihan74.hatenaLib
 import android.net.Uri
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.threeten.bp.LocalDateTime
+import java.time.LocalDateTime
 
 class Entry (
     @SerializedName("eid", alternate = ["entry_id"])

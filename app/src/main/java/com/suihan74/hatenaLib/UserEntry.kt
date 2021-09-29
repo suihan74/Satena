@@ -1,7 +1,7 @@
 package com.suihan74.hatenaLib
 
 import android.net.Uri
-import org.threeten.bp.LocalDateTime
+import java.time.LocalDateTime
 
 data class UserEntryComment (
     val raw : String,

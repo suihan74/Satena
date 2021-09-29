@@ -13,7 +13,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.threeten.bp.LocalDateTime
+import java.time.LocalDateTime
 
 @Suppress("NonAsciiCharacters", "SpellCheckingInspection")
 @RunWith(AndroidJUnit4ClassRunner::class)

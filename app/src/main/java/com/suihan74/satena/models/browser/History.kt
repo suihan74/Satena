@@ -4,7 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import org.threeten.bp.LocalDateTime
+import java.time.LocalDateTime
 
 // ページ情報をアドレス入力時のサジェスチョンなどに使用することを想定して冗長にしている
 

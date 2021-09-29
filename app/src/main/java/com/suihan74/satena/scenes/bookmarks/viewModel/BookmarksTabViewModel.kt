@@ -4,6 +4,7 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.DiffUtil
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
@@ -13,9 +14,8 @@ import com.suihan74.utilities.BookmarkCommentDecorator
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
 import com.suihan74.utilities.extensions.onNotEmpty
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.suihan74.utilities.extensions.parallelMap
+import kotlinx.coroutines.*
 
 class BookmarksTabViewModel(
     private val repo : BookmarksRepository,
@@ -70,6 +70,7 @@ class BookmarksTabViewModel(
 
     // ------ //
 
+    @OptIn(ExperimentalStdlibApi::class)
     private suspend fun createDisplayBookmarks(
         bookmarks: List<Bookmark>
     ) : List<RecyclerState<Entity>> = withContext(Dispatchers.Default) {
@@ -79,17 +80,40 @@ class BookmarksTabViewModel(
             }
         }
         val ignoredUsers = repo.ignoredUsers.value.orEmpty()
+        val mutedBookmarksShown = when (bookmarksTabType.value) {
+            BookmarksTabType.ALL -> repo.showIgnoredUsersInAllBookmarks
+            BookmarksTabType.CUSTOM -> repo.showMutedUsersInCustomBookmarks.value == true
+            else -> false
+        }
 
-        return@withContext bookmarks.map { bookmark ->
+        return@withContext bookmarks.parallelMap { bookmark ->
             val analyzedComment = BookmarkCommentDecorator.convert(bookmark.comment)
+            val starCounts =
+                bookmark.starCount?.let { stars ->
+                    if (stars.isEmpty()) null
+                    else hashMapOf(
+                        StarColor.Yellow to 0,
+                        StarColor.Red to 0,
+                        StarColor.Green to 0,
+                        StarColor.Blue to 0,
+                        StarColor.Purple to 0
+                    ).also { starCounts ->
+                        stars.forEach {
+                            starCounts[it.color] = starCounts[it.color]?.plus(it.count) ?: it.count
+                        }
+                    }
+                }
+
             RecyclerState(
                 type = RecyclerType.BODY,
                 body = Entity(
                     bookmark = bookmark,
                     analyzedComment = analyzedComment,
-                    isIgnored = ignoredUsers.contains(bookmark.user),
+                    isIgnored = mutedBookmarksShown && ignoredUsers.contains(bookmark.user),
+                    containsNGWords = mutedBookmarksShown && repo.containsNGWords(bookmark),
                     mentions = repo.getMentionsFrom(bookmark, analyzedComment),
                     userTags = taggedUsers.firstOrNull { t -> t.user.name == bookmark.user }?.tags ?: emptyList(),
+                    starCounts = starCounts,
                     repo.getBookmarkCounts(bookmark)
                 )
             )
@@ -122,8 +146,10 @@ data class Entity (
     val bookmark: Bookmark,
     val analyzedComment: AnalyzedBookmarkComment,
     val isIgnored: Boolean,
+    val containsNGWords: Boolean,
     val mentions: List<Bookmark>,
     val userTags: List<Tag>,
+    val starCounts: Map<StarColor, Int>?,
     val bookmarkCount: LiveData<Int>
 ) {
     override fun equals(other: Any?): Boolean {
@@ -131,6 +157,7 @@ data class Entity (
 
         return bookmark.same(other.bookmark) &&
                 isIgnored == other.isIgnored &&
+                containsNGWords == other.containsNGWords &&
                 mentions.contentsEquals(other.mentions) { a, b -> a.same(b) } &&
                 userTags.contentsEquals(other.userTags) { a, b -> a.name == b.name }
     }

@@ -15,9 +15,9 @@ import com.suihan74.satena.scenes.post.TagsListOrder
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZonedDateTime
 import java.lang.reflect.Type
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 @SharedPreferencesKey(fileName = "default", version = 10, latest = true)
 enum class PreferenceKey(

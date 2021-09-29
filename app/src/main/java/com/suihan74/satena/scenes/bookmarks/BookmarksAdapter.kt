@@ -28,7 +28,7 @@ import com.suihan74.utilities.extensions.appendStarSpan
 import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.extensions.toVisibility
 import kotlinx.coroutines.*
-import org.threeten.bp.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter
 
 class BookmarksAdapter(
     private val lifecycleOwner: LifecycleOwner
@@ -237,8 +237,12 @@ class BookmarksAdapter(
         }
     }
 
+    // ------ //
+
+    private val bookmarkTimestampFormat = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
+
     /** ブクマリストアイテム */
-    class ViewHolder(
+    inner class ViewHolder(
         private val binding: ListviewItemBookmarksBinding,
         private val bookmarksAdapter: BookmarksAdapter,
         private val lifecycleOwner: LifecycleOwner
@@ -310,6 +314,7 @@ class BookmarksAdapter(
 
             binding.privateMark.visibility = entity.bookmark.private.toVisibility()
             binding.ignoredUserMark.visibility = entity.isIgnored.toVisibility()
+            binding.containsNgWordsMark.visibility = entity.containsNGWords.toVisibility()
 
             // タグ
             binding.bookmarkTags.also { tagsTextView ->
@@ -336,24 +341,17 @@ class BookmarksAdapter(
             builder.append(
                 bookmark.timestamp
                     .toSystemZonedDateTime("Asia/Tokyo")
-                    .format(DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm"))
+                    .format(bookmarkTimestampFormat)
             )
             builder.append("　")
 
-            if (!bookmark.starCount.isNullOrEmpty()) {
-                bookmark.starCount.let { stars ->
-                    val yellowStarCount = stars.filter { it.color == StarColor.Yellow }.sumOf { it.count }
-                    val redStarCount = stars.filter { it.color == StarColor.Red }.sumOf { it.count }
-                    val greenStarCount = stars.filter { it.color == StarColor.Green }.sumOf { it.count }
-                    val blueStarCount = stars.filter { it.color == StarColor.Blue }.sumOf { it.count }
-                    val purpleStarCount = stars.filter { it.color == StarColor.Purple }.sumOf { it.count }
-
-                    builder.appendStarSpan(purpleStarCount, context, R.style.StarSpan_Purple)
-                    builder.appendStarSpan(blueStarCount, context, R.style.StarSpan_Blue)
-                    builder.appendStarSpan(redStarCount, context, R.style.StarSpan_Red)
-                    builder.appendStarSpan(greenStarCount, context, R.style.StarSpan_Green)
-                    builder.appendStarSpan(yellowStarCount, context, R.style.StarSpan_Yellow)
-                }
+            val starCounts = entity.starCounts
+            if (!starCounts.isNullOrEmpty()) {
+                builder.appendStarSpan(starCounts[StarColor.Purple], context, R.style.StarSpan_Purple)
+                builder.appendStarSpan(starCounts[StarColor.Blue], context, R.style.StarSpan_Blue)
+                builder.appendStarSpan(starCounts[StarColor.Red], context, R.style.StarSpan_Red)
+                builder.appendStarSpan(starCounts[StarColor.Green], context, R.style.StarSpan_Green)
+                builder.appendStarSpan(starCounts[StarColor.Yellow], context, R.style.StarSpan_Yellow)
             }
 
             // タイムスタンプ部分テキストを設定

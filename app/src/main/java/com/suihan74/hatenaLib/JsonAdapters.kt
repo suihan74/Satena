@@ -1,12 +1,12 @@
 package com.suihan74.hatenaLib
 
 import com.google.gson.*
-import org.threeten.bp.Instant
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZoneId
-import org.threeten.bp.ZoneOffset
-import org.threeten.bp.format.DateTimeFormatter
 import java.lang.reflect.Type
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 internal val Boolean.int
     get() = if (this) 1 else 0

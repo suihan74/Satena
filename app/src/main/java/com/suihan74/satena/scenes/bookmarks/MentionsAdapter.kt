@@ -11,7 +11,7 @@ import com.suihan74.satena.databinding.ListviewItemCommentBinding
 import com.suihan74.utilities.extensions.appendStarText
 import com.suihan74.utilities.extensions.setHtml
 import com.suihan74.utilities.extensions.toVisibility
-import org.threeten.bp.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter
 
 open class MentionsAdapter (
     private val comments: List<Bookmark>

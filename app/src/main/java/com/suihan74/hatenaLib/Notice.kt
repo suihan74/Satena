@@ -2,7 +2,7 @@ package com.suihan74.hatenaLib
 
 import com.google.gson.annotations.JsonAdapter
 import com.google.gson.annotations.SerializedName
-import org.threeten.bp.LocalDateTime
+import java.time.LocalDateTime
 
 data class Notice (
     @JsonAdapter(EpochTimeDeserializer::class)

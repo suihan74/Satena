@@ -1,8 +1,8 @@
 package com.suihan74.satena.models.browser
 
 import androidx.room.*
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.LocalTime
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Dao
 interface BrowserDao {

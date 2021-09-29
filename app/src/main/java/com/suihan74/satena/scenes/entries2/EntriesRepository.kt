@@ -24,8 +24,8 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.checkFromSpam
 import kotlinx.coroutines.*
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZonedDateTime
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 /** エントリリストの取得時にカテゴリによっては必要な必要な追加パラメータ */
 class LoadEntryParameter {

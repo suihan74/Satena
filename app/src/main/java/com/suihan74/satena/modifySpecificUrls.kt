@@ -1,9 +1,7 @@
 package com.suihan74.satena
 
 import android.net.Uri
-import com.suihan74.hatenaLib.EntriesType
 import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.hatenaLib.SearchType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -116,11 +114,9 @@ private suspend fun modifySpecificUrlsWithConnection(url: String) : String = wit
  * 未登録なら妥当なURLを推定して補正する
  */
 private suspend fun modifySpecificUrlsForEntry(srcUrl: String) : String = withContext(Dispatchers.IO) {
-    val modifiedUrl = modifySpecificUrlsWithoutConnection(srcUrl)
-    val searchResult = HatenaClient.searchEntriesAsync(modifiedUrl, SearchType.Text, EntriesType.Recent).await()
-
-    if (searchResult.any { it.url == modifiedUrl }) modifiedUrl
-    else modifySpecificUrlsWithConnection(modifiedUrl)
+    val modifiedUrl = modifySpecificUrlsWithConnection(srcUrl)
+    val bookmarkCounts = HatenaClient.getBookmarkCountsAsync(listOf(srcUrl, modifiedUrl)).await()
+    bookmarkCounts.maxByOrNull { it.value }?.key ?: srcUrl
 }
 
 // ------ //

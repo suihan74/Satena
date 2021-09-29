@@ -8,8 +8,8 @@ import com.suihan74.satena.scenes.browser.WebViewTheme
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
-import org.threeten.bp.ZonedDateTime
 import java.lang.reflect.Type
+import java.time.ZonedDateTime
 
 /**
  * WebView版内部ブラウザの設定

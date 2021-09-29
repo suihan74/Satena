@@ -1,9 +1,9 @@
 package com.suihan74.satena.models.converters
 
 import androidx.room.TypeConverter
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZoneOffset
-import org.threeten.bp.ZonedDateTime
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 class LocalDateTimeConverter {
     private val offset = ZoneOffset.UTC

@@ -23,7 +23,7 @@ import com.suihan74.utilities.extensions.makeSpannedFromHtml
 import com.suihan74.utilities.extensions.message
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.threeten.bp.LocalDateTime
+import java.time.LocalDateTime
 
 /**
  * バックグラウンドで反復実行される通知確認処理

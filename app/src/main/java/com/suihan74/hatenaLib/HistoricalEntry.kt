@@ -1,7 +1,7 @@
 package com.suihan74.hatenaLib
 
 import com.google.gson.annotations.JsonAdapter
-import org.threeten.bp.LocalDateTime
+import java.time.LocalDateTime
 
 /** ユーザーのブクマの場合とはてな全体とで微妙に仕様が違うので注意 */
 internal data class HistoricalEntry (

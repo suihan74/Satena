@@ -15,7 +15,7 @@ import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUserRelation
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.models.userTag.UserTagDao
-import org.threeten.bp.OffsetDateTime
+import java.time.OffsetDateTime
 
 /**
  * アプリで使用するDB
