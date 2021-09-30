@@ -16,6 +16,7 @@ import com.suihan74.satena.databinding.ListviewItemEntries2Binding
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.alsoAs
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
 
 class EntriesAdapter(
     private var lifecycleOwner: LifecycleOwner
@@ -45,14 +46,7 @@ class EntriesAdapter(
     private var onItemsSubmitted : Listener<List<Entry>?>? = null
 
     /** クリック処理済みフラグ（複数回タップされないようにする） */
-    private val itemClickedLock by lazy { Any() }
-    private var itemClicked : Boolean = false
-        get() = lock(itemClickedLock) { field }
-        private set(value) {
-            lock(itemClickedLock) {
-                field = value
-            }
-        }
+    private val clickLock = Mutex()
 
     /** クリック回数判定時間 */
     var multipleClickDuration: Long = 0L
@@ -110,7 +104,10 @@ class EntriesAdapter(
 
     /** 復帰時に実行する */
     fun onResume() {
-        itemClicked = false
+        runCatching {
+            consideringMultipleClickedEntry = null
+            clickLock.unlock()
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
@@ -161,12 +158,14 @@ class EntriesAdapter(
             else RecyclerState.makeStatesWithFooter(items)
 
         submitList(newList) {
-            lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            lifecycleOwner.lifecycleScope.launchWhenResumed {
                 commitCallback?.invoke()
                 onItemsSubmitted?.invoke(items ?: emptyList())
             }
         }
     }
+
+    // ------ //
 
     fun showProgressBar() {
         lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
@@ -179,6 +178,8 @@ class EntriesAdapter(
             loading.value = false
         }
     }
+
+    // ------ //
 
     private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entry>>() {
         override fun areItemsTheSame(
@@ -196,6 +197,10 @@ class EntriesAdapter(
                 oldItem.body?.bookmarkedData == newItem.body?.bookmarkedData
     }
 
+    // ------ //
+
+    private var consideringMultipleClickedEntry : Entry? = null
+
     inner class ViewHolder(
         private val binding: ListviewItemEntries2Binding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -211,24 +216,30 @@ class EntriesAdapter(
         init {
             binding.commentsList.adapter = CommentsAdapter().apply {
                 setOnItemClickedListener { comment ->
-                    if (!itemClicked) {
-                        itemClicked = true
-                        val entry = entry ?: return@setOnItemClickedListener
-                        onCommentClicked?.invoke(entry, comment)
-                        lifecycleOwner.lifecycleScope.launch {
-                            delay(clickGuardRefreshDelay)
-                            itemClicked = false
+                    lifecycleOwner.lifecycleScope.launchWhenResumed {
+                        if (clickLock.tryLock()) {
+                            try {
+                                val entry = entry ?: return@launchWhenResumed
+                                onCommentClicked?.invoke(entry, comment)
+                                delay(clickGuardRefreshDelay)
+                            }
+                            finally {
+                                runCatching { clickLock.unlock() }
+                            }
                         }
                     }
                 }
                 setOnItemLongClickedListener { comment ->
-                    if (!itemClicked) {
-                        itemClicked = true
-                        val entry = entry ?: return@setOnItemLongClickedListener false
-                        onCommentLongClicked?.invoke(entry, comment)
-                        lifecycleOwner.lifecycleScope.launch {
-                            delay(clickGuardRefreshDelay)
-                            itemClicked = false
+                    lifecycleOwner.lifecycleScope.launchWhenResumed {
+                        if (clickLock.tryLock()) {
+                            try {
+                                val entry = entry ?: return@launchWhenResumed
+                                onCommentLongClicked?.invoke(entry, comment)
+                                delay(clickGuardRefreshDelay)
+                            }
+                            finally {
+                                runCatching { clickLock.unlock() }
+                            }
                         }
                     }
                     onCommentLongClicked != null
@@ -255,14 +266,18 @@ class EntriesAdapter(
             entry: Entry?,
             singleClickAction: ItemClickedListener<Entry>?,
             multipleClickAction: ItemMultipleClickedListener<Entry>?
-        ) : (View)->Unit = {
+        ) : (View)->Unit = body@ {
+            if (entry == null) return@body
             if (multipleClickDuration == 0L) {
-                if (entry != null && !itemClicked) {
-                    itemClicked = true
-                    singleClickAction?.invoke(entry)
-                    lifecycleOwner.lifecycleScope.launch {
-                        delay(clickGuardRefreshDelay)
-                        itemClicked = false
+                if (clickLock.tryLock()) {
+                    lifecycleOwner.lifecycleScope.launchWhenResumed {
+                        try {
+                            singleClickAction?.invoke(entry)
+                            delay(clickGuardRefreshDelay)
+                        }
+                        finally {
+                            runCatching { clickLock.unlock() }
+                        }
                     }
                 }
             }
@@ -285,24 +300,26 @@ class EntriesAdapter(
             singleClickAction: ItemClickedListener<Entry>?,
             multipleClickAction: ItemMultipleClickedListener<Entry>?
         ) {
-            if (clickCount++ > 0) return
+            if (entry == null || clickLock.isLocked || clickCount++ > 0) return
+            if (consideringMultipleClickedEntry != null && consideringMultipleClickedEntry != entry) return
+            consideringMultipleClickedEntry = entry
             val duration = multipleClickDuration
-            lifecycleOwner.lifecycleScope.launch {
+            lifecycleOwner.lifecycleScope.launchWhenResumed {
                 delay(duration)
-                val count = clickCount
-                clickCount = 0
-                if (entry != null && !itemClicked) {
-                    itemClicked = true
-                    withContext(Dispatchers.Main) {
-                        if (count > 1) {
-                            multipleClickAction?.invoke(entry, count)
+                if (clickLock.tryLock()) {
+                    val count = clickCount
+                    clickCount = 0
+                    try {
+                        when (count) {
+                            1 -> singleClickAction?.invoke(entry)
+                            else -> multipleClickAction?.invoke(entry, count)
                         }
-                        else {
-                            singleClickAction?.invoke(entry)
-                        }
+                        delay(clickGuardRefreshDelay)
                     }
-                    delay(clickGuardRefreshDelay)
-                    itemClicked = false
+                    finally {
+                        consideringMultipleClickedEntry = null
+                        runCatching { clickLock.unlock() }
+                    }
                 }
             }
         }
