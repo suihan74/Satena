@@ -12,8 +12,6 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.extensions.alsoAs
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
  * ブラウザのドロワタブ上のブクマ画面か，それを表示するか確認する画面の表示領域
@@ -51,12 +49,10 @@ class BookmarksFrameFragment : Fragment(), ScrollableToTop, TabItem {
             if (browserViewModel.autoFetchBookmarks.value == true) return@observe
             if (firstObservingSkipped) {
                 val prevUrl = browserViewModel.bookmarksRepo.url
-                lifecycleScope.launchWhenCreated {
+                lifecycleScope.launchWhenResumed {
                     if (entryUrl != prevUrl) {
                         browserViewModel.bookmarksRepo.clear()
-                        withContext(Dispatchers.Main) {
-                            startConfirmFragment()
-                        }
+                        startConfirmFragment()
                     }
                 }
             }
