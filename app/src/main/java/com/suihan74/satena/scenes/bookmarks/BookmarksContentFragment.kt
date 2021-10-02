@@ -105,7 +105,7 @@ class BookmarksContentFragment : Fragment() {
         super.onResume()
         binding.toolbar.startMarquee()
 
-        lifecycleScope.launchWhenCreated {
+        lifecycleScope.launchWhenResumed {
             runCatching {
                 contentsViewModel.updateExtraScrollBarVisibility(
                     extraMargin > tileHeight
