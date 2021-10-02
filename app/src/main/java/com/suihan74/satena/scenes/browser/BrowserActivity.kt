@@ -229,7 +229,7 @@ class BrowserActivity :
     }
 
     /** ドロワが開かれている */
-    val drawerOpened: Boolean
+    private val drawerOpened: Boolean
         get() = binding.drawerLayout.isDrawerOpen(binding.drawerArea)
 
     // ------ //

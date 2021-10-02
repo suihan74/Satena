@@ -25,11 +25,11 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     private var _binding : FragmentEntries2Binding? = null
     protected val binding get() = _binding!!
 
-    private val entriesTabPager : ViewPager2
-        get() = binding.entriesTabPager
+    private val entriesTabPager : ViewPager2?
+        get() = _binding?.entriesTabPager
 
-    private val entriesTabAdapter : EntriesTabAdapter
-        get() = entriesTabPager.adapter as EntriesTabAdapter
+    private val entriesTabAdapter : EntriesTabAdapter?
+        get() = entriesTabPager?.adapter as? EntriesTabAdapter
 
     protected val contentLayout : ViewGroup
         get() = binding.contentLayout
@@ -114,27 +114,27 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
 
     /** 全てのタブのリストを再構成する */
     override fun reloadLists() {
-        entriesTabAdapter.reloadLists()
+        entriesTabAdapter?.reloadLists()
     }
 
     /** リストを再構成する(取得を行わない単なる再配置) */
     override fun refreshLists() {
-        entriesTabAdapter.refreshLists()
+        entriesTabAdapter?.refreshLists()
     }
 
     /** エントリに付けたブクマを削除 */
     override fun removeBookmark(entry: Entry) {
-        entriesTabAdapter.removeBookmark(entry)
+        entriesTabAdapter?.removeBookmark(entry)
     }
 
     /** エントリに付けたブクマを更新する */
     override fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
-        entriesTabAdapter.updateBookmark(entry, bookmarkResult)
+        entriesTabAdapter?.updateBookmark(entry, bookmarkResult)
     }
 
     /** 与えられたタブのコンテンツを最上までスクロールする */
     private fun scrollContentToTop(tabPosition: Int) {
-        entriesTabAdapter.findFragment(tabPosition).alsoAs<EntriesTabFragment> {
+        entriesTabAdapter?.findFragment(tabPosition).alsoAs<EntriesTabFragment> {
             it.scrollToTop()
         }
     }
@@ -167,9 +167,11 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
             return@l true
         }
 
-        TabLayoutMediator(tabLayout, entriesTabPager) { tab, position ->
-            tab.text = getTabTitle(position)
-        }.attach()
+        entriesTabPager?.let { tabPager ->
+            TabLayoutMediator(tabLayout, tabPager) { tab, position ->
+                tab.text = getTabTitle(position)
+            }.attach()
+        }
         tabLayout.addOnTabSelectedListener(listener)
         tabLayout.setOnTabLongClickListener(longClickListener)
 
@@ -177,7 +179,7 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     }
 
     override fun scrollToTop() {
-        entriesTabPager.currentItem.alsoAs<Int> {
+        entriesTabPager?.currentItem.alsoAs<Int> {
             scrollContentToTop(it)
         }
     }

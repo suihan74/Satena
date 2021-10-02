@@ -105,11 +105,13 @@ class BookmarksContentFragment : Fragment() {
         super.onResume()
         binding.toolbar.startMarquee()
 
-        lifecycleScope.launchWhenCreated {
-            runCatching {
-                contentsViewModel.updateExtraScrollBarVisibility(
-                    extraMargin > tileHeight
-                )
+        binding.tabPager.post {
+            lifecycleScope.launchWhenResumed {
+                runCatching {
+                    contentsViewModel.updateExtraScrollBarVisibility(
+                        extraMargin > tileHeight
+                    )
+                }
             }
         }
     }
