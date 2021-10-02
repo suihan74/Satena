@@ -26,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.BufferedReader
 import java.io.Closeable
 
 class ReleaseNotesDialogFragment : DialogFragment() {
@@ -90,6 +89,10 @@ class ReleaseNotesDialogFragment : DialogFragment() {
             adapter = ReleaseNotesAdapter(updater)
         }
 
+        if (savedInstanceState != null) {
+            viewModel.onRestore(resources)
+        }
+
         return createBuilder()
             .setTitle(R.string.release_notes_dialog_title)
             .setNegativeButton(R.string.dialog_close, null)
@@ -150,14 +153,16 @@ class ReleaseNotesDialogFragment : DialogFragment() {
         val lastVersionName: String?
     ) : Closeable {
         /** 逐次読み込みのために`BufferedReader`を保持する */
-        private var bufferedReader : BufferedReader? = null
+        private var bufferedReader = resources.openRawResource(R.raw.release_notes).bufferedReader()
 
         /**
          * 次に読み込む行の内容
          *
          * 各履歴項目の終了を「次行が次の履歴のタイトル部分かどうか」で判定するため
          */
-        private var nextLine : String? = null
+        private var nextLine : String? = runCatching { bufferedReader.readLine() }.getOrNull()
+
+        private var linesCount : Int = 0
 
         private var lastLoadedVersion : String? = null
 
@@ -167,15 +172,15 @@ class ReleaseNotesDialogFragment : DialogFragment() {
 
         // ------ //
 
-        init {
-            runCatching { bufferedReader?.close() }
+        fun onRestore(resources: Resources) {
             bufferedReader = resources.openRawResource(R.raw.release_notes).bufferedReader()
-            nextLine = runCatching { bufferedReader?.readLine() }.getOrNull()
+            repeat(linesCount) {
+                nextLine = runCatching { bufferedReader.readLine() }.getOrNull()
+            }
         }
 
         override fun close() {
-            runCatching { bufferedReader?.close() }
-            bufferedReader = null
+            runCatching { bufferedReader.close() }
         }
 
         // ------ //
@@ -187,7 +192,8 @@ class ReleaseNotesDialogFragment : DialogFragment() {
          */
         private fun readLine() : String? {
             val result = nextLine
-            nextLine = runCatching { bufferedReader?.readLine() }.getOrNull()
+            nextLine = runCatching { bufferedReader.readLine() }.getOrNull()
+            if (nextLine != null) linesCount++
             return result
         }
 
@@ -214,7 +220,7 @@ class ReleaseNotesDialogFragment : DialogFragment() {
                                     return@buildList
                                 }
 
-                                append("[version $code]")
+                                append("[ version $code ]")
                                 break
                             }
                         }
@@ -276,6 +282,10 @@ class ReleaseNotesDialogFragment : DialogFragment() {
             }
         }
 
+        fun onRestore(resources: Resources) {
+            repository.onRestore(resources)
+        }
+
         override fun close() {
             repository.close()
         }
@@ -298,7 +308,9 @@ class ReleaseNotesDialogFragment : DialogFragment() {
     /**
      * 更新履歴リストを表示するためのアダプタ
      */
-    class ReleaseNotesAdapter(val scrollingUpdater : RecyclerViewScrollingUpdater) : ListAdapter<ReleaseNote, RecyclerView.ViewHolder>(DiffCallback()) {
+    class ReleaseNotesAdapter(
+        private val scrollingUpdater : RecyclerViewScrollingUpdater
+    ) : ListAdapter<ReleaseNote, RecyclerView.ViewHolder>(DiffCallback()) {
 
         override fun submitList(list: List<ReleaseNote>?) {
             super.submitList(list) {
