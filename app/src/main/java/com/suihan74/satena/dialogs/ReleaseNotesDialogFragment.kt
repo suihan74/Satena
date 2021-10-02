@@ -7,25 +7,27 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.*
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogReleaseNotes2Binding
 import com.suihan74.satena.databinding.ListviewItemReleaseNotesBinding
 import com.suihan74.satena.databinding.ListviewSeparatorReleaseNotesBinding
+import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.SectionViewHolder
 import com.suihan74.utilities.exceptions.TaskFailureException
-import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.withArguments
-import com.suihan74.utilities.provideViewModel
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.BufferedReader
+import java.io.Closeable
 
 class ReleaseNotesDialogFragment : DialogFragment() {
     companion object {
@@ -43,8 +45,8 @@ class ReleaseNotesDialogFragment : DialogFragment() {
             lastVersionName: String,
             currentVersionName: String
         ) = ReleaseNotesDialogFragment().withArguments {
-            putString(ARG_LAST_VERSION_NAME, lastVersionName)
             putString(ARG_CURRENT_VERSION_NAME, currentVersionName)
+            putString(ARG_LAST_VERSION_NAME, lastVersionName)
         }
 
         /** 最後に起動したときのバージョン */
@@ -56,40 +58,36 @@ class ReleaseNotesDialogFragment : DialogFragment() {
 
     // ------ //
 
-    val viewModel by lazy {
-        provideViewModel(this) {
-            val lastVersionName = arguments?.getString(ARG_LAST_VERSION_NAME)
-            val currentVersionName = arguments?.getString(ARG_CURRENT_VERSION_NAME)
-
-            DialogViewModel(
-                lastVersionName,
-                currentVersionName
+    val viewModel by lazyProvideViewModel {
+        DialogViewModel(
+            ReleaseNotesRepository(
+                resources,
+                currentVersionName = arguments?.getString(ARG_CURRENT_VERSION_NAME),
+                lastVersionName = arguments?.getString(ARG_LAST_VERSION_NAME)
             )
-        }
+        )
     }
 
     // ------ //
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val context = requireContext()
-        val binding = DataBindingUtil.inflate<FragmentDialogReleaseNotes2Binding>(
-            localLayoutInflater(),
-            R.layout.fragment_dialog_release_notes2,
-            null,
-            false
-        ).also {
+        val binding = FragmentDialogReleaseNotes2Binding.inflate(localLayoutInflater(), null, false).also {
             it.vm = viewModel
-            it.lifecycleOwner = parentFragment?.viewLifecycleOwner ?: requireActivity()
+            it.lifecycleOwner = this
         }
 
-        // 履歴の読み込み
-        lifecycleScope.launch {
-            try {
-                viewModel.loadReleaseNotes(resources)
+        // 下端までスクロールで追加分取得
+        binding.recyclerView.apply {
+            val updater = RecyclerViewScrollingUpdater {
+                this.isEnabled = false
+                lifecycleScope.launchWhenResumed {
+                    viewModel.loadReleaseNotes()
+                    this@RecyclerViewScrollingUpdater.loadCompleted()
+                }
             }
-            catch (e: TaskFailureException) {
-                context.showToast(R.string.msg_read_release_notes_failed)
-            }
+            updater.isEnabled = false
+            addOnScrollListener(updater)
+            adapter = ReleaseNotesAdapter(updater)
         }
 
         return createBuilder()
@@ -97,6 +95,11 @@ class ReleaseNotesDialogFragment : DialogFragment() {
             .setNegativeButton(R.string.dialog_close, null)
             .setView(binding.root)
             .create()
+    }
+
+    override fun onDestroy() {
+        runCatching { viewModel.close() }
+        super.onDestroy()
     }
 
     // ------ //
@@ -121,8 +124,9 @@ class ReleaseNotesDialogFragment : DialogFragment() {
         @JvmStatic
         @BindingAdapter("releaseNotes")
         fun setReleaseNotes(recyclerView: RecyclerView, items: List<ReleaseNote>?) {
-            if (items.isNullOrEmpty()) return
-            recyclerView.adapter = ReleaseNotesAdapter(items)
+            recyclerView.adapter.alsoAs<ReleaseNotesAdapter> { adapter ->
+                adapter.submitList(items.orEmpty())
+            }
         }
     }
 
@@ -138,19 +142,143 @@ class ReleaseNotesDialogFragment : DialogFragment() {
 
     // ------ //
 
-    class DialogViewModel(
+    class ReleaseNotesRepository(
+        resources: Resources,
+        /** 現在実行中のバージョン */
+        val currentVersionName: String?,
         /** 最後に起動したときのバージョン */
-        val lastVersionName : String?,
+        val lastVersionName: String?
+    ) : Closeable {
+        /** 逐次読み込みのために`BufferedReader`を保持する */
+        private var bufferedReader : BufferedReader? = null
+
+        /**
+         * 次に読み込む行の内容
+         *
+         * 各履歴項目の終了を「次行が次の履歴のタイトル部分かどうか」で判定するため
+         */
+        private var nextLine : String? = null
+
+        private var lastLoadedVersion : String? = null
+
+        private val _releaseNotes = MutableLiveData<List<ReleaseNote>>()
+        /** 更新履歴リスト */
+        val releaseNotes : LiveData<List<ReleaseNote>> = _releaseNotes
+
+        // ------ //
+
+        init {
+            runCatching { bufferedReader?.close() }
+            bufferedReader = resources.openRawResource(R.raw.release_notes).bufferedReader()
+            nextLine = runCatching { bufferedReader?.readLine() }.getOrNull()
+        }
+
+        override fun close() {
+            runCatching { bufferedReader?.close() }
+            bufferedReader = null
+        }
+
+        // ------ //
+
+        /**
+         * バッファされた次の行内容を返し、release_notes.txtからさらに次の行を読み込む
+         *
+         * @return 終端or読み込み失敗時にnull
+         */
+        private fun readLine() : String? {
+            val result = nextLine
+            nextLine = runCatching { bufferedReader?.readLine() }.getOrNull()
+            return result
+        }
+
+        @OptIn(ExperimentalStdlibApi::class)
+        suspend fun loadNextItems(num: Int) = coroutineScope {
+            if (lastVersionName != null && lastVersionName == lastLoadedVersion) return@coroutineScope
+
+            val newItems = buildList {
+                val titleRegex = Regex("""^\s*\[\s*version\s*([0-9.]+)\s*]\s*$""")
+                val separatorRegex = Regex("""^----*$""")
+
+                repeat(num) {
+                    var insertSeparator = false
+
+                    val title = buildString {
+                        while (true) {
+                            val line = readLine() ?: return@buildList
+                            val matchResult = titleRegex.find(line)
+                            if (matchResult != null) {
+                                val code = matchResult.groupValues[1]
+                                // 差分表示時は前回起動時のバージョンまで表示したら処理終了する
+                                lastLoadedVersion = code
+                                if (lastVersionName == code) {
+                                    return@buildList
+                                }
+
+                                append("[version $code]")
+                                break
+                            }
+                        }
+                    }
+
+                    val body = buildString {
+                        do {
+                            val line = readLine() ?: break
+                            if (separatorRegex.matches(line)) {
+                                insertSeparator = true
+                                break
+                            }
+                            else {
+                                append(line)
+                                if (line.isNotBlank()) {
+                                    append("\n")
+                                }
+                            }
+                        } while (nextLine?.matches(titleRegex) != true)
+                    }
+
+                    add(ReleaseNote(title, body))
+
+                    if (insertSeparator) {
+                        add(ReleaseNote("---", ""))
+                    }
+                }
+            }
+
+            withContext(Dispatchers.Default) {
+                _releaseNotes.postValue(
+                    if (newItems.isEmpty()) _releaseNotes.value.orEmpty()
+                    else _releaseNotes.value.orEmpty().plus(newItems)
+                )
+            }
+        }
+    }
+
+    // ------ //
+
+    class DialogViewModel(private val repository: ReleaseNotesRepository) : ViewModel(), Closeable {
+        /** 最後に起動したときのバージョン */
+        val lastVersionName = repository.lastVersionName
 
         /** 現在実行中のバージョン */
-        val currentVersionName : String?
-    ) : ViewModel() {
+        val currentVersionName = repository.currentVersionName
 
         /** 差分のみを表示する */
         val displayOnlyDiffs = lastVersionName != null && currentVersionName != null
 
         /** 更新履歴 */
-        val releaseNotes = MutableLiveData<List<ReleaseNote>>()
+        val releaseNotes = repository.releaseNotes
+
+        // ------ //
+
+        init {
+            viewModelScope.launch {
+                loadReleaseNotes()
+            }
+        }
+
+        override fun close() {
+            repository.close()
+        }
 
         // ------ //
 
@@ -160,56 +288,8 @@ class ReleaseNotesDialogFragment : DialogFragment() {
          * @throws TaskFailureException
          */
         @OptIn(ExperimentalStdlibApi::class)
-        suspend fun loadReleaseNotes(resources: Resources) = withContext(Dispatchers.Default) {
-            try {
-                resources.openRawResource(R.raw.release_notes).bufferedReader().use { reader ->
-                    // 最後の起動時のバージョンが渡されている場合、そこから最新までの差分だけを表示する
-                    val text = when (lastVersionName) {
-                        null -> reader.readText()
-                        else -> buildString {
-                            val lastVersionText = "[ version $lastVersionName ]"
-                            reader.useLines { lines ->
-                                lines.forEach { line ->
-                                    if (line.contains(lastVersionText)) return@useLines
-                                    else append(line, "\n")
-                                }
-                            }
-                        }
-                    }
-
-                    val historyRegex = Regex("""(\[\s*version\s*\S+\s*])(\r?\n)+([^\[]+)""")
-                    val tailLineBreakRegex = Regex("""(\r?\n)+$""")
-
-                    val items =  buildList<ReleaseNote> {
-                        historyRegex.findAll(text).forEach { match ->
-                            runCatching {
-                                val body = match.groupValues[3].replace(tailLineBreakRegex, "")
-                                if (body.endsWith("---")) {
-                                    add(ReleaseNote(
-                                        title = match.groupValues[1],
-                                        body = body.replace(Regex("""(\r?\n)*---$"""),"")
-                                    ))
-                                    add(ReleaseNote(
-                                        title = "---",
-                                        body = ""
-                                    ))
-                                }
-                                else {
-                                    add(ReleaseNote(
-                                        title = match.groupValues[1],
-                                        body = body
-                                    ))
-                                }
-                            }
-                        }
-                    }
-
-                    releaseNotes.postValue(items)
-                }
-            }
-            catch (e: Throwable) {
-                throw TaskFailureException(cause = e)
-            }
+        suspend fun loadReleaseNotes() = withContext(Dispatchers.Default) {
+            repository.loadNextItems(num = 10)
         }
     }
 
@@ -217,38 +297,33 @@ class ReleaseNotesDialogFragment : DialogFragment() {
 
     /**
      * 更新履歴リストを表示するためのアダプタ
-     *
-     * 一度初期化されたら後から更新されたりしないので、`RecyclerView.Adapter`で簡単に作っている
      */
-    class ReleaseNotesAdapter(
-        val items: List<ReleaseNote>
-    ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    class ReleaseNotesAdapter(val scrollingUpdater : RecyclerViewScrollingUpdater) : ListAdapter<ReleaseNote, RecyclerView.ViewHolder>(DiffCallback()) {
 
-        override fun getItemCount() = items.size
-
-        override fun getItemViewType(position: Int): Int = when (items[position].title) {
-            "---" -> ViewHolderType.SEPARATOR.int
-            else -> ViewHolderType.CONTENT.int
+        override fun submitList(list: List<ReleaseNote>?) {
+            super.submitList(list) {
+                scrollingUpdater.isEnabled = true
+            }
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            return when (viewType) {
-                ViewHolderType.CONTENT.int -> {
-                    val binding = ListviewItemReleaseNotesBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
-                    ReleaseNoteViewHolder(binding)
-                }
+        override fun getItemViewType(position: Int) : Int =
+            when (currentList[position].title) {
+                "---" -> ViewHolderType.SEPARATOR.ordinal
+                else -> ViewHolderType.CONTENT.ordinal
+            }
 
-                ViewHolderType.SEPARATOR.int -> {
-                    SectionViewHolder(ListviewSeparatorReleaseNotesBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    ))
-                }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : RecyclerView.ViewHolder {
+            val layoutInflater = LayoutInflater.from(parent.context)
+            return when (viewType) {
+                ViewHolderType.CONTENT.ordinal ->
+                    ReleaseNoteViewHolder(
+                        ListviewItemReleaseNotesBinding.inflate(layoutInflater, parent, false)
+                    )
+
+                ViewHolderType.SEPARATOR.ordinal ->
+                    SectionViewHolder(
+                        ListviewSeparatorReleaseNotesBinding.inflate(layoutInflater, parent, false)
+                    )
 
                 else -> throw NotImplementedError()
             }
@@ -256,11 +331,15 @@ class ReleaseNotesDialogFragment : DialogFragment() {
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
             holder.alsoAs<ReleaseNoteViewHolder> {
-                it.setModel(items[position])
+                it.setModel(currentList[position])
             }
         }
 
-        class ReleaseNoteViewHolder(private val binding : ListviewItemReleaseNotesBinding) : RecyclerView.ViewHolder(binding.root) {
+        // ------ //
+
+        class ReleaseNoteViewHolder(
+            private val binding : ListviewItemReleaseNotesBinding
+        ) : RecyclerView.ViewHolder(binding.root) {
             fun setModel(model: ReleaseNote) {
                 binding.titleTextView.text = model.title
                 binding.bodyTextView.text = model.body
@@ -270,9 +349,21 @@ class ReleaseNotesDialogFragment : DialogFragment() {
 
         // ------ //
 
-        enum class ViewHolderType(val int : Int) {
-            CONTENT(0),
-            SEPARATOR(1)
+        enum class ViewHolderType {
+            CONTENT,
+            SEPARATOR
+        }
+
+        // ------ //
+
+        class DiffCallback : DiffUtil.ItemCallback<ReleaseNote>() {
+            override fun areItemsTheSame(oldItem: ReleaseNote, newItem: ReleaseNote): Boolean {
+                return oldItem.title == newItem.title
+            }
+
+            override fun areContentsTheSame(oldItem: ReleaseNote, newItem: ReleaseNote): Boolean {
+                return oldItem.body == newItem.body
+            }
         }
     }
 }
