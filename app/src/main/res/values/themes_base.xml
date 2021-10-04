@@ -81,9 +81,10 @@
         <item name="colorSurface">@color/panelBackground</item>
         <!-- (フォロー/フォロワー画面の)非選択トグルボタン文字色で使用 -->
         <item name="colorOnSurface">@color/textColor</item>
-
         <!-- クリック時背景アニメーション色 -->
         <item name="colorControlHighlight">@color/rippleMaterial</item>
+        <!-- リストセクションの文字色 -->
+        <item name="sectionTextColor">@color/colorPrimaryText</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Light</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.Light</item>
@@ -118,9 +119,10 @@
         <item name="colorSurface">@color/panelBackgroundDark</item>
         <!-- (フォロー/フォロワー画面の)非選択トグルボタン文字色で使用 -->
         <item name="colorOnSurface">@color/textColorDark</item>
-
         <!-- クリック時背景アニメーション色 -->
         <item name="colorControlHighlight">@color/rippleMaterialDark</item>
+        <!-- リストセクションの文字色 -->
+        <item name="sectionTextColor">@color/textColorDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.Dark</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.Dark</item>
@@ -173,9 +175,10 @@
         <item name="colorOnSurface">@color/textColorExDark</item>
         <!-- ポップアップ背景 -->
         <item name="popupMenuBackground">@drawable/dialog_background_ex_dark</item>
-
         <!-- 水平ProgressBarの色 -->
         <item name="horizontalProgressBarPrimaryColor">@color/colorPrimaryExDark</item>
+        <!-- リストセクションの文字色 -->
+        <item name="sectionTextColor">@color/textColorDark</item>
 
         <item name="android:spinnerStyle">@style/SpinnerStyle.ExDark</item>
         <item name="alertDialogTheme">@style/AlertDialogStyle.ExDark</item>

@@ -12,7 +12,7 @@
     <TextView
             android:id="@+id/text_view"
             android:textStyle="bold"
-            android:textColor="@color/textColorDark"
+            android:textColor="?sectionTextColor"
             android:textSize="14sp"
 
             android:layout_alignParentLeft="true"
@@ -23,7 +23,7 @@
     <ImageButton
             android:id="@+id/clear_button"
             app:srcCompat="@drawable/ic_clear_history_by_date"
-            app:tint="?attr/textColor"
+            app:tint="?sectionTextColor"
             android:background="?attr/actionBarItemBackground"
             android:contentDescription="@null"
             android:layout_alignParentRight="true"
