@@ -191,12 +191,10 @@
                 android:text="@{vm.selectedText}"
                 android:textColor="@color/colorPrimaryText"
                 android:textSize="20sp"
-
-                app:layout_anchor="@id/bookmark_detail_layout"
-                app:layout_anchorGravity="bottom"
-
                 android:background="#aa000000"
                 android:visibility="@{vm.selectedText}"
+                app:layout_anchor="@id/bookmark_detail_layout"
+                app:layout_anchorGravity="bottom"
                 android:paddingStart="8dp"
                 android:paddingEnd="96dp"
                 android:paddingTop="16dp"

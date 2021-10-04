@@ -198,9 +198,9 @@
         <TextView
                 android:id="@+id/quote_text_view"
                 android:text="@{vm.selectedText}"
-                android:background="#aa000000"
                 android:textColor="@color/colorPrimaryText"
                 android:textSize="20sp"
+                android:background="#aa000000"
                 android:visibility="@{vm.selectedText}"
                 app:layout_anchor="@id/bookmark_detail_layout"
                 app:layout_anchorGravity="bottom"
@@ -210,7 +210,6 @@
                 android:paddingBottom="32dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
-
 
         <!-- スターボタン -->
         <LinearLayout
