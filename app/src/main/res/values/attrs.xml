@@ -33,6 +33,9 @@
 
         <!-- 水平ProgressBarの色 -->
         <attr name="horizontalProgressBarPrimaryColor" format="color"/>
+
+        <!-- リストセクションの文字色 -->
+        <attr name="sectionTextColor" format="color"/>
     </declare-styleable>
 
     <declare-styleable name="TextFloatingActionButton">
