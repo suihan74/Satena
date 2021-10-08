@@ -44,7 +44,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         // 引っ張って更新
         swipeLayout.apply swipeLayout@ {
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
+            setColorSchemeColors(context.getThemeColor(R.attr.swipeRefreshForeground))
             setOnRefreshListener {
                 viewModel.reloadLists(
                     onError = onErrorRefreshEntries,

@@ -3,6 +3,7 @@
     <declare-styleable name="AppTheme">
         <attr name="dividerColor" format="color"/>
         <attr name="swipeRefreshBackground" format="color"/>
+        <attr name="swipeRefreshForeground" format="color"/>
         <attr name="bookmarkDialogBackgroundColor" format="color"/>
         <attr name="bookmarkDialogBackground" format="color|reference"/>
         <attr name="entryCommentBackground" format="color"/>

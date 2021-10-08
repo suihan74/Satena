@@ -118,7 +118,7 @@ class BrowserActivity :
         // スワイプしてページを更新する
         binding.swipeLayout.let { swipeLayout ->
             swipeLayout.setProgressBackgroundColorSchemeColor(getThemeColor(R.attr.swipeRefreshBackground))
-            swipeLayout.setColorSchemeColors(getThemeColor(R.attr.colorPrimary))
+            swipeLayout.setColorSchemeColors(getThemeColor(R.attr.swipeRefreshForeground))
             swipeLayout.setOnRefreshListener {
                 viewModel.setOnPageFinishedListener {
                     swipeLayout.isRefreshing = false

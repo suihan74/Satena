@@ -77,7 +77,7 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
         binding.swipeLayout.run {
             val context = requireContext()
             setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
+            setColorSchemeColors(context.getThemeColor(R.attr.swipeRefreshForeground))
             setOnRefreshListener {
                 lifecycleScope.launch(Dispatchers.Main) {
                     runCatching {

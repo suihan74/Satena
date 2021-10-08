@@ -129,7 +129,7 @@ class PopularBookmarksTabFragment :
         binding.swipeLayout.let { swipeLayout ->
             val context = requireContext()
             swipeLayout.setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
-            swipeLayout.setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
+            swipeLayout.setColorSchemeColors(context.getThemeColor(R.attr.swipeRefreshForeground))
             swipeLayout.setOnRefreshListener {
                 reloadBookmarks()
             }

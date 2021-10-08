@@ -78,7 +78,7 @@ class IgnoredUsersFragment : Fragment() {
                 activity.getThemeColor(R.attr.swipeRefreshBackground)
             )
             swipeLayout.setColorSchemeColors(
-                activity.getThemeColor(R.attr.colorPrimary)
+                activity.getThemeColor(R.attr.swipeRefreshForeground)
             )
             swipeLayout.setOnRefreshListener {
                 lifecycleScope.launch(Dispatchers.Main) {

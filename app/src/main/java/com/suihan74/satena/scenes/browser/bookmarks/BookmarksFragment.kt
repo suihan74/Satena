@@ -357,7 +357,7 @@ class BookmarksFragment :
         binding.swipeLayout.let { swipeLayout ->
             val activity = requireActivity()
             swipeLayout.setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
-            swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
+            swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.swipeRefreshForeground))
             swipeLayout.setOnRefreshListener {
                 lifecycleScope.launchWhenResumed {
                     when (bookmarksTabViewModel.bookmarksTabType.value) {
