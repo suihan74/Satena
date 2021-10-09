@@ -19,7 +19,6 @@ import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.lazyProvideViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
@@ -74,21 +73,14 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
             it.lifecycleOwner = viewLifecycleOwner
         }
 
-        binding.swipeLayout.run {
-            val context = requireContext()
-            setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(context.getThemeColor(R.attr.swipeRefreshForeground))
-            setOnRefreshListener {
-                lifecycleScope.launch(Dispatchers.Main) {
-                    runCatching {
-                        bookmarkDetailViewModel.updateList(tabType, forceUpdate = true)
-                    }.onFailure {
-                        lifecycleScope.launchWhenResumed {
-                            showToast(R.string.msg_update_stars_failed)
-                        }
-                    }
-                    isRefreshing = false
+        binding.swipeLayout.setOnRefreshListener {
+            lifecycleScope.launchWhenResumed {
+                runCatching {
+                    bookmarkDetailViewModel.updateList(tabType, forceUpdate = true)
+                }.onFailure {
+                    showToast(R.string.msg_update_stars_failed)
                 }
+                binding.swipeLayout.isRefreshing = false
             }
         }
 

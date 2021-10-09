@@ -8,7 +8,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
-import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
 
@@ -32,27 +31,23 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
         val entriesAdapter = EntriesAdapter(viewLifecycleOwner)
 
         // 引っ張って更新
-        swipeLayout.apply {
-            setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(context.getThemeColor(R.attr.swipeRefreshForeground))
-            setOnRefreshListener {
-                entriesAdapter.setOnItemsSubmittedListener { list ->
-                    if (list != null) {
-                        this.isRefreshing = false
-                        entriesList.scrollToPosition(0)
-                        entriesAdapter.setOnItemsSubmittedListener(null)
-                    }
+        swipeLayout.setOnRefreshListener {
+            entriesAdapter.setOnItemsSubmittedListener { list ->
+                if (list != null) {
+                    swipeLayout.isRefreshing = false
+                    entriesList.scrollToPosition(0)
+                    entriesAdapter.setOnItemsSubmittedListener(null)
                 }
-                viewModel.reloadLists(
-                    onError = { e ->
-                        onErrorRefreshEntries.invoke(e)
-                        entriesAdapter.setOnItemsSubmittedListener(null)
-                    },
-                    onFinally = {
-                        this.isRefreshing = false
-                    }
-                )
             }
+            viewModel.reloadLists(
+                onError = { e ->
+                    onErrorRefreshEntries.invoke(e)
+                    entriesAdapter.setOnItemsSubmittedListener(null)
+                },
+                onFinally = {
+                    swipeLayout.isRefreshing = false
+                }
+            )
         }
 
         // スクロールで追加ロード

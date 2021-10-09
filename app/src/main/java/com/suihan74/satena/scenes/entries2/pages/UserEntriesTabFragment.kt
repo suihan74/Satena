@@ -11,7 +11,6 @@ import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
-import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
@@ -43,15 +42,11 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         val entriesAdapter = EntriesAdapter(viewLifecycleOwner)
 
         // 引っ張って更新
-        swipeLayout.apply swipeLayout@ {
-            setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(context.getThemeColor(R.attr.swipeRefreshForeground))
-            setOnRefreshListener {
-                viewModel.reloadLists(
-                    onError = onErrorRefreshEntries,
-                    onFinally = { this.isRefreshing = false }
-                )
-            }
+        swipeLayout.setOnRefreshListener {
+            viewModel.reloadLists(
+                onError = onErrorRefreshEntries,
+                onFinally = { swipeLayout.isRefreshing = false }
+            )
         }
 
         // スクロールで追加ロード

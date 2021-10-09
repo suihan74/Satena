@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
-import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
@@ -16,7 +15,6 @@ import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.utilities.ScrollableToBottom
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.alsoAs
-import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.launch
 
@@ -137,9 +135,6 @@ abstract class BookmarksTabFragment :
 
         // 引っ張って更新
         binding.swipeLayout.let { swipeLayout ->
-            val context = requireContext()
-            swipeLayout.setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
-            swipeLayout.setColorSchemeColors(context.getThemeColor(R.attr.swipeRefreshForeground))
             swipeLayout.setOnRefreshListener {
                 reloadBookmarks()
             }

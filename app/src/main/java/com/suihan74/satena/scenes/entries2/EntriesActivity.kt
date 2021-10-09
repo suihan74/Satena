@@ -126,7 +126,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     /**
      * ボトムバーの項目がクリックされたときのリスナを設定する
      */
-    fun setOnBottomMenuItemClickListener(listener: Listener<UserBottomItem>?) {
+    private fun setOnBottomMenuItemClickListener(listener: Listener<UserBottomItem>?) {
         onBottomMenuItemClickListener = listener
     }
 

@@ -38,7 +38,7 @@
 
             </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            <com.suihan74.utilities.views.SwipeRefreshLayout
                     android:id="@+id/swipe_layout"
                     app:layout_constraintTop_toTopOf="@id/address_bar_area"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -53,7 +53,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
 
-            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            </com.suihan74.utilities.views.SwipeRefreshLayout>
 
             <View
                     android:id="@+id/click_guard"

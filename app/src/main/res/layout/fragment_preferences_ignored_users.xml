@@ -12,7 +12,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        <com.suihan74.utilities.views.SwipeRefreshLayout
                 android:id="@+id/swipe_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -25,7 +25,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
 
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </com.suihan74.utilities.views.SwipeRefreshLayout>
 
         <com.suihan74.utilities.views.ImeEnhancedEditText
                 android:id="@+id/search_text"

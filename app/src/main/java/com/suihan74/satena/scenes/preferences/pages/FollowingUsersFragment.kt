@@ -13,9 +13,6 @@ import com.suihan74.satena.databinding.ListviewItemIgnoredUsersBinding
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.ignored.FollowingUsersViewModel
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredUsersAdapter
-import com.suihan74.utilities.extensions.getThemeColor
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * フォロー中ユーザーリスト
@@ -65,18 +62,10 @@ class FollowingUsersFragment : Fragment() {
         }
 
         // スワイプ更新機能の設定
-        binding.swipeLayout.also { swipeLayout ->
-            swipeLayout.setProgressBackgroundColorSchemeColor(
-                activity.getThemeColor(R.attr.swipeRefreshBackground)
-            )
-            swipeLayout.setColorSchemeColors(
-                activity.getThemeColor(R.attr.swipeRefreshForeground)
-            )
-            swipeLayout.setOnRefreshListener {
-                lifecycleScope.launch(Dispatchers.Main) {
-                    viewModel.loadList()
-                    swipeLayout.isRefreshing = false
-                }
+        binding.swipeLayout.setOnRefreshListener {
+            lifecycleScope.launchWhenResumed {
+                viewModel.loadList()
+                binding.swipeLayout.isRefreshing = false
             }
         }
 
