@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
-import androidx.lifecycle.LifecycleOwner
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.OnError
@@ -32,13 +31,13 @@ class MyBookmarksViewModel(
 
     /** タブ用ViewModelへの値変更の伝播 */
     override fun connectToTab(
-        lifecycleOwner: LifecycleOwner,
+        fragment: EntriesTabFragment,
         entriesAdapter: EntriesAdapter,
         viewModel: EntriesTabFragmentViewModel,
         onError: OnError?
     ) {
-        super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
-        searchQuery.observe(lifecycleOwner, {
+        super.connectToTab(fragment, entriesAdapter, viewModel, onError)
+        searchQuery.observe(fragment.viewLifecycleOwner, {
             viewModel.searchQuery = it
         })
     }

@@ -21,14 +21,8 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.entries2.dialog.BrowserShortcutDialog
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.startInnerBrowser
-import com.suihan74.utilities.OnError
-import com.suihan74.utilities.OnFinally
-import com.suihan74.utilities.OnSuccess
 import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.topBackStackEntry
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class EntriesViewModel(
     val repository : EntriesRepository
@@ -145,22 +139,7 @@ class EntriesViewModel(
     // ------ //
 
     /** 初期化処理 */
-    fun initialize(
-        coroutineScope: CoroutineScope,
-        forceUpdate: Boolean,
-        onSuccess: OnSuccess<Unit>? = null,
-        onError: OnError? = null,
-        onFinally: OnFinally? = null
-    ) = coroutineScope.launch(Dispatchers.Main) {
-        runCatching {
-            repository.initialize(forceUpdate)
-        }.onSuccess {
-            onSuccess?.invoke(Unit)
-        }.onFailure {
-            onError?.invoke(it)
-        }
-        onFinally?.invoke()
-    }
+    suspend fun initialize(forceUpdate: Boolean) = repository.initialize(forceUpdate)
 
     /** アプリアップデートを確認する */
     fun startAppUpdate(activity: EntriesActivity, snackBarAnchorView: View, requestCode: Int) {

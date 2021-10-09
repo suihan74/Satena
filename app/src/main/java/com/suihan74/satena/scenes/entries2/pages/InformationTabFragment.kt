@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.entries2.pages
 
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.satena.models.Category
@@ -20,8 +21,6 @@ class InformationTabFragment : EntriesTabFragmentBase() {
         entriesList: RecyclerView,
         swipeLayout: SwipeRefreshLayout
     ) {
-        val context = requireContext()
-
         // エントリリスト用のアダプタ
         val adapter = InformationAdapter()
 
@@ -30,10 +29,11 @@ class InformationTabFragment : EntriesTabFragmentBase() {
 
         // 引っ張って更新
         swipeLayout.setOnRefreshListener {
-            viewModel.reloadLists(
-                onError = onErrorRefreshEntries,
-                onFinally = { swipeLayout.isRefreshing = false }
-            )
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.reloadLists() }
+                    .onFailure { onErrorRefreshEntries(it) }
+                swipeLayout.isRefreshing = false
+            }
         }
     }
 }

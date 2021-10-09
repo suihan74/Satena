@@ -2,13 +2,9 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
-import com.suihan74.satena.scenes.entries2.EntriesAdapter
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
-import com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel
-import com.suihan74.satena.scenes.entries2.EntriesTabType
+import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.satena.scenes.entries2.dialog.FavoriteSitesSelectionDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.OnError
@@ -43,14 +39,16 @@ class FavoriteSitesViewModel(
     }
 
     override fun connectToTab(
-        lifecycleOwner: LifecycleOwner,
+        fragment: EntriesTabFragment,
         entriesAdapter: EntriesAdapter,
         viewModel: EntriesTabFragmentViewModel,
         onError: OnError?
     ) {
-        super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
-        repository.favoriteSites.observe(lifecycleOwner, Observer {
-            viewModel.reloadLists()
+        super.connectToTab(fragment, entriesAdapter, viewModel, onError)
+        repository.favoriteSites.observe(fragment.viewLifecycleOwner, {
+            fragment.lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.reloadLists() }
+            }
         })
     }
 }

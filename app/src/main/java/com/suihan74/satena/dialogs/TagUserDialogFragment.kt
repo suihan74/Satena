@@ -14,7 +14,6 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogTaggedUserBinding
-import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SuspendSwitcher
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.showSoftInputMethod
@@ -61,7 +60,7 @@ class TagUserDialogFragment : DialogFragment() {
                         .clear(binding.userIcon)
                     binding.progressBar.visibility = View.VISIBLE
                     checkExistsJob?.cancel()
-                    checkExistsJob = lifecycleScope.launch {
+                    checkExistsJob = lifecycleScope.launchWhenResumed {
                         runCatching {
                             delay(CHECKING_USER_EXISTENCE_DELAY)
                             viewModel.updateUserExistence(userName)
@@ -104,11 +103,13 @@ class TagUserDialogFragment : DialogFragment() {
                 )
 
                 getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                    val context = requireContext()
-                    viewModel.invokeOnComplete(this@TagUserDialogFragment) { e -> when(e) {
-                        is EmptyUserNameException -> context.showToast(R.string.msg_add_user_dialog_empty_username)
-                        is UserNotFoundException -> context.showToast(R.string.msg_add_user_dialog_user_not_found)
-                    } }
+                    lifecycleScope.launchWhenResumed {
+                        runCatching { viewModel.invokeOnComplete(this@TagUserDialogFragment) }
+                            .onFailure { when (it) {
+                                is EmptyUserNameException -> context.showToast(R.string.msg_add_user_dialog_empty_username)
+                                is UserNotFoundException -> context.showToast(R.string.msg_add_user_dialog_user_not_found)
+                            } }
+                    }
                 }
             }
     }
@@ -147,20 +148,9 @@ class TagUserDialogFragment : DialogFragment() {
         /**  */
         var onComplete: SuspendSwitcher<String>? = null
 
-        fun invokeOnComplete(
-            dialog: DialogFragment,
-            onError: OnError?
-        ) = viewModelScope.launch(Dispatchers.Main) {
-            if (userName.isBlank()) {
-                onError?.invoke(EmptyUserNameException())
-                return@launch
-            }
-
-            // ユーザーが存在しない
-            if (!isUserExisted) {
-                onError?.invoke(UserNotFoundException())
-                return@launch
-            }
+        suspend fun invokeOnComplete(dialog: DialogFragment) {
+            if (userName.isBlank()) throw EmptyUserNameException()
+            if (!isUserExisted) throw UserNotFoundException()
 
             if (false != onComplete?.invoke(userName)) {
                 dialog.dismiss()

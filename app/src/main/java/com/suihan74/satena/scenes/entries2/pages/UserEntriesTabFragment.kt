@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
 import android.util.Log
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -43,25 +44,25 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
 
         // 引っ張って更新
         swipeLayout.setOnRefreshListener {
-            viewModel.reloadLists(
-                onError = onErrorRefreshEntries,
-                onFinally = { swipeLayout.isRefreshing = false }
-            )
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.reloadLists() }
+                    .onFailure { onErrorRefreshEntries(it) }
+                swipeLayout.isRefreshing = false
+            }
         }
 
         // スクロールで追加ロード
         val scrollingUpdater = RecyclerViewScrollingUpdater {
             entriesAdapter.showProgressBar()
-            viewModel.loadAdditional(
-                onFinally = {
-                    entriesAdapter.hideProgressBar()
-                    loadCompleted()
-                },
-                onError = { e ->
-                    context.showToast(R.string.msg_get_entry_failed)
-                    Log.e("loadAdditional", Log.getStackTraceString(e))
-                }
-            )
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.loadAdditional() }
+                    .onFailure {
+                        context.showToast(R.string.msg_get_entry_failed)
+                        Log.e("loadAdditional", Log.getStackTraceString(it))
+                    }
+                entriesAdapter.hideProgressBar()
+                loadCompleted()
+            }
         }
 
         // エントリリストの設定
@@ -75,7 +76,10 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         parentViewModel?.tag?.observe(viewLifecycleOwner, observerForOnlyUpdates {
             viewModel.tag = it
             entriesAdapter.submitEntries(null) {
-                viewModel.reloadLists(onError = onErrorRefreshEntries)
+                lifecycleScope.launchWhenResumed {
+                    runCatching { viewModel.reloadLists() }
+                        .onFailure { onErrorRefreshEntries(it) }
+                }
             }
         })
     }

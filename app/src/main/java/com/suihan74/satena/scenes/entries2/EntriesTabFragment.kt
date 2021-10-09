@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.entries2
 
 import android.util.Log
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -39,30 +40,28 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
                     entriesAdapter.setOnItemsSubmittedListener(null)
                 }
             }
-            viewModel.reloadLists(
-                onError = { e ->
-                    onErrorRefreshEntries.invoke(e)
-                    entriesAdapter.setOnItemsSubmittedListener(null)
-                },
-                onFinally = {
-                    swipeLayout.isRefreshing = false
-                }
-            )
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.reloadLists() }
+                    .onFailure {
+                        onErrorRefreshEntries(it)
+                        entriesAdapter.setOnItemsSubmittedListener(null)
+                    }
+                swipeLayout.isRefreshing = false
+            }
         }
 
         // スクロールで追加ロード
         val scrollingUpdater = RecyclerViewScrollingUpdater {
             entriesAdapter.showProgressBar()
-            viewModel.loadAdditional(
-                onFinally = {
-                    entriesAdapter.hideProgressBar()
-                    loadCompleted()
-                },
-                onError = { e ->
-                    context.showToast(R.string.msg_get_entry_failed)
-                    Log.e("loadAdditional", Log.getStackTraceString(e))
-                }
-            )
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.loadAdditional() }
+                    .onFailure {
+                        context.showToast(R.string.msg_get_entry_failed)
+                        Log.e("loadAdditional", Log.getStackTraceString(it))
+                    }
+                entriesAdapter.hideProgressBar()
+                loadCompleted()
+            }
         }
 
         // エントリリストの設定
@@ -79,12 +78,7 @@ class EntriesTabFragment : EntriesTabFragmentBase() {
             }
         }
 
-        parentViewModel?.connectToTab(
-            requireActivity(),
-            entriesAdapter,
-            viewModel,
-            onErrorRefreshEntries
-        )
+        parentViewModel?.connectToTab(this, entriesAdapter, viewModel) { onErrorRefreshEntries(it) }
     }
 }
 
