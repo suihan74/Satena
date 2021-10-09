@@ -7,7 +7,8 @@
             type="com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel"/>
     </data>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/swipe_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
