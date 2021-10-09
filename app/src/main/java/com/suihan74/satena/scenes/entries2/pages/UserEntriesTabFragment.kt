@@ -12,6 +12,7 @@ import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
 
@@ -76,14 +77,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         }
 
         // タグの変更を監視
-        var isTagInitialized = false
-        val parentViewModel = parentViewModel!!
-        parentViewModel.tag.observe(viewLifecycleOwner, {
-            if (!isTagInitialized) {
-                isTagInitialized = true
-                return@observe
-            }
-
+        parentViewModel?.tag?.observe(viewLifecycleOwner, observerForOnlyUpdates {
             viewModel.tag = it
             entriesAdapter.submitEntries(null) {
                 viewModel.reloadLists(onError = onErrorRefreshEntries)

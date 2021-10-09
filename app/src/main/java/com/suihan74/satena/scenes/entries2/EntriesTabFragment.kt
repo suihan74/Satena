@@ -14,13 +14,15 @@ import com.suihan74.utilities.extensions.withArguments
 
 class EntriesTabFragment : EntriesTabFragmentBase() {
     companion object {
-        fun createInstance(fragmentViewModelKey: String, category: Category, tabPosition: Int = 0) = EntriesTabFragment().withArguments {
+        fun createInstance(
+            fragmentViewModelKey: String,
+            category: Category,
+            tabPosition: Int = 0
+        ) = EntriesTabFragment().withArguments {
             putString(ARG_FRAGMENT_VIEW_MODEL_KEY, fragmentViewModelKey)
             putEnum(ARG_CATEGORY, category)
             putInt(ARG_TAB_POSITION, tabPosition)
         }
-
-        const val DIALOG_ENTRY_MENU = "EntriesTabFragment.DIALOG_ENTRY_MENU"
     }
 
     override fun initializeRecyclerView(entriesList: RecyclerView, swipeLayout: SwipeRefreshLayout) {

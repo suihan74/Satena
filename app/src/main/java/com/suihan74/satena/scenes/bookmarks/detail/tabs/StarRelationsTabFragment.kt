@@ -43,7 +43,7 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
         get() = requireActivity() as BookmarksActivity
 
     private val bookmarkDetailFragment : BookmarkDetailFragment
-        get() = parentFragment as BookmarkDetailFragment
+        get() = requireParentFragment() as BookmarkDetailFragment
 
     private val bookmarkDetailViewModel : BookmarkDetailViewModel
         get() = bookmarkDetailFragment.viewModel

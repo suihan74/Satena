@@ -85,8 +85,7 @@ class AddingTagDialog : ExpandableBottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        val listener = parentFragment as? OnDismissListener ?: requireActivity() as? OnDismissListener
-        listener?.onDismiss(this)
+        (parentFragment as? OnDismissListener ?: activity as? OnDismissListener)?.onDismiss(this)
     }
 
     // ------ //
