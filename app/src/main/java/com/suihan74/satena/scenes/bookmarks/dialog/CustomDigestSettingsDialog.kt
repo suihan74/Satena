@@ -16,6 +16,7 @@ import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.CustomDigestSettingsKey
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.repository.CustomDigestRepositoryImpl
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.lazyProvideViewModel
@@ -79,6 +80,10 @@ class CustomDigestSettingsDialog : BottomSheetDialogFragment() {
         val maxNumOfElements = MutableLiveData<Int>()
         val starsCountThreshold = MutableLiveData<Int>()
 
+        val displayMutedBookmarks = MutableLiveData<Boolean>()
+
+        // ------ //
+
         var onComplete : Listener<DialogFragment>? = null
 
         private var fragmentManager : FragmentManager? = null
@@ -94,22 +99,24 @@ class CustomDigestSettingsDialog : BottomSheetDialogFragment() {
             if (initialized) {
                 return
             }
-            val repo = bookmarksViewModel.repository
+            val repo = bookmarksViewModel.repository.customDigest
             useCustomDigest.value = repo.useCustomDigest.value
             ignoreStarsByIgnoredUsers.value = repo.ignoreStarsByIgnoredUsers.value
             deduplicateStars.value = repo.deduplicateStars.value
             maxNumOfElements.value = repo.maxNumOfElements.value
             starsCountThreshold.value = repo.starsCountThreshold.value
+            displayMutedBookmarks.value = bookmarksViewModel.repository.showIgnoredUsersInDigest.value
             initialized = true
         }
 
         fun finish(bookmarksViewModel: BookmarksViewModel, fragment: DialogFragment) {
-            val repo = bookmarksViewModel.repository
+            val repo = bookmarksViewModel.repository.customDigest as CustomDigestRepositoryImpl
             repo.useCustomDigest.value = useCustomDigest.value
             repo.ignoreStarsByIgnoredUsers.value = ignoreStarsByIgnoredUsers.value
             repo.deduplicateStars.value = deduplicateStars.value
             repo.maxNumOfElements.value = maxNumOfElements.value
             repo.starsCountThreshold.value = starsCountThreshold.value
+            bookmarksViewModel.repository.showIgnoredUsersInDigest.value = displayMutedBookmarks.value
             onComplete?.invoke(fragment)
         }
 

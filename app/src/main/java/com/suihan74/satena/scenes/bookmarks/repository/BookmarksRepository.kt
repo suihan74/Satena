@@ -33,8 +33,8 @@ import kotlin.collections.HashMap
 class BookmarksRepository(
     val accountLoader: AccountLoader,
     val prefs : SafeSharedPreferences<PreferenceKey>,
-    val customDigestSettings : SafeSharedPreferences<CustomDigestSettingsKey>,
-    val ignoredEntriesRepo : IgnoredEntriesRepository,
+    customDigestSettings : SafeSharedPreferences<CustomDigestSettingsKey>,
+    private val ignoredEntriesRepo : IgnoredEntriesRepository,
     private val userTagDao: UserTagDao,
 ) :
         // ユーザー関係
@@ -157,17 +157,17 @@ class BookmarksRepository(
     private val _bookmarksDigest = MutableLiveData<BookmarksDigest?>()
     val bookmarksDigest : LiveData<BookmarksDigest?> = _bookmarksDigest
 
-    suspend fun popularBookmarks() : List<Bookmark> = filterIgnored(
-        wordFilter(
-            bookmarksDigest.value?.scoredBookmarks.orEmpty()
-        )
-    )
+    suspend fun popularBookmarks() : List<Bookmark> =
+        wordFilter(bookmarksDigest.value?.scoredBookmarks.orEmpty()).let { rawList ->
+            if (showIgnoredUsersInDigest.value == true) rawList.map { Bookmark.create(it) }
+            else filterIgnored(rawList)
+        }
 
-    suspend fun followingsBookmarks() : List<Bookmark> = filterIgnored(
-        wordFilter(
-            bookmarksDigest.value?.favoriteBookmarks.orEmpty()
-        )
-    )
+    suspend fun followingsBookmarks() : List<Bookmark> =
+        wordFilter(bookmarksDigest.value?.favoriteBookmarks.orEmpty()).let { rawList ->
+            if (showIgnoredUsersInDigest.value == true) rawList.map { Bookmark.create(it) }
+            else filterIgnored(rawList)
+        }
 
     /** 非表示対象、無言を含むすべての新着ブクマ */
     private var bookmarksRecentCache : List<BookmarkWithStarCount> = emptyList()
@@ -178,6 +178,13 @@ class BookmarksRepository(
     /** 新着ブクマの続きを読み込めるかどうか */
     val additionalLoadable : Boolean
         get() = recentCursor != null
+
+    /** 「注目」ブクマリストでは非表示対象を表示する */
+    val showIgnoredUsersInDigest by lazy {
+        PreferenceLiveData(prefs, PreferenceKey.BOOKMARKS_SHOWING_IGNORED_BOOKMARKS_IN_DIGEST) { p, key ->
+            p.getBoolean(key)
+        }
+    }
 
     /** 「すべて」ブクマリストでは非表示対象を表示する */
     val showIgnoredUsersInAllBookmarks by lazy {
@@ -194,42 +201,8 @@ class BookmarksRepository(
     }
 
     // ------ //
-    // ダイジェスト抽出設定
-
-    /** 最大要素数 */
-    val maxNumOfElements by lazy {
-        PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS) { p, key ->
-            p.getInt(key)
-        }
-    }
-
-    /** 抽出対象になるスター数の閾値 */
-    val starsCountThreshold by lazy {
-        PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.STARS_COUNT_THRESHOLD) { p, key ->
-            p.getInt(key)
-        }
-    }
-
-    /** カスタムダイジェストを使用する */
-    val useCustomDigest by lazy {
-        PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.USE_CUSTOM_DIGEST) { p, key ->
-            p.getBoolean(key)
-        }
-    }
-
-    /** 非表示ユーザーのスターを無視する */
-    val ignoreStarsByIgnoredUsers by lazy {
-        PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.IGNORE_STARS_BY_IGNORED_USERS) { p, key ->
-            p.getBoolean(key)
-        }
-    }
-
-    /** 同じユーザーが複数つけた同色のスターを1個だけと数える */
-    val deduplicateStars by lazy {
-        PreferenceLiveData(customDigestSettings, CustomDigestSettingsKey.DEDUPLICATE_STARS) { p, key ->
-            p.getBoolean(key)
-        }
-    }
+    // アプリ独自ダイジェスト
+    val customDigest = CustomDigestRepository(customDigestSettings)
 
     // ------ //
     // カスタムタブの設定
@@ -805,7 +778,7 @@ class BookmarksRepository(
     suspend fun loadPopularBookmarks() = withContext(Dispatchers.Default) {
         val result = runCatching {
             client.getDigestBookmarksAsync(url).await().let { digest ->
-                if (useCustomDigest.value == true) {
+                if (customDigest.useCustomDigest.value == true) {
                     val userScoredBookmarks = loadUserCustomizedDigest()
                     digest.copy(scoredBookmarks = userScoredBookmarks)
                 }
@@ -823,7 +796,11 @@ class BookmarksRepository(
             }
         }
 
-        val bookmarks = filterIgnored(digest.favoriteBookmarks.plus(digest.scoredBookmarks).distinctBy { it.user })
+        val bookmarks =
+            digest.favoriteBookmarks
+                .plus(digest.scoredBookmarks)
+                .distinctBy { it.user }
+                .map { Bookmark.create(it) }
 
         bookmarks.forEach {
             loadUserTags(it.user)
@@ -987,9 +964,13 @@ class BookmarksRepository(
      */
     @OptIn(ExperimentalStdlibApi::class)
     suspend fun loadUserCustomizedDigest() : List<BookmarkWithStarCount> {
-        val maxNumOfElements = maxNumOfElements.value ?: return emptyList()
-        val bookmarks = bookmarksEntry.value?.bookmarks.orEmpty()
-            .filterNot { it.comment.isBlank() || checkIgnored(it) }
+        val maxNumOfElements = customDigest.maxNumOfElements.value ?: return emptyList()
+        val bookmarks =
+            bookmarksEntry.value?.bookmarks.orEmpty().let { rawList ->
+                if (showIgnoredUsersInDigest.value == true) rawList.filterNot { it.comment.isBlank() }
+                else rawList.filterNot { it.comment.isBlank() || checkIgnored(it) }
+            }
+
         loadStarsEntriesForBookmarks(bookmarks)
         val stars =
             bookmarks.map {
@@ -998,8 +979,7 @@ class BookmarksRepository(
 
         val targetBookmarks =
             bookmarks.mapIndexedNotNull { idx, b ->
-                val s = stars[idx] ?: return@mapIndexedNotNull null
-                b.copy(starCount = s.allStars)
+                stars[idx]?.let { s -> b.copy(starCount = s.allStars) }
             }
         val targetStars = stars.filterNotNull()
 
@@ -1026,10 +1006,10 @@ class BookmarksRepository(
         starsEntry: StarsEntry,
         maxStarsCount: Int
     ) : Double? {
-        val deduplicateStars = deduplicateStars.value == true
-        val ignoreStarsByIgnoredUsers = ignoreStarsByIgnoredUsers.value == true
+        val deduplicateStars = customDigest.deduplicateStars.value == true
+        val ignoreStarsByIgnoredUsers = customDigest.ignoreStarsByIgnoredUsers.value == true
         val colorStarsWeight = 1.0
-        val starsCountThreshold = starsCountThreshold.value ?: return null
+        val starsCountThreshold = customDigest.starsCountThreshold.value ?: return null
         //val commentScoreWeight = 0  // TODO: コメントそのものを評価するか検討
 
         val fixedStarsEntry =
@@ -1150,7 +1130,7 @@ class BookmarksRepository(
     /**
      * 渡された全ブクマにつけられたスター情報を取得し、キャッシュしておく
      */
-    suspend fun loadStarsEntriesForBookmarks(bookmarks: List<Bookmark>) {
+    private suspend fun loadStarsEntriesForBookmarks(bookmarks: List<Bookmark>) {
         entry.value?.let { entry ->
             val bookmarkUrls = bookmarks.filter {
                 it.comment.isNotBlank()
