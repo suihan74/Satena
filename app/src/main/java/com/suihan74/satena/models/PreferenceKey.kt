@@ -243,7 +243,10 @@ enum class PreferenceKey(
     /** リストスクロールにあわせてメニューボタンを隠す */
     BOOKMARKS_HIDING_BUTTONS_BY_SCROLLING(typeInfo<Boolean>(), true),
 
-    /** 「すべて」タブで非表示ユーザーも表示する */
+    /** 「注目」タブで非表示対象も表示する */
+    BOOKMARKS_SHOWING_IGNORED_BOOKMARKS_IN_DIGEST(typeInfo<Boolean>(), false),
+
+    /** 「すべて」タブで非表示対象も表示する */
     BOOKMARKS_SHOWING_IGNORED_USERS_IN_ALL_BOOKMARKS(typeInfo<Boolean>(), true),
 
     /** IDコール先の非表示ユーザーのブクマを表示する */

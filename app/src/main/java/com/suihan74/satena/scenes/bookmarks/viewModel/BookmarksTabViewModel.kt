@@ -81,6 +81,7 @@ class BookmarksTabViewModel(
         }
         val ignoredUsers = repo.ignoredUsers.value.orEmpty()
         val mutedBookmarksShown = when (bookmarksTabType.value) {
+            BookmarksTabType.POPULAR -> repo.showIgnoredUsersInDigest.value == true
             BookmarksTabType.ALL -> repo.showIgnoredUsersInAllBookmarks
             BookmarksTabType.CUSTOM -> repo.showMutedUsersInCustomBookmarks.value == true
             else -> false
