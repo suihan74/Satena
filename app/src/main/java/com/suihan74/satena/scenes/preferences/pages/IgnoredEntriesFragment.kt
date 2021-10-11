@@ -53,7 +53,6 @@ class IgnoredEntriesFragment : Fragment() {
                     viewModel.openMenuDialog(context, entry, childFragmentManager)
                 }
             }
-            setHasFixedSize(true)
         }
 
         binding.addButton.setOnClickListener {

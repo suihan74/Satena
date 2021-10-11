@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
     <data>
+        <import type="com.suihan74.satena.models.ignoredEntry.IgnoredEntryType"/>
+        <import type="com.suihan74.satena.models.ignoredEntry.IgnoreTarget"/>
         <variable name="entry" type="com.suihan74.satena.models.ignoredEntry.IgnoredEntry"/>
     </data>
 
@@ -19,8 +21,38 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/entryText"
                 android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/entryText"
+                android:text="エントリ"
+                android:textSize="11sp"
+                android:textColor="@color/colorPrimaryText"
+                android:background="@drawable/ignore_target_background"
+                android:visibility="@{entry.type == IgnoredEntryType.TEXT &amp;&amp; entry.target.contains(IgnoreTarget.ENTRY)}"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/queryText"
+                app:layout_constraintEnd_toStartOf="@id/bookmarkText"
+                android:layout_marginStart="6dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/bookmarkText"
+                android:text="ブコメ"
+                android:textSize="11sp"
+                android:textColor="@color/colorPrimaryText"
+                android:background="@drawable/ignore_target_background"
+                android:visibility="@{entry.type == IgnoredEntryType.TEXT &amp;&amp; entry.target.contains(IgnoreTarget.BOOKMARK)}"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/entryText"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginStart="6dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
