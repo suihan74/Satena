@@ -123,9 +123,10 @@ class BookmarksActivity :
             intent.getStringExtra(EXTRA_TARGET_USER).onNotNull { user ->
                 bookmarksViewModel.bookmarksEntry.observe(this, scopedObserver { bEntry ->
                     bookmarksViewModel.bookmarksEntry.removeObserver(this)
+                    val entry = bookmarksViewModel.entry.value!!
                     val bookmark = bEntry?.bookmarks?.firstOrNull { it.user == user }
                     if (bookmark != null) {
-                        contentsViewModel.openBookmarkDetail(this@BookmarksActivity, bookmark)
+                        contentsViewModel.openBookmarkDetail(this@BookmarksActivity, entry, bookmark)
                     }
                 })
             }

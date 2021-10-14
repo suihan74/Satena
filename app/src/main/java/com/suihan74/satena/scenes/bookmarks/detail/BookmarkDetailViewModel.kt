@@ -1,12 +1,15 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
-import androidx.lifecycle.*
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.*
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
+import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarkMenuActionsImpl
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.Dispatchers
@@ -17,11 +20,9 @@ import kotlinx.coroutines.withContext
 class BookmarkDetailViewModel(
     val fragment: BookmarkDetailFragment,
     val repository : BookmarksRepository,
+    val entry : Entry,
     bookmark : Bookmark
 ) : ViewModel() {
-
-    /** 画面の表示対象のブクマ */
-    val bookmark : LiveData<Bookmark> by lazy { _bookmark }
 
     private val _bookmark = MutableLiveData<Bookmark>().also {
         it.observeForever { b ->
@@ -31,6 +32,9 @@ class BookmarkDetailViewModel(
             }
         }
     }
+
+    /** 画面の表示対象のブクマ */
+    val bookmark : LiveData<Bookmark> = _bookmark
 
     /**
      * 非表示ユーザーかどうか
@@ -226,5 +230,21 @@ class BookmarkDetailViewModel(
             it.putExtra(BookmarkPostActivity.EXTRA_URL, url)
         }
         postBookmarkLauncher.launch(intent)
+    }
+
+    // ------ //
+
+    private val bookmarkMenuActions by lazy { BookmarkMenuActionsImpl(repository) }
+
+    /** ブクマ項目に対する操作メニューを表示 */
+    suspend fun openBookmarkMenuDialog(fragmentManager: FragmentManager) {
+        val bookmark = bookmark.value!!
+        val starsEntry = runCatching { repository.getStarsEntry(bookmark) }.getOrNull()
+        bookmarkMenuActions.openBookmarkMenuDialog(
+            entry,
+            bookmark,
+            starsEntry?.value,
+            fragmentManager
+        )
     }
 }

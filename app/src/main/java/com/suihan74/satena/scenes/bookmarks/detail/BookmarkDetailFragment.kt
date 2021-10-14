@@ -10,6 +10,7 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.StarColor
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarkDetail3Binding
@@ -27,10 +28,14 @@ import kotlinx.coroutines.launch
 class BookmarkDetailFragment : Fragment() {
 
     companion object {
-        fun createInstance(bookmark: Bookmark) = BookmarkDetailFragment().withArguments {
+        fun createInstance(entry: Entry, bookmark: Bookmark) = BookmarkDetailFragment().withArguments {
+            putObject(ARG_ENTRY, entry)
             putObject(ARG_BOOKMARK, bookmark)
             putString(ARG_USER, bookmark.user)
         }
+
+        /** 表示対象のエントリ */
+        private const val ARG_ENTRY = "ARG_ENTRY"
 
         /** 表示対象のブクマ */
         private const val ARG_BOOKMARK = "ARG_BOOKMARK"
@@ -59,9 +64,10 @@ class BookmarkDetailFragment : Fragment() {
 
         // 複数回同じユーザーの詳細画面が開かれた場合使いまわすためActivityをownerにしている
         provideViewModel(bookmarksActivity, viewModelKey) {
+            val entry = args.getObject<Entry>(ARG_ENTRY)!!
             val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
             val repository = bookmarksViewModel.repository
-            BookmarkDetailViewModel(this, repository, bookmark)
+            BookmarkDetailViewModel(this, repository, entry, bookmark)
         }
     }
 
@@ -101,9 +107,8 @@ class BookmarkDetailFragment : Fragment() {
 
         // ブクマに対するメニュー
         binding.menuButton.setOnClickListener {
-            val bookmark = viewModel.bookmark.value ?: return@setOnClickListener
             lifecycleScope.launch {
-                bookmarksViewModel.openBookmarkMenuDialog(bookmark, childFragmentManager)
+                viewModel.openBookmarkMenuDialog(childFragmentManager)
             }
         }
 

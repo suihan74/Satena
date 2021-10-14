@@ -16,6 +16,7 @@ import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
 import com.suihan74.satena.models.ExtraScrollingAlignment
 import com.suihan74.satena.models.PreferenceKey
@@ -224,7 +225,7 @@ class ContentsViewModel(
     // ------ //
 
     /** 選択したブクマの詳細情報画面を開く */
-    fun openBookmarkDetail(container: BookmarkDetailOpenable, bookmark: Bookmark) {
+    fun openBookmarkDetail(container: BookmarkDetailOpenable, entry: Entry, bookmark: Bookmark) {
         val fragmentManager = container.fragmentManager
 
         val backStackName = "detail: ${bookmark.user}"
@@ -234,7 +235,7 @@ class ContentsViewModel(
             return
         }
 
-        val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(bookmark)
+        val bookmarkDetailFragment = BookmarkDetailFragment.createInstance(entry, bookmark)
         fragmentManager.beginTransaction()
             .replace(container.bookmarkDetailFrameLayoutId, bookmarkDetailFragment, backStackName)
             .addToBackStack(backStackName)
@@ -242,11 +243,11 @@ class ContentsViewModel(
     }
 
     /** ブクマをつけていないユーザーの詳細情報画面を開く */
-    fun openEmptyBookmarkDetail(container: BookmarkDetailOpenable, user: String) {
+    fun openEmptyBookmarkDetail(container: BookmarkDetailOpenable, entry: Entry, user: String) {
         val dummyBookmark = Bookmark(
             user = user,
             comment = ""
         )
-        openBookmarkDetail(container, dummyBookmark)
+        openBookmarkDetail(container, entry, dummyBookmark)
     }
 }
