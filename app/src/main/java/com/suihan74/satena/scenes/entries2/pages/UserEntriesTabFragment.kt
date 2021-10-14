@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.entries2.pages
 
 import android.os.Bundle
 import android.util.Log
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -11,7 +12,7 @@ import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.utilities.RecyclerViewScrollingUpdater
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
-import com.suihan74.utilities.extensions.getThemeColor
+import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
 
@@ -42,30 +43,26 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         val entriesAdapter = EntriesAdapter(viewLifecycleOwner)
 
         // 引っ張って更新
-        swipeLayout.apply swipeLayout@ {
-            setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
-            setOnRefreshListener {
-                viewModel.reloadLists(
-                    onError = onErrorRefreshEntries,
-                    onFinally = { this.isRefreshing = false }
-                )
+        swipeLayout.setOnRefreshListener {
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.reloadLists() }
+                    .onFailure { onErrorRefreshEntries(it) }
+                swipeLayout.isRefreshing = false
             }
         }
 
         // スクロールで追加ロード
         val scrollingUpdater = RecyclerViewScrollingUpdater {
             entriesAdapter.showProgressBar()
-            viewModel.loadAdditional(
-                onFinally = {
-                    entriesAdapter.hideProgressBar()
-                    loadCompleted()
-                },
-                onError = { e ->
-                    context.showToast(R.string.msg_get_entry_failed)
-                    Log.e("loadAdditional", Log.getStackTraceString(e))
-                }
-            )
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.loadAdditional() }
+                    .onFailure {
+                        context.showToast(R.string.msg_get_entry_failed)
+                        Log.e("loadAdditional", Log.getStackTraceString(it))
+                    }
+                entriesAdapter.hideProgressBar()
+                loadCompleted()
+            }
         }
 
         // エントリリストの設定
@@ -76,17 +73,13 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         }
 
         // タグの変更を監視
-        var isTagInitialized = false
-        val parentViewModel = parentViewModel!!
-        parentViewModel.tag.observe(viewLifecycleOwner, {
-            if (!isTagInitialized) {
-                isTagInitialized = true
-                return@observe
-            }
-
+        parentViewModel?.tag?.observe(viewLifecycleOwner, observerForOnlyUpdates {
             viewModel.tag = it
             entriesAdapter.submitEntries(null) {
-                viewModel.reloadLists(onError = onErrorRefreshEntries)
+                lifecycleScope.launchWhenResumed {
+                    runCatching { viewModel.reloadLists() }
+                        .onFailure { onErrorRefreshEntries(it) }
+                }
             }
         })
     }

@@ -25,10 +25,10 @@ class ViewModel(
 
         val intent = repository.createIntent(activity) { e -> when (e) {
             is AccountLoader.HatenaSignInException ->
-                activity.showToast(R.string.msg_hatena_sign_in_failed)
+                SatenaApplication.instance.showToast(R.string.msg_hatena_sign_in_failed)
 
             is AccountLoader.MastodonSignInException ->
-                activity.showToast(R.string.msg_auth_mastodon_failed)
+                SatenaApplication.instance.showToast(R.string.msg_auth_mastodon_failed)
         } }
 
         try {

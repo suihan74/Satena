@@ -13,6 +13,7 @@ import com.suihan74.satena.databinding.ListviewItemPrefsPostBookmarkAccountState
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
+import com.suihan74.satena.scenes.bookmarks.repository.mutableCustomDigestRepository
 import com.suihan74.satena.scenes.post.TagsListOrder
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.AccountLoader
@@ -96,6 +97,11 @@ class BookmarkViewModel(
         PreferenceKey.BOOKMARKS_EXTRA_SCROLL_ALIGNMENT,
         { it.id },
         { ExtraScrollingAlignment.fromId(it) }
+    )
+
+    /** 「注目」タブでは非表示ブクマを表示する */
+    private val displayMutedBookmarksInDigestTab = createLiveData<Boolean>(
+        PreferenceKey.BOOKMARKS_SHOWING_IGNORED_BOOKMARKS_IN_DIGEST
     )
 
     /** 「すべて」タブでは非表示ブクマを表示する */
@@ -202,37 +208,7 @@ class BookmarkViewModel(
 
     // ------ //
     /** アプリ独自のダイジェスト抽出機能用の設定ファイル */
-    private val customDigestPrefs = SafeSharedPreferences.create<CustomDigestSettingsKey>(context)
-
-    /** アプリ独自のダイジェスト抽出機能を使用する */
-    private val useCustomDigest = createLiveData<CustomDigestSettingsKey, Boolean>(
-        customDigestPrefs,
-        CustomDigestSettingsKey.USE_CUSTOM_DIGEST
-    )
-
-    /** 集計時に非表示ユーザーのスターを無視する */
-    private val customDigestIgnoreStarsByIgnoredUsers = createLiveData<CustomDigestSettingsKey, Boolean>(
-        customDigestPrefs,
-        CustomDigestSettingsKey.IGNORE_STARS_BY_IGNORED_USERS
-    )
-
-    /** 集計時に連打スターを1個だけ数える */
-    private val customDigestDeduplicateStars = createLiveData<CustomDigestSettingsKey, Boolean>(
-        customDigestPrefs,
-        CustomDigestSettingsKey.DEDUPLICATE_STARS
-    )
-
-    /** 最大抽出数 */
-    private val customDigestMaxNumOfElements = createLiveData<CustomDigestSettingsKey, Int>(
-        customDigestPrefs,
-        CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS
-    )
-
-    /** 抽出対象になる最小スター数 */
-    private val customDigestStarsCountThreshold = createLiveData<CustomDigestSettingsKey, Int>(
-        customDigestPrefs,
-        CustomDigestSettingsKey.STARS_COUNT_THRESHOLD
-    )
+    private val customDigest = mutableCustomDigestRepository(SafeSharedPreferences.create(context))
 
     // ------ //
 
@@ -271,7 +247,7 @@ class BookmarkViewModel(
             load(fragment)
         })
 
-        useCustomDigest.observe(fragment.viewLifecycleOwner, observerForOnlyUpdates {
+        customDigest.useCustomDigest.observe(fragment.viewLifecycleOwner, observerForOnlyUpdates {
             load(fragment)
         })
 
@@ -386,6 +362,7 @@ class BookmarkViewModel(
 
         addSection(R.string.pref_bookmark_section_ignoring)
         addPrefToggleItem(fragment, confirmIgnoreUser, R.string.pref_bookmarks_using_ignore_user_dialog_desc)
+        addPrefToggleItem(fragment, displayMutedBookmarksInDigestTab, R.string.pref_bookmarks_showing_ignored_bookmarks_in_digest_desc)
         addPrefToggleItem(fragment, displayMutedBookmarksInAllBookmarksTab, R.string.pref_bookmarks_showing_ignored_users_in_all_bookmarks_desc)
         addPrefToggleItem(fragment, displayMutedBookmarksInMention, R.string.pref_bookmarks_showing_ignored_users_with_calling_desc)
         addPrefToggleItem(fragment, displayIgnoredUsersStar, R.string.pref_bookmarks_showing_stars_of_ignored_users_desc)
@@ -413,13 +390,13 @@ class BookmarkViewModel(
         // --- //
 
         addSection(R.string.pref_bookmark_section_custom_digest)
-        addPrefToggleItem(fragment, useCustomDigest, R.string.digest_bookmarks_use_custom_digest_desc)
-        if (useCustomDigest.value == true) {
-            addPrefToggleItem(fragment, customDigestIgnoreStarsByIgnoredUsers, R.string.digest_bookmarks_exclude_ignored_users_desc)
-            addPrefToggleItem(fragment, customDigestDeduplicateStars, R.string.digest_bookmarks_deduplicate_stars_desc)
-            addPrefItem(fragment, customDigestMaxNumOfElements, R.string.digest_bookmarks_max_num_of_elements_picker_title) {
+        addPrefToggleItem(fragment, customDigest.useCustomDigest, R.string.digest_bookmarks_use_custom_digest_desc)
+        if (customDigest.useCustomDigest.value == true) {
+            addPrefToggleItem(fragment, customDigest.ignoreStarsByIgnoredUsers, R.string.digest_bookmarks_exclude_ignored_users_desc)
+            addPrefToggleItem(fragment, customDigest.deduplicateStars, R.string.digest_bookmarks_deduplicate_stars_desc)
+            addPrefItem(fragment, customDigest.maxNumOfElements, R.string.digest_bookmarks_max_num_of_elements_picker_title) {
                 openNumberPickerDialog(
-                    customDigestMaxNumOfElements,
+                    customDigest.maxNumOfElements,
                     min = CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS_LOWER_BOUND,
                     max = CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS_UPPER_BOUND,
                     titleId = R.string.digest_bookmarks_max_num_of_elements_picker_title,
@@ -427,9 +404,9 @@ class BookmarkViewModel(
                     fragmentManager = fragmentManager
                 )
             }
-            addPrefItem(fragment, customDigestStarsCountThreshold, R.string.digest_bookmarks_stars_count_threshold_picker_title) {
+            addPrefItem(fragment, customDigest.starsCountThreshold, R.string.digest_bookmarks_stars_count_threshold_picker_title) {
                 openNumberPickerDialog(
-                    customDigestStarsCountThreshold,
+                    customDigest.starsCountThreshold,
                     min = CustomDigestSettingsKey.STARS_COUNT_THRESHOLD_LOWER_BOUND,
                     max = CustomDigestSettingsKey.STARS_COUNT_THRESHOLD_UPPER_BOUND,
                     titleId = R.string.digest_bookmarks_stars_count_threshold_picker_title,

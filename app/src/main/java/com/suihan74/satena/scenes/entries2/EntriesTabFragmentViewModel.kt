@@ -8,9 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.ExtraScrollingAlignment
-import com.suihan74.utilities.OnError
-import com.suihan74.utilities.OnFinally
-import com.suihan74.utilities.OnSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -144,24 +141,11 @@ class EntriesTabFragmentViewModel(
     }
 
     /** 表示項目リストを初期化 */
-    fun reloadLists(
-        onSuccess: OnSuccess<Unit>? = null,
-        onError: OnError? = null,
-        onFinally: OnFinally? = null
-    ) = viewModelScope.launch(Dispatchers.Main) {
-        try {
-            when (category) {
-                Category.Notices -> loadNotices()
-                Category.Maintenance -> loadInformation()
-                else -> loadEntries()
-            }
-            onSuccess?.invoke(Unit)
-        }
-        catch (e: Throwable) {
-            onError?.invoke(e)
-        }
-        finally {
-            onFinally?.invoke()
+    suspend fun reloadLists() {
+        when (category) {
+            Category.Notices -> loadNotices()
+            Category.Maintenance -> loadInformation()
+            else -> loadEntries()
         }
     }
 
@@ -244,38 +228,21 @@ class EntriesTabFragmentViewModel(
     }
 
     /** エントリリストの追加ロード */
-    fun loadAdditional(
-        onFinally: OnFinally? = null,
-        onError: OnError? = null
-    ) = viewModelScope.launch(Dispatchers.Default) {
-        try {
-            val offset = entries.value?.size ?: 0
-            val entries = fetchEntries(offset)
-            val oldItems = this@EntriesTabFragmentViewModel.entries.value ?: emptyList()
-            this@EntriesTabFragmentViewModel.entries.postValue(
-                oldItems.plus(entries).distinctBy { it.url }
-            )
-        }
-        catch (e: Throwable) {
-            withContext(Dispatchers.Main) {
-                onError?.invoke(e)
-            }
-        }
-        finally {
-            withContext(Dispatchers.Main) {
-                onFinally?.invoke()
-            }
-        }
+    suspend fun loadAdditional() = withContext(Dispatchers.Default) {
+        val offset = entries.value?.size ?: 0
+        val entries = fetchEntries(offset)
+        val oldItems = this@EntriesTabFragmentViewModel.entries.value ?: emptyList()
+        this@EntriesTabFragmentViewModel.entries.postValue(
+            oldItems.plus(entries).distinctBy { it.url }
+        )
     }
 
     // ------ //
 
     /** 通知を削除する */
-    fun deleteNotice(notice: Notice, onError: OnError? = null) {
-        runCatching {
-            repository.deleteNotice(notice)
-        }
-        reloadLists(onError = onError)
+    suspend fun deleteNotice(notice: Notice) {
+        repository.deleteNotice(notice)
+        reloadLists()
     }
 
     // ------ //

@@ -18,7 +18,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -126,7 +125,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     /**
      * ボトムバーの項目がクリックされたときのリスナを設定する
      */
-    fun setOnBottomMenuItemClickListener(listener: Listener<UserBottomItem>?) {
+    private fun setOnBottomMenuItemClickListener(listener: Listener<UserBottomItem>?) {
         onBottomMenuItemClickListener = listener
     }
 
@@ -137,19 +136,16 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
         setTheme(Theme.themeId(prefs))
 
-        viewModel.initialize(
-            lifecycleScope,
-            forceUpdate = false,
-            onFinally = {
-                if (savedInstanceState == null) {
-                    showContents()
+        lifecycleScope.launchWhenCreated {
+            runCatching { viewModel.initialize(forceUpdate = false) }
+                .onFailure {
+                    showToast(R.string.msg_auth_failed)
+                    Log.e("error", Log.getStackTraceString(it))
                 }
-            },
-            onError = { e ->
-                showToast(R.string.msg_auth_failed)
-                Log.e("error", Log.getStackTraceString(e))
+            if (savedInstanceState == null) {
+                showContents()
             }
-        )
+        }
 
         binding = ActivityEntries2Binding.inflate(layoutInflater).also {
             it.vm = viewModel
@@ -240,7 +236,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
 
         // --- Observers ---
 
-        viewModel.signedIn.observe(this, Observer {
+        viewModel.signedIn.observe(this, {
             if (it) {
                 binding.entriesMenuNoticesButton.show()
             }
@@ -251,24 +247,24 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         })
 
         // 通信状態の変更を監視
-        SatenaApplication.instance.networkReceiver.state.observe(this, Observer { state ->
+        SatenaApplication.instance.networkReceiver.state.observe(this, { state ->
             if (state == NetworkReceiver.State.CONNECTED) {
                 val needToSignIn = viewModel.signedIn.value != true
-                viewModel.initialize(
-                    lifecycleScope,
-                    forceUpdate = false,
-                    onSuccess = {
-                        if (needToSignIn) {
-                            val accountName = HatenaClient.account?.name ?: return@initialize
-                            showToast(R.string.msg_retry_sign_in_succeeded, accountName)
+                lifecycleScope.launchWhenCreated {
+                    runCatching { viewModel.initialize(forceUpdate = false) }
+                        .onSuccess {
+                            if (needToSignIn) {
+                                HatenaClient.account?.name?.let {
+                                    showToast(R.string.msg_retry_sign_in_succeeded, it)
+                                }
+                            }
                         }
-                    }
-                )
+                }
             }
         })
 
         // 非表示エントリ情報が更新されたらリストを更新する
-        viewModel.repository.ignoredEntriesRepo.ignoredEntriesForEntries.observe(this, Observer {
+        viewModel.repository.ignoredEntriesRepo.ignoredEntriesForEntries.observe(this, {
             runCatching {
                 refreshLists()
             }
@@ -385,15 +381,15 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
 
     override fun onRestart() {
         super.onRestart()
+
         // アカウントの状態を更新する
-        viewModel.initialize(
-            lifecycleScope,
-            forceUpdate = false,
-            onError = { e ->
-                showToast(R.string.msg_auth_failed)
-                Log.e("error", Log.getStackTraceString(e))
-            }
-        )
+        lifecycleScope.launchWhenCreated {
+            runCatching { viewModel.initialize(forceUpdate = true) }
+                .onFailure {
+                    showToast(R.string.msg_auth_failed)
+                    Log.e("error", Log.getStackTraceString(it))
+                }
+        }
     }
 
     /** 戻るボタンの挙動 */

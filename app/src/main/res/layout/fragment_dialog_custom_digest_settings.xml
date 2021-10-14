@@ -36,12 +36,23 @@
                 android:layout_height="wrap_content"/>
 
         <CheckBox
+                android:id="@+id/displayMutedBookmarks"
+                android:layout_marginTop="6dp"
+                android:text="@string/pref_bookmarks_showing_ignored_bookmarks_in_digest_desc"
+                android:checked="@={vm.displayMutedBookmarks}"
+                app:layout_constraintTop_toBottomOf="@id/useCustomDigestCheckBox"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <CheckBox
                 android:id="@+id/excludeIgnoredUsersCheckBox"
                 android:layout_marginTop="6dp"
                 android:text="@string/digest_bookmarks_exclude_ignored_users_desc"
                 android:checked="@={vm.ignoreStarsByIgnoredUsers}"
                 android:visibility="@{vm.useCustomDigest}"
-                app:layout_constraintTop_toBottomOf="@id/useCustomDigestCheckBox"
+                app:layout_constraintTop_toBottomOf="@id/displayMutedBookmarks"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_width="0dp"

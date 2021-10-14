@@ -1,13 +1,9 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
-import androidx.lifecycle.LifecycleOwner
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
-import com.suihan74.satena.scenes.entries2.EntriesAdapter
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
-import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel
+import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 
@@ -34,18 +30,18 @@ class SearchEntriesViewModel(
 
     /** タブ用ViewModelへの値変更の伝播 */
     override fun connectToTab(
-        lifecycleOwner: LifecycleOwner,
+        fragment: EntriesTabFragment,
         entriesAdapter: EntriesAdapter,
         viewModel: EntriesTabFragmentViewModel,
         onError: OnError?
     ) {
-        super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
+        super.connectToTab(fragment, entriesAdapter, viewModel, onError)
 
         // 検索用パラメータの変更を伝播
-        searchQuery.observe(lifecycleOwner, {
+        searchQuery.observe(fragment.viewLifecycleOwner, {
             viewModel.searchQuery = it
         })
-        searchType.observe(lifecycleOwner, {
+        searchType.observe(fragment.viewLifecycleOwner, {
             viewModel.searchType = it
         })
     }

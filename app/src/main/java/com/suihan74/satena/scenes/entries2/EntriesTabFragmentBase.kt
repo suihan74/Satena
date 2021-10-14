@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.hatenaLib.BookmarkResult
@@ -16,7 +17,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
-import com.suihan74.utilities.OnError
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
@@ -39,7 +39,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         get() = requireActivity() as EntriesActivity
 
     /** EntriesActivityのViewModel */
-    protected val activityViewModel : EntriesViewModel
+    private val activityViewModel : EntriesViewModel
         get() = entriesActivity.viewModel
 
     /** タブの表示内容に関するViewModel */
@@ -71,9 +71,11 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
             }
 
     /** リスト更新失敗時に呼ばれる */
-    protected val onErrorRefreshEntries: OnError = { e ->
-        Log.e("error", Log.getStackTraceString(e))
-        activity?.showToast(R.string.msg_update_entries_failed)
+    protected fun onErrorRefreshEntries(e: Throwable) {
+        runCatching {
+            Log.e("error", Log.getStackTraceString(e))
+            activity?.showToast(R.string.msg_update_entries_failed)
+        }
     }
 
     /**
@@ -102,7 +104,10 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         // リスト未ロード状態なら再試行する
         SatenaApplication.instance.networkReceiver.state.observe(viewLifecycleOwner, { state ->
             if (state == NetworkReceiver.State.CONNECTED && viewModel.filteredEntries.value.isNullOrEmpty()) {
-                viewModel.reloadLists(onError = onErrorRefreshEntries)
+                lifecycleScope.launchWhenResumed {
+                    runCatching { viewModel.reloadLists() }
+                        .onFailure { onErrorRefreshEntries(it) }
+                }
             }
         })
 
@@ -124,7 +129,10 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
         // エントリリストの初期ロード
         if (viewModel.filteredEntries.value.isNullOrEmpty()) {
-            viewModel.reloadLists(onError = onErrorRefreshEntries)
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.reloadLists() }
+                    .onFailure { onErrorRefreshEntries(it) }
+            }
         }
 
         binding.entriesList.adapter.alsoAs<EntriesAdapter> {
@@ -178,7 +186,10 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     fun reload() {
         binding.entriesList.adapter.alsoAs<EntriesAdapter> {
             it.clearEntries {
-                viewModel.reloadLists(onError = onErrorRefreshEntries)
+                lifecycleScope.launchWhenResumed {
+                    runCatching { viewModel.reloadLists() }
+                        .onFailure { e -> onErrorRefreshEntries(e) }
+                }
             }
         }
     }

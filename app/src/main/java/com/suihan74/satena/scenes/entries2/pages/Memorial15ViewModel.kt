@@ -1,14 +1,12 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.EntriesAdapter
-import com.suihan74.satena.scenes.entries2.EntriesFragmentViewModel
-import com.suihan74.satena.scenes.entries2.EntriesTabFragmentViewModel
+import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.OnError
 
 class Memorial15ViewModel : EntriesFragmentViewModel() {
@@ -28,21 +26,24 @@ class Memorial15ViewModel : EntriesFragmentViewModel() {
 
     /** タブ用ViewModelへの値変更の伝播 */
     override fun connectToTab(
-        lifecycleOwner: LifecycleOwner,
+        fragment: EntriesTabFragment,
         entriesAdapter: EntriesAdapter,
         viewModel: EntriesTabFragmentViewModel,
         onError: OnError?
     ) {
-        super.connectToTab(lifecycleOwner, entriesAdapter, viewModel, onError)
+        super.connectToTab(fragment, entriesAdapter, viewModel, onError)
 
         // "タブの"初期ロード時に設定を反映させるために現在値を代入している
         // タブ数が3以上になると、TabViewModelの初期化時には既にFragmentViewModelの中身が更新されている可能性がある
         viewModel.isUserMemorial = isUserMode.value ?: false
-        isUserMode.observe(lifecycleOwner, Observer {
+        isUserMode.observe(fragment.viewLifecycleOwner, Observer {
             if (category.value != Category.Memorial15th || it == null || it == viewModel.isUserMemorial) return@Observer
             viewModel.isUserMemorial = it
             entriesAdapter.clearEntries {
-                viewModel.reloadLists(onError = onError)
+                fragment.lifecycleScope.launchWhenResumed {
+                    runCatching { viewModel.reloadLists() }
+                        .onFailure { e-> onError?.invoke(e) }
+                }
             }
         })
     }

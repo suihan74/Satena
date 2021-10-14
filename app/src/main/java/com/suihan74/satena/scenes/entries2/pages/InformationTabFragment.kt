@@ -1,12 +1,11 @@
 package com.suihan74.satena.scenes.entries2.pages
 
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.satena.scenes.entries2.InformationAdapter
-import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
 
@@ -22,8 +21,6 @@ class InformationTabFragment : EntriesTabFragmentBase() {
         entriesList: RecyclerView,
         swipeLayout: SwipeRefreshLayout
     ) {
-        val context = requireContext()
-
         // エントリリスト用のアダプタ
         val adapter = InformationAdapter()
 
@@ -31,14 +28,11 @@ class InformationTabFragment : EntriesTabFragmentBase() {
         entriesList.adapter = adapter
 
         // 引っ張って更新
-        swipeLayout.apply swipeLayout@ {
-            setProgressBackgroundColorSchemeColor(context.getThemeColor(R.attr.swipeRefreshBackground))
-            setColorSchemeColors(context.getThemeColor(R.attr.colorPrimary))
-            setOnRefreshListener {
-                viewModel.reloadLists(
-                    onError = onErrorRefreshEntries,
-                    onFinally = { this.isRefreshing = false }
-                )
+        swipeLayout.setOnRefreshListener {
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.reloadLists() }
+                    .onFailure { onErrorRefreshEntries(it) }
+                swipeLayout.isRefreshing = false
             }
         }
     }

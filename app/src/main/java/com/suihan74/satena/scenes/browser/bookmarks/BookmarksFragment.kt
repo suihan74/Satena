@@ -32,7 +32,6 @@ import com.suihan74.satena.scenes.post.BookmarkPostViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
-import com.suihan74.utilities.extensions.getThemeColor
 import com.suihan74.utilities.extensions.scopedObserver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -354,18 +353,13 @@ class BookmarksFragment :
         })
 
         // スワイプしてブクマリストを更新する
-        binding.swipeLayout.let { swipeLayout ->
-            val activity = requireActivity()
-            swipeLayout.setProgressBackgroundColorSchemeColor(activity.getThemeColor(R.attr.swipeRefreshBackground))
-            swipeLayout.setColorSchemeColors(activity.getThemeColor(R.attr.colorPrimary))
-            swipeLayout.setOnRefreshListener {
-                lifecycleScope.launchWhenResumed {
-                    when (bookmarksTabViewModel.bookmarksTabType.value) {
-                        BookmarksTabType.POPULAR -> viewModel.loadPopularBookmarks(requireContext())
-                        else -> viewModel.loadRecentBookmarks(requireContext())
-                    }
-                    swipeLayout.isRefreshing = false
+        binding.swipeLayout.setOnRefreshListener {
+            lifecycleScope.launchWhenResumed {
+                when (bookmarksTabViewModel.bookmarksTabType.value) {
+                    BookmarksTabType.POPULAR -> viewModel.loadPopularBookmarks(requireContext())
+                    else -> viewModel.loadRecentBookmarks(requireContext())
                 }
+                binding.swipeLayout.isRefreshing = false
             }
         }
     }

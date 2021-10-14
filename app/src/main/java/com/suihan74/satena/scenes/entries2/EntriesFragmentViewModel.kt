@@ -49,39 +49,51 @@ abstract class EntriesFragmentViewModel : ViewModel() {
 
     /** タブ用ViewModelへの値変更の伝播 */
     open fun connectToTab(
-        lifecycleOwner: LifecycleOwner,
+        fragment: EntriesTabFragment,
         entriesAdapter: EntriesAdapter,
         viewModel: EntriesTabFragmentViewModel,
         onError: OnError?
     ) {
+        val owner = fragment.viewLifecycleOwner
+        val lifecycleScope = fragment.lifecycleScope
+
         // Issueの変更を監視する
         // Issueの選択を監視している親のEntriesFragmentから状態をもらってくる
         viewModel.issue = issue.value
-        issue.observe(lifecycleOwner, Observer {
+        issue.observe(owner, Observer {
             if (viewModel.issue == it) return@Observer
             viewModel.issue = it
             // 一度クリアしておかないとスクロール位置が滅茶苦茶になる
             entriesAdapter.clearEntries {
-                viewModel.reloadLists(onError = onError)
+                lifecycleScope.launchWhenResumed {
+                    runCatching { viewModel.reloadLists() }
+                        .onFailure { e -> onError?.invoke(e) }
+                }
             }
         })
 
         // Tagの変更を監視する
         viewModel.tag = tag.value
-        tag.observe(lifecycleOwner, Observer {
+        tag.observe(owner, Observer {
             if (viewModel.tag == it) return@Observer
             viewModel.tag = it
             entriesAdapter.clearEntries {
-                viewModel.reloadLists(onError = onError)
+                lifecycleScope.launchWhenResumed {
+                    runCatching { viewModel.reloadLists() }
+                        .onFailure { e -> onError?.invoke(e) }
+                }
             }
         })
 
         // サイトURL指定
         viewModel.siteUrl = siteUrl.value
-        siteUrl.observe(lifecycleOwner, Observer {
+        siteUrl.observe(owner, Observer {
             if (category.value != Category.Site && (it == null || viewModel.siteUrl == it)) return@Observer
             viewModel.siteUrl = it
-            viewModel.reloadLists(onError = onError)
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.reloadLists() }
+                    .onFailure { e -> onError?.invoke(e) }
+            }
         })
     }
 }

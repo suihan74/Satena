@@ -10,7 +10,7 @@
                 type="com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailViewModel" />
     </data>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    <com.suihan74.utilities.views.SwipeRefreshLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/swipe_layout"
             android:layout_width="match_parent"
@@ -25,6 +25,5 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
+    </com.suihan74.utilities.views.SwipeRefreshLayout>
 </layout>

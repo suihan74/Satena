@@ -929,7 +929,19 @@ object HatenaClient : BaseClient(), CoroutineScope {
             if (limit != null) append("&limit=$limit")
         }
         return@async try {
-            getJson<BookmarksDigest>(apiUrl, withCookie = true)
+            if (signedIn()) {
+                val tasks = listOf<Deferred<BookmarksDigest>>(
+                    async { getJson(apiUrl, withCookie = false) },
+                    async { getJson(apiUrl, withCookie = true) }
+                )
+                tasks.awaitAll()
+                tasks[0].await().copy(
+                    favoriteBookmarks = tasks[1].await().favoriteBookmarks
+                )
+            }
+            else {
+                getJson<BookmarksDigest>(apiUrl, withCookie = true)
+            }
         }
         catch (e: NotFoundException) {
             // まだブクマされていない場合

@@ -3,6 +3,7 @@
     <declare-styleable name="AppTheme">
         <attr name="dividerColor" format="color"/>
         <attr name="swipeRefreshBackground" format="color"/>
+        <attr name="swipeRefreshForeground" format="color"/>
         <attr name="bookmarkDialogBackgroundColor" format="color"/>
         <attr name="bookmarkDialogBackground" format="color|reference"/>
         <attr name="entryCommentBackground" format="color"/>
@@ -42,5 +43,10 @@
         <attr name="text" format="string"/>
         <attr name="textColor" format="color"/>
         <attr name="backgroundTint" format="color"/>
+    </declare-styleable>
+
+    <declare-styleable name="SwipeRefreshLayout">
+        <attr name="progressBackgroundColor" format="color" />
+        <attr name="progressForegroundColor" format="color" />
     </declare-styleable>
 </resources>

@@ -116,16 +116,12 @@ class BrowserActivity :
         initializeToolbar()
 
         // スワイプしてページを更新する
-        binding.swipeLayout.let { swipeLayout ->
-            swipeLayout.setProgressBackgroundColorSchemeColor(getThemeColor(R.attr.swipeRefreshBackground))
-            swipeLayout.setColorSchemeColors(getThemeColor(R.attr.colorPrimary))
-            swipeLayout.setOnRefreshListener {
-                viewModel.setOnPageFinishedListener {
-                    swipeLayout.isRefreshing = false
-                    viewModel.setOnPageFinishedListener(null)
-                }
-                binding.webview.reload()
+        binding.swipeLayout.setOnRefreshListener {
+            viewModel.setOnPageFinishedListener {
+                binding.swipeLayout.isRefreshing = false
+                viewModel.setOnPageFinishedListener(null)
             }
+            binding.webview.reload()
         }
     }
 
