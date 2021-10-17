@@ -277,11 +277,11 @@ class BookmarksRepository(
     /** 画面を停止して行うべき読み込みの発生状態 */
     val staticLoading : LiveData<Boolean> = _staticLoading
 
-    suspend fun startLoading() = withContext(Dispatchers.Main) {
+    suspend fun startLoading() = withContext(Dispatchers.Main.immediate) {
         _staticLoading.value = true
     }
 
-    suspend fun stopLoading() = withContext(Dispatchers.Main) {
+    suspend fun stopLoading() = withContext(Dispatchers.Main.immediate) {
         _staticLoading.value = false
     }
 
@@ -493,20 +493,22 @@ class BookmarksRepository(
         val entry = intent.getObjectExtra<Entry>(EXTRA_ENTRY)
         if (entry != null) {
             loadEntry(entry)
-            runCatching {
+            val result = runCatching {
                 loadBookmarks(entry.url)
             }
-            .onFailure(onLoadBookmarksFailure)
+            stopLoading()
+            result.onFailure(onLoadBookmarksFailure)
             return
         }
 
         val eid = intent.getLongExtra(EXTRA_ENTRY_ID, 0L)
         if (eid > 0L) {
-            runCatching {
+            val result = runCatching {
                 val e = loadEntry(eid)
                 loadBookmarks(e.url)
             }
-            .onFailure(onLoadBookmarksFailure)
+            stopLoading()
+            result.onFailure(onLoadBookmarksFailure)
             return
         }
 
@@ -523,13 +525,13 @@ class BookmarksRepository(
         }.getOrNull()
 
         if (url != null && URLUtil.isNetworkUrl(url)) {
-            runCatching {
+            val result = runCatching {
                 val modifiedUrl = modifySpecificUrls(url) ?: url
                 loadEntry(modifiedUrl)
                 loadBookmarks(modifiedUrl)
             }
-            .onFailure(onLoadBookmarksFailure)
-
+            stopLoading()
+            result.onFailure(onLoadBookmarksFailure)
             return
         }
 

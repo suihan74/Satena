@@ -157,6 +157,7 @@ class BookmarksViewModel(
             is CancellationException -> return
             is ForbiddenException -> R.string.msg_bookmark_comments_are_hidden
             is IllegalArgumentException -> R.string.invalid_url_error
+            is NotFoundException -> return
             else -> R.string.msg_update_bookmarks_failed
         }
         Log.w("loadingBookmarksFailure", e.stackTraceToString())

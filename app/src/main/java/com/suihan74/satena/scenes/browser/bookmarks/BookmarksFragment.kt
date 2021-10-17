@@ -90,6 +90,7 @@ class ContentsViewModel(
                         loadBookmarks(entryUrl)
                     }
                 }
+                bookmarksRepo.stopLoading()
                 loadingJobMutex.withLock {
                     loadBookmarksEntryJob = null
                 }
