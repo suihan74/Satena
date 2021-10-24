@@ -22,6 +22,9 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <intent>
+            <action android:name="android.media.browse.MediaBrowserService" />
+        </intent>
     </queries>
 
     <application
@@ -40,21 +43,27 @@
 
         <!-- Activities -->
 
-        <activity android:name=".scenes.splash.SplashActivity" android:launchMode="singleTop" android:noHistory="true" android:theme="@style/SplashTheme">
+        <activity android:name=".scenes.splash.SplashActivity"
+                android:exported="true"
+                android:launchMode="singleTop"
+                android:noHistory="true"
+                android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".scenes.entries2.EntriesActivity" android:launchMode="singleTop">
-        </activity>
+        <activity android:name=".scenes.entries2.EntriesActivity"
+                android:launchMode="singleTop"/>
 
-        <activity android:name=".scenes.browser.BrowserActivity" android:launchMode="standard" android:windowSoftInputMode="adjustResize">
-        </activity>
+        <activity android:name=".scenes.browser.BrowserActivity"
+                android:launchMode="standard"
+                android:windowSoftInputMode="adjustResize"/>
 
         <!-- ブクマ一覧画面 -->
-        <activity android:name=".scenes.bookmarks.BookmarksActivity">
+        <activity android:name=".scenes.bookmarks.BookmarksActivity"
+                android:exported="true">
             <intent-filter android:label="ブコメを見る">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT" />
@@ -75,6 +84,7 @@
         <!-- ブコメ投稿画面 -->
         <activity
                 android:name=".scenes.post.BookmarkPostActivity"
+                android:exported="true"
                 android:theme="@style/AppDialogTheme">
             <intent-filter android:label="ブコメを書く">
                 <action android:name="android.intent.action.SEND"/>
@@ -86,7 +96,9 @@
 
         <!-- ログイン画面 -->
         <activity android:name=".scenes.authentication.HatenaAuthenticationActivity" android:launchMode="singleTask"/>
-        <activity android:name=".scenes.authentication.MastodonAuthenticationActivity" android:launchMode="singleTask">
+        <activity android:name=".scenes.authentication.MastodonAuthenticationActivity"
+                android:exported="true"
+                android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -100,6 +112,7 @@
         <!-- 他ツール類 -->
         <!-- ブコメページをブラウザで開く共有機能 -->
         <activity android:name=".scenes.tools.OpenBookmarksPageActivity"
+                android:exported="true"
                 android:theme="@style/Theme.AppCompat.NoActionBar"
                 android:noHistory="true"
                 android:launchMode="singleTask">

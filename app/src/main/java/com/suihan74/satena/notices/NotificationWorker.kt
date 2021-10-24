@@ -156,7 +156,7 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
                                 context,
                                 1,
                                 openEntryIntent,
-                                PendingIntent.FLAG_UPDATE_CURRENT
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                             )
                         ),
                         NotificationCompat.Action(
@@ -166,7 +166,7 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
                                 context,
                                 2,
                                 openBookmarkIntent,
-                                PendingIntent.FLAG_UPDATE_CURRENT
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                             )
                         ),
                         NotificationCompat.Action(
@@ -176,7 +176,7 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
                                 context,
                                 3,
                                 openNoticesIntent,
-                                PendingIntent.FLAG_UPDATE_CURRENT
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                             )
                         )
                     )
@@ -202,7 +202,7 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
         }
 
         val pendingIntent =
-            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
         val style = NotificationCompat.BigTextStyle()
             .bigText(message)
