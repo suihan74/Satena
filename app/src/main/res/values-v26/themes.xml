@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- フォーカス時に勝手にハイライトしない -->
+    <style name="Base.V26.AppTheme" parent="Base.AppTheme">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.AppTheme.Light" parent="Base.AppTheme.Light">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.AppTheme.Dark" parent="Base.AppTheme.Dark">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.AppTheme.ExDark" parent="Base.AppTheme.ExDark">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+        <item name="android:ambientShadowAlpha">0.25</item>
+    </style>
+
+    <style name="Base.V26.AppDialogTheme" parent="Base.AppDialogTheme">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.AppDialogTheme.Light" parent="Base.AppDialogTheme.Light">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.AppDialogTheme.Dark" parent="Base.AppDialogTheme.Dark">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.AppDialogTheme.ExDark" parent="Base.AppDialogTheme.ExDark">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+
+    <style name="Base.V26.AlertDialogStyle" parent="Base.AlertDialogStyle">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.AlertDialogStyle.Light" parent="Base.AlertDialogStyle.Light">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.AlertDialogStyle.Dark" parent="Base.AlertDialogStyle.Dark">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.AlertDialogStyle.ExDark" parent="Base.AlertDialogStyle.ExDark">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+
+    <style name="Base.V26.BottomSheetDialogTheme" parent="Base.BottomSheetDialogTheme">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.BottomSheetDialogTheme.Light" parent="Base.BottomSheetDialogTheme.Light">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.BottomSheetDialogTheme.Dark" parent="Base.BottomSheetDialogTheme.Dark">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+    <style name="Base.V26.BottomSheetDialogTheme.ExDark" parent="Base.BottomSheetDialogTheme.ExDark">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+
+    <!-- ====== -->
+
+    <style name="AppTheme" parent="Base.V26.AppTheme"/>
+    <style name="AppTheme.Light" parent="Base.V26.AppTheme.Light"/>
+    <style name="AppTheme.Dark" parent="Base.V26.AppTheme.Dark"/>
+    <style name="AppTheme.ExDark" parent="Base.V26.AppTheme.ExDark"/>
+
+    <style name="AppDialogTheme" parent="Base.V26.AppDialogTheme"/>
+    <style name="AppDialogTheme.Light" parent="Base.V26.AppDialogTheme.Light"/>
+    <style name="AppDialogTheme.Dark" parent="Base.V26.AppDialogTheme.Dark"/>
+    <style name="AppDialogTheme.ExDark" parent="Base.V26.AppDialogTheme.ExDark"/>
+
+    <style name="AlertDialogStyle" parent="Base.V26.AlertDialogStyle"/>
+    <style name="AlertDialogStyle.Light" parent="Base.V26.AlertDialogStyle.Light"/>
+    <style name="AlertDialogStyle.Dark" parent="Base.V26.AlertDialogStyle.Dark"/>
+    <style name="AlertDialogStyle.ExDark" parent="Base.V26.AlertDialogStyle.ExDark"/>
+
+    <style name="BottomSheetDialogTheme" parent="Base.V26.BottomSheetDialogTheme"/>
+    <style name="BottomSheetDialogTheme.Light" parent="Base.V26.BottomSheetDialogTheme.Light"/>
+    <style name="BottomSheetDialogTheme.Dark" parent="Base.V26.BottomSheetDialogTheme.Dark"/>
+    <style name="BottomSheetDialogTheme.ExDark" parent="Base.V26.BottomSheetDialogTheme.ExDark"/>
+</resources>

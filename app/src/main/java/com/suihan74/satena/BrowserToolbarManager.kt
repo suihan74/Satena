@@ -54,7 +54,7 @@ class BrowserToolbarManager : BroadcastReceiver() {
 
         fun getOnClickPendingIntent(context: Context): PendingIntent {
             val broadcastIntent = Intent(context, BrowserToolbarManager::class.java)
-            return PendingIntent.getBroadcast(context, 0, broadcastIntent, 0)
+            return PendingIntent.getBroadcast(context, 0, broadcastIntent, PendingIntent.FLAG_IMMUTABLE)
         }
     }
 }

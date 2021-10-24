@@ -27,7 +27,9 @@ import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.checkRunningByTag
 import com.suihan74.utilities.extensions.whenFalse
 import com.suihan74.utilities.extensions.whenTrue
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -50,6 +52,10 @@ class SatenaApplication : Application() {
 
     lateinit var networkReceiver : NetworkReceiver
         private set
+
+    // ------ //
+
+    val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     // ------ //
 
@@ -188,6 +194,7 @@ class SatenaApplication : Application() {
 
     override fun onTerminate() {
         unregisterNetworkCallback()
+        coroutineScope.cancel()
         super.onTerminate()
     }
 
@@ -196,7 +203,7 @@ class SatenaApplication : Application() {
     /** 各種グローバルリポジトリを生成 */
     private fun initializeRepositories() {
         ignoredEntriesRepository = IgnoredEntriesRepository(ignoredEntryDao).also {
-            GlobalScope.launch {
+            coroutineScope.launch {
                 it.loadAllIgnoredEntries()
             }
         }

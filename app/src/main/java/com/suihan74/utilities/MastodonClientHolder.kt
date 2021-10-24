@@ -4,10 +4,8 @@ import com.google.gson.Gson
 import com.sys1yagi.mastodon4j.MastodonClient
 import com.sys1yagi.mastodon4j.api.entity.Account
 import com.sys1yagi.mastodon4j.extension.fromJson
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 
 object MastodonClientHolder {
     var client : MastodonClient? = null
@@ -16,7 +14,7 @@ object MastodonClientHolder {
     var account : Account? = null
         private set
 
-    fun signInAsync(c: MastodonClient) : Deferred<Account> = GlobalScope.async(Dispatchers.Default) {
+    suspend fun signIn(c: MastodonClient) : Account = withContext(Dispatchers.Default) {
         signOut()
 
         client = c
@@ -28,7 +26,7 @@ object MastodonClientHolder {
             throw RuntimeException("failed to sign-in mastodon", e)
         }
 
-        return@async account!!
+        return@withContext account!!
     }
 
     fun signOut() {

@@ -227,16 +227,17 @@ class EntriesRepository(
             return
         }
 
-        GlobalScope.launch(Dispatchers.IO) {
+        val app = SatenaApplication.instance
+        app.coroutineScope.launch(Dispatchers.IO) {
             runCatching {
-                GlideApp.get(SatenaApplication.instance).clearDiskCache()
+                GlideApp.get(app).clearDiskCache()
 
                 prefs.editSync {
                     putObject(PreferenceKey.IMAGE_CACHE_LAST_CLEARED, now)
                 }
 
                 withContext(Dispatchers.Main) {
-                    SatenaApplication.instance.showToast(R.string.msg_pref_generals_clear_image_cache_succeeded)
+                    app.showToast(R.string.msg_pref_generals_clear_image_cache_succeeded)
                 }
             }
         }

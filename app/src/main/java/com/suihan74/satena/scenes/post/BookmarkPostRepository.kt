@@ -177,7 +177,7 @@ class BookmarkPostRepository(
      */
     private suspend fun signIn() = withContext(Dispatchers.Main) {
         val result = runCatching {
-            accountLoader.signInHatenaAsync(reSignIn = false).await()!!
+            accountLoader.signInHatena(reSignIn = false)!!
         }
 
         if (result.isSuccess) {
@@ -221,7 +221,7 @@ class BookmarkPostRepository(
      */
     private suspend fun signInMastodon() = withContext(Dispatchers.Main) {
         val result = runCatching {
-            accountLoader.signInMastodonAsync(reSignIn = false).await()
+            accountLoader.signInMastodon(reSignIn = false)
         }
 
         if (result.isSuccess) {
@@ -397,9 +397,7 @@ class BookmarkPostRepository(
         saveStates()
 
         val result = runCatching {
-            accountLoader.signInHatenaAsync(reSignIn = false).await()
-                ?: throw AccountLoader.HatenaSignInException()
-
+            accountLoader.signInHatena(reSignIn = false) ?: throw AccountLoader.HatenaSignInException()
             accountLoader.client.postBookmarkAsync(
                 url = entry.url,
                 comment = editData.comment,
@@ -421,7 +419,7 @@ class BookmarkPostRepository(
                     if (bookmarkResult.comment.isBlank()) "\"${entry.title}\" ${entry.url}"
                     else "${bookmarkResult.comment} / \"${entry.title}\" ${entry.url}"
 
-                accountLoader.signInMastodonAsync(reSignIn = false).await()
+                accountLoader.signInMastodon(reSignIn = false)
                 val client = accountLoader.mastodonClientHolder.client!!
                 Statuses(client).postStatus(
                     status = status,

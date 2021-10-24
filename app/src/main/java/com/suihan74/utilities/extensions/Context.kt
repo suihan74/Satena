@@ -11,6 +11,7 @@ import androidx.annotation.AttrRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -49,7 +50,7 @@ object ContextExtensions {
     /**
      * 同一タグがついたトーストの重複通知を回避する
      */
-    fun Context.showToast(message: String, tag: ToastTag) = GlobalScope.launch {
+    fun Context.showToast(message: String, tag: ToastTag) = SatenaApplication.instance.coroutineScope.launch {
         liveTagsMutex.withLock {
             if (liveTags.contains(tag)) return@launch
             liveTags.add(tag)

@@ -8,7 +8,9 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.sys1yagi.mastodon4j.MastodonClient
-import kotlinx.coroutines.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -42,19 +44,19 @@ class AccountLoader(
 
     // ------ //
 
-    suspend fun signInAccounts(reSignIn: Boolean = false) {
+    suspend fun signInAccounts(reSignIn: Boolean = false) = coroutineScope {
         val jobs = listOf(
-            signInHatenaAsync(reSignIn),
-            signInMastodonAsync(reSignIn)
+            async { signInHatena(reSignIn) },
+            async { signInMastodon(reSignIn) }
         )
         jobs.awaitAll()
     }
 
-    fun signInHatenaAsync(reSignIn: Boolean = true) : Deferred<Account?> = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
+    suspend fun signInHatena(reSignIn: Boolean = true) : Account? {
         hatenaMutex.withLock {
             if (client.signedIn() && !reSignIn) {
                 sharedHatenaFlow.emit(client.account)
-                return@async client.account
+                return client.account
             }
 
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
@@ -65,7 +67,7 @@ class AccountLoader(
             val userRkEncryptedStr = prefs.getString(PreferenceKey.HATENA_RK)
             if (userRkEncryptedStr.isNullOrEmpty()) {
                 sharedHatenaFlow.emit(null)
-                return@async null
+                return null
             }
             else {
                 val result = runCatching {
@@ -80,16 +82,16 @@ class AccountLoader(
 
                 val account = result.getOrNull()
                 sharedHatenaFlow.emit(account)
-                return@async result.getOrNull()
+                return result.getOrNull()
             }
         }
     }
 
-    fun signInMastodonAsync(reSignIn: Boolean = true) = GlobalScope.async(Dispatchers.Default + SupervisorJob()) {
+    suspend fun signInMastodon(reSignIn: Boolean = true) : com.sys1yagi.mastodon4j.api.entity.Account? {
         mastodonMutex.withLock {
             if (mastodonClientHolder.signedIn() && !reSignIn) {
                 sharedMastodonFlow.emit(mastodonClientHolder.account)
-                return@async mastodonClientHolder.account
+                return mastodonClientHolder.account
             }
 
             val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
@@ -98,7 +100,7 @@ class AccountLoader(
 
             if (mastodonAccessTokenEncryptedStr.isEmpty()) {
                 sharedMastodonFlow.emit(null)
-                return@async null
+                return null
             }
             // Mastodonログイン
             val serializer = ObjectSerializer<CryptUtility.EncryptedData>()
@@ -115,11 +117,11 @@ class AccountLoader(
                     .accessToken(data.accessToken)
                     .build()
 
-                val account = mastodonClientHolder.signInAsync(client).await()
+                val account = mastodonClientHolder.signIn(client)
 
                 sharedMastodonFlow.emit(account)
 
-                return@async account
+                return account
             }
             catch (e: Throwable) {
                 sharedMastodonFlow.emit(null)
@@ -149,12 +151,12 @@ class AccountLoader(
     suspend fun signInMastodon(instanceName: String, accessToken: String) : MastodonAccount {
         mastodonMutex.withLock {
             try {
-                val account = MastodonClientHolder.signInAsync(
+                val account = MastodonClientHolder.signIn(
                     MastodonClient
                         .Builder(instanceName, OkHttpClient.Builder(), Gson())
                         .accessToken(accessToken)
                         .build()
-                ).await()
+                )
                 sharedMastodonFlow.emit(account)
                 saveMastodonAccount(instanceName, accessToken)
 
