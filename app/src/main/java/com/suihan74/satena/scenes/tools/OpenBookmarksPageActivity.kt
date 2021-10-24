@@ -5,14 +5,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.utilities.exceptions.InvalidUrlException
-import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.createIntentWithoutThisApplication
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -22,7 +22,7 @@ class OpenBookmarksPageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val srcUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
-        GlobalScope.launch {
+        lifecycleScope.launch {
             redirect(srcUrl)
         }
     }

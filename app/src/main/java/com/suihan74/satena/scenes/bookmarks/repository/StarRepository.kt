@@ -313,7 +313,7 @@ class StarRepository(
 
     private suspend fun signIn() {
         runCatching {
-            accountLoader.signInHatenaAsync(reSignIn = false).await()
+            accountLoader.signInHatena(reSignIn = false)
         }
     }
 

@@ -319,7 +319,7 @@ class UserRelationRepository(
      * @throws AccountLoader.HatenaSignInException
      */
     private suspend fun signIn() : HatenaClient {
-        accountLoader.signInHatenaAsync(reSignIn = false).await()
+        accountLoader.signInHatena(reSignIn = false)
         return accountLoader.client
     }
 }

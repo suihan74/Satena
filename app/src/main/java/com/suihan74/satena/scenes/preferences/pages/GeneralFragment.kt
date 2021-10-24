@@ -16,7 +16,6 @@ import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.putObjectExtra
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.floor
@@ -281,8 +280,8 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
             .setMessage(R.string.pref_generals_clear_image_cache_dialog_message)
             .setNegativeButton(R.string.dialog_cancel)
             .setPositiveButton(R.string.dialog_ok) {
-                GlobalScope.launch(Dispatchers.Main) {
-                    val app = SatenaApplication.instance
+                val app = SatenaApplication.instance
+                app.coroutineScope.launch(Dispatchers.Main) {
                     withContext(Dispatchers.IO) {
                         GlideApp.get(app).clearDiskCache()
                     }

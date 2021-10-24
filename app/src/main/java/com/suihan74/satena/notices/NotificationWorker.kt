@@ -51,7 +51,7 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
             val localLastUpdated = prefs.getNullable<LocalDateTime>(PreferenceKey.NOTICES_LAST_SEEN)
             val now = LocalDateTime.now()
 
-            SatenaApplication.instance.accountLoader.signInHatenaAsync().await()
+            SatenaApplication.instance.accountLoader.signInHatena()
 
             val response = HatenaClient.getNoticesAsync().await()
             if (isLastSeenUpdatable) {
