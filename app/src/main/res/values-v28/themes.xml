@@ -1,25 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="Base.AppTheme"/>
-    <style name="AppTheme.Light" parent="Base.AppTheme.Light"/>
-    <style name="AppTheme.Dark" parent="Base.AppTheme.Dark"/>
-    <style name="AppTheme.ExDark" parent="Base.AppTheme.ExDark">
-        <item name="android:outlineAmbientShadowColor">?colorPrimary</item>
-        <item name="android:ambientShadowAlpha">0.25</item>
+    <style name="Base.V28.AppTheme" parent="Base.V26.AppTheme"/>
+    <style name="Base.V28.AppTheme.Light" parent="Base.V26.AppTheme.Light"/>
+    <style name="Base.V28.AppTheme.Dark" parent="Base.V26.AppTheme.Dark"/>
+    <style name="Base.V28.AppTheme.ExDark" parent="Base.V26.AppTheme.ExDark">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
     </style>
 
-    <style name="AppDialogTheme" parent="Base.AppDialogTheme"/>
-    <style name="AppDialogTheme.Light" parent="Base.AppDialogTheme.Light"/>
-    <style name="AppDialogTheme.Dark" parent="Base.AppDialogTheme.Dark"/>
-    <style name="AppDialogTheme.ExDark" parent="Base.AppDialogTheme.ExDark"/>
+    <style name="Base.V28.AppDialogTheme" parent="Base.V26.AppDialogTheme"/>
+    <style name="Base.V28.AppDialogTheme.Light" parent="Base.V26.AppDialogTheme.Light"/>
+    <style name="Base.V28.AppDialogTheme.Dark" parent="Base.V26.AppDialogTheme.Dark"/>
+    <style name="Base.V28.AppDialogTheme.ExDark" parent="Base.V26.AppDialogTheme.ExDark"/>
 
-    <style name="AlertDialogStyle" parent="Base.AlertDialogStyle"/>
-    <style name="AlertDialogStyle.Light" parent="Base.AlertDialogStyle.Light"/>
-    <style name="AlertDialogStyle.Dark" parent="Base.AlertDialogStyle.Dark"/>
-    <style name="AlertDialogStyle.ExDark" parent="Base.AlertDialogStyle.ExDark"/>
+    <style name="Base.V28.AlertDialogStyle" parent="Base.V26.AlertDialogStyle"/>
+    <style name="Base.V28.AlertDialogStyle.Light" parent="Base.V26.AlertDialogStyle.Light"/>
+    <style name="Base.V28.AlertDialogStyle.Dark" parent="Base.V26.AlertDialogStyle.Dark"/>
+    <style name="Base.V28.AlertDialogStyle.ExDark" parent="Base.V26.AlertDialogStyle.ExDark"/>
+    <style name="Base.V28.BottomSheetDialogTheme" parent="Base.V26.BottomSheetDialogTheme"/>
+    <style name="Base.V28.BottomSheetDialogTheme.Light" parent="Base.V26.BottomSheetDialogTheme.Light"/>
+    <style name="Base.V28.BottomSheetDialogTheme.Dark" parent="Base.V26.BottomSheetDialogTheme.Dark"/>
+    <style name="Base.V28.BottomSheetDialogTheme.ExDark" parent="Base.V26.BottomSheetDialogTheme.ExDark"/>
 
-    <style name="BottomSheetDialogTheme" parent="Base.BottomSheetDialogTheme"/>
-    <style name="BottomSheetDialogTheme.Light" parent="Base.BottomSheetDialogTheme.Light"/>
-    <style name="BottomSheetDialogTheme.Dark" parent="Base.BottomSheetDialogTheme.Dark"/>
-    <style name="BottomSheetDialogTheme.ExDark" parent="Base.BottomSheetDialogTheme.ExDark"/>
+    <!-- ====== -->
+
+    <style name="AppTheme" parent="Base.V28.AppTheme"/>
+    <style name="AppTheme.Light" parent="Base.V28.AppTheme.Light"/>
+    <style name="AppTheme.Dark" parent="Base.V28.AppTheme.Dark"/>
+    <style name="AppTheme.ExDark" parent="Base.V28.AppTheme.ExDark"/>
+
+    <style name="AppDialogTheme" parent="Base.V28.AppDialogTheme"/>
+    <style name="AppDialogTheme.Light" parent="Base.V28.AppDialogTheme.Light"/>
+    <style name="AppDialogTheme.Dark" parent="Base.V28.AppDialogTheme.Dark"/>
+    <style name="AppDialogTheme.ExDark" parent="Base.V28.AppDialogTheme.ExDark"/>
+
+    <style name="AlertDialogStyle" parent="Base.V28.AlertDialogStyle"/>
+    <style name="AlertDialogStyle.Light" parent="Base.V28.AlertDialogStyle.Light"/>
+    <style name="AlertDialogStyle.Dark" parent="Base.V28.AlertDialogStyle.Dark"/>
+    <style name="AlertDialogStyle.ExDark" parent="Base.V28.AlertDialogStyle.ExDark"/>
+
+    <style name="BottomSheetDialogTheme" parent="Base.V28.BottomSheetDialogTheme"/>
+    <style name="BottomSheetDialogTheme.Light" parent="Base.V28.BottomSheetDialogTheme.Light"/>
+    <style name="BottomSheetDialogTheme.Dark" parent="Base.V28.BottomSheetDialogTheme.Dark"/>
+    <style name="BottomSheetDialogTheme.ExDark" parent="Base.V28.BottomSheetDialogTheme.ExDark"/>
 </resources>
