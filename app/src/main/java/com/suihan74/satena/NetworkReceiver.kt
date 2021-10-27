@@ -3,11 +3,16 @@ package com.suihan74.satena
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
-import android.net.NetworkCapabilities
+import android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET
+import android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED
 import androidx.annotation.RequiresApi
-import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import com.suihan74.utilities.SingleUpdateMutableLiveData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 class NetworkReceiver(private val context: Context) {
     enum class State {
@@ -22,30 +27,46 @@ class NetworkReceiver(private val context: Context) {
     private val mState = SingleUpdateMutableLiveData<State>()
     val state : LiveData<State>  = mState
 
-    var previousState = State.INITIALIZING
-        private set
+    private var previousState = State.INITIALIZING
+
+    private val networks = HashSet<String>()
+
+    private val mutex = Mutex()
+
+    // ------ //
 
     @RequiresApi(23)
     val networkCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) = checkConnection()
-        override fun onLost(network: Network) = checkConnection()
+        override fun onAvailable(network: Network) {
+            SatenaApplication.instance.coroutineScope.launch {
+                mutex.withLock {
+                    val nc = context.getSystemService(ConnectivityManager::class.java)
+                        .getNetworkCapabilities(network)
+                    if (
+                        nc != null &&
+                        nc.hasCapability(NET_CAPABILITY_INTERNET) &&
+                        nc.hasCapability(NET_CAPABILITY_VALIDATED)
+                    ) {
+                        networks.add(network.toString())
+                    }
+                    checkConnection()
+                }
+            }
+        }
+        override fun onLost(network: Network) {
+            SatenaApplication.instance.coroutineScope.launch {
+                mutex.withLock {
+                    networks.remove(network.toString())
+                    checkConnection()
+                }
+            }
+        }
     }
 
-    @RequiresApi(23)
-    @WorkerThread
-    private fun checkConnection() {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetworks = cm.allNetworks
-            .mapNotNull { cm.getNetworkCapabilities((it)) }
-            .filter {
-                it.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                it.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-            }
-
-        // 「wifi,lteなど問わず何か一つでも通信手段が確立されている状態」をCONNECTEDと判断する
+    private suspend fun checkConnection() = withContext(Dispatchers.Default) {
         val state =
-            if (activeNetworks.isNotEmpty()) State.CONNECTED
-            else State.DISCONNECTED
+            if (networks.isEmpty()) State.DISCONNECTED
+            else State.CONNECTED
 
         if (mState.value != state) {
             // 初回の状態を通知しないようにする
