@@ -445,7 +445,7 @@ class BookmarkPostViewModel(
 
         AlertDialogFragment.Builder()
             .setTitle(R.string.pref_post_bookmarks_tags_list_order_desc)
-            .setSingleChoiceItems(labelIds, selectedItem) { f, which ->
+            .setSingleChoiceItems(labelIds, selectedItem) { _, which ->
                 repository.tagsListOrder.value = items[which]
             }
             .setNegativeButton(R.string.dialog_cancel)

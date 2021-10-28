@@ -398,18 +398,20 @@ class BookmarksViewModel(
         bookmark: Bookmark,
         color: StarColor,
         quote: String?
-    ) = withContext(Dispatchers.Main) {
-        val result = runCatching {
-            repository.postStar(entry, bookmark, color, quote.orEmpty())
-        }.onSuccess {
-            context.showToast(R.string.msg_post_star_succeeded, bookmark.user)
-            // 表示を更新する
-            repository.updateStarCounts(bookmark)
-        }.onFailure { e ->
-            Log.w("postStar", Log.getStackTraceString(e))
-            when (e) {
-                is StarExhaustedException -> context.showToast(R.string.msg_no_color_stars, color.name)
-                else -> context.showToast(R.string.msg_post_star_failed, bookmark.user)
+    ) {
+        withContext(Dispatchers.Main) {
+            runCatching {
+                repository.postStar(entry, bookmark, color, quote.orEmpty())
+            }.onSuccess {
+                context.showToast(R.string.msg_post_star_succeeded, bookmark.user)
+                // 表示を更新する
+                repository.updateStarCounts(bookmark)
+            }.onFailure { e ->
+                Log.w("postStar", Log.getStackTraceString(e))
+                when (e) {
+                    is StarExhaustedException -> context.showToast(R.string.msg_no_color_stars, color.name)
+                    else -> context.showToast(R.string.msg_post_star_failed, bookmark.user)
+                }
             }
         }
     }
