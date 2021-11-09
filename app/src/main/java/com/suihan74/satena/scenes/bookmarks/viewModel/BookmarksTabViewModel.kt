@@ -38,7 +38,7 @@ class BookmarksTabViewModel(
         repo.bookmarksDigest.removeObservers(owner)
         when (tabType) {
             BookmarksTabType.POPULAR -> setPopularBookmarksLiveData(owner)
-            else -> setRecentBookmarksLiveData(owner, liveData!!, tabType)
+            else -> setRecentBookmarksLiveData(owner, liveData!!)
         }
         _bookmarksTabType.value = tabType
     }
@@ -56,7 +56,7 @@ class BookmarksTabViewModel(
     }
 
     @MainThread
-    private fun setRecentBookmarksLiveData(owner: LifecycleOwner, liveData: LiveData<List<Bookmark>>, tabType: BookmarksTabType) {
+    private fun setRecentBookmarksLiveData(owner: LifecycleOwner, liveData: LiveData<List<Bookmark>>) {
         bookmarks = liveData.also { ld ->
             ld.observe(owner, Observer { rawList ->
                 viewModelScope.launch(Dispatchers.Main) {

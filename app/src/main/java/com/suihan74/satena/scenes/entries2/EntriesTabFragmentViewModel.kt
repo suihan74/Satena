@@ -329,15 +329,13 @@ class EntriesTabFragmentViewModel(
     fun onClickComment(
         activity: FragmentActivity,
         entry: Entry,
-        bookmarkResult: BookmarkResult,
-        fragmentManager: FragmentManager
+        bookmarkResult: BookmarkResult
     ) {
         openComment(activity, entry, bookmarkResult)
     }
 
     /** コメント部分長押し時の処理 */
     fun onLongClickComment(
-        activity: FragmentActivity,
         entry: Entry,
         bookmarkResult: BookmarkResult,
         fragmentManager: FragmentManager

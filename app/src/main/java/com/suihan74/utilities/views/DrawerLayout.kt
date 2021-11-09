@@ -39,10 +39,10 @@ open class DrawerLayout @JvmOverloads constructor(
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         super.onLayout(changed, l, t, r, b)
-        updateSystemGestureExclusionRects(l, t, r, b)
+        updateSystemGestureExclusionRects(r, b)
     }
 
-    private fun updateSystemGestureExclusionRects(l: Int, t: Int, r: Int, b: Int) {
+    private fun updateSystemGestureExclusionRects(r: Int, b: Int) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             return
         }
