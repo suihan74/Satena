@@ -535,11 +535,15 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     countRegex.find(it.wholeText())?.groupValues?.get(1)?.toIntOrNull()
                 } ?: return@m null
 
+                val scheme =
+                    if (entryUrl.startsWith("https://")) "https://"
+                    else "http://"
+
                 val rootUrl =
                     entry.getElementsByAttributeValue("data-gtm-click-label", "entry-info-root-url")
                         .firstOrNull()
                         ?.attr("href")
-                        ?.let { path -> Uri.decode(rootUrlRegex.replaceFirst(path, "https://")) }
+                        ?.let { path -> Uri.decode(rootUrlRegex.replaceFirst(path, scheme)) }
                         ?: entryUrl
 
                 val faviconUrl = entry.getElementsByClass("favicon").firstOrNull()?.attr("src") ?: ""
