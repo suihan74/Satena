@@ -519,6 +519,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
             val countRegex = Regex("""(\d+)\s*users""")
             val thumbnailRegex = Regex("""background-image:url\('(.+)'\);""")
+            val rootUrlRegex = Regex("""^/site/""")
             val classNamePrefix = "entrylist-contents"
 
             val dateTimeFormat = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
@@ -534,9 +535,12 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     countRegex.find(it.wholeText())?.groupValues?.get(1)?.toIntOrNull()
                 } ?: return@m null
 
-                val rootUrl = entry.getElementsByAttributeValue("data-gtm-click-label", "entry-info-root-url").firstOrNull()?.attr("href")?.let { path ->
-                    Uri.decode(path.replace("/entrylist?url=", ""))
-                } ?: entryUrl
+                val rootUrl =
+                    entry.getElementsByAttributeValue("data-gtm-click-label", "entry-info-root-url")
+                        .firstOrNull()
+                        ?.attr("href")
+                        ?.let { path -> Uri.decode(rootUrlRegex.replaceFirst(path, "https://")) }
+                        ?: entryUrl
 
                 val faviconUrl = entry.getElementsByClass("favicon").firstOrNull()?.attr("src") ?: ""
 
