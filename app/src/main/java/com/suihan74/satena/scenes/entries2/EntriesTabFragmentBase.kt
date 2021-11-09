@@ -174,11 +174,11 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
         // コメント部分クリック時の挙動
         adapter.setOnCommentClickedListener { entry, bookmark ->
-            viewModel.onClickComment(entriesActivity, entry, bookmark, childFragmentManager)
+            viewModel.onClickComment(entriesActivity, entry, bookmark)
         }
 
         adapter.setOnCommentLongClickedListener { entry, bookmark ->
-            viewModel.onLongClickComment(entriesActivity, entry, bookmark, childFragmentManager)
+            viewModel.onLongClickComment(entry, bookmark, childFragmentManager)
         }
     }
 
