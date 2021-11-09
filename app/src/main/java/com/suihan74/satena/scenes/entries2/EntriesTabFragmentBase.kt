@@ -113,6 +113,14 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
         initializeRecyclerView(binding.entriesList, binding.swipeLayout)
 
+        // エントリリストの初期ロード
+        if (viewModel.filteredEntries.value.isNullOrEmpty()) {
+            lifecycleScope.launchWhenResumed {
+                runCatching { viewModel.reloadLists() }
+                    .onFailure { onErrorRefreshEntries(it) }
+            }
+        }
+
         return binding.root
     }
 
@@ -126,14 +134,6 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         viewModel.onResume()
 
         setEntriesAdapterListeners()
-
-        // エントリリストの初期ロード
-        if (viewModel.filteredEntries.value.isNullOrEmpty()) {
-            lifecycleScope.launchWhenResumed {
-                runCatching { viewModel.reloadLists() }
-                    .onFailure { onErrorRefreshEntries(it) }
-            }
-        }
 
         binding.entriesList.adapter.alsoAs<EntriesAdapter> {
             it.onResume()

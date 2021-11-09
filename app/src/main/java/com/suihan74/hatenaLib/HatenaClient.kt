@@ -8,6 +8,8 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
@@ -42,8 +44,11 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
     /** はてなブックマークの情報取得にログイン情報が必要なリクエストに付加するクッキー */
     private var mRk : HttpCookie? = null
+        get() = runBlocking { signedInMutex.withLock { field } }
+
     /** はてなスターの情報取得にログイン情報が必要なリクエストに付加するキー */
     private var mRksForStar : String? = null
+        get() = runBlocking { signedInMutex.withLock { field } }
 
     /** rkの値 クッキー情報の"rk=???;"の???部分 */
     val rkStr : String?
@@ -51,25 +56,12 @@ object HatenaClient : BaseClient(), CoroutineScope {
 
     /** 現在ログイン済みのユーザ情報 */
     var account : Account? = null
-        get() = synchronized(this) { field }
-        private set(value) {
-            synchronized(this) {
-                field = value
-            }
-        }
+        get() = runBlocking { signedInMutex.withLock { field } }
 
     /** キャッシュされた非表示ユーザーリスト */
     var ignoredUsers : List<String> = emptyList()
-        get() {
-            synchronized(field) {
-                return field
-            }
-        }
-        private set(value) {
-            synchronized(field) {
-                field = value
-            }
-        }
+        get() = runBlocking { ignoredUsersMutex.withLock { field } }
+    private val ignoredUsersMutex = Mutex()
 
     /** 非表示ユーザーリストをある程度の時間キャッシュする */
     private var mIgnoredUsersLastUpdated = LocalDateTime.MIN
@@ -79,26 +71,15 @@ object HatenaClient : BaseClient(), CoroutineScope {
     /**
      * HatenaClientがログイン済みか確認する
      */
-    fun signedIn() : Boolean = mSignedIn //mRk != null && account != null
+    fun signedIn() : Boolean = runBlocking { signedInMutex.withLock { mSignedIn } } //mRk != null && account != null
     private var mSignedIn : Boolean = false
-        get() = synchronized(field) { field }
-        set(value) {
-            synchronized(field) {
-                field = value
-            }
-        }
+    private val signedInMutex = Mutex()
 
     /**
      * HatenaClientがはてなスターのサービスにログイン済みかを確認する
      */
-    fun signedInStar() : Boolean = mSignedInStar
+    fun signedInStar() : Boolean = runBlocking { signedInMutex.withLock { mSignedInStar } }
     private var mSignedInStar : Boolean = false
-        get() = synchronized(field) { field }
-        set(value) {
-            synchronized(field) {
-                field = value
-            }
-        }
 
     /**
      * ログイン
@@ -136,15 +117,21 @@ object HatenaClient : BaseClient(), CoroutineScope {
         cookieManager.cookieStore.add(URI(cookie.domain), cookie)
 
         try {
-            mRk = cookie
-            mSignedIn = true
-            account = getAccountAsync().await()
-            if (account?.login != true) throw SignInFailureException()
+            signedInMutex.withLock {
+                mRk = cookie
+                mSignedIn = true
+            }
+            getAccountAsync().await().let {
+                if (!it.login) throw SignInFailureException()
+                account = it
+            }
         }
         catch (e: Throwable) {
-            mRk = null
-            mSignedIn = false
-            account = null
+            signedInMutex.withLock {
+                mRk = null
+                mSignedIn = false
+                account = null
+            }
             throw SignInFailureException(e)
         }
 
@@ -156,14 +143,16 @@ object HatenaClient : BaseClient(), CoroutineScope {
     }
 
     private suspend fun signInImpl(response: Response) : Account = response.use {
-        if (!response.isSuccessful) {
-            mSignedIn = false
-            mSignedInStar = false
-            throw SignInFailureException("connection error")
-        }
+        signedInMutex.withLock {
+            if (!response.isSuccessful) {
+                mSignedIn = false
+                mSignedInStar = false
+                throw SignInFailureException("connection error")
+            }
 
-        cookieManager.cookieStore.cookies.firstOrNull { it.name == "rk" }?.let { rk ->
-            mRk = rk
+            cookieManager.cookieStore.cookies.firstOrNull { it.name == "rk" }?.let { rk ->
+                mRk = rk
+            }
         }
 
         try {
@@ -174,10 +163,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
             throw SignInFailureException(e)
         }
 
-        try {
+        runCatching {
             getIgnoredUsersAsync().await()
         }
-        catch(e: Throwable) {}
 
         return account!!
     }
@@ -187,11 +175,13 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     private fun signInStarAsync() : Deferred<Any> = async {
         require(signedIn()) { "need to sign-in to use the star service" }
-        val url = "$S_BASE_URL/entries.json?${cacheAvoidance()}"
-        val response = getJson<StarsEntries>(url)
+        signedInMutex.withLock {
+            val url = "$S_BASE_URL/entries.json?${cacheAvoidance()}"
+            val response = getJson<StarsEntries>(url)
 
-        mRksForStar = response.rks ?: throw RuntimeException("connection error: $S_BASE_URL")
-        mSignedInStar = true
+            mRksForStar = response.rks ?: throw RuntimeException("connection error: $S_BASE_URL")
+            mSignedInStar = true
+        }
     }
 
 
@@ -200,13 +190,19 @@ object HatenaClient : BaseClient(), CoroutineScope {
      */
     fun signOut() {
         cookieManager.cookieStore.removeAll()
-        mRk = null
-        mRksForStar = null
-        account = null
-        ignoredUsers = emptyList()
-        mIgnoredUsersLastUpdated = LocalDateTime.MIN
-        mSignedIn = false
-        mSignedInStar = false
+        runBlocking {
+            signedInMutex.withLock {
+                mRk = null
+                mRksForStar = null
+                account = null
+                ignoredUsersMutex.withLock {
+                    ignoredUsers = emptyList()
+                }
+                mIgnoredUsersLastUpdated = LocalDateTime.MIN
+                mSignedIn = false
+                mSignedInStar = false
+            }
+        }
     }
 
     /**
@@ -217,8 +213,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
         if (mRk == null) throw RuntimeException("need to sign-in to get account")
 
         val url = "$B_BASE_URL/my.name"
-        account = getJson<Account>(url)
-        return@async account!!
+        return@async getJson<Account>(url).also {
+            account = it
+        }
     }
 
     /**
@@ -227,24 +224,24 @@ object HatenaClient : BaseClient(), CoroutineScope {
     fun getIgnoredUsersAsync(limit: Int?, cursor: String?) : Deferred<IgnoredUsersResponse> = async {
         require(signedIn()) { "need to sign-in to get ignored users" }
 
-        val url = buildString {
-            append("$B_BASE_URL/api/my/ignore_users?${cacheAvoidance()}")
-            if (limit == null) {
-                val count = account!!.ignoresRegex.count { it == '|' } * 2
-                append("&limit=$count")
+        ignoredUsersMutex.withLock {
+            val url = buildString {
+                append("$B_BASE_URL/api/my/ignore_users?${cacheAvoidance()}")
+                if (limit == null) {
+                    val count = account!!.ignoresRegex.count { it == '|' } * 2
+                    append("&limit=$count")
+                } else {
+                    append("&limit=$limit")
+                }
+                if (cursor != null) {
+                    append("&cursor=$cursor")
+                }
             }
-            else {
-                append("&limit=$limit")
-            }
-            if (cursor != null) {
-                append("&cursor=$cursor")
+
+            return@async getJson<IgnoredUsersResponse>(url).also {
+                ignoredUsers = it.users
             }
         }
-
-        val response = getJson<IgnoredUsersResponse>(url)
-        ignoredUsers = response.users
-
-        return@async response
     }
 
     /**
@@ -1340,14 +1337,17 @@ object HatenaClient : BaseClient(), CoroutineScope {
         require(signedIn()) { "need to sign-in to mute users" }
         val url = "$B_BASE_URL/${account!!.name}/api.ignore.json"
         try {
-            val params = mapOf(
-                "username" to user,
-                "rks" to account!!.rks
-            )
-            post(url, params).use { response ->
-                if (!response.isSuccessful) throw RuntimeException("failed to mute an user: $user")
-                if (!ignoredUsers.contains(user)) {
-                    ignoredUsers = ignoredUsers.plus(user)
+            val prevState = ignoredUsers
+            ignoredUsersMutex.withLock {
+                val params = mapOf(
+                    "username" to user,
+                    "rks" to account!!.rks
+                )
+                post(url, params).use { response ->
+                    if (!response.isSuccessful) throw RuntimeException("failed to mute an user: $user")
+                    if (!prevState.contains(user)) {
+                        ignoredUsers = prevState.plus(user)
+                    }
                 }
             }
         }
@@ -1363,13 +1363,16 @@ object HatenaClient : BaseClient(), CoroutineScope {
         require(signedIn()) { "need to sign-in to mute users" }
         val url = "$B_BASE_URL/${account!!.name}/api.unignore.json"
         try {
-            val params = mapOf(
-                "username" to user,
-                "rks" to account!!.rks
-            )
-            post(url, params).use { response ->
-                if (!response.isSuccessful) throw RuntimeException("failed to mute an user: $user")
-                ignoredUsers = ignoredUsers.filterNot { it == user }.toList()
+            val prevState = ignoredUsers
+            ignoredUsersMutex.withLock {
+                val params = mapOf(
+                    "username" to user,
+                    "rks" to account!!.rks
+                )
+                post(url, params).use { response ->
+                    if (!response.isSuccessful) throw RuntimeException("failed to mute an user: $user")
+                    ignoredUsers = prevState.filterNot { it == user }.toList()
+                }
             }
         }
         catch (e: IOException) {
