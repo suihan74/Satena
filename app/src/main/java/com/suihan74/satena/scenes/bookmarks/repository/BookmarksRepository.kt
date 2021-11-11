@@ -130,13 +130,20 @@ class BookmarksRepository(
         private set
 
     /** エントリ情報 */
-    val entry = MutableLiveData<Entry?>()
+    private val _entry = MutableLiveData<Entry?>()
+    val entry : LiveData<Entry?> = _entry
 
     /** ブクマを含むエントリ情報 */
-    val bookmarksEntry = MutableLiveData<BookmarksEntry?>()
+    private val _bookmarksEntry = MutableLiveData<BookmarksEntry?>()
+    val bookmarksEntry : LiveData<BookmarksEntry?> = _bookmarksEntry
+
 
     /** エントリのスター情報 */
     val entryStarsEntry = MutableLiveData<StarsEntry?>()
+
+    /** エントリの関連エントリ */
+    private val _relatedEntries = MutableLiveData<List<Entry>>()
+    val relatedEntries : LiveData<List<Entry>> = _relatedEntries
 
     // 各タブでの表示用のブクマリスト
 
@@ -293,8 +300,8 @@ class BookmarksRepository(
     suspend fun clear() = withContext(Dispatchers.Main) {
         loadingBookmarksEntryMutex.withLock {
             _staticLoading.value = false
-            entry.value = null
-            bookmarksEntry.value = null
+            _entry.value = null
+            _bookmarksEntry.value = null
             entryStarsEntry.value = null
             bookmarksRecentCache = emptyList()
             _bookmarksDigest.value = null
@@ -367,8 +374,11 @@ class BookmarksRepository(
     }
 
     /** 取得済みのエントリ情報をセットする */
-    private suspend fun loadEntry(e: Entry) = withContext(Dispatchers.Main.immediate) {
-        entry.value = e
+    private suspend fun loadEntry(e: Entry) {
+        withContext(Dispatchers.Main.immediate) {
+            _entry.value = e
+        }
+        loadRelatedEntries(e.url)
         readEntriesRepo.insert(e, ReadEntryCondition.BOOKMARKS_SHOWN)
     }
 
@@ -380,8 +390,9 @@ class BookmarksRepository(
     suspend fun loadEntry(url: String) : Entry {
         val response = runCatching { getEntry(url) }.getOrThrow()
         withContext(Dispatchers.Main) {
-            entry.value = response
+            _entry.value = response
         }
+        loadRelatedEntries(response.url)
         readEntriesRepo.insert(response, ReadEntryCondition.BOOKMARKS_OR_PAGE_SHOWN)
         return response
     }
@@ -394,8 +405,9 @@ class BookmarksRepository(
     private suspend fun loadEntry(eid: Long) : Entry {
         val response = runCatching { getEntry(eid) }.getOrThrow()
         withContext(Dispatchers.Main) {
-            entry.value = response
+            _entry.value = response
         }
+        loadRelatedEntries(response.url)
         readEntriesRepo.insert(response, ReadEntryCondition.BOOKMARKS_SHOWN)
         return response
     }
@@ -428,6 +440,16 @@ class BookmarksRepository(
         return result.getOrElse { throw ConnectionFailureException(it) }
     }
 
+    private suspend fun loadRelatedEntries(url: String) = withContext(Dispatchers.Default) {
+        runCatching {
+            client.getRelatedEntries(url)
+        }.onSuccess {
+            _relatedEntries.postValue(it)
+        }.onFailure {
+            _relatedEntries.postValue(emptyList())
+        }
+    }
+
     /**
      * ブクマエントリ情報をロードする
      *
@@ -446,7 +468,7 @@ class BookmarksRepository(
             }
 
             withContext(Dispatchers.Main.immediate) {
-                bookmarksEntry.value = e
+                _bookmarksEntry.value = e
             }
         }
     }
@@ -694,7 +716,7 @@ class BookmarksRepository(
     suspend fun updateBookmark(
         result: BookmarkResult
     ) = withContext(Dispatchers.Default) {
-        entry.postValue(
+        _entry.postValue(
             entry.value?.copy(
                 id = result.eid ?: entry.value?.id ?: 0L,
                 bookmarkedData = result
@@ -726,7 +748,7 @@ class BookmarksRepository(
                 bookmarks = e.bookmarks.updateFirstOrPlusAhead(b) { it.user == user }
             )
         }
-        bookmarksEntry.postValue(bEntry)
+        _bookmarksEntry.postValue(bEntry)
 
         val digest = bookmarksDigest.value
         _bookmarksDigest.postValue(BookmarksDigest(
@@ -912,7 +934,7 @@ class BookmarksRepository(
                 }
                 val new = bookmarks.map { Bookmark.create(it) }
 
-                bookmarksEntry.postValue(
+                _bookmarksEntry.postValue(
                     bEntry.copy(bookmarks = exists.plus(new).sortedByDescending { it.timestamp })
                 )
             }
@@ -1211,7 +1233,7 @@ class BookmarksRepository(
 
         // 表示を更新する
 
-        entry.postValue(
+        _entry.postValue(
             entry.value?.copy(bookmarkedData = null)
         )
 
@@ -1220,7 +1242,7 @@ class BookmarksRepository(
                 bookmarks = e.bookmarks.filterNot { it.user == user }
             )
         }
-        bookmarksEntry.postValue(bEntry)
+        _bookmarksEntry.postValue(bEntry)
 
         val digest = bookmarksDigest.value
         _bookmarksDigest.postValue(BookmarksDigest(

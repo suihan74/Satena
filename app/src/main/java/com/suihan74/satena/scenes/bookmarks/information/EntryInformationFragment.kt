@@ -12,10 +12,11 @@ import androidx.fragment.app.Fragment
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
-import com.suihan74.satena.databinding.FragmentEntryInformation3Binding
+import com.suihan74.satena.databinding.FragmentEntryInformationBinding
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.makeSpannedFromHtml
@@ -42,7 +43,7 @@ class EntryInformationFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentEntryInformation3Binding.inflate(inflater, container, false).also {
+        val binding = FragmentEntryInformationBinding.inflate(inflater, container, false).also {
             it.vm = bookmarksViewModel
             it.lifecycleOwner = viewLifecycleOwner
         }
@@ -109,6 +110,8 @@ class EntryInformationFragment : Fragment() {
             }
         }
 
+        binding.relatedEntriesList.adapter = EntriesAdapter(viewLifecycleOwner)
+
         return binding.root
     }
 
@@ -150,7 +153,7 @@ class EntryInformationFragment : Fragment() {
         @JvmStatic
         @BindingAdapter("lowerFloorButtonVisibility")
         fun setLowerFloorButtonVisibility(view: View, entry: Entry?) {
-            view.setVisibility(entry != null && HatenaClient.isUrlCommentPages(entry.url))
+            view.setVisibility(entry != null && HatenaClient.isUrlCommentPages(entry.url), disabledDefault = View.INVISIBLE)
         }
     }
 }

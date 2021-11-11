@@ -13,6 +13,7 @@ import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.scenes.entries2.InformationAdapter
 import com.suihan74.satena.scenes.entries2.NoticesAdapter
 import com.suihan74.utilities.DividerItemDecorator
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.toVisibility
 
 /** 区切り線 */
@@ -62,6 +63,14 @@ fun RecyclerView.setEntries(
 
         else ->
             (adapter as? EntriesAdapter)?.submitEntries(entries, readEntryIds)
+    }
+}
+
+/** エントリリスト */
+@BindingAdapter("entries")
+fun RecyclerView.setEntries(entries: List<Entry>?) {
+    adapter.alsoAs<EntriesAdapter> {
+        it.submitEntries(entries)
     }
 }
 

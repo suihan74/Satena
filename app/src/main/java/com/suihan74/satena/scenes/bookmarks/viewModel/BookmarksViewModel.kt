@@ -83,6 +83,9 @@ class BookmarksViewModel(
     /** エントリにつけられたスター */
     val entryStarsEntry = repository.entryStarsEntry
 
+    /** エントリの関連エントリ */
+    val relatedEntries = repository.relatedEntries
+
     /** アクションバーに表示するサブタイトル */
     val subtitle = MutableLiveData<String>()
 
