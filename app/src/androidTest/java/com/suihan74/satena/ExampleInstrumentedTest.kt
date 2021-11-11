@@ -2,7 +2,6 @@ package com.suihan74.satena
 
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry
-import com.jakewharton.threetenabp.AndroidThreeTen
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -57,8 +56,6 @@ class ExampleInstrumentedTest {
     private val appContext = InstrumentationRegistry.getInstrumentation().targetContext
 
     init {
-        AndroidThreeTen.init(appContext)
-
         // キーバージョン移行テスト
         SafeSharedPreferences.migrate<TestKeyOld, TestKey>(appContext) { old, latest -> }
     }

@@ -913,6 +913,23 @@ object HatenaClient : BaseClient(), CoroutineScope {
     }
 
     /**
+     * 関連エントリ情報を取得する
+     */
+    suspend fun getRelatedEntries(url: String) : List<Entry> = coroutineScope {
+        try {
+            val apiUrl = "$B_BASE_URL/api/ipad.related_entry.json?ad=0&url=${Uri.encode(url)}"
+            getJson<RelatedEntriesResponse>(
+                RelatedEntriesResponse::class.java,
+                apiUrl,
+                withCookie = false
+            ).entries
+        }
+        catch (e: Throwable) {
+            throw ConnectionFailureException(cause = e)
+        }
+    }
+
+    /**
      * ブックマークリストを取得する
      */
     fun getRecentBookmarksAsync(
