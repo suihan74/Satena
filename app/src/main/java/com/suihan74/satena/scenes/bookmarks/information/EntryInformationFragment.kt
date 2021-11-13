@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.RecyclerView
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
@@ -16,10 +17,13 @@ import com.suihan74.satena.databinding.FragmentEntryInformationBinding
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.entries2.EntriesAdapter
 import com.suihan74.satena.startInnerBrowser
+import com.suihan74.utilities.RecyclerState
+import com.suihan74.utilities.RecyclerType
 import com.suihan74.utilities.bindings.setVisibility
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.makeSpannedFromHtml
+import com.suihan74.utilities.extensions.putObjectExtra
 
 /** ドロワ部分にエントリ情報を表示する */
 class EntryInformationFragment : Fragment() {
@@ -110,7 +114,14 @@ class EntryInformationFragment : Fragment() {
             }
         }
 
-        binding.relatedEntriesList.adapter = EntriesAdapter(viewLifecycleOwner)
+        binding.relatedEntriesList.adapter = RelatedEntriesAdapter(viewLifecycleOwner).also { adapter ->
+            adapter.setOnItemClickedListener {
+                val intent = Intent(bookmarksActivity, BookmarksActivity::class.java).apply {
+                    putObjectExtra(BookmarksActivity.EXTRA_ENTRY, it)
+                }
+                startActivity(intent)
+            }
+        }
 
         return binding.root
     }
@@ -135,6 +146,16 @@ class EntryInformationFragment : Fragment() {
     // ------ //
 
     object BindingAdapters {
+        @JvmStatic
+        @BindingAdapter("relatedEntries")
+        fun setRelatedEntries(recyclerView: RecyclerView, entries: List<Entry>?) {
+            recyclerView.adapter.alsoAs<RelatedEntriesAdapter> { adapter ->
+                adapter.submitList(
+                    entries?.map { RecyclerState(RecyclerType.BODY, it) }.orEmpty()
+                )
+            }
+        }
+
         /** エントリURLを装飾してボタンに表示する */
         @JvmStatic
         @BindingAdapter("entryPageUrl")
