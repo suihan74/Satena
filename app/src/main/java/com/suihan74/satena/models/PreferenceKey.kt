@@ -191,6 +191,9 @@ enum class PreferenceKey(
     /** EntryReadActionType.BOILERPLATE時の定型文 */
     ENTRY_READ_ACTION_BOILERPLATE(typeInfo<String>(), ""),
 
+    /** エントリ検索設定 */
+    ENTRY_SEARCH_SETTING(typeInfo<EntrySearchSetting>(), EntrySearchSetting()),
+
     ////////////////////////////////////////
     // bookmarks
     ////////////////////////////////////////

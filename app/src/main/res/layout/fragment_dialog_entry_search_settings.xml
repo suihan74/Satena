@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="fragment"
+                type="com.suihan74.satena.scenes.entries2.dialog.SearchSettingsDialog" />
+        <variable name="vm" type="com.suihan74.satena.scenes.entries2.dialog.SearchSettingsDialog.DialogViewModel"/>
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:paddingTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:id="@+id/title"
+                android:text="@string/entry_search_settings_title"
+                android:textSize="18sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="12dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/searchModeButton"
+                android:background="?selectableItemBackground"
+                android:text="@{@string/entry_search_settings_mode_desc(fragment.getString(vm.searchType.textId))}"
+                tools:text="@string/entry_search_settings_mode_desc"
+                android:textColor="?textColor"
+                android:textAlignment="textStart"
+                android:onClick="@{() -> vm.openSearchTypePicker(fragment)}"
+                app:layout_constraintTop_toBottomOf="@id/title"
+                app:layout_constraintBottom_toTopOf="@id/minBookmarksButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="12dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/minBookmarksButton"
+                android:background="?selectableItemBackground"
+                android:text="@{@string/entry_search_settings_min_bookmarks_desc(vm.users)}"
+                tools:text="@string/entry_search_settings_min_bookmarks_desc"
+                android:textAllCaps="false"
+                android:textColor="?textColor"
+                android:textAlignment="textStart"
+                android:onClick="@{() -> vm.openUsersPicker(fragment)}"
+                app:layout_constraintTop_toBottomOf="@id/searchModeButton"
+                app:layout_constraintBottom_toTopOf="@id/safeSearchCheckBox"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:paddingHorizontal="12dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/dateDescText"
+                android:text="@string/entry_search_settings_date_desc"
+                app:layout_constraintTop_toTopOf="@id/dateBeginButton"
+                app:layout_constraintBottom_toBottomOf="@id/dateBeginButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/dateBeginButton"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                android:paddingHorizontal="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/dateBeginButton"
+                android:background="?selectableItemBackground"
+                android:text="@{vm.dateBegin}"
+                android:textColor="?textColor"
+                android:textAlignment="center"
+                android:onClick="@{() -> vm.openDateBeginPicker(fragment)}"
+                app:layout_constraintTop_toBottomOf="@id/minBookmarksButton"
+                app:layout_constraintBottom_toTopOf="@id/safeSearchCheckBox"
+                app:layout_constraintStart_toEndOf="@id/dateDescText"
+                app:layout_constraintEnd_toStartOf="@id/dateSeparator"
+                android:layout_marginHorizontal="8dp"
+                android:paddingHorizontal="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <TextView
+                android:id="@+id/dateSeparator"
+                android:text="～"
+                app:layout_constraintTop_toTopOf="@id/dateBeginButton"
+                app:layout_constraintBottom_toBottomOf="@id/dateBeginButton"
+                app:layout_constraintStart_toEndOf="@id/dateBeginButton"
+                app:layout_constraintEnd_toStartOf="@id/dateEndButton"
+                android:layout_marginHorizontal="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/dateEndButton"
+                android:background="?selectableItemBackground"
+                android:text="@{vm.dateEnd}"
+                android:textColor="?textColor"
+                android:textAlignment="center"
+                android:onClick="@{() -> vm.openDateEndPicker(fragment)}"
+                app:layout_constraintTop_toBottomOf="@id/minBookmarksButton"
+                app:layout_constraintBottom_toTopOf="@id/safeSearchCheckBox"
+                app:layout_constraintStart_toEndOf="@id/dateSeparator"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginHorizontal="8dp"
+                android:paddingHorizontal="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ImageButton
+                android:id="@+id/clearDateButton"
+                android:foreground="@drawable/ic_baseline_close"
+                android:foregroundTint="?textColor"
+                android:background="?actionBarItemBackground"
+                android:onClick="@{() -> vm.clearDate()}"
+                app:layout_constraintTop_toTopOf="@id/dateBeginButton"
+                app:layout_constraintBottom_toBottomOf="@id/dateBeginButton"
+                app:layout_constraintStart_toEndOf="@id/dateEndButton"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        <CheckBox
+                android:id="@+id/safeSearchCheckBox"
+                android:background="?selectableItemBackground"
+                android:text="@string/entry_search_settings_safe_desc"
+                android:checked="@={vm.safe}"
+                android:textColor="?textColor"
+                android:textAlignment="textStart"
+                app:layout_constraintTop_toBottomOf="@id/dateBeginButton"
+                app:layout_constraintBottom_toTopOf="@id/safeSearchCheckBox"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:paddingVertical="14dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <View
+                android:id="@+id/closeButtonSeparator"
+                android:background="?bottomSheetDialogHandleColor"
+                app:layout_constraintTop_toBottomOf="@id/safeSearchCheckBox"
+                app:layout_constraintBottom_toTopOf="@id/okButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                app:layout_constraintVertical_bias="1"
+                android:layout_marginTop="20dp"
+                android:layout_marginHorizontal="12dp"
+                android:layout_width="0dp"
+                android:layout_height="2dp"/>
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/cancelButton"
+                style="@style/ButtonBarButtonStyle"
+                android:text="@string/dialog_cancel"
+                android:textColor="?bottomSheetDialogHandleColor"
+                android:textSize="14sp"
+                android:layout_marginEnd="12dp"
+                app:layout_constraintTop_toTopOf="@id/okButton"
+                app:layout_constraintBottom_toBottomOf="@id/okButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/okButton"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintHorizontal_bias="1"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"/>
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/okButton"
+                style="@style/ButtonBarButtonStyle"
+                android:text="@string/dialog_register"
+                android:textColor="?colorPrimary"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/closeButtonSeparator"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/cancelButton"
+                app:layout_constraintEnd_toEndOf="@id/closeButtonSeparator"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

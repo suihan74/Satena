@@ -20,6 +20,7 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.checkFromSpam
@@ -197,6 +198,13 @@ class EntriesRepository(
     /** エクストラスクロール機能のツマミの配置 */
     val extraScrollingAlignment
         get() = ExtraScrollingAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_SCROLL_ALIGNMENT))
+
+    /** 検索設定 */
+    val searchSetting by lazy {
+        PreferenceLiveData(prefs, PreferenceKey.ENTRY_SEARCH_SETTING) { p, key ->
+            p.getObject<EntrySearchSetting>(key)
+        }
+    }
 
     /** 初期化処理 */
     suspend fun initialize(forceUpdate: Boolean = false) = withContext(Dispatchers.Default) {
@@ -577,14 +585,22 @@ class EntriesRepository(
     /** エントリを検索する */
     private suspend fun searchEntries(tabPosition: Int, offset: Int?, params: LoadEntryParameter) : List<Entry> {
         val query = params.get<String>(LoadEntryParameter.SEARCH_QUERY)!!
-        val searchType = params.get<SearchType>(LoadEntryParameter.SEARCH_TYPE)!!
+        val searchType = searchSetting.value?.searchType ?: SearchType.Title
         val entriesType = EntriesType.fromId(tabPosition)
+        val users = searchSetting.value?.users ?: 1
+        val dateBegin = searchSetting.value?.dateBegin
+        val dateEnd = searchSetting.value?.dateEnd
+        val safe = searchSetting.value?.safe ?: false
 
         return client.searchEntriesAsync(
             query = query,
             searchType = searchType,
             entriesType = entriesType,
-            of = offset
+            of = offset,
+            users = users,
+            dateBegin = dateBegin,
+            dateEnd = dateEnd,
+            safe = safe
         ).await()
     }
 

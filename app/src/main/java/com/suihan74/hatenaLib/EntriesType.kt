@@ -21,13 +21,13 @@ enum class SearchType(
     val id: Int,
     @StringRes val textId: Int
 ) {
-    Tag(0,
-        R.string.search_type_tag
-    ),
+    Tag(0, R.string.search_type_tag),
 
-    Text(1,
-        R.string.search_type_text
-    );
+    Title(2, R.string.search_type_title),
+
+    Text(1, R.string.search_type_text);
+
+    // ------ //
 
     // for Gson
     private constructor() : this(0, 0)

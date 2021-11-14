@@ -97,6 +97,7 @@
 
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
+    <string name="search_type_title">タイトル</string>
     <string name="search_type_text">テキスト</string>
 
     <!-- カテゴリ -->
@@ -660,6 +661,14 @@
     <string name="msg_entries_initial_tab_changed">「%1$s」カテゴリ「%2$s」タブを最初に表示するように設定しました</string>
     <string name="msg_force_default_home_category">エラーによりホームカテゴリを表示できないので「総合」カテゴリを表示します</string>
     <string name="msg_retry_sign_in_succeeded">id:%sでサインインしました</string>
+
+    <!-- 検索設定ダイアログ -->
+    <string name="entry_search_settings_title">検索パラメータ</string>
+    <string name="entry_search_settings_mode_desc">検索対象 : %1$s</string>
+    <string name="entry_search_settings_min_bookmarks_dialog_title">最小ブクマ数を選択</string>
+    <string name="entry_search_settings_min_bookmarks_desc">ブクマ数 : %1$d</string>
+    <string name="entry_search_settings_date_desc">期間指定</string>
+    <string name="entry_search_settings_safe_desc">セーフサーチ</string>
 
     <!-- 通知 -->
     <string name="notification_channel_name">通知</string>

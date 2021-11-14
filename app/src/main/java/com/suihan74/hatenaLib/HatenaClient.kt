@@ -638,9 +638,9 @@ object HatenaClient : BaseClient(), CoroutineScope {
         entriesType: EntriesType = EntriesType.Recent,
         limit: Int? = null,
         of: Int? = null,
-        users: Int? = null,
-        dateBegin: LocalDateTime? = null,
-        dateEnd: LocalDateTime? = null,
+        users: Int = 1,
+        dateBegin: LocalDate? = null,
+        dateEnd: LocalDate? = null,
         safe: Boolean = false
     ) : Deferred<List<Entry>> = async {
         val url = buildString {
@@ -652,13 +652,13 @@ object HatenaClient : BaseClient(), CoroutineScope {
             )
             limit?.let { append("&limit=$it") }
             of?.let { append("&of=$it") }
-            users?.let { append("&users=$it") }
+            append("&users=$users")
 
             val formatter by lazy { DateTimeFormatter.ofPattern("yyyy-MM-dd") }
             dateBegin?.let { append("&date_begin=${formatter.format(it)}") }
             dateEnd?.let { append("&date_end=${formatter.format(it)}") }
 
-            if (!safe) append("safe=off")
+            if (!safe) append("&safe=off")
         }
         val listType = object : TypeToken<List<Entry>>() {}.type
         return@async getJson<List<Entry>>(listType, url)

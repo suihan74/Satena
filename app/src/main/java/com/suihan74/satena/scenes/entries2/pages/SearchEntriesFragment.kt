@@ -6,20 +6,18 @@ import android.view.MenuInflater
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
-import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.dialog.SearchSettingsDialog
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.showAllowingStateLoss
 
 class SearchEntriesFragment : MultipleTabsEntriesFragment() {
     companion object {
@@ -117,42 +115,16 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
             initializeSearchView(searchView, viewModel, menu, bottomAppBar)
         }
 
-        // 検索タイプ選択メニューの設定
-        menu.findItem(R.id.search_type)?.let { item ->
+        // 検索パラメータの設定
+        menu.findItem(R.id.search_settings)?.let { item ->
             item.setOnMenuItemClickListener {
-                AlertDialogFragment.Builder()
-                    .setTitle(R.string.desc_search_type)
-                    .setNegativeButton(R.string.dialog_cancel)
-                    .setItems(SearchType.values().map { it.textId }) { _, which ->
-                        val prevValue = viewModel.searchType.value
-                        viewModel.searchType.value = SearchType.fromOrdinal(which)
-
-                        if (prevValue != viewModel.searchType.value) {
-                            reloadLists()
-                        }
-                    }
-                    .create()
-                    .showAllowingStateLoss(childFragmentManager, DIALOG_SEARCH_TYPE)
-                return@setOnMenuItemClickListener true
+                requireActivity().alsoAs<EntriesActivity> { activity ->
+                    SearchSettingsDialog
+                        .createInstance(activity.viewModel.repository)
+                        .show(childFragmentManager, DIALOG_SEARCH_TYPE)
+                }
+                true
             }
-
-            viewModel.searchType.observe(viewLifecycleOwner, {
-                val context = requireContext()
-                val iconId =
-                    when (it) {
-                        SearchType.Tag -> R.drawable.ic_tag
-                        SearchType.Text -> R.drawable.ic_title
-                        else -> throw RuntimeException()
-                    }
-                item.icon = ContextCompat.getDrawable(context, iconId)!!.apply {
-                    setTint(context.getColor(R.color.colorPrimaryText))
-                }
-                val text = getString(it.textId)
-                item.title = text
-                activity.alsoAs<EntriesActivity> { activity ->
-                    activity.toolbar.title = text + getString(R.string.category_search)
-                }
-            })
         }
     }
 

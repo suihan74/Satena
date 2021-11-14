@@ -10,9 +10,9 @@
             app:showAsAction="always"/>
 
     <item
-            android:id="@+id/search_type"
-            android:title="@string/search_type_text"
-            android:icon="@drawable/ic_title"
+            android:id="@+id/search_settings"
+            android:title="@string/entry_search_settings_title"
+            android:icon="@drawable/ic_baseline_tune"
             app:iconTint="?attr/textColor"
             app:showAsAction="always"/>
 </menu>
