@@ -9,7 +9,9 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.suihan74.hatenaLib.BooleanDeserializer
+import com.suihan74.utilities.LocalDateSerializer
 import com.suihan74.utilities.LocalDateTimeSerializer
+import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 
@@ -92,6 +94,7 @@ val Bundle.gson : Gson by lazy {
         .serializeNulls()
         .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
         .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeSerializer())
+        .registerTypeAdapter(LocalDate::class.java, LocalDateSerializer())
         .registerTypeAdapter(Boolean::class.java, BooleanDeserializer())
         .create()
 }
