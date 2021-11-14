@@ -637,9 +637,12 @@ object HatenaClient : BaseClient(), CoroutineScope {
         searchType: SearchType,
         entriesType: EntriesType = EntriesType.Recent,
         limit: Int? = null,
-        of: Int? = null
+        of: Int? = null,
+        users: Int? = null,
+        dateBegin: LocalDateTime? = null,
+        dateEnd: LocalDateTime? = null,
+        safe: Boolean = false
     ) : Deferred<List<Entry>> = async {
-
         val url = buildString {
             append(
                 "$B_BASE_URL/api/ipad.search/${searchType.name.lowercase()}?${cacheAvoidance()}",
@@ -647,10 +650,16 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 "&sort=${entriesType.name.lowercase()}",
                 "&include_bookmarked_data=1"
             )
-            if (limit != null) append("&limit=$limit")
-            if (of != null) append("&of=$of")
-        }
+            limit?.let { append("&limit=$it") }
+            of?.let { append("&of=$it") }
+            users?.let { append("&users=$it") }
 
+            val formatter by lazy { DateTimeFormatter.ofPattern("yyyy-MM-dd") }
+            dateBegin?.let { append("&date_begin=${formatter.format(it)}") }
+            dateEnd?.let { append("&date_end=${formatter.format(it)}") }
+
+            if (!safe) append("safe=off")
+        }
         val listType = object : TypeToken<List<Entry>>() {}.type
         return@async getJson<List<Entry>>(listType, url)
     }
