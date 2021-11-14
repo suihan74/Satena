@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 import java.lang.reflect.Type
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -430,6 +431,17 @@ fun SharedPreferences.Editor.putObject(key: String, src: Any?) : SharedPreferenc
 
 ////////////////////////////////////////////////////////////////////
 
+class LocalDateSerializer : JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
+    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+
+    override fun serialize(src: LocalDate?, typeOfSrc: Type?, context: JsonSerializationContext?) =
+        JsonPrimitive(formatter.format(src))
+
+    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?) : LocalDate? =
+        formatter.parse(json!!.asString, LocalDate::from)
+}
+
+
 class LocalDateTimeSerializer : JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
     private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
@@ -454,6 +466,7 @@ private fun getSharedPreferencesGson() =
     GsonBuilder()
         .serializeNulls()
         .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+        .registerTypeAdapter(LocalDate::class.java, LocalDateSerializer())
         .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeSerializer())
         .registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeSerializer())
         .create()
