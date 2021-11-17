@@ -12,11 +12,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.datepicker.*
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogEntrySearchSettingsBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.dialogs.DatePickerDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.models.EntrySearchSetting
 import com.suihan74.satena.scenes.entries2.EntriesRepository
@@ -25,6 +25,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 class SearchSettingsDialog : BottomSheetDialogFragment() {
@@ -139,14 +141,36 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
         }
 
         private fun openDatePickerImpl(fragment: Fragment, target: MutableLiveData<LocalDate?>) {
-            DatePickerDialogFragment
-                .createInstance(
-                    initialValue = target.value,
-                    max = LocalDate.now(),
-                    min = LocalDate.of(2005, 2, 10)
-                )
-                .setOnCompletedListener { date, _ ->
-                    target.value = date
+            MaterialDatePicker.Builder.dateRangePicker()
+                .apply {
+                    // はてブのサービス開始（2005-02-10）～今日の日付までに制限
+                    val validators = listOf(
+                        DateValidatorPointBackward.before(
+                            LocalDate.now().atTime(23, 59).toEpochSecond(ZoneOffset.UTC) * 1000
+                        ),
+                        DateValidatorPointForward.from(
+                            LocalDateTime.of(2005, 2, 10, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1000
+                        )
+                    )
+                    setCalendarConstraints(
+                        CalendarConstraints.Builder()
+                            .setValidator(CompositeDateValidator.allOf(validators))
+                            .build()
+                    )
+
+                    // 初期値を設定
+                    dateBegin.value?.let { begin ->
+                        val beginTime = begin.atTime(0, 0).toEpochSecond(ZoneOffset.UTC) * 1000
+                        val endTime = (dateEnd.value ?: LocalDate.now()).atTime(0, 0).toEpochSecond(ZoneOffset.UTC) * 1000
+                        setSelection(androidx.core.util.Pair(beginTime, endTime))
+                    }
+                }
+                .build()
+                .apply {
+                    addOnPositiveButtonClickListener { result ->
+                        dateBegin.value = LocalDateTime.ofEpochSecond(result.first / 1000, 0, ZoneOffset.UTC).toLocalDate()
+                        dateEnd.value = LocalDateTime.ofEpochSecond(result.second / 1000, 0, ZoneOffset.UTC).toLocalDate()
+                    }
                 }
                 .show(fragment.childFragmentManager, null)
         }
