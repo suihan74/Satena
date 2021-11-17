@@ -155,10 +155,17 @@
     <style name="CheckBoxStyle" parent="Widget.AppCompat.CompoundButton.CheckBox"/>
     <style name="CheckBoxStyle.Light">
         <item name="colorControlNormal">@color/textColor</item>
+        <item name="colorControlActivated">@color/colorPrimary</item>
         <item name="android:textColor">@color/textColor</item>
     </style>
     <style name="CheckBoxStyle.Dark">
         <item name="colorControlNormal">@color/textColorDark</item>
+        <item name="colorControlActivated">@color/colorPrimaryDark</item>
+        <item name="android:textColor">@color/textColorDark</item>
+    </style>
+    <style name="CheckBoxStyle.ExDark">
+        <item name="colorControlNormal">@color/colorPrimaryExDark</item>
+        <item name="colorControlActivated">@color/colorPrimaryExDark</item>
         <item name="android:textColor">@color/textColorDark</item>
     </style>
 
