@@ -64,10 +64,10 @@
         <TextView
                 android:id="@+id/dateDescText"
                 android:text="@string/entry_search_settings_date_desc"
-                app:layout_constraintTop_toTopOf="@id/dateBeginButton"
-                app:layout_constraintBottom_toBottomOf="@id/dateBeginButton"
+                app:layout_constraintTop_toTopOf="@id/dateButton"
+                app:layout_constraintBottom_toBottomOf="@id/dateButton"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/dateBeginButton"
+                app:layout_constraintEnd_toStartOf="@id/dateButton"
                 app:layout_constraintHorizontal_bias="0"
                 app:layout_constraintHorizontal_chainStyle="packed"
                 android:paddingHorizontal="12dp"
@@ -75,46 +75,19 @@
                 android:layout_height="wrap_content"/>
 
         <Button
-                android:id="@+id/dateBeginButton"
+                android:id="@+id/dateButton"
                 android:background="?selectableItemBackground"
-                android:text="@{vm.dateBegin}"
+                android:text="@{vm.dateStr}"
                 android:textColor="?textColor"
                 android:textAlignment="center"
-                android:onClick="@{() -> vm.openDateBeginPicker(fragment)}"
+                android:onClick="@{() -> vm.openDatePicker(fragment)}"
                 app:layout_constraintTop_toBottomOf="@id/minBookmarksButton"
                 app:layout_constraintBottom_toTopOf="@id/safeSearchCheckBox"
                 app:layout_constraintStart_toEndOf="@id/dateDescText"
-                app:layout_constraintEnd_toStartOf="@id/dateSeparator"
-                android:layout_marginHorizontal="8dp"
+                app:layout_constraintEnd_toStartOf="@id/clearDateButton"
+                android:layout_marginHorizontal="12dp"
                 android:paddingHorizontal="12dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        <TextView
-                android:id="@+id/dateSeparator"
-                android:text="～"
-                app:layout_constraintTop_toTopOf="@id/dateBeginButton"
-                app:layout_constraintBottom_toBottomOf="@id/dateBeginButton"
-                app:layout_constraintStart_toEndOf="@id/dateBeginButton"
-                app:layout_constraintEnd_toStartOf="@id/dateEndButton"
-                android:layout_marginHorizontal="16dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        <Button
-                android:id="@+id/dateEndButton"
-                android:background="?selectableItemBackground"
-                android:text="@{vm.dateEnd}"
-                android:textColor="?textColor"
-                android:textAlignment="center"
-                android:onClick="@{() -> vm.openDateEndPicker(fragment)}"
-                app:layout_constraintTop_toBottomOf="@id/minBookmarksButton"
-                app:layout_constraintBottom_toTopOf="@id/safeSearchCheckBox"
-                app:layout_constraintStart_toEndOf="@id/dateSeparator"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginHorizontal="8dp"
-                android:paddingHorizontal="12dp"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
 
         <ImageButton
@@ -123,10 +96,11 @@
                 android:foregroundTint="?textColor"
                 android:background="?actionBarItemBackground"
                 android:onClick="@{() -> vm.clearDate()}"
-                app:layout_constraintTop_toTopOf="@id/dateBeginButton"
-                app:layout_constraintBottom_toBottomOf="@id/dateBeginButton"
-                app:layout_constraintStart_toEndOf="@id/dateEndButton"
+                app:layout_constraintTop_toTopOf="@id/dateButton"
+                app:layout_constraintBottom_toBottomOf="@id/dateButton"
+                app:layout_constraintStart_toEndOf="@id/dateButton"
                 app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="12dp"
                 android:layout_width="24dp"
                 android:layout_height="24dp"/>
 
@@ -137,7 +111,7 @@
                 android:checked="@={vm.safe}"
                 android:textColor="?textColor"
                 android:textAlignment="textStart"
-                app:layout_constraintTop_toBottomOf="@id/dateBeginButton"
+                app:layout_constraintTop_toBottomOf="@id/dateButton"
                 app:layout_constraintBottom_toTopOf="@id/safeSearchCheckBox"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

@@ -4,13 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.datepicker.*
 import com.suihan74.hatenaLib.SearchType
@@ -22,6 +17,10 @@ import com.suihan74.satena.models.EntrySearchSetting
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -58,7 +57,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
         ).also {
             it.fragment = this
             it.vm = viewModel
-            it.lifecycleOwner = this
+            it.lifecycleOwner = viewLifecycleOwner
         }
 
         binding.cancelButton.setOnClickListener {
@@ -84,21 +83,43 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
 
         val users = MutableLiveData<Int>()
 
-        val dateBegin = MutableLiveData<LocalDate?>()
+        /** 期間指定: 開始日 */
+        private val dateBeginFlow = MutableStateFlow<LocalDate?>(null)
 
-        val dateEnd = MutableLiveData<LocalDate?>()
+        /** 期間指定: 終了日 */
+        private val dateEndFlow = MutableStateFlow<LocalDate?>(null)
+
+        /** 期間指定ボタンの表示文字列 */
+        private val _dateStr = MutableLiveData<String>()
+        val dateStr : LiveData<String> = _dateStr
 
         val safe = MutableLiveData<Boolean>()
 
         // ------ //
+
+        init {
+            dateBeginFlow
+                .combine(dateEndFlow) { begin, end ->
+                    if (begin == null && end == null) "未設定"
+                    else buildString {
+                        DateTimeFormatter.ofPattern("yy-MM-dd").let { formatter ->
+                            append(begin?.format(formatter) ?: "未設定")
+                            append(" ～ ")
+                            append(end?.format(formatter) ?: "未設定")
+                        }
+                    }
+                }
+                .onEach { _dateStr.value = it }
+                .launchIn(viewModelScope)
+        }
 
         suspend fun initialize(repo: EntriesRepository) = withContext(Dispatchers.Main.immediate) {
             repository = repo
             repo.searchSetting.value?.let {
                 searchType.value = it.searchType
                 users.value = it.users
-                dateBegin.value = it.dateBegin
-                dateEnd.value = it.dateEnd
+                dateBeginFlow.emit(it.dateBegin)
+                dateEndFlow.emit(it.dateEnd)
                 safe.value = it.safe
             }
         }
@@ -107,8 +128,8 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
             repository.searchSetting.value = EntrySearchSetting(
                 searchType.value ?: SearchType.Tag,
                 users.value ?: 1,
-                dateBegin.value,
-                dateEnd.value,
+                dateBeginFlow.value,
+                dateEndFlow.value,
                 safe.value ?: false
             )
         }
@@ -140,7 +161,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                 .show(fragment.childFragmentManager, null)
         }
 
-        private fun openDatePickerImpl(fragment: Fragment, target: MutableLiveData<LocalDate?>) {
+        fun openDatePicker(fragment: Fragment) {
             MaterialDatePicker.Builder.dateRangePicker()
                 .apply {
                     // はてブのサービス開始（2005-02-10）～今日の日付までに制限
@@ -159,41 +180,33 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                     )
 
                     // 初期値を設定
-                    dateBegin.value?.let { begin ->
+                    dateBeginFlow.value?.let { begin ->
                         val beginTime = begin.atTime(0, 0).toEpochSecond(ZoneOffset.UTC) * 1000
-                        val endTime = (dateEnd.value ?: LocalDate.now()).atTime(0, 0).toEpochSecond(ZoneOffset.UTC) * 1000
+                        val endTime = (dateEndFlow.value ?: LocalDate.now()).atTime(0, 0).toEpochSecond(ZoneOffset.UTC) * 1000
                         setSelection(androidx.core.util.Pair(beginTime, endTime))
                     }
                 }
                 .build()
                 .apply {
                     addOnPositiveButtonClickListener { result ->
-                        dateBegin.value = LocalDateTime.ofEpochSecond(result.first / 1000, 0, ZoneOffset.UTC).toLocalDate()
-                        dateEnd.value = LocalDateTime.ofEpochSecond(result.second / 1000, 0, ZoneOffset.UTC).toLocalDate()
+                        viewModelScope.launch {
+                            dateBeginFlow.emit(
+                                LocalDateTime.ofEpochSecond(result.first / 1000, 0, ZoneOffset.UTC)
+                                    .toLocalDate()
+                            )
+                            dateEndFlow.emit(
+                                LocalDateTime.ofEpochSecond(result.second / 1000, 0, ZoneOffset.UTC)
+                                    .toLocalDate()
+                            )
+                        }
                     }
                 }
                 .show(fragment.childFragmentManager, null)
         }
 
-        fun openDateBeginPicker(fragment: Fragment) = openDatePickerImpl(fragment, dateBegin)
-        fun openDateEndPicker(fragment: Fragment) = openDatePickerImpl(fragment, dateEnd)
-
-        fun clearDate() = viewModelScope.launch(Dispatchers.Main) {
-            dateBegin.value = null
-            dateEnd.value = null
-        }
-    }
-
-    // ------ //
-
-    object BindingAdapters {
-        @JvmStatic
-        @BindingAdapter("android:text")
-        fun bindDate(textView: TextView, date: LocalDate?) {
-            textView.text = date?.let {
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                formatter.format(date)
-            } ?: "未設定"
+        fun clearDate() = viewModelScope.launch {
+            dateBeginFlow.emit(null)
+            dateEndFlow.emit(null)
         }
     }
 }
