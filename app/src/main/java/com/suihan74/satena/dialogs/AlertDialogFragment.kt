@@ -46,6 +46,9 @@ class AlertDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        if (savedInstanceState != null && viewModel.dismissOnRestoring) {
+            dismiss()
+        }
         return viewModel.createDialog(this)
     }
 
@@ -61,31 +64,35 @@ class AlertDialogFragment : DialogFragment() {
 
     // ------ //
 
-    fun setDismissOnClickButton(flag: Boolean) = lifecycleScope.launchWhenStarted {
+    fun setDismissOnClickButton(flag: Boolean) = lifecycleScope.launchWhenCreated {
         viewModel.dismissOnClickButton = flag
     }
 
-    fun setDismissOnClickItem(flag: Boolean) = lifecycleScope.launchWhenStarted {
+    fun setDismissOnClickItem(flag: Boolean) = lifecycleScope.launchWhenCreated {
         viewModel.dismissOnClickItem = flag
     }
 
-    fun setOnClickPositiveButton(listener: Listener<AlertDialogFragment>?) = lifecycleScope.launchWhenStarted {
+    fun setDismissOnRestoring(flag: Boolean) = lifecycleScope.launchWhenCreated {
+        viewModel.dismissOnRestoring = flag
+    }
+
+    fun setOnClickPositiveButton(listener: Listener<AlertDialogFragment>?) = lifecycleScope.launchWhenCreated {
         viewModel.onClickPositiveButton = listener
     }
 
-    fun setOnClickNegativeButton(listener: Listener<AlertDialogFragment>?) = lifecycleScope.launchWhenStarted {
+    fun setOnClickNegativeButton(listener: Listener<AlertDialogFragment>?) = lifecycleScope.launchWhenCreated {
         viewModel.onClickNegativeButton = listener
     }
 
-    fun setOnClickNeutralButton(listener: Listener<AlertDialogFragment>?) = lifecycleScope.launchWhenStarted {
+    fun setOnClickNeutralButton(listener: Listener<AlertDialogFragment>?) = lifecycleScope.launchWhenCreated {
         viewModel.onClickNeutralButton = listener
     }
 
-    fun setOnClickItem(listener: ((AlertDialogFragment, Int)->Unit)?) = lifecycleScope.launchWhenStarted {
+    fun setOnClickItem(listener: ((AlertDialogFragment, Int)->Unit)?) = lifecycleScope.launchWhenCreated {
         viewModel.onClickItem = listener
     }
 
-    fun setOnSelectItem(listener: ((AlertDialogFragment, Int, Boolean)->Unit)?) = lifecycleScope.launchWhenStarted {
+    fun setOnSelectItem(listener: ((AlertDialogFragment, Int, Boolean)->Unit)?) = lifecycleScope.launchWhenCreated {
         viewModel.onSelectItem = listener
     }
 
@@ -143,6 +150,9 @@ class AlertDialogFragment : DialogFragment() {
 
         /** 項目クリック処理後に自動でダイアログを閉じる (null: choiceItems時にはfalse, Items時にはtrue) */
         var dismissOnClickItem : Boolean? = null
+
+        /** 復元するかわりに閉じる */
+        var dismissOnRestoring : Boolean = false
 
         /** ポジティブボタンのクリック時処理 */
         var onClickPositiveButton : Listener<AlertDialogFragment>? = null
@@ -359,6 +369,11 @@ class AlertDialogFragment : DialogFragment() {
 
         fun dismissOnClickItem(flag: Boolean) : Builder {
             dialog.setDismissOnClickItem(flag)
+            return this
+        }
+
+        fun dismissOnRestore(flag: Boolean = true) : Builder {
+            dialog.setDismissOnRestoring(flag)
             return this
         }
 
