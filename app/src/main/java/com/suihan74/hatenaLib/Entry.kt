@@ -82,8 +82,9 @@ class Entry (
 
     @delegate:Transient
     val faviconUrl : String by lazy {
-        mFaviconUrl ?: run {
-            "https://www.google.com/s2/favicons?domain=${Uri.parse(url).host}"
+        Uri.parse(url).let { uri ->
+            if (uri.host == "anond.hatelabo.jp") "https://anond.hatelabo.jp/images/favicon.ico"
+            else mFaviconUrl ?: "https://www.google.com/s2/favicons?domain=${Uri.parse(url).host}"
         }
     }
 
