@@ -668,7 +668,14 @@
     <string name="entry_search_settings_min_bookmarks_dialog_title">最小ブクマ数を選択</string>
     <string name="entry_search_settings_min_bookmarks_desc">ブクマ数 : %1$d</string>
     <string name="entry_search_settings_date_desc">期間指定</string>
+    <string name="entry_search_settings_date_mode_title">期間指定方法を選択</string>
+    <string name="entry_search_date_picker_title">日数を指定</string>
+    <string name="entry_search_date_picker_desc">何日前からのエントリを検索するか選択（0=当日だけ）</string>
     <string name="entry_search_settings_safe_desc">セーフサーチ</string>
+
+    <!-- EntrySearchDateMode -->
+    <string name="entry_search_date_mode_recent">直近N日間</string>
+    <string name="entry_search_date_mode_calendar">カレンダーで指定</string>
 
     <!-- 通知 -->
     <string name="notification_channel_name">通知</string>

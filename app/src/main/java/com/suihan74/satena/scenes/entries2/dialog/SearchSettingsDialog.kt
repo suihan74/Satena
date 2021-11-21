@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.datepicker.*
@@ -13,7 +14,9 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentDialogEntrySearchSettingsBinding
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialog
+import com.suihan74.satena.models.EntrySearchDateMode
 import com.suihan74.satena.models.EntrySearchSetting
+import com.suihan74.satena.models.orDefault
 import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +26,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -83,6 +87,9 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
 
         val users = MutableLiveData<Int>()
 
+        /** 期間指定方法 */
+        private val dateMode = MutableStateFlow(EntrySearchDateMode.RECENT)
+
         /** 期間指定: 開始日 */
         private val dateBeginFlow = MutableStateFlow<LocalDate?>(null)
 
@@ -99,13 +106,20 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
 
         init {
             dateBeginFlow
-                .combine(dateEndFlow) { begin, end ->
+                .combine(dateEndFlow, ::Pair)
+                .combine(dateMode) { (begin, end), mode ->
                     if (begin == null && end == null) "未設定"
-                    else buildString {
-                        DateTimeFormatter.ofPattern("yy-MM-dd").let { formatter ->
-                            append(begin?.format(formatter) ?: "未設定")
-                            append(" ～ ")
-                            append(end?.format(formatter) ?: "未設定")
+                    else when (mode) {
+                        EntrySearchDateMode.RECENT -> {
+                            "直近${Duration.between(begin!!.atStartOfDay(), end!!.atStartOfDay()).toDays()}日間"
+                        }
+
+                        EntrySearchDateMode.CALENDAR -> buildString {
+                            DateTimeFormatter.ofPattern("yy-MM-dd").let { formatter ->
+                                append(begin?.format(formatter) ?: "未設定")
+                                append(" ～ ")
+                                append(end?.format(formatter) ?: "未設定")
+                            }
                         }
                     }
                 }
@@ -118,6 +132,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
             repo.searchSetting.value?.let {
                 searchType.value = it.searchType
                 users.value = it.users
+                dateMode.value = it.dateMode
                 dateBeginFlow.emit(it.dateBegin)
                 dateEndFlow.emit(it.dateEnd)
                 safe.value = it.safe
@@ -128,6 +143,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
             repository.searchSetting.value = EntrySearchSetting(
                 searchType.value ?: SearchType.Tag,
                 users.value ?: 1,
+                dateMode.value.orDefault,
                 dateBeginFlow.value,
                 dateEndFlow.value,
                 safe.value ?: false
@@ -162,6 +178,41 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
         }
 
         fun openDatePicker(fragment: Fragment) {
+            val values = EntrySearchDateMode.values()
+            val labels = values.map { it.textId }
+            AlertDialogFragment.Builder()
+                .setTitle(R.string.entry_search_settings_date_mode_title)
+                .setItems(labels) { f, which ->
+                    when (values[which]) {
+                        EntrySearchDateMode.RECENT -> openDateRangePicker(f.parentFragmentManager)
+                        EntrySearchDateMode.CALENDAR -> openCalendar(f.parentFragmentManager)
+                    }
+                }
+                .setNegativeButton(R.string.dialog_cancel)
+                .create()
+                .show(fragment.childFragmentManager, "mode selector")
+        }
+
+        private fun openDateRangePicker(fragmentManager: FragmentManager) {
+            val today = LocalDateTime.now()
+            val oldest = LocalDateTime.of(2005, 2, 10, 0, 0, 0)
+            NumberPickerDialog
+                .createInstance(
+                    0, Duration.between(oldest, today).toDays().toInt(), 0,
+                    R.string.entry_search_date_picker_title,
+                    R.string.entry_search_date_picker_desc,
+                )
+                .setOnCompleteListener {
+                    viewModelScope.launch {
+                        dateMode.emit(EntrySearchDateMode.RECENT)
+                        dateBeginFlow.emit(today.minusDays(it.toLong()).toLocalDate())
+                        dateEndFlow.emit(today.toLocalDate())
+                    }
+                }
+                .show(fragmentManager, null)
+        }
+
+        private fun openCalendar(fragmentManager: FragmentManager) {
             MaterialDatePicker.Builder.dateRangePicker()
                 .apply {
                     // はてブのサービス開始（2005-02-10）～今日の日付までに制限
@@ -190,6 +241,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                 .apply {
                     addOnPositiveButtonClickListener { result ->
                         viewModelScope.launch {
+                            dateMode.emit(EntrySearchDateMode.CALENDAR)
                             dateBeginFlow.emit(
                                 LocalDateTime.ofEpochSecond(result.first / 1000, 0, ZoneOffset.UTC)
                                     .toLocalDate()
@@ -201,7 +253,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                         }
                     }
                 }
-                .show(fragment.childFragmentManager, null)
+                .show(fragmentManager, null)
         }
 
         fun clearDate() = viewModelScope.launch {

@@ -25,6 +25,8 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.checkFromSpam
 import kotlinx.coroutines.*
+import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
@@ -588,8 +590,27 @@ class EntriesRepository(
         val searchType = searchSetting.value?.searchType ?: SearchType.Title
         val entriesType = EntriesType.fromId(tabPosition)
         val users = searchSetting.value?.users ?: 1
-        val dateBegin = searchSetting.value?.dateBegin
-        val dateEnd = searchSetting.value?.dateEnd
+        val dateMode = searchSetting.value?.dateMode.orDefault
+        val today = LocalDate.now()
+        val dateBegin =
+            when (dateMode) {
+                EntrySearchDateMode.RECENT -> {
+                    today.minusDays(
+                        Duration
+                            .between(
+                                searchSetting.value?.dateBegin?.atStartOfDay(),
+                                searchSetting.value?.dateEnd?.atStartOfDay()
+                            )
+                            .toDays()
+                    )
+                }
+                EntrySearchDateMode.CALENDAR -> searchSetting.value?.dateBegin
+            }
+        val dateEnd =
+            when (dateMode) {
+                EntrySearchDateMode.RECENT -> searchSetting.value?.dateEnd?.let { today }
+                EntrySearchDateMode.CALENDAR -> searchSetting.value?.dateEnd
+            }
         val safe = searchSetting.value?.safe ?: false
 
         return client.searchEntriesAsync(
