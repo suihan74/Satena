@@ -9,6 +9,7 @@ import com.suihan74.satena.models.CustomDigestSettingsKey
 import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.readEntry.ReadEntryDao
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
@@ -31,11 +32,12 @@ import kotlin.collections.HashMap
  * ブクマ画面用のリポジトリ
  */
 class BookmarksRepository(
-    val accountLoader: AccountLoader,
+    val accountLoader : AccountLoader,
     val prefs : SafeSharedPreferences<PreferenceKey>,
     customDigestSettings : SafeSharedPreferences<CustomDigestSettingsKey>,
     private val ignoredEntriesRepo : IgnoredEntriesRepository,
-    private val userTagDao: UserTagDao,
+    private val userTagDao : UserTagDao,
+    private val readEntryDao : ReadEntryDao
 ) :
         // ユーザー関係
         UserRelationRepositoryInterface by UserRelationRepository(accountLoader),
@@ -366,6 +368,7 @@ class BookmarksRepository(
     /** 取得済みのエントリ情報をセットする */
     private suspend fun loadEntry(e: Entry) = withContext(Dispatchers.Main.immediate) {
         entry.value = e
+        readEntryDao.insert(e)
     }
 
     /**
@@ -378,6 +381,7 @@ class BookmarksRepository(
         withContext(Dispatchers.Main) {
             entry.value = response
         }
+        readEntryDao.insert(response)
         return response
     }
 
@@ -391,6 +395,7 @@ class BookmarksRepository(
         withContext(Dispatchers.Main) {
             entry.value = response
         }
+        readEntryDao.insert(response)
         return response
     }
 
