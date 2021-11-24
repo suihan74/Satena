@@ -19,7 +19,7 @@
                 app:tint="?tagTextColor"
                 android:visibility="@{read}"
                 android:textSize="12sp"
-                android:alpha="0.2"
+                android:alpha="0.4"
                 app:layout_constraintStart_toStartOf="@id/favicon"
                 app:layout_constraintTop_toTopOf="@id/favicon"
                 app:layout_constraintBottom_toBottomOf="@id/bookmark_users"
