@@ -20,6 +20,7 @@
                 entries="@{vm.filteredEntries}"
                 notices="@{vm.notices}"
                 information="@{vm.information}"
+                readEntryIds="@{vm.readEntryIds}"
                 divider="@{@drawable/recycler_view_item_divider}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>

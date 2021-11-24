@@ -75,7 +75,7 @@ class UserEntriesTabFragment : EntriesTabFragmentBase() {
         // タグの変更を監視
         parentViewModel?.tag?.observe(viewLifecycleOwner, observerForOnlyUpdates {
             viewModel.tag = it
-            entriesAdapter.submitEntries(null) {
+            entriesAdapter.submitEntries(null, null) {
                 lifecycleScope.launchWhenResumed {
                     runCatching { viewModel.reloadLists() }
                         .onFailure { onErrorRefreshEntries(it) }

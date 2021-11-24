@@ -4,6 +4,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable name="entry" type="com.suihan74.hatenaLib.Entry"/>
+        <variable name="read" type="Boolean"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -11,6 +12,20 @@
             tools:background="?panelBackground"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/readIcon"
+                android:src="@drawable/ic_check_circle_outline"
+                app:tint="?tagTextColor"
+                android:visibility="@{read}"
+                android:textSize="12sp"
+                android:alpha="0.4"
+                app:layout_constraintStart_toStartOf="@id/favicon"
+                app:layout_constraintTop_toTopOf="@id/favicon"
+                app:layout_constraintBottom_toBottomOf="@id/bookmark_users"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                tools:ignore="ContentDescription" />
 
         <ImageView
                 android:id="@+id/favicon"

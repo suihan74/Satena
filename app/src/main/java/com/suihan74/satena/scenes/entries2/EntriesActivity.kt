@@ -80,9 +80,10 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         val repository = EntriesRepository(
             context = app,
             client = HatenaClient,
-            accountLoader = app.accountLoader,
-            ignoredEntriesRepo = app.ignoredEntriesRepository,
-            favoriteSitesRepo = app.favoriteSitesRepository
+            app.accountLoader,
+            app.ignoredEntriesRepository,
+            app.favoriteSitesRepository,
+            app.readEntryDao
         )
         EntriesViewModel(repository)
     }

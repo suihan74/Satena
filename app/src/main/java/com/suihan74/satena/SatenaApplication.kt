@@ -135,6 +135,10 @@ class SatenaApplication : Application() {
     val browserDao
         get() = appDatabase.browserDao()
 
+    /** 既読エントリ情報 */
+    val readEntryDao
+        get() = appDatabase.readEntryDao()
+
     // ------ //
 
     override fun onCreate() {
