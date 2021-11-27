@@ -672,7 +672,7 @@ class BookmarksViewModel(
  */
 interface TitleBarClickHandler {
     fun onClickToolbar(activity: BookmarksActivity)
-    fun onLongClickToolbar(activity: BookmarksActivity)
+    fun onLongClickToolbar(activity: BookmarksActivity) : Boolean
 }
 
 /**
@@ -698,14 +698,14 @@ class TitleBarClickHandlerImpl(private val repository: BookmarksRepository) : Ti
      *
      * エントリメニューダイアログを開く
      */
-    override fun onLongClickToolbar(activity: BookmarksActivity) {
-        val entry = repository.entry.value ?: return
-        handleTitleBarClickBehavior(
-            activity,
-            entry,
-            repository.titleBarLongClickBehavior
-        )
-    }
+    override fun onLongClickToolbar(activity: BookmarksActivity) : Boolean =
+        repository.entry.value?.let { entry ->
+            handleTitleBarClickBehavior(
+                activity,
+                entry,
+                repository.titleBarLongClickBehavior
+            )
+        } ?: false
 
     // ------ //
 
@@ -713,7 +713,7 @@ class TitleBarClickHandlerImpl(private val repository: BookmarksRepository) : Ti
         activity: BookmarksActivity,
         entry: Entry,
         liveData: PreferenceLiveData<SafeSharedPreferences<PreferenceKey>, PreferenceKey, TapTitleBarAction>
-    ) {
+    ) : Boolean {
         when (liveData.value) {
             TapTitleBarAction.SHOW_PAGE -> showEntryOnInnerBrowser(activity, entry)
 
@@ -723,8 +723,9 @@ class TitleBarClickHandlerImpl(private val repository: BookmarksRepository) : Ti
 
             TapTitleBarAction.SHOW_MENU -> showEntryMenuDialog(activity, entry)
 
-            else -> {}
+            else -> return false
         }
+        return true
     }
 
     // ------ //

@@ -3,7 +3,13 @@
     <data>
         <variable
                 name="vm"
+                type="com.suihan74.satena.scenes.bookmarks.information.EntryInformationViewModel" />
+        <variable
+                name="bookmarkVM"
                 type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
+        <variable
+                name="activity"
+                type="com.suihan74.satena.scenes.bookmarks.BookmarksActivity" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -27,7 +33,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:contentDescription="@null"
-                app:src="@{vm.entry.imageUrl}"
+                app:src="@{bookmarkVM.entry.imageUrl}"
                 tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
         <TextView
@@ -46,7 +52,7 @@
                 android:scrollbarSize="4dp"
                 android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
                 android:scrollbars="vertical"
-                android:text="@{vm.entry.title}"
+                android:text="@{bookmarkVM.entry.title}"
                 android:textIsSelectable="true"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -54,7 +60,7 @@
 
         <TextView
                 android:id="@+id/stars"
-                starsEntry="@{vm.entryStarsEntry}"
+                starsEntry="@{bookmarkVM.entryStarsEntry}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/title"
@@ -68,7 +74,7 @@
 
         <ImageButton
                 android:id="@+id/add_star_button"
-                android:visibility="@{vm.signedIn}"
+                android:visibility="@{bookmarkVM.signedIn}"
                 app:srcCompat="@drawable/ic_add_star"
                 app:tint="?attr/tagTextColor"
                 android:background="?attr/actionBarItemBackground"
@@ -80,7 +86,7 @@
 
         <TextView
                 android:id="@+id/page_url"
-                entryPageUrl="@{vm.entry.url}"
+                entryPageUrl="@{bookmarkVM.entry.url}"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/stars"
@@ -110,7 +116,7 @@
                 android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
                 android:scrollbars="vertical"
                 android:layout_marginTop="3dp"
-                android:text="@{vm.entry.description}"
+                android:text="@{bookmarkVM.entry.description}"
                 android:textIsSelectable="true"
                 android:textSize="12sp"
                 tools:text="@tools:sample/lorem/random" />
@@ -145,7 +151,7 @@
 
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/tags_list"
-                    bookmarksEntryTags="@{vm.bookmarksEntry.tags}"
+                    bookmarksEntryTags="@{bookmarkVM.bookmarksEntry.tags}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp" />
@@ -164,7 +170,7 @@
                     android:id="@+id/related_entries_list"
                     style="@style/RecyclerView.Linear"
                     divider="@{@drawable/recycler_view_item_divider}"
-                    relatedEntries="@{vm.relatedEntries}"
+                    relatedEntries="@{bookmarkVM.relatedEntries}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp" />
@@ -175,8 +181,9 @@
         <Button
                 android:id="@+id/to_lower_floor_button"
                 android:text="@string/entry_information_lower_floor"
-                lowerFloorButtonVisibility="@{vm.entry}"
+                lowerFloorButtonVisibility="@{bookmarkVM.entry}"
                 style="?buttonStyle"
+                android:onClick="@{() -> vm.downFloor(activity)}"
                 app:layout_constraintTop_toBottomOf="@id/lists_scroll_view"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -187,8 +194,9 @@
         <Button
                 android:id="@+id/to_upper_floor_button"
                 android:text="@string/entry_information_upper_floor"
-                upperFloorButtonVisibility="@{vm.entry}"
+                upperFloorButtonVisibility="@{bookmarkVM.entry}"
                 style="?buttonStyle"
+                android:onClick="@{() -> vm.upFloor(activity)}"
                 app:layout_constraintTop_toTopOf="@id/to_lower_floor_button"
                 app:layout_constraintBottom_toBottomOf="@id/to_lower_floor_button"
                 app:layout_constraintEnd_toEndOf="parent"

@@ -17,13 +17,13 @@ import com.suihan74.satena.databinding.FragmentEntryInformationBinding
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.makeSpannedFromHtml
 import com.suihan74.utilities.extensions.putObjectExtra
+import com.suihan74.utilities.lazyProvideViewModel
 
 /** ドロワ部分にエントリ情報を表示する */
 class EntryInformationFragment : Fragment() {
@@ -40,6 +40,10 @@ class EntryInformationFragment : Fragment() {
     private val bookmarksViewModel: BookmarksViewModel
         get() = bookmarksActivity.bookmarksViewModel
 
+    private val viewModel by lazyProvideViewModel {
+        EntryInformationViewModel(bookmarksViewModel.entry)
+    }
+
     // ------ //
 
     override fun onCreateView(
@@ -48,28 +52,15 @@ class EntryInformationFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentEntryInformationBinding.inflate(inflater, container, false).also {
-            it.vm = bookmarksViewModel
+            it.vm = viewModel
+            it.bookmarkVM = bookmarksViewModel
+            it.activity = bookmarksActivity
             it.lifecycleOwner = viewLifecycleOwner
         }
 
         binding.pageUrl.apply {
-            setOnClickListener {
-                val entry = bookmarksViewModel.entry.value ?: return@setOnClickListener
-                bookmarksActivity.let {
-                    it.closeDrawer()
-                    it.startInnerBrowser(entry)
-                }
-            }
-
-            setOnLongClickListener {
-                val entry = bookmarksViewModel.entry.value ?: return@setOnLongClickListener false
-                val intent = Intent(Intent.ACTION_SEND).also {
-                    it.putExtra(Intent.EXTRA_TEXT, entry.url)
-                    it.type = "text/plain"
-                }
-                startActivity(intent)
-                true
-            }
+            setOnClickListener { viewModel.onClickPageUrl(bookmarksActivity) }
+            setOnLongClickListener { viewModel.onLongClickPageUrl(bookmarksActivity) }
         }
 
         // スターをつける
@@ -81,20 +72,6 @@ class EntryInformationFragment : Fragment() {
             ) { color ->
                 bookmarksViewModel.postStarToEntry(requireContext(), color, childFragmentManager)
             }
-        }
-
-        // -1階
-        binding.toLowerFloorButton.setOnClickListener {
-            val entry = bookmarksViewModel.entry.value ?: return@setOnClickListener
-            val url = HatenaClient.getEntryUrlFromCommentPageUrl(entry.url)
-            changeFloor(url)
-        }
-
-        // +1階 (今見ているページのコメントページに移動)
-        binding.toUpperFloorButton.setOnClickListener {
-            val entry = bookmarksViewModel.entry.value ?: return@setOnClickListener
-            val url = HatenaClient.getCommentPageUrlFromEntryUrl(entry.url)
-            changeFloor(url)
         }
 
         binding.tagsList.apply {
@@ -124,23 +101,6 @@ class EntryInformationFragment : Fragment() {
         }
 
         return binding.root
-    }
-
-    private fun changeFloor(url: String) {
-        bookmarksActivity.closeDrawer()
-        val intent = Intent(bookmarksActivity, BookmarksActivity::class.java).apply {
-            putExtra(BookmarksActivity.EXTRA_ENTRY_URL, url)
-            bookmarksViewModel.entry.value?.let { entry ->
-                Regex("""(\S+)\s*のブックマーク\s*/\s*はてなブックマーク$""")
-                    .find(entry.title)
-                    ?.groupValues
-                    ?.get(1)
-                    ?.let { userName ->
-                        putExtra(BookmarksActivity.EXTRA_TARGET_USER, userName)
-                    }
-            }
-        }
-        startActivity(intent)
     }
 
     // ------ //
