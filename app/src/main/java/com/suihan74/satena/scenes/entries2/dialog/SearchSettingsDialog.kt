@@ -1,12 +1,16 @@
 package com.suihan74.satena.scenes.entries2.dialog
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.datepicker.*
 import com.suihan74.hatenaLib.SearchType
@@ -18,6 +22,7 @@ import com.suihan74.satena.models.EntrySearchDateMode
 import com.suihan74.satena.models.EntrySearchSetting
 import com.suihan74.satena.models.orDefault
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,6 +53,17 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
     }
 
     // ------ //
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        super.onCreateDialog(savedInstanceState).apply {
+            setOnShowListener {
+                dialog.alsoAs<BottomSheetDialog> { d ->
+                    BottomSheetBehavior
+                        .from(d.findViewById<FrameLayout>(R.id.design_bottom_sheet)!!)
+                        .state = BottomSheetBehavior.STATE_EXPANDED
+                }
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -128,14 +144,15 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
         }
 
         suspend fun initialize(repo: EntriesRepository) = withContext(Dispatchers.Main.immediate) {
-            repository = repo
-            repo.searchSetting.value?.let {
-                searchType.value = it.searchType
-                users.value = it.users
-                dateMode.value = it.dateMode
-                dateBeginFlow.emit(it.dateBegin)
-                dateEndFlow.emit(it.dateEnd)
-                safe.value = it.safe
+            repository = repo.also { r ->
+                r.searchSetting.value?.let {
+                    searchType.value = it.searchType
+                    users.value = it.users
+                    dateMode.value = it.dateMode
+                    dateBeginFlow.emit(it.dateBegin)
+                    dateEndFlow.emit(it.dateEnd)
+                    safe.value = it.safe
+                }
             }
         }
 
@@ -164,6 +181,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                     dialog.dismiss()
                 }
                 .setNegativeButton(R.string.dialog_cancel)
+                .dismissOnRestore()
                 .create()
                 .show(fragment.childFragmentManager, null)
         }
@@ -189,8 +207,9 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                     }
                 }
                 .setNegativeButton(R.string.dialog_cancel)
+                .dismissOnRestore()
                 .create()
-                .show(fragment.childFragmentManager, "mode selector")
+                .show(fragment.childFragmentManager, null)
         }
 
         private fun openDateRangePicker(fragmentManager: FragmentManager) {
