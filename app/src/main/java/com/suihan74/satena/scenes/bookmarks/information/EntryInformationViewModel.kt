@@ -13,6 +13,11 @@ class EntryInformationViewModel(
     private val entry: LiveData<Entry?>
 ) : ViewModel() {
 
+    /**
+     * ページURL部分をクリックしたときの動作
+     *
+     * ドロワを閉じてアプリ内ブラウザでURLを開く
+     */
     fun onClickPageUrl(activity: BookmarksActivity) {
         val entry = entry.value ?: return
         activity.let {
@@ -21,6 +26,11 @@ class EntryInformationViewModel(
         }
     }
 
+    /**
+     * ページURL部分をクリックしたときの動作
+     *
+     * 共有する
+     */
     fun onLongClickPageUrl(activity: BookmarksActivity) : Boolean {
         return entry.value?.let { entry ->
             activity.startActivity(
