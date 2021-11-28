@@ -61,7 +61,7 @@ class BrowserActivity :
             SafeSharedPreferences.create(this),
             app.ignoredEntriesRepository,
             app.userTagDao,
-            app.readEntryDao
+            app.readEntriesRepository
         )
 
         val historyRepo = HistoryRepository(browserSettings, app.browserDao)

@@ -58,7 +58,7 @@ class BookmarksActivity :
             SafeSharedPreferences.create(this),
             app.ignoredEntriesRepository,
             app.userTagDao,
-            app.readEntryDao
+            app.readEntriesRepository
         )
 
         BookmarksViewModel(repository).also {

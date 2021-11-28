@@ -43,13 +43,15 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     private val historyPrefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
 
+    private val readEntriesRepo = SatenaApplication.instance.readEntriesRepository
+
     /** レイアウトモード */
     val bottomLayoutMode = createLiveData<Boolean>(
         PreferenceKey.ENTRIES_BOTTOM_LAYOUT_MODE
     )
 
     /** 下部レイアウトをスクロールで隠す */
-    val hideBottomLayoutByScroll = createLiveData<Boolean>(
+    private val hideBottomLayoutByScroll = createLiveData<Boolean>(
         PreferenceKey.ENTRIES_HIDE_BOTTOM_LAYOUT_BY_SCROLLING
     )
 
@@ -66,7 +68,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     )
 
     /** 下部バーの追加項目の配置方法 */
-    val extraBottomItemsAlignment = createLiveDataEnum(
+    private val extraBottomItemsAlignment = createLiveDataEnum(
         PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT,
         { it.id },
         { ExtraBottomItemsAlignment.fromId(it) }
@@ -80,71 +82,71 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     )
 
     /** エントリ項目シングルタップの挙動 */
-    val singleTapAction = createLiveDataEnum(
+    private val singleTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_SINGLE_TAP_ACTION,
         { it.id },
         { TapEntryAction.fromId(it) }
     )
 
     /** エントリ項目複数回タップの挙動 */
-    val multipleTapAction = createLiveDataEnum(
+    private val multipleTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION,
         { it.id },
         { TapEntryAction.fromId(it) }
     )
 
     /** エントリ項目ロングタップの挙動 */
-    val longTapAction = createLiveDataEnum(
+    private val longTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_LONG_TAP_ACTION,
         { it.id },
         { TapEntryAction.fromId(it) }
     )
 
     /** エントリ項目右端シングルタップの挙動 */
-    val edgeSingleTapAction = createLiveDataEnum(
+    private val edgeSingleTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_EDGE_SINGLE_TAP_ACTION,
         { it.id },
         { TapEntryAction.fromId(it) }
     )
 
     /** エントリ項目右端複数回タップの挙動 */
-    val edgeMultipleTapAction = createLiveDataEnum(
+    private val edgeMultipleTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_EDGE_MULTIPLE_TAP_ACTION,
         { it.id },
         { TapEntryAction.fromId(it) }
     )
 
     /** エントリ項目右端ロングタップの挙動 */
-    val edgeLongTapAction = createLiveDataEnum(
+    private val edgeLongTapAction = createLiveDataEnum(
         PreferenceKey.ENTRY_EDGE_LONG_TAP_ACTION,
         { it.id },
         { TapEntryAction.fromId(it) }
     )
 
     /** エントリ項目タップ回数判定時間 */
-    val multipleTapDuration = createLiveData<Long>(
+    private val multipleTapDuration = createLiveData<Long>(
         PreferenceKey.ENTRY_MULTIPLE_TAP_DURATION
     )
 
     /** 最初に表示するカテゴリ */
-    val homeCategory = createLiveDataEnum<Category>(
+    private val homeCategory = createLiveDataEnum<Category>(
         PreferenceKey.ENTRIES_HOME_CATEGORY,
         { it.id },
         { Category.fromId(it) }
     )
 
     /** カテゴリリストの表示形式 */
-    val categoriesMode = createLiveDataEnum<CategoriesMode>(
+    private val categoriesMode = createLiveDataEnum<CategoriesMode>(
         PreferenceKey.ENTRIES_CATEGORIES_MODE
     )
 
     /** メニュー表示中の操作を許可 */
-    val menuTapGuard = createLiveData<Boolean>(
+    private val menuTapGuard = createLiveData<Boolean>(
         PreferenceKey.ENTRIES_MENU_TAP_GUARD
     )
 
     /** スクロールでツールバーを隠す */
-    val hideToolbarWithScroll = createLiveData<Boolean>(
+    private val hideToolbarWithScroll = createLiveData<Boolean>(
         PreferenceKey.ENTRIES_HIDING_TOOLBAR_BY_SCROLLING
     )
 
@@ -154,23 +156,28 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     )
 
     /** ブクマ閲覧履歴の最大保存数 */
-    val historyMaxSize = createLiveData<EntriesHistoryKey, Int>(
+    private val historyMaxSize = createLiveData<EntriesHistoryKey, Int>(
         historyPrefs,
         EntriesHistoryKey.MAX_SIZE
     )
 
+    /** 既読マークを表示するか否か */
+    private val displayReadMark = createLiveData<Boolean>(
+        PreferenceKey.ENTRY_DISPLAY_READ_MARK
+    )
+
     /** タブ長押しでホームカテゴリ・初期タブを変更する */
-    val changeHomeByLongTappingTab = createLiveData<Boolean>(
+    private val changeHomeByLongTappingTab = createLiveData<Boolean>(
         PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB
     )
 
     /** 「あとで読む」エントリを「読んだ」したときの挙動 */
-    val entryReadActionType = createLiveDataEnum<EntryReadActionType>(
+    private val entryReadActionType = createLiveDataEnum<EntryReadActionType>(
         PreferenceKey.ENTRY_READ_ACTION_TYPE
     )
 
     /** EntryReadActionType.BOILERPLATE時の定型文 */
-    val entryReadActionBoilerPlate = createLiveData<String>(
+    private val entryReadActionBoilerPlate = createLiveData<String>(
         PreferenceKey.ENTRY_READ_ACTION_BOILERPLATE
     )
 
@@ -188,6 +195,11 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         // 「読んだ」したときの定型文編集ビューを表示切替え
         entryReadActionType.observe(owner, observerForOnlyUpdates {
             load(fragment)
+        })
+        displayReadMark.observe(owner, observerForOnlyUpdates {
+            viewModelScope.launch {
+                readEntriesRepo.setDisplaying(it)
+            }
         })
     }
 
@@ -344,6 +356,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager = fragmentManager
             )
         }
+        addPrefToggleItem(fragment, displayReadMark, R.string.pref_entries_display_read_mark_desc)
 
         // --- //
 
