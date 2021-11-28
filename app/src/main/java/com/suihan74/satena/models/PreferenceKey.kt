@@ -194,6 +194,9 @@ enum class PreferenceKey(
     /** エントリ検索設定 */
     ENTRY_SEARCH_SETTING(typeInfo<EntrySearchSetting>(), EntrySearchSetting()),
 
+    /** 既読マークを表示するかどうか */
+    ENTRY_DISPLAY_READ_MARK(typeInfo<Boolean>(), true),
+
     ////////////////////////////////////////
     // bookmarks
     ////////////////////////////////////////

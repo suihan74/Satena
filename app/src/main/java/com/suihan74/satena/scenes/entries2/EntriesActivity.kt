@@ -83,7 +83,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             app.accountLoader,
             app.ignoredEntriesRepository,
             app.favoriteSitesRepository,
-            app.readEntryDao
+            app.readEntriesRepository
         )
         EntriesViewModel(repository)
     }

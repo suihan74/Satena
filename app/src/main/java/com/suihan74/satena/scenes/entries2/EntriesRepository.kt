@@ -17,7 +17,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.models.readEntry.ReadEntryDao
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
@@ -96,7 +95,7 @@ class EntriesRepository(
     private val accountLoader: AccountLoader,
     val ignoredEntriesRepo: IgnoredEntriesRepository,
     val favoriteSitesRepo: FavoriteSitesRepository,
-    private val readEntryDao: ReadEntryDao
+    private val readEntryRepo: ReadEntriesRepository
 ) {
     /** アプリ内アップデート */
     private var appUpdateManager: AppUpdateManager? = null
@@ -110,6 +109,9 @@ class EntriesRepository(
     private val historyPrefs by lazy {
         SafeSharedPreferences.create<EntriesHistoryKey>(context)
     }
+
+    /** ロード済みの既読エントリID */
+    val readEntryIds = readEntryRepo.readEntryIds
 
     /** サインイン状態 */
     val signedIn : Boolean
@@ -268,26 +270,9 @@ class EntriesRepository(
         val entries =
             if (issue == null) loadEntries(category, tabPosition, offset, params)
             else loadEntries(issue, tabPosition, offset)
-
-        val ids = entries.mapNotNull {
-            when (it.id) {
-                0L -> null
-                else -> it.id
-            }
-        }
-        val readEntries = readEntryDao.find(ids)
-        _readEntries.emit(
-            HashSet<Long>().also { set ->
-                set.addAll(_readEntries.value)
-                set.addAll(readEntries.map { it.eid })
-            }
-        )
-
+        readEntryRepo.load(entries)
         return entries
     }
-
-    private val _readEntries = MutableStateFlow<Set<Long>>(emptySet())
-    val readEntryIds = _readEntries as StateFlow<Set<Long>>
 
     /** 最新のエントリーリストを読み込む(Category指定) */
     private suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int?, params: LoadEntryParameter?) : List<Entry> =

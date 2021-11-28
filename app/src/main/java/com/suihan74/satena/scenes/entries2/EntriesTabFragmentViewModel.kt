@@ -95,6 +95,7 @@ class EntriesTabFragmentViewModel(
     /** ユーザーの歴史を取得する : Category.Memorial15th */
     var isUserMemorial : Boolean = false
 
+    /** ロード済みの既読エントリID */
     val readEntryIds = repository.readEntryIds
 
     val extraScrollingAlignment

@@ -18,6 +18,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.models.*
 import com.suihan74.satena.notices.NotificationWorker
+import com.suihan74.satena.scenes.entries2.ReadEntriesRepository
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
@@ -115,6 +116,9 @@ class SatenaApplication : Application() {
     /** お気に入りサイトを扱うリポジトリ */
     lateinit var favoriteSitesRepository : FavoriteSitesRepository
 
+    /** 既読エントリ情報を扱うリポジトリ */
+    lateinit var readEntriesRepository : ReadEntriesRepository
+
     /** アカウント管理 */
     val accountLoader : AccountLoader by lazy {
         AccountLoader(this, HatenaClient, MastodonClientHolder)
@@ -136,7 +140,7 @@ class SatenaApplication : Application() {
         get() = appDatabase.browserDao()
 
     /** 既読エントリ情報 */
-    val readEntryDao
+    private val readEntryDao
         get() = appDatabase.readEntryDao()
 
     // ------ //
@@ -215,6 +219,11 @@ class SatenaApplication : Application() {
         favoriteSitesRepository = FavoriteSitesRepository(
             SafeSharedPreferences.create(this),
             HatenaClient
+        )
+
+        readEntriesRepository = ReadEntriesRepository(
+            readEntryDao,
+            SafeSharedPreferences.create(this)
         )
     }
 

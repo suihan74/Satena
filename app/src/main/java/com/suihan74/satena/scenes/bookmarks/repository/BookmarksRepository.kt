@@ -9,10 +9,10 @@ import com.suihan74.satena.models.CustomDigestSettingsKey
 import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
-import com.suihan74.satena.models.readEntry.ReadEntryDao
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
+import com.suihan74.satena.scenes.entries2.ReadEntriesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
 import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepositoryInterface
@@ -37,7 +37,7 @@ class BookmarksRepository(
     customDigestSettings : SafeSharedPreferences<CustomDigestSettingsKey>,
     private val ignoredEntriesRepo : IgnoredEntriesRepository,
     private val userTagDao : UserTagDao,
-    private val readEntryDao : ReadEntryDao
+    private val readEntriesRepo: ReadEntriesRepository
 ) :
         // ユーザー関係
         UserRelationRepositoryInterface by UserRelationRepository(accountLoader),
@@ -368,7 +368,7 @@ class BookmarksRepository(
     /** 取得済みのエントリ情報をセットする */
     private suspend fun loadEntry(e: Entry) = withContext(Dispatchers.Main.immediate) {
         entry.value = e
-        readEntryDao.insert(e)
+        readEntriesRepo.insert(e)
     }
 
     /**
@@ -381,7 +381,7 @@ class BookmarksRepository(
         withContext(Dispatchers.Main) {
             entry.value = response
         }
-        readEntryDao.insert(response)
+        readEntriesRepo.insert(response)
         return response
     }
 
@@ -395,7 +395,7 @@ class BookmarksRepository(
         withContext(Dispatchers.Main) {
             entry.value = response
         }
-        readEntryDao.insert(response)
+        readEntriesRepo.insert(response)
         return response
     }
 
