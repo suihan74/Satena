@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelStoreOwner
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.satena.scenes.entries2.EntriesViewModel
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
@@ -34,8 +34,7 @@ class SiteEntriesFragment : MultipleTabsEntriesFragment() {
         }
     }
 
-    override val title : String?
-        get() = viewModel.siteUrl.value
+    private val activityViewModel by activityViewModels<EntriesViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,11 +47,9 @@ class SiteEntriesFragment : MultipleTabsEntriesFragment() {
         viewModel.siteUrl.value = arguments.getString(ARG_SITE_URL)
 
         // Category.SiteではサイトURLをタイトルに表示する
-        activity.alsoAs<EntriesActivity> { activity ->
-            viewModel.siteUrl.observe(viewLifecycleOwner, {
-                activity.toolbar.title = title
-            })
-        }
+        viewModel.siteUrl.observe(viewLifecycleOwner, {
+            activityViewModel.toolbarTitle.value = it
+        })
 
         return root
     }

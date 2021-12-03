@@ -6,6 +6,7 @@ import android.view.MenuInflater
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
@@ -14,6 +15,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.EntriesViewModel
 import com.suihan74.satena.scenes.entries2.dialog.SearchSettingsDialog
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
@@ -42,6 +44,8 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
 
     // ------ //
 
+    private val activityViewModel by activityViewModels<EntriesViewModel>()
+
     private val searchViewModel : SearchEntriesViewModel
         get() = viewModel as SearchEntriesViewModel
 
@@ -61,7 +65,6 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         if (savedInstanceState == null) {
             val arguments = requireArguments()
             searchViewModel.searchQuery.value = arguments.getString(ARG_SEARCH_QUERY)
-            searchViewModel.searchType.value = arguments.getEnum(ARG_SEARCH_TYPE, SearchType.Text)
         }
     }
 
@@ -79,12 +82,6 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
             setHasOptionsMenu(false)
             activity.inflateExtraBottomMenu(R.menu.search_entries_bottom)
             initializeMenu(bottomAppBar.menu, bottomAppBar)
-        }
-
-        if (!searchViewModel.searchQuery.value.isNullOrBlank()) {
-            activity.alsoAs<EntriesActivity> {
-                it.toolbar.subtitle = searchViewModel.searchQuery.value
-            }
         }
 
         return result
@@ -136,6 +133,15 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
     ) = searchView.run {
         val fragment = this@SearchEntriesFragment
 
+        searchViewModel.searchSetting.observe(viewLifecycleOwner, {
+            it?.searchType?.let { searchType ->
+                activityViewModel.toolbarTitle.value = "${getString(searchType.textId)}検索"
+            }
+        })
+        searchViewModel.searchQuery.observe(viewLifecycleOwner, {
+            activityViewModel.toolbarSubTitle.value = searchViewModel.searchQuery.value
+        })
+
         // 文字色をテーマに合わせて調整する
         findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)?.also { editText ->
             if (bottomAppBar == null) {
@@ -162,10 +168,6 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
             // 検索ボタン押下時にロードを行う
             override fun onQueryTextSubmit(query: String?): Boolean {
                 viewModel.searchQuery.value = query
-                activity.alsoAs<EntriesActivity> { activity ->
-                    activity.toolbar.subtitle = viewModel.searchQuery.value
-                }
-
                 reloadLists()
 
                 requireActivity().hideSoftInputMethod(fragment.contentLayout)

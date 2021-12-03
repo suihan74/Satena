@@ -5,6 +5,7 @@ import android.view.*
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
@@ -12,6 +13,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.EntriesViewModel
 import com.suihan74.satena.scenes.entries2.initialize
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putEnum
@@ -26,6 +28,8 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
     }
 
     private var clearIssueCallback : OnBackPressedCallback? = null
+
+    private val activityViewModel by activityViewModels<EntriesViewModel>()
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,
@@ -44,12 +48,10 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
         val root = super.onCreateView(inflater, container, savedInstanceState)
 
         // ツールバーを更新
-        activity.alsoAs<EntriesActivity> { activity ->
-            activity.toolbar.also {
-                it.title = getString(category.textId)
-                it.subtitle = viewModel.issue.value?.name
-            }
-        }
+        activityViewModel.toolbarTitle.value = getString(category.textId)
+        viewModel.issue.observe(viewLifecycleOwner, {
+            activityViewModel.toolbarSubTitle.value = it?.name
+        })
 
         return root
     }
@@ -125,11 +127,7 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
 
         // Issue選択時にサブタイトルを表示する
         viewModel.issue.observe(viewLifecycleOwner, {
-            val toolbar = (requireActivity() as EntriesActivity).toolbar
-            toolbar.subtitle = it?.name
-
             clearIssueCallback?.isEnabled = it != null
-
             if (it == null) {
                 spinner.setSelection(0)
             }

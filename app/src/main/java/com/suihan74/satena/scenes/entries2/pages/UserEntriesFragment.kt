@@ -5,15 +5,13 @@ import android.view.*
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.EntriesActivity
-import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
-import com.suihan74.satena.scenes.entries2.initialize
+import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putEnum
 import com.suihan74.utilities.extensions.withArguments
@@ -44,11 +42,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         return UserEntriesTabFragment.createInstance(viewModelKey, user)
     }
 
-    override val title : String
-        get() = "id:${viewModel.user.value}"
-
-    override val subtitle : String?
-        get() = viewModel.tag.value?.let { tag -> "${tag.text}(${tag.count})" }
+    private val activityViewModel by activityViewModels<EntriesViewModel>()
 
     private var clearTagCallback : OnBackPressedCallback? = null
 
@@ -61,9 +55,10 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
         // ユーザーIDをタイトルに表示する
         viewModel.user.observe(viewLifecycleOwner, {
-            activity.alsoAs<EntriesActivity> {
-                it.toolbar.title = title
-            }
+            activityViewModel.toolbarTitle.value = "id:$it"
+        })
+        viewModel.tag.observe(viewLifecycleOwner, { tag ->
+            activityViewModel.toolbarSubTitle.value = tag?.let { "${it.text}(${it.count})" }.orEmpty()
         })
 
         return root
@@ -138,12 +133,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
         // タグ選択時にサブタイトルを表示する
         viewModel.tag.observe(viewLifecycleOwner, {
-            activity.alsoAs<EntriesActivity> { activity ->
-                activity.toolbar.subtitle = subtitle
-            }
-
             clearTagCallback?.isEnabled = it != null
-
             if (it == null) {
                 spinner.setSelection(0)
             }

@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
-import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.OnError
@@ -16,14 +15,11 @@ class SearchEntriesViewModel(
     )
 
     /** 検索クエリ */
-    val searchQuery by lazy {
+    val searchQuery =
         SingleUpdateMutableLiveData<String>()
-    }
 
-    /** 検索タイプ */
-    val searchType by lazy {
-        SingleUpdateMutableLiveData(SearchType.Text)
-    }
+    /** 検索設定 */
+    val searchSetting = repository.searchSetting
 
     override val tabCount: Int = 2
     override fun getTabTitle(context: Context, position: Int) : String = context.getString(tabTitles[position])
@@ -41,8 +37,10 @@ class SearchEntriesViewModel(
         searchQuery.observe(fragment.viewLifecycleOwner, {
             viewModel.searchQuery = it
         })
-        searchType.observe(fragment.viewLifecycleOwner, {
-            viewModel.searchType = it
+        searchSetting.observe(fragment.viewLifecycleOwner, {
+            it?.searchType?.let { searchType ->
+                viewModel.searchType = searchType
+            }
         })
     }
 }
