@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -15,11 +17,9 @@ import com.suihan74.satena.databinding.FragmentDialogCustomDigestSettingsBinding
 import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.CustomDigestSettingsKey
-import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.repository.CustomDigestRepositoryImpl
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.utilities.Listener
-import com.suihan74.utilities.lazyProvideViewModel
 
 /**
  * ブクマリストのダイジェスト抽出方法の設定ダイアログ
@@ -32,12 +32,8 @@ class CustomDigestSettingsDialog : BottomSheetDialogFragment() {
 
     // ------ //
 
-    private val viewModel by lazyProvideViewModel {
-        DialogViewModel()
-    }
-
-    private val bookmarksViewModel
-        get() = (requireActivity() as BookmarksActivity).bookmarksViewModel
+    private val viewModel by viewModels<DialogViewModel>()
+    private val bookmarksViewModel by activityViewModels<BookmarksViewModel>()
 
     // ------ //
 

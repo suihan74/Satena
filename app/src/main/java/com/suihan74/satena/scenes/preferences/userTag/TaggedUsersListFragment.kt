@@ -7,6 +7,8 @@ import android.transition.TransitionSet
 import android.view.*
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
@@ -14,7 +16,6 @@ import com.suihan74.satena.databinding.FragmentTaggedUsersListBinding
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesTab
-import com.suihan74.satena.scenes.preferences.pages.UserTagsFragment
 import com.suihan74.utilities.bindings.setDivider
 
 class TaggedUsersListFragment : Fragment() {
@@ -24,17 +25,8 @@ class TaggedUsersListFragment : Fragment() {
 
     // ------ //
 
-    private val userTagsFragment : UserTagsFragment
-        get() = requireParentFragment() as UserTagsFragment
-
-    private val viewModel : UserTagViewModel
-        get() = userTagsFragment.viewModel
-
-    private val preferencesActivity : PreferencesActivity
-        get() = requireActivity() as PreferencesActivity
-
-    private val activityViewModel : PreferencesActivity.ActivityViewModel
-        get() = preferencesActivity.viewModel
+    private val viewModel by viewModels<UserTagViewModel>({ requireParentFragment() })
+    private val activityViewModel by activityViewModels<PreferencesActivity.ActivityViewModel>()
 
     // ------ //
 
@@ -63,7 +55,7 @@ class TaggedUsersListFragment : Fragment() {
 
         val taggedUsersAdapter = object : TaggedUsersAdapter() {
             override fun onItemClicked(user: User) {
-                viewModel.openUserMenuDialog(requireActivity(), user, userTagsFragment.childFragmentManager)
+                viewModel.openUserMenuDialog(requireActivity(), user, parentFragmentManager)
             }
 
             override fun onItemLongClicked(user: User): Boolean {

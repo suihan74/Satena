@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
@@ -30,14 +31,8 @@ class PopularBookmarksTabFragment :
 
     // ------ //
 
-    private val bookmarksActivity : BookmarksActivity
-        get() = requireActivity() as BookmarksActivity
-
-    val bookmarksViewModel : BookmarksViewModel
-        get() = bookmarksActivity.bookmarksViewModel
-
-    val contentsViewModel : ContentsViewModel
-        get() = bookmarksActivity.contentsViewModel
+    private val bookmarksViewModel by activityViewModels<BookmarksViewModel>()
+    private val contentsViewModel by activityViewModels<ContentsViewModel>()
 
     val viewModel by lazyProvideViewModel {
         BookmarksTabViewModel(bookmarksViewModel.repository)

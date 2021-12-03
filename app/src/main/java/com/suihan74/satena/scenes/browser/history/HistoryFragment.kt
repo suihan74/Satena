@@ -9,6 +9,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.databinding.FragmentBrowserHistoryBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
@@ -33,8 +34,7 @@ class HistoryFragment :
     private val browserActivity : BrowserActivity
         get() = requireActivity() as BrowserActivity
 
-    private val activityViewModel : BrowserViewModel
-        get() = browserActivity.viewModel
+    private val activityViewModel by activityViewModels<BrowserViewModel>()
 
     private val viewModel by lazyProvideViewModel {
         HistoryViewModel(activityViewModel.historyRepo)

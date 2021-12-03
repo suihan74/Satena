@@ -6,13 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.suihan74.satena.databinding.FragmentBrowserBookmarksConfirmationBinding
-import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
-import com.suihan74.utilities.lazyProvideViewModel
 
 /**
  * ブクマタブの内容を取得・表示するか確認する画面
@@ -24,18 +24,11 @@ class ConfirmationFragment : Fragment() {
 
     // ------ //
 
-    private val browserActivity
-        get() = requireActivity() as BrowserActivity
-
-    private val browserViewModel
-        get() = browserActivity.viewModel
+    private val viewModel by viewModels<ConfirmationViewModel>()
+    private val browserViewModel by activityViewModels<BrowserViewModel>()
 
     private val frameFragment
         get() = requireParentFragment() as BookmarksFrameFragment
-
-    private val viewModel by lazyProvideViewModel {
-        ConfirmationViewModel()
-    }
 
     // ------ //
 

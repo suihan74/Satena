@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
@@ -37,14 +38,8 @@ abstract class BookmarksTabFragment :
 
     // ------ //
 
-    val bookmarksActivity : BookmarksActivity
-        get() = requireActivity() as BookmarksActivity
-
-    val bookmarksViewModel : BookmarksViewModel
-        get() = bookmarksActivity.bookmarksViewModel
-
-    val contentsViewModel : ContentsViewModel
-        get() = bookmarksActivity.contentsViewModel
+    protected val bookmarksViewModel by activityViewModels<BookmarksViewModel>()
+    protected val contentsViewModel by activityViewModels<ContentsViewModel>()
 
     val viewModel by lazyProvideViewModel {
         BookmarksTabViewModel(bookmarksViewModel.repository)
