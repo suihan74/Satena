@@ -49,13 +49,6 @@ class EntriesTabFragmentViewModel(
             params.put(LoadEntryParameter.SEARCH_QUERY, value)
         }
 
-    /** 検索タイプ */
-    var searchType: SearchType
-        get() = params.get(LoadEntryParameter.SEARCH_TYPE, SearchType.Text)
-        set(value) {
-            params.put(LoadEntryParameter.SEARCH_TYPE, value)
-        }
-
     /** 追加パラメータ */
     private val params by lazy { LoadEntryParameter() }
 

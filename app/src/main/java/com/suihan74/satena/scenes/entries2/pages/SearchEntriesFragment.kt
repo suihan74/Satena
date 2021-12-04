@@ -57,7 +57,8 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         repository: EntriesRepository,
         category: Category
     ) = provideViewModel(owner, viewModelKey) {
-        SearchEntriesViewModel(repository)
+        val arguments = requireArguments()
+        SearchEntriesViewModel(repository, arguments.getEnum<SearchType>(ARG_SEARCH_TYPE))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

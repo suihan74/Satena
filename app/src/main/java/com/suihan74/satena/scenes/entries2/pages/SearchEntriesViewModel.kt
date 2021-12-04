@@ -1,13 +1,15 @@
 package com.suihan74.satena.scenes.entries2.pages
 
 import android.content.Context
+import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
 import com.suihan74.satena.scenes.entries2.*
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 
 class SearchEntriesViewModel(
-    private val repository : EntriesRepository
+    repository : EntriesRepository,
+    initialSearchType : SearchType? = null
 ) : EntriesFragmentViewModel() {
     private val tabTitles = arrayOf(
         R.string.entries_tab_hot,
@@ -19,7 +21,11 @@ class SearchEntriesViewModel(
         SingleUpdateMutableLiveData<String>()
 
     /** 検索設定 */
-    val searchSetting = repository.searchSetting
+    val searchSetting = repository.searchSetting.also { liveData ->
+        initialSearchType?.let {
+            liveData.value = liveData.value?.copy(searchType = it)
+        }
+    }
 
     override val tabCount: Int = 2
     override fun getTabTitle(context: Context, position: Int) : String = context.getString(tabTitles[position])
@@ -36,11 +42,6 @@ class SearchEntriesViewModel(
         // 検索用パラメータの変更を伝播
         searchQuery.observe(fragment.viewLifecycleOwner, {
             viewModel.searchQuery = it
-        })
-        searchSetting.observe(fragment.viewLifecycleOwner, {
-            it?.searchType?.let { searchType ->
-                viewModel.searchType = searchType
-            }
         })
     }
 }
