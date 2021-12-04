@@ -6,8 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -22,8 +24,8 @@ import com.suihan74.satena.models.EntrySearchDateMode
 import com.suihan74.satena.models.EntrySearchSetting
 import com.suihan74.satena.models.orDefault
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.extensions.alsoAs
-import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -48,9 +50,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
 
     // ------ //
 
-    private val viewModel by lazyProvideViewModel {
-        DialogViewModel()
-    }
+    private val viewModel by viewModels<DialogViewModel>()
 
     // ------ //
 
@@ -86,12 +86,20 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
 
         binding.okButton.setOnClickListener {
             lifecycleScope.launchWhenCreated {
-                viewModel.save()
+                viewModel.save(this@SearchSettingsDialog)
                 dismiss()
             }
         }
 
         return binding.root
+    }
+
+    // ------ //
+
+    fun setOnSaveListener(listener: DialogListener<EntrySearchSetting>?) = this.also {
+        lifecycleScope.launchWhenCreated {
+            viewModel.onSaveListener = listener
+        }
     }
 
     // ------ //
@@ -117,6 +125,10 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
         val dateStr : LiveData<String> = _dateStr
 
         val safe = MutableLiveData<Boolean>()
+
+        // ------ //
+
+        var onSaveListener : DialogListener<EntrySearchSetting>? = null
 
         // ------ //
 
@@ -156,8 +168,8 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
             }
         }
 
-        suspend fun save() = withContext(Dispatchers.Main.immediate) {
-            repository.searchSetting.value = EntrySearchSetting(
+        suspend fun save(fragment: DialogFragment) = withContext(Dispatchers.Main.immediate) {
+            val result = EntrySearchSetting(
                 searchType.value ?: SearchType.Tag,
                 users.value ?: 1,
                 dateMode.value.orDefault,
@@ -165,6 +177,8 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                 dateEndFlow.value,
                 safe.value ?: false
             )
+            repository.searchSetting.value = result
+            onSaveListener?.invoke(result, fragment)
         }
 
         // ------ //

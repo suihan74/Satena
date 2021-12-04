@@ -119,6 +119,7 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
                 requireActivity().alsoAs<EntriesActivity> { activity ->
                     SearchSettingsDialog
                         .createInstance(activity.viewModel.repository)
+                        .setOnSaveListener { _, _ -> reloadLists() }
                         .show(childFragmentManager, DIALOG_SEARCH_TYPE)
                 }
                 true
