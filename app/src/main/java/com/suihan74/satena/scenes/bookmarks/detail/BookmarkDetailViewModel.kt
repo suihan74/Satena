@@ -1,9 +1,12 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
+import android.content.Intent
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
+import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -181,5 +184,16 @@ class BookmarkDetailViewModel(
                 }
             }
         }
+    }
+
+    /** ブクマをブクマするためのアクティビティを開く */
+    fun openPostBookmarkActivity(fragment: Fragment) {
+        val intent = Intent(fragment.requireContext(), BookmarkPostActivity::class.java).also {
+            it.putExtra(
+                BookmarkPostActivity.EXTRA_URL,
+                bookmark.value!!.getBookmarkUrl(repository.entry.value!!)
+            )
+        }
+        fragment.startActivity(intent)
     }
 }

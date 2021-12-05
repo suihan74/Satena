@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
-import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.transition.Fade
@@ -16,7 +15,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarkDetail3Binding
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
-import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
@@ -133,13 +131,7 @@ class BookmarkDetailFragment : Fragment() {
 
         // ブクマボタン設定
         binding.bookmarkButton?.setOnClickListener {
-            val intent = Intent(requireContext(), BookmarkPostActivity::class.java).also {
-                it.putExtra(
-                    BookmarkPostActivity.EXTRA_URL,
-                    viewModel.bookmark.value!!.getBookmarkUrl(bookmarksViewModel.entry.value!!)
-                )
-            }
-            startActivity(intent)
+            viewModel.openPostBookmarkActivity(this)
         }
 
         binding.showStarsButton.setOnClickListener {
