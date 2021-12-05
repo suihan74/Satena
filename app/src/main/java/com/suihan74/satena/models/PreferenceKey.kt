@@ -197,6 +197,9 @@ enum class PreferenceKey(
     /** 既読マークを表示するかどうか */
     ENTRY_DISPLAY_READ_MARK(typeInfo<Boolean>(), true),
 
+    /** 既読マーク情報の寿命（日） */
+    ENTRY_READ_MARK_LIFETIME(typeInfo<Long>(), 90),
+
     ////////////////////////////////////////
     // bookmarks
     ////////////////////////////////////////

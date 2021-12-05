@@ -264,6 +264,7 @@ class SatenaApplication : Application() {
     fun updatePreferencesVersion() {
         runCatching {
             PreferenceKeyMigration.check(applicationContext)
+            EntriesHistoryKeyMigration.check(applicationContext)
         }
     }
 
