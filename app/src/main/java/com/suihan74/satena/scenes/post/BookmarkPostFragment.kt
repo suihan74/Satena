@@ -10,7 +10,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.suihan74.satena.databinding.FragmentBookmarkPost2Binding
+import com.suihan74.satena.databinding.FragmentBookmarkPostBinding
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.browser.BrowserViewModel
@@ -48,7 +48,7 @@ class BookmarkPostFragment : Fragment(), AddingTagDialog.OnDismissListener {
     private val viewModel : BookmarkPostViewModel
         get() = (requireActivity() as BookmarkPostViewModelOwner).bookmarkPostViewModel
 
-    private var _binding : FragmentBookmarkPost2Binding? = null
+    private var _binding : FragmentBookmarkPostBinding? = null
     private val binding get() = _binding!!
 
     // ------ //
@@ -66,7 +66,7 @@ class BookmarkPostFragment : Fragment(), AddingTagDialog.OnDismissListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentBookmarkPost2Binding.inflate(inflater, container, false).also {
+        _binding = FragmentBookmarkPostBinding.inflate(inflater, container, false).also {
             it.vm = viewModel
             it.fm = childFragmentManager
             it.commentEditText = it.comment
@@ -166,7 +166,7 @@ class BookmarkPostFragment : Fragment(), AddingTagDialog.OnDismissListener {
     }
 
     /** タグリストを初期化 */
-    private fun setupTagsList(binding: FragmentBookmarkPost2Binding) {
+    private fun setupTagsList(binding: FragmentBookmarkPostBinding) {
         val comment = binding.comment
         val tagsList = binding.tagsList
 
