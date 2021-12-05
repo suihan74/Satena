@@ -74,7 +74,7 @@
         <ImageButton
                 android:id="@+id/add_new_tag_text_view"
                 android:src="@drawable/ic_add_new_tag"
-                android:tint="@color/add_new_tag_tint"
+                app:tint="@color/add_new_tag_tint"
                 android:background="@drawable/button_background_add_new_tag"
                 android:onClick="@{() -> vm.openNewTagDialog(context, commentEditText, fm)}"
                 android:contentDescription="@string/description_add_new_tag_button"
@@ -241,11 +241,12 @@
         <FrameLayout
                 android:id="@+id/click_guard"
                 android:visibility="@{vm.nowLoading}"
-                tools:visibility="gone"
+                tools:visibility="visible"
                 android:clickable="true"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:background="#a0000000"
+                android:elevation="8dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
