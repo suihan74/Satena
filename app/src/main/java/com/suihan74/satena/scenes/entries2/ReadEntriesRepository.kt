@@ -6,6 +6,7 @@ import com.suihan74.satena.models.readEntry.ReadEntryDao
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.time.ZonedDateTime
 
 class ReadEntriesRepository(
     private val dao : ReadEntryDao,
@@ -24,6 +25,8 @@ class ReadEntriesRepository(
     private val _displaying
         get() = displaying as MutableStateFlow<Boolean>
 
+    private var lastDeletedOldItems : ZonedDateTime? = null
+
     // ------ //
 
     suspend fun insert(entry: Entry) {
@@ -35,6 +38,7 @@ class ReadEntriesRepository(
     }
 
     suspend fun load(entries: List<Entry>) {
+        deleteOldItems()
         val ids = entries.mapNotNull {
             when (it.id) {
                 0L -> null
@@ -58,5 +62,17 @@ class ReadEntriesRepository(
             if (enabled) readEntryIdsCache
             else emptySet()
         )
+    }
+
+    private suspend fun deleteOldItems() {
+        runCatching {
+            val now = ZonedDateTime.now()
+            if (lastDeletedOldItems == null || now != lastDeletedOldItems) {
+                val lifetime = prefs.getLong(PreferenceKey.ENTRY_READ_MARK_LIFETIME)
+                val date = now.minusDays(lifetime)
+                dao.delete(date)
+                lastDeletedOldItems = now
+            }
+        }
     }
 }

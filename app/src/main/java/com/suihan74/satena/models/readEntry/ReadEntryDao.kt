@@ -45,6 +45,10 @@ interface ReadEntryDao {
     @Delete
     suspend fun delete(readEntry: ReadEntry)
 
+    /** 指定日より前の項目を削除する */
+    @Query("delete from read_entry where timestamp<:date")
+    suspend fun delete(date: ZonedDateTime)
+
     @Query("delete from read_entry")
     suspend fun clearAll()
 }
