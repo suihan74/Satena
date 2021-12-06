@@ -12,12 +12,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksFabs3Binding
 import com.suihan74.satena.models.ExtraScrollingAlignment
-import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
-import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
@@ -31,8 +28,12 @@ class FloatingActionButtonsFragment : Fragment() {
 
     // ------ //
 
-    private val bookmarksViewModel by activityViewModels<BookmarksViewModel>()
-    private val contentsViewModel by activityViewModels<ContentsViewModel>()
+    private val bookmarksViewModel by lazy {
+        requireActivity<BookmarksActivity>().bookmarksViewModel
+    }
+    private val contentsViewModel by lazy {
+        requireActivity<BookmarksActivity>().contentsViewModel
+    }
 
     /** ブクマ投稿ダイアログを開くボタンを複数回押されてもダイアログが複数出ないようにする */
     private var bookmarkButtonClicked = false

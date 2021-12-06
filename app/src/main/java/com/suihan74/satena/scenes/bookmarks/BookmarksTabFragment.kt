@@ -5,17 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel
-import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
-import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.utilities.ScrollableToBottom
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.launch
 
@@ -38,8 +36,12 @@ abstract class BookmarksTabFragment :
 
     // ------ //
 
-    protected val bookmarksViewModel by activityViewModels<BookmarksViewModel>()
-    protected val contentsViewModel by activityViewModels<ContentsViewModel>()
+    protected val bookmarksViewModel by lazy {
+        requireActivity<BookmarksActivity>().bookmarksViewModel
+    }
+    protected val contentsViewModel by lazy {
+        requireActivity<BookmarksActivity>().contentsViewModel
+    }
 
     val viewModel by lazyProvideViewModel {
         BookmarksTabViewModel(bookmarksViewModel.repository)

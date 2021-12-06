@@ -5,15 +5,18 @@ import android.view.*
 import android.widget.Spinner
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.scenes.entries2.*
+import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
+import com.suihan74.satena.scenes.entries2.initialize
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
 
@@ -26,6 +29,14 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
         private const val ARG_USER = "ARG_USER"
     }
+
+    // ------ //
+
+    private val activityViewModel by lazy {
+        requireActivity<EntriesActivity>().viewModel
+    }
+
+    // ------ //
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,
@@ -41,8 +52,6 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         viewModel.user.value = user
         return UserEntriesTabFragment.createInstance(viewModelKey, user)
     }
-
-    private val activityViewModel by activityViewModels<EntriesViewModel>()
 
     private var clearTagCallback : OnBackPressedCallback? = null
 

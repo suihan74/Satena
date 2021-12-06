@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.transition.Fade
 import androidx.transition.TransitionSet
@@ -16,6 +15,7 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.extensions.getEnum
+import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.extensions.toVisibility
 import java.util.*
 
@@ -50,7 +50,9 @@ abstract class EntriesFragment : Fragment() {
         get() = requireActivity() as EntriesActivity
 
     /** EntriesActivityのViewModel */
-    private val activityViewModel by activityViewModels<EntriesViewModel>()
+    private val activityViewModel by lazy {
+        requireActivity<EntriesActivity>().viewModel
+    }
 
     protected lateinit var viewModel: EntriesFragmentViewModel
 

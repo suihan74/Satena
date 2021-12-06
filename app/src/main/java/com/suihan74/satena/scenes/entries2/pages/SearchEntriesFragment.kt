@@ -6,7 +6,6 @@ import android.view.MenuInflater
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
@@ -15,7 +14,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.satena.scenes.entries2.EntriesViewModel
 import com.suihan74.satena.scenes.entries2.dialog.SearchSettingsDialog
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
@@ -44,7 +42,9 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
 
     // ------ //
 
-    private val activityViewModel by activityViewModels<EntriesViewModel>()
+    private val activityViewModel by lazy {
+        requireActivity<EntriesActivity>().viewModel
+    }
 
     private val searchViewModel : SearchEntriesViewModel
         get() = viewModel as SearchEntriesViewModel

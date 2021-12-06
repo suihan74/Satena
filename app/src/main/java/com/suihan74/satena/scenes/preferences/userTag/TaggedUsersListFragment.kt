@@ -7,8 +7,6 @@ import android.transition.TransitionSet
 import android.view.*
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.suihan74.satena.R
@@ -16,7 +14,10 @@ import com.suihan74.satena.databinding.FragmentTaggedUsersListBinding
 import com.suihan74.satena.models.userTag.User
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesTab
+import com.suihan74.satena.scenes.preferences.pages.UserTagsFragment
 import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.extensions.requireActivity
+import com.suihan74.utilities.extensions.requireParentFragment
 
 class TaggedUsersListFragment : Fragment() {
     companion object {
@@ -25,8 +26,13 @@ class TaggedUsersListFragment : Fragment() {
 
     // ------ //
 
-    private val viewModel by viewModels<UserTagViewModel>({ requireParentFragment() })
-    private val activityViewModel by activityViewModels<PreferencesActivity.ActivityViewModel>()
+    private val viewModel by lazy {
+        requireParentFragment<UserTagsFragment>().viewModel
+    }
+
+    private val activityViewModel by lazy {
+        requireActivity<PreferencesActivity>().viewModel
+    }
 
     // ------ //
 

@@ -9,7 +9,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.TooltipCompat
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
@@ -17,7 +16,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.satena.scenes.entries2.EntriesViewModel
 import com.suihan74.satena.scenes.entries2.initialize
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
@@ -32,7 +30,9 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
 
     // ------ //
 
-    private val activityViewModel by activityViewModels<EntriesViewModel>()
+    private val activityViewModel by lazy {
+        requireActivity<EntriesActivity>().viewModel
+    }
 
     private val fragmentViewModel: MyBookmarksViewModel
         get() = viewModel as MyBookmarksViewModel
