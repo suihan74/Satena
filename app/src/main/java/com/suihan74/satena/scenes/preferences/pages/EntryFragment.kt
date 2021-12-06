@@ -12,6 +12,7 @@ import com.suihan74.satena.databinding.ListviewItemPrefsBottomItemsBinding
 import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.dialogs.TextInputDialogFragment
 import com.suihan74.satena.models.*
+import com.suihan74.satena.models.browser.ReadEntryLifetime
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
@@ -166,6 +167,13 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         PreferenceKey.ENTRY_DISPLAY_READ_MARK
     )
 
+    /** 既読情報の寿命 */
+    private val readMarkLifetime = createLiveDataEnum(
+        PreferenceKey.ENTRY_READ_MARK_LIFETIME,
+        { it.days },
+        { ReadEntryLifetime.fromDays(it) }
+    )
+
     /** タブ長押しでホームカテゴリ・初期タブを変更する */
     private val changeHomeByLongTappingTab = createLiveData<Boolean>(
         PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB
@@ -200,6 +208,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             viewModelScope.launch {
                 readEntriesRepo.setDisplaying(it)
             }
+            load(fragment)
         })
     }
 
@@ -357,6 +366,16 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             )
         }
         addPrefToggleItem(fragment, displayReadMark, R.string.pref_entries_display_read_mark_desc)
+        if (displayReadMark.value == true) {
+            addPrefItem(fragment, readMarkLifetime, R.string.pref_entries_read_mark_lifetime_desc) {
+                openEnumSelectionDialog(
+                    ReadEntryLifetime.values(),
+                    readMarkLifetime,
+                    R.string.pref_entries_read_mark_lifetime_desc,
+                    fragmentManager
+                )
+            }
+        }
 
         // --- //
 

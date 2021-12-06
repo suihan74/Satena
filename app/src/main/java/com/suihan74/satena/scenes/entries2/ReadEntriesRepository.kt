@@ -68,10 +68,11 @@ class ReadEntriesRepository(
         runCatching {
             val now = ZonedDateTime.now()
             if (lastDeletedOldItems == null || now != lastDeletedOldItems) {
-                val lifetime = prefs.getLong(PreferenceKey.ENTRY_READ_MARK_LIFETIME)
-                val date = now.minusDays(lifetime)
-                dao.delete(date)
-                lastDeletedOldItems = now
+                val lifetime = prefs.getInt(PreferenceKey.ENTRY_READ_MARK_LIFETIME).toLong()
+                if (lifetime > 0) {
+                    dao.delete(now.minusDays(lifetime))
+                    lastDeletedOldItems = now
+                }
             }
         }
     }
