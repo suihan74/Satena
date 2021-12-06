@@ -141,6 +141,16 @@
     public static *** e(...);
 }
 
+##---------------Begin: auto detected missing rules ----------
+
+-dontwarn com.beloo.widget.chipslayoutmanager.Orientation
+-dontwarn org.bouncycastle.jsse.BCSSLParameters
+-dontwarn org.bouncycastle.jsse.BCSSLSocket
+-dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
+-dontwarn org.openjsse.javax.net.ssl.SSLParameters
+-dontwarn org.openjsse.javax.net.ssl.SSLSocket
+-dontwarn org.openjsse.net.ssl.OpenJSSE
+
 ##---------------Begin: proguard configuration for user codes  ----------
 
 -keepnames class com.suihan74.*.** { *; }
