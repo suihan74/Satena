@@ -2,16 +2,28 @@ package com.suihan74.satena.scenes.bookmarks.information
 
 import android.content.Context
 import android.content.Intent
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.EntryMenuActionsImplForBookmarks
+import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
+import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.EntryMenuActions
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.startInnerBrowser
+import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.putObjectExtra
 
 class EntryInformationViewModel(
-    private val entry: LiveData<Entry?>
+    bookmarksRepo: BookmarksRepository,
+    favoriteSitesRepo: FavoriteSitesRepository
 ) : ViewModel() {
+    private val entry: LiveData<Entry?> = bookmarksRepo.entry
 
     /**
      * ページURL部分をクリックしたときの動作
@@ -88,5 +100,44 @@ class EntryInformationViewModel(
             .let {
                 context.startActivity(it)
             }
+    }
+
+    // ------ //
+
+    /** タグリスト用のアダプタを生成する */
+    fun tagsAdapter(context: Context) = TagsAdapter().also { adapter ->
+        adapter.setOnItemClickedListener { tag ->
+            context.alsoAs<BookmarksActivity> { it.closeDrawer() }
+            val intent = Intent(context, EntriesActivity::class.java).apply {
+                putExtra(EntriesActivity.EXTRA_SEARCH_TAG, tag)
+            }
+            context.startActivity(intent)
+        }
+    }
+
+    /** 関連エントリ用のアダプタを生成する */
+    fun relatedEntriesAdapter(
+        fragment: Fragment,
+        lifecycleOwner: LifecycleOwner
+    ) = RelatedEntriesAdapter(lifecycleOwner).also { adapter ->
+        adapter.setOnItemClickedListener {
+            val intent = Intent(fragment.requireContext(), BookmarksActivity::class.java).apply {
+                putObjectExtra(BookmarksActivity.EXTRA_ENTRY, it)
+            }
+            fragment.startActivity(intent)
+        }
+        adapter.setOnItemLongClickedListener {
+            openEntryMenuDialog(it, fragment.childFragmentManager)
+            true
+        }
+    }
+
+    // ------ //
+
+    private val entryMenuActions : EntryMenuActions =
+        EntryMenuActionsImplForBookmarks(bookmarksRepo, favoriteSitesRepo)
+
+    private fun openEntryMenuDialog(entry: Entry, fragmentManager: FragmentManager) {
+        entryMenuActions.openMenuDialog(entry, fragmentManager)
     }
 }

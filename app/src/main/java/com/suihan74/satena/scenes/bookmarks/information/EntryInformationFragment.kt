@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.bookmarks.information
 
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,21 +12,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentEntryInformationBinding
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
-import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.makeSpannedFromHtml
-import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.lazyProvideViewModel
 
 /** ドロワ部分にエントリ情報を表示する */
 class EntryInformationFragment : Fragment() {
-
     companion object {
         fun createInstance() = EntryInformationFragment()
     }
@@ -41,7 +38,10 @@ class EntryInformationFragment : Fragment() {
         get() = bookmarksActivity.bookmarksViewModel
 
     private val viewModel by lazyProvideViewModel {
-        EntryInformationViewModel(bookmarksViewModel.entry)
+        EntryInformationViewModel(
+            bookmarksViewModel.repository,
+            SatenaApplication.instance.favoriteSitesRepository
+        )
     }
 
     // ------ //
@@ -79,26 +79,10 @@ class EntryInformationFragment : Fragment() {
                 .setMaxViewsInRow(4)
                 .setRowStrategy(ChipsLayoutManager.STRATEGY_DEFAULT)
                 .build()
-
-            adapter = TagsAdapter().also { adapter ->
-                adapter.setOnItemClickedListener { tag ->
-                    bookmarksActivity.closeDrawer()
-                    val intent = Intent(bookmarksActivity, EntriesActivity::class.java).apply {
-                        putExtra(EntriesActivity.EXTRA_SEARCH_TAG, tag)
-                    }
-                    startActivity(intent)
-                }
-            }
+            adapter = viewModel.tagsAdapter(bookmarksActivity)
         }
 
-        binding.relatedEntriesList.adapter = RelatedEntriesAdapter(viewLifecycleOwner).also { adapter ->
-            adapter.setOnItemClickedListener {
-                val intent = Intent(bookmarksActivity, BookmarksActivity::class.java).apply {
-                    putObjectExtra(BookmarksActivity.EXTRA_ENTRY, it)
-                }
-                startActivity(intent)
-            }
-        }
+        binding.relatedEntriesList.adapter = viewModel.relatedEntriesAdapter(this, viewLifecycleOwner)
 
         return binding.root
     }

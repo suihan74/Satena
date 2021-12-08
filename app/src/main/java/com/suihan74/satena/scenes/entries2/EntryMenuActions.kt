@@ -55,7 +55,7 @@ interface EntryMenuActions {
 
             TapEntryAction.SHARE -> sharePage(activity, entry)
 
-            TapEntryAction.SHOW_MENU -> openMenuDialog(activity, entry, fragmentManager, coroutineScope)
+            TapEntryAction.SHOW_MENU -> openMenuDialog(entry, fragmentManager)
 
             TapEntryAction.NOTHING -> {}
         }
@@ -65,10 +65,8 @@ interface EntryMenuActions {
      * エントリ項目に対するメニューダイアログを開く
      */
     fun openMenuDialog(
-        activity: FragmentActivity,
         entry: Entry,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
+        fragmentManager: FragmentManager
     ) {
         val dialog = EntryMenuDialog2.createInstance(entry).apply {
             setShowCommentsListener { entry, f ->

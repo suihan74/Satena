@@ -767,6 +767,6 @@ class TitleBarClickHandlerImpl(private val repository: BookmarksRepository) : Ti
             repository,
             SatenaApplication.instance.favoriteSitesRepository
         )
-        handler.openMenuDialog(activity, entry, activity.supportFragmentManager, activity.lifecycleScope)
+        handler.openMenuDialog(entry, activity.supportFragmentManager)
     }
 }
