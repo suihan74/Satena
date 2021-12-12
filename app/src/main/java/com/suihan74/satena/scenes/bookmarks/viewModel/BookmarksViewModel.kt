@@ -299,8 +299,7 @@ class BookmarksViewModel(
                 activity,
                 entry,
                 actionType,
-                activity.supportFragmentManager,
-                viewModelScope
+                activity.supportFragmentManager
             )
         }
     }

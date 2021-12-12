@@ -9,6 +9,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.HatenaClient
+import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.EntryMenuActionsImplForBookmarks
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
@@ -17,10 +19,9 @@ import com.suihan74.satena.scenes.entries2.EntryMenuActions
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.extensions.alsoAs
-import com.suihan74.utilities.extensions.putObjectExtra
 
 class EntryInformationViewModel(
-    bookmarksRepo: BookmarksRepository,
+    private val bookmarksRepo: BookmarksRepository,
     favoriteSitesRepo: FavoriteSitesRepository
 ) : ViewModel() {
     private val entry: LiveData<Entry?> = bookmarksRepo.entry
@@ -120,15 +121,36 @@ class EntryInformationViewModel(
         fragment: Fragment,
         lifecycleOwner: LifecycleOwner
     ) = RelatedEntriesAdapter(lifecycleOwner).also { adapter ->
-        adapter.setOnItemClickedListener {
-            val intent = Intent(fragment.requireContext(), BookmarksActivity::class.java).apply {
-                putObjectExtra(BookmarksActivity.EXTRA_ENTRY, it)
-            }
-            fragment.startActivity(intent)
+        fun invokeClickAction(fragment: Fragment, entry: Entry, actionKey: PreferenceKey) {
+            val tapAction = TapEntryAction.fromId(
+                bookmarksRepo.prefs.getInt(actionKey)
+            )
+            entryMenuActions.invokeEntryClickedAction(
+                fragment.requireActivity(),
+                entry,
+                tapAction,
+                fragment.childFragmentManager
+            )
         }
-        adapter.setOnItemLongClickedListener {
-            openEntryMenuDialog(it, fragment.childFragmentManager)
+
+        adapter.setOnItemClickedListener { entry ->
+            invokeClickAction(fragment, entry, PreferenceKey.ENTRY_SINGLE_TAP_ACTION)
+        }
+        adapter.setOnItemLongClickedListener { entry ->
+            invokeClickAction(fragment, entry, PreferenceKey.ENTRY_LONG_TAP_ACTION)
             true
+        }
+        adapter.setOnItemMultipleClickedListener { entry, _ ->
+            invokeClickAction(fragment, entry, PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION)
+        }
+        adapter.setOnItemEdgeClickedListener { entry ->
+            invokeClickAction(fragment, entry, PreferenceKey.ENTRY_EDGE_SINGLE_TAP_ACTION)
+        }
+        adapter.setOnItemEdgeClickedListener { entry ->
+            invokeClickAction(fragment, entry, PreferenceKey.ENTRY_EDGE_LONG_TAP_ACTION)
+        }
+        adapter.setOnItemEdgeClickedListener { entry ->
+            invokeClickAction(fragment, entry, PreferenceKey.ENTRY_EDGE_MULTIPLE_TAP_ACTION)
         }
     }
 

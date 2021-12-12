@@ -43,8 +43,7 @@ interface EntryMenuActions {
         activity: FragmentActivity,
         entry: Entry,
         entryAction: TapEntryAction,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
+        fragmentManager: FragmentManager
     ) {
         when (entryAction) {
             TapEntryAction.SHOW_COMMENTS -> showComments(activity, entry)

@@ -259,8 +259,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** エントリを複数回クリックしたときの処理 */
@@ -272,8 +271,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryMultipleClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** エントリを長押ししたときの処理 */
@@ -285,8 +283,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryLongClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** エントリ右端をシングルクリックしたときの処理 */
@@ -298,8 +295,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryEdgeClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** エントリ右端を複数回クリックしたときの処理 */
@@ -311,8 +307,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryEdgeMultipleClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** エントリ右端を長押ししたときの処理 */
@@ -324,8 +319,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryEdgeLongClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** コメント部分クリック時の処理 */
