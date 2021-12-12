@@ -133,6 +133,8 @@ class EntryInformationViewModel(
             )
         }
 
+        adapter.multipleClickDuration = bookmarksRepo.prefs.getLong(PreferenceKey.ENTRY_MULTIPLE_TAP_DURATION)
+
         adapter.setOnItemClickedListener { entry ->
             invokeClickAction(fragment, entry, PreferenceKey.ENTRY_SINGLE_TAP_ACTION)
         }
