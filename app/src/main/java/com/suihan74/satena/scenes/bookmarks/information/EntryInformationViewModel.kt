@@ -146,10 +146,11 @@ class EntryInformationViewModel(
         adapter.setOnItemEdgeClickedListener { entry ->
             invokeClickAction(fragment, entry, PreferenceKey.ENTRY_EDGE_SINGLE_TAP_ACTION)
         }
-        adapter.setOnItemEdgeClickedListener { entry ->
+        adapter.setOnItemEdgeLongClickedListener { entry ->
             invokeClickAction(fragment, entry, PreferenceKey.ENTRY_EDGE_LONG_TAP_ACTION)
+            true
         }
-        adapter.setOnItemEdgeClickedListener { entry ->
+        adapter.setOnItemEdgeMultipleClickedListener { entry, _ ->
             invokeClickAction(fragment, entry, PreferenceKey.ENTRY_EDGE_MULTIPLE_TAP_ACTION)
         }
     }
