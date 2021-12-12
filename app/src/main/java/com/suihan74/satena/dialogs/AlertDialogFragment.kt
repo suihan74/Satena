@@ -11,6 +11,7 @@ import androidx.annotation.StringRes
 import androidx.annotation.StyleRes
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.utilities.Listener
@@ -323,6 +324,10 @@ class AlertDialogFragment : DialogFragment() {
         }
 
         fun create() = dialog
+
+        fun show(fragmentManager: FragmentManager, tag: String? = null) {
+            create().show(fragmentManager, tag)
+        }
 
         fun setTitle(@StringRes titleId: Int) : Builder {
             args.putInt(ARG_TITLE_ID, titleId)

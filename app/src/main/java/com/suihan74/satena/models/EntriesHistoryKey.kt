@@ -3,6 +3,7 @@ package com.suihan74.satena.models
 import android.content.Context
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -83,7 +84,7 @@ object EntriesHistoryKeyMigration {
         val repo = SatenaApplication.instance.readEntriesRepository
         val prefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
         prefs.getObject<List<Entry>>(EntriesHistoryKey.ENTRIES)?.forEach { entry ->
-            repo.insert(entry)
+            repo.insert(entry, ReadEntryCondition.BOOKMARKS_SHOWN)
         }
         prefs.edit { /* バージョン情報の更新に必要 */ }
     }

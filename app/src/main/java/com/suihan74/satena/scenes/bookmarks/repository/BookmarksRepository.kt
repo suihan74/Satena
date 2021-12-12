@@ -9,6 +9,7 @@ import com.suihan74.satena.models.CustomDigestSettingsKey
 import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
@@ -368,7 +369,7 @@ class BookmarksRepository(
     /** 取得済みのエントリ情報をセットする */
     private suspend fun loadEntry(e: Entry) = withContext(Dispatchers.Main.immediate) {
         entry.value = e
-        readEntriesRepo.insert(e)
+        readEntriesRepo.insert(e, ReadEntryCondition.BOOKMARKS_SHOWN)
     }
 
     /**
@@ -381,7 +382,7 @@ class BookmarksRepository(
         withContext(Dispatchers.Main) {
             entry.value = response
         }
-        readEntriesRepo.insert(response)
+        readEntriesRepo.insert(response, ReadEntryCondition.BOOKMARKS_OR_PAGE_SHOWN)
         return response
     }
 
@@ -395,7 +396,7 @@ class BookmarksRepository(
         withContext(Dispatchers.Main) {
             entry.value = response
         }
-        readEntriesRepo.insert(response)
+        readEntriesRepo.insert(response, ReadEntryCondition.BOOKMARKS_SHOWN)
         return response
     }
 

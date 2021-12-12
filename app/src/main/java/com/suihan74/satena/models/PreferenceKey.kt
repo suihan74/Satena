@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.Gravity
 import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.models.browser.ReadEntryLifetime
+import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
 import com.suihan74.satena.scenes.browser.BrowserMode
@@ -197,6 +198,9 @@ enum class PreferenceKey(
 
     /** 既読マークを表示するかどうか */
     ENTRY_DISPLAY_READ_MARK(typeInfo<Boolean>(), true),
+
+    /** どうしたら既読マークがつくか */
+    ENTRY_READ_MARK_CONDITION(typeInfo<Int>(), ReadEntryCondition.BOOKMARKS_OR_PAGE_SHOWN.int),
 
     /** 既読マーク情報の寿命（日） */
     ENTRY_READ_MARK_LIFETIME(typeInfo<Int>(), ReadEntryLifetime.MONTH_3.days),

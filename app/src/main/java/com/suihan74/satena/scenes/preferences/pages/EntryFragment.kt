@@ -9,10 +9,12 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsBottomItemsBinding
+import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.dialogs.TextInputDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.browser.ReadEntryLifetime
+import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
 import com.suihan74.satena.scenes.entries2.UserBottomItem
@@ -24,6 +26,7 @@ import com.suihan74.satena.scenes.preferences.entries.EntriesDefaultTabsFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.and
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
@@ -166,6 +169,9 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     private val displayReadMark = createLiveData<Boolean>(
         PreferenceKey.ENTRY_DISPLAY_READ_MARK
     )
+
+    /** 既読マークをつける条件 */
+    private val readMarkCondition = readEntriesRepo.readEntryCondition
 
     /** 既読情報の寿命 */
     private val readMarkLifetime = createLiveDataEnum(
@@ -367,6 +373,10 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         }
         addPrefToggleItem(fragment, displayReadMark, R.string.pref_entries_display_read_mark_desc)
         if (displayReadMark.value == true) {
+            addPrefItem(fragment, readMarkCondition, R.string.pref_entries_read_mark_condition_desc) {
+                openReadEntryConditionSelectionDialog(fragmentManager)
+            }
+
             addPrefItem(fragment, readMarkLifetime, R.string.pref_entries_read_mark_lifetime_desc) {
                 openEnumSelectionDialog(
                     ReadEntryLifetime.values(),
@@ -473,6 +483,32 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 }
             }
         }
+    }
+
+    // ------ //
+
+    /**
+     * 既読マークをつけるタイミングを選択する
+     */
+    private fun openReadEntryConditionSelectionDialog(fragmentManager: FragmentManager) {
+        val values = ReadEntryCondition.visibleValues()
+        val labelIds = values.map { it.textId }
+        val value = readMarkCondition.value!!.int
+        val states = values.map { it.int and value > 0 }.toBooleanArray()
+
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_entries_read_mark_condition_desc)
+            .setMultipleChoiceItems(labelIds, states) { _, which, state ->
+                states[which] = state
+            }
+            .setPositiveButton(R.string.dialog_ok) {
+                var code = 0
+                for (i in values.indices) {
+                    code = code or (values[i].int and states[i])
+                }
+                readMarkCondition.value = ReadEntryCondition.fromInt(code)
+            }
+            .show(fragmentManager, null)
     }
 
     // ------ //

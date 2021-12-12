@@ -9,9 +9,11 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
 import com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog
@@ -170,6 +172,11 @@ interface EntryMenuActions {
 /** 画面に依らない共通の処理の実装 */
 
 abstract class EntryMenuActionsImplBasic : EntryMenuActions {
+    private fun readEntry(entry: Entry) =SatenaApplication.instance.coroutineScope.launch {
+        SatenaApplication.instance.readEntriesRepository
+            .insert(entry, ReadEntryCondition.PAGE_SHOWN)
+    }
+
     override fun showComments(activity: FragmentActivity, entry: Entry) {
         val intent = Intent(activity, BookmarksActivity::class.java).also {
             it.putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry)
@@ -178,6 +185,7 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
     }
 
     override fun showPage(activity: FragmentActivity, entry: Entry) {
+        readEntry(entry)
         activity.startInnerBrowser(entry)
     }
 
@@ -194,6 +202,7 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
                 "cannot resolve intent for browsing the web site: ${entry.url}"
             }
 
+            readEntry(entry)
             activity.startActivity(intent)
         }
         catch (e: Throwable) {

@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +22,7 @@ import com.suihan74.satena.databinding.ListviewItemGeneralSectionBinding
 import com.suihan74.satena.databinding.ListviewItemPrefsButtonBinding
 import com.suihan74.satena.models.TextIdContainer
 import com.suihan74.utilities.extensions.alsoAs
+import kotlinx.coroutines.flow.Flow
 
 /**
  * 設定項目表示用アダプタ
@@ -138,14 +140,55 @@ class PreferencesAdapter(
 /**
  * 設定アイテム
  */
-open class PreferenceItem<T>(
-    val fragment: Fragment,
-    val liveData: LiveData<T>,
-    @StringRes val titleId: Int,
-    @StringRes val suffixId: Int? = null,
-    private val onLongClick: (()->Unit)? = null,
-    private val onClick: (()->Unit)? = null
-) : PreferencesAdapter.Item {
+open class PreferenceItem<T> : PreferencesAdapter.Item {
+    constructor(
+        fragment: Fragment,
+        liveData: LiveData<T>,
+        @StringRes titleId: Int,
+        @StringRes suffixId: Int? = null,
+        onLongClick: (()->Unit)? = null,
+        onClick: (()->Unit)? = null
+    ) {
+        this.fragment = fragment
+        this.liveData = liveData
+        this.titleId = titleId
+        this.suffixId = suffixId
+        this.onLongClick = onLongClick
+        this.onClick = onClick
+    }
+
+    constructor(
+        fragment: Fragment,
+        flow: Flow<T>,
+        @StringRes titleId: Int,
+        @StringRes suffixId: Int? = null,
+        onLongClick: (()->Unit)? = null,
+        onClick: (()->Unit)? = null
+    ) {
+        this.fragment = fragment
+        this.liveData = flow.asLiveData()
+        this.titleId = titleId
+        this.suffixId = suffixId
+        this.onLongClick = onLongClick
+        this.onClick = onClick
+    }
+
+    // ------ //
+
+    val fragment: Fragment
+
+    val liveData: LiveData<T>
+
+    @StringRes val titleId: Int
+
+    @StringRes val suffixId: Int?
+
+    private val onLongClick: (()->Unit)?
+
+    private val onClick: (()->Unit)?
+
+    // ------ //
+
     override val layoutId: Int
         get() = R.layout.listview_item_prefs_button
 
@@ -279,6 +322,18 @@ fun MutableList<PreferencesAdapter.Item>.addPrefItem(
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) = add(PreferenceItem(fragment, liveData, titleId, suffixId, onLongClick, onClick))
+
+/**
+ * 設定項目を追加する
+ */
+fun MutableList<PreferencesAdapter.Item>.addPrefItem(
+    fragment: Fragment,
+    flow: Flow<*>,
+    @StringRes titleId: Int,
+    @StringRes suffixId: Int? = null,
+    onLongClick: (() -> Unit)? = null,
+    onClick: (() -> Unit)? = null
+) = add(PreferenceItem(fragment, flow, titleId, suffixId, onLongClick, onClick))
 
 /**
  * 真偽値をトグルする設定項目を追加する
