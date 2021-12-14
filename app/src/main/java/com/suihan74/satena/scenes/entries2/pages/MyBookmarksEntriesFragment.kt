@@ -65,6 +65,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             activity.inflateExtraBottomMenu(R.menu.my_bookmarks_bottom)
             initializeMenu(bottomAppBar.menu, bottomAppBar)
         }
+        setSubTitle(fragmentViewModel)
 
         return result
     }
