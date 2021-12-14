@@ -12,6 +12,7 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.requireActivity
 
 /**
  * ブラウザのドロワタブ上のブクマ画面か，それを表示するか確認する画面の表示領域
@@ -23,11 +24,9 @@ class BookmarksFrameFragment : Fragment(), ScrollableToTop, TabItem {
 
     // ------ //
 
-    private val browserActivity
-        get() = requireActivity() as BrowserActivity
-
-    private val browserViewModel
-        get() = browserActivity.viewModel
+    private val browserViewModel by lazy {
+        requireActivity<BrowserActivity>().viewModel
+    }
 
     private val bodyFragment : Fragment?
         get() = childFragmentManager.findFragmentById(R.id.contentsFrame)

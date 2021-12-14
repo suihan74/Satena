@@ -10,7 +10,6 @@ import android.widget.ImageButton
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -91,9 +90,6 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     // ------ //
 
     private lateinit var binding: ActivityEntries2Binding
-
-    val toolbar : Toolbar
-        get() = binding.toolbar
 
     // ------ //
 

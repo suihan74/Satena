@@ -67,8 +67,6 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
         webView.settings.useWideViewPort = true
         webView.setInitialScale(1)
         webView.scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
-    //        webView.settings.userAgentString = "Mozilla/5.0 (Linux; Android 4.0.3; SC-02C Build/IML74K) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.58 Mobile Safari/537.31"
-
         webView.webViewClient = WebViewClient()
         webView.loadUrl(SIGN_IN_PAGE_URL)
     }

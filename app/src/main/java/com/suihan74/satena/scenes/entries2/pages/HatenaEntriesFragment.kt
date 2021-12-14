@@ -15,6 +15,7 @@ import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.satena.scenes.entries2.initialize
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
 
@@ -26,6 +27,10 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
     }
 
     private var clearIssueCallback : OnBackPressedCallback? = null
+
+    private val activityViewModel by lazy {
+        requireActivity<EntriesActivity>().viewModel
+    }
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,
@@ -44,12 +49,10 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
         val root = super.onCreateView(inflater, container, savedInstanceState)
 
         // ツールバーを更新
-        activity.alsoAs<EntriesActivity> { activity ->
-            activity.toolbar.also {
-                it.title = getString(category.textId)
-                it.subtitle = viewModel.issue.value?.name
-            }
-        }
+        activityViewModel.toolbarTitle.value = getString(category.textId)
+        viewModel.issue.observe(viewLifecycleOwner, {
+            activityViewModel.toolbarSubTitle.value = it?.name
+        })
 
         return root
     }
@@ -125,11 +128,7 @@ class HatenaEntriesFragment : MultipleTabsEntriesFragment() {
 
         // Issue選択時にサブタイトルを表示する
         viewModel.issue.observe(viewLifecycleOwner, {
-            val toolbar = (requireActivity() as EntriesActivity).toolbar
-            toolbar.subtitle = it?.name
-
             clearIssueCallback?.isEnabled = it != null
-
             if (it == null) {
                 spinner.setSelection(0)
             }

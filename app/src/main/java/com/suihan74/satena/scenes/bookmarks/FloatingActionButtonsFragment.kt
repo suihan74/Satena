@@ -15,8 +15,6 @@ import androidx.fragment.app.Fragment
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FragmentBookmarksFabs3Binding
 import com.suihan74.satena.models.ExtraScrollingAlignment
-import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
-import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
@@ -30,14 +28,12 @@ class FloatingActionButtonsFragment : Fragment() {
 
     // ------ //
 
-    private val bookmarksActivity : BookmarksActivity
-        get() = requireActivity() as BookmarksActivity
-
-    private val bookmarksViewModel : BookmarksViewModel
-        get() = bookmarksActivity.bookmarksViewModel
-
-    private val contentsViewModel : ContentsViewModel
-        get() = bookmarksActivity.contentsViewModel
+    private val bookmarksViewModel by lazy {
+        requireActivity<BookmarksActivity>().bookmarksViewModel
+    }
+    private val contentsViewModel by lazy {
+        requireActivity<BookmarksActivity>().contentsViewModel
+    }
 
     /** ブクマ投稿ダイアログを開くボタンを複数回押されてもダイアログが複数出ないようにする */
     private var bookmarkButtonClicked = false

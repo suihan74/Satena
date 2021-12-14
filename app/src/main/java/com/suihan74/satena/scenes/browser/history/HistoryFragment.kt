@@ -12,10 +12,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.databinding.FragmentBrowserHistoryBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
-import com.suihan74.satena.scenes.browser.BrowserViewModel
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
+import com.suihan74.utilities.extensions.requireActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -33,8 +33,9 @@ class HistoryFragment :
     private val browserActivity : BrowserActivity
         get() = requireActivity() as BrowserActivity
 
-    private val activityViewModel : BrowserViewModel
-        get() = browserActivity.viewModel
+    private val activityViewModel by lazy {
+        requireActivity<BrowserActivity>().viewModel
+    }
 
     private val viewModel by lazyProvideViewModel {
         HistoryViewModel(activityViewModel.historyRepo)
