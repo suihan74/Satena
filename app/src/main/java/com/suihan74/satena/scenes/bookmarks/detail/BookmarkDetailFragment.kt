@@ -7,6 +7,7 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
 import androidx.activity.addCallback
+import androidx.appcompat.widget.TooltipCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
@@ -130,7 +131,7 @@ class BookmarkDetailFragment : Fragment() {
         initializeStarButtons(binding)
 
         // ブクマボタン設定
-        binding.bookmarkButton?.setOnClickListener {
+        binding.bookmarkButton.setOnClickListener {
             viewModel.openPostBookmarkActivity(this)
         }
 
@@ -364,6 +365,10 @@ class BookmarkDetailFragment : Fragment() {
         )
 
         binding.showStarsButton.setImageResource(R.drawable.ic_baseline_close)
+        TooltipCompat.setTooltipText(
+            binding.showStarsButton,
+            getString(R.string.dialog_close)
+        )
     }
 
     private fun closeStarMenu(binding: FragmentBookmarkDetail3Binding) {
@@ -375,5 +380,9 @@ class BookmarkDetailFragment : Fragment() {
         hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
 
         binding.showStarsButton.setImageResource(R.drawable.ic_add_star_filled)
+        TooltipCompat.setTooltipText(
+            binding.showStarsButton,
+            getString(R.string.description_select_posting_star)
+        )
     }
 }
