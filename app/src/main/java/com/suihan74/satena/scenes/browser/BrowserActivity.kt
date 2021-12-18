@@ -125,6 +125,12 @@ class BrowserActivity :
         }
     }
 
+    override fun onStop() {
+        binding.swipeLayout.isRefreshing = false
+        viewModel.setOnPageFinishedListener(null)
+        super.onStop()
+    }
+
     /** 戻る処理を制御する */
     override fun onBackPressed() {
         when {
