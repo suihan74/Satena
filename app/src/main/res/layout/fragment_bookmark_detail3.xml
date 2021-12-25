@@ -422,6 +422,7 @@
                 android:id="@+id/bookmark_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="28dp"
                 android:layout_marginEnd="4dp"
