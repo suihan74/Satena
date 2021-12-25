@@ -82,7 +82,7 @@ abstract class EntriesFragment : Fragment() {
     abstract fun removeBookmark(entry: Entry)
 
     /** エントリに付けたブクマを更新する */
-    abstract fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult)
+    abstract fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

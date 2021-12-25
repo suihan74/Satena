@@ -73,6 +73,14 @@ class ReadEntriesRepository(
         }
     }
 
+    suspend fun delete(entry: Entry) {
+        dao.delete(entry)
+        readEntryIdsCache.remove(entry.id)
+        if (displaying.value) {
+            _readEntryIds.emit(readEntryIds.value.minus(entry.id))
+        }
+    }
+
     suspend fun setDisplaying(enabled: Boolean) {
         if (enabled == displaying.value) return
         prefs.edit {

@@ -205,7 +205,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     }
 
     /** エントリに付けたブクマを更新する */
-    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
         viewModel.updateBookmark(entry, bookmarkResult)
     }
 

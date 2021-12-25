@@ -350,6 +350,7 @@
     <string name="entries_read_mark_condition_bookmarks_shown">ブクマ画面を開いたとき</string>
     <string name="entries_read_mark_condition_page_shown">Webページを開いたとき</string>
     <string name="entries_read_mark_condition_bookmarks_or_page_shown">ブクマ画面 or Webページを開いたとき</string>
+    <string name="entries_delete_read_mark_desc">既読マークを消す</string>
 
     <string name="pref_entries_history_max_size_dialog_title">ブクマ閲覧履歴の最大保存数を設定</string>
     <string name="pref_entries_history_max_size_dialog_msg">%1$d～%2$d件で指定できます</string>
@@ -722,6 +723,7 @@
     <string name="msg_unignore_user_failed">id:%sの非表示解除に失敗しました</string>
     <string name="msg_remove_bookmark_succeeded">ブクマを削除しました</string>
     <string name="msg_remove_bookmark_failed">ブクマ削除に失敗しました</string>
+    <string name="msg_remove_read_mark_failed">既読マーク削除に失敗しました</string>
     <string name="msg_bookmarks_initial_tab_changed">「%s」タブを最初に表示するように設定しました</string>
 
     <!-- スター削除ダイアログ -->

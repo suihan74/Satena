@@ -19,8 +19,8 @@ import kotlinx.coroutines.launch
 
 /** ブコメに含まれるリンク文字列に対する処理 */
 class EntryMenuActionsImplForBookmarks(
-    private val bookmarksRepo: BookmarksRepository,
-    private val favoriteSitesRepo: FavoriteSitesRepository
+    private val bookmarksRepo : BookmarksRepository,
+    private val favoriteSitesRepo : FavoriteSitesRepository
 ) : EntryMenuActionsImplBasic() {
 
     override fun showEntries(activity: FragmentActivity, entry: Entry) {
@@ -123,5 +123,14 @@ class EntryMenuActionsImplForBookmarks(
                 activity.showToast(R.string.msg_remove_bookmark_failed)
             }
         }
+    }
+
+    override fun deleteReadMark(
+        activity: FragmentActivity,
+        entry: Entry,
+        coroutineScope: CoroutineScope
+    ) {
+        // DO NOTHING
+        // ブクマ画面では表示されないアクション
     }
 }

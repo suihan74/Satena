@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.ExtraScrollingAlignment
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +23,7 @@ class EntriesTabFragmentViewModel(
     private val tabPosition: Int
 ) :
     ViewModel(),
-    EntryMenuActions by EntryMenuActionsImplForEntries(repository),
+    EntryMenuActions by EntryMenuActionsImplForEntries(repository, SatenaApplication.instance.readEntriesRepository),
     CommentMenuActions by CommentMenuActionsImpl(repository)
 {
     companion object {
@@ -129,7 +130,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** エントリに付けたブクマを更新する */
-    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
         entries.value = entries.value?.map {
             if (it.same(entry)) it.copy(bookmarkedData = bookmarkResult)
             else it

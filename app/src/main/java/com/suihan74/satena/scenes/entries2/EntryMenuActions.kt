@@ -107,6 +107,10 @@ interface EntryMenuActions {
                 val a = f.requireActivity()
                 deleteEntryBookmark(a, entry, a.lifecycleScope)
             }
+            setDeleteReadMarkListener { entry, f ->
+                val a = f.requireActivity()
+                deleteReadMark(a, entry, a.lifecycleScope)
+            }
         }
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_ENTRY_MENU)
     }
@@ -158,6 +162,13 @@ interface EntryMenuActions {
 
     /** ブクマを削除する */
     fun deleteEntryBookmark(
+        activity: FragmentActivity,
+        entry: Entry,
+        coroutineScope: CoroutineScope
+    )
+
+    /** 既読マークを削除する */
+    fun deleteReadMark(
         activity: FragmentActivity,
         entry: Entry,
         coroutineScope: CoroutineScope
@@ -232,7 +243,8 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
 
 /** エントリ画面用の実装 */
 class EntryMenuActionsImplForEntries(
-    private val repository: EntriesRepository
+    private val repository : EntriesRepository,
+    private val readEntriesRepo : ReadEntriesRepository
 ) : EntryMenuActionsImplBasic() {
 
     override fun showEntries(activity: FragmentActivity, entry: Entry) {
@@ -347,6 +359,23 @@ class EntryMenuActionsImplForEntries(
             }
             else {
                 activity.showToast(R.string.msg_remove_bookmark_failed)
+            }
+        }
+    }
+
+    override fun deleteReadMark(
+        activity: FragmentActivity,
+        entry: Entry,
+        coroutineScope: CoroutineScope
+    ) {
+        coroutineScope.launch(Dispatchers.Main) {
+            runCatching {
+                readEntriesRepo.delete(entry)
+                activity.alsoAs<EntriesActivity> {
+                    it.updateBookmark(entry, entry.bookmarkedData)
+                }
+            }.onFailure {
+                activity.showToast(R.string.msg_remove_read_mark_failed)
             }
         }
     }

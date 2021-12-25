@@ -128,7 +128,7 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
     }
 
     /** エントリに付けたブクマを更新する */
-    override fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+    override fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
         entriesTabAdapter?.updateBookmark(entry, bookmarkResult)
     }
 

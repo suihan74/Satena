@@ -477,7 +477,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     }
 
     /** エントリに付けたブクマを更新する */
-    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
         val fragment = supportFragmentManager.get<EntriesFragment>()
         fragment?.updateBookmark(entry, bookmarkResult)
     }
