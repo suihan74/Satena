@@ -255,24 +255,21 @@ class EntryMenuActionsImplForEntries(
 
     override fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 repository.favoriteSitesRepo.favoriteEntrySite(entry)
-            }
-            if (result.isSuccess) {
+            }.onSuccess {
                 context.showToast(R.string.msg_favorite_site_registration_succeeded)
-            }
-            else {
-                Log.e("favoriteEntry", Log.getStackTraceString(result.exceptionOrNull()))
+            }.onFailure {
+                Log.e("favoriteEntry", Log.getStackTraceString(it))
             }
         }
     }
 
     override fun unfavoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 repository.favoriteSitesRepo.unfavoriteEntrySite(entry)
-            }
-            if (result.isSuccess) {
+            }.onSuccess {
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)
             }
         }
@@ -280,18 +277,12 @@ class EntryMenuActionsImplForEntries(
 
     override fun readLaterEntry(activity: FragmentActivity, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 repository.readLaterEntry(entry)
-            }
-
-            if (result.isSuccess) {
-                val bookmarkResult = result.getOrNull()!!
-                activity.alsoAs<EntriesActivity> { a ->
-                    a.updateBookmark(entry, bookmarkResult)
-                }
+            }.onSuccess { bookmarkResult ->
+                activity.alsoAs<EntriesActivity> { a -> a.updateBookmark(entry, bookmarkResult) }
                 activity.showToast(R.string.msg_post_bookmark_succeeded)
-            }
-            else {
+            }.onFailure {
                 activity.showToast(R.string.msg_post_bookmark_failed)
             }
         }
@@ -347,17 +338,12 @@ class EntryMenuActionsImplForEntries(
         coroutineScope: CoroutineScope
     ) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 repository.deleteBookmark(entry)
-            }
-
-            if (result.isSuccess) {
-                activity.alsoAs<EntriesActivity> { a ->
-                    a.removeBookmark(entry)
-                }
+            }.onSuccess {
+                activity.alsoAs<EntriesActivity> { a -> a.removeBookmark(entry) }
                 activity.showToast(R.string.msg_remove_bookmark_succeeded)
-            }
-            else {
+            }.onFailure {
                 activity.showToast(R.string.msg_remove_bookmark_failed)
             }
         }

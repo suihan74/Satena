@@ -32,10 +32,9 @@ class EntryMenuActionsImplForBookmarks(
 
     override fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 favoriteSitesRepo.favoriteEntrySite(entry)
-            }
-            if (result.isSuccess) {
+            }.onSuccess {
                 context.showToast(R.string.msg_favorite_site_registration_succeeded)
             }
         }
@@ -43,10 +42,9 @@ class EntryMenuActionsImplForBookmarks(
 
     override fun unfavoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 favoriteSitesRepo.unfavoriteEntrySite(entry)
-            }
-            if (result.isSuccess) {
+            }.onSuccess {
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)
             }
         }
@@ -54,14 +52,11 @@ class EntryMenuActionsImplForBookmarks(
 
     override fun readLaterEntry(activity: FragmentActivity, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 bookmarksRepo.readLater(entry)
-            }
-
-            if (result.isSuccess) {
+            }.onSuccess {
                 activity.showToast(R.string.msg_post_bookmark_succeeded)
-            }
-            else {
+            }.onFailure {
                 activity.showToast(R.string.msg_post_bookmark_failed)
             }
         }
@@ -112,14 +107,11 @@ class EntryMenuActionsImplForBookmarks(
         coroutineScope: CoroutineScope
     ) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 bookmarksRepo.deleteBookmark(entry)
-            }
-
-            if (result.isSuccess) {
+            }.onSuccess {
                 activity.showToast(R.string.msg_remove_bookmark_succeeded)
-            }
-            else {
+            }.onFailure {
                 activity.showToast(R.string.msg_remove_bookmark_failed)
             }
         }
