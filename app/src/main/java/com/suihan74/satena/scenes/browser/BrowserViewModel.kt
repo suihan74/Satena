@@ -496,20 +496,19 @@ class BrowserViewModel(
      * プライベートブラウジングを有効化する
      */
     private fun setPrivateBrowsing(wv: WebView, enabled: Boolean) {
-        val settings = wv.settings
-        if (enabled) {
-            // cookie
-            CookieManager.getInstance().setAcceptCookie(false)
-            // cache
-            settings.cacheMode = WebSettings.LOAD_NO_CACHE
-            settings.setAppCacheEnabled(false)
-        }
-        else {
-            // cookie
-            CookieManager.getInstance().setAcceptCookie(true)
-            // cache
-            settings.cacheMode = WebSettings.LOAD_DEFAULT
-            settings.setAppCacheEnabled(true)
+        wv.settings.let { settings ->
+            if (enabled) {
+                // cookie
+                CookieManager.getInstance().setAcceptCookie(false)
+                // cache
+                settings.cacheMode = WebSettings.LOAD_NO_CACHE
+            }
+            else {
+                // cookie
+                CookieManager.getInstance().setAcceptCookie(true)
+                // cache
+                settings.cacheMode = WebSettings.LOAD_DEFAULT
+            }
         }
     }
 
