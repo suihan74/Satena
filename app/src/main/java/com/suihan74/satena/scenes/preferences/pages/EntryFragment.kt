@@ -493,7 +493,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     private fun openReadEntryConditionSelectionDialog(fragmentManager: FragmentManager) {
         val values = ReadEntryCondition.visibleValues()
         val labelIds = values.map { it.textId }
-        val value = readMarkCondition.value!!.int
+        val value = readMarkCondition.value.int
         val states = values.map { it.int and value > 0 }.toBooleanArray()
 
         AlertDialogFragment.Builder()
