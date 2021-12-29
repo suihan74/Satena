@@ -1312,6 +1312,13 @@ class BookmarksRepository(
 
     // ------ //
 
+    suspend fun getBookmarksToBookmark(bookmark: Bookmark) : List<Bookmark> {
+        val url = bookmark.getCommentPageUrl(entry.value!!)
+        val response = client.getRecentBookmarksAsync(url).await()
+        return response.bookmarks
+            .map { Bookmark.create(it) }
+    }
+
     /** 指定ブクマに言及しているブクマを取得する */
     suspend fun getMentionsTo(bookmark: Bookmark) : List<Bookmark> {
         val displayIgnoredUsers = prefs.getBoolean(PreferenceKey.BOOKMARKS_SHOWING_IGNORED_USERS_WITH_CALLING)

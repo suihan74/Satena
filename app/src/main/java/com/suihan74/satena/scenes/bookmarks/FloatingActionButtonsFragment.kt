@@ -129,7 +129,7 @@ class FloatingActionButtonsFragment : Fragment() {
             // 自分のブコメの詳細画面に遷移
             bookmarksViewModel.userBookmark?.let { bookmark ->
                 activity.alsoAs<BookmarkDetailOpenable> { container ->
-                    contentsViewModel.openBookmarkDetail(container, bookmark)
+                    contentsViewModel.openBookmarkDetail(container, bookmarksViewModel.entry.value!!, bookmark)
                 }
             }
 

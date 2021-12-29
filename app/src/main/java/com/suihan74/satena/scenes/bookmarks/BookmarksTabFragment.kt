@@ -93,7 +93,7 @@ abstract class BookmarksTabFragment :
             adapter.setOnItemClickedListener { bookmark ->
                 // 詳細画面を開く
                 activity.alsoAs<BookmarkDetailOpenable> { container ->
-                    contentsViewModel.openBookmarkDetail(container, bookmark)
+                    contentsViewModel.openBookmarkDetail(container, bookmarksViewModel.entry.value!!, bookmark)
                 }
             }
 

@@ -50,7 +50,9 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
     val viewModel by lazyProvideViewModel {
         StarRelationsTabViewModel(
             tabType = requireArguments().getEnum<DetailTabAdapter.TabType>(ARG_TAB_TYPE)!!,
-            repository = bookmarkDetailViewModel.repository
+            repository = bookmarkDetailViewModel.repository,
+            targetEntry = bookmarkDetailViewModel.entry,
+            targetBookmark = bookmarkDetailViewModel.bookmark
         )
     }
 
