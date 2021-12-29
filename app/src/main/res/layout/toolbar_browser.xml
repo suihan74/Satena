@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
                 android:background="@drawable/browser_address_area_background"
                 android:paddingHorizontal="12dp"
                 android:layout_marginRight="10dp"
@@ -27,14 +27,14 @@
                 android:layout_height="wrap_content">
 
             <com.suihan74.utilities.views.ImeEnhancedEditText
-                    android:id="@+id/address_edit_text"
+                    android:id="@+id/addressEditText"
 
                     android:text="@={vm.addressText}"
                     android:hint="@string/browser_address_bar_hint"
 
                     android:textSize="16sp"
                     android:paddingVertical="8dp"
-                    android:paddingHorizontal="8dp"
+                    android:paddingHorizontal="32dp"
                     android:singleLine="true"
                     android:inputType="textNoSuggestions"
                     android:imeOptions="actionGo"
@@ -47,23 +47,53 @@
                     android:textCursorDrawable="@drawable/searchview_cursor"
                     android:textColorHighlight="@color/searchViewHighlight"
 
-                    android:layout_toLeftOf="@id/favorite_button"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
 
             <ImageButton
-                    android:id="@+id/favorite_button"
-                    android:src="@drawable/ic_star"
-                    android:tint="@color/colorPrimaryText"
+                    android:id="@+id/favicon"
+                    app:src="@{vm.faviconBitmap}"
                     android:background="?selectableItemBackgroundBorderless"
+                    android:contentDescription="@null"
 
-                    android:layout_marginLeft="2dp"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    app:layout_constraintTop_toTopOf="@id/addressEditText"
+                    app:layout_constraintBottom_toBottomOf="@id/addressEditText"
+                    app:layout_constraintLeft_toLeftOf="@id/addressEditText"
+                    android:padding="2dp"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
 
-        </RelativeLayout>
+            <ProgressBar
+                    android:id="@+id/faviconProgressBar"
+                    android:progressTint="@color/colorPrimaryText"
+                    android:visibility="@{vm.faviconLoading}"
+                    app:layout_constraintTop_toTopOf="@id/favicon"
+                    app:layout_constraintBottom_toBottomOf="@id/favicon"
+                    app:layout_constraintStart_toStartOf="@id/favicon"
+                    app:layout_constraintEnd_toEndOf="@id/favicon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+
+            <ImageButton
+                    android:id="@+id/favoriteButton"
+                    android:src="@drawable/ic_star"
+                    app:tint="@color/colorPrimaryText"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:contentDescription="@null"
+
+                    app:layout_constraintTop_toTopOf="@id/addressEditText"
+                    app:layout_constraintBottom_toBottomOf="@id/addressEditText"
+                    app:layout_constraintRight_toRightOf="@id/addressEditText"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.appcompat.widget.Toolbar>
 </layout>

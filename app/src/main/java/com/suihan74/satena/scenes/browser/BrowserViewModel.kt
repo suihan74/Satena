@@ -92,6 +92,12 @@ class BrowserViewModel(
     /** ページの読み込み完了率 */
     val loadingProgress : LiveData<Int> = browserRepo.loadingProgress
 
+    /** 表示中ページのfavicon */
+    val faviconBitmap = browserRepo.faviconBitmap
+
+    /** favicon読み込み状態 */
+    val faviconLoading = browserRepo.faviconLoading
+
     /** ユーザーエージェント */
     private val userAgent = browserRepo.userAgent
 
@@ -732,6 +738,8 @@ class BrowserViewModel(
         val vm = this@BrowserViewModel
         vm.title.value = url
         vm.url.value = url
+        vm.faviconBitmap.value = null
+        vm.faviconLoading.value = true
         browserRepo.resourceUrls.clear()
     }
 
