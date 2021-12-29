@@ -35,6 +35,9 @@ class BrowserToolbar @JvmOverloads constructor(
     /** 表示中のページをお気に入りから除外するボタンが押下された */
     private var onUnfavoriteCurrentPageListener : Listener<Unit>? = null
 
+    /** favicon部分のクリック時処理 */
+    private var onClickFaviconListener : Listener<Unit>? = null
+
     // ------ //
 
     /** アドレスバー入力部分のフォーカスが変化したときの追加処理をセット */
@@ -50,6 +53,10 @@ class BrowserToolbar @JvmOverloads constructor(
     /** 表示中のページをお気に入りから除外するボタンが押下されたときの処理をセット */
     fun setOnUnfavoriteCurrentPageListener(l: Listener<Unit>?) {
         onUnfavoriteCurrentPageListener = l
+    }
+
+    fun setOnClickFaviconListener(l: Listener<Unit>?) {
+        onClickFaviconListener = l
     }
 
     // ------ //
@@ -93,6 +100,10 @@ class BrowserToolbar @JvmOverloads constructor(
                     else -> false
                 }
             }
+        }
+
+        binding.favicon.setOnClickListener {
+            onClickFaviconListener?.invoke(Unit)
         }
 
         binding.favoriteButton.let { favButton ->

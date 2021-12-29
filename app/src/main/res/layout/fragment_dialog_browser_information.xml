@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.browser.BrowserViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/favicon"
+                app:src="@{vm.faviconBitmap}"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="@null"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/closeButtonSeparator"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintVertical_bias="0"
+                android:layout_marginTop="12dp"
+                android:layout_marginStart="12dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        <com.suihan74.utilities.views.MarqueeTextView
+                android:id="@+id/title"
+                android:text="@{vm.title}"
+                android:textSize="16sp"
+                android:textAllCaps="false"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                app:layout_constraintTop_toTopOf="@id/favicon"
+                app:layout_constraintBottom_toBottomOf="@id/favicon"
+                app:layout_constraintStart_toEndOf="@id/favicon"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="12dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <com.suihan74.utilities.views.MarqueeTextView
+                android:id="@+id/url"
+                android:text="@{vm.url}"
+                android:textSize="12sp"
+                android:textAllCaps="false"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                app:layout_constraintTop_toBottomOf="@id/favicon"
+                app:layout_constraintBottom_toTopOf="@id/closeButtonSeparator"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="6dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+        <View
+                android:id="@+id/closeButtonSeparator"
+                android:background="?bottomSheetDialogHandleColor"
+                app:layout_constraintTop_toBottomOf="@id/url"
+                app:layout_constraintBottom_toTopOf="@id/okButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                app:layout_constraintVertical_bias="1"
+                android:layout_marginTop="20dp"
+                android:layout_marginHorizontal="12dp"
+                android:layout_width="0dp"
+                android:layout_height="2dp"/>
+
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/okButton"
+                style="@style/ButtonBarButtonStyle"
+                android:text="@string/dialog_ok"
+                android:textColor="?colorPrimary"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/closeButtonSeparator"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/closeButtonSeparator"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"/>
+
+        <ImageButton
+                android:id="@+id/shareButton"
+                android:src="@drawable/ic_baseline_share"
+                android:background="?actionBarItemBackground"
+                android:contentDescription="@null"
+                app:layout_constraintTop_toTopOf="@id/okButton"
+                app:layout_constraintBottom_toBottomOf="@id/okButton"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="12dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

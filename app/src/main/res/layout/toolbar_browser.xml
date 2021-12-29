@@ -71,7 +71,7 @@
 
             <ProgressBar
                     android:id="@+id/faviconProgressBar"
-                    android:progressTint="@color/colorPrimaryText"
+                    android:indeterminateTint="@color/colorPrimaryText"
                     android:visibility="@{vm.faviconLoading}"
                     app:layout_constraintTop_toTopOf="@id/favicon"
                     app:layout_constraintBottom_toBottomOf="@id/favicon"

@@ -383,6 +383,12 @@ class BrowserActivity :
             toolbar.setOnUnfavoriteCurrentPageListener {
                 viewModel.unfavoriteCurrentPage(supportFragmentManager)
             }
+
+            // favicon部分のクリックリスナ
+            toolbar.setOnClickFaviconListener {
+                InformationDialog.createInstance()
+                    .show(supportFragmentManager, null)
+            }
         }
 
         val toolbarBinding = toolbar.inflate(viewModel, this, binding.appbarLayout, true)
