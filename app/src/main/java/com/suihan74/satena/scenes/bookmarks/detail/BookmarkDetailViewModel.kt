@@ -1,7 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
-import android.content.Context
 import android.content.Intent
+import androidx.fragment.app.Fragment
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
@@ -99,13 +99,6 @@ class BookmarkDetailViewModel(
      * ブクマが言及している他のブクマ
      */
     val mentionsFromUser = MutableLiveData<List<StarRelation>>()
-
-    // ------ //
-
-    /** ブクマ投稿画面遷移用ランチャ */
-    private val postBookmarkLauncher = fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        // TODO
-    }
 
     // ------ //
 
@@ -222,14 +215,15 @@ class BookmarkDetailViewModel(
         }
     }
 
-    // ------ //
-
-    fun openPostBookmarkDialog(context: Context) {
-        val intent = Intent(context, BookmarkPostActivity::class.java).also {
-            val url = bookmark.value!!.getCommentPageUrl(repository.entry.value!!)
-            it.putExtra(BookmarkPostActivity.EXTRA_URL, url)
+    /** ブクマをブクマするためのアクティビティを開く */
+    fun openPostBookmarkActivity(fragment: Fragment) {
+        val intent = Intent(fragment.requireContext(), BookmarkPostActivity::class.java).also {
+            it.putExtra(
+                BookmarkPostActivity.EXTRA_URL,
+                bookmark.value!!.getBookmarkUrl(repository.entry.value!!)
+            )
         }
-        postBookmarkLauncher.launch(intent)
+        fragment.startActivity(intent)
     }
 
     // ------ //

@@ -7,6 +7,7 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
 import androidx.activity.addCallback
+import androidx.appcompat.widget.TooltipCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Bookmark
@@ -134,6 +135,11 @@ class BookmarkDetailFragment : Fragment() {
         // スター付与ボタン設定
         initializeStarButtons(binding)
 
+        // ブクマボタン設定
+        binding.bookmarkButton.setOnClickListener {
+            viewModel.openPostBookmarkActivity(this)
+        }
+
         binding.showStarsButton.setOnClickListener {
             viewModel.starsMenuOpened.value = viewModel.starsMenuOpened.value != true
         }
@@ -229,6 +235,41 @@ class BookmarkDetailFragment : Fragment() {
             .duration = 100
     }
 
+    private fun showBookmarkButton(layoutId: Int, dimenId: Int) =
+        when (resources.configuration.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> showBookmarkButtonLandscape(layoutId, dimenId)
+            else -> showBookmarkButtonPortrait(layoutId, dimenId)
+        }
+
+
+    private fun showBookmarkButtonPortrait(layoutId: Int, dimenId: Int) {
+        val view = requireView()
+        val layout = view.findViewById<View>(layoutId)
+        val pos = requireContext().resources.getDimension(dimenId)
+
+        layout.animate()
+            .translationXBy(0f)
+            .translationX(-pos)
+            .alphaBy(0f)
+            .alpha(1f)
+            .duration = 100
+    }
+
+    private fun showBookmarkButtonLandscape(layoutId: Int, dimenId: Int) {
+        val view = requireView()
+        val layout = view.findViewById<View>(layoutId)
+        val pos = requireContext().resources.getDimension(dimenId)
+
+        layout.animate()
+            .translationYBy(0f)
+            .translationY(-pos)
+            .alphaBy(0f)
+            .alpha(1f)
+            .duration = 100
+    }
+
+    // ------ ///
+
     private fun hideStarButton(layoutId: Int, counterId: Int) =
         when (resources.configuration.orientation) {
             Configuration.ORIENTATION_LANDSCAPE -> hideStarButtonLandscape(layoutId, counterId)
@@ -271,7 +312,37 @@ class BookmarkDetailFragment : Fragment() {
             .duration = 100
     }
 
+    private fun hideBookmarkButton(layoutId: Int) =
+        when (resources.configuration.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> hideBookmarkButtonLandscape(layoutId)
+            else -> hideBookmarkButtonPortrait(layoutId)
+        }
+
+    private fun hideBookmarkButtonPortrait(layoutId: Int) {
+        val view = requireView()
+        val layout = view.findViewById<View>(layoutId)
+        layout.animate()
+            .translationX(0f)
+            .alpha(0f)
+            .duration = 100
+    }
+
+    private fun hideBookmarkButtonLandscape(layoutId: Int) {
+        val view = requireView()
+        val layout = view.findViewById<View>(layoutId)
+        layout.animate()
+            .translationY(0f)
+            .alpha(0f)
+            .duration = 100
+    }
+
+    // ------ //
+
     private fun openStarMenu(binding: FragmentBookmarkDetail3Binding) {
+        showBookmarkButton(
+            R.id.bookmark_button,
+            R.dimen.yellow_star_position
+        )
         showStarButton(
             R.id.purple_star_layout,
             R.id.purple_stars_count,
@@ -299,9 +370,14 @@ class BookmarkDetailFragment : Fragment() {
         )
 
         binding.showStarsButton.setImageResource(R.drawable.ic_baseline_close)
+        TooltipCompat.setTooltipText(
+            binding.showStarsButton,
+            getString(R.string.dialog_close)
+        )
     }
 
     private fun closeStarMenu(binding: FragmentBookmarkDetail3Binding) {
+        hideBookmarkButton(R.id.bookmark_button)
         hideStarButton(R.id.purple_star_layout, R.id.purple_stars_count)
         hideStarButton(R.id.blue_star_layout, R.id.blue_stars_count)
         hideStarButton(R.id.red_star_layout, R.id.red_stars_count)
@@ -309,5 +385,9 @@ class BookmarkDetailFragment : Fragment() {
         hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
 
         binding.showStarsButton.setImageResource(R.drawable.ic_add_star_filled)
+        TooltipCompat.setTooltipText(
+            binding.showStarsButton,
+            getString(R.string.description_select_posting_star)
+        )
     }
 }
