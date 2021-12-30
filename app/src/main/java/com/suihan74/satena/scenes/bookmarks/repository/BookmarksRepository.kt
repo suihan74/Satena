@@ -1214,8 +1214,8 @@ class BookmarksRepository(
      * @throws SignInFailureException
      * @throws TaskFailureException
      */
-    suspend fun deleteBookmark(bookmark: Bookmark) = withContext(Dispatchers.Default) {
-        val url = entry.value?.url ?: throw TaskFailureException("invalid entry")
+    suspend fun deleteBookmark(entry: Entry, bookmark: Bookmark) = withContext(Dispatchers.Default) {
+        val url = entry.url
         val user = bookmark.user
 
         requireSignIn()
@@ -1232,27 +1232,28 @@ class BookmarksRepository(
         }
 
         // 表示を更新する
-
-        _entry.postValue(
-            entry.value?.copy(bookmarkedData = null)
-        )
-
-        val bEntry = bookmarksEntry.value?.let { e ->
-            e.copy(
-                bookmarks = e.bookmarks.filterNot { it.user == user }
+        if (url == _entry.value?.url) {
+            _entry.postValue(
+                _entry.value?.copy(bookmarkedData = null)
             )
+
+            val bEntry = bookmarksEntry.value?.let { e ->
+                e.copy(
+                    bookmarks = e.bookmarks.filterNot { it.user == user }
+                )
+            }
+            _bookmarksEntry.postValue(bEntry)
+
+            val digest = bookmarksDigest.value
+            _bookmarksDigest.postValue(BookmarksDigest(
+                digest?.referedBlogEntries.orEmpty(),
+                digest?.scoredBookmarks?.filterNot { it.user == user }.orEmpty(),
+                digest?.favoriteBookmarks?.filterNot { it.user == user }.orEmpty()
+            ))
+
+            bookmarksRecentCache =
+                bookmarksRecentCache.filterNot { it.user == user }
         }
-        _bookmarksEntry.postValue(bEntry)
-
-        val digest = bookmarksDigest.value
-        _bookmarksDigest.postValue(BookmarksDigest(
-            digest?.referedBlogEntries.orEmpty(),
-            digest?.scoredBookmarks?.filterNot { it.user == user }.orEmpty(),
-            digest?.favoriteBookmarks?.filterNot { it.user == user }.orEmpty()
-        ))
-
-        bookmarksRecentCache =
-            bookmarksRecentCache.filterNot { it.user == user }
 
         refreshBookmarks()
         stopLoading()

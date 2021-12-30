@@ -95,6 +95,7 @@ class BookmarkMenuActionsImpl(
             val a = f.requireActivity()
             openConfirmBookmarkDeletionDialog(
                 a,
+                entry,
                 b,
                 f.parentFragmentManager,
                 a.lifecycleScope
@@ -408,6 +409,7 @@ class BookmarkMenuActionsImpl(
     /** 自分のブクマを削除するか確認するダイアログを開く */
     private fun openConfirmBookmarkDeletionDialog(
         context: Context,
+        entry: Entry,
         bookmark: Bookmark,
         fragmentManager: FragmentManager,
         coroutineScope: CoroutineScope
@@ -418,14 +420,11 @@ class BookmarkMenuActionsImpl(
             .setNegativeButton(R.string.dialog_cancel)
             .setPositiveButton(R.string.dialog_ok) {
                 coroutineScope.launch(Dispatchers.Main) {
-                    val result = runCatching {
-                        repository.deleteBookmark(bookmark)
-                    }
-
-                    if (result.isSuccess) {
+                    runCatching {
+                        repository.deleteBookmark(entry, bookmark)
+                    }.onSuccess {
                         context.showToast(R.string.msg_remove_bookmark_succeeded)
-                    }
-                    else {
+                    }.onFailure {
                         context.showToast(R.string.msg_remove_bookmark_failed)
                     }
                 }
