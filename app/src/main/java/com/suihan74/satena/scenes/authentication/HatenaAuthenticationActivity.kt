@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.authentication
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.webkit.*
@@ -10,6 +11,7 @@ import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityHatenaAuthenticationBinding
+import com.suihan74.satena.scenes.splash.SplashActivity
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.finish
 import com.suihan74.utilities.extensions.toVisibility
@@ -21,25 +23,28 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
     companion object {
         private const val BASE_URL = "https://www.hatena.ne.jp"
         private const val SIGN_IN_PAGE_URL = "$BASE_URL/login"
+
+        const val EXTRA_FIRST_LAUNCHING = "EXTRA_FIRST_LAUNCHING"
     }
 
     // ------ //
 
     private val cookieManager = CookieManager.getInstance()
 
-    private val rk : String? get() {
-        val cookies = cookieManager.getCookie(BASE_URL)
-        if (cookies.isNullOrBlank()) return null
-        val regex = Regex("""rk=(.+);""")
-        val matches = regex.find(cookies)
-        return matches?.groupValues?.getOrNull(1)
-    }
+    private val rk: String?
+        get() {
+            val cookies = cookieManager.getCookie(BASE_URL)
+            if (cookies.isNullOrBlank()) return null
+            val regex = Regex("""rk=(.+);""")
+            val matches = regex.find(cookies)
+            return matches?.groupValues?.getOrNull(1)
+        }
 
     private var finished = false
 
     private val loading = MutableLiveData<Boolean>()
 
-    private lateinit var binding : ActivityHatenaAuthenticationBinding
+    private lateinit var binding: ActivityHatenaAuthenticationBinding
 
     // ------ //
 
@@ -73,7 +78,15 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
 
     override fun finish() {
         binding.webView.finish()
-        super.finish()
+        if (intent.getBooleanExtra(EXTRA_FIRST_LAUNCHING, false)) {
+            val intent = Intent(this, SplashActivity::class.java).also {
+                it.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+        }
+        else {
+            super.finish()
+        }
     }
 
     // ------ //
@@ -109,7 +122,7 @@ class HatenaAuthenticationActivity : AppCompatActivity() {
     // ------ //
 
     inner class WebViewClient : android.webkit.WebViewClient() {
-        private val emptyResourceRequest : WebResourceResponse =
+        private val emptyResourceRequest: WebResourceResponse =
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream("".toByteArray()))
 
         override fun onReceivedError(
