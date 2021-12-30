@@ -9,11 +9,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.databinding.FragmentBookmarksTab3Binding
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksTabViewModel
-import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
-import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
 import com.suihan74.utilities.ScrollableToBottom
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.launch
 
@@ -30,14 +29,12 @@ class PopularBookmarksTabFragment :
 
     // ------ //
 
-    private val bookmarksActivity : BookmarksActivity
-        get() = requireActivity() as BookmarksActivity
-
-    val bookmarksViewModel : BookmarksViewModel
-        get() = bookmarksActivity.bookmarksViewModel
-
-    val contentsViewModel : ContentsViewModel
-        get() = bookmarksActivity.contentsViewModel
+    private val bookmarksViewModel by lazy {
+        requireActivity<BookmarksActivity>().bookmarksViewModel
+    }
+    private val contentsViewModel by lazy {
+        requireActivity<BookmarksActivity>().contentsViewModel
+    }
 
     val viewModel by lazyProvideViewModel {
         BookmarksTabViewModel(bookmarksViewModel.repository)
@@ -86,7 +83,7 @@ class PopularBookmarksTabFragment :
             adapter.setOnItemClickedListener { bookmark ->
                 // 詳細画面を開く
                 activity.alsoAs<BookmarkDetailOpenable> { container ->
-                    contentsViewModel.openBookmarkDetail(container, bookmark)
+                    contentsViewModel.openBookmarkDetail(container, bookmarksViewModel.entry.value!!, bookmark)
                 }
             }
 

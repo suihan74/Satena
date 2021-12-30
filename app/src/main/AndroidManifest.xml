@@ -30,12 +30,12 @@
     <application
             android:name=".SatenaApplication"
             android:allowBackup="true"
+            android:fullBackupOnly="true"
             android:icon="@mipmap/ic_launcher"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_name"
             android:supportsRtl="true"
             android:theme="@style/AppTheme.Light"
-            android:fullBackupContent="true"
             android:usesCleartextTraffic="true">  <!-- 暗号化されていないHTTP通信を許可 -->
 
         <!-- Receivers -->

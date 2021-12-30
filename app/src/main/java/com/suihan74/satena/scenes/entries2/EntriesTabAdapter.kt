@@ -37,7 +37,7 @@ class EntriesTabAdapter(
     }
 
     /** エントリに付けたブクマを更新する */
-    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
         map {
             it.updateBookmark(entry, bookmarkResult)
         }

@@ -190,7 +190,7 @@
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
-        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.ExDark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
         <item name="bottomSheetDialogHandleColor">@color/colorPrimaryExDark</item>
 
@@ -296,8 +296,8 @@
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
-        <item name="android:checkboxStyle">@style/CheckBoxStyle.Dark</item>
-        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="android:checkboxStyle">@style/CheckBoxStyle.ExDark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.ExDark</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme.ExDark</item>
         <item name="bottomSheetDialogHandleColor">@color/colorPrimaryExDark</item>
     </style>
@@ -377,7 +377,7 @@
         <item name="android:editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
         <item name="android:textColorHint">@color/textColorHintDark</item>
-        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.ExDark</item>
     </style>
 
     <!-- ========= -->
@@ -387,10 +387,12 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorPrimary</item>
+        <item name="colorControlNormal">?colorPrimary</item>
     </style>
     <style name="Base.BottomSheetDialogTheme.Light">
         <item name="android:textViewStyle">@style/TextViewStyle.Light</item>
         <item name="editTextStyle">@style/EditTextStyle.Light</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Light</item>
         <item name="bottomSheetStyle">@style/BottomSheet.Light</item>
         <!-- クリック時背景アニメーション色 -->
         <item name="colorControlHighlight">@color/rippleMaterial</item>
@@ -398,6 +400,7 @@
     <style name="Base.BottomSheetDialogTheme.Dark">
         <item name="android:textViewStyle">@style/TextViewStyle.Dark</item>
         <item name="editTextStyle">@style/EditTextStyle.Dark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.Dark</item>
         <item name="bottomSheetStyle">@style/BottomSheet.Dark</item>
         <!-- クリック時背景アニメーション色 -->
         <item name="colorControlHighlight">@color/rippleMaterialDark</item>
@@ -407,6 +410,7 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDarkExDark</item>
         <item name="android:textViewStyle">@style/TextViewStyle.ExDark</item>
         <item name="editTextStyle">@style/EditTextStyle.ExDark</item>
+        <item name="checkboxStyle">@style/CheckBoxStyle.ExDark</item>
         <item name="bottomSheetStyle">@style/BottomSheet.ExDark</item>
         <!-- クリック時背景アニメーション色 -->
         <item name="colorControlHighlight">@color/rippleMaterialExDark</item>

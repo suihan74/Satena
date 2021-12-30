@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModelStoreOwner
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
-import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
 
@@ -23,6 +23,14 @@ class SiteEntriesFragment : MultipleTabsEntriesFragment() {
         private const val ARG_SITE_URL = "ARG_SITE_URL"
     }
 
+    // ------ //
+
+    private val activityViewModel by lazy {
+        requireActivity<EntriesActivity>().viewModel
+    }
+
+    // ------ //
+
     override fun generateViewModel(
         owner: ViewModelStoreOwner,
         viewModelKey: String,
@@ -33,9 +41,6 @@ class SiteEntriesFragment : MultipleTabsEntriesFragment() {
             siteUrl.value = requireArguments().getString(ARG_SITE_URL)
         }
     }
-
-    override val title : String?
-        get() = viewModel.siteUrl.value
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,11 +53,9 @@ class SiteEntriesFragment : MultipleTabsEntriesFragment() {
         viewModel.siteUrl.value = arguments.getString(ARG_SITE_URL)
 
         // Category.SiteではサイトURLをタイトルに表示する
-        activity.alsoAs<EntriesActivity> { activity ->
-            viewModel.siteUrl.observe(viewLifecycleOwner, {
-                activity.toolbar.title = title
-            })
-        }
+        viewModel.siteUrl.observe(viewLifecycleOwner, {
+            activityViewModel.toolbarTitle.value = it
+        })
 
         return root
     }

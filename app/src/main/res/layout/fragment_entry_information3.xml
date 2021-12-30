@@ -63,7 +63,7 @@
                 android:id="@+id/add_star_button"
                 android:visibility="@{vm.signedIn}"
                 app:srcCompat="@drawable/ic_add_star"
-                android:tint="?attr/tagTextColor"
+                app:tint="?attr/tagTextColor"
                 android:background="?attr/actionBarItemBackground"
                 android:layout_below="@id/icon"
                 android:layout_alignEnd="@id/icon"

@@ -37,3 +37,8 @@ enum class BrowserHistoryLifeSpan(
  * 画像キャッシュの自動消去間隔
  */
 typealias ClearingImageCacheSpan = BrowserHistoryLifeSpan
+
+/**
+ * 既読エントリの自動消去間隔
+ */
+typealias ReadEntryLifetime = BrowserHistoryLifeSpan

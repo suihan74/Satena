@@ -9,7 +9,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.TooltipCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
@@ -29,10 +28,18 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
         }
     }
 
+    // ------ //
+
+    private val activityViewModel by lazy {
+        requireActivity<EntriesActivity>().viewModel
+    }
+
     private val fragmentViewModel: MyBookmarksViewModel
         get() = viewModel as MyBookmarksViewModel
 
     private var onBackPressedCallback : OnBackPressedCallback? = null
+
+    // ------ //
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,
@@ -58,6 +65,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
             activity.inflateExtraBottomMenu(R.menu.my_bookmarks_bottom)
             initializeMenu(bottomAppBar.menu, bottomAppBar)
         }
+        setSubTitle(fragmentViewModel)
 
         return result
     }
@@ -222,7 +230,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
         } ?: return
 
         // タグ一覧のロード完了後に候補リストを作成する
-        viewModel.tags.observe(viewLifecycleOwner, Observer { tags ->
+        viewModel.tags.observe(viewLifecycleOwner, { tags ->
             val activity = requireActivity()
 
             if (tags.isNotEmpty()) {
@@ -256,7 +264,7 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
         })
 
         // タグ選択時にサブタイトルを表示する
-        viewModel.tag.observe(viewLifecycleOwner, Observer {
+        viewModel.tag.observe(viewLifecycleOwner, {
             setSubTitle(fragmentViewModel)
 
             if (it == null) {
@@ -273,15 +281,16 @@ class MyBookmarksEntriesFragment : MultipleTabsEntriesFragment() {
 
     /** 検索情報をサブタイトルに表示する */
     private fun setSubTitle(viewModel: MyBookmarksViewModel) {
-        val toolbar = (requireActivity() as EntriesActivity).toolbar
         val tag = viewModel.tag.value
         val query = viewModel.searchQuery.value
         val isQueryBlank = query.isNullOrBlank()
 
-        toolbar.subtitle =
-            if (tag == null && isQueryBlank) null
-            else if (tag == null) query
-            else if (isQueryBlank) "${tag.text}(${tag.count})"
-            else "${tag.text}(${tag.count}),$query"
+        activityViewModel.toolbarSubTitle.value =
+            when {
+                tag == null && isQueryBlank -> null
+                tag == null -> query
+                isQueryBlank -> "${tag.text}(${tag.count})"
+                else -> "${tag.text}(${tag.count}),$query"
+            }
     }
 }

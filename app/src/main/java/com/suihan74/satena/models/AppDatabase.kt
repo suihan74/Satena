@@ -9,8 +9,11 @@ import com.suihan74.satena.models.browser.BrowserDao
 import com.suihan74.satena.models.browser.HistoryLog
 import com.suihan74.satena.models.browser.HistoryPage
 import com.suihan74.satena.models.converters.LocalDateTimeConverter
+import com.suihan74.satena.models.converters.ZonedDateTimeConverter
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntry
 import com.suihan74.satena.models.ignoredEntry.IgnoredEntryDao
+import com.suihan74.satena.models.readEntry.ReadEntry
+import com.suihan74.satena.models.readEntry.ReadEntryDao
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.models.userTag.TagAndUserRelation
 import com.suihan74.satena.models.userTag.User
@@ -27,15 +30,20 @@ import java.time.OffsetDateTime
         TagAndUserRelation::class,
         IgnoredEntry::class,
         HistoryPage::class,
-        HistoryLog::class
+        HistoryLog::class,
+        ReadEntry::class,
     ],
-    version = 6
+    version = 7
 )
-@TypeConverters(LocalDateTimeConverter::class)
+@TypeConverters(
+    LocalDateTimeConverter::class,
+    ZonedDateTimeConverter::class
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userTagDao() : UserTagDao
     abstract fun ignoredEntryDao() : IgnoredEntryDao
     abstract fun browserDao() : BrowserDao
+    abstract fun readEntryDao() : ReadEntryDao
 }
 
 // ------ //
@@ -53,7 +61,8 @@ fun RoomDatabase.Builder<AppDatabase>.migrate() : RoomDatabase.Builder<AppDataba
         Migration4to5(),
         // ------ //
         Migration1to5(),
-        Migration5to6()
+        Migration5to6(),
+        Migration6to7()
     )
     .fallbackToDestructiveMigration()
 
@@ -145,5 +154,14 @@ class Migration5to6 : Migration(5, 6) {
         val offset = OffsetDateTime.now().offset.totalSeconds
         database.execSQL("UPDATE `browser_history_pages` SET `lastVisited` = `lastVisited` - $offset")
         database.execSQL("UPDATE `browser_history_items` SET `visitedAt` = `visitedAt` - $offset")
+    }
+}
+
+/**
+ * v1.10.0: 既読エントリを記録する
+ */
+class Migration6to7 : Migration(6, 7) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS `read_entry` (`eid` INTEGER PRIMARY KEY NOT NULL, `timestamp` INTEGER NOT NULL)")
     }
 }

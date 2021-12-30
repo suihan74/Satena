@@ -9,9 +9,11 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.IgnoredEntryDialogFragment
 import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
 import com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog
@@ -41,8 +43,7 @@ interface EntryMenuActions {
         activity: FragmentActivity,
         entry: Entry,
         entryAction: TapEntryAction,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
+        fragmentManager: FragmentManager
     ) {
         when (entryAction) {
             TapEntryAction.SHOW_COMMENTS -> showComments(activity, entry)
@@ -53,7 +54,7 @@ interface EntryMenuActions {
 
             TapEntryAction.SHARE -> sharePage(activity, entry)
 
-            TapEntryAction.SHOW_MENU -> openMenuDialog(activity, entry, fragmentManager, coroutineScope)
+            TapEntryAction.SHOW_MENU -> openMenuDialog(entry, fragmentManager)
 
             TapEntryAction.NOTHING -> {}
         }
@@ -63,10 +64,8 @@ interface EntryMenuActions {
      * エントリ項目に対するメニューダイアログを開く
      */
     fun openMenuDialog(
-        activity: FragmentActivity,
         entry: Entry,
-        fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
+        fragmentManager: FragmentManager
     ) {
         val dialog = EntryMenuDialog2.createInstance(entry).apply {
             setShowCommentsListener { entry, f ->
@@ -107,6 +106,10 @@ interface EntryMenuActions {
             setDeleteBookmarkListener { entry, f ->
                 val a = f.requireActivity()
                 deleteEntryBookmark(a, entry, a.lifecycleScope)
+            }
+            setDeleteReadMarkListener { entry, f ->
+                val a = f.requireActivity()
+                deleteReadMark(a, entry, a.lifecycleScope)
             }
         }
         dialog.showAllowingStateLoss(fragmentManager, DIALOG_ENTRY_MENU)
@@ -163,6 +166,13 @@ interface EntryMenuActions {
         entry: Entry,
         coroutineScope: CoroutineScope
     )
+
+    /** 既読マークを削除する */
+    fun deleteReadMark(
+        activity: FragmentActivity,
+        entry: Entry,
+        coroutineScope: CoroutineScope
+    )
 }
 
 // ------ //
@@ -170,6 +180,11 @@ interface EntryMenuActions {
 /** 画面に依らない共通の処理の実装 */
 
 abstract class EntryMenuActionsImplBasic : EntryMenuActions {
+    private fun readEntry(entry: Entry) =SatenaApplication.instance.coroutineScope.launch {
+        SatenaApplication.instance.readEntriesRepository
+            .insert(entry, ReadEntryCondition.PAGE_SHOWN)
+    }
+
     override fun showComments(activity: FragmentActivity, entry: Entry) {
         val intent = Intent(activity, BookmarksActivity::class.java).also {
             it.putObjectExtra(BookmarksActivity.EXTRA_ENTRY, entry)
@@ -178,6 +193,7 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
     }
 
     override fun showPage(activity: FragmentActivity, entry: Entry) {
+        readEntry(entry)
         activity.startInnerBrowser(entry)
     }
 
@@ -194,6 +210,7 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
                 "cannot resolve intent for browsing the web site: ${entry.url}"
             }
 
+            readEntry(entry)
             activity.startActivity(intent)
         }
         catch (e: Throwable) {
@@ -226,7 +243,8 @@ abstract class EntryMenuActionsImplBasic : EntryMenuActions {
 
 /** エントリ画面用の実装 */
 class EntryMenuActionsImplForEntries(
-    private val repository: EntriesRepository
+    private val repository : EntriesRepository,
+    private val readEntriesRepo : ReadEntriesRepository
 ) : EntryMenuActionsImplBasic() {
 
     override fun showEntries(activity: FragmentActivity, entry: Entry) {
@@ -237,24 +255,21 @@ class EntryMenuActionsImplForEntries(
 
     override fun favoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 repository.favoriteSitesRepo.favoriteEntrySite(entry)
-            }
-            if (result.isSuccess) {
+            }.onSuccess {
                 context.showToast(R.string.msg_favorite_site_registration_succeeded)
-            }
-            else {
-                Log.e("favoriteEntry", Log.getStackTraceString(result.exceptionOrNull()))
+            }.onFailure {
+                Log.e("favoriteEntry", Log.getStackTraceString(it))
             }
         }
     }
 
     override fun unfavoriteEntry(context: Context, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 repository.favoriteSitesRepo.unfavoriteEntrySite(entry)
-            }
-            if (result.isSuccess) {
+            }.onSuccess {
                 context.showToast(R.string.msg_favorite_site_deletion_succeeded)
             }
         }
@@ -262,18 +277,12 @@ class EntryMenuActionsImplForEntries(
 
     override fun readLaterEntry(activity: FragmentActivity, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 repository.readLaterEntry(entry)
-            }
-
-            if (result.isSuccess) {
-                val bookmarkResult = result.getOrNull()!!
-                activity.alsoAs<EntriesActivity> { a ->
-                    a.updateBookmark(entry, bookmarkResult)
-                }
+            }.onSuccess { bookmarkResult ->
+                activity.alsoAs<EntriesActivity> { a -> a.updateBookmark(entry, bookmarkResult) }
                 activity.showToast(R.string.msg_post_bookmark_succeeded)
-            }
-            else {
+            }.onFailure {
                 activity.showToast(R.string.msg_post_bookmark_failed)
             }
         }
@@ -329,18 +338,30 @@ class EntryMenuActionsImplForEntries(
         coroutineScope: CoroutineScope
     ) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 repository.deleteBookmark(entry)
-            }
-
-            if (result.isSuccess) {
-                activity.alsoAs<EntriesActivity> { a ->
-                    a.removeBookmark(entry)
-                }
+            }.onSuccess {
+                activity.alsoAs<EntriesActivity> { a -> a.removeBookmark(entry) }
                 activity.showToast(R.string.msg_remove_bookmark_succeeded)
-            }
-            else {
+            }.onFailure {
                 activity.showToast(R.string.msg_remove_bookmark_failed)
+            }
+        }
+    }
+
+    override fun deleteReadMark(
+        activity: FragmentActivity,
+        entry: Entry,
+        coroutineScope: CoroutineScope
+    ) {
+        coroutineScope.launch(Dispatchers.Main) {
+            runCatching {
+                readEntriesRepo.delete(entry)
+                activity.alsoAs<EntriesActivity> {
+                    it.updateBookmark(entry, entry.bookmarkedData)
+                }
+            }.onFailure {
+                activity.showToast(R.string.msg_remove_read_mark_failed)
             }
         }
     }

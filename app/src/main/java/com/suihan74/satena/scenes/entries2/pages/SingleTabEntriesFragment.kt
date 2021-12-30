@@ -58,7 +58,7 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
     }
 
     /** エントリに付けたブクマを更新する */
-    override fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+    override fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
         contentFragment?.updateBookmark(entry, bookmarkResult)
     }
 

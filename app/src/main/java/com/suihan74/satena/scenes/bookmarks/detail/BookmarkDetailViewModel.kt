@@ -1,9 +1,14 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
+import android.content.Intent
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
+import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarkMenuActionsImpl
+import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.exceptions.TaskFailureException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -11,12 +16,11 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class BookmarkDetailViewModel(
+    val fragment: BookmarkDetailFragment,
     val repository : BookmarksRepository,
+    val entry : Entry,
     bookmark : Bookmark
 ) : ViewModel() {
-
-    /** 画面の表示対象のブクマ */
-    val bookmark : LiveData<Bookmark> by lazy { _bookmark }
 
     private val _bookmark = MutableLiveData<Bookmark>().also {
         it.observeForever { b ->
@@ -26,6 +30,9 @@ class BookmarkDetailViewModel(
             }
         }
     }
+
+    /** 画面の表示対象のブクマ */
+    val bookmark : LiveData<Bookmark> = _bookmark
 
     /**
      * 非表示ユーザーかどうか
@@ -67,6 +74,11 @@ class BookmarkDetailViewModel(
     val starsMenuOpened = MutableLiveData<Boolean>()
 
     /**
+     * ブクマにつけられたブコメ
+     */
+    val bookmarksToUser = MutableLiveData<List<StarRelation>>()
+
+    /**
      * ブクマにつけられたスター
      */
     val starsToUser = MutableLiveData<List<StarRelation>>()
@@ -104,6 +116,7 @@ class BookmarkDetailViewModel(
 
     private suspend fun reload() {
         runCatching {
+            updateList(DetailTabAdapter.TabType.BOOKMARKS_TO_USER)
             updateList(DetailTabAdapter.TabType.STARS_TO_USER, true)
             updateList(DetailTabAdapter.TabType.STARS_FROM_USER, true)
             updateList(DetailTabAdapter.TabType.MENTION_TO_USER, true)
@@ -114,6 +127,8 @@ class BookmarkDetailViewModel(
     /** タブに対応するリストを取得する */
     fun getList(tabType: DetailTabAdapter.TabType) : LiveData<List<StarRelation>> {
         return when (tabType) {
+            DetailTabAdapter.TabType.BOOKMARKS_TO_USER -> bookmarksToUser
+
             DetailTabAdapter.TabType.STARS_TO_USER -> starsToUser
 
             DetailTabAdapter.TabType.STARS_FROM_USER -> starsFromUser
@@ -135,6 +150,21 @@ class BookmarkDetailViewModel(
     ) = withContext(Dispatchers.Default) {
         val bookmark = bookmark.value!!
         when (tabType) {
+            DetailTabAdapter.TabType.BOOKMARKS_TO_USER -> {
+                if (forceUpdate || bookmarksToUser.value == null) {
+                    val bookmarks = repository.getBookmarksToBookmark(bookmark)
+                    val relations = bookmarks.map {
+                        StarRelation(
+                            sender = it.user,
+                            receiver = bookmark.user,
+                            senderBookmark = it,
+                            receiverBookmark = bookmark
+                        )
+                    }
+                    bookmarksToUser.postValue(relations)
+                }
+            }
+
             DetailTabAdapter.TabType.STARS_TO_USER -> {
                 if (forceUpdate || starsToUser.value == null) {
                     starsToUser.postValue(
@@ -181,5 +211,40 @@ class BookmarkDetailViewModel(
                 }
             }
         }
+    }
+
+    suspend fun updateBookmarksToUser() {
+        runCatching {
+            bookmark.value?.let { repository.getBookmarkCounts(it) }
+            updateList(DetailTabAdapter.TabType.BOOKMARKS_TO_USER, forceUpdate = true)
+        }
+    }
+
+    /** ブクマをブクマするためのアクティビティを開く */
+    suspend fun openPostBookmarkActivity(fragment: BookmarkDetailFragment) = withContext(Dispatchers.Main) {
+        starsMenuOpened.value = false
+        val intent = Intent(fragment.requireContext(), BookmarkPostActivity::class.java).also {
+            it.putExtra(
+                BookmarkPostActivity.EXTRA_URL,
+                bookmark.value!!.getCommentPageUrl(repository.entry.value!!)
+            )
+        }
+        fragment.bookmarkPostActivityLauncher.launch(intent)
+    }
+
+    // ------ //
+
+    private val bookmarkMenuActions by lazy { BookmarkMenuActionsImpl(repository) }
+
+    /** ブクマ項目に対する操作メニューを表示 */
+    suspend fun openBookmarkMenuDialog(fragmentManager: FragmentManager) {
+        val bookmark = bookmark.value!!
+        val starsEntry = runCatching { repository.getStarsEntry(bookmark) }.getOrNull()
+        bookmarkMenuActions.openBookmarkMenuDialog(
+            entry,
+            bookmark,
+            starsEntry?.value,
+            fragmentManager
+        )
     }
 }

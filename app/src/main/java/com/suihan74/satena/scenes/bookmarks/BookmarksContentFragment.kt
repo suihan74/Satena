@@ -83,7 +83,6 @@ class BookmarksContentFragment : Fragment() {
         // ツールバーロングタップ
         binding.toolbar.setOnLongClickListener {
             bookmarksViewModel.onLongClickToolbar(bookmarksActivity)
-            true
         }
 
         // エクストラスクロールによる上部マージン設定

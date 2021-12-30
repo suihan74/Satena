@@ -20,7 +20,7 @@ import kotlinx.coroutines.sync.Mutex
 
 class EntriesAdapter(
     private var lifecycleOwner: LifecycleOwner
-) : ListAdapter<RecyclerState<Entry>, RecyclerView.ViewHolder>(DiffCallback()) {
+) : ListAdapter<RecyclerState<EntriesAdapter.DisplayEntry>, RecyclerView.ViewHolder>(DiffCallback()) {
 
     /** エントリクリック時の挙動 */
     private var onItemClicked : ItemClickedListener<Entry>? = null
@@ -152,10 +152,18 @@ class EntriesAdapter(
     }
 
     /** エントリはこのメソッドを使ってセットする */
-    fun submitEntries(items: List<Entry>?, commitCallback: (()->Any?)? = null) {
-        val newList : List<RecyclerState<Entry>> =
-            if (items.isNullOrEmpty()) emptyList()
-            else RecyclerState.makeStatesWithFooter(items)
+    fun submitEntries(
+        items: List<Entry>?,
+        readEntryIds: Set<Long>?,
+        commitCallback: (()->Any?)? = null
+    ) {
+        val newList =
+            when {
+                items.isNullOrEmpty() -> emptyList()
+                else -> RecyclerState.makeStatesWithFooter(
+                    items.map { DisplayEntry(it, readEntryIds?.contains(it.id) ?: false) }
+                )
+            }
 
         submitList(newList) {
             lifecycleOwner.lifecycleScope.launchWhenResumed {
@@ -181,20 +189,40 @@ class EntriesAdapter(
 
     // ------ //
 
-    private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<Entry>>() {
+    /**
+     * 既読状態を併せて保持した表示用のアイテム
+     */
+    data class DisplayEntry(
+        val entry : Entry,
+        val read : Boolean
+    )
+
+    // ------ //
+
+    private class DiffCallback : DiffUtil.ItemCallback<RecyclerState<DisplayEntry>>() {
         override fun areItemsTheSame(
-            oldItem: RecyclerState<Entry>,
-            newItem: RecyclerState<Entry>
-        ) = oldItem.type == newItem.type && oldItem.body?.id == newItem.body?.id && oldItem.body?.url == newItem.body?.url
+            oldItem: RecyclerState<DisplayEntry>,
+            newItem: RecyclerState<DisplayEntry>
+        ) : Boolean {
+            val oldEntry = oldItem.body?.entry
+            val newEntry = newItem.body?.entry
+            return oldItem.type == newItem.type &&
+                    oldEntry?.id == newEntry?.id && oldEntry?.url == newEntry?.url
+        }
 
         override fun areContentsTheSame(
-            oldItem: RecyclerState<Entry>,
-            newItem: RecyclerState<Entry>
-        ) = oldItem.type == newItem.type &&
-                oldItem.body?.count == newItem.body?.count &&
-                oldItem.body?.title == newItem.body?.title &&
-                oldItem.body?.imageUrl == newItem.body?.imageUrl &&
-                oldItem.body?.bookmarkedData == newItem.body?.bookmarkedData
+            oldItem: RecyclerState<DisplayEntry>,
+            newItem: RecyclerState<DisplayEntry>
+        ) : Boolean {
+            val oldEntry = oldItem.body?.entry
+            val newEntry = newItem.body?.entry
+            return oldItem.type == newItem.type &&
+                    oldEntry?.count == newEntry?.count &&
+                    oldEntry?.title == newEntry?.title &&
+                    oldEntry?.imageUrl == newEntry?.imageUrl &&
+                    oldEntry?.bookmarkedData == newEntry?.bookmarkedData &&
+                    oldItem.body?.read == newItem.body?.read
+        }
     }
 
     // ------ //
@@ -207,11 +235,10 @@ class EntriesAdapter(
         private var clickCount = 0
         private val clickGuardRefreshDelay = 800L
 
-        var entry: Entry? = null
-            private set(value) {
-                field = value
-                binding.entry = value
-            }
+        private var displayEntry : DisplayEntry? = null
+
+        private val entry : Entry?
+            get() = displayEntry?.entry
 
         init {
             binding.commentsList.adapter = CommentsAdapter().apply {
@@ -249,9 +276,12 @@ class EntriesAdapter(
 
         // ------ //
 
-        fun initialize(entry: Entry?) {
-            this.entry = entry
+        fun initialize(displayEntry: DisplayEntry?) {
+            this.displayEntry = displayEntry
             this.clickCount = 0
+
+            binding.entry = displayEntry?.entry
+            binding.read = displayEntry?.read ?: false
 
             // 項目 タップ/長押し/複数回
             itemView.setOnClickListener(clickListener(entry, onItemClicked, onItemMultipleClicked))

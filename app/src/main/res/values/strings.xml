@@ -97,6 +97,7 @@
 
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
+    <string name="search_type_title">タイトル</string>
     <string name="search_type_text">テキスト</string>
 
     <!-- カテゴリ -->
@@ -341,7 +342,15 @@
     <string name="pref_entries_menu_tap_guard_desc">メニュー表示中に他の操作をできないようにする</string>
     <string name="pref_entries_hiding_toolbar_by_scrolling_desc">スクロールでツールバーを隠す</string>
     <string name="pref_entries_history_max_size_desc">ブクマ閲覧履歴の最大保存数</string>
+    <string name="pref_entries_display_read_mark_desc">既読マークを表示する</string>
+    <string name="pref_entries_read_mark_lifetime_desc">既読情報の保持期間</string>
     <string name="pref_entries_change_home_by_long_tapping_desc">タブ長押しでホームカテゴリ・初期タブを変更する</string>
+
+    <string name="pref_entries_read_mark_condition_desc">既読マークをつけるタイミング</string>
+    <string name="entries_read_mark_condition_bookmarks_shown">ブクマ画面を開いたとき</string>
+    <string name="entries_read_mark_condition_page_shown">Webページを開いたとき</string>
+    <string name="entries_read_mark_condition_bookmarks_or_page_shown">ブクマ画面 or Webページを開いたとき</string>
+    <string name="entries_delete_read_mark_desc">既読マークを消す</string>
 
     <string name="pref_entries_history_max_size_dialog_title">ブクマ閲覧履歴の最大保存数を設定</string>
     <string name="pref_entries_history_max_size_dialog_msg">%1$d～%2$d件で指定できます</string>
@@ -577,6 +586,7 @@
     <!-- ブックマーク投稿ダイアログ -->
     <string name="post_bookmark_button_text">B!</string>
     <string name="post_bookmark_button_tooltip">投稿する</string>
+    <string name="post_bookmark_to_bookmark_button_tooltip">ブクマをブクマする</string>
     <string name="bookmark_comment_edit_text_hint">ブコメ(任意)</string>
     <string name="confirm_post_bookmark">ブックマークします。よろしいですか？</string>
     <string name="msg_comment_too_long">コメントが長すぎます。%d文字以下にしてください</string>
@@ -661,6 +671,21 @@
     <string name="msg_force_default_home_category">エラーによりホームカテゴリを表示できないので「総合」カテゴリを表示します</string>
     <string name="msg_retry_sign_in_succeeded">id:%sでサインインしました</string>
 
+    <!-- 検索設定ダイアログ -->
+    <string name="entry_search_settings_title">検索パラメータ</string>
+    <string name="entry_search_settings_mode_desc">検索対象 : %1$s</string>
+    <string name="entry_search_settings_min_bookmarks_dialog_title">最小ブクマ数を選択</string>
+    <string name="entry_search_settings_min_bookmarks_desc">ブクマ数 : %1$d</string>
+    <string name="entry_search_settings_date_desc">期間指定</string>
+    <string name="entry_search_settings_date_mode_title">期間指定方法を選択</string>
+    <string name="entry_search_date_picker_title">日数を指定</string>
+    <string name="entry_search_date_picker_desc">何日前からのエントリを検索するか選択（0=当日だけ）</string>
+    <string name="entry_search_settings_safe_desc">セーフサーチ</string>
+
+    <!-- EntrySearchDateMode -->
+    <string name="entry_search_date_mode_recent">直近N日間</string>
+    <string name="entry_search_date_mode_calendar">カレンダーで指定</string>
+
     <!-- 通知 -->
     <string name="notification_channel_name">通知</string>
     <string name="notice_title">通知</string>
@@ -699,6 +724,7 @@
     <string name="msg_unignore_user_failed">id:%sの非表示解除に失敗しました</string>
     <string name="msg_remove_bookmark_succeeded">ブクマを削除しました</string>
     <string name="msg_remove_bookmark_failed">ブクマ削除に失敗しました</string>
+    <string name="msg_remove_read_mark_failed">既読マーク削除に失敗しました</string>
     <string name="msg_bookmarks_initial_tab_changed">「%s」タブを最初に表示するように設定しました</string>
 
     <!-- スター削除ダイアログ -->
@@ -707,6 +733,7 @@
 
     <!-- ブクマ画面でのエントリ情報 -->
     <string name="entry_information_tags_header">タグ</string>
+    <string name="entry_information_relatives_header">関連エントリ</string>
     <string name="entry_information_lower_floor">-1階</string>
     <string name="entry_information_upper_floor">+1階</string>
     <string name="msg_get_entry_information_failed">エントリ情報の取得に失敗しました</string>
@@ -718,11 +745,10 @@
     <string name="star_with_count">★%d</string>
     <string name="bookmark_detail_quote_comment">"%s"</string>
 
-    <string name="bookmark_detail_tab_stars_from">(%1$d) from %2$s</string>
-    <string name="bookmark_detail_tab_stars_to">(%1$d) to %2$s</string>
-    <string name="bookmark_detail_tab_mentions_from">(%1$d) from %2$s</string>
-    <string name="bookmark_detail_tab_mentions_to">(%1$d) to %2$s</string>
+    <string name="bookmark_detail_tab_from">(%1$d) from %2$s</string>
+    <string name="bookmark_detail_tab_to">(%1$d) to %2$s</string>
 
+    <string name="bookmark_detail_tab_tooltip_bookmarks_to">id:%sのブクマにつけられたブコメ</string>
     <string name="bookmark_detail_tab_tooltip_stars_from">id:%sがスターをつけた他のブコメ</string>
     <string name="bookmark_detail_tab_tooltip_stars_to">id:%sにスターをつけたユーザーとそのブコメ</string>
     <string name="bookmark_detail_tab_tooltip_mentions_from">id:%sが言及した他のブコメ</string>

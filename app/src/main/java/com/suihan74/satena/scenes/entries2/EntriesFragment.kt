@@ -15,6 +15,7 @@ import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.Issue
 import com.suihan74.satena.models.Category
 import com.suihan74.utilities.extensions.getEnum
+import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.extensions.toVisibility
 import java.util.*
 
@@ -35,13 +36,6 @@ abstract class EntriesFragment : Fragment() {
         category: Category
     ): EntriesFragmentViewModel
 
-    /** タイトル */
-    open val title: String?
-        get() = getString(category.textId)
-
-    /** サブタイトル */
-    open val subtitle: String? = null
-
     //////////////////////////////////////////////////
 
     /**
@@ -52,10 +46,12 @@ abstract class EntriesFragment : Fragment() {
      */
     private lateinit var uuid: String
 
+    private val entriesActivity
+        get() = requireActivity() as EntriesActivity
+
     /** EntriesActivityのViewModel */
-    private val activityViewModel: EntriesViewModel by lazy {
-        val activity = requireActivity() as EntriesActivity
-        activity.viewModel
+    private val activityViewModel by lazy {
+        requireActivity<EntriesActivity>().viewModel
     }
 
     protected lateinit var viewModel: EntriesFragmentViewModel
@@ -86,13 +82,12 @@ abstract class EntriesFragment : Fragment() {
     abstract fun removeBookmark(entry: Entry)
 
     /** エントリに付けたブクマを更新する */
-    abstract fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult)
+    abstract fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val activity = requireActivity()
-
         val arguments = requireArguments()
 
         // UUIDを生成
@@ -115,17 +110,9 @@ abstract class EntriesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val activity = requireActivity() as EntriesActivity
-        val toolbar = activity.toolbar
-
-        // ツールバーを更新
-        toolbar.also {
-            it.title = title
-            it.subtitle = subtitle
-        }
-
-        activity.showAppBar()
-
+        activityViewModel.toolbarTitle.value = getString(category.textId)
+        activityViewModel.toolbarSubTitle.value = ""
+        entriesActivity.showAppBar()
         return null
     }
 
@@ -133,13 +120,12 @@ abstract class EntriesFragment : Fragment() {
         super.onResume()
 
         // EntriesActivityのTabLayoutとBottomAppBarをFragment側に公開する
-        val activity = requireActivity() as EntriesActivity
-        val tabLayout = activity.initializeTabLayout()
+        val tabLayout = entriesActivity.initializeTabLayout()
 
-        val bottomAppBar = activity.initializeBottomAppBar()
+        val bottomAppBar = entriesActivity.initializeBottomAppBar()
 
         tabLayout.visibility =
-            updateActivityAppBar(activity, tabLayout, bottomAppBar).toVisibility(defaultInvisible = View.GONE)
+            updateActivityAppBar(entriesActivity, tabLayout, bottomAppBar).toVisibility(defaultInvisible = View.GONE)
     }
 
     /**

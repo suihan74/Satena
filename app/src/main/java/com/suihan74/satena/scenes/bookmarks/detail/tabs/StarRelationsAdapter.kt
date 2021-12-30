@@ -26,6 +26,19 @@ class StarRelationsAdapter(
 
     fun setStarRelations(starRelations: List<StarRelation>, ignoredUsers: List<String>, callback: Runnable? = null) {
         val items = when(tabType) {
+            DetailTabAdapter.TabType.BOOKMARKS_TO_USER -> starRelations.map {
+                val bookmark = it.senderBookmark
+                Item(
+                    user = it.sender,
+                    userIconUrl = HatenaClient.getUserIconUrl(it.sender),
+                    comment = bookmark?.comment.orEmpty(),
+                    bookmark = bookmark,
+                    star = null,
+                    ignored = ignoredUsers.contains(it.sender),
+                    relation = it
+                )
+            }
+
             DetailTabAdapter.TabType.STARS_TO_USER -> starRelations.map {
                 val bookmark = it.senderBookmark
                 Item(

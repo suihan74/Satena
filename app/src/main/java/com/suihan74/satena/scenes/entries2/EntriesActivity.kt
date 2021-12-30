@@ -10,7 +10,6 @@ import android.widget.ImageButton
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -80,9 +79,10 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         val repository = EntriesRepository(
             context = app,
             client = HatenaClient,
-            accountLoader = app.accountLoader,
-            ignoredEntriesRepo = app.ignoredEntriesRepository,
-            favoriteSitesRepo = app.favoriteSitesRepository
+            app.accountLoader,
+            app.ignoredEntriesRepository,
+            app.favoriteSitesRepository,
+            app.readEntriesRepository
         )
         EntriesViewModel(repository)
     }
@@ -90,9 +90,6 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     // ------ //
 
     private lateinit var binding: ActivityEntries2Binding
-
-    val toolbar : Toolbar
-        get() = binding.toolbar
 
     // ------ //
 
@@ -480,7 +477,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     }
 
     /** エントリに付けたブクマを更新する */
-    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
         val fragment = supportFragmentManager.get<EntriesFragment>()
         fragment?.updateBookmark(entry, bookmarkResult)
     }

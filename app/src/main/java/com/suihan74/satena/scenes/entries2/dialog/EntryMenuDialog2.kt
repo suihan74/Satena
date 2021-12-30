@@ -1,9 +1,9 @@
 package com.suihan74.satena.scenes.entries2.dialog
 
 import android.app.Dialog
-import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.hatenaLib.Entry
@@ -14,6 +14,8 @@ import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
 import com.suihan74.satena.models.TapEntryAction
+import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.satena.scenes.entries2.ReadEntriesRepository
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.extensions.getObject
@@ -33,18 +35,18 @@ class EntryMenuDialog2 : DialogFragment() {
     // ------ //
 
     private val viewModel by lazyProvideViewModel {
+        val app = SatenaApplication.instance
         val entry = requireArguments().getObject<Entry>(ARG_ENTRY)!!
         DialogViewModel(
             entry,
-            SatenaApplication.instance.favoriteSitesRepository
+            app.favoriteSitesRepository,
+            app.readEntriesRepository
         )
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = localLayoutInflater()
-
         val entry = viewModel.entry
-
         val titleViewBinding = DialogTitleEntry2Binding.inflate(inflater, null, false).also {
             it.title = entry.title
             it.url = entry.url
@@ -55,7 +57,7 @@ class EntryMenuDialog2 : DialogFragment() {
         return createBuilder()
             .setCustomTitle(titleViewBinding.root)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setItems(viewModel.labels(requireContext())) { _, which ->
+            .setItems(viewModel.labels(requireActivity())) { _, which ->
                 viewModel.invokeAction(which, this)
             }
             .create()
@@ -107,19 +109,27 @@ class EntryMenuDialog2 : DialogFragment() {
         viewModel.deleteBookmark = l
     }
 
+    fun setDeleteReadMarkListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+        viewModel.deleteReadMark = l
+    }
+
     // ------ //
 
     class DialogViewModel(
         val entry : Entry,
-        val favoriteSitesRepo : FavoriteSitesRepository
+        private val favoriteSitesRepo : FavoriteSitesRepository,
+        private val readEntriesRepo : ReadEntriesRepository
     ) : ViewModel() {
 
         /** メニュー項目と対応する処理 */
-        val items by lazy { createItems() }
+        private var items : List<Pair<Int, DialogListener<Entry>?>> = emptyList()
 
         /** メニュー項目のラベル */
-        fun labels(context: Context) : Array<String> =
-            items.map { context.getString(it.first) }.toTypedArray()
+        fun labels(activity: FragmentActivity) : Array<String> =
+            createItems(activity)
+                .also { this.items = it }
+                .map { activity.getString(it.first) }
+                .toTypedArray()
 
         // ------ //
 
@@ -156,6 +166,9 @@ class EntryMenuDialog2 : DialogFragment() {
         /** ブクマを削除する */
         var deleteBookmark : DialogListener<Entry>? = null
 
+        /** 既読マークを削除する */
+        var deleteReadMark : DialogListener<Entry>? = null
+
         // ------ //
 
         fun invokeAction(which: Int, fragment: EntryMenuDialog2) {
@@ -163,7 +176,7 @@ class EntryMenuDialog2 : DialogFragment() {
         }
 
         @OptIn(ExperimentalStdlibApi::class)
-        fun createItems() = buildList {
+        fun createItems(activity: FragmentActivity) = buildList {
             add(TapEntryAction.SHOW_COMMENTS.textId to showComments)
             add(TapEntryAction.SHOW_PAGE.textId to showPage)
             add(TapEntryAction.SHOW_PAGE_IN_BROWSER.textId to showPageInBrowser)
@@ -192,6 +205,10 @@ class EntryMenuDialog2 : DialogFragment() {
 
             if (entry.bookmarkedData != null) {
                 add(R.string.entry_action_delete_bookmark to deleteBookmark)
+            }
+
+            if (activity is EntriesActivity && readEntriesRepo.readEntryIds.value.contains(entry.id)) {
+                add(R.string.entries_delete_read_mark_desc to deleteReadMark)
             }
         }
     }

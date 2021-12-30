@@ -92,6 +92,12 @@ class BrowserViewModel(
     /** ページの読み込み完了率 */
     val loadingProgress : LiveData<Int> = browserRepo.loadingProgress
 
+    /** 表示中ページのfavicon */
+    val faviconBitmap = browserRepo.faviconBitmap
+
+    /** favicon読み込み状態 */
+    val faviconLoading = browserRepo.faviconLoading
+
     /** ユーザーエージェント */
     private val userAgent = browserRepo.userAgent
 
@@ -496,20 +502,19 @@ class BrowserViewModel(
      * プライベートブラウジングを有効化する
      */
     private fun setPrivateBrowsing(wv: WebView, enabled: Boolean) {
-        val settings = wv.settings
-        if (enabled) {
-            // cookie
-            CookieManager.getInstance().setAcceptCookie(false)
-            // cache
-            settings.cacheMode = WebSettings.LOAD_NO_CACHE
-            settings.setAppCacheEnabled(false)
-        }
-        else {
-            // cookie
-            CookieManager.getInstance().setAcceptCookie(true)
-            // cache
-            settings.cacheMode = WebSettings.LOAD_DEFAULT
-            settings.setAppCacheEnabled(true)
+        wv.settings.let { settings ->
+            if (enabled) {
+                // cookie
+                CookieManager.getInstance().setAcceptCookie(false)
+                // cache
+                settings.cacheMode = WebSettings.LOAD_NO_CACHE
+            }
+            else {
+                // cookie
+                CookieManager.getInstance().setAcceptCookie(true)
+                // cache
+                settings.cacheMode = WebSettings.LOAD_DEFAULT
+            }
         }
     }
 
@@ -733,6 +738,8 @@ class BrowserViewModel(
         val vm = this@BrowserViewModel
         vm.title.value = url
         vm.url.value = url
+        vm.faviconBitmap.value = null
+        vm.faviconLoading.value = true
         browserRepo.resourceUrls.clear()
     }
 

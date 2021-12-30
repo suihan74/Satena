@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.browser
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.webkit.WebViewFeature
@@ -166,6 +167,12 @@ class BrowserRepository(
 
     /** ページのロード完了率 */
     val loadingProgress = MutableLiveData<Int>()
+
+    /** 表示中ページのfavicon */
+    val faviconBitmap = MutableLiveData<Bitmap?>()
+
+    /** faviconの読み込み状態 */
+    val faviconLoading = MutableLiveData(false)
 
     // ------ //
 

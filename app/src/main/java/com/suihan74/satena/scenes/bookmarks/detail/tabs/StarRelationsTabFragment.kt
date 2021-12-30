@@ -50,7 +50,9 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
     val viewModel by lazyProvideViewModel {
         StarRelationsTabViewModel(
             tabType = requireArguments().getEnum<DetailTabAdapter.TabType>(ARG_TAB_TYPE)!!,
-            repository = bookmarkDetailViewModel.repository
+            repository = bookmarkDetailViewModel.repository,
+            targetEntry = bookmarkDetailViewModel.entry,
+            targetBookmark = bookmarkDetailViewModel.bookmark
         )
     }
 
@@ -93,7 +95,7 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
             adapter.setOnLongLickItemListener {
                 val item = it.item ?: return@setOnLongLickItemListener
                 lifecycleScope.launch {
-                    viewModel.openStarRelationMenuDialog(item, childFragmentManager)
+                    viewModel.openStarRelationMenuDialog(bookmarkDetailViewModel, item, childFragmentManager)
                 }
             }
         }

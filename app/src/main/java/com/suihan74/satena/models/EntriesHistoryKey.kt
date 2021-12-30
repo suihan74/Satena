@@ -2,19 +2,18 @@ package com.suihan74.satena.models
 
 import android.content.Context
 import com.suihan74.hatenaLib.Entry
+import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
+import kotlinx.coroutines.runBlocking
 import java.lang.reflect.Type
-
-/**************************************
- * version 1
- **************************************/
 
 /**
  * エントリ表示履歴を保存
  */
-@SharedPreferencesKey(fileName = "entries_history", version = 0, latest = true)
+@SharedPreferencesKey(fileName = "entries_history", version = 1, latest = true)
 enum class EntriesHistoryKey (
     override val valueType: Type,
     override val defaultValue: Any?
@@ -61,5 +60,34 @@ fun Entry.saveHistory(context: Context) {
         prefs.edit {
             put(EntriesHistoryKey.ENTRIES, emptyList<Entry>())
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// version migration
+////////////////////////////////////////////////////////////////////////////////
+
+@Suppress("deprecation")
+object EntriesHistoryKeyMigration {
+    fun check(context: Context) {
+        while (true) {
+            when (SafeSharedPreferences.version<EntriesHistoryKey>(context)) {
+                0 -> migrateFromVersion0(context)
+
+                else -> break
+            }
+        }
+    }
+
+    /** v0 -> v1: 既存の既読エントリ情報を既読マークに反映する */
+    private fun migrateFromVersion0(context: Context) = runBlocking {
+        val repo = SatenaApplication.instance.readEntriesRepository
+        val prefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
+        runCatching {
+            prefs.getObject<List<Entry>>(EntriesHistoryKey.ENTRIES)?.forEach { entry ->
+                repo.insert(entry, ReadEntryCondition.BOOKMARKS_SHOWN)
+            }
+        }
+        prefs.edit { /* バージョン情報の更新に必要 */ }
     }
 }

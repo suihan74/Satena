@@ -60,7 +60,8 @@ class BrowserActivity :
             prefs,
             SafeSharedPreferences.create(this),
             app.ignoredEntriesRepository,
-            app.userTagDao
+            app.userTagDao,
+            app.readEntriesRepository
         )
 
         val historyRepo = HistoryRepository(browserSettings, app.browserDao)
@@ -123,6 +124,12 @@ class BrowserActivity :
             }
             binding.webview.reload()
         }
+    }
+
+    override fun onStop() {
+        binding.swipeLayout.isRefreshing = false
+        viewModel.setOnPageFinishedListener(null)
+        super.onStop()
     }
 
     /** 戻る処理を制御する */
@@ -375,6 +382,12 @@ class BrowserActivity :
             // お気に入りから除外
             toolbar.setOnUnfavoriteCurrentPageListener {
                 viewModel.unfavoriteCurrentPage(supportFragmentManager)
+            }
+
+            // favicon部分のクリックリスナ
+            toolbar.setOnClickFaviconListener {
+                InformationDialog.createInstance()
+                    .show(supportFragmentManager, null)
             }
         }
 

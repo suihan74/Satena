@@ -20,10 +20,15 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
+import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.checkFromSpam
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
@@ -89,7 +94,8 @@ class EntriesRepository(
     private val client: HatenaClient,
     private val accountLoader: AccountLoader,
     val ignoredEntriesRepo: IgnoredEntriesRepository,
-    val favoriteSitesRepo: FavoriteSitesRepository
+    val favoriteSitesRepo: FavoriteSitesRepository,
+    private val readEntryRepo: ReadEntriesRepository
 ) {
     /** アプリ内アップデート */
     private var appUpdateManager: AppUpdateManager? = null
@@ -103,6 +109,9 @@ class EntriesRepository(
     private val historyPrefs by lazy {
         SafeSharedPreferences.create<EntriesHistoryKey>(context)
     }
+
+    /** ロード済みの既読エントリID */
+    val readEntryIds = readEntryRepo.readEntryIds
 
     /** サインイン状態 */
     val signedIn : Boolean
@@ -198,6 +207,13 @@ class EntriesRepository(
     val extraScrollingAlignment
         get() = ExtraScrollingAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_SCROLL_ALIGNMENT))
 
+    /** 検索設定 */
+    val searchSetting by lazy {
+        PreferenceLiveData(prefs, PreferenceKey.ENTRY_SEARCH_SETTING) { p, key ->
+            p.getObject<EntrySearchSetting>(key)
+        }
+    }
+
     /** 初期化処理 */
     suspend fun initialize(forceUpdate: Boolean = false) = withContext(Dispatchers.Default) {
         runCatching {
@@ -250,9 +266,13 @@ class EntriesRepository(
         tabPosition: Int,
         offset: Int? = null,
         params: LoadEntryParameter? = null
-    ) : List<Entry> =
-        if (issue == null) loadEntries(category, tabPosition, offset, params)
-        else loadEntries(issue, tabPosition, offset)
+    ) : List<Entry> {
+        val entries =
+            if (issue == null) loadEntries(category, tabPosition, offset, params)
+            else loadEntries(issue, tabPosition, offset)
+        readEntryRepo.load(entries)
+        return entries
+    }
 
     /** 最新のエントリーリストを読み込む(Category指定) */
     private suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int?, params: LoadEntryParameter?) : List<Entry> =
@@ -577,14 +597,41 @@ class EntriesRepository(
     /** エントリを検索する */
     private suspend fun searchEntries(tabPosition: Int, offset: Int?, params: LoadEntryParameter) : List<Entry> {
         val query = params.get<String>(LoadEntryParameter.SEARCH_QUERY)!!
-        val searchType = params.get<SearchType>(LoadEntryParameter.SEARCH_TYPE)!!
+        val searchType = searchSetting.value?.searchType ?: SearchType.Title
         val entriesType = EntriesType.fromId(tabPosition)
+        val users = searchSetting.value?.users ?: 1
+        val dateMode = searchSetting.value?.dateMode.orDefault
+        val today = LocalDate.now()
+        val dateBegin =
+            when (dateMode) {
+                EntrySearchDateMode.RECENT -> {
+                    today.minusDays(
+                        Duration
+                            .between(
+                                searchSetting.value?.dateBegin?.atStartOfDay(),
+                                searchSetting.value?.dateEnd?.atStartOfDay()
+                            )
+                            .toDays()
+                    )
+                }
+                EntrySearchDateMode.CALENDAR -> searchSetting.value?.dateBegin
+            }
+        val dateEnd =
+            when (dateMode) {
+                EntrySearchDateMode.RECENT -> searchSetting.value?.dateEnd?.let { today }
+                EntrySearchDateMode.CALENDAR -> searchSetting.value?.dateEnd
+            }
+        val safe = searchSetting.value?.safe ?: false
 
         return client.searchEntriesAsync(
             query = query,
             searchType = searchType,
             entriesType = entriesType,
-            of = offset
+            of = offset,
+            users = users,
+            dateBegin = dateBegin,
+            dateEnd = dateEnd,
+            safe = safe
         ).await()
     }
 

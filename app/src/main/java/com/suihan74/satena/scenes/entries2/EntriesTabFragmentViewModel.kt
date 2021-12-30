@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.ExtraScrollingAlignment
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +23,7 @@ class EntriesTabFragmentViewModel(
     private val tabPosition: Int
 ) :
     ViewModel(),
-    EntryMenuActions by EntryMenuActionsImplForEntries(repository),
+    EntryMenuActions by EntryMenuActionsImplForEntries(repository, SatenaApplication.instance.readEntriesRepository),
     CommentMenuActions by CommentMenuActionsImpl(repository)
 {
     companion object {
@@ -47,13 +48,6 @@ class EntriesTabFragmentViewModel(
         get() = params.get(LoadEntryParameter.SEARCH_QUERY)
         set(value) {
             params.put(LoadEntryParameter.SEARCH_QUERY, value)
-        }
-
-    /** 検索タイプ */
-    var searchType: SearchType
-        get() = params.get(LoadEntryParameter.SEARCH_TYPE, SearchType.Text)
-        set(value) {
-            params.put(LoadEntryParameter.SEARCH_TYPE, value)
         }
 
     /** 追加パラメータ */
@@ -95,6 +89,9 @@ class EntriesTabFragmentViewModel(
     /** ユーザーの歴史を取得する : Category.Memorial15th */
     var isUserMemorial : Boolean = false
 
+    /** ロード済みの既読エントリID */
+    val readEntryIds = repository.readEntryIds
+
     val extraScrollingAlignment
         get() = repository.extraScrollingAlignment
 
@@ -133,7 +130,7 @@ class EntriesTabFragmentViewModel(
     }
 
     /** エントリに付けたブクマを更新する */
-    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult) {
+    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
         entries.value = entries.value?.map {
             if (it.same(entry)) it.copy(bookmarkedData = bookmarkResult)
             else it
@@ -256,8 +253,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** エントリを複数回クリックしたときの処理 */
@@ -269,8 +265,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryMultipleClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** エントリを長押ししたときの処理 */
@@ -282,8 +277,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryLongClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** エントリ右端をシングルクリックしたときの処理 */
@@ -295,8 +289,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryEdgeClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** エントリ右端を複数回クリックしたときの処理 */
@@ -308,8 +301,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryEdgeMultipleClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** エントリ右端を長押ししたときの処理 */
@@ -321,8 +313,7 @@ class EntriesTabFragmentViewModel(
         activity,
         entry,
         repository.entryEdgeLongClickedAction,
-        fragmentManager,
-        viewModelScope
+        fragmentManager
     )
 
     /** コメント部分クリック時の処理 */

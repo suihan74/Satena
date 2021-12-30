@@ -45,8 +45,14 @@ fun RecyclerView.setDivider(dividerId: Int) {
 // ------ //
 
 /** エントリリスト */
-@BindingAdapter("category", "entries", "notices", "information")
-fun RecyclerView.setEntries(category: Category, entries: List<Entry>?, notices: List<Notice>?, information: List<MaintenanceEntry>?) {
+@BindingAdapter("category", "entries", "notices", "information", "readEntryIds")
+fun RecyclerView.setEntries(
+    category: Category,
+    entries: List<Entry>?,
+    notices: List<Notice>?,
+    information: List<MaintenanceEntry>?,
+    readEntryIds: Set<Long>?
+) {
     when (category) {
         Category.Notices ->
             (adapter as? NoticesAdapter)?.submitNotices(notices)
@@ -55,7 +61,7 @@ fun RecyclerView.setEntries(category: Category, entries: List<Entry>?, notices: 
             (adapter as? InformationAdapter)?.submitInformation(information)
 
         else ->
-            (adapter as? EntriesAdapter)?.submitEntries(entries)
+            (adapter as? EntriesAdapter)?.submitEntries(entries, readEntryIds)
     }
 }
 

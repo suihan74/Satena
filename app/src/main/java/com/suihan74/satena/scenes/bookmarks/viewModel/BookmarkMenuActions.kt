@@ -20,6 +20,7 @@ import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.dialog.*
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
@@ -36,6 +37,17 @@ class BookmarkMenuActionsImpl(
     private val repository: BookmarksRepository
 ) : BookmarkMenuActions {
     private val DIALOG_BOOKMARK_MENU by lazy { "DIALOG_BOOKMARK_MENU" }
+
+    // ------ //
+
+    private var onDeleteBookmark : Listener<Bookmark>? = null
+
+    fun setOnDeleteBookmarkListener(l : Listener<Bookmark>?) : BookmarkMenuActionsImpl {
+        onDeleteBookmark = l
+        return this
+    }
+
+    // ------ //
 
     /** ブクマ項目に対する操作メニューを表示 */
     suspend fun openBookmarkMenuDialog(
@@ -95,9 +107,11 @@ class BookmarkMenuActionsImpl(
             val a = f.requireActivity()
             openConfirmBookmarkDeletionDialog(
                 a,
+                entry,
                 b,
                 f.parentFragmentManager,
-                a.lifecycleScope
+                a.lifecycleScope,
+                onDeleteBookmark
             )
         }
 
@@ -408,9 +422,11 @@ class BookmarkMenuActionsImpl(
     /** 自分のブクマを削除するか確認するダイアログを開く */
     private fun openConfirmBookmarkDeletionDialog(
         context: Context,
+        entry: Entry,
         bookmark: Bookmark,
         fragmentManager: FragmentManager,
-        coroutineScope: CoroutineScope
+        coroutineScope: CoroutineScope,
+        onDeleteBookmark: Listener<Bookmark>? = null
     ) {
         AlertDialogFragment.Builder()
             .setTitle(R.string.confirm_dialog_title_simple)
@@ -418,14 +434,12 @@ class BookmarkMenuActionsImpl(
             .setNegativeButton(R.string.dialog_cancel)
             .setPositiveButton(R.string.dialog_ok) {
                 coroutineScope.launch(Dispatchers.Main) {
-                    val result = runCatching {
-                        repository.deleteBookmark(bookmark)
-                    }
-
-                    if (result.isSuccess) {
+                    runCatching {
+                        repository.deleteBookmark(entry, bookmark)
+                    }.onSuccess {
                         context.showToast(R.string.msg_remove_bookmark_succeeded)
-                    }
-                    else {
+                        onDeleteBookmark?.invoke(bookmark)
+                    }.onFailure {
                         context.showToast(R.string.msg_remove_bookmark_failed)
                     }
                 }

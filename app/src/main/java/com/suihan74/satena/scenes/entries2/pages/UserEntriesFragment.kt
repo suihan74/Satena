@@ -16,6 +16,7 @@ import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
 import com.suihan74.satena.scenes.entries2.initialize
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putEnum
+import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.provideViewModel
 
@@ -28,6 +29,14 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
         private const val ARG_USER = "ARG_USER"
     }
+
+    // ------ //
+
+    private val activityViewModel by lazy {
+        requireActivity<EntriesActivity>().viewModel
+    }
+
+    // ------ //
 
     override fun generateViewModel(
         owner: ViewModelStoreOwner,
@@ -44,12 +53,6 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
         return UserEntriesTabFragment.createInstance(viewModelKey, user)
     }
 
-    override val title : String
-        get() = "id:${viewModel.user.value}"
-
-    override val subtitle : String?
-        get() = viewModel.tag.value?.let { tag -> "${tag.text}(${tag.count})" }
-
     private var clearTagCallback : OnBackPressedCallback? = null
 
     override fun onCreateView(
@@ -61,9 +64,10 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
         // ユーザーIDをタイトルに表示する
         viewModel.user.observe(viewLifecycleOwner, {
-            activity.alsoAs<EntriesActivity> {
-                it.toolbar.title = title
-            }
+            activityViewModel.toolbarTitle.value = "id:$it"
+        })
+        viewModel.tag.observe(viewLifecycleOwner, { tag ->
+            activityViewModel.toolbarSubTitle.value = tag?.let { "${it.text}(${it.count})" }.orEmpty()
         })
 
         return root
@@ -138,12 +142,7 @@ class UserEntriesFragment : SingleTabEntriesFragment() {
 
         // タグ選択時にサブタイトルを表示する
         viewModel.tag.observe(viewLifecycleOwner, {
-            activity.alsoAs<EntriesActivity> { activity ->
-                activity.toolbar.subtitle = subtitle
-            }
-
             clearTagCallback?.isEnabled = it != null
-
             if (it == null) {
                 spinner.setSelection(0)
             }

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+                name="vm"
+                type="com.suihan74.satena.scenes.bookmarks.information.EntryInformationViewModel" />
+        <variable
+                name="bookmarkVM"
+                type="com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel" />
+        <variable
+                name="activity"
+                type="com.suihan74.satena.scenes.bookmarks.BookmarksActivity" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:tools="http://schemas.android.com/tools"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:background="?attr/panelBackground"
+            android:paddingBottom="12dp"
+            tools:layout_width="300dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <ImageView
+                android:id="@+id/icon"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/title"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="@null"
+                app:src="@{bookmarkVM.entry.imageUrl}"
+                tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/icon"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                maxLinesPortrait="@{6}"
+                maxLinesLandscape="@{3}"
+                android:minHeight="64dp"
+                android:scrollbarSize="4dp"
+                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+                android:scrollbars="vertical"
+                android:text="@{bookmarkVM.entry.title}"
+                android:textIsSelectable="true"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="sample title text" />
+
+        <TextView
+                android:id="@+id/stars"
+                starsEntry="@{bookmarkVM.entryStarsEntry}"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/title"
+                app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintEnd_toStartOf="@id/add_star_button"
+                app:layout_constraintHorizontal_bias="0"
+                android:layout_toStartOf="@id/add_star_button"
+                android:layout_marginEnd="6dp"
+                android:visibility="@{stars.text}"
+                tools:text="★" />
+
+        <ImageButton
+                android:id="@+id/add_star_button"
+                android:visibility="@{bookmarkVM.signedIn}"
+                app:srcCompat="@drawable/ic_add_star"
+                app:tint="?attr/tagTextColor"
+                android:background="?attr/actionBarItemBackground"
+                app:layout_constraintBottom_toBottomOf="@id/stars"
+                app:layout_constraintEnd_toEndOf="@id/icon"
+                android:contentDescription="@null"
+                android:layout_width="18dp"
+                android:layout_height="18dp" />
+
+        <TextView
+                android:id="@+id/page_url"
+                entryPageUrl="@{bookmarkVM.entry.url}"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/stars"
+                app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintEnd_toEndOf="@id/icon"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="7dp"
+                android:background="?selectableItemBackground"
+                android:ellipsize="middle"
+                android:maxLines="2"
+                android:textColor="?attr/colorPrimary"
+                android:textIsSelectable="false"
+                tools:text="https://localhost/" />
+
+        <TextView
+                android:id="@+id/description"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/page_url"
+                app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintEnd_toEndOf="@id/icon"
+                android:ellipsize="end"
+                maxLinesPortrait="@{6}"
+                maxLinesLandscape="@{3}"
+                tools:lines="6"
+                android:scrollbarSize="4dp"
+                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+                android:scrollbars="vertical"
+                android:layout_marginTop="3dp"
+                android:text="@{bookmarkVM.entry.description}"
+                android:textIsSelectable="true"
+                android:textSize="12sp"
+                tools:text="@tools:sample/lorem/random" />
+
+        <ScrollView
+                android:id="@+id/lists_scroll_view"
+                android:scrollbarSize="4dp"
+                android:scrollbarThumbVertical="@drawable/scrollbar_thumb"
+                android:scrollbars="vertical"
+                app:layout_constraintTop_toBottomOf="@id/description"
+                app:layout_constraintBottom_toTopOf="@id/to_lower_floor_button"
+                app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintEnd_toEndOf="@id/icon"
+                android:layout_marginTop="14dp"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                tools:ignore="ScrollViewCount">
+
+            <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+            <com.suihan74.utilities.bindings.TextViewWithDrawable
+                    android:id="@+id/tags_header"
+                    app:drawableStart="@{@drawable/ic_tag}"
+                    android:text="@string/entry_information_tags_header"
+                    android:textStyle="bold"
+                    android:textColor="?attr/tagTextColor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/tags_list"
+                    bookmarksEntryTags="@{bookmarkVM.bookmarksEntry.tags}"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp" />
+
+            <com.suihan74.utilities.bindings.TextViewWithDrawable
+                    android:id="@+id/related_entries_list_header"
+                    app:drawableStart="@{@drawable/ic_tag}"
+                    android:text="@string/entry_information_relatives_header"
+                    android:textStyle="bold"
+                    android:textColor="?attr/tagTextColor"
+                    android:layout_marginTop="14dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/related_entries_list"
+                    style="@style/RecyclerView.Linear"
+                    divider="@{@drawable/recycler_view_item_divider}"
+                    relatedEntries="@{bookmarkVM.relatedEntries}"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp" />
+
+            </LinearLayout>
+        </ScrollView>
+
+        <Button
+                android:id="@+id/to_lower_floor_button"
+                android:text="@string/entry_information_lower_floor"
+                lowerFloorButtonVisibility="@{bookmarkVM.entry}"
+                style="?buttonStyle"
+                android:onClick="@{() -> vm.downFloor(activity)}"
+                app:layout_constraintTop_toBottomOf="@id/lists_scroll_view"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/to_upper_floor_button"
+                android:text="@string/entry_information_upper_floor"
+                upperFloorButtonVisibility="@{bookmarkVM.entry}"
+                style="?buttonStyle"
+                android:onClick="@{() -> vm.upFloor(activity)}"
+                app:layout_constraintTop_toTopOf="@id/to_lower_floor_button"
+                app:layout_constraintBottom_toBottomOf="@id/to_lower_floor_button"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

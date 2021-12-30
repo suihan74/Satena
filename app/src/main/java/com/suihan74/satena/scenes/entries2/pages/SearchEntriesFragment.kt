@@ -6,20 +6,18 @@ import android.view.MenuInflater
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.SearchType
 import com.suihan74.satena.R
-import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntriesRepository
+import com.suihan74.satena.scenes.entries2.dialog.SearchSettingsDialog
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.provideViewModel
-import com.suihan74.utilities.showAllowingStateLoss
 
 class SearchEntriesFragment : MultipleTabsEntriesFragment() {
     companion object {
@@ -44,6 +42,10 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
 
     // ------ //
 
+    private val activityViewModel by lazy {
+        requireActivity<EntriesActivity>().viewModel
+    }
+
     private val searchViewModel : SearchEntriesViewModel
         get() = viewModel as SearchEntriesViewModel
 
@@ -55,7 +57,8 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         repository: EntriesRepository,
         category: Category
     ) = provideViewModel(owner, viewModelKey) {
-        SearchEntriesViewModel(repository)
+        val arguments = requireArguments()
+        SearchEntriesViewModel(repository, arguments.getEnum<SearchType>(ARG_SEARCH_TYPE))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +66,6 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         if (savedInstanceState == null) {
             val arguments = requireArguments()
             searchViewModel.searchQuery.value = arguments.getString(ARG_SEARCH_QUERY)
-            searchViewModel.searchType.value = arguments.getEnum(ARG_SEARCH_TYPE, SearchType.Text)
         }
     }
 
@@ -81,12 +83,6 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
             setHasOptionsMenu(false)
             activity.inflateExtraBottomMenu(R.menu.search_entries_bottom)
             initializeMenu(bottomAppBar.menu, bottomAppBar)
-        }
-
-        if (!searchViewModel.searchQuery.value.isNullOrBlank()) {
-            activity.alsoAs<EntriesActivity> {
-                it.toolbar.subtitle = searchViewModel.searchQuery.value
-            }
         }
 
         return result
@@ -117,42 +113,17 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
             initializeSearchView(searchView, viewModel, menu, bottomAppBar)
         }
 
-        // 検索タイプ選択メニューの設定
-        menu.findItem(R.id.search_type)?.let { item ->
+        // 検索パラメータの設定
+        menu.findItem(R.id.search_settings)?.let { item ->
             item.setOnMenuItemClickListener {
-                AlertDialogFragment.Builder()
-                    .setTitle(R.string.desc_search_type)
-                    .setNegativeButton(R.string.dialog_cancel)
-                    .setItems(SearchType.values().map { it.textId }) { _, which ->
-                        val prevValue = viewModel.searchType.value
-                        viewModel.searchType.value = SearchType.fromOrdinal(which)
-
-                        if (prevValue != viewModel.searchType.value) {
-                            reloadLists()
-                        }
-                    }
-                    .create()
-                    .showAllowingStateLoss(childFragmentManager, DIALOG_SEARCH_TYPE)
-                return@setOnMenuItemClickListener true
+                requireActivity().alsoAs<EntriesActivity> { activity ->
+                    SearchSettingsDialog
+                        .createInstance(activity.viewModel.repository)
+                        .setOnSaveListener { _, _ -> reloadLists() }
+                        .show(childFragmentManager, DIALOG_SEARCH_TYPE)
+                }
+                true
             }
-
-            viewModel.searchType.observe(viewLifecycleOwner, {
-                val context = requireContext()
-                val iconId =
-                    when (it) {
-                        SearchType.Tag -> R.drawable.ic_tag
-                        SearchType.Text -> R.drawable.ic_title
-                        else -> throw RuntimeException()
-                    }
-                item.icon = ContextCompat.getDrawable(context, iconId)!!.apply {
-                    setTint(context.getColor(R.color.colorPrimaryText))
-                }
-                val text = getString(it.textId)
-                item.title = text
-                activity.alsoAs<EntriesActivity> { activity ->
-                    activity.toolbar.title = text + getString(R.string.category_search)
-                }
-            })
         }
     }
 
@@ -163,6 +134,15 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         bottomAppBar: BottomAppBar?
     ) = searchView.run {
         val fragment = this@SearchEntriesFragment
+
+        searchViewModel.searchSetting.observe(viewLifecycleOwner, {
+            it?.searchType?.let { searchType ->
+                activityViewModel.toolbarTitle.value = "${getString(searchType.textId)}検索"
+            }
+        })
+        searchViewModel.searchQuery.observe(viewLifecycleOwner, {
+            activityViewModel.toolbarSubTitle.value = searchViewModel.searchQuery.value
+        })
 
         // 文字色をテーマに合わせて調整する
         findViewById<SearchView.SearchAutoComplete>(androidx.appcompat.R.id.search_src_text)?.also { editText ->
@@ -190,10 +170,6 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
             // 検索ボタン押下時にロードを行う
             override fun onQueryTextSubmit(query: String?): Boolean {
                 viewModel.searchQuery.value = query
-                activity.alsoAs<EntriesActivity> { activity ->
-                    activity.toolbar.subtitle = viewModel.searchQuery.value
-                }
-
                 reloadLists()
 
                 requireActivity().hideSoftInputMethod(fragment.contentLayout)

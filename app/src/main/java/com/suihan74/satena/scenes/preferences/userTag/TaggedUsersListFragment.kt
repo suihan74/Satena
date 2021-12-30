@@ -16,6 +16,8 @@ import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesTab
 import com.suihan74.satena.scenes.preferences.pages.UserTagsFragment
 import com.suihan74.utilities.bindings.setDivider
+import com.suihan74.utilities.extensions.requireActivity
+import com.suihan74.utilities.extensions.requireParentFragment
 
 class TaggedUsersListFragment : Fragment() {
     companion object {
@@ -24,17 +26,13 @@ class TaggedUsersListFragment : Fragment() {
 
     // ------ //
 
-    private val userTagsFragment : UserTagsFragment
-        get() = requireParentFragment() as UserTagsFragment
+    private val viewModel by lazy {
+        requireParentFragment<UserTagsFragment>().viewModel
+    }
 
-    private val viewModel : UserTagViewModel
-        get() = userTagsFragment.viewModel
-
-    private val preferencesActivity : PreferencesActivity
-        get() = requireActivity() as PreferencesActivity
-
-    private val activityViewModel : PreferencesActivity.ActivityViewModel
-        get() = preferencesActivity.viewModel
+    private val activityViewModel by lazy {
+        requireActivity<PreferencesActivity>().viewModel
+    }
 
     // ------ //
 
@@ -63,7 +61,7 @@ class TaggedUsersListFragment : Fragment() {
 
         val taggedUsersAdapter = object : TaggedUsersAdapter() {
             override fun onItemClicked(user: User) {
-                viewModel.openUserMenuDialog(requireActivity(), user, userTagsFragment.childFragmentManager)
+                viewModel.openUserMenuDialog(requireActivity(), user, parentFragmentManager)
             }
 
             override fun onItemLongClicked(user: User): Boolean {

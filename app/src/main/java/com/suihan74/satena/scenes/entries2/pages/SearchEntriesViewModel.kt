@@ -8,7 +8,8 @@ import com.suihan74.utilities.OnError
 import com.suihan74.utilities.SingleUpdateMutableLiveData
 
 class SearchEntriesViewModel(
-    private val repository : EntriesRepository
+    repository : EntriesRepository,
+    initialSearchType : SearchType? = null
 ) : EntriesFragmentViewModel() {
     private val tabTitles = arrayOf(
         R.string.entries_tab_hot,
@@ -16,13 +17,14 @@ class SearchEntriesViewModel(
     )
 
     /** 検索クエリ */
-    val searchQuery by lazy {
+    val searchQuery =
         SingleUpdateMutableLiveData<String>()
-    }
 
-    /** 検索タイプ */
-    val searchType by lazy {
-        SingleUpdateMutableLiveData(SearchType.Text)
+    /** 検索設定 */
+    val searchSetting = repository.searchSetting.also { liveData ->
+        initialSearchType?.let {
+            liveData.value = liveData.value?.copy(searchType = it)
+        }
     }
 
     override val tabCount: Int = 2
@@ -40,9 +42,6 @@ class SearchEntriesViewModel(
         // 検索用パラメータの変更を伝播
         searchQuery.observe(fragment.viewLifecycleOwner, {
             viewModel.searchQuery = it
-        })
-        searchType.observe(fragment.viewLifecycleOwner, {
-            viewModel.searchType = it
         })
     }
 }

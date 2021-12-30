@@ -28,34 +28,32 @@ class EntriesViewModel(
     val repository : EntriesRepository
 ) : ViewModel() {
     /** カテゴリリスト */
-    val categories by lazy {
-        repository.categoriesLiveData
-    }
+    val categories = repository.categoriesLiveData
 
     /** サインイン状態 */
-    val signedIn by lazy {
-        repository.signedInLiveData
-    }
+    val signedIn = repository.signedInLiveData
+
+    /** ツールバーに表示するタイトル */
+    val toolbarTitle = MutableLiveData<String>("")
+
+    /** ツールバーに表示するサブタイトル */
+    val toolbarSubTitle = MutableLiveData<String>("")
 
     /** サインイン/マイブックマークボタンの説明テキスト */
-    val myBookmarkButtonTextId by lazy {
-        MutableLiveData<Int>().also { resId ->
-            signedIn.observeForever {
-                resId.value =
-                    if (it) R.string.my_bookmarks_button_desc_my_bookmarks
-                    else R.string.my_bookmarks_button_desc_sign_in
-            }
+    val myBookmarkButtonTextId = MutableLiveData<Int>().also { resId ->
+        signedIn.observeForever {
+            resId.value =
+                if (it) R.string.my_bookmarks_button_desc_my_bookmarks
+                else R.string.my_bookmarks_button_desc_sign_in
         }
     }
 
     /** サインイン/マイブックマークボタンのアイコン */
-    val myBookmarkButtonIconId by lazy {
-        MutableLiveData<Int>().also { resId ->
-            signedIn.observeForever {
-                 resId.value =
-                     if (it) R.drawable.ic_mybookmarks
-                     else R.drawable.ic_baseline_person_add
-            }
+    val myBookmarkButtonIconId = MutableLiveData<Int>().also { resId ->
+        signedIn.observeForever {
+             resId.value =
+                 if (it) R.drawable.ic_mybookmarks
+                 else R.drawable.ic_baseline_person_add
         }
     }
 
