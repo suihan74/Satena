@@ -441,7 +441,7 @@
                 android:visibility="@{!vm.bookmark.comment.empty &amp;&amp; vm.repository.signedIn}"
                 app:tooltipText="@{@string/description_select_posting_star}"
                 android:contentDescription="@string/description_select_posting_star"
-                android:src="@drawable/ic_add_star_filled"
+                android:src="@drawable/ic_baseline_add"
                 android:tint="@android:color/white"
                 app:backgroundTint="?colorPrimary"
                 app:layout_anchor="@id/bookmark_detail_layout"

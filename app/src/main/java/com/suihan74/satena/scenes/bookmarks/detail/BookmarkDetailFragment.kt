@@ -398,7 +398,7 @@ class BookmarkDetailFragment : Fragment() {
         hideStarButton(R.id.green_star_layout, R.id.green_stars_count)
         hideStarButton(R.id.yellow_star_layout, R.id.yellow_stars_count)
 
-        binding.showStarsButton.setImageResource(R.drawable.ic_add_star_filled)
+        binding.showStarsButton.setImageResource(R.drawable.ic_baseline_add)
         TooltipCompat.setTooltipText(
             binding.showStarsButton,
             getString(R.string.description_select_posting_star)
