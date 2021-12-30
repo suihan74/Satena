@@ -95,7 +95,7 @@ class StarRelationsTabFragment : Fragment(), ScrollableToTop {
             adapter.setOnLongLickItemListener {
                 val item = it.item ?: return@setOnLongLickItemListener
                 lifecycleScope.launch {
-                    viewModel.openStarRelationMenuDialog(item, childFragmentManager)
+                    viewModel.openStarRelationMenuDialog(bookmarkDetailViewModel, item, childFragmentManager)
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
+import android.app.Activity
 import android.content.res.Configuration
 import android.os.Bundle
 import android.transition.Fade
@@ -7,6 +8,7 @@ import android.transition.Slide
 import android.transition.TransitionSet
 import android.view.*
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.TooltipCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -69,6 +71,16 @@ class BookmarkDetailFragment : Fragment() {
             val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
             val repository = bookmarksViewModel.repository
             BookmarkDetailViewModel(this, repository, entry, bookmark)
+        }
+    }
+
+    val bookmarkPostActivityLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            lifecycleScope.launch {
+                viewModel.updateBookmarksToUser()
+            }
         }
     }
 
@@ -137,7 +149,9 @@ class BookmarkDetailFragment : Fragment() {
 
         // ブクマボタン設定
         binding.bookmarkButton.setOnClickListener {
-            viewModel.openPostBookmarkActivity(this)
+            lifecycleScope.launch {
+                viewModel.openPostBookmarkActivity(this@BookmarkDetailFragment)
+            }
         }
 
         binding.showStarsButton.setOnClickListener {

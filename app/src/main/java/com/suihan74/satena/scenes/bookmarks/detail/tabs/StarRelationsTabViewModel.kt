@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.detail.BookmarkDetailViewModel
 import com.suihan74.satena.scenes.bookmarks.detail.DetailTabAdapter
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarkMenuActionsImpl
@@ -86,6 +87,7 @@ class StarRelationsTabViewModel(
      * スター項目に対するメニューを開く
      */
     suspend fun openStarRelationMenuDialog(
+        detailViewModel: BookmarkDetailViewModel,
         item: StarRelationsAdapter.Item,
         fragmentManager: FragmentManager,
     ) {
@@ -105,7 +107,13 @@ class StarRelationsTabViewModel(
             if (isMyBookmark) item.relation.receiverBookmark
             else null
 
-        bookmarkMenuActions.openBookmarkMenuDialog(
+        bookmarkMenuActions.setOnDeleteBookmarkListener {
+            if (tabType == DetailTabAdapter.TabType.BOOKMARKS_TO_USER) {
+                viewModelScope.launch {
+                    detailViewModel.updateBookmarksToUser()
+                }
+            }
+        }.openBookmarkMenuDialog(
             entry,
             bookmark,
             starsEntry?.value,

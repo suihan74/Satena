@@ -1,7 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
 import android.content.Intent
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import com.suihan74.hatenaLib.Bookmark
@@ -214,15 +213,23 @@ class BookmarkDetailViewModel(
         }
     }
 
+    suspend fun updateBookmarksToUser() {
+        runCatching {
+            bookmark.value?.let { repository.getBookmarkCounts(it) }
+            updateList(DetailTabAdapter.TabType.BOOKMARKS_TO_USER, forceUpdate = true)
+        }
+    }
+
     /** ブクマをブクマするためのアクティビティを開く */
-    fun openPostBookmarkActivity(fragment: Fragment) {
+    suspend fun openPostBookmarkActivity(fragment: BookmarkDetailFragment) = withContext(Dispatchers.Main) {
+        starsMenuOpened.value = false
         val intent = Intent(fragment.requireContext(), BookmarkPostActivity::class.java).also {
             it.putExtra(
                 BookmarkPostActivity.EXTRA_URL,
                 bookmark.value!!.getCommentPageUrl(repository.entry.value!!)
             )
         }
-        fragment.startActivity(intent)
+        fragment.bookmarkPostActivityLauncher.launch(intent)
     }
 
     // ------ //
