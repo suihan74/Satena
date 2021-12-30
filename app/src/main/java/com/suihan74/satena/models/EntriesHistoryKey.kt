@@ -83,8 +83,10 @@ object EntriesHistoryKeyMigration {
     private fun migrateFromVersion0(context: Context) = runBlocking {
         val repo = SatenaApplication.instance.readEntriesRepository
         val prefs = SafeSharedPreferences.create<EntriesHistoryKey>(context)
-        prefs.getObject<List<Entry>>(EntriesHistoryKey.ENTRIES)?.forEach { entry ->
-            repo.insert(entry, ReadEntryCondition.BOOKMARKS_SHOWN)
+        runCatching {
+            prefs.getObject<List<Entry>>(EntriesHistoryKey.ENTRIES)?.forEach { entry ->
+                repo.insert(entry, ReadEntryCondition.BOOKMARKS_SHOWN)
+            }
         }
         prefs.edit { /* バージョン情報の更新に必要 */ }
     }
