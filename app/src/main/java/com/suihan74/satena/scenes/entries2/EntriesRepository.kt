@@ -25,8 +25,6 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.checkFromSpam
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -603,18 +601,19 @@ class EntriesRepository(
         val dateMode = searchSetting.value?.dateMode.orDefault
         val today = LocalDate.now()
         val dateBegin =
-            when (dateMode) {
-                EntrySearchDateMode.RECENT -> {
-                    today.minusDays(
-                        Duration
-                            .between(
-                                searchSetting.value?.dateBegin?.atStartOfDay(),
-                                searchSetting.value?.dateEnd?.atStartOfDay()
-                            )
-                            .toDays()
-                    )
+            searchSetting.value?.dateBegin?.let { dateBegin ->
+                when (dateMode) {
+                    EntrySearchDateMode.RECENT ->
+                        today.minusDays(
+                            Duration
+                                .between(
+                                    dateBegin.atStartOfDay(),
+                                    searchSetting.value?.dateEnd?.atStartOfDay()
+                                )
+                                .toDays()
+                        )
+                    EntrySearchDateMode.CALENDAR -> dateBegin
                 }
-                EntrySearchDateMode.CALENDAR -> searchSetting.value?.dateBegin
             }
         val dateEnd =
             when (dateMode) {
