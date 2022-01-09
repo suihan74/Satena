@@ -23,7 +23,6 @@ import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.models.EntrySearchDateMode
 import com.suihan74.satena.models.EntrySearchSetting
 import com.suihan74.satena.models.orDefault
-import com.suihan74.satena.scenes.entries2.EntriesRepository
 import com.suihan74.utilities.DialogListener
 import com.suihan74.utilities.extensions.alsoAs
 import kotlinx.coroutines.Dispatchers
@@ -41,9 +40,9 @@ import java.time.format.DateTimeFormatter
 
 class SearchSettingsDialog : BottomSheetDialogFragment() {
     companion object {
-        fun createInstance(repository: EntriesRepository) = SearchSettingsDialog().also { f ->
+        fun createInstance(searchSetting: MutableLiveData<EntrySearchSetting?>) = SearchSettingsDialog().also { f ->
             f.lifecycleScope.launchWhenCreated {
-                f.viewModel.initialize(repository)
+                f.viewModel.initialize(searchSetting)
             }
         }
     }
@@ -105,7 +104,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
     // ------ //
 
     class DialogViewModel : ViewModel() {
-        private lateinit var repository: EntriesRepository
+        private var searchSetting : MutableLiveData<EntrySearchSetting?>? = null
 
         val searchType = MutableLiveData<SearchType>()
 
@@ -155,9 +154,9 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                 .launchIn(viewModelScope)
         }
 
-        suspend fun initialize(repo: EntriesRepository) = withContext(Dispatchers.Main.immediate) {
-            repository = repo.also { r ->
-                r.searchSetting.value?.let {
+        suspend fun initialize(searchSetting: MutableLiveData<EntrySearchSetting?>) = withContext(Dispatchers.Main.immediate) {
+            this@DialogViewModel.searchSetting = searchSetting.also { liveData ->
+                liveData.value?.let {
                     searchType.value = it.searchType
                     users.value = it.users
                     dateMode.value = it.dateMode
@@ -177,7 +176,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                 dateEndFlow.value,
                 safe.value ?: false
             )
-            repository.searchSetting.value = result
+            searchSetting?.value = result
             onSaveListener?.invoke(result, fragment)
         }
 

@@ -36,8 +36,8 @@ class LoadEntryParameter {
         /** 検索クエリ(String) : Category.Search */
         const val SEARCH_QUERY = "LoadEntryParameter.SEARCH_QUERY"
 
-        /** 検索タイプ(SearchType: TAG or TEXT) : Category.Search */
-        const val SEARCH_TYPE = "LoadEntryParameter.SEARCH_TYPE"
+        /** 一時的な検索設定(EntrySearchSetting?) : Category.Search */
+        const val TEMPORARY_SEARCH_SETTING = "LoadEntryParameter.TEMPORARY_SEARCH_SETTING"
 
         /** サイトURL(String) : Category.Site */
         const val SITE_URL = "LoadEntryParameter.SITE_URL"
@@ -594,21 +594,23 @@ class EntriesRepository(
 
     /** エントリを検索する */
     private suspend fun searchEntries(tabPosition: Int, offset: Int?, params: LoadEntryParameter) : List<Entry> {
+        val setting = params.get(LoadEntryParameter.TEMPORARY_SEARCH_SETTING) ?: searchSetting.value
+
         val query = params.get<String>(LoadEntryParameter.SEARCH_QUERY)!!
-        val searchType = searchSetting.value?.searchType ?: SearchType.Title
+        val searchType = setting?.searchType ?: SearchType.Title
         val entriesType = EntriesType.fromId(tabPosition)
-        val users = searchSetting.value?.users ?: 1
-        val dateMode = searchSetting.value?.dateMode.orDefault
+        val users = setting?.users ?: 1
+        val dateMode = setting?.dateMode.orDefault
         val today = LocalDate.now()
         val dateBegin =
-            searchSetting.value?.dateBegin?.let { dateBegin ->
+            setting?.dateBegin?.let { dateBegin ->
                 when (dateMode) {
                     EntrySearchDateMode.RECENT ->
                         today.minusDays(
                             Duration
                                 .between(
                                     dateBegin.atStartOfDay(),
-                                    searchSetting.value?.dateEnd?.atStartOfDay()
+                                    setting.dateEnd?.atStartOfDay()
                                 )
                                 .toDays()
                         )
@@ -617,10 +619,10 @@ class EntriesRepository(
             }
         val dateEnd =
             when (dateMode) {
-                EntrySearchDateMode.RECENT -> searchSetting.value?.dateEnd?.let { today }
-                EntrySearchDateMode.CALENDAR -> searchSetting.value?.dateEnd
+                EntrySearchDateMode.RECENT -> setting?.dateEnd?.let { today }
+                EntrySearchDateMode.CALENDAR -> setting?.dateEnd
             }
-        val safe = searchSetting.value?.safe ?: false
+        val safe = setting?.safe ?: false
 
         return client.searchEntriesAsync(
             query = query,
