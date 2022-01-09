@@ -40,6 +40,8 @@
     <!-- Dialog -->
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_yes">はい</string>
+    <string name="dialog_no">いいえ</string>
     <string name="dialog_register">登録</string>
     <string name="dialog_delete">削除</string>
     <string name="dialog_open">開く</string>
@@ -681,6 +683,7 @@
     <string name="entry_search_date_picker_title">日数を指定</string>
     <string name="entry_search_date_picker_desc">何日前からのエントリを検索するか選択（0=当日だけ）</string>
     <string name="entry_search_settings_safe_desc">セーフサーチ</string>
+    <string name="entry_search_settings_update_source_desc">今回の内容で既定設定も同時に更新しますか？</string>
 
     <!-- EntrySearchDateMode -->
     <string name="entry_search_date_mode_recent">直近N日間</string>
