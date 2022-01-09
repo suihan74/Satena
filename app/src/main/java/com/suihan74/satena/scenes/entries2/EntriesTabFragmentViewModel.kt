@@ -2,12 +2,14 @@ package com.suihan74.satena.scenes.entries2
 
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.*
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.EntrySearchSetting
 import com.suihan74.satena.models.ExtraScrollingAlignment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,6 +51,9 @@ class EntriesTabFragmentViewModel(
         set(value) {
             params.put(LoadEntryParameter.SEARCH_QUERY, value)
         }
+
+    /** 検索パラメータ */
+    var temporarySearchSetting: LiveData<EntrySearchSetting?>? = null
 
     /** 追加パラメータ */
     private val params by lazy { LoadEntryParameter() }
@@ -181,7 +186,9 @@ class EntriesTabFragmentViewModel(
 
             Category.Search -> {
                 if (searchQuery.isNullOrBlank()) return emptyList()
-                else params
+                else params.also {
+                    it.put(LoadEntryParameter.TEMPORARY_SEARCH_SETTING, temporarySearchSetting?.value)
+                }
             }
 
             Category.Memorial15th -> params.also {

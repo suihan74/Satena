@@ -41,9 +41,12 @@ import java.time.format.DateTimeFormatter
 
 class SearchSettingsDialog : BottomSheetDialogFragment() {
     companion object {
-        fun createInstance(repository: EntriesRepository) = SearchSettingsDialog().also { f ->
+        fun createInstance(
+            repository: EntriesRepository,
+            searchSetting: MutableLiveData<EntrySearchSetting?>
+        ) = SearchSettingsDialog().also { f ->
             f.lifecycleScope.launchWhenCreated {
-                f.viewModel.initialize(repository)
+                f.viewModel.initialize(repository, searchSetting)
             }
         }
     }
@@ -85,10 +88,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
         }
 
         binding.okButton.setOnClickListener {
-            lifecycleScope.launchWhenCreated {
-                viewModel.save(this@SearchSettingsDialog)
-                dismiss()
-            }
+            viewModel.onClickPositiveButton(this)
         }
 
         return binding.root
@@ -105,7 +105,9 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
     // ------ //
 
     class DialogViewModel : ViewModel() {
-        private lateinit var repository: EntriesRepository
+        private var repository : EntriesRepository? = null
+
+        private var searchSetting : MutableLiveData<EntrySearchSetting?>? = null
 
         val searchType = MutableLiveData<SearchType>()
 
@@ -155,9 +157,13 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                 .launchIn(viewModelScope)
         }
 
-        suspend fun initialize(repo: EntriesRepository) = withContext(Dispatchers.Main.immediate) {
-            repository = repo.also { r ->
-                r.searchSetting.value?.let {
+        suspend fun initialize(
+            repository: EntriesRepository,
+            searchSetting: MutableLiveData<EntrySearchSetting?>
+        ) = withContext(Dispatchers.Main.immediate) {
+            this@DialogViewModel.repository = repository
+            this@DialogViewModel.searchSetting = searchSetting.also { liveData ->
+                liveData.value?.let {
                     searchType.value = it.searchType
                     users.value = it.users
                     dateMode.value = it.dateMode
@@ -168,7 +174,7 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
             }
         }
 
-        suspend fun save(fragment: DialogFragment) = withContext(Dispatchers.Main.immediate) {
+        suspend fun save(fragment: DialogFragment, updateSource: Boolean = false) = withContext(Dispatchers.Main.immediate) {
             val result = EntrySearchSetting(
                 searchType.value ?: SearchType.Tag,
                 users.value ?: 1,
@@ -177,11 +183,45 @@ class SearchSettingsDialog : BottomSheetDialogFragment() {
                 dateEndFlow.value,
                 safe.value ?: false
             )
-            repository.searchSetting.value = result
+            searchSetting?.value = result
+            if (updateSource) {
+                repository?.searchSetting?.value = result
+            }
             onSaveListener?.invoke(result, fragment)
         }
 
         // ------ //
+
+        fun onClickPositiveButton(fragment: DialogFragment) {
+            if (repository?.searchSetting != searchSetting) {
+                AlertDialogFragment.Builder()
+                    .setTitle(R.string.confirm_dialog_title_simple)
+                    .setMessage(R.string.entry_search_settings_update_source_desc)
+                    .setPositiveButton(R.string.dialog_yes) { f ->
+                        f.parentFragment.alsoAs<DialogFragment> { parent ->
+                            parent.lifecycleScope.launchWhenCreated {
+                                save(parent, true)
+                                parent.dismiss()
+                            }
+                        }
+                    }
+                    .setNegativeButton(R.string.dialog_no) { f ->
+                        f.parentFragment.alsoAs<DialogFragment> { parent ->
+                            parent.lifecycleScope.launchWhenCreated {
+                                save(parent, false)
+                                parent.dismiss()
+                            }
+                        }
+                    }
+                    .show(fragment.childFragmentManager, null)
+            }
+            else {
+                fragment.lifecycleScope.launchWhenCreated {
+                    save(fragment)
+                    fragment.dismiss()
+                }
+            }
+        }
 
         fun openSearchTypePicker(fragment: Fragment) {
             val items = SearchType.values()

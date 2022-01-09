@@ -116,9 +116,9 @@ class SearchEntriesFragment : MultipleTabsEntriesFragment() {
         // 検索パラメータの設定
         menu.findItem(R.id.search_settings)?.let { item ->
             item.setOnMenuItemClickListener {
-                requireActivity().alsoAs<EntriesActivity> { activity ->
+                requireActivity().alsoAs<EntriesActivity> {
                     SearchSettingsDialog
-                        .createInstance(activity.viewModel.repository)
+                        .createInstance(activityViewModel.repository, viewModel.searchSetting)
                         .setOnSaveListener { _, _ -> reloadLists() }
                         .show(childFragmentManager, DIALOG_SEARCH_TYPE)
                 }
