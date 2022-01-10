@@ -20,7 +20,9 @@ class BrowserWebChromeClient(
      */
     override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
         super.onReceivedIcon(view, icon)
-        repo.faviconLoading.value = false
-        repo.faviconBitmap.value = icon
+        if (repo.faviconLoading.value == true) {
+            repo.faviconLoading.value = false
+            repo.faviconBitmap.value = icon
+        }
     }
 }

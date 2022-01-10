@@ -112,6 +112,9 @@ class BrowserActivity :
 
         // WebViewの設定
         viewModel.initializeWebView(binding.webview, this)
+        savedInstanceState?.let {
+            binding.webview.restoreState(it)
+        }
 
         // ツールバーの設定
         initializeToolbar()
@@ -130,6 +133,11 @@ class BrowserActivity :
         binding.swipeLayout.isRefreshing = false
         viewModel.setOnPageFinishedListener(null)
         super.onStop()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        webView.saveState(outState)
+        super.onSaveInstanceState(outState)
     }
 
     /** 戻る処理を制御する */
