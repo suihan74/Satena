@@ -183,11 +183,14 @@ class BrowserViewModel(
 
     // ------ //
 
+    private var webViewClient : WebViewClient? = null
+    private var webChromeClient : WebChromeClient? = null
+
     /** WebViewの設定 */
     @MainThread
     fun initializeWebView(wv: WebView, activity: BrowserActivity) {
-        wv.webViewClient = BrowserWebViewClient(activity, this)
-        wv.webChromeClient = BrowserWebChromeClient(browserRepo)
+        wv.webViewClient = webViewClient ?: BrowserWebViewClient(activity, this).also { webViewClient = it }
+        wv.webChromeClient = webChromeClient ?: BrowserWebChromeClient(browserRepo).also { webChromeClient = it }
 
         // DOMストレージ使用
         wv.settings.domStorageEnabled = true
@@ -738,8 +741,10 @@ class BrowserViewModel(
         val vm = this@BrowserViewModel
         vm.title.value = url
         vm.url.value = url
-        vm.faviconBitmap.value = null
-        vm.faviconLoading.value = true
+        if (url != previousUrl) {
+            vm.faviconBitmap.value = null
+            vm.faviconLoading.value = true
+        }
         browserRepo.resourceUrls.clear()
     }
 
@@ -763,7 +768,6 @@ class BrowserViewModel(
 
         // 「戻る/進む」履歴に追加する
         _backForwardList.value = view!!.copyBackForwardList()
-        //updateBackStack(url, title, faviconUrl)
 
         runCatching {
             onPageFinishedListener?.invoke(url)

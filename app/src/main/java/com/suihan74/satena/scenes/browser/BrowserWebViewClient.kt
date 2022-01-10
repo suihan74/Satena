@@ -77,7 +77,7 @@ class BrowserWebViewClient(
 
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
-        if (url != null) {
+        if (url != null && loadedUrl != url) {
             viewModel.onPageFinished(view, url)
             loadedUrl = url
         }
