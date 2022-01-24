@@ -1,5 +1,7 @@
 package com.suihan74.satena.scenes.bookmarks
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.MainThread
@@ -44,6 +46,10 @@ class BookmarksActivity :
 
         /** 画面表示後直接特定のユーザーのブクマを表示する場合その対象 */
         const val EXTRA_TARGET_USER = "BookmarksActivity.EXTRA_TARGET_USER"
+
+        // ------ //
+
+        const val RESULT_ENTRY = "BookmarksActivity.RESULT_ENTRY"
     }
 
     // ------ //
@@ -142,6 +148,13 @@ class BookmarksActivity :
 
             else -> super.onBackPressed()
         }
+    }
+
+    override fun finish() {
+        setResult(Activity.RESULT_OK, Intent().also {
+            it.putObjectExtra(RESULT_ENTRY, bookmarksViewModel.entry.value)
+        })
+        super.finish()
     }
 
     // ------ //
