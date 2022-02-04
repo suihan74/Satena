@@ -5,6 +5,7 @@ import android.webkit.URLUtil
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.CustomDigestSettingsKey
 import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.PreferenceKey
@@ -1233,9 +1234,12 @@ class BookmarksRepository(
 
         // 表示を更新する
         if (url == _entry.value?.url) {
-            _entry.postValue(
-                _entry.value?.copy(bookmarkedData = null)
-            )
+            _entry.value?.copy(bookmarkedData = null).let { updatedEntry ->
+                _entry.postValue(updatedEntry)
+                if (updatedEntry != null) {
+                    SatenaApplication.instance.actionsRepository.emitUpdatingEntry(updatedEntry)
+                }
+            }
 
             val bEntry = bookmarksEntry.value?.let { e ->
                 e.copy(
