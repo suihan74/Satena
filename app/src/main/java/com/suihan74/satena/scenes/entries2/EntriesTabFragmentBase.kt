@@ -22,6 +22,8 @@ import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.provideViewModel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     companion object {
@@ -62,6 +64,8 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     protected val entriesList : RecyclerView
         get() = binding.entriesList
+
+    private val updateEntryActionFlow = SatenaApplication.instance.actionsRepository.updateEntryActionFlow
 
     /** 親のEntriesFragmentのViewModel */
     protected val parentViewModel : EntriesFragmentViewModel?
@@ -120,6 +124,10 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
                     .onFailure { onErrorRefreshEntries(it) }
             }
         }
+
+        updateEntryActionFlow
+            .onEach { updateBookmark(it.entry, it.entry.bookmarkedData) }
+            .launchIn(lifecycleScope)
 
         return binding.root
     }

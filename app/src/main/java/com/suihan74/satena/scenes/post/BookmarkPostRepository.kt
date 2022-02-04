@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.post
 import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.*
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
 import com.suihan74.satena.models.TootVisibility
@@ -410,6 +411,10 @@ class BookmarkPostRepository(
         val bookmarkResult = result.getOrElse {
             throw ConnectionFailureException(cause = result.exceptionOrNull())
         }
+
+        SatenaApplication.instance.actionsRepository.emitUpdatingEntry(
+            entry.copy(bookmarkedData = bookmarkResult)
+        )
 
         if (editData.postMastodon) {
             val mstdnResult = runCatching {

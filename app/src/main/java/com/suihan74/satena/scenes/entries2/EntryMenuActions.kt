@@ -15,6 +15,7 @@ import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivityContract
 import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
 import com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
@@ -246,6 +247,14 @@ class EntryMenuActionsImplForEntries(
     private val repository : EntriesRepository,
     private val readEntriesRepo : ReadEntriesRepository
 ) : EntryMenuActionsImplBasic() {
+
+    override fun showComments(activity: FragmentActivity, entry: Entry) {
+        activity.alsoAs<EntriesActivity> { a ->
+            a.bookmarksActivityLauncher.launch(
+                BookmarksActivityContract.Args(entry = entry)
+            )
+        }
+    }
 
     override fun showEntries(activity: FragmentActivity, entry: Entry) {
         activity.alsoAs<EntriesActivity> { a ->

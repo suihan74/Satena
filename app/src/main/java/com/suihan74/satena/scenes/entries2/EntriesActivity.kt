@@ -39,6 +39,7 @@ import com.suihan74.satena.models.ExtraScrollingAlignment
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
 import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
+import com.suihan74.satena.scenes.bookmarks.BookmarksActivityContract
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.bottomBar.UserBottomItemsSetter
@@ -125,6 +126,12 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     private fun setOnBottomMenuItemClickListener(listener: Listener<UserBottomItem>?) {
         onBottomMenuItemClickListener = listener
     }
+
+    // ------ //
+
+    val bookmarksActivityLauncher = registerForActivityResult(BookmarksActivityContract()) {}
+
+    // ------ //
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
