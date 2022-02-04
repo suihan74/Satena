@@ -1,14 +1,12 @@
 package com.suihan74.satena.scenes.bookmarks
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 import com.suihan74.hatenaLib.Entry
-import com.suihan74.utilities.extensions.getObjectExtra
 import com.suihan74.utilities.extensions.putObjectExtra
 
-class BookmarksActivityContract : ActivityResultContract<BookmarksActivityContract.Args, Entry?>() {
+class BookmarksActivityContract : ActivityResultContract<BookmarksActivityContract.Args, Unit>() {
     data class Args(
         val entry: Entry? = null,
         val url: String? = null,
@@ -26,9 +24,5 @@ class BookmarksActivityContract : ActivityResultContract<BookmarksActivityContra
             }
         }
 
-    override fun parseResult(resultCode: Int, intent: Intent?): Entry? =
-        when (resultCode) {
-            Activity.RESULT_OK -> intent?.getObjectExtra(BookmarksActivity.RESULT_ENTRY)
-            else -> null
-        }
+    override fun parseResult(resultCode: Int, intent: Intent?) {}
 }

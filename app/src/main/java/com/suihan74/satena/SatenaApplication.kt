@@ -119,6 +119,9 @@ class SatenaApplication : Application() {
     /** 既読エントリ情報を扱うリポジトリ */
     lateinit var readEntriesRepository : ReadEntriesRepository
 
+    /** 複数画面にアクションを伝搬するリポジトリ */
+    lateinit var actionsRepository : ActionsRepository
+
     /** アカウント管理 */
     val accountLoader : AccountLoader by lazy {
         AccountLoader(this, HatenaClient, MastodonClientHolder)
@@ -225,6 +228,8 @@ class SatenaApplication : Application() {
             readEntryDao,
             SafeSharedPreferences.create(this)
         )
+
+        actionsRepository = ActionsRepository()
     }
 
     // ------ //

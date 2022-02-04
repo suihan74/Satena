@@ -129,11 +129,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
 
     // ------ //
 
-    val bookmarksActivityLauncher = registerForActivityResult(BookmarksActivityContract()) { entry ->
-        entry?.let {
-            updateBookmark(it, it.bookmarkedData)
-        }
-    }
+    val bookmarksActivityLauncher = registerForActivityResult(BookmarksActivityContract()) {}
 
     // ------ //
 
