@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.Entry
@@ -13,8 +13,14 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentDialogShareBookmarkBinding
 import com.suihan74.satena.dialogs.ShareDialogViewModel
+import com.suihan74.utilities.exceptions.EmptyException
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.lazyProvideViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 class ShareBookmarkDialog : BottomSheetDialogFragment() {
     companion object {
@@ -50,14 +56,25 @@ class ShareBookmarkDialog : BottomSheetDialogFragment() {
     // ------ //
 
     class DialogViewModel : ShareDialogViewModel() {
-        val entry = MutableLiveData<Entry>()
+        val entry = MutableStateFlow<Entry?>(null)
 
-        val bookmark = MutableLiveData<Bookmark>()
+        val bookmark = MutableStateFlow<Bookmark?>(null)
 
         // ------ //
 
-        val commentPageUrl : String
-            get() = bookmark.value!!.getCommentPageUrl(entry.value!!)
+        private val _commentPageUrl = MutableStateFlow("")
+        val commentPageUrl : StateFlow<String> = _commentPageUrl
+
+        init {
+            viewModelScope.launch {
+                entry
+                    .combine(bookmark) { entry, bookmark ->
+                        if (entry == null || bookmark == null) ""
+                        else bookmark.getCommentPageUrl(entry)
+                    }
+                    .collect { _commentPageUrl.value = it }
+            }
+        }
 
         // ------ //
 
@@ -66,7 +83,7 @@ class ShareBookmarkDialog : BottomSheetDialogFragment() {
          */
         fun shareLinkUrlString(fragment: ShareBookmarkDialog) {
             runCatching {
-                shareText(fragment, commentPageUrl)
+                shareText(fragment, commentPageUrl.value)
                 fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_bookmark_failure)
@@ -87,7 +104,8 @@ class ShareBookmarkDialog : BottomSheetDialogFragment() {
          */
         fun copyLinkUrlToClipboard(fragment: ShareBookmarkDialog) {
             runCatching {
-                copyTextToClipboard(fragment, commentPageUrl)
+                if (commentPageUrl.value.isBlank()) throw EmptyException()
+                copyTextToClipboard(fragment, commentPageUrl.value)
                 fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_bookmark_failure)
@@ -111,7 +129,8 @@ class ShareBookmarkDialog : BottomSheetDialogFragment() {
          */
         fun openLink(fragment: ShareBookmarkDialog) {
             runCatching {
-                openLinkInBrowser(fragment, commentPageUrl)
+                if (commentPageUrl.value.isBlank()) throw EmptyException()
+                openLinkInBrowser(fragment, commentPageUrl.value)
                 fragment.dismiss()
             }.onFailure {
                 SatenaApplication.instance.showToast(R.string.share_bookmark_failure)
