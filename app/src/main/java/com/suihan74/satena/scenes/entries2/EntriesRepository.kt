@@ -212,6 +212,10 @@ class EntriesRepository(
         }
     }
 
+    /** 「あとで読む」するときデフォルトで非公開ブクマにする */
+    private val privateReadLater : Boolean
+        get() = prefs.get(PreferenceKey.ENTRY_PRIVATE_READ_LATER)
+
     /** 初期化処理 */
     suspend fun initialize(forceUpdate: Boolean = false) = withContext(Dispatchers.Default) {
         runCatching {
@@ -706,7 +710,8 @@ class EntriesRepository(
     suspend fun readLaterEntry(entry: Entry) : BookmarkResult =
         client.postBookmarkAsync(
             url = entry.url,
-            readLater = true
+            readLater = true,
+            isPrivate = privateReadLater
         ).await()
 
     /** 「あとで読む」エントリを読んだ */

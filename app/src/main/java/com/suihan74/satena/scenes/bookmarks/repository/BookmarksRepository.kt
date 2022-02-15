@@ -26,9 +26,6 @@ import com.suihan74.utilities.extensions.updateFirstOrPlusAhead
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 /**
  * ブクマ画面用のリポジトリ
@@ -267,6 +264,10 @@ class BookmarksRepository(
     val linkLongTapEntryAction by lazy {
         TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
     }
+
+    /** （リンクを）「あとで読む」したときデフォルトで非公開ブクマにする */
+    val privateReadLater : Boolean
+        get() = prefs.getBoolean(PreferenceKey.ENTRY_PRIVATE_READ_LATER)
 
     // ------ //
 
@@ -1274,7 +1275,11 @@ class BookmarksRepository(
         requireSignIn()
         startLoading()
         val result = runCatching {
-            client.postBookmarkAsync(entry.url, readLater = true).await()
+            client.postBookmarkAsync(
+                entry.url,
+                readLater = true,
+                isPrivate = privateReadLater
+            ).await()
         }
         stopLoading()
 

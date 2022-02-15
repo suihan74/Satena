@@ -185,6 +185,11 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         PreferenceKey.ENTRIES_CHANGE_HOME_BY_LONG_TAPPING_TAB
     )
 
+    /** エントリメニューから「あとで読む」するときにデフォルトで非公開ブクマにする */
+    private val privateReadLater = createLiveData<Boolean>(
+        PreferenceKey.ENTRY_PRIVATE_READ_LATER
+    )
+
     /** 「あとで読む」エントリを「読んだ」したときの挙動 */
     private val entryReadActionType = createLiveDataEnum<EntryReadActionType>(
         PreferenceKey.ENTRY_READ_ACTION_TYPE
@@ -390,6 +395,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_entry_section_read_later)
+        addPrefToggleItem(fragment, privateReadLater, R.string.pref_entries_private_read_later_desc)
         addPrefItem(fragment, entryReadActionType, R.string.pref_entries_read_action_type_desc) {
             openEnumSelectionDialog(
                 EntryReadActionType.values(),

@@ -358,6 +358,7 @@
     <string name="pref_entries_history_max_size_dialog_msg">%1$d～%2$d件で指定できます</string>
     <string name="pref_entries_history_max_size_text">件</string>
 
+    <string name="pref_entries_private_read_later_desc">「あとで読む」するときデフォルトで非公開ブクマにする</string>
     <string name="pref_entries_read_action_type_desc">「あとで読む」エントリを「読んだ」したときの挙動</string>
     <string name="pref_entries_read_action_boilerplate_desc">「読んだ」ときに投稿する定型文</string>
     <string name="pref_entries_read_action_boilerplate_hint">ブコメの入力ルールに従います</string>
