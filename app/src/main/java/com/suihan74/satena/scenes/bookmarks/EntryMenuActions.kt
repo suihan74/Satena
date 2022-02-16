@@ -62,19 +62,16 @@ class EntryMenuActionsImplForBookmarks(
         }
     }
 
-    override fun readEntry(activity: FragmentActivity, entry: Entry, coroutineScope: CoroutineScope) {
+    override fun readEntry(
+        activity: FragmentActivity,
+        entry: Entry,
+        coroutineScope: CoroutineScope
+    ) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 bookmarksRepo.read(entry)
-            }
-
-            if (result.isSuccess) {
-                val (action, _) = result.getOrNull()!!
+            }.onSuccess { (action, _) ->
                 when (action) {
-                    EntryReadActionType.REMOVE -> {
-                        activity.showToast(R.string.msg_remove_bookmark_succeeded)
-                    }
-
                     EntryReadActionType.DIALOG -> {
                         // ブクマ編集ダイアログに遷移する
                         // あとで戻ってきたときに画面を更新する --> Activity#onActivityResult
@@ -82,20 +79,11 @@ class EntryMenuActionsImplForBookmarks(
                             it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
                         }
                         activity.startActivity(intent)
-/*
-                        activity.startActivityForResult(
-                            intent,
-                            BookmarkPostActivity.REQUEST_CODE
-                        )
- */
                     }
-
-                    else -> {
-                        activity.showToast(R.string.msg_post_bookmark_succeeded)
-                    }
+                    EntryReadActionType.REMOVE -> activity.showToast(R.string.msg_remove_bookmark_succeeded)
+                    else -> activity.showToast(R.string.msg_post_bookmark_succeeded)
                 }
-            }
-            else {
+            }.onFailure {
                 activity.showToast(R.string.msg_post_bookmark_failed)
             }
         }
