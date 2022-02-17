@@ -16,6 +16,7 @@ import com.suihan74.satena.scenes.bookmarks.EntryMenuActionsImplForBookmarks
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.entries2.EntryMenuActions
+import com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.startInnerBrowser
 import com.suihan74.utilities.extensions.alsoAs
@@ -46,12 +47,8 @@ class EntryInformationViewModel(
      */
     fun onLongClickPageUrl(activity: BookmarksActivity) : Boolean {
         return entry.value?.let { entry ->
-            activity.startActivity(
-                Intent(Intent.ACTION_SEND).also {
-                    it.putExtra(Intent.EXTRA_TEXT, entry.url)
-                    it.type = "text/plain"
-                }
-            )
+            ShareEntryDialog.createInstance(entry)
+                .show(activity.supportFragmentManager, null)
             true
         } ?: false
     }

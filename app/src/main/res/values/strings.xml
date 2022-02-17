@@ -358,6 +358,7 @@
     <string name="pref_entries_history_max_size_dialog_msg">%1$d～%2$d件で指定できます</string>
     <string name="pref_entries_history_max_size_text">件</string>
 
+    <string name="pref_entries_private_read_later_desc">「あとで読む」「読んだ」するとき非公開ブクマする</string>
     <string name="pref_entries_read_action_type_desc">「あとで読む」エントリを「読んだ」したときの挙動</string>
     <string name="pref_entries_read_action_boilerplate_desc">「読んだ」ときに投稿する定型文</string>
     <string name="pref_entries_read_action_boilerplate_hint">ブコメの入力ルールに従います</string>
@@ -599,6 +600,8 @@
     <string name="hint_twitter_toggle">Twitterに投稿します</string>
     <string name="hint_facebook_toggle">Facebookに投稿します</string>
     <string name="hint_private_toggle">非公開でブクマします</string>
+    <string name="hint_private_toggle_on">非公開ブクマ: ON</string>
+    <string name="hint_private_toggle_off">非公開ブクマ: OFF</string>
     <string name="msg_post_tag_added">タグ[%s]を挿入しました</string>
     <string name="msg_post_tag_already_exists">タグ[%s]は既に挿入されています</string>
     <string name="msg_post_too_many_tags">使用できるタグは最大%d個です</string>

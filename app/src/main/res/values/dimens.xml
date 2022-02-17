@@ -48,6 +48,10 @@
     <dimen name="add_star_button_size">48dp</dimen>
     <dimen name="add_star_button_margin">12dp</dimen>
 
+    <!-- ダイアログでメニューリストを自前で実装する際の上下左右パディング -->
+    <dimen name="dialog_menu_item_horizontal_padding">24dp</dimen>
+    <dimen name="dialog_menu_item_vertical_padding">12dp</dimen>
+
     <!-- タグリストの文字サイズ -->
     <dimen name="tag_text_size">14sp</dimen>
 </resources>

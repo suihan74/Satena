@@ -187,6 +187,9 @@ enum class PreferenceKey(
     /** タブのスワイプ感度 */
     ENTRIES_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
 
+    /** エントリメニューから「あとで読む」ときデフォルトで非公開ブクマにする */
+    ENTRY_PRIVATE_READ_LATER(typeInfo<Boolean>(), false),
+
     /** 「あとで読む」エントリを「読んだ」したときの挙動 */
     ENTRY_READ_ACTION_TYPE(typeInfo<Int>(), EntryReadActionType.SILENT_BOOKMARK.ordinal),
 

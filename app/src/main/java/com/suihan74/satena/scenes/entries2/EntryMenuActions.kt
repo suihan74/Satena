@@ -299,44 +299,38 @@ class EntryMenuActionsImplForEntries(
 
     override fun readEntry(activity: FragmentActivity, entry: Entry, coroutineScope: CoroutineScope) {
         coroutineScope.launch(Dispatchers.Main) {
-            val result = runCatching {
+            runCatching {
                 repository.readEntry(entry)
-            }
+            }.onSuccess { (action, bookmarkResult) ->
+                when (action) {
+                    EntryReadActionType.REMOVE -> {
+                        activity.alsoAs<EntriesActivity> { a ->
+                            a.removeBookmark(entry)
+                        }
+                        activity.showToast(R.string.msg_remove_bookmark_succeeded)
+                    }
 
-            if (result.isFailure) {
+                    EntryReadActionType.DIALOG -> {
+                        // ブクマ編集ダイアログに遷移する
+                        // あとで戻ってきたときに画面を更新する --> Activity#onActivityResult
+                        val intent = Intent(activity, BookmarkPostActivity::class.java).also {
+                            it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
+                        }
+                        activity.startActivity(intent)
+                    }
+
+                    else -> {
+                        if (bookmarkResult != null) {
+                            activity.alsoAs<EntriesActivity> { a ->
+                                a.updateBookmark(entry, bookmarkResult)
+                            }
+                        }
+                        activity.showToast(R.string.msg_post_bookmark_succeeded)
+                    }
+                }
+            }.onFailure {
                 activity.showToast(R.string.msg_post_bookmark_failed)
                 return@launch
-            }
-
-            val (action, bookmarkResult) = result.getOrNull()!!
-            when (action) {
-                EntryReadActionType.REMOVE -> {
-                    activity.alsoAs<EntriesActivity> { a ->
-                        a.removeBookmark(entry)
-                    }
-                    activity.showToast(R.string.msg_remove_bookmark_succeeded)
-                }
-
-                EntryReadActionType.DIALOG -> {
-                    // ブクマ編集ダイアログに遷移する
-                    // あとで戻ってきたときに画面を更新する --> Activity#onActivityResult
-                    val intent = Intent(activity, BookmarkPostActivity::class.java).also {
-                        it.putObjectExtra(BookmarkPostActivity.EXTRA_ENTRY, entry)
-                    }
-                    activity.startActivityForResult(
-                        intent,
-                        BookmarkPostActivity.REQUEST_CODE
-                    )
-                }
-
-                else -> {
-                    if (bookmarkResult != null) {
-                        activity.alsoAs<EntriesActivity> { a ->
-                            a.updateBookmark(entry, bookmarkResult)
-                        }
-                    }
-                    activity.showToast(R.string.msg_post_bookmark_succeeded)
-                }
             }
         }
     }
