@@ -1314,7 +1314,8 @@ class BookmarksRepository(
                 client.postBookmarkAsync(
                     url = entry.url,
                     readLater = false,
-                    comment = comment
+                    comment = comment,
+                    isPrivate = privateReadLater
                 ).await()
             }
         }
