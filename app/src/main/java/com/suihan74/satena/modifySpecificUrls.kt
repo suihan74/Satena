@@ -68,7 +68,9 @@ private suspend fun modifySpecificUrlsWithConnection(url: String) : String = wit
                 .let { req ->
                     client.newCall(req).execute().use { response ->
                         if (!response.isSuccessful) return@use url
-                        val realUrl = response.request.url.toString()
+                        val realUrl = response.request.url.let { uri ->
+                            buildString { append(uri.scheme, "://", uri.host, uri.encodedPath) }
+                        }
                         when (response.header("Content-Type")) {
                             "text/html" -> realUrl
                             else -> return@withContext realUrl
@@ -84,7 +86,9 @@ private suspend fun modifySpecificUrlsWithConnection(url: String) : String = wit
         val modified = client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@use requestUrl
 
-            val realUrl = response.request.url.toString()
+            val realUrl = response.request.url.let { uri ->
+                buildString { append(uri.scheme, "://", uri.host, uri.encodedPath) }
+            }
             val contentType = response.header("Content-Type")
             if (contentType != "text/html") {
                 return@use realUrl
