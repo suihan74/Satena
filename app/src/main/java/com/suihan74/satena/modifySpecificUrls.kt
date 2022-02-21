@@ -58,41 +58,63 @@ private fun modifySpecificUrlsWithoutConnection(url: String) : String = when {
 private suspend fun modifySpecificUrlsWithConnection(url: String) : String = withContext(Dispatchers.IO) {
     try {
         val client = OkHttpClient()
+
+        // ヘッダ取得だけで解決する場合
+        val requestUrl =
+            Request.Builder()
+                .head()
+                .url(url)
+                .build()
+                .let { req ->
+                    client.newCall(req).execute().use { response ->
+                        if (!response.isSuccessful) return@use url
+                        val realUrl = response.request.url.let { uri ->
+                            buildString { append(uri.scheme, "://", uri.host, uri.encodedPath) }
+                        }
+                        when (response.header("Content-Type")) {
+                            "text/html" -> realUrl
+                            else -> return@withContext realUrl
+                        }
+                    }
+                }
+
         val request = Request.Builder()
             .get()
-            .url(url)
+            .url(requestUrl)
             .build()
 
         val modified = client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return@use url
+            if (!response.isSuccessful) return@use requestUrl
+
+            val realUrl = response.request.url.let { uri ->
+                buildString { append(uri.scheme, "://", uri.host, uri.encodedPath) }
+            }
+            val contentType = response.header("Content-Type")
+            if (contentType != "text/html") {
+                return@use realUrl
+            }
 
             val root = Jsoup.parse(response.body!!.use { it.string() })
             val entryRegex = Regex("""https?://b\.hatena\.ne\.jp/entry/\d+/?$""")
-            if (url.startsWith(HatenaClient.B_BASE_URL+"/entry")) {
+            if (realUrl.startsWith(HatenaClient.B_BASE_URL+"/entry")) {
                 if (entryRegex.matches(url)) {
                     // "https://b.hatena.ne.jp/entry/{eid}"は通常の法則に則ったURLのブコメページにリダイレクトされる
                     // modifySpecificUrls()では、さらにそのブコメページのブコメ先エントリURLに変換する
                     // 例) [in] /entry/18625960 ==> /entry/s/www.google.com ==> https://www.google.com [out]
                     val htmlTag = root.getElementsByTag("html").first()
-                    if (htmlTag.attr("data-page-subtype") == "comment") {
-                        // コメントページのURLの場合
-                        htmlTag.attr("data-stable-request-url")
-                    }
-                    else {
-                        htmlTag.attr("data-entry-url")
+                    // コメントページのURLの場合
+                    when (htmlTag.attr("data-page-subtype")) {
+                        "comment" -> htmlTag.attr("data-stable-request-url")
+                        else -> htmlTag.attr("data-entry-url")
                     }
                 }
-                else {
-                    url
-                }
+                else realUrl
             }
             else {
                 root.head()
                     .allElements
                     .firstOrNull { elem ->
-                        elem.tagName() == "meta" && (elem.attr("property") == "og:url" || elem.attr(
-                            "name"
-                        ) == "twitter:url")
+                        elem.tagName() == "meta" && (elem.attr("property") == "og:url" || elem.attr("name") == "twitter:url")
                     }
                     ?.attr("content")
             }
