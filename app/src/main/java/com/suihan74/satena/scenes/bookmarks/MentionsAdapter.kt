@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.bookmarks
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -55,7 +56,7 @@ open class MentionsAdapter (
                 binding.userName.text = value.user
 
                 val comment = buildString {
-                    append(value.comment)
+                    append(Uri.decode(value.comment))
                     value.starCount?.let { stars ->
                         val map = stars.countMap()
 
