@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
+import com.suihan74.hatenaLib.countMap
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemCommentBinding
 import com.suihan74.utilities.extensions.appendStarText
@@ -51,26 +52,23 @@ open class MentionsAdapter (
                 value ?: return
 
                 val context = binding.root.context
-
                 binding.userName.text = value.user
 
-                val commentBuilder = StringBuilder(value.comment)
-                value.starCount?.let {
-                    val yellowStarCount = it.firstOrNull { s -> s.color == StarColor.Yellow }?.count ?: 0
-                    val redStarCount = it.firstOrNull { s -> s.color == StarColor.Red }?.count ?: 0
-                    val greenStarCount = it.firstOrNull { s -> s.color == StarColor.Green }?.count ?: 0
-                    val blueStarCount = it.firstOrNull { s -> s.color == StarColor.Blue }?.count ?: 0
-                    val purpleStarCount = it.firstOrNull { s -> s.color == StarColor.Purple }?.count ?: 0
+                val comment = buildString {
+                    append(value.comment)
+                    value.starCount?.let { stars ->
+                        val map = stars.countMap()
 
-                    commentBuilder.append(" ")
-                    commentBuilder.appendStarText(purpleStarCount, context, R.color.starPurple)
-                    commentBuilder.appendStarText(blueStarCount, context, R.color.starBlue)
-                    commentBuilder.appendStarText(redStarCount, context, R.color.starRed)
-                    commentBuilder.appendStarText(greenStarCount, context, R.color.starGreen)
-                    commentBuilder.appendStarText(yellowStarCount, context, R.color.starYellow)
+                        append(" ")
+                        map[StarColor.Purple]?.let { appendStarText(it, context, R.color.starPurple) }
+                        map[StarColor.Blue]?.let { appendStarText(it, context, R.color.starBlue) }
+                        map[StarColor.Red]?.let { appendStarText(it, context, R.color.starRed) }
+                        map[StarColor.Green]?.let { appendStarText(it, context, R.color.starGreen) }
+                        map[StarColor.Yellow]?.let { appendStarText(it, context, R.color.starYellow) }
+                    }
                 }
                 binding.comment.apply {
-                    setHtml(commentBuilder.toString())
+                    setHtml(comment)
                     visibility = value.comment.isNotBlank().toVisibility()
                 }
 

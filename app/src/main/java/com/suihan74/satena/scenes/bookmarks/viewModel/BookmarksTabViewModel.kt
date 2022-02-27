@@ -5,6 +5,7 @@ import androidx.lifecycle.*
 import androidx.recyclerview.widget.DiffUtil
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.StarColor
+import com.suihan74.hatenaLib.countMap
 import com.suihan74.satena.R
 import com.suihan74.satena.models.userTag.Tag
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
@@ -15,7 +16,9 @@ import com.suihan74.utilities.RecyclerState
 import com.suihan74.utilities.RecyclerType
 import com.suihan74.utilities.extensions.onNotEmpty
 import com.suihan74.utilities.extensions.parallelMap
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class BookmarksTabViewModel(
     private val repo : BookmarksRepository,
@@ -92,17 +95,7 @@ class BookmarksTabViewModel(
             val starCounts =
                 bookmark.starCount?.let { stars ->
                     if (stars.isEmpty()) null
-                    else hashMapOf(
-                        StarColor.Yellow to 0,
-                        StarColor.Red to 0,
-                        StarColor.Green to 0,
-                        StarColor.Blue to 0,
-                        StarColor.Purple to 0
-                    ).also { starCounts ->
-                        stars.forEach {
-                            starCounts[it.color] = starCounts[it.color]?.plus(it.count) ?: it.count
-                        }
-                    }
+                    else stars.countMap()
                 }
 
             RecyclerState(
