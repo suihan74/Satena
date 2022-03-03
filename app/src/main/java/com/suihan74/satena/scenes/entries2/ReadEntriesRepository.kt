@@ -53,7 +53,7 @@ class ReadEntriesRepository(
             dao.insert(entry)
             readEntryIdsCache.add(entry.id)
             if (displaying.value) {
-                _readEntryIds.emit(readEntryIdsCache)
+                _readEntryIds.emit(readEntryIds.value.plus(entry.id))
             }
         }
     }
@@ -66,10 +66,10 @@ class ReadEntriesRepository(
                 else -> it.id
             }
         }
-        val foundIds = dao.find(ids)
-        readEntryIdsCache.addAll(foundIds.map { it.eid })
+        val foundIds = dao.find(ids).map { it.eid }
+        readEntryIdsCache.addAll(foundIds)
         if (displaying.value) {
-            _readEntryIds.emit(readEntryIdsCache)
+            _readEntryIds.emit(readEntryIds.value.plus(foundIds))
         }
     }
 
