@@ -349,6 +349,7 @@
     <string name="pref_entries_change_home_by_long_tapping_desc">タブ長押しでホームカテゴリ・初期タブを変更する</string>
 
     <string name="pref_entries_read_mark_condition_desc">既読マークをつけるタイミング</string>
+    <string name="entries_read_mark_condition_none">つけない</string>
     <string name="entries_read_mark_condition_bookmarks_shown">ブクマ画面を開いたとき</string>
     <string name="entries_read_mark_condition_page_shown">Webページを開いたとき</string>
     <string name="entries_read_mark_condition_bookmarks_or_page_shown">ブクマ画面 or Webページを開いたとき</string>

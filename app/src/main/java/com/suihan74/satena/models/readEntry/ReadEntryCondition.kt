@@ -12,6 +12,9 @@ enum class ReadEntryCondition(
     /** 設定画面に表示して直接選択できる */
     private val visible : Boolean = true
 ) : TextIdContainer {
+    /** 何も選択されていない */
+    NONE(0b0000, R.string.entries_read_mark_condition_none, visible = false),
+
     /** ブクマ画面を開いた */
     BOOKMARKS_SHOWN(0b0001, R.string.entries_read_mark_condition_bookmarks_shown),
 
