@@ -36,3 +36,12 @@ data class Star(
     }
 }
 
+/**
+ * スターリストから各カラーのスター数を取得する
+ */
+fun List<Star>.countMap() : Map<StarColor, Int> = buildMap {
+    for(s in this@countMap) {
+        this[s.color] = this[s.color]?.plus(1) ?: s.count
+    }
+}
+

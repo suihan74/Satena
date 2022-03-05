@@ -10,12 +10,18 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.suihan74.hatenaLib.*
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.StarColor
+import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.FooterRecyclerViewLoadableBinding
 import com.suihan74.satena.databinding.ListviewItemBookmarksBinding
@@ -27,7 +33,9 @@ import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.appendStarSpan
 import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.extensions.toVisibility
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.format.DateTimeFormatter
 
 class BookmarksAdapter(
@@ -369,6 +377,7 @@ class BookmarksAdapter(
             }
 
             // ブクマへのブクマ数の表示
+            binding.bookmarksCount.visibility = View.GONE
             bookmarkCountObserver?.let {
                 entity.bookmarkCount.removeObserver(it)
             }

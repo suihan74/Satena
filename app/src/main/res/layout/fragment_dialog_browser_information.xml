@@ -45,7 +45,7 @@
 
         <com.suihan74.utilities.views.MarqueeTextView
                 android:id="@+id/url"
-                android:text="@{vm.url}"
+                encodedUrl="@{vm.url}"
                 android:textSize="12sp"
                 android:textAllCaps="false"
                 android:singleLine="true"

@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityBookmarksBinding
@@ -14,8 +15,12 @@ import com.suihan74.satena.scenes.bookmarks.information.EntryInformationFragment
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarksViewModel
 import com.suihan74.satena.scenes.bookmarks.viewModel.ContentsViewModel
-import com.suihan74.utilities.*
-import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.DrawerOwner
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.extensions.onNotNull
+import com.suihan74.utilities.extensions.scopedObserver
+import com.suihan74.utilities.lazyProvideViewModel
 
 /**
  * ブクマ一覧画面
@@ -140,7 +145,13 @@ class BookmarksActivity :
                 closeDrawer()
             }
 
-            else -> super.onBackPressed()
+            else ->
+                runCatching {
+                    super.onBackPressed()
+                }.onFailure {
+                    FirebaseCrashlytics.getInstance().recordException(it)
+                    finish()
+                }
         }
     }
 
