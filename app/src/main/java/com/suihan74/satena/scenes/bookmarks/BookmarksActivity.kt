@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityBookmarksBinding
@@ -145,8 +146,12 @@ class BookmarksActivity :
             }
 
             else ->
-                runCatching { super.onBackPressed() }
-                .onFailure { finish() }
+                runCatching {
+                    super.onBackPressed()
+                }.onFailure {
+                    FirebaseCrashlytics.getInstance().recordException(it)
+                    finish()
+                }
         }
     }
 

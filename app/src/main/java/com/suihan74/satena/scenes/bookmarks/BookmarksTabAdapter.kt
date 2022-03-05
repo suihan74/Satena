@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 
-class BookmarksTabAdapter(val activity: FragmentActivity) : FragmentStateAdapter(activity) {
+class BookmarksTabAdapter(private val activity: FragmentActivity) : FragmentStateAdapter(activity) {
 
     private fun getTabType(position: Int) : BookmarksTabType =
         BookmarksTabType.fromOrdinal(position)
