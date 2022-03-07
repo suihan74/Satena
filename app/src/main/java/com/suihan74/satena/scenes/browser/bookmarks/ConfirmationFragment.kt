@@ -1,6 +1,5 @@
 package com.suihan74.satena.scenes.browser.bookmarks
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -62,9 +61,9 @@ class ConfirmationViewModel : ViewModel() {
     // ------- //
 
     fun onCreateView(owner: LifecycleOwner, browserViewModel: BrowserViewModel) {
-        browserViewModel.url.observe(owner, {
-            url.value = Uri.decode(it)
-        })
+        browserViewModel.entryUrl.observe(owner) {
+            url.value = it
+        }
     }
 
     // ------- //
