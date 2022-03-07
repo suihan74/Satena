@@ -18,8 +18,6 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
-import java.util.*
-import kotlin.collections.ArrayList
 
 class HistoryRepository(
     private val prefs: SafeSharedPreferences<BrowserSettingsKey>,
@@ -77,6 +75,23 @@ class HistoryRepository(
                 historiesCache.add(inserted)
                 histories.postValue(historiesCache)
             }
+        }
+    }
+
+    suspend fun insertOrUpdateHistory(
+        url: String,
+        title: String,
+        faviconUrl: String? = null
+    ) = withContext(Dispatchers.Default) {
+        val decodedUrl = Uri.decode(url)
+        val existed = dao.getRecentHistories(limit = 1).firstOrNull()
+        val existedPage = existed?.page
+        if (existedPage != null && existedPage.url == decodedUrl) {
+            val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
+            dao.updateHistoryPage(existedPage.copy(title = title, faviconUrl = favicon))
+        }
+        else {
+            insertHistory(url, title, faviconUrl)
         }
     }
 
