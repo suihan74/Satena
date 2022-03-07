@@ -86,12 +86,22 @@ class HistoryRepository(
         val decodedUrl = Uri.decode(url)
         val existed = dao.getRecentHistories(limit = 1).firstOrNull()
         val existedPage = existed?.page
-        if (existedPage != null && existedPage.url == decodedUrl) {
-            val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
-            dao.updateHistoryPage(existedPage.copy(title = title, faviconUrl = favicon))
+        if (existedPage == null || existedPage.url != decodedUrl) {
+            insertHistory(url, title, faviconUrl)
         }
         else {
-            insertHistory(url, title, faviconUrl)
+            val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
+            val updated = existedPage.copy(title = title, faviconUrl = favicon)
+            dao.updateHistoryPage(updated)
+            historiesCacheLock.withLock {
+                val updatedCache = historiesCache.map {
+                    if (it.page == existedPage) it.copy(page = updated)
+                    else it
+                }
+                historiesCache.clear()
+                historiesCache.addAll(updatedCache)
+                histories.postValue(updatedCache)
+            }
         }
     }
 
