@@ -95,7 +95,7 @@ class HistoryRepository(
                 val updated = existedPage.copy(title = title, faviconUrl = favicon)
                 dao.updateHistoryPage(updated)
                 val updatedCache = historiesCache.map {
-                    if (it.page == existedPage) it.copy(page = updated)
+                    if (it.page.id == existedPage.id) it.copy(page = updated)
                     else it
                 }
                 historiesCache.clear()
