@@ -22,8 +22,31 @@ suspend fun modifySpecificUrls(url: String?) : String? {
         }
     }
 
-    return result.getOrDefault(url)
+    return removeUtmParameters(result.getOrDefault(url))
 }
+
+/**
+ * URLからUTMパラメータを除去して返す
+ */
+private fun removeUtmParameters(url: String?) : String? {
+    if (url == null || !url.contains("?")) return url
+
+    val uri = Uri.parse(url)
+    val queries = uri.queryParameterNames
+        .mapNotNull { key ->
+            if (key.startsWith("utm_")) null
+            else "$key=${uri.getQueryParameter(key)}"
+        }
+        .joinToString(separator = "&")
+
+    return buildString {
+        append(uri.scheme, "://", uri.host, uri.encodedPath)
+        if (queries.isNotEmpty()) {
+            append("?", queries)
+        }
+    }
+}
+
 
 /**
  * 幾つかの頻出するサイトに対して
@@ -71,10 +94,9 @@ private suspend fun modifySpecificUrlsWithConnection(url: String) : String = wit
                         val realUrl = response.request.url.let { uri ->
                             buildString { append(uri.scheme, "://", uri.host, uri.encodedPath) }
                         }
-                        when (response.header("Content-Type")) {
-                            "text/html" -> realUrl
-                            else -> return@withContext realUrl
-                        }
+
+                        if (response.header("Content-Type")?.contains("text/html") == true) url
+                        else return@withContext realUrl
                     }
                 }
 
@@ -89,8 +111,7 @@ private suspend fun modifySpecificUrlsWithConnection(url: String) : String = wit
             val realUrl = response.request.url.let { uri ->
                 buildString { append(uri.scheme, "://", uri.host, uri.encodedPath) }
             }
-            val contentType = response.header("Content-Type")
-            if (contentType != "text/html") {
+            if (response.header("Content-Type")?.contains("text/html") != true) {
                 return@use realUrl
             }
 
