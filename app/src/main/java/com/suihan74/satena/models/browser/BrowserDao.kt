@@ -138,6 +138,15 @@ interface BrowserDao {
     }
 
     // ------ //
+    // UPDATE
+
+    /**
+     * ページ情報を更新
+     */
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateHistoryPage(historyPage: HistoryPage)
+
+    // ------ //
     // DELETE
 
     /**

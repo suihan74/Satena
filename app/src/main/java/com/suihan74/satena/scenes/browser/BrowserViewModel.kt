@@ -22,7 +22,6 @@ import androidx.webkit.WebViewFeature
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.suihan74.satena.*
-import com.suihan74.satena.R
 import com.suihan74.satena.dialogs.AlertDialogFragment
 import com.suihan74.satena.models.FavoriteSite
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
@@ -190,7 +189,7 @@ class BrowserViewModel(
     @MainThread
     fun initializeWebView(wv: WebView, activity: BrowserActivity) {
         wv.webViewClient = webViewClient ?: BrowserWebViewClient(activity, this).also { webViewClient = it }
-        wv.webChromeClient = webChromeClient ?: BrowserWebChromeClient(browserRepo).also { webChromeClient = it }
+        wv.webChromeClient = webChromeClient ?: BrowserWebChromeClient(browserRepo, this).also { webChromeClient = it }
 
         // DOMストレージ使用
         wv.settings.domStorageEnabled = true
@@ -750,30 +749,26 @@ class BrowserViewModel(
 
     /** ページ読み込み完了時の処理 */
     fun onPageFinished(view: WebView?, url: String) = viewModelScope.launch(Dispatchers.Main) {
-        val vm = this@BrowserViewModel
-
         // TODO: タイトルがひとつ前のページから更新されていない場合がある
-        val title = view?.title ?: url
-        vm.title.value = title
         browserRepo.resourceUrls.addUnique(ResourceUrl(url, false))
-
-        val faviconUrl = Uri.parse(url).faviconUrl
-
-        // 通常のwebページだけを履歴に追加する
-        if (privateBrowsingEnabled.value != true && URLUtil.isNetworkUrl(url)) {
-            viewModelScope.launch {
-                historyRepo.insertHistory(url, title, faviconUrl)
-            }
-        }
-
-        // 「戻る/進む」履歴に追加する
-        _backForwardList.value = view!!.copyBackForwardList()
 
         runCatching {
             onPageFinishedListener?.invoke(url)
         }
 
         previousUrl = url
+    }
+
+    fun onReceivedTitle(view: WebView?, title: String?) = viewModelScope.launch(Dispatchers.Main) {
+        val vm = this@BrowserViewModel
+        val url = view?.url ?: return@launch
+        vm.url.value = url
+        vm.title.value = title.orEmpty()
+
+        _backForwardList.value = view.copyBackForwardList()
+        if (privateBrowsingEnabled.value != true && URLUtil.isNetworkUrl(url)) {
+            historyRepo.insertOrUpdateHistory(url, title.orEmpty(), Uri.parse(url).faviconUrl)
+        }
     }
 
     /** リソースを追加 */
