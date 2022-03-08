@@ -90,10 +90,10 @@ class HistoryRepository(
             insertHistory(url, title, faviconUrl)
         }
         else {
-            val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
-            val updated = existedPage.copy(title = title, faviconUrl = favicon)
-            dao.updateHistoryPage(updated)
             historiesCacheLock.withLock {
+                val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
+                val updated = existedPage.copy(title = title, faviconUrl = favicon)
+                dao.updateHistoryPage(updated)
                 val updatedCache = historiesCache.map {
                     if (it.page == existedPage) it.copy(page = updated)
                     else it

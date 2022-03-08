@@ -762,9 +762,7 @@ class BrowserViewModel(
     fun onReceivedTitle(view: WebView?, title: String?) = viewModelScope.launch(Dispatchers.Main) {
         val vm = this@BrowserViewModel
         val url = view?.url ?: return@launch
-        if (vm.url.value != url) {
-            vm.url.value = url
-        }
+        vm.url.value = url
         vm.title.value = title.orEmpty()
 
         _backForwardList.value = view.copyBackForwardList()
