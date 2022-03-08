@@ -92,6 +92,9 @@ class HistoryAdapter(
             oldItem?.log?.id == newItem?.log?.id
 
         override fun areModelContentsTheSame(oldItem: History?, newItem: History?): Boolean =
-            oldItem?.page == newItem?.page
+            oldItem?.page?.url == newItem?.page?.url &&
+                    oldItem?.page?.title == newItem?.page?.title &&
+                    oldItem?.page?.faviconUrl == newItem?.page?.faviconUrl &&
+                    oldItem?.log?.visitedAt == newItem?.log?.visitedAt
     }
 }
