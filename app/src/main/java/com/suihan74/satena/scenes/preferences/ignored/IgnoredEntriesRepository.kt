@@ -29,7 +29,6 @@ class IgnoredEntriesRepository(
 
     // ------ //
 
-    private var ignoredEntriesCache : ArrayList<IgnoredEntry> = ArrayList()
     private val ignoredEntriesCacheLock by lazy { Mutex() }
 
     private val _ignoredEntries = MutableLiveData<List<IgnoredEntry>>()
@@ -40,11 +39,9 @@ class IgnoredEntriesRepository(
     /** 全ての非表示設定をロードする */
     suspend fun loadAllIgnoredEntries(forceUpdate: Boolean = false) = withContext(Dispatchers.IO) {
         ignoredEntriesCacheLock.withLock {
-            if (forceUpdate || ignoredEntriesCache.isEmpty()) {
+            if (forceUpdate || ignoredEntries.value.isNullOrEmpty()) {
                 val allEntries = dao.getAllEntries()
-                ignoredEntriesCache.clear()
-                ignoredEntriesCache.addAll(allEntries)
-                _ignoredEntries.postValue(ignoredEntriesCache)
+                _ignoredEntries.postValue(allEntries)
 
                 val forEntries = ArrayList<IgnoredEntry>()
                 val forBookmarks = ArrayList<String>()
@@ -90,9 +87,7 @@ class IgnoredEntriesRepository(
         try {
             ignoredEntriesCacheLock.withLock {
                 dao.insert(entry)
-                dao.find(entry.type, entry.query)?.also {
-                    ignoredEntriesCache.add(it)
-
+                dao.find(entry.type, entry.query)?.let {
                     if (it.target contains IgnoreTarget.BOOKMARK) {
                         _ignoredWordsForBookmarks = _ignoredWordsForBookmarks.plus(it.query)
                     }
@@ -101,9 +96,9 @@ class IgnoredEntriesRepository(
                         val existed = _ignoredEntriesForEntries.value.orEmpty()
                         _ignoredEntriesForEntries.postValue(existed.plus(it))
                     }
-                }
 
-                _ignoredEntries.postValue(ignoredEntriesCache)
+                    _ignoredEntries.postValue(ignoredEntries.value.orEmpty().plus(it))
+                }
             }
         }
         catch (e: Throwable) {
@@ -120,7 +115,6 @@ class IgnoredEntriesRepository(
         try {
             ignoredEntriesCacheLock.withLock {
                 dao.delete(entry)
-                ignoredEntriesCache.remove(entry)
 
                 if (entry.target contains IgnoreTarget.ENTRY) {
                     val existed = _ignoredEntriesForEntries.value.orEmpty()
@@ -133,7 +127,7 @@ class IgnoredEntriesRepository(
                     _ignoredWordsForBookmarks = _ignoredWordsForBookmarks.filterNot { it == entry.query }
                 }
 
-                _ignoredEntries.postValue(ignoredEntriesCache)
+                _ignoredEntries.postValue(ignoredEntries.value.orEmpty().minus(entry))
             }
         }
         catch (e: Throwable) {
@@ -151,10 +145,10 @@ class IgnoredEntriesRepository(
             ignoredEntriesCacheLock.withLock {
                 dao.update(entry)
                 dao.find(entry.type, entry.query)?.also { newItem ->
-                    val existedIdx = ignoredEntriesCache.indexOfFirst { it.id == newItem.id }
+                    val entries = ignoredEntries.value.orEmpty()
+                    val existedIdx = entries.indexOfFirst { it.id == newItem.id }
                     if (existedIdx < 0) return@withLock
-                    val existed = ignoredEntriesCache[existedIdx]
-                    ignoredEntriesCache[existedIdx] = newItem
+                    val existed = entries[existedIdx]
 
                     if (newItem.target contains IgnoreTarget.BOOKMARK) {
                         _ignoredWordsForBookmarks = _ignoredWordsForBookmarks.updateFirstOrPlus(newItem.query) {
@@ -168,9 +162,17 @@ class IgnoredEntriesRepository(
                             existed.target contains IgnoreTarget.ENTRY && it.id == newItem.id
                         })
                     }
-                }
 
-                _ignoredEntries.postValue(ignoredEntriesCache)
+                    _ignoredEntries.postValue(buildList {
+                        if (existedIdx > 0) {
+                            addAll(entries.subList(0, existedIdx))
+                        }
+                        add(entry)
+                        if (existedIdx < entries.lastIndex) {
+                            addAll(entries.subList(existedIdx + 1, entries.size))
+                        }
+                    })
+                }
             }
         }
         catch (e: Throwable) {
