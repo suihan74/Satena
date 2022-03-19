@@ -224,9 +224,12 @@ open class PreferenceToggleItem(
     fragment: Fragment,
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
-    @StringRes suffixId: Int? = null
+    @StringRes suffixId: Int? = null,
+    action: ((Boolean)->Unit)? = null
 ) : PreferenceItem<Boolean>(fragment, liveData, titleId, suffixId, null, {
-    liveData.value = liveData.value != true
+    action?.invoke(liveData.value == true) ?: run {
+        liveData.value = liveData.value != true
+    }
 })
 
 // ------ //
@@ -342,8 +345,16 @@ fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
     fragment: Fragment,
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
-    @StringRes suffixId: Int? = null
-) = add(PreferenceToggleItem(fragment, liveData, titleId, suffixId))
+    @StringRes suffixId: Int? = null,
+    action: ((Boolean)->Unit)? = null
+) = add(PreferenceToggleItem(fragment, liveData, titleId, suffixId, action))
+
+fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
+    fragment: Fragment,
+    liveData: MutableLiveData<Boolean>,
+    @StringRes titleId: Int,
+    action: ((Boolean)->Unit)?
+) = add(PreferenceToggleItem(fragment, liveData, titleId, null, action))
 
 // ------ //
 

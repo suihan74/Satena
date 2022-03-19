@@ -163,7 +163,19 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         addSection(R.string.pref_browser_section_features)
         addPrefToggleItem(fragment, secretModeEnabled, R.string.pref_browser_private_browsing_enabled_desc)
-        addPrefToggleItem(fragment, javascriptEnabled, R.string.pref_browser_javascript_enabled_desc)
+        addPrefToggleItem(fragment, javascriptEnabled, R.string.pref_browser_javascript_enabled_desc) { value ->
+            AlertDialogFragment.Builder()
+                .setTitle(R.string.confirm_dialog_title_simple)
+                .setMessage(
+                    if (value) R.string.browser_menu_javascript_off_desc
+                    else R.string.browser_menu_javascript_on_desc
+                )
+                .setPositiveButton(R.string.dialog_ok) {
+                    javascriptEnabled.value = !value
+                }
+                .setNegativeButton(R.string.dialog_cancel)
+                .show(fragmentManager)
+        }
         addPrefToggleItem(fragment, useUrlBlock, R.string.pref_browser_use_url_blocking_desc)
         addButton(fragment, R.string.pref_browser_open_url_blocking_desc) {
             fragment.childFragmentManager.beginTransaction()

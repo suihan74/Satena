@@ -816,6 +816,12 @@
     <string name="browser_menu_settings">設定</string>
     <string name="browser_menu_exit">終了</string>
 
+    <!-- JavaScript ON/OFF時のメッセージ -->
+    <string name="browser_menu_javascript_on_desc">JavaScriptをONにすることには潜在的なセキュリティリスクがあります。よろしいですか？</string>
+    <string name="browser_menu_javascript_off_desc">JavaScriptをOFFにすると一部ページが正しく表示されない場合があります。よろしいですか？</string>
+    <string name="msg_browser_javascript_on">JavaScriptを有効化しました</string>
+    <string name="msg_browser_javascript_off">JavaScriptを無効化しました</string>
+
     <string name="browser_link_menu_open_link">リンクを開く</string>
     <string name="browser_link_menu_share_link">リンクを共有</string>
     <string name="browser_link_menu_open_bookmarks">ブクマ画面を表示</string>
