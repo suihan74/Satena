@@ -8,6 +8,7 @@ import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.GravityCompat
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
@@ -25,9 +26,12 @@ import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.post.BookmarkPostRepository
 import com.suihan74.satena.scenes.post.BookmarkPostViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner
-import com.suihan74.utilities.*
+import com.suihan74.utilities.DrawerOwner
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -329,11 +333,27 @@ class BrowserActivity :
             }
         })
 
-        viewModel.drawerOpened.observe(this, {
+        viewModel.drawerOpened.observe(this) {
             if (it) openDrawer()
             else closeDrawer()
+        }
+
+        // ドロワ開閉の感度設定
+        val drawerGravity = GravityCompat.getAbsoluteGravity(
+            viewModel.drawerGravity,
+            resources.configuration.layoutDirection
+        )
+        val defaultDrawerTouchSlop =
+            if (drawerGravity == Gravity.RIGHT) drawerLayout.rightTouchSlop
+            else drawerLayout.leftTouchSlop
+        drawerLayout.setTouchSlop(
+            defaultDrawerTouchSlop + (defaultDrawerTouchSlop * 15f * (1f - (viewModel.drawerTouchSlopScale.value ?: 0f))).toInt()
+        )
+        viewModel.drawerTouchSlopScale.observe(this, observerForOnlyUpdates {
+            // TODO
         })
 
+        // ドロワページ切替の感度設定
         val defaultTouchSlop = drawerViewPager.touchSlop
         setDrawerViewPagerSensitivity(drawerViewPager, defaultTouchSlop)
         setDrawerSwipeClosable(drawerTabLayout.selectedTabPosition)

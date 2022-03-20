@@ -153,6 +153,9 @@ class BrowserViewModel(
     /** 現在選択中のドロワタブ */
     val currentDrawerTab = SingleUpdateMutableLiveData<DrawerTab>()
 
+    /** ドロワ開閉の感度 */
+    val drawerTouchSlopScale = browserRepo.drawerTouchSlop
+
     /** ドロワページャのスワイプ感度 */
     val drawerPagerTouchSlopScale = browserRepo.drawerPagerScrollSensitivity
 

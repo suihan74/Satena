@@ -74,6 +74,8 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     private val initialBookmarksList get() = browserRepo.initialBookmarksList
 
+    private val drawerTouchSlopScale get() = browserRepo.drawerTouchSlop
+
     private val drawerPagerTouchSlopScale get() = browserRepo.drawerPagerScrollSensitivity
 
     private val historyLifeSpan get() = browserRepo.historyLifeSpan
@@ -192,6 +194,17 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_browser_section_behavior)
+        addButton(fragment, R.string.pref_browser_drawer_touch_slop_desc) {
+            SliderDialog.createInstance(
+                titleId = R.string.pref_browser_drawer_touch_slop_desc,
+                messageId = R.string.pref_browser_drawer_touch_slop_dialog_message,
+                min = 0f,
+                max = 1f,
+                value = drawerTouchSlopScale.value ?: 1f
+            ).setOnCompleteListener { value, _ ->
+                drawerTouchSlopScale.value = value
+            }.show(fragmentManager, null)
+        }
         addButton(fragment, R.string.pref_browser_drawer_pager_touch_slop_desc) {
             SliderDialog.createInstance(
                 titleId = R.string.pref_browser_drawer_pager_touch_slop_desc,
@@ -199,11 +212,9 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
                 min = 0.1f,
                 max = 1f,
                 value = drawerPagerTouchSlopScale.value ?: 1f
-            )
-                .setOnCompleteListener { value, _ ->
-                    drawerPagerTouchSlopScale.value = value
-                }
-                .show(fragmentManager, "")
+            ).setOnCompleteListener { value, _ ->
+                drawerPagerTouchSlopScale.value = value
+            }.show(fragmentManager, null)
         }
 
         // --- //

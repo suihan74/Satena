@@ -537,6 +537,9 @@
     <string name="pref_browser_initial_bookmarks_list_desc">最初に表示するブクマリスト</string>
     <string name="browser_bookmarks_list_same_as_bookmarks">ブクマ画面の初期表示タブと同じ</string>
 
+    <string name="pref_browser_drawer_touch_slop_desc">ドロワ開閉のスワイプ感度</string>
+    <string name="pref_browser_drawer_touch_slop_dialog_message">スライダーを左に移動すると感度が低くなります</string>
+
     <string name="pref_browser_drawer_pager_touch_slop_desc">ドロワタブ切替えのスワイプ感度</string>
 
     <string name="pref_browser_history_lifespan_desc">履歴を保存する期間</string>

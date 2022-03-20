@@ -132,6 +132,12 @@ class BrowserRepository(
             }
         }
 
+    /** ドロワ開閉のスワイプ感度 */
+    val drawerTouchSlop =
+        createBrowserSettingsLiveData(BrowserSettingsKey.DRAWER_TOUCH_SLOP_SCALE) { p, key ->
+            p.getFloat(key)
+        }
+
     /** ドロワページャのスワイプ感度 */
     val drawerPagerScrollSensitivity =
         createBrowserSettingsLiveData(BrowserSettingsKey.DRAWER_PAGER_SCROLL_SENSITIVITY) { p, key ->
