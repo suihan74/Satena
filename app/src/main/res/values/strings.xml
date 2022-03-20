@@ -537,6 +537,9 @@
     <string name="pref_browser_initial_bookmarks_list_desc">最初に表示するブクマリスト</string>
     <string name="browser_bookmarks_list_same_as_bookmarks">ブクマ画面の初期表示タブと同じ</string>
 
+    <string name="pref_browser_drawer_touch_slop_desc">ドロワ開閉のスワイプ感度</string>
+    <string name="pref_browser_drawer_touch_slop_dialog_message">スライダーを左に移動すると感度が低くなります</string>
+
     <string name="pref_browser_drawer_pager_touch_slop_desc">ドロワタブ切替えのスワイプ感度</string>
 
     <string name="pref_browser_history_lifespan_desc">履歴を保存する期間</string>
@@ -815,6 +818,12 @@
     <string name="browser_menu_javascript">Javascript</string>
     <string name="browser_menu_settings">設定</string>
     <string name="browser_menu_exit">終了</string>
+
+    <!-- JavaScript ON/OFF時のメッセージ -->
+    <string name="browser_menu_javascript_on_desc">JavaScriptをONにすることには潜在的なセキュリティリスクがあります。よろしいですか？</string>
+    <string name="browser_menu_javascript_off_desc">JavaScriptをOFFにすると一部ページが正しく表示されない場合があります。よろしいですか？</string>
+    <string name="msg_browser_javascript_on">JavaScriptを有効化しました</string>
+    <string name="msg_browser_javascript_off">JavaScriptを無効化しました</string>
 
     <string name="browser_link_menu_open_link">リンクを開く</string>
     <string name="browser_link_menu_share_link">リンクを共有</string>

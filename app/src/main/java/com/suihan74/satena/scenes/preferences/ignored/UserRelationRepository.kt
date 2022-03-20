@@ -19,9 +19,6 @@ import kotlinx.coroutines.withContext
  * 他のリポジトリに組み込む際はIgnoredUsersRepositoryに移譲する
  */
 interface UserRelationRepositoryInterface {
-    /** はてなで設定した非表示ユーザー */
-//    val ignoredUsersCache : List<String>
-
     /** 非表示ユーザーリストのLiveData */
     val ignoredUsers : LiveData<List<String>>
 
@@ -103,8 +100,6 @@ class UserRelationRepository(
     private val accountLoader: AccountLoader
 ) : UserRelationRepositoryInterface {
 
-    private val _ignoredUsersCache = ArrayList<String>()
-
     private val _ignoredUsers = MutableLiveData<List<String>>()
     override val ignoredUsers: LiveData<List<String>> = _ignoredUsers
 
@@ -116,90 +111,69 @@ class UserRelationRepository(
     // ------ //
 
     /** 読み込み済みの内容をクリアする */
-    suspend fun clearIgnoredUsers() = cacheMutex.withLock {
-        _ignoredUsersCache.clear()
-        withContext(Dispatchers.Main) {
-            _ignoredUsers.value = emptyList()
+    suspend fun clearIgnoredUsers() = withContext(Dispatchers.Default) {
+        cacheMutex.withLock {
+            _ignoredUsers.postValue(emptyList())
         }
     }
 
     /** 非表示ユーザーリストを読み込む */
-    override suspend fun loadIgnoredUsers() = cacheMutex.withLock {
-        val result = runCatching {
-            val client = signIn()
-            client.getIgnoredUsersAsync().await()
-        }
-
-        if (result.isSuccess) {
-            _ignoredUsersCache.clear()
-            _ignoredUsersCache.addAll(result.getOrDefault(emptyList()).reversed())
-            withContext(Dispatchers.Main) {
-                _ignoredUsers.value = _ignoredUsersCache
+    override suspend fun loadIgnoredUsers() { withContext(Dispatchers.Default) {
+        cacheMutex.withLock {
+            runCatching {
+                val client = signIn()
+                client.getIgnoredUsersAsync().await()
+            }.onSuccess { users ->
+                _ignoredUsers.postValue(users.reversed())
             }
         }
-    }
+    } }
 
     /**
      * ユーザーを非表示にする
      *
      * @throws FetchIgnoredUsersFailureException
      */
-    override suspend fun ignoreUser(user: String) {
-        val result = runCatching {
-            val client = signIn()
-            client.ignoreUserAsync(user).await()
-        }
-
-        if (result.isSuccess) {
-            cacheMutex.withLock {
-                _ignoredUsersCache.add(user)
-                withContext(Dispatchers.Main) {
-                    _ignoredUsers.value = _ignoredUsersCache
-                }
+    override suspend fun ignoreUser(user: String) { withContext(Dispatchers.Default) {
+        cacheMutex.withLock {
+            runCatching {
+                val client = signIn()
+                client.ignoreUserAsync(user).await()
+            }.onSuccess {
+                _ignoredUsers.postValue(
+                    ignoredUsers.value.orEmpty().plus(user)
+                )
+            }.onFailure {
+                throw FetchIgnoredUsersFailureException(message = it.message, cause = it)
             }
         }
-        else {
-            val e = result.exceptionOrNull()
-            throw FetchIgnoredUsersFailureException(
-                message = e?.message,
-                cause = e
-            )
-        }
-    }
+    } }
 
     /**
      * ユーザーの非表示を解除する
      *
      * @throws FetchIgnoredUsersFailureException
      */
-    override suspend fun unIgnoreUser(user: String) {
-        val result = runCatching {
-            val client = signIn()
-            client.unignoreUserAsync(user).await()
-        }
-
-        if (result.isSuccess) {
-            cacheMutex.withLock {
-                _ignoredUsersCache.remove(user)
-                withContext(Dispatchers.Main) {
-                    _ignoredUsers.value = _ignoredUsersCache
-                }
+    override suspend fun unIgnoreUser(user: String) { withContext(Dispatchers.Default) {
+        cacheMutex.withLock {
+            runCatching {
+                val client = signIn()
+                client.unignoreUserAsync(user).await()
+            }.onSuccess {
+                _ignoredUsers.postValue(
+                    ignoredUsers.value.orEmpty().minus(user)
+                )
+            }.onFailure {
+                throw FetchIgnoredUsersFailureException(message = it.message, cause = it)
             }
         }
-        else {
-            val e = result.exceptionOrNull()
-            throw FetchIgnoredUsersFailureException(
-                message = e?.message,
-                cause = e
-            )
-        }
-    }
+    } }
 
     /**
      * 指定ユーザーが非表示されているか確認する
      */
     override suspend fun isIgnored(user: String) : Boolean = cacheMutex.withLock {
-        return@withLock _ignoredUsersCache.contains(user)
+        return@withLock ignoredUsers.value?.contains(user) ?: false
     }
 
     // ------ //
@@ -210,13 +184,11 @@ class UserRelationRepository(
      * @throws TaskFailureException
      */
     override suspend fun followUser(user: String) {
-        val result = runCatching {
+        runCatching {
             val client = signIn()
             client.follow(user)
-        }
-
-        if (result.isFailure) {
-            throw TaskFailureException(cause = result.exceptionOrNull())
+        }.onFailure {
+            throw TaskFailureException(cause = it)
         }
     }
 
@@ -226,13 +198,11 @@ class UserRelationRepository(
      * @throws TaskFailureException
      */
     override suspend fun unFollowUser(user: String) {
-        val result = runCatching {
+        runCatching {
             val client = signIn()
             client.unfollow(user)
-        }
-
-        if (result.isFailure) {
-            throw TaskFailureException(cause = result.exceptionOrNull())
+        }.onFailure {
+            throw TaskFailureException(cause = it)
         }
     }
 
@@ -241,41 +211,35 @@ class UserRelationRepository(
      *
      * @throws TaskFailureException
      */
-    override suspend fun getFollowings() : List<String> {
-        val result = runCatching {
+    override suspend fun getFollowings() : List<String> =
+        runCatching {
             signIn().let { client ->
                 if (client.signedIn()) client.getFollowingsAsync().await()
                 else emptyList()
             }
-        }
-
-        return result.getOrElse {
-            throw TaskFailureException(cause = result.exceptionOrNull())
-        }
-    }
+        }.onFailure {
+            throw TaskFailureException(cause = it)
+        }.getOrThrow()
 
     /**
      * お気に入られユーザーリストを取得する
      *
      * @throws TaskFailureException
      */
-    override suspend fun getFollowers() : List<Follower> {
-        val result = runCatching {
+    override suspend fun getFollowers() : List<Follower> =
+        runCatching {
             signIn().let { client ->
                 if (client.signedIn()) client.getFollowersAsync().await()
                 else emptyList()
             }
-        }
-
-        return result.getOrElse {
-            throw TaskFailureException(cause = result.exceptionOrNull())
-        }
-    }
+        }.onFailure {
+            throw TaskFailureException(cause = it)
+        }.getOrThrow()
 
     /** 通報処理開始 */
-    private suspend fun startReporting() = withContext(Dispatchers.Main) { _reporting.value = true }
+    private suspend fun startReporting() = withContext(Dispatchers.Main.immediate) { _reporting.value = true }
     /** 通報処理終了 */
-    private suspend fun stopReporting() = withContext(Dispatchers.Main) { _reporting.value = false }
+    private suspend fun stopReporting() = withContext(Dispatchers.Main.immediate) { _reporting.value = false }
 
     /**
      *  ブコメを通報する
@@ -291,14 +255,12 @@ class UserRelationRepository(
     ) {
         startReporting()
 
-        val result = runCatching {
+        runCatching {
             val client = signIn()
             client.reportAsync(entry, bookmark, category, model.comment).await()
-        }
-
-        if (result.isFailure) {
+        }.onFailure {
             stopReporting()
-            throw TaskFailureException(cause = result.exceptionOrNull())
+            throw TaskFailureException(cause = it)
         }
 
         if (model.ignoreAfterReporting) {

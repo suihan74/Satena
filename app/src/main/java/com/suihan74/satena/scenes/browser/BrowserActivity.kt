@@ -25,9 +25,12 @@ import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.post.BookmarkPostRepository
 import com.suihan74.satena.scenes.post.BookmarkPostViewModel
 import com.suihan74.satena.scenes.post.BookmarkPostViewModelOwner
-import com.suihan74.utilities.*
+import com.suihan74.utilities.DrawerOwner
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.*
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -329,22 +332,47 @@ class BrowserActivity :
             }
         })
 
-        viewModel.drawerOpened.observe(this, {
+        viewModel.drawerOpened.observe(this) {
             if (it) openDrawer()
             else closeDrawer()
-        })
+        }
 
-        val defaultTouchSlop = drawerViewPager.touchSlop
-        setDrawerViewPagerSensitivity(drawerViewPager, defaultTouchSlop)
-        setDrawerSwipeClosable(drawerTabLayout.selectedTabPosition)
+        // ドロワ開閉の感度設定
+        Pair(drawerLayout.leftTouchSlop, drawerLayout.rightTouchSlop).let { (defaultLeft, defaultRight) ->
+            viewModel.drawerTouchSlopScale.observe(this) {
+                setDrawerSensitivity(drawerLayout, defaultLeft, defaultRight)
+            }
+        }
 
-        viewModel.drawerPagerTouchSlopScale.observe(this, observerForOnlyUpdates {
-            setDrawerViewPagerSensitivity(drawerViewPager, defaultTouchSlop)
-        })
+        // ドロワページ切替の感度設定
+        drawerViewPager.touchSlop.let { defaultPagerTouchSlop ->
+            setDrawerSwipeClosable(drawerTabLayout.selectedTabPosition)
+            viewModel.drawerPagerTouchSlopScale.observe(this) {
+                setDrawerViewPagerSensitivity(drawerViewPager, defaultPagerTouchSlop)
+            }
+        }
     }
 
     /**
-     * ドロワタブの遷移感度を下げる
+     * ドロワ開閉の感度を設定する
+     */
+    @SuppressLint("RtlHardcoded")
+    private fun setDrawerSensitivity(drawerLayout: DrawerLayout, defaultLeftTouchSlop: Int, defaultRightTouchSlop: Int) {
+        val actualGravity = Gravity.getAbsoluteGravity(
+            viewModel.drawerGravity,
+            resources.configuration.layoutDirection
+        )
+        val defaultDrawerTouchSlop =
+            if (actualGravity == Gravity.LEFT) defaultLeftTouchSlop
+            else defaultRightTouchSlop
+        val scale = 15f * (1f - (viewModel.drawerTouchSlopScale.value ?: 0f))
+        drawerLayout.setTouchSlop(
+            defaultDrawerTouchSlop + (defaultDrawerTouchSlop * scale).toInt()
+        )
+    }
+
+    /**
+     * ドロワタブの遷移感度を設定する
      */
     private fun setDrawerViewPagerSensitivity(viewPager: ViewPager2, defaultTouchSlop: Int) {
         runCatching {

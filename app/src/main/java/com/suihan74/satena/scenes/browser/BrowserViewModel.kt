@@ -153,6 +153,9 @@ class BrowserViewModel(
     /** 現在選択中のドロワタブ */
     val currentDrawerTab = SingleUpdateMutableLiveData<DrawerTab>()
 
+    /** ドロワ開閉の感度 */
+    val drawerTouchSlopScale = browserRepo.drawerTouchSlop
+
     /** ドロワページャのスワイプ感度 */
     val drawerPagerTouchSlopScale = browserRepo.drawerPagerScrollSensitivity
 
@@ -238,8 +241,13 @@ class BrowserViewModel(
 
         // jsのON/OFF
         wv.settings.javaScriptEnabled = javaScriptEnabled.value ?: true
-        javaScriptEnabled.observe(activity, Observer {
+        javaScriptEnabled.observe(activity, observerForOnlyUpdates {
+            wv.context.showToast(
+                if (it) R.string.msg_browser_javascript_on
+                else R.string.msg_browser_javascript_off
+            )
             wv.settings.javaScriptEnabled = it
+            wv.reload()
         })
 
         // UserAgentの設定
@@ -577,8 +585,17 @@ class BrowserViewModel(
         }
 
         R.id.javascript -> {
-            javaScriptEnabled.value = javaScriptEnabled.value != true
-            activity.webView.reload()
+            AlertDialogFragment.Builder()
+                .setTitle(R.string.confirm_dialog_title_simple)
+                .setMessage(
+                    if (javaScriptEnabled.value == true) R.string.browser_menu_javascript_off_desc
+                    else R.string.browser_menu_javascript_on_desc
+                )
+                .setPositiveButton(R.string.dialog_ok) {
+                    javaScriptEnabled.value = javaScriptEnabled.value != true
+                }
+                .setNegativeButton(R.string.dialog_cancel)
+                .show(activity.supportFragmentManager)
             true
         }
 

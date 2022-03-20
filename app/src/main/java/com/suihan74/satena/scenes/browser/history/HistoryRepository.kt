@@ -26,9 +26,6 @@ class HistoryRepository(
 
     /** 閲覧履歴 */
     val histories = MutableLiveData<List<History>>()
-
-    /** ロード済みの全閲覧履歴データのキャッシュ */
-    private var historiesCache = ArrayList<History>()
     private val historiesCacheLock = Mutex()
 
     /** 検索ワード */
@@ -63,17 +60,16 @@ class HistoryRepository(
             log = visited
         )
         dao.insertHistory(history)
-        val inserted = dao.getHistory(now)
-
-        if (inserted != null) {
+        dao.getHistory(now)?.let { inserted ->
             clearOldHistories()
             historiesCacheLock.withLock {
-                historiesCache.removeAll {
-                    it.log.visitedAt.toSystemZonedDateTime("UTC").toLocalDate().equals(today)
-                            && it.page.url == inserted.page.url
-                }
-                historiesCache.add(inserted)
-                histories.postValue(historiesCache)
+                val items =
+                    histories.value.orEmpty()
+                        .filterNot {
+                            it.log.visitedAt.toSystemZonedDateTime("UTC").toLocalDate().equals(today)
+                                    && it.page.url == inserted.page.url
+                        }.plus(inserted)
+                histories.postValue(items)
             }
         }
     }
@@ -94,13 +90,12 @@ class HistoryRepository(
                 val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
                 val updated = existedPage.copy(title = title, faviconUrl = favicon)
                 dao.updateHistoryPage(updated)
-                val updatedCache = historiesCache.map {
-                    if (it.page.id == existedPage.id) it.copy(page = updated)
-                    else it
-                }
-                historiesCache.clear()
-                historiesCache.addAll(updatedCache)
-                histories.postValue(updatedCache)
+                histories.postValue(
+                    histories.value.orEmpty().map {
+                        if (it.page.id == existedPage.id) it.copy(page = updated)
+                        else it
+                    }
+                )
             }
         }
     }
@@ -110,27 +105,24 @@ class HistoryRepository(
         dao.deleteHistoryLog(history.log)
 
         historiesCacheLock.withLock {
-            historiesCache.removeAll { it.log.id == history.log.id }
-            histories.postValue(historiesCache)
+            histories.postValue(histories.value.orEmpty().filterNot { it.log.id == history.log.id })
         }
     }
 
     /** 履歴リストを更新 */
     suspend fun loadHistories() = withContext(Dispatchers.Default) {
         historiesCacheLock.withLock {
-            historiesCache.clear()
             runCatching {
-                historiesCache.addAll(
-                        dao.findHistory(query = keyword.value.orEmpty())
+                histories.postValue(
+                    dao.findHistory(query = keyword.value.orEmpty())
                 )
             }.onFailure {
                 dao.restoreHistoryTable_v192()
                 FirebaseCrashlytics.getInstance().recordException(RuntimeException("v190 history issue has fixed"))
-                historiesCache.addAll(
-                        dao.findHistory(query = keyword.value.orEmpty())
+                histories.postValue(
+                    dao.findHistory(query = keyword.value.orEmpty())
                 )
             }
-            histories.postValue(historiesCache)
         }
     }
 
@@ -147,10 +139,11 @@ class HistoryRepository(
         dao.deleteHistory(start, end)
 
         historiesCacheLock.withLock {
-            historiesCache.removeAll { h ->
-                h.log.visitedAt.toSystemZonedDateTime("UTC").toLocalDate() == date
-            }
-            histories.postValue(historiesCache)
+            histories.postValue(
+                histories.value.orEmpty().filterNot { h ->
+                    h.log.visitedAt.toSystemZonedDateTime("UTC").toLocalDate() == date
+                }
+            )
         }
     }
 
@@ -158,17 +151,19 @@ class HistoryRepository(
     suspend fun loadAdditional() = withContext(Dispatchers.Default) {
         historiesCacheLock.withLock {
             val additional = runCatching {
-                dao.findHistory(query = keyword.value.orEmpty(), offset = historiesCache.size)
+                dao.findHistory(query = keyword.value.orEmpty(), offset = histories.value?.size ?: 0)
             }.getOrElse {
                 dao.restoreHistoryTable_v192()
                 FirebaseCrashlytics.getInstance().recordException(RuntimeException("v190 history issue has fixed"))
-                dao.findHistory(query = keyword.value.orEmpty(), offset = historiesCache.size)
+                dao.findHistory(query = keyword.value.orEmpty(), offset = histories.value?.size ?: 0)
             }
             if (additional.isEmpty()) return@withContext
 
-            historiesCache.addAll(additional)
-            historiesCache.sortBy { it.log.visitedAt }
-            histories.postValue(historiesCache)
+            histories.postValue(
+                histories.value.orEmpty()
+                    .plus(additional)
+                    .sortedBy { it.log.visitedAt }
+            )
         }
     }
 
@@ -189,11 +184,11 @@ class HistoryRepository(
         }
 
         historiesCacheLock.withLock {
-            val newItems = historiesCache.filter {
-                it.log.visitedAt >= threshold
-            }
-            historiesCache.clear()
-            historiesCache.addAll(newItems)
+            histories.postValue(
+                histories.value.orEmpty().filter {
+                    it.log.visitedAt >= threshold
+                }
+            )
         }
 
         prefs.editSync {
