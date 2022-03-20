@@ -8,7 +8,6 @@ import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.core.view.GravityCompat
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
@@ -339,32 +338,41 @@ class BrowserActivity :
         }
 
         // ドロワ開閉の感度設定
-        val drawerGravity = GravityCompat.getAbsoluteGravity(
+        Pair(drawerLayout.leftTouchSlop, drawerLayout.rightTouchSlop).let { (defaultLeft, defaultRight) ->
+            viewModel.drawerTouchSlopScale.observe(this) {
+                setDrawerSensitivity(drawerLayout, defaultLeft, defaultRight)
+            }
+        }
+
+        // ドロワページ切替の感度設定
+        drawerViewPager.touchSlop.let { defaultPagerTouchSlop ->
+            setDrawerSwipeClosable(drawerTabLayout.selectedTabPosition)
+            viewModel.drawerPagerTouchSlopScale.observe(this) {
+                setDrawerViewPagerSensitivity(drawerViewPager, defaultPagerTouchSlop)
+            }
+        }
+    }
+
+    /**
+     * ドロワ開閉の感度を設定する
+     */
+    @SuppressLint("RtlHardcoded")
+    private fun setDrawerSensitivity(drawerLayout: DrawerLayout, defaultLeftTouchSlop: Int, defaultRightTouchSlop: Int) {
+        val actualGravity = Gravity.getAbsoluteGravity(
             viewModel.drawerGravity,
             resources.configuration.layoutDirection
         )
         val defaultDrawerTouchSlop =
-            if (drawerGravity == Gravity.RIGHT) drawerLayout.rightTouchSlop
-            else drawerLayout.leftTouchSlop
+            if (actualGravity == Gravity.LEFT) defaultLeftTouchSlop
+            else defaultRightTouchSlop
+        val scale = 15f * (1f - (viewModel.drawerTouchSlopScale.value ?: 0f))
         drawerLayout.setTouchSlop(
-            defaultDrawerTouchSlop + (defaultDrawerTouchSlop * 15f * (1f - (viewModel.drawerTouchSlopScale.value ?: 0f))).toInt()
+            defaultDrawerTouchSlop + (defaultDrawerTouchSlop * scale).toInt()
         )
-        viewModel.drawerTouchSlopScale.observe(this, observerForOnlyUpdates {
-            // TODO
-        })
-
-        // ドロワページ切替の感度設定
-        val defaultTouchSlop = drawerViewPager.touchSlop
-        setDrawerViewPagerSensitivity(drawerViewPager, defaultTouchSlop)
-        setDrawerSwipeClosable(drawerTabLayout.selectedTabPosition)
-
-        viewModel.drawerPagerTouchSlopScale.observe(this, observerForOnlyUpdates {
-            setDrawerViewPagerSensitivity(drawerViewPager, defaultTouchSlop)
-        })
     }
 
     /**
-     * ドロワタブの遷移感度を下げる
+     * ドロワタブの遷移感度を設定する
      */
     private fun setDrawerViewPagerSensitivity(viewPager: ViewPager2, defaultTouchSlop: Int) {
         runCatching {
