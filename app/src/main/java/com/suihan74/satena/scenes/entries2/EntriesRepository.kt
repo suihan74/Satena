@@ -17,6 +17,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
@@ -272,8 +273,16 @@ class EntriesRepository(
         val entries =
             if (issue == null) loadEntries(category, tabPosition, offset, params)
             else loadEntries(issue, tabPosition, offset)
-        readEntryRepo.load(entries)
-        return entries
+
+        return (entries.map { entry ->
+            if (entry.url.startsWith("https://ad-hatena.com/hatena")) {
+                val modifiedUrl = modifySpecificUrls(entry.url) ?: entry.url
+                entry.copy(url = modifiedUrl)
+            }
+            else entry
+        }).also {
+            readEntryRepo.load(it)
+        }
     }
 
     /** 最新のエントリーリストを読み込む(Category指定) */
