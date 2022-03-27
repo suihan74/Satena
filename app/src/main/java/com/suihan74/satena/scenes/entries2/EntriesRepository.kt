@@ -274,10 +274,14 @@ class EntriesRepository(
             if (issue == null) loadEntries(category, tabPosition, offset, params)
             else loadEntries(issue, tabPosition, offset)
 
+        // 広告エントリURLをリダイレクト先のURLに解決する
         return (entries.map { entry ->
             if (entry.url.startsWith("https://ad-hatena.com/hatena")) {
                 val modifiedUrl = modifySpecificUrls(entry.url) ?: entry.url
-                entry.copy(url = modifiedUrl)
+                entry.copy(
+                    url = modifiedUrl,
+                    adUrl = entry.url
+                )
             }
             else entry
         }).also {

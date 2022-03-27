@@ -97,6 +97,9 @@
     <!-- 設定表示用 -->
     <string name="entries_tab_maintain">位置を維持</string>
 
+    <!-- エントリ項目 -->
+    <string name="entry_item_ad">広告</string>
+
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
     <string name="search_type_title">タイトル</string>

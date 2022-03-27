@@ -84,9 +84,28 @@
                 app:layout_constraintTop_toBottomOf="@id/title"
                 app:layout_constraintBottom_toTopOf="@id/comments_list"
                 app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintEnd_toStartOf="@id/ad_mark"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintHorizontal_chainStyle="packed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="1000 users"/>
+
+        <TextView
+                android:id="@+id/ad_mark"
+                android:visibility="@{entry.adUrl}"
+                android:text="@string/entry_item_ad"
+                android:textSize="12sp"
+                android:textColor="@color/colorPrimaryText"
+                android:background="@drawable/ad_entry_mark_background"
+                android:paddingHorizontal="7dp"
+                android:paddingVertical="1dp"
+                app:layout_constraintBaseline_toBaselineOf="@id/bookmark_users"
+                app:layout_constraintStart_toEndOf="@id/bookmark_users"
+                app:layout_constraintEnd_toStartOf="@id/domain"
+                android:layout_marginHorizontal="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
         <TextView
                 android:id="@+id/domain"
@@ -98,8 +117,9 @@
                 android:maxLines="1"
                 android:layout_marginStart="16dp"
                 app:layout_constraintBaseline_toBaselineOf="@id/bookmark_users"
-                app:layout_constraintStart_toEndOf="@id/bookmark_users"
+                app:layout_constraintStart_toEndOf="@id/ad_mark"
                 app:layout_constraintEnd_toEndOf="@id/title"
+                app:layout_constraintHorizontal_bias="1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 tools:text="hoge.com"/>

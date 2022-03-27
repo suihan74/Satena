@@ -34,7 +34,10 @@ data class IgnoredEntry (
     // ------ //
 
     fun isMatched(entry: Entry) = when (type) {
-        IgnoredEntryType.URL -> entry.url.startsWith("https://$query") || entry.url.startsWith("http://$query")
+        IgnoredEntryType.URL ->
+            entry.url.startsWith("https://$query") || entry.url.startsWith("http://$query") ||
+            entry.adUrl?.startsWith("https://$query") == true || entry.adUrl?.startsWith("http://$query") == true
+
         IgnoredEntryType.TEXT -> target.contains(IgnoreTarget.ENTRY) && entry.title.contains(query)
     }
 

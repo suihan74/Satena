@@ -36,7 +36,14 @@ class Entry (
     val myHotEntryComments : List<BookmarkResult>? = null,
 
     @JsonAdapter(TimestampDeserializer::class)
-    val date: LocalDateTime? = null
+    val date: LocalDateTime? = null,
+
+    /**
+     * 広告エントリの場合のURL
+     *
+     * 手動でURL解決し元の広告用URLはここに退避させるため、APIから返された時点では常にnull
+     */
+    val adUrl : String? = null
 ) {
 
     // for Gson
@@ -100,7 +107,8 @@ class Entry (
         ampUrl: String? = this.ampUrl,
         bookmarkedData: BookmarkResult? = this.bookmarkedData,
         myhotentryComments: List<BookmarkResult>? = this.myHotEntryComments,
-        date: LocalDateTime? = this.date
+        date: LocalDateTime? = this.date,
+        adUrl: String? = this.adUrl
     ) = Entry(
         id = id,
         title = title,
@@ -113,7 +121,8 @@ class Entry (
         ampUrl = ampUrl,
         bookmarkedData = bookmarkedData,
         myHotEntryComments = myhotentryComments,
-        date = date
+        date = date,
+        adUrl = adUrl
     )
 
     /** 同じエントリに対するインスタンスかを確認する */
