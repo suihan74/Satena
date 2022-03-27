@@ -96,6 +96,19 @@ interface EntryMenuActions {
                 val a = f.requireActivity()
                 openIgnoreEntryDialog(a, entry, a.supportFragmentManager, a.lifecycleScope)
             }
+            setIgnoreAdsListener { entry, f ->
+                val a = f.requireActivity()
+                val adUrl = Uri.parse(entry.adUrl ?: entry.url).let {
+                    buildString {
+                        append(it.scheme, "://", it.host, it.path)
+                    }
+                }
+                val dummyEntry = entry.copy(
+                    url = adUrl,
+                    title = adUrl
+                )
+                openIgnoreEntryDialog(a, dummyEntry, a.supportFragmentManager, a.lifecycleScope)
+            }
             setReadLaterListener { entry, f ->
                 val a = f.requireActivity()
                 readLaterEntry(a, entry, a.lifecycleScope)

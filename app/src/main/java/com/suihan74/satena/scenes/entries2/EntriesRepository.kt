@@ -272,8 +272,19 @@ class EntriesRepository(
         val entries =
             if (issue == null) loadEntries(category, tabPosition, offset, params)
             else loadEntries(issue, tabPosition, offset)
-        readEntryRepo.load(entries)
-        return entries
+
+        // 広告エントリURLをリダイレクト先のURLに解決する
+        return (entries.map { entry ->
+            if (entry.url.startsWith("https://ad-hatena.com/hatena")) {
+                entry.copy(
+                    url = Uri.parse(entry.url).getQueryParameter("url") ?: entry.url,
+                    adUrl = entry.url
+                )
+            }
+            else entry
+        }).also {
+            readEntryRepo.load(it)
+        }
     }
 
     /** 最新のエントリーリストを読み込む(Category指定) */

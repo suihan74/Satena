@@ -97,6 +97,9 @@
     <!-- 設定表示用 -->
     <string name="entries_tab_maintain">位置を維持</string>
 
+    <!-- エントリ項目 -->
+    <string name="entry_item_ad">広告</string>
+
     <!-- 検索タイプ -->
     <string name="search_type_tag">タグ</string>
     <string name="search_type_title">タイトル</string>
@@ -151,6 +154,7 @@
     <string name="entry_action_read">読んだ</string>
     <string name="entry_action_delete_bookmark">ブックマークを削除する</string>
     <string name="entry_action_ignore">このサイトを非表示にする</string>
+    <string name="entry_action_ignore_ads">はてなの広告を非表示にする</string>
 
     <string name="msg_show_page_failed">アプリ内ブラウザを開けませんでした。外部アプリを開きます</string>
     <string name="msg_show_page_in_browser_failed">外部アプリを開けませんでした</string>

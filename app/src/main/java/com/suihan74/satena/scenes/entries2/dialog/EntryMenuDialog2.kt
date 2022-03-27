@@ -128,6 +128,10 @@ class EntryMenuDialog2 : DialogFragment() {
         viewModel.ignore = l
     }
 
+    fun setIgnoreAdsListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
+        viewModel.ignoreAds = l
+    }
+
     fun setReadLaterListener(l: DialogListener<Entry>?) = lifecycleScope.launchWhenCreated {
         viewModel.readLater = l
     }
@@ -176,6 +180,9 @@ class EntryMenuDialog2 : DialogFragment() {
         /** 非表示設定を追加 */
         var ignore : DialogListener<Entry>? = null
 
+        /** 広告を非表示にする */
+        var ignoreAds : DialogListener<Entry>? = null
+
         /** あとで読む */
         var readLater : DialogListener<Entry>? = null
 
@@ -217,6 +224,9 @@ class EntryMenuDialog2 : DialogFragment() {
             }
 
             add(R.string.entry_action_ignore, ignore)
+            if (entry.adUrl != null) {
+                add(R.string.entry_action_ignore_ads, ignoreAds)
+            }
 
             if (HatenaClient.signedIn() && entry.bookmarkedData == null) {
                 add(R.string.entry_action_read_later, readLater)
