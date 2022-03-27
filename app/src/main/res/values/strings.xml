@@ -154,6 +154,7 @@
     <string name="entry_action_read">読んだ</string>
     <string name="entry_action_delete_bookmark">ブックマークを削除する</string>
     <string name="entry_action_ignore">このサイトを非表示にする</string>
+    <string name="entry_action_ignore_ads">はてなの広告を非表示にする</string>
 
     <string name="msg_show_page_failed">アプリ内ブラウザを開けませんでした。外部アプリを開きます</string>
     <string name="msg_show_page_in_browser_failed">外部アプリを開けませんでした</string>
