@@ -17,7 +17,6 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
-import com.suihan74.satena.modifySpecificUrls
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
@@ -277,9 +276,8 @@ class EntriesRepository(
         // 広告エントリURLをリダイレクト先のURLに解決する
         return (entries.map { entry ->
             if (entry.url.startsWith("https://ad-hatena.com/hatena")) {
-                val modifiedUrl = modifySpecificUrls(entry.url) ?: entry.url
                 entry.copy(
-                    url = modifiedUrl,
+                    url = Uri.parse(entry.url).getQueryParameter("url") ?: entry.url,
                     adUrl = entry.url
                 )
             }
