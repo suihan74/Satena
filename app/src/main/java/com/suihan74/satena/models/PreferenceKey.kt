@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.Gravity
 import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.models.browser.ReadEntryLifetime
+import com.suihan74.satena.models.readEntry.ReadEntryBehavior
 import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
@@ -21,7 +22,7 @@ import java.lang.reflect.Type
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
-@SharedPreferencesKey(fileName = "default", version = 10, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 11, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -200,7 +201,11 @@ enum class PreferenceKey(
     ENTRY_SEARCH_SETTING(typeInfo<EntrySearchSetting>(), EntrySearchSetting()),
 
     /** 既読マークを表示するかどうか */
+    @Deprecated("migrated to ENTRY_READ_BEHAVIOR")
     ENTRY_DISPLAY_READ_MARK(typeInfo<Boolean>(), true),
+
+    /** 既読マークを表示するかどうか */
+    ENTRY_READ_BEHAVIOR(typeInfo<Int>(), ReadEntryBehavior.DISPLAY_READ_MARK.int),
 
     /** どうしたら既読マークがつくか */
     ENTRY_READ_MARK_CONDITION(typeInfo<Int>(), ReadEntryCondition.BOOKMARKS_OR_PAGE_SHOWN.int),
@@ -576,6 +581,27 @@ object PreferenceKeyMigration {
                 putInt(PreferenceKey.ENTRY_EDGE_SINGLE_TAP_ACTION, prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
                 putInt(PreferenceKey.ENTRY_EDGE_LONG_TAP_ACTION, prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
                 putInt(PreferenceKey.ENTRY_EDGE_MULTIPLE_TAP_ACTION, prefs.getInt(PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION))
+            }
+        }.onFailure {
+            prefs.edit {}
+        }
+    }
+
+    /**
+     * v10 -> v11
+     *
+     * 「既読マークの表示/非表示」設定を「既読エントリの振舞い」に変更
+     */
+    private fun migrateFromVersion10(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        runCatching {
+            prefs.edit {
+                val readMarkVisible = prefs.getBoolean(PreferenceKey.ENTRY_DISPLAY_READ_MARK)
+                val behavior =
+                    if (readMarkVisible) ReadEntryBehavior.DISPLAY_READ_MARK
+                    else ReadEntryBehavior.NONE
+                putInt(PreferenceKey.ENTRY_READ_BEHAVIOR, behavior.int)
+                remove(PreferenceKey.ENTRY_DISPLAY_READ_MARK)
             }
         }.onFailure {
             prefs.edit {}

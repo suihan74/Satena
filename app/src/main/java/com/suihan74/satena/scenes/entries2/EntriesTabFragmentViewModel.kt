@@ -12,6 +12,8 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntrySearchSetting
 import com.suihan74.satena.models.ExtraScrollingAlignment
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -21,6 +23,7 @@ import kotlinx.coroutines.withContext
 
 class EntriesTabFragmentViewModel(
     private val repository: EntriesRepository,
+    private val readEntriesRepository: ReadEntriesRepository,
     val category: Category,
     private val tabPosition: Int
 ) :
@@ -66,20 +69,17 @@ class EntriesTabFragmentViewModel(
         }
 
     /** フィルタされていない全エントリリスト */
-    private val entries by lazy {
-        MutableLiveData<List<Entry>>()
-    }
-
-    /** タブで表示するエントリリスト */
-    val filteredEntries by lazy {
-        MutableLiveData<List<Entry>>().also { filtered ->
-            entries.observeForever {
-                viewModelScope.launch {
-                    filtered.postValue(repository.filterEntries(it ?: emptyList()))
-                }
+    private val entries = MutableLiveData<List<Entry>>().apply {
+        observeForever {
+            viewModelScope.launch(Dispatchers.Default) {
+                _filteredEntries.postValue(repository.filterEntries(it ?: emptyList()))
             }
         }
     }
+
+    /** タブで表示するエントリリスト */
+    val filteredEntries : LiveData<List<Entry>> = MutableLiveData()
+    private val _filteredEntries = filteredEntries as MutableLiveData<List<Entry>>
 
     /** フィルタされていない全通知リスト */
     val notices by lazy {
@@ -105,6 +105,18 @@ class EntriesTabFragmentViewModel(
 
     // ------ //
 
+    init {
+        viewModelScope.launch {
+            readEntriesRepository.readEntryBehavior
+                .onEach {
+                    filter()
+                }
+                .launchIn(viewModelScope)
+        }
+    }
+
+    // ------ //
+
     fun onResume() {
         extraScrollBarVisibility.value = extraScrollingAlignment != ExtraScrollingAlignment.NONE
     }
@@ -112,13 +124,15 @@ class EntriesTabFragmentViewModel(
     // ------ //
 
     /** フィルタリングを任意で実行する */
-    fun filter() = viewModelScope.launch(Dispatchers.Main) {
-        entries.value = entries.value
+    fun filter() = viewModelScope.launch(Dispatchers.Default) {
+        _filteredEntries.postValue(repository.filterEntries(entries.value.orEmpty()))
     }
 
     /** 指定したエントリを削除する */
-    fun delete(entry: Entry) {
-        entries.value = entries.value?.filterNot { it.same(entry) }
+    fun delete(entry: Entry) = viewModelScope.launch(Dispatchers.Default) {
+        entries.postValue(
+            entries.value?.filterNot { it.same(entry) }
+        )
     }
 
     /** 指定したエントリのブクマを削除する */

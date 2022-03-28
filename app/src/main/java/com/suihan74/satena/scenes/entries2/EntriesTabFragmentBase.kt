@@ -53,6 +53,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
             EntriesTabFragmentViewModel(
                 activityViewModel.repository,
+                SatenaApplication.instance.readEntriesRepository,
                 category,
                 tabPosition
             )

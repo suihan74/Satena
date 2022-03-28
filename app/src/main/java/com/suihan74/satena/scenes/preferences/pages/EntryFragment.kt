@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.annotation.StringRes
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.R
@@ -14,6 +15,7 @@ import com.suihan74.satena.dialogs.NumberPickerDialog
 import com.suihan74.satena.dialogs.TextInputDialogFragment
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.browser.ReadEntryLifetime
+import com.suihan74.satena.models.readEntry.ReadEntryBehavior
 import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.scenes.entries2.CategoriesMode
 import com.suihan74.satena.scenes.entries2.ExtraBottomItemsAlignment
@@ -30,6 +32,8 @@ import com.suihan74.utilities.extensions.and
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 /**
@@ -165,10 +169,8 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         EntriesHistoryKey.MAX_SIZE
     )
 
-    /** 既読マークを表示するか否か */
-    private val displayReadMark = createLiveData<Boolean>(
-        PreferenceKey.ENTRY_DISPLAY_READ_MARK
-    )
+    /** エントリ既読エントリの振舞い */
+    private val readEntryBehavior = readEntriesRepo.readEntryBehavior
 
     /** 既読マークをつける条件 */
     private val readMarkCondition = readEntriesRepo.readEntryCondition
@@ -215,12 +217,10 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         entryReadActionType.observe(owner, observerForOnlyUpdates {
             load(fragment)
         })
-        displayReadMark.observe(owner, observerForOnlyUpdates {
-            viewModelScope.launch {
-                readEntriesRepo.setDisplaying(it)
-            }
+        // 既読エントリの振舞い
+        readEntryBehavior.onEach {
             load(fragment)
-        })
+        }.launchIn(fragment.lifecycleScope)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -376,8 +376,16 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager = fragmentManager
             )
         }
-        addPrefToggleItem(fragment, displayReadMark, R.string.pref_entries_display_read_mark_desc)
-        if (displayReadMark.value == true) {
+
+        addPrefItem(fragment, readEntryBehavior, R.string.pref_entries_display_read_mark_desc) {
+            openEnumSelectionDialog(
+                ReadEntryBehavior.values(),
+                readEntryBehavior,
+                R.string.pref_entries_display_read_mark_desc,
+                fragmentManager
+            )
+        }
+        if (readEntryBehavior.value != ReadEntryBehavior.NONE) {
             addPrefItem(fragment, readMarkCondition, R.string.pref_entries_read_mark_condition_desc) {
                 openReadEntryConditionSelectionDialog(fragmentManager)
             }

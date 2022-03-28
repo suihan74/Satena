@@ -3,6 +3,7 @@ package com.suihan74.satena.scenes.entries2
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.readEntry.ReadEntryBehavior
 import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.models.readEntry.ReadEntryDao
 import com.suihan74.utilities.SafeSharedPreferences
@@ -18,17 +19,29 @@ class ReadEntriesRepository(
 ) {
     /** ロード済みの既読エントリID */
     val readEntryIds : StateFlow<Set<Long>> = MutableStateFlow(emptySet())
-    private val _readEntryIds
-        get() = readEntryIds as MutableStateFlow<Set<Long>>
+    private val _readEntryIds = readEntryIds as MutableStateFlow<Set<Long>>
 
     private val readEntryIdsCache = HashSet<Long>()
 
     /** 既読マークを表示するか否か */
     val displaying : StateFlow<Boolean> = MutableStateFlow(
-        prefs.getBoolean(PreferenceKey.ENTRY_DISPLAY_READ_MARK)
+        prefs.getInt(PreferenceKey.ENTRY_READ_BEHAVIOR) != ReadEntryBehavior.NONE.int
     )
-    private val _displaying
-        get() = displaying as MutableStateFlow<Boolean>
+    private val _displaying = displaying as MutableStateFlow<Boolean>
+
+    /** 既読エントリの振舞い */
+    val readEntryBehavior = MutableStateFlow(
+        ReadEntryBehavior.fromInt(
+            prefs.getInt(PreferenceKey.ENTRY_READ_BEHAVIOR)
+        )
+    ).apply {
+        onEach {
+            prefs.edit {
+                putInt(PreferenceKey.ENTRY_READ_BEHAVIOR, it.int)
+            }
+            setBehavior(it)
+        }.launchIn(SatenaApplication.instance.coroutineScope)
+    }
 
     /** 既読マークをつけるタイミング */
     val readEntryCondition = MutableStateFlow(
@@ -81,11 +94,8 @@ class ReadEntriesRepository(
         }
     }
 
-    suspend fun setDisplaying(enabled: Boolean) {
-        if (enabled == displaying.value) return
-        prefs.edit {
-            putBoolean(PreferenceKey.ENTRY_DISPLAY_READ_MARK, enabled)
-        }
+    private suspend fun setBehavior(behavior: ReadEntryBehavior) {
+        val enabled = behavior != ReadEntryBehavior.NONE
         _displaying.emit(enabled)
         _readEntryIds.emit(
             if (enabled) readEntryIdsCache

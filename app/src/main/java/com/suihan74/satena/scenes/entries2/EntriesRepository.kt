@@ -17,6 +17,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.readEntry.ReadEntryBehavior
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
@@ -775,9 +776,20 @@ class EntriesRepository(
 
     /** エントリをフィルタリングする */
     suspend fun filterEntries(entries: List<Entry>) : List<Entry> = withContext(Dispatchers.IO) {
-        return@withContext entries.filterNot { entry ->
-            ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.isMatched(entry) } == true
+        when (readEntryRepo.readEntryBehavior.value) {
+            ReadEntryBehavior.HIDE_ENTRY -> {
+                val ids = readEntryIds.value
+                entries.filterNot { entry ->
+                    ids.contains(entry.id) ||
+                    ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.isMatched(entry) } == true
+                }
+            }
+
+            else -> entries.filterNot { entry ->
+                ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.isMatched(entry) } == true
+            }
         }
+
     }
 
     /** アプリ内アップデートを使用する */

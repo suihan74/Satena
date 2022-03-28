@@ -348,12 +348,18 @@
     <string name="pref_entries_menu_tap_guard_desc">メニュー表示中に他の操作をできないようにする</string>
     <string name="pref_entries_hiding_toolbar_by_scrolling_desc">スクロールでツールバーを隠す</string>
     <string name="pref_entries_history_max_size_desc">ブクマ閲覧履歴の最大保存数</string>
-    <string name="pref_entries_display_read_mark_desc">既読マークを表示する</string>
+    <string name="pref_entries_display_read_mark_desc">既読エントリの振舞い</string>
     <string name="pref_entries_read_mark_lifetime_desc">既読情報の保持期間</string>
     <string name="pref_entries_change_home_by_long_tapping_desc">タブ長押しでホームカテゴリ・初期タブを変更する</string>
 
-    <string name="pref_entries_read_mark_condition_desc">既読マークをつけるタイミング</string>
-    <string name="entries_read_mark_condition_none">つけない</string>
+    <!-- ReadEntryBehavior -->
+    <string name="read_entry_behavior_none">何もしない</string>
+    <string name="read_entry_behavior_display_read_mark">既読マークを表示</string>
+    <string name="read_entry_behavior_hide_entry">既読エントリを非表示</string>
+
+    <!-- ReadMarkCondition -->
+    <string name="pref_entries_read_mark_condition_desc">エントリを既読にするタイミング</string>
+    <string name="entries_read_mark_condition_none">既読にしない</string>
     <string name="entries_read_mark_condition_bookmarks_shown">ブクマ画面を開いたとき</string>
     <string name="entries_read_mark_condition_page_shown">Webページを開いたとき</string>
     <string name="entries_read_mark_condition_bookmarks_or_page_shown">ブクマ画面 or Webページを開いたとき</string>
