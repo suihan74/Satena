@@ -84,16 +84,17 @@ private fun Context.startInnerBrowser(remoteViews: RemoteViews, url: String) = C
 
 fun Context.startInnerBrowser(entry: Entry) {
     val prefs = SafeSharedPreferences.create<PreferenceKey>(this)
+    val url = entry.adUrl ?: entry.url
     when (BrowserMode.fromId(prefs.getInt(PreferenceKey.BROWSER_MODE))) {
         BrowserMode.CUSTOM_TABS_INTENT ->
             startInnerBrowser(
                 BrowserToolbarManager.createRemoteViews(this),
-                entry.url
+                url
             )
 
         BrowserMode.WEB_VIEW -> {
             val intent = Intent(this, BrowserActivity::class.java).apply {
-                putExtra(BrowserActivity.EXTRA_URL, entry.url)
+                putExtra(BrowserActivity.EXTRA_URL, url)
             }
             startActivity(intent)
         }
