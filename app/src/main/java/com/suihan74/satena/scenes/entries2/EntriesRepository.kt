@@ -775,19 +775,20 @@ class EntriesRepository(
     // ------ //
 
     /** エントリをフィルタリングする */
-    suspend fun filterEntries(entries: List<Entry>) : List<Entry> = withContext(Dispatchers.IO) {
+    suspend fun filterEntries(category: Category, entries: List<Entry>) : List<Entry> = withContext(Dispatchers.IO) {
+        fun filterIgnoredEntries(entry: Entry) : Boolean =
+            ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.isMatched(entry) } == true
+
         when (readEntryRepo.readEntryBehavior.value) {
             ReadEntryBehavior.HIDE_ENTRY -> {
-                val ids = readEntryIds.value
-                entries.filterNot { entry ->
-                    ids.contains(entry.id) ||
-                    ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.isMatched(entry) } == true
+                val targetCategory = readEntryRepo.categoriesHidingReadEntries.value.contains(category)
+                if (targetCategory) {
+                    val ids = readEntryIds.value
+                    entries.filterNot { entry -> ids.contains(entry.id) || filterIgnoredEntries(entry) }
                 }
+                else entries.filterNot { entry -> filterIgnoredEntries(entry) }
             }
-
-            else -> entries.filterNot { entry ->
-                ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.isMatched(entry) } == true
-            }
+            else -> entries.filterNot { entry -> filterIgnoredEntries(entry) }
         }
 
     }

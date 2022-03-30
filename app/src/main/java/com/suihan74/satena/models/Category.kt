@@ -16,6 +16,7 @@ enum class Category(
     val hasIssues: Boolean = false,
     val displayInList: Boolean = true,
     val willBeHome : Boolean = true,
+    val canHideReadEntries : Boolean = true
 ) : TextIdContainer {
     All(id = 0,
         R.string.category_all,
@@ -117,7 +118,8 @@ enum class Category(
         displayInList = false,
         requireSignedIn = true,
         singleColumns = true,
-        willBeHome = false
+        willBeHome = false,
+        canHideReadEntries = false
     ),
 
     Search(id = 13,
@@ -140,7 +142,8 @@ enum class Category(
         displayInList = false,
         requireSignedIn = true,
         singleColumns = true,
-        willBeHome = false
+        willBeHome = false,
+        canHideReadEntries = false
     ),
 
     Memorial15th(id = 21,
@@ -154,14 +157,16 @@ enum class Category(
         R.string.category_maintenance,
         R.drawable.ic_category_maintenance,
         requireSignedIn = false,
-        singleColumns = true
+        singleColumns = true,
+        canHideReadEntries = false
     ),
 
     History(id = 17,
         R.string.category_history,
         R.drawable.ic_category_history,
         requireSignedIn = false,
-        singleColumns = true
+        singleColumns = true,
+        canHideReadEntries = false
     ),
 
     Site(id = 18,
@@ -185,7 +190,8 @@ enum class Category(
         requireSignedIn = true,
         singleColumns = true,
         displayInList = false,
-        willBeHome = false
+        willBeHome = false,
+        canHideReadEntries = false
     )
 
     ;

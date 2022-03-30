@@ -72,7 +72,7 @@ class EntriesTabFragmentViewModel(
     private val entries = MutableLiveData<List<Entry>>().apply {
         observeForever {
             viewModelScope.launch(Dispatchers.Default) {
-                _filteredEntries.postValue(repository.filterEntries(it ?: emptyList()))
+                _filteredEntries.postValue(repository.filterEntries(category, it ?: emptyList()))
             }
         }
     }
@@ -125,7 +125,7 @@ class EntriesTabFragmentViewModel(
 
     /** フィルタリングを任意で実行する */
     fun filter() = viewModelScope.launch(Dispatchers.Default) {
-        _filteredEntries.postValue(repository.filterEntries(entries.value.orEmpty()))
+        _filteredEntries.postValue(repository.filterEntries(category, entries.value.orEmpty()))
     }
 
     /** 指定したエントリを削除する */

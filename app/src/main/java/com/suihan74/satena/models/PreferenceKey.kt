@@ -213,6 +213,11 @@ enum class PreferenceKey(
     /** 既読マーク情報の寿命（日） */
     ENTRY_READ_MARK_LIFETIME(typeInfo<Int>(), ReadEntryLifetime.MONTH_3.days),
 
+    /** 既読エントリを非表示にしないカテゴリ(PreferenceKey.ENTRY_READ_BEHAVIOR -> ReadEntryBehavior.HIDE_ENTRYのとき) */
+    ENTRY_CATEGORIES_WITHOUT_HIDING_READ_ENTRY(typeInfo<List<Int>>(), Category.values().filterNot {
+        it == Category.MyBookmarks || it == Category.History || it == Category.Stars
+    }.map { it.id }),
+
     ////////////////////////////////////////
     // bookmarks
     ////////////////////////////////////////

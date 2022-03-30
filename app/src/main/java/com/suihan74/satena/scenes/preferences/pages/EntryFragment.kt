@@ -175,6 +175,9 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     /** 既読マークをつける条件 */
     private val readMarkCondition = readEntriesRepo.readEntryCondition
 
+    /** 既読エントリを隠すカテゴリ */
+    private val categoriesHidingReadEntries = readEntriesRepo.categoriesHidingReadEntries
+
     /** 既読情報の寿命 */
     private val readMarkLifetime = createLiveDataEnum(
         PreferenceKey.ENTRY_READ_MARK_LIFETIME,
@@ -385,6 +388,11 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
+        if (readEntryBehavior.value == ReadEntryBehavior.HIDE_ENTRY) {
+            addButton(fragment, R.string.pref_entries_categories_hiding_read_entries_desc) {
+                openCategoriesHidingReadEntriesSelectionDialog(fragmentManager)
+            }
+        }
         if (readEntryBehavior.value != ReadEntryBehavior.NONE) {
             addPrefItem(fragment, readMarkCondition, R.string.pref_entries_read_mark_condition_desc) {
                 openReadEntryConditionSelectionDialog(fragmentManager)
@@ -521,6 +529,27 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                     code = code or (values[i].int and states[i])
                 }
                 readMarkCondition.value = ReadEntryCondition.fromInt(code)
+            }
+            .show(fragmentManager, null)
+    }
+
+    /**
+     * 既読エントリを非表示にするカテゴリ選択ダイアログ
+     */
+    private fun openCategoriesHidingReadEntriesSelectionDialog(fragmentManager: FragmentManager) {
+        val prevCategories = categoriesHidingReadEntries.value
+        val values = Category.values().filter { it.canHideReadEntries }
+        val labelIds = values.map { it.textId }
+        val states = values.map { prevCategories.contains(it) }.toBooleanArray()
+
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_entries_categories_hiding_read_entries_desc)
+            .setMultipleChoiceItems(labelIds, states) { _, which, state ->
+                states[which] = state
+            }
+            .setPositiveButton(R.string.dialog_ok) {
+                categoriesHidingReadEntries.value =
+                    values.filterIndexed { i, _ -> states[i] }
             }
             .show(fragmentManager, null)
     }
