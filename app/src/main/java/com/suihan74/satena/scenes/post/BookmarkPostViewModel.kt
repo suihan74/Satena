@@ -238,24 +238,14 @@ class BookmarkPostViewModel(
     private suspend fun postBookmarkImpl(context: Context) = withContext(Dispatchers.Main) {
         nowLoading.value = true
 
-        val result = runCatching {
+        runCatching {
             repository.postBookmark(editData)
-        }
-
-        if (result.isSuccess) {
-            val bookmarkResult = result.getOrNull()
-
-            if (bookmarkResult == null) {
-                context.showToast(R.string.msg_post_bookmark_failed)
-                Log.e("postBookmark", "invalid result")
-            }
-            else {
-                context.showToast(R.string.msg_post_bookmark_succeeded)
-                onPostSuccess?.invoke(bookmarkResult)
-            }
-        }
-        else {
-            when (val e = result.exceptionOrNull()) {
+        }.onSuccess { (bookmarkResult, err) ->
+            if (err == null) context.showToast(R.string.msg_post_bookmark_succeeded)
+            else context.showToast(R.string.msg_post_mastodon_failed)
+            onPostSuccess?.invoke(bookmarkResult)
+        }.onFailure { e ->
+            when (e) {
                 is MultiplePostException ->
                     context.showToast(R.string.msg_multiple_post)
 

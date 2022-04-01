@@ -2,7 +2,10 @@ package com.suihan74.satena.scenes.post
 
 import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
-import com.suihan74.hatenaLib.*
+import com.suihan74.hatenaLib.BookmarkResult
+import com.suihan74.hatenaLib.ConnectionFailureException
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.Tag
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
@@ -376,7 +379,9 @@ class BookmarkPostRepository(
      * @throws ConnectionFailureException はてなへのブクマ投稿処理中での失敗
      * @throws PostingMastodonFailureException Mastodonへの投稿失敗(ブクマは自体は成功)
      */
-    suspend fun postBookmark(editData: BookmarkEditData) : BookmarkResult = withContext(Dispatchers.Default) {
+    suspend fun postBookmark(
+        editData: BookmarkEditData
+    ) : Pair<BookmarkResult, PostingMastodonFailureException?> = withContext(Dispatchers.Default) {
         val entry = editData.entry
 
         // URLスキームがhttpかhttpsであることを確認する
@@ -397,27 +402,29 @@ class BookmarkPostRepository(
         // 連携状態を保存
         saveStates()
 
-        val result = runCatching {
-            accountLoader.signInHatena(reSignIn = false) ?: throw AccountLoader.HatenaSignInException()
-            accountLoader.client.postBookmarkAsync(
-                url = entry.url,
-                comment = editData.comment,
-                postTwitter = editData.postTwitter,
-                postFacebook = editData.postFacebook,
-                isPrivate = editData.private
-            ).await()
-        }
-
-        val bookmarkResult = result.getOrElse {
-            throw ConnectionFailureException(cause = result.exceptionOrNull())
-        }
+        val bookmarkResult =
+            runCatching {
+                accountLoader.signInHatena(reSignIn = false) ?: throw AccountLoader.HatenaSignInException()
+                accountLoader.client.postBookmarkAsync(
+                    url = entry.url,
+                    comment = editData.comment,
+                    postTwitter = editData.postTwitter,
+                    postFacebook = editData.postFacebook,
+                    isPrivate = editData.private
+                ).await()
+            }.onFailure {
+                throw ConnectionFailureException(cause = it)
+            }.getOrThrow()
 
         SatenaApplication.instance.actionsRepository.emitUpdatingEntry(
-            entry.copy(bookmarkedData = bookmarkResult)
+            entry.copy(
+                bookmarkedData = bookmarkResult.copy(starsCount = entry.bookmarkedData?.starsCount)
+            )
         )
 
+        var mstdnException : PostingMastodonFailureException? = null
         if (editData.postMastodon) {
-            val mstdnResult = runCatching {
+            runCatching {
                 val visibility = TootVisibility.fromOrdinal(prefs.getInt(PreferenceKey.MASTODON_POST_VISIBILITY))
 
                 val status =
@@ -434,14 +441,12 @@ class BookmarkPostRepository(
                     mediaIds = null,
                     spoilerText = null
                 ).execute()
-            }
-
-            if (mstdnResult.isFailure) {
-                throw PostingMastodonFailureException(cause = result.exceptionOrNull())
+            }.onFailure {
+                mstdnException = PostingMastodonFailureException(cause = it)
             }
         }
 
-        return@withContext bookmarkResult
+        return@withContext bookmarkResult to mstdnException
     }
 
     /** タグ部分の終了位置を取得する */
