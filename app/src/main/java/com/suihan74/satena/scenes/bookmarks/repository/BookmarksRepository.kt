@@ -731,9 +731,10 @@ class BookmarksRepository(
             link = result.permalink,
             tags = result.tags,
             timestamp = result.timestamp,
-            starCount = result.starsCount?.map {
-                StarCount(it.color, it.count)
-            } ?: emptyList()
+            starCount =
+                result.starsCount?.map { StarCount(it.color, it.count) }
+                    ?: getStarsEntry(result).value?.counts
+                    ?: emptyList()
         )
         updateBookmark(bookmark)
     }
@@ -1085,16 +1086,24 @@ class BookmarksRepository(
      *
      * @throws TaskFailureException
      */
-    suspend fun getStarsEntry(bookmark: Bookmark, forceUpdate: Boolean = false) : LiveData<StarsEntry> {
-        val result = runCatching {
+    suspend fun getStarsEntry(bookmark: Bookmark, forceUpdate: Boolean = false) : LiveData<StarsEntry> =
+        runCatching {
             getStarsEntry(bookmark.getBookmarkUrl(entry.value!!), forceUpdate)
-        }
-        .onFailure {
+        }.onFailure {
             throw TaskFailureException(cause = it)
-        }
+        }.getOrThrow()
 
-        return result.getOrNull()!!
-    }
+    /**
+     * 対象ブクマにつけられたスター情報を取得する
+     *
+     * @throws TaskFailureException
+     */
+    suspend fun getStarsEntry(bookmark: BookmarkResult, forceUpdate: Boolean = false) : LiveData<StarsEntry> =
+        runCatching {
+            getStarsEntry(bookmark.permalink, forceUpdate)
+        }.onFailure {
+            throw TaskFailureException(cause = it)
+        }.getOrThrow()
 
     private val bookmarkCounts = HashMap<String, LiveData<Int>>()
     private val bookmarkCountsMutex = Mutex()

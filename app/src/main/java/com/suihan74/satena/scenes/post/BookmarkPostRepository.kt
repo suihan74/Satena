@@ -417,9 +417,7 @@ class BookmarkPostRepository(
             }.getOrThrow()
 
         SatenaApplication.instance.actionsRepository.emitUpdatingEntry(
-            entry.copy(
-                bookmarkedData = bookmarkResult.copy(starsCount = entry.bookmarkedData?.starsCount)
-            )
+            entry.copy(bookmarkedData = bookmarkResult)
         )
 
         var mstdnException : PostingMastodonFailureException? = null

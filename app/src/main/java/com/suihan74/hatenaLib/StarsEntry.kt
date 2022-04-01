@@ -16,9 +16,22 @@ data class StarsEntry (
         else -> coloredStars?.find { it.color == color } ?.starsCount ?: 0
     }
 
+    /** BookmarkWithStarCount用のカラーごとのスター数リストを生成 */
+    @delegate:Transient
+    val counts : List<StarCount> by lazy {
+        HashMap<StarColor, Int>().apply {
+            for (c in StarColor.values()) { put(c, 0) }
+            if (coloredStars != null) {
+                for (s in coloredStars) {
+                    put(s.color, this[s.color]?.plus(s.starsCount) ?: 0)
+                }
+            }
+            put(StarColor.Yellow, stars.sumOf { it.count })
+        }.map { StarCount(it.key, it.value) }
+    }
 
     @delegate:Transient
-    val totalStarsCount: Int by lazy {
+    val totalStarsCount : Int by lazy {
         stars.sumOf { it.count } + (coloredStars?.sumOf { it.starsCount } ?: 0)
     }
 
