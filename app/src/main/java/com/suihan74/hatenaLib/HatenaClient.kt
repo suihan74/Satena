@@ -28,7 +28,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 /////////////////////////////////////////////////////////////////
@@ -569,7 +568,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     title = title,
                     description = description,
                     count = count,
-                    url = entryUrl,
+                    _url = entryUrl,
                     rootUrl = rootUrl,
                     faviconUrl = faviconUrl,
                     _imageUrl = imageUrl,
@@ -778,7 +777,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     title = title,
                     description = description,
                     count = 0,
-                    url = actualUrl,
+                    _url = actualUrl,
                     rootUrl = getTemporaryRootUrl(uri),
                     faviconUrl = getFaviconUrl(uri),
                     _imageUrl = imageUrl)
@@ -790,7 +789,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     title = "",
                     description = "",
                     count = 0,
-                    url = url,
+                    _url = url,
                     rootUrl = getTemporaryRootUrl(uri),
                     faviconUrl = getFaviconUrl(uri),
                     _imageUrl = "")
@@ -903,7 +902,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 title = title,
                 description = description,
                 count = count,
-                url = entryUrl,
+                _url = entryUrl,
                 rootUrl = rootUrl,
                 faviconUrl = faviconUrl,
                 _imageUrl = imageUrl,
@@ -1813,7 +1812,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                         title = title,
                         description = description,
                         count = bookmarkCount,
-                        url = entryUrl,
+                        _url = entryUrl,
                         rootUrl = rootUrl,
                         faviconUrl = faviconUrl,
                         _imageUrl = imageUrl,

@@ -43,7 +43,7 @@ data class UserEntry (
         title = entry.title,
         description = entry.content,
         count = entry.totalBookmarks,
-        url = entry.url,
+        _url = entry.url,
         faviconUrl = entry.faviconUrl ?: "",
         _imageUrl = entry.imageUrl ?: "",
         rootUrl = Uri.parse(entry.url).let { it.scheme!! + "://" + it.host!! },
