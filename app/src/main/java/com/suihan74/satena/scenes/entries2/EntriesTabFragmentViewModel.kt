@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 
 class EntriesTabFragmentViewModel(
     private val repository: EntriesRepository,
-    private val readEntriesRepository: ReadEntriesRepository,
+    readEntriesRepository: ReadEntriesRepository,
     val category: Category,
     private val tabPosition: Int
 ) :
@@ -106,13 +106,9 @@ class EntriesTabFragmentViewModel(
     // ------ //
 
     init {
-        viewModelScope.launch {
-            readEntriesRepository.readEntryBehavior
-                .onEach {
-                    filter()
-                }
-                .launchIn(viewModelScope)
-        }
+        readEntriesRepository.readEntryBehavior
+            .onEach { filter() }
+            .launchIn(viewModelScope)
     }
 
     // ------ //
@@ -124,36 +120,45 @@ class EntriesTabFragmentViewModel(
     // ------ //
 
     /** フィルタリングを任意で実行する */
-    fun filter() = viewModelScope.launch(Dispatchers.Default) {
-        _filteredEntries.postValue(repository.filterEntries(category, entries.value.orEmpty()))
+    suspend fun filter() = withContext(Dispatchers.Default) {
+        _filteredEntries.postValue(
+            repository.filterEntries(category, entries.value.orEmpty())
+        )
     }
 
     /** 指定したエントリを削除する */
-    fun delete(entry: Entry) = viewModelScope.launch(Dispatchers.Default) {
+    suspend fun delete(entry: Entry) = withContext(Dispatchers.Default) {
         entries.postValue(
             entries.value?.filterNot { it.same(entry) }
         )
     }
 
     /** 指定したエントリのブクマを削除する */
-    fun deleteBookmark(entry: Entry) {
+    suspend fun deleteBookmark(entry: Entry) = withContext(Dispatchers.Default) {
         if (category == Category.MyBookmarks) {
             delete(entry)
         }
         else {
-            entries.value = entries.value?.map {
-                if (it.same(entry)) it.copy(bookmarkedData = null)
-                else it
-            }
+            entries.postValue(
+                entries.value?.map {
+                    if (it.same(entry)) it.copy(bookmarkedData = null)
+                    else it
+                }
+            )
         }
     }
 
     /** エントリに付けたブクマを更新する */
-    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
-        entries.value = entries.value?.map {
-            if (it.same(entry)) it.copy(bookmarkedData = bookmarkResult)
-            else it
-        }
+    suspend fun updateBookmark(
+        entry: Entry,
+        bookmarkResult: BookmarkResult?
+    ) = withContext(Dispatchers.Default) {
+        entries.postValue(
+            entries.value?.map {
+                if (it.same(entry)) it.copy(bookmarkedData = bookmarkResult)
+                else it
+            }
+        )
     }
 
     /** 表示項目リストを初期化 */

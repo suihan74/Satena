@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.hatenaLib.BookmarkResult
@@ -24,6 +25,7 @@ import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     companion object {
@@ -205,17 +207,23 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     /** リストを再構成する(取得はしない) */
     fun refreshList() {
-        viewModel.filter()
+        viewModel.viewModelScope.launch {
+            viewModel.filter()
+        }
     }
 
     /** エントリに付けたブクマを削除 */
     fun removeBookmark(entry: Entry) {
-        viewModel.deleteBookmark(entry)
+        viewModel.viewModelScope.launch {
+            viewModel.deleteBookmark(entry)
+        }
     }
 
     /** エントリに付けたブクマを更新する */
     fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
-        viewModel.updateBookmark(entry, bookmarkResult)
+        viewModel.viewModelScope.launch {
+            viewModel.updateBookmark(entry, bookmarkResult)
+        }
     }
 
     /** リストを上端までスクロールする */
