@@ -12,6 +12,7 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntrySearchSetting
 import com.suihan74.satena.models.ExtraScrollingAlignment
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -72,7 +73,7 @@ class EntriesTabFragmentViewModel(
     private val entries = MutableLiveData<List<Entry>>().apply {
         observeForever {
             viewModelScope.launch(Dispatchers.Default) {
-                _filteredEntries.postValue(repository.filterEntries(category, it ?: emptyList()))
+                filter(it.orEmpty())
             }
         }
     }
@@ -106,7 +107,7 @@ class EntriesTabFragmentViewModel(
     // ------ //
 
     init {
-        readEntriesRepository.readEntryBehavior
+        combine(readEntriesRepository.readEntryBehavior, readEntriesRepository.categoriesHidingReadEntries, ::Pair)
             .onEach { filter() }
             .launchIn(viewModelScope)
     }
@@ -120,9 +121,13 @@ class EntriesTabFragmentViewModel(
     // ------ //
 
     /** フィルタリングを任意で実行する */
-    suspend fun filter() = withContext(Dispatchers.Default) {
+    suspend fun filter() {
+        filter(entries.value.orEmpty())
+    }
+
+    private suspend fun filter(entries: List<Entry>) = withContext(Dispatchers.Default) {
         _filteredEntries.postValue(
-            repository.filterEntries(category, entries.value.orEmpty())
+            repository.filterEntries(category, entries)
         )
     }
 
