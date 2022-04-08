@@ -18,6 +18,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.entries2.dialog.ExcludedEntriesDialog
+import com.suihan74.satena.scenes.entries2.dialog.ExcludedEntry
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
@@ -224,6 +226,13 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
         viewModel.viewModelScope.launch {
             viewModel.updateBookmark(entry, bookmarkResult)
         }
+    }
+
+    /** 非表示対象のエントリ一覧 */
+    fun openExcludedEntriesDialog() {
+        ExcludedEntriesDialog.createInstance(
+            viewModel.excludedEntries.value.orEmpty().map { ExcludedEntry(it) }
+        ).show(childFragmentManager, null)
     }
 
     /** リストを上端までスクロールする */

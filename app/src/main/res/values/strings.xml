@@ -708,6 +708,10 @@
     <string name="entry_search_date_mode_recent">直近N日間</string>
     <string name="entry_search_date_mode_calendar">カレンダーで指定</string>
 
+    <!-- 非表示エントリ一覧ダイアログ -->
+    <string name="entry_excluded_entries_title">非表示エントリ</string>
+    <string name="entry_excluded_entries_desc">非表示対象のエントリ一覧</string>
+
     <!-- 通知 -->
     <string name="notification_channel_name">通知</string>
     <string name="notice_title">通知</string>

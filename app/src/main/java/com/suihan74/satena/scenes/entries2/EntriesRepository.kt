@@ -763,22 +763,42 @@ class EntriesRepository(
     // ------ //
 
     /** エントリをフィルタリングする */
-    suspend fun filterEntries(category: Category, entries: List<Entry>) : List<Entry> = withContext(Dispatchers.IO) {
+    suspend fun filterEntries(
+        category: Category,
+        entries: List<Entry>
+    ) : Pair<List<Entry>, List<Entry>> = withContext(Dispatchers.IO) {
         fun filterIgnoredEntries(entry: Entry) : Boolean =
             ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.isMatched(entry) } == true
+
+        val activeEntries = ArrayList<Entry>()
+        val inactiveEntries = ArrayList<Entry>()
 
         when (readEntryRepo.readEntryBehavior.value) {
             ReadEntryBehavior.HIDE_ENTRY -> {
                 val targetCategory = readEntryRepo.categoriesHidingReadEntries.value.contains(category)
                 if (targetCategory) {
                     val ids = readEntryIds.value
-                    entries.filterNot { entry -> ids.contains(entry.id) || filterIgnoredEntries(entry) }
+                    for (entry in entries) {
+                        if (ids.contains(entry.id) || filterIgnoredEntries(entry)) inactiveEntries.add(entry)
+                        else activeEntries.add(entry)
+                    }
                 }
-                else entries.filterNot { entry -> filterIgnoredEntries(entry) }
+                else {
+                    for (entry in entries) {
+                        if (filterIgnoredEntries(entry)) inactiveEntries.add(entry)
+                        else activeEntries.add(entry)
+                    }
+                }
             }
-            else -> entries.filterNot { entry -> filterIgnoredEntries(entry) }
+            else -> {
+                for (entry in entries) {
+                    if (filterIgnoredEntries(entry)) inactiveEntries.add(entry)
+                    else activeEntries.add(entry)
+                }
+            }
         }
 
+        activeEntries to inactiveEntries
     }
 
     /** アプリ内アップデートを使用する */

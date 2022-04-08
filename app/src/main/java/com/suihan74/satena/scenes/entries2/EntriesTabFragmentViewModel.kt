@@ -82,6 +82,10 @@ class EntriesTabFragmentViewModel(
     val filteredEntries : LiveData<List<Entry>> = MutableLiveData()
     private val _filteredEntries = filteredEntries as MutableLiveData<List<Entry>>
 
+    /** フィルタによって除外されたエントリ */
+    val excludedEntries : LiveData<List<Entry>> = MutableLiveData()
+    private val _excludedEntries = excludedEntries as MutableLiveData<List<Entry>>
+
     /** フィルタされていない全通知リスト */
     val notices by lazy {
         MutableLiveData<List<Notice>>()
@@ -126,9 +130,9 @@ class EntriesTabFragmentViewModel(
     }
 
     private suspend fun filter(entries: List<Entry>) = withContext(Dispatchers.Default) {
-        _filteredEntries.postValue(
-            repository.filterEntries(category, entries)
-        )
+        val (activeEntries, inactiveEntries) = repository.filterEntries(category, entries)
+        _filteredEntries.postValue(activeEntries)
+        _excludedEntries.postValue(inactiveEntries)
     }
 
     /** 指定したエントリを削除する */

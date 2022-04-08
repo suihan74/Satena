@@ -137,4 +137,7 @@ abstract class EntriesFragment : Fragment() {
 
     /** 一番上までスクロール */
     abstract fun scrollToTop()
+
+    /** 非表示対象のエントリ一覧を表示する */
+    abstract fun openExcludedEntriesDialog()
 }

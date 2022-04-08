@@ -206,6 +206,8 @@ class EntriesViewModel(
 
         UserBottomItem.INNER_BROWSER -> activity.startInnerBrowser()
 
+        UserBottomItem.EXCLUDED_ENTRIES -> activity.openExcludedEntriesDialog()
+
         UserBottomItem.SEARCH -> showCategory(activity, Category.Search)
 
         UserBottomItem.HOME -> showCategory(activity, homeCategory)

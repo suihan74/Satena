@@ -471,6 +471,11 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         showAppBar()
     }
 
+    fun openExcludedEntriesDialog() {
+        supportFragmentManager.get<EntriesFragment>()
+            ?.openExcludedEntriesDialog()
+    }
+
     /** エントリリストを再構成する */
     fun refreshLists() {
         val fragment = supportFragmentManager.get<EntriesFragment>()

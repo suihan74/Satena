@@ -39,6 +39,11 @@ enum class UserBottomItem(
         longClickable = true
     ),
 
+    EXCLUDED_ENTRIES(10,
+        R.drawable.ic_preferences_filters,
+        R.string.entry_excluded_entries_desc
+    ),
+
     SEARCH(3,
         R.drawable.ic_baseline_search,
         R.string.category_search
