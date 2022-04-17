@@ -5,10 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.BindingAdapter
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.*
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -25,6 +22,8 @@ import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.sync.Mutex
 
 /** フィルタで除外されたエントリ一覧を表示する画面 */
@@ -83,8 +82,24 @@ class ExcludedEntriesDialog : BottomSheetDialogFragment() {
 
         // ------ //
 
+        init {
+            readEntriesRepo.readEntryIds.onEach { readIds ->
+                val list = _excludedEntriesAdapter?.currentList.orEmpty()
+                _excludedEntriesAdapter?.submitList(
+                    list.map {
+                        it.copy(read = readIds.contains(it.entry.id))
+                    }
+                )
+            }.launchIn(viewModelScope)
+        }
+
+        // ------ //
+
+        private var _excludedEntriesAdapter : ExcludedEntriesAdapter? = null
+
         fun excludedEntriesAdapter(fragment: ExcludedEntriesDialog) =
             ExcludedEntriesAdapter(fragment.viewLifecycleOwner).apply {
+                _excludedEntriesAdapter = this
                 multipleClickDuration = entriesRepo.entryMultipleClickDuration
                 setOnClickListener { entry ->
                     entryMenuActions.invokeEntryClickedAction(
@@ -128,7 +143,7 @@ class ExcludedEntriesDialog : BottomSheetDialogFragment() {
                     )
                     true
                 }
-                setOnMultipleClickListener { entry, i ->
+                setOnMultipleClickEdgeListener { entry, i ->
                     entryMenuActions.invokeEntryClickedAction(
                         fragment.requireActivity(),
                         entry,
@@ -143,7 +158,8 @@ class ExcludedEntriesDialog : BottomSheetDialogFragment() {
 // ------ //
 
 data class ExcludedEntry(
-    val entry : Entry
+    val entry : Entry,
+    val read : Boolean
 )
 
 // ------ //
@@ -198,7 +214,7 @@ class ExcludedEntriesAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.binding.also {
-            holder.initialize(currentList[position].entry, false, lifecycleOwner)
+            holder.initialize(currentList[position], lifecycleOwner)
         }
     }
 
@@ -209,11 +225,12 @@ class ExcludedEntriesAdapter(
         private val clickGuardRefreshDelay = 800L
         private var consideringMultipleClickedEntry : Entry? = null
 
-        fun initialize(entry: Entry?, read: Boolean?, lifecycleOwner: LifecycleOwner) {
+        fun initialize(excludedEntry: ExcludedEntry?, lifecycleOwner: LifecycleOwner) {
             this.clickCount = 0
 
-            binding.entry = entry
-            binding.read = read ?: false
+            val entry = excludedEntry?.entry
+            binding.entry = excludedEntry?.entry
+            binding.read = excludedEntry?.read ?: false
             binding.lifecycleOwner = lifecycleOwner
 
             // 項目 タップ/長押し/複数回
@@ -294,7 +311,7 @@ class ExcludedEntriesAdapter(
             oldItem.entry.id == newItem.entry.id
 
         override fun areContentsTheSame(oldItem: ExcludedEntry, newItem: ExcludedEntry) =
-            oldItem.entry.same(newItem.entry)
+            oldItem.entry.same(newItem.entry) && oldItem.read == newItem.read
     }
 }
 

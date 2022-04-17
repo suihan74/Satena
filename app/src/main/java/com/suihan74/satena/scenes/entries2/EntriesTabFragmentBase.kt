@@ -231,7 +231,10 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     /** 非表示対象のエントリ一覧 */
     fun openExcludedEntriesDialog() {
         ExcludedEntriesDialog.createInstance(
-            viewModel.excludedEntries.value.orEmpty().map { ExcludedEntry(it) }
+            viewModel.excludedEntries.value.orEmpty()
+                .map {
+                    ExcludedEntry(it, activityViewModel.repository.readEntryIds.value.contains(it.id))
+                }
         ).show(childFragmentManager, null)
     }
 
