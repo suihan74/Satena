@@ -1,5 +1,6 @@
 package com.suihan74.satena.scenes.preferences
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
@@ -8,7 +9,6 @@ import androidx.annotation.StringRes
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -86,7 +86,6 @@ class PreferencesAdapter(
      * 汎用的なボタン
      */
     open class Button(
-        val fragment: Fragment,
         val text: LiveData<CharSequence>,
         val subText: LiveData<CharSequence>? = null,
         val textColor: LiveData<Int>? = null,
@@ -142,14 +141,12 @@ class PreferencesAdapter(
  */
 open class PreferenceItem<T> : PreferencesAdapter.Item {
     constructor(
-        fragment: Fragment,
         liveData: LiveData<T>,
         @StringRes titleId: Int,
         @StringRes suffixId: Int? = null,
         onLongClick: (()->Unit)? = null,
         onClick: (()->Unit)? = null
     ) {
-        this.fragment = fragment
         this.liveData = liveData
         this.titleId = titleId
         this.suffixId = suffixId
@@ -158,14 +155,12 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
     }
 
     constructor(
-        fragment: Fragment,
         flow: Flow<T>,
         @StringRes titleId: Int,
         @StringRes suffixId: Int? = null,
         onLongClick: (()->Unit)? = null,
         onClick: (()->Unit)? = null
     ) {
-        this.fragment = fragment
         this.liveData = flow.asLiveData()
         this.titleId = titleId
         this.suffixId = suffixId
@@ -174,8 +169,6 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
     }
 
     // ------ //
-
-    val fragment: Fragment
 
     val liveData: LiveData<T>
 
@@ -221,12 +214,11 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
  * 設定用トグルボタン
  */
 open class PreferenceToggleItem(
-    fragment: Fragment,
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
     @StringRes suffixId: Int? = null,
     action: ((Boolean)->Unit)? = null
-) : PreferenceItem<Boolean>(fragment, liveData, titleId, suffixId, null, {
+) : PreferenceItem<Boolean>(liveData, titleId, suffixId, null, {
     action?.invoke(liveData.value == true) ?: run {
         liveData.value = liveData.value != true
     }
@@ -245,7 +237,7 @@ fun MutableList<PreferencesAdapter.Item>.addSection(
  * ボタン(非設定項目)を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addButton(
-    fragment: Fragment,
+    context: Context,
     @StringRes textId: Int,
     @StringRes subTextId: Int? = null,
     @ColorRes textColorId: Int? = null,
@@ -253,9 +245,7 @@ fun MutableList<PreferencesAdapter.Item>.addButton(
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) : Boolean {
-    val context = fragment.requireContext()
     val button = PreferencesAdapter.Button(
-        fragment = fragment,
         text = MutableLiveData(context.getText(textId)),
         subText = subTextId?.let { MutableLiveData(context.getText(it)) },
         textColor = textColorId?.let { MutableLiveData(context.getColor(it)) },
@@ -270,7 +260,6 @@ fun MutableList<PreferencesAdapter.Item>.addButton(
  * ボタン(非設定項目)を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addButton(
-    fragment: Fragment,
     text: LiveData<CharSequence>,
     subText: LiveData<CharSequence>? = null,
     textColor: LiveData<Int>? = null,
@@ -278,7 +267,6 @@ fun MutableList<PreferencesAdapter.Item>.addButton(
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) = add(PreferencesAdapter.Button(
-    fragment = fragment,
     text = text,
     subText = subText,
     textColor = textColor,
@@ -291,7 +279,7 @@ fun MutableList<PreferencesAdapter.Item>.addButton(
  * ボタン(非設定項目)を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addButton(
-    fragment: Fragment,
+    context: Context,
     text: LiveData<CharSequence>,
     subText: LiveData<CharSequence>? = null,
     textColorId: Int? = null,
@@ -299,9 +287,7 @@ fun MutableList<PreferencesAdapter.Item>.addButton(
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) : Boolean {
-    val context = fragment.requireContext()
     val button = PreferencesAdapter.Button(
-        fragment = fragment,
         text = text,
         subText = subText,
         textColor = textColorId?.let { MutableLiveData(context.getColor(it)) },
@@ -318,43 +304,39 @@ fun MutableList<PreferencesAdapter.Item>.addButton(
  * 設定項目を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addPrefItem(
-    fragment: Fragment,
     liveData: LiveData<*>,
     @StringRes titleId: Int,
     @StringRes suffixId: Int? = null,
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
-) = add(PreferenceItem(fragment, liveData, titleId, suffixId, onLongClick, onClick))
+) = add(PreferenceItem(liveData, titleId, suffixId, onLongClick, onClick))
 
 /**
  * 設定項目を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addPrefItem(
-    fragment: Fragment,
     flow: Flow<*>,
     @StringRes titleId: Int,
     @StringRes suffixId: Int? = null,
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
-) = add(PreferenceItem(fragment, flow, titleId, suffixId, onLongClick, onClick))
+) = add(PreferenceItem(flow, titleId, suffixId, onLongClick, onClick))
 
 /**
  * 真偽値をトグルする設定項目を追加する
  */
 fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
-    fragment: Fragment,
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
     @StringRes suffixId: Int? = null,
     action: ((Boolean)->Unit)? = null
-) = add(PreferenceToggleItem(fragment, liveData, titleId, suffixId, action))
+) = add(PreferenceToggleItem(liveData, titleId, suffixId, action))
 
 fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
-    fragment: Fragment,
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
     action: ((Boolean)->Unit)?
-) = add(PreferenceToggleItem(fragment, liveData, titleId, null, action))
+) = add(PreferenceToggleItem(liveData, titleId, null, action))
 
 // ------ //
 

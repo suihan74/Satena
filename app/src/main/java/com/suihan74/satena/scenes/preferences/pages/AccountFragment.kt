@@ -6,7 +6,6 @@ import android.net.Uri
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.databinding.ViewDataBinding
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
@@ -26,6 +25,7 @@ import com.suihan74.utilities.AccountLoader
 import com.suihan74.utilities.MastodonAccount
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.requireActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
@@ -37,9 +37,8 @@ import kotlinx.coroutines.withContext
  * 「アカウント」画面
  */
 class AccountFragment : ListPreferencesFragment() {
-    override val viewModel by lazy {
-        AccountViewModel(requireContext(), SatenaApplication.instance.accountLoader)
-    }
+    override val viewModel
+        get() = requireActivity<PreferencesActivity>().accountViewModel
 }
 
 // ------ //
@@ -83,35 +82,36 @@ class AccountViewModel(
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(fragment: ListPreferencesFragment): List<PreferencesAdapter.Item> = buildList {
+    override fun createList(
+        context: Context,
+        fragmentManager: FragmentManager
+    ): List<PreferencesAdapter.Item> = buildList {
         addSection(R.string.pref_accounts_service_name_hatena)
         if (accountHatena.value == null) {
-            addButton(fragment, R.string.sign_in) {
-                val activity = fragment.requireActivity() as PreferencesActivity
-                openHatenaAuthenticationActivity(activity)
+            addButton(context, R.string.sign_in) {
+                openHatenaAuthenticationActivity(context)
             }
         }
         else {
-            add(PrefItemHatenaAccount(fragment, this@AccountViewModel))
+            add(PrefItemHatenaAccount(context, fragmentManager, this@AccountViewModel))
         }
 
         // --- //
 
         addSection(R.string.pref_accounts_service_name_mastodon)
         if (accountMastodon.value == null) {
-            addButton(fragment, R.string.sign_in) {
-                val context = fragment.requireContext()
+            addButton(context, R.string.sign_in) {
                 openMastodonAuthenticationActivity(context)
             }
         }
         else {
-            add(PrefItemMastodonAccount(fragment, this@AccountViewModel))
-            addPrefItem(fragment, mastodonStatusVisibility, R.string.pref_accounts_mastodon_status_visibility_desc) {
+            add(PrefItemMastodonAccount(fragmentManager, this@AccountViewModel))
+            addPrefItem(mastodonStatusVisibility, R.string.pref_accounts_mastodon_status_visibility_desc) {
                 openEnumSelectionDialog(
                     TootVisibility.values(),
                     mastodonStatusVisibility,
                     R.string.pref_accounts_mastodon_status_visibility_desc,
-                    fragment.childFragmentManager
+                    fragmentManager
                 )
             }
         }
@@ -122,9 +122,13 @@ class AccountViewModel(
     /**
      * はてな認証画面を開く
      */
-    private fun openHatenaAuthenticationActivity(activity: PreferencesActivity) {
-        val intent = Intent(activity, HatenaAuthenticationActivity::class.java)
-        activity.hatenaAuthenticationLauncher.launch(intent)
+    private fun openHatenaAuthenticationActivity(context: Context) {
+        val intent = Intent(context, HatenaAuthenticationActivity::class.java)
+        context.alsoAs<PreferencesActivity> {
+            it.hatenaAuthenticationLauncher.launch(intent)
+        } ?: run {
+            context.startActivity(intent)
+        }
     }
 
     /**
@@ -183,7 +187,8 @@ class AccountViewModel(
      * サインイン済みのはてなアカウントボタン
      */
     class PrefItemHatenaAccount(
-        private val fragment: Fragment,
+        private val context: Context,
+        private val fragmentManager: FragmentManager,
         private val viewModel: AccountViewModel
     ) : PreferencesAdapter.Item {
         override val layoutId: Int = R.layout.listview_item_prefs_sign_in_hatena
@@ -193,11 +198,11 @@ class AccountViewModel(
                 it.vm = viewModel
 
                 it.root.setOnClickListener {
-                    viewModel.openHatenaAuthenticationActivity(fragment.requireActivity() as PreferencesActivity)
+                    viewModel.openHatenaAuthenticationActivity(context)
                 }
 
                 it.deleteButton.setOnClickListener {
-                    viewModel.openHatenaAccountDeletionDialog(fragment.childFragmentManager)
+                    viewModel.openHatenaAccountDeletionDialog(fragmentManager)
                 }
             }
         }
@@ -208,7 +213,6 @@ class AccountViewModel(
 
         override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
             old is PrefItemHatenaAccount && new is PrefItemHatenaAccount &&
-                    old.fragment == new.fragment &&
                     old.viewModel.accountHatena.value == new.viewModel.accountHatena.value
     }
 
@@ -218,7 +222,7 @@ class AccountViewModel(
      * サインイン済みのMastodonアカウントボタン
      */
     class PrefItemMastodonAccount(
-        private val fragment: Fragment,
+        private val fragmentManager: FragmentManager,
         private val viewModel: AccountViewModel
     ) : PreferencesAdapter.Item {
         override val layoutId: Int = R.layout.listview_item_prefs_sign_in_mastodon
@@ -232,7 +236,7 @@ class AccountViewModel(
                 }
 
                 it.deleteButton.setOnClickListener {
-                    viewModel.openMastodonAccountDeletionDialog(fragment.childFragmentManager)
+                    viewModel.openMastodonAccountDeletionDialog(fragmentManager)
                 }
             }
         }
@@ -243,7 +247,6 @@ class AccountViewModel(
 
         override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) =
             old is PrefItemMastodonAccount && new is PrefItemMastodonAccount &&
-                    old.fragment == new.fragment &&
                     old.viewModel.accountMastodon.value == new.viewModel.accountMastodon.value
     }
 

@@ -8,7 +8,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
-import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsPostBookmarkAccountStatesBinding
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
@@ -21,6 +20,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
+import com.suihan74.utilities.extensions.requireActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
@@ -31,12 +31,8 @@ import kotlinx.coroutines.launch
  * 「ブックマーク」画面
  */
 class BookmarkFragment : ListPreferencesFragment() {
-    override val viewModel by lazy {
-        BookmarkViewModel(
-            requireContext(),
-            SatenaApplication.instance.accountLoader
-        )
-    }
+    override val viewModel
+        get() = requireActivity<PreferencesActivity>().bookmarkViewModel
 }
 
 // ------ //
@@ -259,13 +255,14 @@ class BookmarkViewModel(
     // ------ //
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(fragment: ListPreferencesFragment): List<PreferencesAdapter.Item> = buildList {
-        val fragmentManager = fragment.childFragmentManager
-
+    override fun createList(
+        context: Context,
+        fragmentManager: FragmentManager
+    ): List<PreferencesAdapter.Item> = buildList {
         if (signedInHatena.value == true) {
             addSection(R.string.pref_bookmark_section_posting)
-            addPrefToggleItem(fragment, confirmPostBookmark, R.string.pref_bookmarks_using_post_dialog_desc)
-            addPrefItem(fragment, verticalGravity, R.string.pref_bookmarks_post_dialog_vertical_gravity_desc) {
+            addPrefToggleItem(confirmPostBookmark, R.string.pref_bookmarks_using_post_dialog_desc)
+            addPrefItem(verticalGravity, R.string.pref_bookmarks_post_dialog_vertical_gravity_desc) {
                 openEnumSelectionDialog(
                     BookmarkPostActivityGravity.values(),
                     verticalGravity,
@@ -273,7 +270,7 @@ class BookmarkViewModel(
                     fragmentManager
                 )
             }
-            addPrefToggleItem(fragment, saveAccountStates, R.string.pref_bookmarks_save_states)
+            addPrefToggleItem(saveAccountStates, R.string.pref_bookmarks_save_states)
             if (saveAccountStates.value == false) {
                 add(
                     PrefItemAccountStatesSetter(
@@ -283,7 +280,7 @@ class BookmarkViewModel(
                     )
                 )
             }
-            addPrefItem(fragment, tagsListOrder, R.string.pref_post_bookmarks_tags_list_order_desc) {
+            addPrefItem(tagsListOrder, R.string.pref_post_bookmarks_tags_list_order_desc) {
                 openEnumSelectionDialog(
                     TagsListOrder.values(),
                     tagsListOrder,
@@ -291,13 +288,13 @@ class BookmarkViewModel(
                     fragmentManager
                 )
             }
-            addPrefToggleItem(fragment, expandAddingTagsDialogByDefault, R.string.pref_post_bookmarks_expand_adding_tags_dialog_by_default_desc)
+            addPrefToggleItem(expandAddingTagsDialogByDefault, R.string.pref_post_bookmarks_expand_adding_tags_dialog_by_default_desc)
         }
 
         // --- //
 
         addSection(R.string.pref_bookmark_section_tab)
-        addPrefItem(fragment, initialTabPosition, R.string.pref_bookmarks_initial_tab_desc) {
+        addPrefItem(initialTabPosition, R.string.pref_bookmarks_initial_tab_desc) {
             openEnumSelectionDialog(
                 BookmarksTabType.values(),
                 initialTabPosition,
@@ -305,12 +302,12 @@ class BookmarkViewModel(
                 fragmentManager
             )
         }
-        addPrefToggleItem(fragment, changeHomeByLongTapping, R.string.pref_bookmarks_change_home_by_long_tapping_desc)
+        addPrefToggleItem(changeHomeByLongTapping, R.string.pref_bookmarks_change_home_by_long_tapping_desc)
 
         // --- //
 
         addSection(R.string.pref_bookmark_section_title_bar)
-        addPrefItem(fragment, titleSingleClickBehavior, R.string.pref_bookmarks_title_single_click_behavior_desc) {
+        addPrefItem(titleSingleClickBehavior, R.string.pref_bookmarks_title_single_click_behavior_desc) {
             openEnumSelectionDialog(
                 TapTitleBarAction.values(),
                 titleSingleClickBehavior,
@@ -318,7 +315,7 @@ class BookmarkViewModel(
                 fragmentManager
             )
         }
-        addPrefItem(fragment, titleLongClickBehavior, R.string.pref_bookmarks_title_long_click_behavior_desc) {
+        addPrefItem(titleLongClickBehavior, R.string.pref_bookmarks_title_long_click_behavior_desc) {
             openEnumSelectionDialog(
                 TapTitleBarAction.values(),
                 titleLongClickBehavior,
@@ -330,14 +327,14 @@ class BookmarkViewModel(
         // --- //
 
         addSection(R.string.pref_bookmark_section_behavior)
-        addPrefToggleItem(fragment, confirmPostStar, R.string.pref_bookmarks_using_post_star_dialog_desc)
-        addPrefToggleItem(fragment, useAddStarPopupMenu, R.string.pref_bookmarks_using_add_star_popup_menu_desc)
+        addPrefToggleItem(confirmPostStar, R.string.pref_bookmarks_using_post_star_dialog_desc)
+        addPrefToggleItem(useAddStarPopupMenu, R.string.pref_bookmarks_using_add_star_popup_menu_desc)
         if (useAddStarPopupMenu.value == true) {
-            addPrefToggleItem(fragment, useAddStarEdge, R.string.pref_bookmarks_using_add_star_edge_desc)
+            addPrefToggleItem(useAddStarEdge, R.string.pref_bookmarks_using_add_star_edge_desc)
         }
-        addPrefToggleItem(fragment, toggleToolbarByScrolling, R.string.pref_bookmarks_hiding_toolbar_by_scrolling)
-        addPrefToggleItem(fragment, toggleButtonsByScrolling, R.string.pref_bookmarks_hiding_buttons_with_scrolling_desc)
-        addButton(fragment, R.string.pref_pager_scroll_sensitivity_desc) {
+        addPrefToggleItem(toggleToolbarByScrolling, R.string.pref_bookmarks_hiding_toolbar_by_scrolling)
+        addPrefToggleItem(toggleButtonsByScrolling, R.string.pref_bookmarks_hiding_buttons_with_scrolling_desc)
+        addButton(context, R.string.pref_pager_scroll_sensitivity_desc) {
             SliderDialog.createInstance(
                 titleId = R.string.pref_pager_scroll_sensitivity_desc,
                 messageId = R.string.pref_pager_scroll_sensitivity_dialog_message,
@@ -349,7 +346,7 @@ class BookmarkViewModel(
             }
             .show(fragmentManager, "")
         }
-        addPrefItem(fragment, extraScrollingAlignment, R.string.pref_extra_scroll_align_desc) {
+        addPrefItem(extraScrollingAlignment, R.string.pref_extra_scroll_align_desc) {
             openEnumSelectionDialog(
                 ExtraScrollingAlignment.values(),
                 extraScrollingAlignment,
@@ -361,16 +358,16 @@ class BookmarkViewModel(
         // --- //
 
         addSection(R.string.pref_bookmark_section_ignoring)
-        addPrefToggleItem(fragment, confirmIgnoreUser, R.string.pref_bookmarks_using_ignore_user_dialog_desc)
-        addPrefToggleItem(fragment, displayMutedBookmarksInDigestTab, R.string.pref_bookmarks_showing_ignored_bookmarks_in_digest_desc)
-        addPrefToggleItem(fragment, displayMutedBookmarksInAllBookmarksTab, R.string.pref_bookmarks_showing_ignored_users_in_all_bookmarks_desc)
-        addPrefToggleItem(fragment, displayMutedBookmarksInMention, R.string.pref_bookmarks_showing_ignored_users_with_calling_desc)
-        addPrefToggleItem(fragment, displayIgnoredUsersStar, R.string.pref_bookmarks_showing_stars_of_ignored_users_desc)
+        addPrefToggleItem(confirmIgnoreUser, R.string.pref_bookmarks_using_ignore_user_dialog_desc)
+        addPrefToggleItem(displayMutedBookmarksInDigestTab, R.string.pref_bookmarks_showing_ignored_bookmarks_in_digest_desc)
+        addPrefToggleItem(displayMutedBookmarksInAllBookmarksTab, R.string.pref_bookmarks_showing_ignored_users_in_all_bookmarks_desc)
+        addPrefToggleItem(displayMutedBookmarksInMention, R.string.pref_bookmarks_showing_ignored_users_with_calling_desc)
+        addPrefToggleItem(displayIgnoredUsersStar, R.string.pref_bookmarks_showing_stars_of_ignored_users_desc)
 
         // --- //
 
         addSection(R.string.pref_bookmark_section_link)
-        addPrefItem(fragment, linkSingleTapAction, R.string.pref_bookmark_link_single_tap_action_desc) {
+        addPrefItem(linkSingleTapAction, R.string.pref_bookmark_link_single_tap_action_desc) {
             openEnumSelectionDialog(
                 TapEntryAction.values(),
                 linkSingleTapAction,
@@ -378,7 +375,7 @@ class BookmarkViewModel(
                 fragmentManager
             )
         }
-        addPrefItem(fragment, linkLongTapAction, R.string.pref_bookmark_link_long_tap_action_desc) {
+        addPrefItem(linkLongTapAction, R.string.pref_bookmark_link_long_tap_action_desc) {
             openEnumSelectionDialog(
                 TapEntryAction.values(),
                 linkLongTapAction,
@@ -390,11 +387,11 @@ class BookmarkViewModel(
         // --- //
 
         addSection(R.string.pref_bookmark_section_custom_digest)
-        addPrefToggleItem(fragment, customDigest.useCustomDigest, R.string.digest_bookmarks_use_custom_digest_desc)
+        addPrefToggleItem(customDigest.useCustomDigest, R.string.digest_bookmarks_use_custom_digest_desc)
         if (customDigest.useCustomDigest.value == true) {
-            addPrefToggleItem(fragment, customDigest.ignoreStarsByIgnoredUsers, R.string.digest_bookmarks_exclude_ignored_users_desc)
-            addPrefToggleItem(fragment, customDigest.deduplicateStars, R.string.digest_bookmarks_deduplicate_stars_desc)
-            addPrefItem(fragment, customDigest.maxNumOfElements, R.string.digest_bookmarks_max_num_of_elements_picker_title) {
+            addPrefToggleItem(customDigest.ignoreStarsByIgnoredUsers, R.string.digest_bookmarks_exclude_ignored_users_desc)
+            addPrefToggleItem(customDigest.deduplicateStars, R.string.digest_bookmarks_deduplicate_stars_desc)
+            addPrefItem(customDigest.maxNumOfElements, R.string.digest_bookmarks_max_num_of_elements_picker_title) {
                 openNumberPickerDialog(
                     customDigest.maxNumOfElements,
                     min = CustomDigestSettingsKey.MAX_NUM_OF_ELEMENTS_LOWER_BOUND,
@@ -404,7 +401,7 @@ class BookmarkViewModel(
                     fragmentManager = fragmentManager
                 )
             }
-            addPrefItem(fragment, customDigest.starsCountThreshold, R.string.digest_bookmarks_stars_count_threshold_picker_title) {
+            addPrefItem(customDigest.starsCountThreshold, R.string.digest_bookmarks_stars_count_threshold_picker_title) {
                 openNumberPickerDialog(
                     customDigest.starsCountThreshold,
                     min = CustomDigestSettingsKey.STARS_COUNT_THRESHOLD_LOWER_BOUND,

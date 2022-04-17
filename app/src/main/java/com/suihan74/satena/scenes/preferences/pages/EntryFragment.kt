@@ -30,6 +30,7 @@ import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.and
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
+import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
@@ -40,9 +41,8 @@ import kotlinx.coroutines.launch
  * 「エントリ」画面
  */
 class EntryFragment : ListPreferencesFragment() {
-    override val viewModel by lazy {
-        EntryViewModel(requireContext())
-    }
+    override val viewModel
+        get() = requireActivity<PreferencesActivity>().entryViewModel
 }
 
 // ------ //
@@ -227,15 +227,16 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(fragment: ListPreferencesFragment) = buildList {
-        val fragmentManager = fragment.childFragmentManager
-
+    override fun createList(
+        context: Context,
+        fragmentManager: FragmentManager
+    ) = buildList {
         addSection(R.string.pref_entry_section_bottom_menu)
-        addPrefToggleItem(fragment, bottomLayoutMode, R.string.pref_entries_layout_mode_desc)
+        addPrefToggleItem(bottomLayoutMode, R.string.pref_entries_layout_mode_desc)
         if (bottomLayoutMode.value == true) {
-            addPrefToggleItem(fragment, hideBottomLayoutByScroll,R.string.pref_hide_bottom_appbar_by_scrolling_desc)
+            addPrefToggleItem(hideBottomLayoutByScroll,R.string.pref_hide_bottom_appbar_by_scrolling_desc)
             add(PrefItemBottomMenuSetter(R.string.pref_bottom_bar_items_desc, this@EntryViewModel, fragmentManager))
-            addPrefItem(fragment, bottomBarButtonsGravity, R.string.pref_bottom_menu_items_gravity_desc) {
+            addPrefItem(bottomBarButtonsGravity, R.string.pref_bottom_menu_items_gravity_desc) {
                 openEnumSelectionDialog(
                     GravitySetting.values(),
                     bottomBarButtonsGravity,
@@ -243,7 +244,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                     fragmentManager
                 )
             }
-            addPrefItem(fragment, extraBottomItemsAlignment, R.string.pref_extra_bottom_items_alignment_desc) {
+            addPrefItem(extraBottomItemsAlignment, R.string.pref_extra_bottom_items_alignment_desc) {
                 openEnumSelectionDialog(
                     ExtraBottomItemsAlignment.values(),
                     extraBottomItemsAlignment,
@@ -256,7 +257,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_entry_section_click)
-        addPrefItem(fragment, singleTapAction, R.string.pref_entries_single_tap_action_desc) {
+        addPrefItem(singleTapAction, R.string.pref_entries_single_tap_action_desc) {
             openEnumSelectionDialog(
                 TapEntryAction.values(),
                 singleTapAction,
@@ -264,7 +265,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefItem(fragment, multipleTapAction, R.string.pref_entries_multiple_tap_action_desc) {
+        addPrefItem(multipleTapAction, R.string.pref_entries_multiple_tap_action_desc) {
             openEnumSelectionDialog(
                 TapEntryAction.values(),
                 multipleTapAction,
@@ -272,7 +273,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefItem(fragment, longTapAction, R.string.pref_entries_long_tap_action_desc) {
+        addPrefItem(longTapAction, R.string.pref_entries_long_tap_action_desc) {
             openEnumSelectionDialog(
                 TapEntryAction.values(),
                 longTapAction,
@@ -280,7 +281,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefItem(fragment, edgeSingleTapAction, R.string.pref_entries_edge_single_tap_action_desc) {
+        addPrefItem(edgeSingleTapAction, R.string.pref_entries_edge_single_tap_action_desc) {
             openEnumSelectionDialog(
                 TapEntryAction.values(),
                 edgeSingleTapAction,
@@ -288,7 +289,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefItem(fragment, edgeMultipleTapAction, R.string.pref_entries_edge_multiple_tap_action_desc) {
+        addPrefItem(edgeMultipleTapAction, R.string.pref_entries_edge_multiple_tap_action_desc) {
             openEnumSelectionDialog(
                 TapEntryAction.values(),
                 edgeMultipleTapAction,
@@ -296,7 +297,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefItem(fragment, edgeLongTapAction, R.string.pref_entries_edge_long_tap_action_desc) {
+        addPrefItem(edgeLongTapAction, R.string.pref_entries_edge_long_tap_action_desc) {
             openEnumSelectionDialog(
                 TapEntryAction.values(),
                 edgeLongTapAction,
@@ -305,14 +306,14 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             )
         }
 
-        addPrefItem(fragment, multipleTapDuration, R.string.pref_entries_multiple_tap_duration_desc, R.string.pref_entries_multiple_tap_duration_unit) {
+        addPrefItem(multipleTapDuration, R.string.pref_entries_multiple_tap_duration_desc, R.string.pref_entries_multiple_tap_duration_unit) {
             openMultipleTapDurationDialog(fragmentManager)
         }
 
         // --- //
 
         addSection(R.string.pref_entry_section_category)
-        addPrefItem(fragment, homeCategory, R.string.home_category_desc) {
+        addPrefItem(homeCategory, R.string.home_category_desc) {
             val categories = (
                 if (HatenaClient.signedIn()) Category.valuesWithSignedIn()
                 else Category.valuesWithoutSignedIn()
@@ -325,13 +326,13 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addButton(fragment, R.string.pref_entries_default_tabs_desc) {
-            fragment.childFragmentManager.beginTransaction()
+        addButton(context, R.string.pref_entries_default_tabs_desc) {
+            fragmentManager.beginTransaction()
                 .replace(R.id.main_layout, EntriesDefaultTabsFragment.createInstance())
                 .commit()
         }
-        addPrefToggleItem(fragment, changeHomeByLongTappingTab, R.string.pref_entries_change_home_by_long_tapping_desc)
-        addPrefItem(fragment, categoriesMode, R.string.pref_entries_categories_mode_desc) {
+        addPrefToggleItem(changeHomeByLongTappingTab, R.string.pref_entries_change_home_by_long_tapping_desc)
+        addPrefItem(categoriesMode, R.string.pref_entries_categories_mode_desc) {
             openEnumSelectionDialog(
                 CategoriesMode.values(),
                 categoriesMode,
@@ -343,9 +344,9 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_entry_section_behavior)
-        addPrefToggleItem(fragment, menuTapGuard, R.string.pref_entries_menu_tap_guard_desc)
-        addPrefToggleItem(fragment, hideToolbarWithScroll, R.string.pref_entries_hiding_toolbar_by_scrolling_desc)
-        addButton(fragment, R.string.pref_pager_scroll_sensitivity_desc) {
+        addPrefToggleItem(menuTapGuard, R.string.pref_entries_menu_tap_guard_desc)
+        addPrefToggleItem(hideToolbarWithScroll, R.string.pref_entries_hiding_toolbar_by_scrolling_desc)
+        addButton(context, R.string.pref_pager_scroll_sensitivity_desc) {
             SliderDialog.createInstance(
                 titleId = R.string.pref_pager_scroll_sensitivity_desc,
                 messageId = R.string.pref_pager_scroll_sensitivity_dialog_message,
@@ -357,7 +358,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             }
                 .show(fragmentManager, "")
         }
-        addPrefItem(fragment, extraScrollingAlignment, R.string.pref_extra_scroll_align_desc) {
+        addPrefItem(extraScrollingAlignment, R.string.pref_extra_scroll_align_desc) {
             openEnumSelectionDialog(
                 ExtraScrollingAlignment.values(),
                 extraScrollingAlignment,
@@ -369,7 +370,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_entry_section_history)
-        addPrefItem(fragment, historyMaxSize, R.string.pref_entries_history_max_size_desc, R.string.pref_entries_history_max_size_text) {
+        addPrefItem(historyMaxSize, R.string.pref_entries_history_max_size_desc, R.string.pref_entries_history_max_size_text) {
             openNumberPickerDialog(
                 historyMaxSize,
                 min = EntriesHistoryKey.MAX_SIZE_LOWER_BOUND,
@@ -380,7 +381,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             )
         }
 
-        addPrefItem(fragment, readEntryBehavior, R.string.pref_entries_display_read_mark_desc) {
+        addPrefItem(readEntryBehavior, R.string.pref_entries_display_read_mark_desc) {
             openEnumSelectionDialog(
                 ReadEntryBehavior.values(),
                 readEntryBehavior,
@@ -389,16 +390,16 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             )
         }
         if (readEntryBehavior.value == ReadEntryBehavior.HIDE_ENTRY) {
-            addButton(fragment, R.string.pref_entries_categories_hiding_read_entries_desc) {
+            addButton(context, R.string.pref_entries_categories_hiding_read_entries_desc) {
                 openCategoriesHidingReadEntriesSelectionDialog(fragmentManager)
             }
         }
         if (readEntryBehavior.value != ReadEntryBehavior.NONE) {
-            addPrefItem(fragment, readMarkCondition, R.string.pref_entries_read_mark_condition_desc) {
+            addPrefItem(readMarkCondition, R.string.pref_entries_read_mark_condition_desc) {
                 openReadEntryConditionSelectionDialog(fragmentManager)
             }
 
-            addPrefItem(fragment, readMarkLifetime, R.string.pref_entries_read_mark_lifetime_desc) {
+            addPrefItem(readMarkLifetime, R.string.pref_entries_read_mark_lifetime_desc) {
                 openEnumSelectionDialog(
                     ReadEntryLifetime.values(),
                     readMarkLifetime,
@@ -411,8 +412,8 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_entry_section_read_later)
-        addPrefToggleItem(fragment, privateReadLater, R.string.pref_entries_private_read_later_desc)
-        addPrefItem(fragment, entryReadActionType, R.string.pref_entries_read_action_type_desc) {
+        addPrefToggleItem(privateReadLater, R.string.pref_entries_private_read_later_desc)
+        addPrefItem(entryReadActionType, R.string.pref_entries_read_action_type_desc) {
             openEnumSelectionDialog(
                 EntryReadActionType.values(),
                 entryReadActionType,
@@ -421,7 +422,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             )
         }
         if (entryReadActionType.value == EntryReadActionType.BOILERPLATE) {
-            addPrefItem(fragment, entryReadActionBoilerPlate, R.string.pref_entries_read_action_boilerplate_desc) {
+            addPrefItem(entryReadActionBoilerPlate, R.string.pref_entries_read_action_boilerplate_desc) {
                 openReadActionBoilerPlateEditingDialog(fragmentManager)
             }
         }

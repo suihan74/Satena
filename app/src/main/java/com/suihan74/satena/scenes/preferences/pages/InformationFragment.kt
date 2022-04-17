@@ -5,37 +5,39 @@ import android.content.Intent
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.databinding.ViewDataBinding
+import androidx.fragment.app.FragmentManager
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemAppInfoBinding
 import com.suihan74.satena.dialogs.ReleaseNotesDialogFragment
+import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesAdapter
 import com.suihan74.satena.scenes.preferences.addButton
 import com.suihan74.satena.scenes.preferences.addSection
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.requireActivity
 import java.time.LocalDateTime
 
 /**
  * 「情報」画面
  */
 class InformationFragment : ListPreferencesFragment() {
-    override val viewModel by lazy {
-        InformationViewModel(requireContext())
-    }
+    override val viewModel
+        get() = requireActivity<PreferencesActivity>().informationViewModel
 }
 
 // ------ //
 
 class InformationViewModel(context: Context) : ListPreferencesViewModel(context) {
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(fragment: ListPreferencesFragment) = buildList {
-        val fragmentManager = fragment.childFragmentManager
-        val context = fragment.requireContext()
-
+    override fun createList(
+        context: Context,
+        fragmentManager: FragmentManager
+    ) = buildList {
         addSection(R.string.pref_information_section_app)
         add(AppInfoHeaderItem())
-        addButton(fragment, R.string.pref_information_open_play_store_desc) {
+        addButton(context, R.string.pref_information_open_play_store_desc) {
             kotlin.runCatching {
                 val intent = Intent(Intent.ACTION_VIEW).apply {
                     data = Uri.parse(context.getString(R.string.play_store))
@@ -44,7 +46,7 @@ class InformationViewModel(context: Context) : ListPreferencesViewModel(context)
                 context.startActivity(intent)
             }
         }
-        addButton(fragment, R.string.pref_information_release_notes_desc) {
+        addButton(context, R.string.pref_information_release_notes_desc) {
             ReleaseNotesDialogFragment.createInstance()
                 .show(fragmentManager, null)
         }
@@ -52,10 +54,10 @@ class InformationViewModel(context: Context) : ListPreferencesViewModel(context)
         // --- //
 
         addSection(R.string.pref_information_section_developer)
-        addButton(fragment, R.string.developer) { openUrl(context, R.string.developer_hatena) }
-        addButton(fragment, R.string.pref_information_developer_website) { openUrl(context, R.string.developer_website) }
-        addButton(fragment, R.string.pref_information_developer_twitter) { openUrl(context, R.string.developer_twitter) }
-        addButton(fragment, R.string.pref_information_developer_email) {
+        addButton(context, R.string.developer) { openUrl(context, R.string.developer_hatena) }
+        addButton(context, R.string.pref_information_developer_website) { openUrl(context, R.string.developer_website) }
+        addButton(context, R.string.pref_information_developer_twitter) { openUrl(context, R.string.developer_twitter) }
+        addButton(context, R.string.pref_information_developer_email) {
             kotlin.runCatching {
                 val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")).also {
                     it.putExtra(
@@ -70,9 +72,9 @@ class InformationViewModel(context: Context) : ListPreferencesViewModel(context)
         // --- //
 
         addSection(R.string.pref_information_section_info)
-        addButton(fragment, R.string.pref_information_hatena_rules) { openUrl(context, R.string.hatena_rule) }
-        addButton(fragment, R.string.pref_information_privacy_policy) { openUrl(context, R.string.privacy_policy) }
-        addButton(fragment, R.string.pref_information_licenses_desc) {
+        addButton(context, R.string.pref_information_hatena_rules) { openUrl(context, R.string.hatena_rule) }
+        addButton(context, R.string.pref_information_privacy_policy) { openUrl(context, R.string.privacy_policy) }
+        addButton(context, R.string.pref_information_licenses_desc) {
             kotlin.runCatching {
                 val intent = Intent(context, OssLicensesMenuActivity::class.java).apply {
                     putExtra("title", "Licenses")

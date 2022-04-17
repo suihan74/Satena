@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.Menu
 import android.view.View
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,11 +27,14 @@ import com.suihan74.satena.scenes.preferences.backup.Credentials
 import com.suihan74.satena.scenes.preferences.ignored.FollowingUsersViewModel
 import com.suihan74.satena.scenes.preferences.ignored.PreferencesIgnoredUsersViewModel
 import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
+import com.suihan74.satena.scenes.preferences.pages.*
 import com.suihan74.satena.scenes.tools.RestartActivity
-import com.suihan74.utilities.*
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getObjectExtra
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,22 +62,30 @@ class PreferencesActivity : AppCompatActivity() {
 
     val viewModel by lazyProvideViewModel { ActivityViewModel() }
 
+    val informationViewModel by lazyProvideViewModel { InformationViewModel(this) }
+
+    val accountViewModel by lazyProvideViewModel { AccountViewModel(this, SatenaApplication.instance.accountLoader) }
+
+    val generalViewModel by lazyProvideViewModel { GeneralViewModel(this) }
+
+    val entryViewModel by lazyProvideViewModel { EntryViewModel(this) }
+
+    val bookmarkViewModel by lazyProvideViewModel { BookmarkViewModel(this, SatenaApplication.instance.accountLoader) }
+
+    val browserViewModel by lazyProvideViewModel { BrowserViewModel(this) }
+
     /** ユーザー関係のリポジトリ */
     private val userRelationRepository by lazy {
         UserRelationRepository(SatenaApplication.instance.accountLoader)
     }
 
-    private val followingsViewModelDelegate = lazyProvideViewModel {
-        FollowingUsersViewModel(userRelationRepository)
-    }
-    /** フォロー/フォロワー用ViewModel */
-    val followingsViewModel by followingsViewModelDelegate
-
-    private val ignoredUsersViewModelDelegate = lazyProvideViewModel {
-        PreferencesIgnoredUsersViewModel(userRelationRepository)
-    }
+    private val ignoredUsersViewModelDelegate = lazyProvideViewModel { PreferencesIgnoredUsersViewModel(userRelationRepository) }
     /** 非表示ユーザー用ViewModel */
     val ignoredUsersViewModel by ignoredUsersViewModelDelegate
+
+    private val followingsViewModelDelegate = lazyProvideViewModel { FollowingUsersViewModel(userRelationRepository) }
+    /** フォロー/フォロワー用ViewModel */
+    val followingsViewModel by followingsViewModelDelegate
 
     // ------ //
 
@@ -133,6 +145,11 @@ class PreferencesActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.preferences_activity, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
     // ------- //
 
     private fun initializeContents() {
@@ -142,9 +159,9 @@ class PreferencesActivity : AppCompatActivity() {
                 binding.preferencesViewPager.setCurrentItem(it.ordinal, false)
             }
 
-            viewModel.currentTab.observe(this, {
+            viewModel.currentTab.observe(this) {
                 adapter.selectTab(it)
-            })
+            }
         }
 
         // ページャ
