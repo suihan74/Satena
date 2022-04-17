@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
@@ -13,19 +12,20 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.suihan74.hatenaLib.Entry
-import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentDialogExcludedEntriesBinding
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
 import com.suihan74.satena.scenes.entries2.*
-import com.suihan74.utilities.Listener
+import com.suihan74.utilities.ItemClickedListener
+import com.suihan74.utilities.ItemLongClickedListener
+import com.suihan74.utilities.ItemMultipleClickedListener
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.lazyProvideViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
 
 /** フィルタで除外されたエントリ一覧を表示する画面 */
 class ExcludedEntriesDialog : BottomSheetDialogFragment() {
@@ -69,15 +69,6 @@ class ExcludedEntriesDialog : BottomSheetDialogFragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        dialog.alsoAs<BottomSheetDialog> { d ->
-            d.findViewById<FrameLayout>(R.id.design_bottom_sheet)?.let { bottomSheet ->
-                BottomSheetBehavior.from(bottomSheet)
-                    .setState(BottomSheetBehavior.STATE_EXPANDED)
-            }
-        }
-    }
 
     // ------ //
 
@@ -94,6 +85,7 @@ class ExcludedEntriesDialog : BottomSheetDialogFragment() {
 
         fun excludedEntriesAdapter(fragment: ExcludedEntriesDialog) =
             ExcludedEntriesAdapter(fragment.viewLifecycleOwner).apply {
+                multipleClickDuration = entriesRepo.entryMultipleClickDuration
                 setOnClickListener { entry ->
                     entryMenuActions.invokeEntryClickedAction(
                         fragment.requireActivity(),
@@ -107,6 +99,15 @@ class ExcludedEntriesDialog : BottomSheetDialogFragment() {
                         fragment.requireActivity(),
                         entry,
                         entriesRepo.entryLongClickedAction,
+                        fragment.childFragmentManager
+                    )
+                    true
+                }
+                setOnMultipleClickListener { entry, i ->
+                    entryMenuActions.invokeEntryClickedAction(
+                        fragment.requireActivity(),
+                        entry,
+                        entriesRepo.entryMultipleClickedAction,
                         fragment.childFragmentManager
                     )
                 }
@@ -123,6 +124,15 @@ class ExcludedEntriesDialog : BottomSheetDialogFragment() {
                         fragment.requireActivity(),
                         entry,
                         entriesRepo.entryEdgeLongClickedAction,
+                        fragment.childFragmentManager
+                    )
+                    true
+                }
+                setOnMultipleClickListener { entry, i ->
+                    entryMenuActions.invokeEntryClickedAction(
+                        fragment.requireActivity(),
+                        entry,
+                        entriesRepo.entryEdgeMultipleClickedAction,
                         fragment.childFragmentManager
                     )
                 }
@@ -142,25 +152,41 @@ class ExcludedEntriesAdapter(
     private val lifecycleOwner: LifecycleOwner
 ) : ListAdapter<ExcludedEntry, ExcludedEntriesAdapter.ViewHolder>(DiffCallback()) {
 
-    private var onClickListener : Listener<Entry>? = null
-    private var onLongClickListener : Listener<Entry>? = null
-    private var onClickEdgeListener : Listener<Entry>? = null
-    private var onLongClickEdgeListener : Listener<Entry>? = null
+    /** クリック処理済みフラグ（複数回タップされないようにする） */
+    private val clickLock = Mutex()
 
-    fun setOnClickListener(listener : Listener<Entry>?) {
+    /** クリック回数判定時間 */
+    var multipleClickDuration: Long = 0L
+
+    private var onClickListener : ItemClickedListener<Entry>? = null
+    private var onLongClickListener : ItemLongClickedListener<Entry>? = null
+    private var onMultipleClickListener : ItemMultipleClickedListener<Entry>? = null
+    private var onClickEdgeListener : ItemClickedListener<Entry>? = null
+    private var onLongClickEdgeListener : ItemLongClickedListener<Entry>? = null
+    private var onMultipleClickEdgeListener : ItemMultipleClickedListener<Entry>? = null
+
+    fun setOnClickListener(listener : ItemClickedListener<Entry>?) {
         onClickListener = listener
     }
 
-    fun setOnLongClickListener(listener : Listener<Entry>?) {
+    fun setOnLongClickListener(listener : ItemLongClickedListener<Entry>?) {
         onLongClickListener = listener
     }
 
-    fun setOnClickEdgeListener(listener: Listener<Entry>?) {
+    fun setOnMultipleClickListener(listener : ItemMultipleClickedListener<Entry>?) {
+        onMultipleClickListener = listener
+    }
+
+    fun setOnClickEdgeListener(listener: ItemClickedListener<Entry>?) {
         onClickEdgeListener = listener
     }
 
-    fun setOnLongClickEdgeListener(listener: Listener<Entry>?) {
+    fun setOnLongClickEdgeListener(listener: ItemLongClickedListener<Entry>?) {
         onLongClickEdgeListener = listener
+    }
+
+    fun setOnMultipleClickEdgeListener(listener : ItemMultipleClickedListener<Entry>?) {
+        onMultipleClickEdgeListener = listener
     }
 
     // ------ //
@@ -172,23 +198,94 @@ class ExcludedEntriesAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.binding.also {
-            val entry = currentList[position].entry
-            it.entry = entry
-            it.lifecycleOwner = lifecycleOwner
-
-            it.root.setOnClickListener {
-                onClickListener?.invoke(entry)
-            }
-            it.root.setOnLongClickListener {
-                onLongClickListener?.invoke(entry)
-                onLongClickListener != null
-            }
+            holder.initialize(currentList[position].entry, false, lifecycleOwner)
         }
     }
 
     // ------ //
 
-    class ViewHolder(val binding : ListviewItemEntries2Binding) : RecyclerView.ViewHolder(binding.root) {}
+    inner class ViewHolder(val binding : ListviewItemEntries2Binding) : RecyclerView.ViewHolder(binding.root) {
+        private var clickCount = 0
+        private val clickGuardRefreshDelay = 800L
+        private var consideringMultipleClickedEntry : Entry? = null
+
+        fun initialize(entry: Entry?, read: Boolean?, lifecycleOwner: LifecycleOwner) {
+            this.clickCount = 0
+
+            binding.entry = entry
+            binding.read = read ?: false
+            binding.lifecycleOwner = lifecycleOwner
+
+            // 項目 タップ/長押し/複数回
+            itemView.setOnClickListener(clickListener(entry, onClickListener, onMultipleClickListener))
+            itemView.setOnLongClickListener(longClickListener(entry, onLongClickListener))
+
+            // 右端 タップ/長押し/複数回
+            binding.edgeClickArea.setOnClickListener(clickListener(entry, onClickEdgeListener, onMultipleClickEdgeListener))
+            binding.edgeClickArea.setOnLongClickListener(longClickListener(entry, onLongClickEdgeListener))
+        }
+
+        private fun clickListener(
+            entry: Entry?,
+            singleClickAction: ItemClickedListener<Entry>?,
+            multipleClickAction: ItemMultipleClickedListener<Entry>?
+        ) : (View)->Unit = body@ {
+            if (entry == null) return@body
+            if (multipleClickDuration == 0L) {
+                if (clickLock.tryLock()) {
+                    lifecycleOwner.lifecycleScope.launchWhenResumed {
+                        try {
+                            singleClickAction?.invoke(entry)
+                            delay(clickGuardRefreshDelay)
+                        }
+                        finally {
+                            runCatching { clickLock.unlock() }
+                        }
+                    }
+                }
+            }
+            else {
+                considerMultipleClick(entry, singleClickAction, multipleClickAction)
+            }
+        }
+
+        private fun longClickListener(
+            entry: Entry?,
+            longClickAction: ItemLongClickedListener<Entry>?
+        ) : (View)->Boolean = {
+            if (entry != null) longClickAction?.invoke(entry) ?: false
+            else true
+        }
+
+        private fun considerMultipleClick(
+            entry: Entry?,
+            singleClickAction: ItemClickedListener<Entry>?,
+            multipleClickAction: ItemMultipleClickedListener<Entry>?
+        ) {
+            if (entry == null || clickLock.isLocked || clickCount++ > 0) return
+            if (consideringMultipleClickedEntry != null && consideringMultipleClickedEntry != entry) return
+            consideringMultipleClickedEntry = entry
+            val duration = multipleClickDuration
+            lifecycleOwner.lifecycleScope.launchWhenResumed {
+                delay(duration)
+                if (clickLock.tryLock()) {
+                    val count = clickCount
+                    clickCount = 0
+                    try {
+                        when (count) {
+                            1 -> singleClickAction?.invoke(entry)
+                            else -> multipleClickAction?.invoke(entry, count)
+                        }
+                        delay(clickGuardRefreshDelay)
+                    }
+                    finally {
+                        consideringMultipleClickedEntry = null
+                        runCatching { clickLock.unlock() }
+                    }
+                }
+            }
+        }
+    }
 
     // ------ //
 
