@@ -118,7 +118,7 @@ private suspend fun modifySpecificUrlsWithConnection(url: String) : String = wit
             val root = Jsoup.parse(response.body!!.use { it.string() })
             val entryRegex = Regex("""https?://b\.hatena\.ne\.jp/entry/\d+/?$""")
             if (realUrl.startsWith(HatenaClient.B_BASE_URL+"/entry")) {
-                if (entryRegex.matches(url)) {
+                if (entryRegex.matches(realUrl)) {
                     // "https://b.hatena.ne.jp/entry/{eid}"は通常の法則に則ったURLのブコメページにリダイレクトされる
                     // modifySpecificUrls()では、さらにそのブコメページのブコメ先エントリURLに変換する
                     // 例) [in] /entry/18625960 ==> /entry/s/www.google.com ==> https://www.google.com [out]
@@ -138,6 +138,7 @@ private suspend fun modifySpecificUrlsWithConnection(url: String) : String = wit
                         elem.tagName() == "meta" && (elem.attr("property") == "og:url" || elem.attr("name") == "twitter:url")
                     }
                     ?.attr("content")
+                    ?: realUrl
             }
         } ?: url
 
