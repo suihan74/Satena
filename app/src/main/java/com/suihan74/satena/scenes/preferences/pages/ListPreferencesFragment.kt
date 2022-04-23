@@ -1,6 +1,7 @@
 package com.suihan74.satena.scenes.preferences.pages
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.databinding.FragmentListPreferencesBinding
 import com.suihan74.satena.scenes.preferences.PreferencesActivity
 import com.suihan74.satena.scenes.preferences.PreferencesAdapter
+import com.suihan74.utilities.extensions.letAs
 
 /**
  * 設定リスト画面共通フラグメント
@@ -20,6 +22,8 @@ abstract class ListPreferencesFragment : Fragment() {
     // ------ //
 
     abstract val viewModel : ListPreferencesViewModel
+
+    private var binding : FragmentListPreferencesBinding? = null
 
     // ------ //
 
@@ -33,13 +37,36 @@ abstract class ListPreferencesFragment : Fragment() {
             it.lifecycleOwner = viewLifecycleOwner
             initializeRecyclerView(it.recyclerView)
         }
+        this.binding = binding
         viewModel.onCreateView(this)
         return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 
     // ------ //
 
     private fun initializeRecyclerView(recyclerView: RecyclerView) {
         recyclerView.adapter = PreferencesAdapter(viewLifecycleOwner)
+    }
+
+    // ------ //
+
+    fun scrollTo(item: PreferencesAdapter.Item) {
+        binding?.recyclerView?.let { recyclerView ->
+            val index = recyclerView.adapter.letAs<PreferencesAdapter, Int> { adapter ->
+                adapter.currentList.indexOfFirst {
+                    it.areItemsTheSame(it, item)
+                }
+            } ?: return@let
+            runCatching {
+                recyclerView.smoothScrollToPosition(index)
+            }.onFailure {
+                Log.e("ListPreferences", it.stackTraceToString())
+            }
+        }
     }
 }

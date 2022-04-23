@@ -17,10 +17,12 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemGeneralButtonBinding
 import com.suihan74.satena.databinding.ListviewItemGeneralSectionBinding
 import com.suihan74.satena.databinding.ListviewItemPrefsButtonBinding
 import com.suihan74.satena.models.TextIdContainer
+import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.alsoAs
 import kotlinx.coroutines.flow.Flow
 
@@ -32,6 +34,14 @@ class PreferencesAdapter(
 ) : ListAdapter<PreferencesAdapter.Item, PreferencesAdapter.ViewHolder>(
     DiffCallback()
 ) {
+    private var onItemClickListener : Listener<Item>? = null
+
+    fun overrideItemClickListener(listener: Listener<Item>?) {
+        onItemClickListener = listener
+    }
+
+    // ------ //
+
     override fun getItemViewType(position: Int): Int {
         return currentList[position].layoutId
     }
@@ -49,6 +59,11 @@ class PreferencesAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         currentList[position].bind(holder.binding)
         holder.binding.lifecycleOwner = lifecycleOwner
+        onItemClickListener?.let { listener ->
+            holder.binding.root.setOnClickListener {
+                listener.invoke(currentList[position])
+            }
+        }
     }
 
     // ------ //
@@ -59,8 +74,9 @@ class PreferencesAdapter(
 
     interface Item {
         val layoutId : Int
+        val description : String
         fun bind(binding: ViewDataBinding)
-        fun areItemsTheSame(old: Item, new: Item) : Boolean = old == new
+        fun areItemsTheSame(old: Item, new: Item) : Boolean = old === new
         fun areContentsTheSame(old: Item, new: Item) : Boolean = old == new
     }
 
@@ -69,6 +85,10 @@ class PreferencesAdapter(
      */
     open class Section(@StringRes val textId: Int) : Item {
         override val layoutId : Int = R.layout.listview_item_general_section
+
+        override val description: String =
+            SatenaApplication.instance.getString(textId)
+
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemGeneralSectionBinding> {
                 it.textId = textId
@@ -94,6 +114,9 @@ class PreferencesAdapter(
         var onClick : (()->Unit)? = null
     ) : Item {
         override val layoutId : Int = R.layout.listview_item_general_button
+
+        override val description: String = text.value?.toString().orEmpty()
+
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemGeneralButtonBinding> {
                 it.text = text
@@ -184,6 +207,9 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
 
     override val layoutId: Int
         get() = R.layout.listview_item_prefs_button
+
+    override val description: String
+        get() = SatenaApplication.instance.getString(titleId)
 
     override fun bind(binding: ViewDataBinding) {
         binding.alsoAs<ListviewItemPrefsButtonBinding> {

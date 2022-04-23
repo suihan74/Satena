@@ -193,6 +193,9 @@ class AccountViewModel(
     ) : PreferencesAdapter.Item {
         override val layoutId: Int = R.layout.listview_item_prefs_sign_in_hatena
 
+        override val description: String
+            get() = viewModel.accountHatena.value?.name ?: "Hatena"
+
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemPrefsSignInHatenaBinding> {
                 it.vm = viewModel
@@ -226,6 +229,9 @@ class AccountViewModel(
         private val viewModel: AccountViewModel
     ) : PreferencesAdapter.Item {
         override val layoutId: Int = R.layout.listview_item_prefs_sign_in_mastodon
+
+        override val description: String
+            get() = viewModel.accountMastodon.value?.userName ?: "Mastodon"
 
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemPrefsSignInMastodonBinding> {

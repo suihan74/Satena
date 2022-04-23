@@ -9,19 +9,25 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.View
+import androidx.activity.addCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityPreferencesBinding
 import com.suihan74.satena.models.*
+import com.suihan74.satena.scenes.browser.BrowserRepository
+import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.backup.Credentials
 import com.suihan74.satena.scenes.preferences.ignored.FollowingUsersViewModel
@@ -31,13 +37,17 @@ import com.suihan74.satena.scenes.preferences.pages.*
 import com.suihan74.satena.scenes.tools.RestartActivity
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.TabItem
+import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getObjectExtra
+import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.lazyProvideViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import java.time.LocalDateTime
 
 class PreferencesActivity : AppCompatActivity() {
@@ -54,9 +64,44 @@ class PreferencesActivity : AppCompatActivity() {
 
     // ------ //
 
+    /** 項目の検索結果 */
+    data class SearchResultItem(
+        val item : PreferencesAdapter.Item,
+        val tab : PreferencesTab
+    )
+
+    // ------ //
+
     class ActivityViewModel : ViewModel() {
         val currentTab : MutableLiveData<PreferencesTab> by lazy {
             MutableLiveData(PreferencesTab.INFORMATION)
+        }
+
+        val searchText = MutableStateFlow("")
+
+        /** 検索用の全設定リスト */
+        val allPreferencesList = MutableStateFlow<List<SearchResultItem>>(emptyList())
+
+        val filteredPreferencesList = MutableLiveData<List<SearchResultItem>>()
+
+        // ------ //
+
+        init {
+            combine(allPreferencesList, searchText, ::Pair)
+                .onEach { (rawList, query) ->
+                    if (query.isBlank()) {
+                        filteredPreferencesList.postValue(emptyList())
+                    }
+                    else {
+                        val q = query.lowercase()
+                        filteredPreferencesList.postValue(
+                            rawList.filter {
+                                it.item.description.lowercase().contains(q)
+                            }
+                        )
+                    }
+                }
+                .launchIn(viewModelScope)
         }
     }
 
@@ -72,7 +117,16 @@ class PreferencesActivity : AppCompatActivity() {
 
     val bookmarkViewModel by lazyProvideViewModel { BookmarkViewModel(this, SatenaApplication.instance.accountLoader) }
 
-    val browserViewModel by lazyProvideViewModel { BrowserViewModel(this) }
+    val browserViewModel by lazyProvideViewModel {
+        BrowserViewModel(this).apply {
+            val context = this@PreferencesActivity
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val browserSettings = SafeSharedPreferences.create<BrowserSettingsKey>(context)
+
+            browserRepo = BrowserRepository(HatenaClient, prefs, browserSettings)
+            historyRepo = HistoryRepository(browserSettings, SatenaApplication.instance.browserDao)
+        }
+    }
 
     /** ユーザー関係のリポジトリ */
     private val userRelationRepository by lazy {
@@ -147,12 +201,56 @@ class PreferencesActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.preferences_activity, menu)
+        menu?.findItem(R.id.search_view)?.actionView.alsoAs<SearchView> { searchView ->
+            val backPressedCallback =
+                onBackPressedDispatcher.addCallback(
+                    this,
+                    false
+                ) {
+                    searchView.setQuery("", false)
+                    searchView.isIconified = true
+                    isEnabled = false
+                }
+
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                private var job : Job? = null
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    job?.cancel()
+                    job = lifecycleScope.launch(Dispatchers.Default) {
+                        delay(800L)
+                        viewModel.searchText.value = newText.orEmpty()
+                        job = null
+                    }
+                    return true
+                }
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    job?.cancel()
+                    job = null
+                    hideSoftInputMethod()
+                    searchView.clearFocus()
+                    if (viewModel.searchText.value != query) {
+                        viewModel.searchText.value = query.orEmpty()
+                    }
+                    return true
+                }
+            })
+            searchView.setOnSearchClickListener {
+                backPressedCallback.isEnabled = true
+            }
+            searchView.setOnCloseListener {
+                viewModel.searchText.value = ""
+                backPressedCallback.isEnabled = false
+                false
+            }
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
     // ------- //
 
     private fun initializeContents() {
+        viewModel.allPreferencesList.value = createAllPreferencesList()
+
         // アイコンメニュー
         binding.menuRecyclerView.adapter = PreferencesMenuAdapter(this).also { adapter ->
             adapter.setOnClickListener {
@@ -212,6 +310,40 @@ class PreferencesActivity : AppCompatActivity() {
         val position = tab.ordinal
         binding.preferencesViewPager.setCurrentItem(position, false)
         title = getString(R.string.pref_toolbar_title, getString(tab.titleId))
+
+        // 検索結果
+        binding.searchResultRecyclerView.apply {
+            adapter = PreferencesAdapter(this@PreferencesActivity).also { adapter ->
+                adapter.overrideItemClickListener { item ->
+                    val searchResult =
+                        viewModel.filteredPreferencesList.value?.firstOrNull { it.item == item }
+                            ?: return@overrideItemClickListener
+                    viewModel.searchText.value = ""
+                    binding.preferencesViewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                        override fun onPageScrollStateChanged(state: Int) {
+                            if (state != ViewPager2.SCROLL_STATE_IDLE) return
+                            binding.preferencesViewPager.unregisterOnPageChangeCallback(this)
+                            tabAdapter.findFragment(searchResult.tab.ordinal).alsoAs<ListPreferencesFragment> {
+                                it.lifecycleScope.launchWhenResumed {
+                                    delay(150L)
+                                    it.scrollTo(item)
+                                }
+                            }
+                        }
+                    })
+                    binding.preferencesViewPager.setCurrentItem(searchResult.tab.ordinal, true)
+                }
+
+                viewModel.filteredPreferencesList.observe(this@PreferencesActivity) { items ->
+                    binding.searchResultClickGuard.setVisibility(items.isNotEmpty())
+                    adapter.submitList(items.map { it.item })
+                }
+            }
+        }
+
+        binding.searchResultClickGuard.setOnClickListener {
+            viewModel.searchText.value = ""
+        }
     }
 
     // ------ //
@@ -421,5 +553,19 @@ class PreferencesActivity : AppCompatActivity() {
                 loadPreferencesFromFile(targetUri)
             }
         }
+    }
+
+    private fun createAllPreferencesList() : List<SearchResultItem> = buildList {
+        fun MutableList<SearchResultItem>.addAll(tab: PreferencesTab, items: List<PreferencesAdapter.Item>) {
+            this.addAll(items.map { SearchResultItem(item = it, tab = tab) })
+        }
+        val context = this@PreferencesActivity
+        val fm = supportFragmentManager
+        addAll(PreferencesTab.INFORMATION, informationViewModel.createList(context, fm))
+        addAll(PreferencesTab.ACCOUNT, accountViewModel.createList(context, fm))
+        addAll(PreferencesTab.GENERALS, generalViewModel.createList(context, fm))
+        addAll(PreferencesTab.ENTRIES, entryViewModel.createList(context, fm))
+        addAll(PreferencesTab.BOOKMARKS, bookmarkViewModel.createList(context, fm))
+        addAll(PreferencesTab.BROWSER, browserViewModel.createList(context, fm))
     }
 }

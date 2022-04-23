@@ -607,6 +607,9 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         override val layoutId: Int
             get() = R.layout.listview_item_prefs_bottom_items
 
+        override val description: String
+            get() = SatenaApplication.instance.getString(titleId)
+
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemPrefsBottomItemsBinding> {
                 it.vm = viewModel

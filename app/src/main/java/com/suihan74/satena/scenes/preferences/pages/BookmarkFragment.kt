@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsPostBookmarkAccountStatesBinding
 import com.suihan74.satena.models.*
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
@@ -426,6 +427,9 @@ class BookmarkViewModel(
     ) : PreferencesAdapter.Item {
         override val layoutId: Int
             get() = R.layout.listview_item_prefs_post_bookmark_account_states
+
+        override val description: String
+            get() = SatenaApplication.instance.getString(titleId)
 
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemPrefsPostBookmarkAccountStatesBinding> {
