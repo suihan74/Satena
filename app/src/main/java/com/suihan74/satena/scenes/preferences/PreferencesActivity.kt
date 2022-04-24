@@ -93,11 +93,13 @@ class PreferencesActivity : AppCompatActivity() {
                         filteredPreferencesList.postValue(emptyList())
                     }
                     else {
-                        val q = query.lowercase()
+                        val regex = Regex(
+                            query.split(Regex("""\s+""")).joinToString("","^",".*$") { s -> "(?=.*\\Q$s\\E)" },
+                            RegexOption.IGNORE_CASE
+                        )
+
                         filteredPreferencesList.postValue(
-                            rawList.filter {
-                                it.item.description.lowercase().contains(q)
-                            }
+                            rawList.filter { regex.find(it.item.description) != null }
                         )
                     }
                 }

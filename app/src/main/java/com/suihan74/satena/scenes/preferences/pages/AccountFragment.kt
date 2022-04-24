@@ -7,10 +7,8 @@ import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
-import com.suihan74.hatenaLib.Account
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemPrefsSignInHatenaBinding
@@ -22,7 +20,6 @@ import com.suihan74.satena.scenes.authentication.HatenaAuthenticationActivity
 import com.suihan74.satena.scenes.authentication.MastodonAuthenticationActivity
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.AccountLoader
-import com.suihan74.utilities.MastodonAccount
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.requireActivity
@@ -48,9 +45,9 @@ class AccountViewModel(
     private val accountLoader: AccountLoader
 ) : ListPreferencesViewModel(context) {
 
-    val accountHatena = MutableLiveData<Account?>()
+    val accountHatena = accountLoader.hatenaFlow
 
-    val accountMastodon = MutableLiveData<MastodonAccount?>()
+    val accountMastodon = accountLoader.mastodonFlow
 
     private val mastodonStatusVisibility = createLiveDataEnum(
         PreferenceKey.MASTODON_POST_VISIBILITY,
@@ -61,12 +58,8 @@ class AccountViewModel(
     // ------ //
 
     override fun onCreateView(fragment: ListPreferencesFragment) {
-        combine(accountLoader.hatenaFlow, accountLoader.mastodonFlow, ::Pair)
-            .onEach { (hatena, mastodon) ->
-                accountHatena.value = hatena
-                accountMastodon.value = mastodon
-                load(fragment)
-            }
+        combine(accountHatena, accountMastodon, ::Pair)
+            .onEach { load(fragment) }
             .launchIn(viewModelScope)
 
         viewModelScope.launch {

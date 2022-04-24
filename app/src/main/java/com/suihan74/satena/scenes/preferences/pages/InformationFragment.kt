@@ -115,7 +115,8 @@ class InformationViewModel(context: Context) : ListPreferencesViewModel(context)
 
         override val layoutId: Int = R.layout.listview_item_app_info
 
-        override val description: String = tag.orEmpty()
+        override val description: String =
+            SatenaApplication.instance.packageName + "version:" + SatenaApplication.instance.versionName
 
         override fun bind(binding: ViewDataBinding) {
             binding.alsoAs<ListviewItemAppInfoBinding> {
