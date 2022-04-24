@@ -163,6 +163,11 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         PreferenceKey.ENTRIES_PAGER_SCROLL_SENSITIVITY
     )
 
+    /** 人気タブでは一度のロードで全件取得する */
+    private val fullFetchingPopularEntries = createLiveData<Boolean>(
+        PreferenceKey.ENTRIES_FULL_FETCHING_POPULARS
+    )
+
     /** ブクマ閲覧履歴の最大保存数 */
     private val historyMaxSize = createLiveData<EntriesHistoryKey, Int>(
         historyPrefs,
@@ -344,6 +349,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_entry_section_behavior)
+        addPrefToggleItem(fullFetchingPopularEntries, R.string.pref_entries_full_fetching_popular_entries_desc)
         addPrefToggleItem(menuTapGuard, R.string.pref_entries_menu_tap_guard_desc)
         addPrefToggleItem(hideToolbarWithScroll, R.string.pref_entries_hiding_toolbar_by_scrolling_desc)
         addButton(context, R.string.pref_pager_scroll_sensitivity_desc) {

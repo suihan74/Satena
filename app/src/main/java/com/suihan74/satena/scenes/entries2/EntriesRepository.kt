@@ -213,6 +213,10 @@ class EntriesRepository(
         }
     }
 
+    /** 人気タブでは一度のロードで全件取得する */
+    private val fullFetchingPopularEntries
+        get() = prefs.getBoolean(PreferenceKey.ENTRIES_FULL_FETCHING_POPULARS)
+
     /** 「あとで読む」するときデフォルトで非公開ブクマにする */
     private val privateReadLater : Boolean
         get() = prefs.get(PreferenceKey.ENTRY_PRIVATE_READ_LATER)
@@ -280,7 +284,20 @@ class EntriesRepository(
     private suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int?, params: LoadEntryParameter?) : List<Entry> =
         when (val apiCat = category.categoryInApi) {
             null -> loadSpecificEntries(category, tabPosition, offset, params)
-            else -> loadHatenaEntries(tabPosition, apiCat, offset)
+            else -> {
+                if (fullFetchingPopularEntries && tabPosition == EntriesTabType.HOT.tabOrdinal) {
+                    buildList {
+                        var of = offset ?: 0
+                        while (true) {
+                            val entries = loadHatenaEntries(tabPosition, apiCat, of)
+                            if (entries.isEmpty()) break
+                            addAll(entries)
+                            of += entries.size
+                        }
+                    }
+                }
+                else loadHatenaEntries(tabPosition, apiCat, offset)
+            }
         }
 
     /** はてなから提供されているカテゴリ以外のエントリ情報を取得する */

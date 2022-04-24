@@ -188,6 +188,9 @@ enum class PreferenceKey(
     /** タブのスワイプ感度 */
     ENTRIES_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
 
+    /** 人気カテゴリを一度のロードで全て読み込む */
+    ENTRIES_FULL_FETCHING_POPULARS(typeInfo<Boolean>(), false),
+
     /** エントリメニューから「あとで読む」ときデフォルトで非公開ブクマにする */
     ENTRY_PRIVATE_READ_LATER(typeInfo<Boolean>(), false),
 

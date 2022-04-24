@@ -345,6 +345,7 @@
     <string name="pref_home_category_desc">ホームカテゴリ</string>
     <string name="pref_entries_initial_tab_desc">最初に表示するタブ</string>
     <string name="pref_entries_categories_mode_desc">カテゴリ一覧の表示形式</string>
+    <string name="pref_entries_full_fetching_popular_entries_desc">人気タブでは一度の読み込みで全件取得する</string>
     <string name="pref_entries_menu_tap_guard_desc">メニュー表示中に他の操作をできないようにする</string>
     <string name="pref_entries_hiding_toolbar_by_scrolling_desc">スクロールでツールバーを隠す</string>
     <string name="pref_entries_history_max_size_desc">ブクマ閲覧履歴の最大保存数</string>
