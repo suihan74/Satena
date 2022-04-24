@@ -24,6 +24,7 @@ import com.suihan74.satena.databinding.ListviewItemPrefsButtonBinding
 import com.suihan74.satena.models.TextIdContainer
 import com.suihan74.utilities.Listener
 import com.suihan74.utilities.extensions.alsoAs
+import com.suihan74.utilities.extensions.getThemeColor
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -132,7 +133,7 @@ class PreferencesAdapter(
             }
         }
         override fun areItemsTheSame(old: Item, new: Item): Boolean =
-            old is Button && new is Button && old.text == new.text
+            old is Button && new is Button && old.text.value == new.text.value
 
         override fun areContentsTheSame(old: Item, new: Item): Boolean =
             old is Button && new is Button &&
@@ -373,9 +374,9 @@ object PreferencesAdapterBindingAdapters {
     @JvmStatic
     @BindingAdapter("textColorOverlap")
     fun bindTextColorOverlap(textView: TextView, color: Int?) {
-        color?.let {
-            textView.setTextColor(it)
-        }
+        textView.setTextColor(
+            color ?: textView.context.getThemeColor(R.attr.textColor)
+        )
     }
 
     /**
