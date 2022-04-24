@@ -236,6 +236,7 @@ class PreferencesActivity : AppCompatActivity() {
             })
             searchView.setOnSearchClickListener {
                 backPressedCallback.isEnabled = true
+                viewModel.searchText.value = searchView.query?.toString().orEmpty()
             }
             searchView.setOnCloseListener {
                 viewModel.searchText.value = ""
@@ -313,27 +314,10 @@ class PreferencesActivity : AppCompatActivity() {
 
         // 検索結果
         binding.searchResultRecyclerView.apply {
-            adapter = PreferencesAdapter(this@PreferencesActivity).also { adapter ->
-                adapter.overrideItemClickListener { item ->
-                    val searchResult =
-                        viewModel.filteredPreferencesList.value?.firstOrNull { it.item == item }
-                            ?: return@overrideItemClickListener
-                    viewModel.searchText.value = ""
-                    binding.preferencesViewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                        override fun onPageScrollStateChanged(state: Int) {
-                            if (state != ViewPager2.SCROLL_STATE_IDLE) return
-                            binding.preferencesViewPager.unregisterOnPageChangeCallback(this)
-                            tabAdapter.findFragment(searchResult.tab.ordinal).alsoAs<ListPreferencesFragment> {
-                                it.lifecycleScope.launchWhenResumed {
-                                    delay(150L)
-                                    it.scrollTo(item)
-                                }
-                            }
-                        }
-                    })
-                    binding.preferencesViewPager.setCurrentItem(searchResult.tab.ordinal, true)
-                }
-
+            adapter = preferencesAdapterForSearchResult(
+                this@PreferencesActivity,
+                binding.preferencesViewPager
+            ).also { adapter ->
                 viewModel.filteredPreferencesList.observe(this@PreferencesActivity) { items ->
                     binding.searchResultClickGuard.setVisibility(items.isNotEmpty())
                     adapter.submitList(items.map { it.item })
@@ -343,6 +327,46 @@ class PreferencesActivity : AppCompatActivity() {
 
         binding.searchResultClickGuard.setOnClickListener {
             viewModel.searchText.value = ""
+        }
+    }
+
+    private fun preferencesAdapterForSearchResult(
+        activity: PreferencesActivity,
+        viewPager: ViewPager2
+    ) = PreferencesAdapter(activity).also { adapter ->
+        adapter.overrideItemClickListener { item ->
+            val searchResult =
+                viewModel.filteredPreferencesList.value?.firstOrNull { it.item == item }
+                    ?: return@overrideItemClickListener
+            viewModel.searchText.value = ""
+
+            if (viewPager.currentItem == searchResult.tab.ordinal) {
+                viewPager.adapter.alsoAs<PreferencesTabAdapter> { adapter ->
+                    adapter.findFragment(searchResult.tab.ordinal).alsoAs<ListPreferencesFragment> {
+                        it.scrollTo(item)
+                    }
+                }
+            }
+            else {
+                // ページ切替後にスクロール
+                viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                    private var isEnabled = true
+                    override fun onPageScrollStateChanged(state: Int) {
+                        if (!isEnabled) return
+                        if (state != ViewPager2.SCROLL_STATE_IDLE) return
+                        val tabAdapter = viewPager.adapter as? PreferencesTabAdapter ?: return
+                        isEnabled = false
+                        tabAdapter.findFragment(searchResult.tab.ordinal)
+                            .alsoAs<ListPreferencesFragment> {
+                                it.lifecycleScope.launchWhenResumed {
+                                    delay(150L)
+                                    it.scrollTo(item)
+                                }
+                            }
+                    }
+                })
+                viewPager.setCurrentItem(searchResult.tab.ordinal, true)
+            }
         }
     }
 
