@@ -14,7 +14,9 @@ import com.suihan74.satena.models.*
 import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putObjectExtra
+import com.suihan74.utilities.extensions.requireActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,9 +28,8 @@ import kotlin.math.pow
  * 「基本」画面
  */
 class GeneralFragment : ListPreferencesFragment() {
-    override val viewModel by lazy {
-        GeneralViewModel(requireContext())
-    }
+    override val viewModel
+        get() = requireActivity<PreferencesActivity>().generalViewModel
 }
 
 // ------ //
@@ -126,30 +127,30 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         super.onCreateView(fragment)
 
         // 通知確認タスクの有効無効を切り替える
-        checkNotices.observe(fragment.viewLifecycleOwner, {
+        checkNotices.observe(fragment.viewLifecycleOwner) {
             val app = SatenaApplication.instance
             if (it) app.startCheckingNotificationsWorker(app, forceReplace = true)
             else app.stopCheckingNotificationsWorker(app)
-        })
+        }
 
         // 通知確認間隔の変更を反映させるためにWorkを再起動する
-        checkNoticesInterval.observe(fragment.viewLifecycleOwner, {
+        checkNoticesInterval.observe(fragment.viewLifecycleOwner) {
             val app = SatenaApplication.instance
             app.startCheckingNotificationsWorker(app, forceReplace = true)
-        })
+        }
 
-        imageCacheSize.observe(fragment.viewLifecycleOwner, {
+        imageCacheSize.observe(fragment.viewLifecycleOwner) {
             imageCacheSizeLabel.value = createSizeText(it, "B")
-        })
+        }
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(fragment: ListPreferencesFragment) = buildList {
-        val activity = fragment.preferencesActivity
-        val fragmentManager = fragment.childFragmentManager
-
+    override fun createList(
+        context: Context,
+        fragmentManager: FragmentManager
+    ) = buildList {
         addSection(R.string.pref_generals_section_theme)
-        addPrefItem(fragment, theme, R.string.pref_generals_theme_desc) {
+        addPrefItem(theme, R.string.pref_generals_theme_desc) {
             openEnumSelectionDialog(
                 Theme.values(),
                 theme,
@@ -161,7 +162,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
                 }
             }
         }
-        addPrefItem(fragment, dialogTheme, R.string.pref_generals_dialog_theme_desc) {
+        addPrefItem(dialogTheme, R.string.pref_generals_dialog_theme_desc) {
             openEnumSelectionDialog(
                 DialogThemeSetting.values(),
                 dialogTheme,
@@ -169,7 +170,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefItem(fragment, drawerGravity, R.string.pref_generals_drawer_gravity_desc) {
+        addPrefItem(drawerGravity, R.string.pref_generals_drawer_gravity_desc) {
             openEnumSelectionDialog(
                 GravitySetting.values(),
                 drawerGravity,
@@ -181,7 +182,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_generals_section_update)
-        addPrefItem(fragment, appUpdateNoticeMode, R.string.pref_generals_app_update_notice_mode_desc) {
+        addPrefItem(appUpdateNoticeMode, R.string.pref_generals_app_update_notice_mode_desc) {
             openEnumSelectionDialog(
                 AppUpdateNoticeMode.values(),
                 appUpdateNoticeMode,
@@ -189,13 +190,13 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefToggleItem(fragment, noticeIgnoredAppUpdate, R.string.pref_generals_notice_ignored_app_update_desc)
+        addPrefToggleItem(noticeIgnoredAppUpdate, R.string.pref_generals_notice_ignored_app_update_desc)
 
         // --- //
 
         addSection(R.string.pref_generals_section_notices)
-        addPrefToggleItem(fragment, checkNotices, R.string.pref_generals_background_checking_notices_desc)
-        addPrefItem(fragment, checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc, R.string.minutes) {
+        addPrefToggleItem(checkNotices, R.string.pref_generals_background_checking_notices_desc)
+        addPrefItem(checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc, R.string.minutes) {
             openNumberPickerDialog(
                 checkNoticesInterval,
                 min = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_LOWER_BOUND,
@@ -210,35 +211,39 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
                 )
             }
         }
-        addPrefToggleItem(fragment, noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
-        addPrefToggleItem(fragment, ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
+        addPrefToggleItem(noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
+        addPrefToggleItem(ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
 
         // --- //
 
         addSection(R.string.pref_generals_section_intent)
-        addPrefToggleItem(fragment, useIntentChooser, R.string.pref_generals_use_intent_chooser)
+        addPrefToggleItem(useIntentChooser, R.string.pref_generals_use_intent_chooser)
 
         // --- //
 
         addSection(R.string.pref_generals_section_dialogs)
-        addPrefToggleItem(fragment, closeDialogOnTouchOutside, R.string.pref_generals_close_dialog_touch_outside_desc)
-        addPrefToggleItem(fragment, confirmTerminationDialog, R.string.pref_generals_using_termination_dialog_desc)
-        addPrefToggleItem(fragment, displayReleaseNotes, R.string.pref_generals_show_release_notes_after_update_desc)
+        addPrefToggleItem(closeDialogOnTouchOutside, R.string.pref_generals_close_dialog_touch_outside_desc)
+        addPrefToggleItem(confirmTerminationDialog, R.string.pref_generals_using_termination_dialog_desc)
+        addPrefToggleItem(displayReleaseNotes, R.string.pref_generals_show_release_notes_after_update_desc)
 
         // --- //
 
         addSection(R.string.pref_generals_section_backup)
-        addButton(fragment, R.string.pref_generals_save_settings_desc) {
-            activity.openSaveSettingsDialog()
+        addButton(context, R.string.pref_generals_save_settings_desc) {
+            context.alsoAs<PreferencesActivity> {
+                it.openSaveSettingsDialog()
+            }
         }
-        addButton(fragment, R.string.pref_generals_load_settings_desc) {
-            activity.openLoadSettingsDialog()
+        addButton(context, R.string.pref_generals_load_settings_desc) {
+            context.alsoAs<PreferencesActivity> {
+                it.openLoadSettingsDialog()
+            }
         }
 
         // --- //
 
         addSection(R.string.pref_generals_section_clear_caches)
-        addPrefItem(fragment, clearingImageCacheSpan, R.string.pref_generals_clear_image_cache_span) {
+        addPrefItem(clearingImageCacheSpan, R.string.pref_generals_clear_image_cache_span) {
             openEnumSelectionDialog(
                 ClearingImageCacheSpan.values(),
                 clearingImageCacheSpan,
@@ -247,12 +252,12 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
             )
         }
         addButton(
-            fragment,
-            text = MutableLiveData(fragment.getText(R.string.pref_generals_clear_image_cache_desc)),
+            context = context,
+            text = MutableLiveData(context.getText(R.string.pref_generals_clear_image_cache_desc)),
             subText = imageCacheSizeLabel,
             textColorId = R.color.clearCache
         ) {
-            openClearImageCacheConfirmDialog(fragment.childFragmentManager)
+            openClearImageCacheConfirmDialog(fragmentManager)
         }
     }
 

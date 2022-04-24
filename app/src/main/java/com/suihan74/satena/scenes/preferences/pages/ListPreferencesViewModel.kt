@@ -33,7 +33,9 @@ abstract class ListPreferencesViewModel(
     fun load(fragment: ListPreferencesFragment) {
         fragment.lifecycleScope.launchWhenCreated {
             withContext(Dispatchers.IO) {
-                _preferencesItems.postValue(createList(fragment))
+                _preferencesItems.postValue(
+                    createList(fragment.requireActivity(), fragment.childFragmentManager)
+                )
             }
         }
     }
@@ -53,7 +55,8 @@ abstract class ListPreferencesViewModel(
      *
      */
     abstract fun createList(
-        fragment: ListPreferencesFragment
+        context: Context,
+        fragmentManager: FragmentManager
     ) : List<PreferencesAdapter.Item>
 
     /**

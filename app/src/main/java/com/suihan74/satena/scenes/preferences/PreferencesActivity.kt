@@ -7,33 +7,47 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.Menu
 import android.view.View
+import androidx.activity.addCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
+import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.satena.PreferencesMigration
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ActivityPreferencesBinding
 import com.suihan74.satena.models.*
+import com.suihan74.satena.scenes.browser.BrowserRepository
+import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.backup.Credentials
 import com.suihan74.satena.scenes.preferences.ignored.FollowingUsersViewModel
 import com.suihan74.satena.scenes.preferences.ignored.PreferencesIgnoredUsersViewModel
 import com.suihan74.satena.scenes.preferences.ignored.UserRelationRepository
+import com.suihan74.satena.scenes.preferences.pages.*
 import com.suihan74.satena.scenes.tools.RestartActivity
-import com.suihan74.utilities.*
+import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.TabItem
+import com.suihan74.utilities.bindings.setVisibility
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.getObjectExtra
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.suihan74.utilities.extensions.hideSoftInputMethod
+import com.suihan74.utilities.lazyProvideViewModel
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import java.time.LocalDateTime
 
 class PreferencesActivity : AppCompatActivity() {
@@ -50,30 +64,84 @@ class PreferencesActivity : AppCompatActivity() {
 
     // ------ //
 
+    /** 項目の検索結果 */
+    data class SearchResultItem(
+        val item : PreferencesAdapter.Item,
+        val tab : PreferencesTab
+    )
+
+    // ------ //
+
     class ActivityViewModel : ViewModel() {
         val currentTab : MutableLiveData<PreferencesTab> by lazy {
             MutableLiveData(PreferencesTab.INFORMATION)
         }
+
+        val searchText = MutableStateFlow("")
+
+        /** 検索用の全設定リスト */
+        val allPreferencesList = MutableStateFlow<List<SearchResultItem>>(emptyList())
+
+        val filteredPreferencesList = MutableLiveData<List<SearchResultItem>>()
+
+        // ------ //
+
+        init {
+            combine(allPreferencesList, searchText, ::Pair)
+                .onEach { (rawList, query) ->
+                    if (query.isBlank()) {
+                        filteredPreferencesList.postValue(emptyList())
+                    }
+                    else {
+                        val regex = Regex(
+                            query.split(Regex("""\s+""")).joinToString("","^",".*$") { s -> "(?=.*\\Q$s\\E)" },
+                            RegexOption.IGNORE_CASE
+                        )
+
+                        filteredPreferencesList.postValue(
+                            rawList.filter { regex.find(it.item.description) != null }
+                        )
+                    }
+                }
+                .launchIn(viewModelScope)
+        }
     }
 
     val viewModel by lazyProvideViewModel { ActivityViewModel() }
+
+    val informationViewModel by lazyProvideViewModel { InformationViewModel(this) }
+
+    val accountViewModel by lazyProvideViewModel { AccountViewModel(this, SatenaApplication.instance.accountLoader) }
+
+    val generalViewModel by lazyProvideViewModel { GeneralViewModel(this) }
+
+    val entryViewModel by lazyProvideViewModel { EntryViewModel(this) }
+
+    val bookmarkViewModel by lazyProvideViewModel { BookmarkViewModel(this, SatenaApplication.instance.accountLoader) }
+
+    val browserViewModel by lazyProvideViewModel {
+        BrowserViewModel(this).apply {
+            val context = this@PreferencesActivity
+            val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+            val browserSettings = SafeSharedPreferences.create<BrowserSettingsKey>(context)
+
+            browserRepo = BrowserRepository(HatenaClient, prefs, browserSettings)
+            historyRepo = HistoryRepository(browserSettings, SatenaApplication.instance.browserDao)
+        }
+    }
 
     /** ユーザー関係のリポジトリ */
     private val userRelationRepository by lazy {
         UserRelationRepository(SatenaApplication.instance.accountLoader)
     }
 
-    private val followingsViewModelDelegate = lazyProvideViewModel {
-        FollowingUsersViewModel(userRelationRepository)
-    }
-    /** フォロー/フォロワー用ViewModel */
-    val followingsViewModel by followingsViewModelDelegate
-
-    private val ignoredUsersViewModelDelegate = lazyProvideViewModel {
-        PreferencesIgnoredUsersViewModel(userRelationRepository)
-    }
+    private val ignoredUsersViewModelDelegate = lazyProvideViewModel { PreferencesIgnoredUsersViewModel(userRelationRepository) }
     /** 非表示ユーザー用ViewModel */
     val ignoredUsersViewModel by ignoredUsersViewModelDelegate
+
+    private val followingsViewModelDelegate = lazyProvideViewModel { FollowingUsersViewModel(userRelationRepository) }
+    /** フォロー/フォロワー用ViewModel */
+    val followingsViewModel by followingsViewModelDelegate
 
     // ------ //
 
@@ -133,18 +201,68 @@ class PreferencesActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.preferences_activity, menu)
+        menu?.findItem(R.id.search_view)?.actionView.alsoAs<SearchView> { searchView ->
+            val backPressedCallback =
+                onBackPressedDispatcher.addCallback(
+                    this,
+                    false
+                ) {
+                    searchView.setQuery("", false)
+                    searchView.isIconified = true
+                    isEnabled = false
+                }
+
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                private var job : Job? = null
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    job?.cancel()
+                    job = lifecycleScope.launch(Dispatchers.Default) {
+                        delay(800L)
+                        viewModel.searchText.value = newText.orEmpty()
+                        job = null
+                    }
+                    return true
+                }
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    job?.cancel()
+                    job = null
+                    hideSoftInputMethod()
+                    searchView.clearFocus()
+                    if (viewModel.searchText.value != query) {
+                        viewModel.searchText.value = query.orEmpty()
+                    }
+                    return true
+                }
+            })
+            searchView.setOnSearchClickListener {
+                backPressedCallback.isEnabled = true
+                viewModel.searchText.value = searchView.query?.toString().orEmpty()
+            }
+            searchView.setOnCloseListener {
+                viewModel.searchText.value = ""
+                backPressedCallback.isEnabled = false
+                false
+            }
+        }
+        return super.onCreateOptionsMenu(menu)
+    }
+
     // ------- //
 
     private fun initializeContents() {
+        viewModel.allPreferencesList.value = createAllPreferencesList()
+
         // アイコンメニュー
         binding.menuRecyclerView.adapter = PreferencesMenuAdapter(this).also { adapter ->
             adapter.setOnClickListener {
                 binding.preferencesViewPager.setCurrentItem(it.ordinal, false)
             }
 
-            viewModel.currentTab.observe(this, {
+            viewModel.currentTab.observe(this) {
                 adapter.selectTab(it)
-            })
+            }
         }
 
         // ページャ
@@ -195,6 +313,63 @@ class PreferencesActivity : AppCompatActivity() {
         val position = tab.ordinal
         binding.preferencesViewPager.setCurrentItem(position, false)
         title = getString(R.string.pref_toolbar_title, getString(tab.titleId))
+
+        // 検索結果
+        binding.searchResultRecyclerView.apply {
+            adapter = preferencesAdapterForSearchResult(
+                this@PreferencesActivity,
+                binding.preferencesViewPager
+            ).also { adapter ->
+                viewModel.filteredPreferencesList.observe(this@PreferencesActivity) { items ->
+                    binding.searchResultClickGuard.setVisibility(items.isNotEmpty())
+                    adapter.submitList(items.map { it.item })
+                }
+            }
+        }
+
+        binding.searchResultClickGuard.setOnClickListener {
+            viewModel.searchText.value = ""
+        }
+    }
+
+    private fun preferencesAdapterForSearchResult(
+        activity: PreferencesActivity,
+        viewPager: ViewPager2
+    ) = PreferencesAdapter(activity).also { adapter ->
+        adapter.overrideItemClickListener { item ->
+            val searchResult =
+                viewModel.filteredPreferencesList.value?.firstOrNull { it.item == item }
+                    ?: return@overrideItemClickListener
+            viewModel.searchText.value = ""
+
+            if (viewPager.currentItem == searchResult.tab.ordinal) {
+                viewPager.adapter.alsoAs<PreferencesTabAdapter> { adapter ->
+                    adapter.findFragment(searchResult.tab.ordinal).alsoAs<ListPreferencesFragment> {
+                        it.scrollTo(item)
+                    }
+                }
+            }
+            else {
+                // ページ切替後にスクロール
+                viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                    private var isEnabled = true
+                    override fun onPageScrollStateChanged(state: Int) {
+                        if (!isEnabled) return
+                        if (state != ViewPager2.SCROLL_STATE_IDLE) return
+                        val tabAdapter = viewPager.adapter as? PreferencesTabAdapter ?: return
+                        isEnabled = false
+                        tabAdapter.findFragment(searchResult.tab.ordinal)
+                            .alsoAs<ListPreferencesFragment> {
+                                it.lifecycleScope.launchWhenResumed {
+                                    delay(150L)
+                                    it.scrollTo(item)
+                                }
+                            }
+                    }
+                })
+                viewPager.setCurrentItem(searchResult.tab.ordinal, true)
+            }
+        }
     }
 
     // ------ //
@@ -404,5 +579,19 @@ class PreferencesActivity : AppCompatActivity() {
                 loadPreferencesFromFile(targetUri)
             }
         }
+    }
+
+    private fun createAllPreferencesList() : List<SearchResultItem> = buildList {
+        fun MutableList<SearchResultItem>.addAll(tab: PreferencesTab, items: List<PreferencesAdapter.Item>) {
+            this.addAll(items.map { SearchResultItem(item = it, tab = tab) })
+        }
+        val context = this@PreferencesActivity
+        val fm = supportFragmentManager
+        addAll(PreferencesTab.INFORMATION, informationViewModel.createList(context, fm))
+        addAll(PreferencesTab.ACCOUNT, accountViewModel.createList(context, fm))
+        addAll(PreferencesTab.GENERALS, generalViewModel.createList(context, fm))
+        addAll(PreferencesTab.ENTRIES, entryViewModel.createList(context, fm))
+        addAll(PreferencesTab.BOOKMARKS, bookmarkViewModel.createList(context, fm))
+        addAll(PreferencesTab.BROWSER, browserViewModel.createList(context, fm))
     }
 }
