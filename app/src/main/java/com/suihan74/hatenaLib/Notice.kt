@@ -33,6 +33,7 @@ data class Notice (
         const val VERB_ADD_FAVORITE = "add_favorite"
         const val VERB_BOOKMARK = "bookmark"
         const val VERB_STAR = "star"
+        const val VERB_FIRST_BOOKMARK = "first_bookmark"
     }
 
 
@@ -78,8 +79,27 @@ data class NoticeObject (
 }
 
 data class NoticeMetadata (
-    val subjectTitle : String
+    val subjectTitle : String?,
+
+    // for VERB_FIRST_BOOKMARK
+    private val totalBookmarksAchievement : Int? = null,
+    private val entryCanonicalUrl : String? = null,
+    private val entryTitle : String? = null
 ) {
     // for Gson
-    private constructor() : this("")
+    private constructor() : this(null, null, null, null)
+
+    @delegate:Transient
+    val firstBookmarkMetadata : FirstBookmarkMetadata? by lazy {
+        val count = totalBookmarksAchievement ?: return@lazy null
+        val url = entryCanonicalUrl ?: return@lazy null
+        val title = entryTitle ?: return@lazy null
+        FirstBookmarkMetadata(count, url, title)
+    }
 }
+
+data class FirstBookmarkMetadata (
+    val totalBookmarksAchievement : Int,
+    val entryCanonicalUrl : String,
+    val entryTitle : String
+)
