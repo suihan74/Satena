@@ -9,7 +9,7 @@ private val spamRegex by lazy { Regex("""はてなブックマーク\s*-\s*\d+�
 
 /** スパムからのスターの特徴に当てはまるか確認する */
 fun Notice.checkFromSpam() =
-    spamRegex.matches(this.metadata?.subjectTitle ?: "")
+    spamRegex.matches(this.metadata?.subjectTitle.orEmpty())
 
 /**
  * 通知に含まれるユーザー名を抽出する
@@ -64,6 +64,19 @@ fun Notice.message(context: Context) : String {
 
         Notice.VERB_BOOKMARK ->
             "${usersStr}があなたのエントリをブックマークしました"
+
+        Notice.VERB_FIRST_BOOKMARK -> {
+            runCatching {
+                val md = metadata!!.firstBookmarkMetadata!!
+                val titleDigest =
+                    md.entryTitle.toCharArray().joinToString(
+                        separator = "",
+                        limit = 9,
+                        truncated = "..."
+                    )
+                "1番目にブクマした記事が${md.totalBookmarksAchievement}usersに達しました (${titleDigest})"
+            }.getOrElse { "1番目にブクマした記事が注目されています" }
+        }
 
         else ->
             "[sorry, not implemented notice] users: $usersStr , verb: ${this.verb}"
