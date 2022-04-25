@@ -2,6 +2,7 @@ package com.suihan74.utilities.extensions
 
 import android.content.Context
 import androidx.core.content.ContextCompat
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
 
@@ -75,7 +76,10 @@ fun Notice.message(context: Context) : String {
                         truncated = "..."
                     )
                 "1番目にブクマした記事が${md.totalBookmarksAchievement}usersに達しました (${titleDigest})"
-            }.getOrElse { "1番目にブクマした記事が注目されています" }
+            }.getOrElse {
+                FirebaseCrashlytics.getInstance().recordException(RuntimeException("failed to reference firstBookmarkMetadata"))
+                "1番目にブクマした記事が注目されています"
+            }
         }
 
         else ->

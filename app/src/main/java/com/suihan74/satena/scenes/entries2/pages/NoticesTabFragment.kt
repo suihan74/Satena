@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.models.Category
@@ -128,6 +129,7 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
                 }
             startActivity(intent)
         }.onFailure {
+            FirebaseCrashlytics.getInstance().recordException(it)
             onClickUnknownNotice(notice)
         }
     }
