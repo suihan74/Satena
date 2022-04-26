@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Notice
 import com.suihan74.satena.R
@@ -191,6 +192,25 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
 
             Notice.VERB_ADD_FAVORITE -> {
                 Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
+            }
+
+            Notice.VERB_FIRST_BOOKMARK -> {
+                runCatching {
+                    Intent(context, BookmarksActivity::class.java).apply {
+                        putExtra(
+                            BookmarksActivity.EXTRA_ENTRY_URL,
+                            notice.metadata!!.firstBookmarkMetadata!!.entryCanonicalUrl
+                        )
+                    }
+                }.getOrElse {
+                    FirebaseCrashlytics.getInstance().recordException(
+                        RuntimeException("NotificationWorker for VERB_FIRST_BOOKMARK")
+                    )
+                    Intent(context, EntriesActivity::class.java).apply {
+                        putExtra(EntriesActivity.EXTRA_OPEN_NOTICES, true)
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                }
             }
 
             else -> {
