@@ -13,6 +13,7 @@ import androidx.work.WorkerParameters
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Notice
+import com.suihan74.hatenaLib.NoticeVerb
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
@@ -119,9 +120,8 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
         notice: Notice,
         prefs: SafeSharedPreferences<PreferenceKey>
     ) {
-        if (checkFromSpam(prefs, notice)) {
-            return
-        }
+        if (checkMutedNoticeVerb(prefs, notice)) return
+        if (checkFromSpam(prefs, notice)) return
 
         val notificationManager = NotificationManagerCompat.from(context)
 
@@ -133,7 +133,7 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
 
         var actions : List<NotificationCompat.Action>? = null
         val intent = when (notice.verb) {
-            Notice.VERB_STAR -> {
+            NoticeVerb.STAR.str -> {
                 runCatching {
                     val openEntryIntent = Intent(context, BookmarksActivity::class.java).apply {
                         putExtra(BookmarksActivity.EXTRA_ENTRY_ID, notice.eid)
@@ -190,7 +190,7 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
                 }
             }
 
-            Notice.VERB_ADD_FAVORITE -> {
+            NoticeVerb.ADD_FAVORITE.str -> {
                 Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
             }
 
@@ -244,6 +244,23 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
     }
 
     /**
+     * 通知を行うお知らせタイプかチェックする
+     *
+     * @return true: 通知しない設定がされたお知らせタイプ
+     */
+    private fun checkMutedNoticeVerb(
+        prefs: SafeSharedPreferences<PreferenceKey>,
+        notice: Notice
+    ) : Boolean = runCatching {
+        val activeNoticeVerbs =
+            NoticeVerb.fromInt(prefs.getInt(PreferenceKey.ACTIVE_NOTICE_VERBS))
+
+        val result = activeNoticeVerbs.all { it.str != notice.verb }
+        if (result && activeNoticeVerbs.contains(NoticeVerb.OTHERS)) !NoticeVerb.isOthers(notice.verb)
+        else result
+    }.getOrElse { false }
+
+    /**
      * 通知するべきかをチェックする
      *
      * @return true: スパムと思われるので通知しない
@@ -257,7 +274,7 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
             if (!ignoreNoticesFromSpam) return false
 
             if (notice.checkFromSpam()) return true
-            if (notice.verb != Notice.VERB_STAR) return false
+            if (notice.verb != NoticeVerb.STAR.str) return false
 
             // ブコメをつけていないのにスターがつけられた
             val bookmarkPage = HatenaClient.getBookmarkPageAsync(notice.eid, notice.user).await()

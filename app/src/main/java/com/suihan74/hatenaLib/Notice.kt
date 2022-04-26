@@ -29,17 +29,9 @@ data class Notice (
     // for Gson
     private constructor() : this(LocalDateTime.MIN, LocalDateTime.MIN, emptyList(), "", "", null, "")
 
-    companion object {
-        const val VERB_ADD_FAVORITE = "add_favorite"
-        const val VERB_BOOKMARK = "bookmark"
-        const val VERB_STAR = "star"
-        const val VERB_FIRST_BOOKMARK = "first_bookmark"
-    }
-
-
     @delegate:Transient
     val eid : Long by lazy {
-        if (verb == VERB_STAR) {
+        if (verb == NoticeVerb.STAR.str) {
             runCatching {
                 val idx = link.lastIndexOf('-') + 1
                 link.substring(idx).toLong()
@@ -67,6 +59,24 @@ data class NoticeResponse (
     private constructor() : this("", LocalDateTime.MIN, emptyList())
 }
 
+enum class NoticeVerb(
+    val code : Int,
+    val str : String,
+) {
+    OTHERS(0b0000_0001, ""),
+
+    ADD_FAVORITE(0b0000_0010, "add_favorite"),
+    BOOKMARK(0b0000_0100, "bookmark"),
+    STAR(0b0000_1000, "star"),
+    FIRST_BOOKMARK(0b0001_0000, "first_bookmark"),
+    ;
+
+    companion object {
+        val all : Int = values().sumOf { it.code }
+        fun fromInt(int: Int) : List<NoticeVerb> = values().filter { it.code and int > 0 }
+        fun isOthers(verb: String) = verb.isBlank() || values().all { it.str != verb }
+    }
+}
 
 data class NoticeObject (
     val user : String,

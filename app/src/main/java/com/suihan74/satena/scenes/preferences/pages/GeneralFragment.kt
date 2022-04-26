@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.suihan74.hatenaLib.NoticeVerb
 import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -96,6 +97,11 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     /** スパムと思われるスター通知を行わない */
     val ignoreNoticesToSilentBookmark = createLiveData<Boolean>(
         PreferenceKey.IGNORE_NOTICES_FROM_SPAM
+    )
+
+    /** システムの通知を行うはてな通知タイプ */
+    private val activeNoticeVerbs = createLiveData<Int>(
+        PreferenceKey.ACTIVE_NOTICE_VERBS
     )
 
     /** アップデート後初回起動時にリリースノートを表示する */
@@ -196,23 +202,32 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         addSection(R.string.pref_generals_section_notices)
         addPrefToggleItem(checkNotices, R.string.pref_generals_background_checking_notices_desc)
-        addPrefItem(checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc, R.string.minutes) {
-            openNumberPickerDialog(
+        if (checkNotices.value == true) {
+            addPrefItem(
                 checkNoticesInterval,
-                min = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_LOWER_BOUND,
-                max = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_UPPER_BOUND,
-                titleId = R.string.pref_generals_checking_notices_intervals_desc,
-                messageId = R.string.pref_generals_notices_intervals_dialog_msg,
-                fragmentManager = fragmentManager
+                R.string.pref_generals_checking_notices_intervals_desc,
+                R.string.minutes
             ) {
-                SatenaApplication.instance.startCheckingNotificationsWorker(
-                    SatenaApplication.instance,
-                    forceReplace = true
-                )
+                openNumberPickerDialog(
+                    checkNoticesInterval,
+                    min = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_LOWER_BOUND,
+                    max = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_UPPER_BOUND,
+                    titleId = R.string.pref_generals_checking_notices_intervals_desc,
+                    messageId = R.string.pref_generals_notices_intervals_dialog_msg,
+                    fragmentManager = fragmentManager
+                ) {
+                    SatenaApplication.instance.startCheckingNotificationsWorker(
+                        SatenaApplication.instance,
+                        forceReplace = true
+                    )
+                }
             }
+            addPrefItem(activeNoticeVerbs, R.string.pref_generals_enabled_notice_verbs_desc) {
+                openEnabledNoticeVerbsSelectionDialog(fragmentManager)
+            }
+            addPrefToggleItem(ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
         }
         addPrefToggleItem(noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
-        addPrefToggleItem(ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
 
         // --- //
 
@@ -267,6 +282,35 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         viewModelScope.launch {
             calcImageCacheSize(context)
         }
+    }
+
+    // ------ //
+
+    private fun openEnabledNoticeVerbsSelectionDialog(fragmentManager: FragmentManager) {
+        val value = activeNoticeVerbs.value ?: 0
+        val valueLabelPairs = listOf(
+            NoticeVerb.ADD_FAVORITE to R.string.notice_verb_add_favorite,
+            NoticeVerb.STAR to R.string.notice_verb_star,
+            NoticeVerb.BOOKMARK to R.string.notice_verb_bookmark,
+            NoticeVerb.FIRST_BOOKMARK to R.string.notice_verb_first_bookmark
+        )
+        val labels = valueLabelPairs.map { it.second }
+        val states = valueLabelPairs.map { it.first.code and value > 0 }.toBooleanArray()
+
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_generals_enabled_notice_verbs_desc)
+            .setMultipleChoiceItems(labels, states) { _, which, b ->
+                states[which] = b
+            }
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                activeNoticeVerbs.value =
+                    valueLabelPairs.foldIndexed(0) { index, acc, pair ->
+                        if (states[index]) acc + pair.first.code
+                        else acc
+                    }
+            }
+            .show(fragmentManager)
     }
 
     // ------ //

@@ -1304,7 +1304,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val fixNoticesTasks = response.notices.map { notice ->
             async {
                 runCatching {
-                    if (notice.verb == Notice.VERB_STAR && notice.metadata?.subjectTitle.isNullOrBlank()) {
+                    if (notice.verb == NoticeVerb.STAR.str && notice.metadata?.subjectTitle.isNullOrBlank()) {
                         val md = NoticeMetadata(
                             getBookmarkPageAsync(
                                 notice.eid,
