@@ -194,7 +194,7 @@ class NotificationWorker(applicationContext: Context, workerParameters: WorkerPa
                 Intent(Intent.ACTION_VIEW, Uri.parse(notice.link))
             }
 
-            Notice.VERB_FIRST_BOOKMARK -> {
+            NoticeVerb.FIRST_BOOKMARK.str -> {
                 runCatching {
                     Intent(context, BookmarksActivity::class.java).apply {
                         putExtra(
