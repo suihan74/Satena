@@ -724,6 +724,14 @@ class BookmarksRepository(
                 bookmarkedData = result
             )
         )
+
+        val starCount =
+            runCatching {
+                result.starsCount?.map { StarCount(it.color, it.count) }
+                    ?: getStarsEntry(result).value?.counts
+                    ?: emptyList()
+            }.getOrElse { emptyList() }
+
         val bookmark = BookmarkWithStarCount(
             BookmarkWithStarCount.User(result.user, result.userIconUrl),
             comment = result.comment,
@@ -731,10 +739,7 @@ class BookmarksRepository(
             link = result.permalink,
             tags = result.tags,
             timestamp = result.timestamp,
-            starCount =
-                result.starsCount?.map { StarCount(it.color, it.count) }
-                    ?: getStarsEntry(result).value?.counts
-                    ?: emptyList()
+            starCount = starCount
         )
         updateBookmark(bookmark)
     }
@@ -1098,7 +1103,7 @@ class BookmarksRepository(
      *
      * @throws TaskFailureException
      */
-    suspend fun getStarsEntry(bookmark: BookmarkResult, forceUpdate: Boolean = false) : LiveData<StarsEntry> =
+    private suspend fun getStarsEntry(bookmark: BookmarkResult, forceUpdate: Boolean = false) : LiveData<StarsEntry> =
         runCatching {
             getStarsEntry(bookmark.permalink, forceUpdate)
         }.onFailure {
