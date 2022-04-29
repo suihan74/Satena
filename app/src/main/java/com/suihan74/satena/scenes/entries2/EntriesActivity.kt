@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.ImageButton
+import androidx.activity.addCallback
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -22,6 +23,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomappbar.BottomAppBar
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.suihan74.hatenaLib.BookmarkResult
@@ -181,6 +183,9 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         // エクストラスクロール機能を初期化
         initializeExtraScrollBar()
 
+        // エクストラボトムメニューの設定
+        initializeExtraBottomMenu(binding)
+
         // --- Event listeners ---
 
         // FABメニュー表示ボタン
@@ -240,39 +245,32 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
 
         // --- Observers ---
 
-        viewModel.signedIn.observe(this, {
-            if (it) {
-                binding.entriesMenuNoticesButton.show()
-            }
-            else {
-                binding.entriesMenuNoticesButton.hide()
-            }
+        viewModel.signedIn.observe(this) {
+            if (it) binding.entriesMenuNoticesButton.show()
+            else binding.entriesMenuNoticesButton.hide()
             binding.entriesMenuNoticesDesc.visibility = it.toVisibility()
-        })
+        }
 
         // 通信状態の変更を監視
-        SatenaApplication.instance.networkReceiver.state.observe(this, { state ->
-            if (state == NetworkReceiver.State.CONNECTED) {
-                val needToSignIn = viewModel.signedIn.value != true
-                lifecycleScope.launchWhenCreated {
-                    runCatching { viewModel.initialize(forceUpdate = false) }
-                        .onSuccess {
-                            if (needToSignIn) {
-                                HatenaClient.account?.name?.let {
-                                    showToast(R.string.msg_retry_sign_in_succeeded, it)
-                                }
-                            }
-                        }
+        SatenaApplication.instance.networkReceiver.state.observe(this) { state ->
+            if (state != NetworkReceiver.State.CONNECTED) return@observe
+            val needToSignIn = viewModel.signedIn.value != true
+            lifecycleScope.launchWhenCreated {
+                runCatching {
+                    viewModel.initialize(forceUpdate = false)
+                }.onSuccess {
+                    if (!needToSignIn) return@onSuccess
+                    HatenaClient.account?.name?.let {
+                        showToast(R.string.msg_retry_sign_in_succeeded, it)
+                    }
                 }
             }
-        })
+        }
 
         // 非表示エントリ情報が更新されたらリストを更新する
-        viewModel.repository.ignoredEntriesRepo.ignoredEntriesForEntries.observe(this, {
-            runCatching {
-                refreshLists()
-            }
-        })
+        viewModel.repository.ignoredEntriesRepo.ignoredEntriesForEntries.observe(this) {
+            runCatching { refreshLists() }
+        }
     }
 
     /** 最初に表示するコンテンツの用意 */
@@ -651,6 +649,79 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             else -> throw NotImplementedError()
         }
     }
+
+    // ------ //
+
+    /**
+     * エクストラボトムメニューを設定する
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private fun initializeExtraBottomMenu(binding: ActivityEntries2Binding) {
+        val behavior = BottomSheetBehavior.from(binding.extraBottomMenu).apply {
+            isHideable = false
+            state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+        // クリックガード押下・戻るボタン押下で閉じる
+        binding.bottomMenuBackgroundGuard.setOnClickListener {
+            behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+        val backPressedCallback = onBackPressedDispatcher.addCallback(this, false) {
+            behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+        // エクストラボトムメニュー表示時にはクリックガード用の半透明背景を表示する
+        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        binding.bottomMenuBackgroundGuard.visibility = View.VISIBLE
+                        binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+                        backPressedCallback.isEnabled = true
+                    }
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        binding.bottomMenuBackgroundGuard.visibility = View.GONE
+                        binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+                        backPressedCallback.isEnabled = false
+                    }
+                    else -> {}
+                }
+            }
+        })
+        // ボトムメニューとメニューボタンのスワイプを検知し伝播する
+        binding.bottomAppBar.setOnTouchListener { _, motionEvent ->
+            val event = MotionEvent.obtain(
+                motionEvent.downTime,
+                motionEvent.eventTime,
+                motionEvent.action,
+                motionEvent.rawX,
+                motionEvent.rawY + 48, 0
+            )
+            behavior.onTouchEvent(binding.mainContentLayout, binding.extraBottomMenu, event)
+        }
+        binding.entriesMenuButton.setOnTouchListener { _, motionEvent ->
+            val event = MotionEvent.obtain(
+                motionEvent.downTime,
+                motionEvent.eventTime,
+                motionEvent.action,
+                motionEvent.rawX,
+                motionEvent.rawY + 64, 0
+            )
+            behavior.onTouchEvent(binding.mainContentLayout, binding.extraBottomMenu, event)
+        }
+        // 表示コンテンツの初期化
+        binding.extraBottomMenuRecyclerView.apply {
+            adapter = ExtraBottomMenuAdapter().also { adapter ->
+                adapter.submitList(UserBottomItem.values().toList())
+                adapter.setOnClickListener { item ->
+                    behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                    onBottomMenuItemClickListener?.invoke(item)
+                }
+            }
+            layoutManager = GridLayoutManager(this@EntriesActivity, 5)
+        }
+    }
+
+    // ------ //
 
     /** コンテンツ部分にMotionLayoutを導入したことでツールバー開閉が暗黙的に行えなくなったため、明示的に呼び出す */
     fun updateScrollBehavior(dx: Int, dy: Int) {

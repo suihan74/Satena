@@ -27,7 +27,7 @@
 
                 <com.google.android.material.appbar.AppBarLayout
                         android:id="@+id/appbar_layout"
-                        android:elevation="8dp"
+                        app:elevation="8dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
@@ -125,6 +125,17 @@
 
                 </com.suihan74.utilities.views.TouchInterceptableMotionLayout>
 
+                <View
+                        android:id="@+id/bottom_menu_background_guard"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:visibility="gone"
+                        android:background="@color/clickGuard"
+                        app:elevation="8dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+
                 <!-- 下部アプリバー -->
                 <com.suihan74.utilities.views.CustomBottomAppBar
                         android:id="@+id/bottom_app_bar"
@@ -139,11 +150,32 @@
                         android:layout_width="match_parent"
                         android:layout_height="48dp"/>
 
+                <FrameLayout
+                        android:id="@+id/extra_bottom_menu"
+                        android:background="?tabBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+                        app:layout_insetEdge="bottom"
+                        app:behavior_peekHeight="0dp"
+                        app:elevation="32dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/extra_bottom_menu_recycler_view"
+                            android:layout_marginHorizontal="24dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"/>
+                </FrameLayout>
+
                 <androidx.appcompat.widget.SearchView
                         android:id="@+id/bottom_search_view"
                         android:visibility="gone"
                         android:layout_gravity="bottom"
                         app:layout_insetEdge="bottom"
+                        app:elevation="32dp"
                         app:iconifiedByDefault="false"
                         app:queryHint="@string/hint_search_my_bookmarks"
                         app:searchIcon="@null"
