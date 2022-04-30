@@ -246,9 +246,11 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         // --- Observers ---
 
         viewModel.signedIn.observe(this) {
-            if (it) binding.entriesMenuNoticesButton.show()
+            if (it && isFABMenuOpened) binding.entriesMenuNoticesButton.show()
             else binding.entriesMenuNoticesButton.hide()
-            binding.entriesMenuNoticesDesc.visibility = it.toVisibility()
+            if (isFABMenuOpened) {
+                binding.entriesMenuNoticesDesc.visibility = it.toVisibility()
+            }
         }
 
         // 通信状態の変更を監視
@@ -659,11 +661,15 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     private fun initializeExtraBottomMenu(binding: ActivityEntries2Binding) {
         val behavior = BottomSheetBehavior.from(binding.extraBottomMenu).apply {
             isHideable = false
-            state = BottomSheetBehavior.STATE_COLLAPSED
+            lifecycleScope.launchWhenResumed {
+                state = BottomSheetBehavior.STATE_COLLAPSED
+            }
         }
         // クリックガード押下・戻るボタン押下で閉じる
-        binding.bottomMenuBackgroundGuard.setOnClickListener {
-            behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        binding.bottomMenuBackgroundGuard.setOnTouchListener { _, motionEvent ->
+            (MotionEvent.ACTION_DOWN == motionEvent.action).whenTrue {
+                behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            }
         }
         val backPressedCallback = onBackPressedDispatcher.addCallback(this, false) {
             behavior.state = BottomSheetBehavior.STATE_COLLAPSED
@@ -676,11 +682,13 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         binding.bottomMenuBackgroundGuard.visibility = View.VISIBLE
                         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+                        binding.entriesMenuButton.hide()
                         backPressedCallback.isEnabled = true
                     }
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         binding.bottomMenuBackgroundGuard.visibility = View.GONE
                         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+                        binding.entriesMenuButton.show()
                         backPressedCallback.isEnabled = false
                     }
                     else -> {}
@@ -698,6 +706,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             )
             behavior.onTouchEvent(binding.mainContentLayout, binding.extraBottomMenu, event)
         }
+        var moved = false
         binding.entriesMenuButton.setOnTouchListener { _, motionEvent ->
             val event = MotionEvent.obtain(
                 motionEvent.downTime,
@@ -707,6 +716,13 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                 motionEvent.rawY + 64, 0
             )
             behavior.onTouchEvent(binding.mainContentLayout, binding.extraBottomMenu, event)
+            moved =
+                when (motionEvent.action) {
+                    MotionEvent.ACTION_DOWN -> false
+                    MotionEvent.ACTION_MOVE -> true
+                    else -> moved
+                }
+            moved
         }
         // 表示コンテンツの初期化
         binding.extraBottomMenuRecyclerView.apply {
@@ -717,7 +733,8 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                     onBottomMenuItemClickListener?.invoke(item)
                 }
             }
-            layoutManager = GridLayoutManager(this@EntriesActivity, 5)
+            layoutManager = GridLayoutManager(this@EntriesActivity, 2, GridLayoutManager.HORIZONTAL, false)
+            setHasFixedSize(true)
         }
     }
 
@@ -822,6 +839,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         val metrics = resources.displayMetrics
 
         fab.visibility = View.VISIBLE
+        fab.show()
         fab.animate()
             .withEndAction {
                 val descWidth = desc.width / 2f

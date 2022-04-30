@@ -161,11 +161,11 @@
                         app:behavior_peekHeight="0dp"
                         app:elevation="32dp"
                         android:layout_width="match_parent"
-                        android:layout_height="300dp">
+                        android:layout_height="240dp">
 
                     <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/extra_bottom_menu_recycler_view"
-                            android:layout_marginHorizontal="24dp"
+                            style="@style/HorizontalRecyclerView"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"/>
                 </FrameLayout>
