@@ -50,6 +50,7 @@ import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.views.CustomBottomAppBar
 import com.suihan74.utilities.views.bindMenuItemsGravity
+import kotlinx.coroutines.delay
 
 class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     companion object {
@@ -721,8 +722,11 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             adapter = ExtraBottomMenuAdapter().also { adapter ->
                 adapter.submitList(UserBottomItem.values().toList())
                 adapter.setOnClickListener { item ->
-                    behavior.state = BottomSheetBehavior.STATE_COLLAPSED
-                    onBottomMenuItemClickListener?.invoke(item)
+                    lifecycleScope.launchWhenResumed {
+                        delay(250L)
+                        behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                        onBottomMenuItemClickListener?.invoke(item)
+                    }
                 }
             }
             layoutManager = GridLayoutManager(this@EntriesActivity, 2, GridLayoutManager.HORIZONTAL, false)
