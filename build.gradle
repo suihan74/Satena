@@ -29,7 +29,7 @@ allprojects {
     // experimentalApiを使用する
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
         kotlinOptions {
-            freeCompilerArgs += '-Xopt-in=kotlin.RequiresOptIn'
+            freeCompilerArgs += '-opt-in=kotlin.RequiresOptIn'
         }
     }
 }
