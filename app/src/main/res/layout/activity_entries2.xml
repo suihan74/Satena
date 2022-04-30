@@ -150,25 +150,16 @@
                         android:layout_width="match_parent"
                         android:layout_height="48dp"/>
 
-                <FrameLayout
-                        android:id="@+id/extra_bottom_menu"
-                        android:background="?tabBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
-                        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-                        app:layout_insetEdge="bottom"
-                        app:behavior_peekHeight="0dp"
-                        app:elevation="32dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="240dp">
-
                     <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/extra_bottom_menu_recycler_view"
+                            android:id="@+id/extra_bottom_menu"
+                            android:background="?tabBackground"
                             style="@style/HorizontalRecyclerView"
+                            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+                            app:layout_insetEdge="bottom"
+                            app:behavior_peekHeight="0dp"
+                            app:elevation="32dp"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"/>
-                </FrameLayout>
+                            android:layout_height="240dp"/>
 
                 <androidx.appcompat.widget.SearchView
                         android:id="@+id/bottom_search_view"

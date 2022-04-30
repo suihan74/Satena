@@ -696,36 +696,28 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             }
         })
         // ボトムメニューとメニューボタンのスワイプを検知し伝播する
-        binding.bottomAppBar.setOnTouchListener { _, motionEvent ->
-            val event = MotionEvent.obtain(
-                motionEvent.downTime,
-                motionEvent.eventTime,
-                motionEvent.action,
-                motionEvent.rawX,
-                motionEvent.rawY + 48, 0
+        binding.bottomAppBar.setOnTouchListener { _, ev ->
+            behavior.onTouchEvent(
+                binding.mainContentLayout,
+                binding.extraBottomMenu,
+                MotionEvent.obtain(ev.downTime, ev.eventTime, ev.action, ev.rawX, ev.rawY + 48, 0)
             )
-            behavior.onTouchEvent(binding.mainContentLayout, binding.extraBottomMenu, event)
         }
         var moved = false
-        binding.entriesMenuButton.setOnTouchListener { _, motionEvent ->
-            val event = MotionEvent.obtain(
-                motionEvent.downTime,
-                motionEvent.eventTime,
-                motionEvent.action,
-                motionEvent.rawX,
-                motionEvent.rawY + 64, 0
+        binding.entriesMenuButton.setOnTouchListener { _, ev ->
+            behavior.onTouchEvent(
+                binding.mainContentLayout,
+                binding.extraBottomMenu,
+                MotionEvent.obtain(ev.downTime, ev.eventTime, ev.action, ev.rawX, ev.rawY + 64, 0)
             )
-            behavior.onTouchEvent(binding.mainContentLayout, binding.extraBottomMenu, event)
-            moved =
-                when (motionEvent.action) {
-                    MotionEvent.ACTION_DOWN -> false
-                    MotionEvent.ACTION_MOVE -> true
-                    else -> moved
-                }
-            moved
+            when (ev.action) {
+                MotionEvent.ACTION_DOWN -> false
+                MotionEvent.ACTION_MOVE -> true
+                else -> moved
+            }.also { moved = it }
         }
         // 表示コンテンツの初期化
-        binding.extraBottomMenuRecyclerView.apply {
+        binding.extraBottomMenu.apply {
             adapter = ExtraBottomMenuAdapter().also { adapter ->
                 adapter.submitList(UserBottomItem.values().toList())
                 adapter.setOnClickListener { item ->
