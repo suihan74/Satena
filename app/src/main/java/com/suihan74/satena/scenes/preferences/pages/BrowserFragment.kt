@@ -22,8 +22,8 @@ import com.suihan74.satena.scenes.preferences.browser.UrlBlockingFragment
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
-import com.suihan74.utilities.extensions.requireActivity
 import com.suihan74.utilities.extensions.whenFalse
+import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -31,8 +31,12 @@ import kotlinx.coroutines.launch
  * 「ブラウザ」画面
  */
 class BrowserFragment : ListPreferencesFragment() {
-    override val viewModel
-        get() = requireActivity<PreferencesActivity>().browserViewModel
+    override val viewModel by lazy {
+        when (val activity = requireActivity()) {
+            is PreferencesActivity -> activity.browserViewModel
+            else -> provideViewModel(this) { BrowserViewModel(activity) }
+        }
+    }
 }
 
 // ------ //
