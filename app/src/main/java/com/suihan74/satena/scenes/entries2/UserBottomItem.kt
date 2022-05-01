@@ -33,13 +33,13 @@ enum class UserBottomItem(
         requireSignedIn = true
     ),
 
-    INNER_BROWSER(9,
+    INNER_BROWSER(10,
         R.drawable.ic_world,
         R.string.inner_browser,
         longClickable = true
     ),
 
-    EXCLUDED_ENTRIES(10,
+    EXCLUDED_ENTRIES(11,
         R.drawable.ic_preferences_filters,
         R.string.entry_excluded_entries_desc
     ),
@@ -69,12 +69,12 @@ enum class UserBottomItem(
         R.string.open_anonymous_diary_desc
     ),
 
-    HOME(7,
+    HOME(8,
         R.drawable.ic_category_all,
         R.string.home_category_desc
     ),
 
-    CATEGORIES(8,
+    CATEGORIES(9,
         R.drawable.ic_baseline_category,
         R.string.categories_desc
     ),
