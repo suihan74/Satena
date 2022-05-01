@@ -676,8 +676,13 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             behavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
         // エクストラボトムメニュー表示時にはクリックガード用の半透明背景を表示する
-        behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+        val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+            /** 展開後にメニューボタンのクリック処理を実行しない */
+            var cancelMenuButtonAction = false
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                cancelMenuButtonAction = true
+            }
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_EXPANDED -> {
@@ -695,7 +700,8 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                     else -> {}
                 }
             }
-        })
+        }
+        behavior.addBottomSheetCallback(bottomSheetCallback)
         // ボトムメニューとメニューボタンのスワイプを検知し伝播する
         binding.bottomAppBar.setOnTouchListener { _, ev ->
             behavior.onTouchEvent(
@@ -704,21 +710,19 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                 MotionEvent.obtain(ev.downTime, ev.eventTime, ev.action, ev.rawX, ev.rawY + 48, 0)
             )
         }
-        var moved = false
         binding.entriesMenuButton.setOnTouchListener { _, ev ->
             behavior.onTouchEvent(
                 binding.mainContentLayout,
                 binding.extraBottomMenu,
                 MotionEvent.obtain(ev.downTime, ev.eventTime, ev.action, ev.rawX, ev.rawY + 64, 0)
             )
-            when (ev.action) {
-                MotionEvent.ACTION_DOWN -> false
-                MotionEvent.ACTION_MOVE -> true
-                else -> moved
-            }.also { moved = it }
+            if (MotionEvent.ACTION_DOWN == ev.action) {
+                bottomSheetCallback.cancelMenuButtonAction = false
+            }
+            bottomSheetCallback.cancelMenuButtonAction  // 展開後にメニューボタンのクリック処理を実行しない
         }
         // 表示コンテンツの初期化
-        binding.extraBottomMenu.apply {
+        binding.extraBottomMenuRecyclerView.apply {
             adapter = ExtraBottomMenuAdapter().also { adapter ->
                 adapter.submitList(UserBottomItem.values().toList())
                 adapter.setOnClickListener { item ->
@@ -731,6 +735,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             }
             layoutManager = GridLayoutManager(this@EntriesActivity, 2, GridLayoutManager.HORIZONTAL, false)
             setHasFixedSize(true)
+            isNestedScrollingEnabled = true
         }
     }
 
