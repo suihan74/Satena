@@ -667,11 +667,13 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             }
         }
         // クリックガード押下・戻るボタン押下で閉じる
-        binding.bottomMenuBackgroundGuard.setOnTouchListener { _, motionEvent ->
+        val clickGuardAction : (View,MotionEvent)->Boolean = { _, motionEvent ->
             (MotionEvent.ACTION_DOWN == motionEvent.action).whenTrue {
                 behavior.state = BottomSheetBehavior.STATE_COLLAPSED
             }
         }
+        binding.bottomMenuBackgroundGuardA.setOnTouchListener(clickGuardAction)
+        binding.bottomMenuBackgroundGuardB.setOnTouchListener(clickGuardAction)
         val backPressedCallback = onBackPressedDispatcher.addCallback(this, false) {
             behavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
@@ -686,13 +688,15 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_EXPANDED -> {
-                        binding.bottomMenuBackgroundGuard.visibility = View.VISIBLE
+                        binding.bottomMenuBackgroundGuardA.visibility = View.VISIBLE
+                        binding.bottomMenuBackgroundGuardB.visibility = View.VISIBLE
                         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
                         binding.entriesMenuButton.hide()
                         backPressedCallback.isEnabled = true
                     }
                     BottomSheetBehavior.STATE_COLLAPSED -> {
-                        binding.bottomMenuBackgroundGuard.visibility = View.GONE
+                        binding.bottomMenuBackgroundGuardA.visibility = View.GONE
+                        binding.bottomMenuBackgroundGuardB.visibility = View.GONE
                         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
                         binding.entriesMenuButton.show()
                         backPressedCallback.isEnabled = false
