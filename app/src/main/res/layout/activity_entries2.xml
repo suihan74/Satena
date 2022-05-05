@@ -172,12 +172,12 @@
                         app:behavior_peekHeight="0dp"
                         android:elevation="32dp"
                         android:layout_width="match_parent"
-                        android:layout_height="240dp">
+                        android:layout_height="236dp">
 
                     <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/extra_bottom_menu_recycler_view"
                             android:background="?tabBackground"
-                            style="@style/HorizontalRecyclerView"
+                            style="@style/RecyclerView.Linear"
                             app:layout_behavior="@string/appbar_scrolling_view_behavior"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"/>

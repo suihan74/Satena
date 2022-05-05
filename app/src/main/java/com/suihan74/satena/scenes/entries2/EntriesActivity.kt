@@ -737,7 +737,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                     }
                 }
             }
-            layoutManager = GridLayoutManager(this@EntriesActivity, 2, GridLayoutManager.HORIZONTAL, false)
+            layoutManager = GridLayoutManager(this@EntriesActivity, 5, GridLayoutManager.VERTICAL, false)
             setHasFixedSize(true)
             isNestedScrollingEnabled = true
         }
