@@ -137,6 +137,9 @@ enum class PreferenceKey(
     /** ボトムバーの追加項目の表示位置 */
     ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT(typeInfo<Int>(), ExtraBottomItemsAlignment.DEFAULT.id),
 
+    /** エクストラボトムメニューを使用する */
+    ENTRIES_USE_EXTRA_BOTTOM_MENU(typeInfo<Boolean>(), true),
+
     /** エクストラスクロール機能のツマミの配置 */
     ENTRIES_EXTRA_SCROLL_ALIGNMENT(typeInfo<Int>(), ExtraScrollingAlignment.RIGHT.id),
 

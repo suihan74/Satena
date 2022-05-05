@@ -121,6 +121,10 @@ class EntriesViewModel(
     val extraBottomItemsAlignment : ExtraBottomItemsAlignment
         get() = repository.extraBottomItemsAlignment
 
+    /** エクストラボトムメニューを使用する */
+    val useExtraBottomMenu : Boolean
+        get() = repository.useExtraBottomMenu
+
     /** 表示中画面のタブ位置 */
     val currentTabPosition = MutableLiveData<Int>()
 

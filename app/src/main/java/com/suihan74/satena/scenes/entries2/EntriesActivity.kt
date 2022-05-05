@@ -184,9 +184,6 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         // エクストラスクロール機能を初期化
         initializeExtraScrollBar()
 
-        // エクストラボトムメニューの設定
-        initializeExtraBottomMenu(binding)
-
         // --- Event listeners ---
 
         // FABメニュー表示ボタン
@@ -342,6 +339,9 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         binding.bottomSearchView.let {
             it.visibility = (it.visibility == View.VISIBLE && viewModel.isBottomLayoutMode).toVisibility()
         }
+
+        // エクストラボトムメニューの設定
+        initializeExtraBottomMenu(binding)
 
         // ツールバーを隠す設定を反映
         binding.toolbar.let {
@@ -658,8 +658,16 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     /**
      * エクストラボトムメニューを設定する
      */
-    @SuppressLint("ClickableViewAccessibility")
     private fun initializeExtraBottomMenu(binding: ActivityEntries2Binding) {
+        if (viewModel.useExtraBottomMenu) validateExtraBottomMenu(binding)
+        else invalidateExtraBottomMenu(binding)
+    }
+
+    /**
+     * エクストラボトムメニューを有効にする
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private fun validateExtraBottomMenu(binding: ActivityEntries2Binding) {
         val behavior = BottomSheetBehavior.from(binding.extraBottomMenu).apply {
             isHideable = false
             lifecycleScope.launchWhenResumed {
@@ -740,6 +748,15 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             setHasFixedSize(true)
             isNestedScrollingEnabled = true
         }
+    }
+
+    /**
+     * エクストラボトムメニューを無効にする
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private fun invalidateExtraBottomMenu(binding: ActivityEntries2Binding) {
+        binding.bottomAppBar.setOnTouchListener(null)
+        binding.entriesMenuButton.setOnTouchListener(null)
     }
 
     // ------ //
