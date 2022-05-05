@@ -699,6 +699,8 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
                         binding.entriesMenuButton.hide()
                         backPressedCallback.isEnabled = true
+                        closeFABMenu()
+                        // クリックガードをアプリバーの上・ボトムバーの下に表示するために必要
                         binding.appbarLayout.elevation = 0.0f
                     }
                     BottomSheetBehavior.STATE_COLLAPSED -> {
