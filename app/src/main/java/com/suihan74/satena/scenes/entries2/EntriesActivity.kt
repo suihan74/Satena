@@ -672,8 +672,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                 behavior.state = BottomSheetBehavior.STATE_COLLAPSED
             }
         }
-        binding.bottomMenuBackgroundGuardA.setOnTouchListener(clickGuardAction)
-        binding.bottomMenuBackgroundGuardB.setOnTouchListener(clickGuardAction)
+        binding.bottomMenuBackgroundGuard.setOnTouchListener(clickGuardAction)
         val backPressedCallback = onBackPressedDispatcher.addCallback(this, false) {
             behavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
@@ -688,18 +687,18 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_EXPANDED -> {
-                        binding.bottomMenuBackgroundGuardA.visibility = View.VISIBLE
-                        binding.bottomMenuBackgroundGuardB.visibility = View.VISIBLE
+                        binding.bottomMenuBackgroundGuard.visibility = View.VISIBLE
                         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
                         binding.entriesMenuButton.hide()
                         backPressedCallback.isEnabled = true
+                        binding.appbarLayout.elevation = 0.0f
                     }
                     BottomSheetBehavior.STATE_COLLAPSED -> {
-                        binding.bottomMenuBackgroundGuardA.visibility = View.GONE
-                        binding.bottomMenuBackgroundGuardB.visibility = View.GONE
+                        binding.bottomMenuBackgroundGuard.visibility = View.GONE
                         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
                         binding.entriesMenuButton.show()
                         backPressedCallback.isEnabled = false
+                        binding.appbarLayout.elevation = 7.0f
                     }
                     else -> {}
                 }
