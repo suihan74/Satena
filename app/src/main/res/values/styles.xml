@@ -180,6 +180,12 @@
         <item name="layoutManager">androidx.recyclerview.widget.LinearLayoutManager</item>
     </style>
 
+    <style name="HorizontalRecyclerView">
+        <item name="android:scrollbarThumbHorizontal">@drawable/scrollbar_thumb</item>
+        <item name="android:scrollbarSize">4dp</item>
+        <item name="android:scrollbars">horizontal</item>
+    </style>
+
     <!-- MarqueeTextView -->
     <style name="MarqueeTextView" parent="Widget.AppCompat.TextView">
         <item name="android:ellipsize">marquee</item>

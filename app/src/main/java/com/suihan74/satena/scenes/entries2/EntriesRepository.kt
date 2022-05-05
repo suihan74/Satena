@@ -202,6 +202,10 @@ class EntriesRepository(
     val extraBottomItemsAlignment : ExtraBottomItemsAlignment
         get() = ExtraBottomItemsAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT))
 
+    /** エクストラボトムメニューを使用する */
+    val useExtraBottomMenu : Boolean
+        get() = prefs.get(PreferenceKey.ENTRIES_USE_EXTRA_BOTTOM_MENU)
+
     /** エクストラスクロール機能のツマミの配置 */
     val extraScrollingAlignment
         get() = ExtraScrollingAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_SCROLL_ALIGNMENT))

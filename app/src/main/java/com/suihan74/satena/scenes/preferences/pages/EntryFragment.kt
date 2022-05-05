@@ -82,6 +82,11 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         { ExtraBottomItemsAlignment.fromId(it) }
     )
 
+    /** エクストラボトムメニューを使用する */
+    private val useExtraBottomMenu = createLiveData<Boolean>(
+        PreferenceKey.ENTRIES_USE_EXTRA_BOTTOM_MENU
+    )
+
     /** エクストラスクロール機能のツマミの配置 */
     private val extraScrollingAlignment = createLiveDataEnum(
         PreferenceKey.ENTRIES_EXTRA_SCROLL_ALIGNMENT,
@@ -258,6 +263,7 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
                 )
             }
         }
+        addPrefToggleItem(useExtraBottomMenu, R.string.pref_entries_use_extra_bottom_menu_desc)
 
         // --- //
 
