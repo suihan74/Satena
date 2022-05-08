@@ -3,6 +3,7 @@ package com.suihan74.satena.models
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
+import com.suihan74.hatenaLib.NoticeVerb
 import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.models.browser.ReadEntryLifetime
 import com.suihan74.satena.models.readEntry.ReadEntryBehavior
@@ -105,6 +106,9 @@ enum class PreferenceKey(
 
     /** スパムと思われる通知を報せない */
     IGNORE_NOTICES_FROM_SPAM(typeInfo<Boolean>(), true),
+
+    /** システムの通知を行うはてな通知タイプ */
+    ACTIVE_NOTICE_VERBS(typeInfo<Int>(), NoticeVerb.all),
 
     /** 最後に起動したときのアプリバージョン */
     APP_VERSION_LAST_LAUNCH(typeInfo<String>(), "0"),

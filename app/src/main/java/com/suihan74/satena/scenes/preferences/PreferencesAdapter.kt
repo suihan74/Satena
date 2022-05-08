@@ -167,13 +167,13 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
     constructor(
         liveData: LiveData<T>,
         @StringRes titleId: Int,
-        @StringRes suffixId: Int? = null,
-        onLongClick: (()->Unit)? = null,
-        onClick: (()->Unit)? = null
+        textConverter: ((Context, Any) -> String)? = null,
+        onLongClick: (() -> Unit)? = null,
+        onClick: (() -> Unit)? = null
     ) {
         this.liveData = liveData
         this.titleId = titleId
-        this.suffixId = suffixId
+        this.textConverter = textConverter ?: { context, value -> defaultTextConverter(context, value) }
         this.onLongClick = onLongClick
         this.onClick = onClick
     }
@@ -181,13 +181,13 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
     constructor(
         flow: Flow<T>,
         @StringRes titleId: Int,
-        @StringRes suffixId: Int? = null,
-        onLongClick: (()->Unit)? = null,
-        onClick: (()->Unit)? = null
+        textConverter: ((Context, Any) -> String)? = null,
+        onLongClick: (() -> Unit)? = null,
+        onClick: (() -> Unit)? = null
     ) {
         this.liveData = flow.asLiveData()
         this.titleId = titleId
-        this.suffixId = suffixId
+        this.textConverter = textConverter ?: { context, value -> defaultTextConverter(context, value) }
         this.onLongClick = onLongClick
         this.onClick = onClick
     }
@@ -196,13 +196,14 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
 
     val liveData: LiveData<T>
 
-    @StringRes val titleId: Int
+    @StringRes
+    val titleId: Int
 
-    @StringRes val suffixId: Int?
+    val textConverter: (Context, Any) -> String
 
-    private val onLongClick: (()->Unit)?
+    private val onLongClick: (() -> Unit)?
 
-    private val onClick: (()->Unit)?
+    private val onClick: (() -> Unit)?
 
     // ------ //
 
@@ -225,16 +226,32 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
         }
     }
 
-    override fun areItemsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) : Boolean =
+    override fun areItemsTheSame(
+        old: PreferencesAdapter.Item,
+        new: PreferencesAdapter.Item
+    ): Boolean =
         old is PreferenceItem<*> && new is PreferenceItem<*> && old.titleId == new.titleId
 
-    override fun areContentsTheSame(old: PreferencesAdapter.Item, new: PreferencesAdapter.Item) : Boolean =
+    override fun areContentsTheSame(
+        old: PreferencesAdapter.Item,
+        new: PreferencesAdapter.Item
+    ): Boolean =
         old is PreferenceItem<*> && new is PreferenceItem<*> &&
                 old.liveData.value == new.liveData.value &&
                 old.titleId == new.titleId &&
-                old.suffixId == new.suffixId &&
+                old.textConverter == new.textConverter &&
                 old.onLongClick == new.onLongClick &&
                 old.onClick == new.onClick
+
+    companion object {
+        fun <T> defaultTextConverter(context: Context, value: T): String =
+            when (value) {
+                is Number -> value.toString()
+                is Boolean -> context.getString(if (value) R.string.on else R.string.off)
+                is TextIdContainer -> context.getString(value.textId)
+                else -> value.toString()
+            }
+    }
 }
 
 /**
@@ -243,9 +260,9 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
 open class PreferenceToggleItem(
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
-    @StringRes suffixId: Int? = null,
+    textConverter: ((Context, Any) -> String)? = null,
     action: ((Boolean)->Unit)? = null
-) : PreferenceItem<Boolean>(liveData, titleId, suffixId, null, {
+) : PreferenceItem<Boolean>(liveData, titleId, textConverter, null, {
     action?.invoke(liveData.value == true) ?: run {
         liveData.value = liveData.value != true
     }
@@ -330,24 +347,24 @@ fun MutableList<PreferencesAdapter.Item>.addButton(
 /**
  * 設定項目を追加する
  */
-fun MutableList<PreferencesAdapter.Item>.addPrefItem(
-    liveData: LiveData<*>,
+fun <T> MutableList<PreferencesAdapter.Item>.addPrefItem(
+    liveData: LiveData<T>,
     @StringRes titleId: Int,
-    @StringRes suffixId: Int? = null,
+    textConverter: ((Context, Any) -> String)? = null,
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
-) = add(PreferenceItem(liveData, titleId, suffixId, onLongClick, onClick))
+) = add(PreferenceItem(liveData, titleId, textConverter, onLongClick, onClick))
 
 /**
  * 設定項目を追加する
  */
-fun MutableList<PreferencesAdapter.Item>.addPrefItem(
-    flow: Flow<*>,
+fun <T> MutableList<PreferencesAdapter.Item>.addPrefItem(
+    flow: Flow<T>,
     @StringRes titleId: Int,
-    @StringRes suffixId: Int? = null,
+    textConverter: ((Context, Any) -> String)? = null,
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
-) = add(PreferenceItem(flow, titleId, suffixId, onLongClick, onClick))
+) = add(PreferenceItem(flow, titleId, textConverter, onLongClick, onClick))
 
 /**
  * 真偽値をトグルする設定項目を追加する
@@ -355,9 +372,9 @@ fun MutableList<PreferencesAdapter.Item>.addPrefItem(
 fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
-    @StringRes suffixId: Int? = null,
+    textConverter: ((Context, Any) -> String)? = null,
     action: ((Boolean)->Unit)? = null
-) = add(PreferenceToggleItem(liveData, titleId, suffixId, action))
+) = add(PreferenceToggleItem(liveData, titleId, textConverter, action))
 
 fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
     liveData: MutableLiveData<Boolean>,
@@ -390,27 +407,18 @@ object PreferencesAdapterBindingAdapters {
         }
     }
 
-    /**
-     * 現在の設定値を表示する
-     */
     @JvmStatic
-    @BindingAdapter("currentPreference", "suffixId")
-    fun bindPref(textView: TextView, liveData: LiveData<*>?, suffixId: Int?) {
+    @BindingAdapter("currentPreference", "converter")
+    fun bindPref(textView: TextView, liveData: LiveData<*>?, converter: ((Context, Any)->String)?) {
         val context = textView.context
-        val value = when (val value = liveData?.value) {
-            is Number -> value.toString()
-
-            is Boolean ->
-                context.getString(
-                    if (value) R.string.on
-                    else R.string.off
-                )
-
-            is TextIdContainer -> context.getString(value.textId)
-
-            else -> value?.toString().orEmpty()
-        }
-        val suffix = suffixId?.let { context.getText(it) } ?: ""
-        textView.text = String.format("%s%s", value, suffix)
+        textView.text =
+            liveData?.value?.let { value ->
+                converter?.invoke(context, value) ?: when (value) {
+                    is Number -> value.toString()
+                    is Boolean -> context.getString(if (value) R.string.on else R.string.off)
+                    is TextIdContainer -> context.getString(value.textId)
+                    else -> value.toString()
+                }
+            }.orEmpty()
     }
 }

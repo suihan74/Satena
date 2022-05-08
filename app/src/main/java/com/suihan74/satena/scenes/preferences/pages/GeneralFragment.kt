@@ -14,6 +14,7 @@ import com.suihan74.satena.models.*
 import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.NoticeVerbCompat
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.extensions.requireActivity
@@ -96,6 +97,11 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
     /** スパムと思われるスター通知を行わない */
     val ignoreNoticesToSilentBookmark = createLiveData<Boolean>(
         PreferenceKey.IGNORE_NOTICES_FROM_SPAM
+    )
+
+    /** システムの通知を行うはてな通知タイプ */
+    private val activeNoticeVerbs = createLiveData<Int>(
+        PreferenceKey.ACTIVE_NOTICE_VERBS
     )
 
     /** アップデート後初回起動時にリリースノートを表示する */
@@ -196,23 +202,36 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
 
         addSection(R.string.pref_generals_section_notices)
         addPrefToggleItem(checkNotices, R.string.pref_generals_background_checking_notices_desc)
-        addPrefItem(checkNoticesInterval, R.string.pref_generals_checking_notices_intervals_desc, R.string.minutes) {
-            openNumberPickerDialog(
+        if (checkNotices.value == true) {
+            addPrefItem(
                 checkNoticesInterval,
-                min = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_LOWER_BOUND,
-                max = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_UPPER_BOUND,
-                titleId = R.string.pref_generals_checking_notices_intervals_desc,
-                messageId = R.string.pref_generals_notices_intervals_dialog_msg,
-                fragmentManager = fragmentManager
+                R.string.pref_generals_checking_notices_intervals_desc,
+                { context, value -> buildString { append(value.toString(), context.getString(R.string.minutes)) } }
             ) {
-                SatenaApplication.instance.startCheckingNotificationsWorker(
-                    SatenaApplication.instance,
-                    forceReplace = true
-                )
+                openNumberPickerDialog(
+                    checkNoticesInterval,
+                    min = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_LOWER_BOUND,
+                    max = PreferenceKey.BACKGROUND_CHECKING_NOTICES_INTERVALS_UPPER_BOUND,
+                    titleId = R.string.pref_generals_checking_notices_intervals_desc,
+                    messageId = R.string.pref_generals_notices_intervals_dialog_msg,
+                    fragmentManager = fragmentManager
+                ) {
+                    SatenaApplication.instance.startCheckingNotificationsWorker(
+                        SatenaApplication.instance,
+                        forceReplace = true
+                    )
+                }
             }
+            addPrefItem(
+                activeNoticeVerbs,
+                R.string.pref_generals_enabled_notice_verbs_desc,
+                { context, value -> createNoticeTypesText(context, value as Int) }
+            ) {
+                openEnabledNoticeVerbsSelectionDialog(fragmentManager)
+            }
+            addPrefToggleItem(ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
         }
         addPrefToggleItem(noticesLastSeenUpdatable, R.string.pref_generals_notices_last_seen_updatable_desc)
-        addPrefToggleItem(ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
 
         // --- //
 
@@ -267,6 +286,39 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         viewModelScope.launch {
             calcImageCacheSize(context)
         }
+    }
+
+    // ------ //
+
+    private fun openEnabledNoticeVerbsSelectionDialog(fragmentManager: FragmentManager) {
+        val value = activeNoticeVerbs.value ?: 0
+        val valueLabelPairs = NoticeVerbCompat.valueTextPairs()
+        val labels = valueLabelPairs.map { it.second }
+        val states = valueLabelPairs.map { it.first.code and value > 0 }.toBooleanArray()
+
+        AlertDialogFragment.Builder()
+            .setTitle(R.string.pref_generals_enabled_notice_verbs_desc)
+            .setMultipleChoiceItems(labels, states) { _, which, b ->
+                states[which] = b
+            }
+            .setNegativeButton(R.string.dialog_cancel)
+            .setPositiveButton(R.string.dialog_ok) {
+                activeNoticeVerbs.value =
+                    valueLabelPairs.foldIndexed(0) { index, acc, pair ->
+                        if (states[index]) acc + pair.first.code
+                        else acc
+                    }
+            }
+            .show(fragmentManager)
+    }
+
+    private fun createNoticeTypesText(context: Context, value: Int) : String {
+        val labels = NoticeVerbCompat.valueTextPairs().mapNotNull { pair ->
+            if (pair.first.code and value > 0) context.getString(pair.second)
+            else null
+        }
+        return if (labels.isEmpty()) "すべて無効"
+            else labels.joinToString(",")
     }
 
     // ------ //

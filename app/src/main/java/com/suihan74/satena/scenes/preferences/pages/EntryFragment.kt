@@ -317,7 +317,11 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
             )
         }
 
-        addPrefItem(multipleTapDuration, R.string.pref_entries_multiple_tap_duration_desc, R.string.pref_entries_multiple_tap_duration_unit) {
+        addPrefItem(
+            multipleTapDuration,
+            R.string.pref_entries_multiple_tap_duration_desc,
+            { context, value -> buildString { append(value.toString(), context.getString(R.string.pref_entries_multiple_tap_duration_unit)) } }
+        ) {
             openMultipleTapDurationDialog(fragmentManager)
         }
 
@@ -382,7 +386,11 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_entry_section_history)
-        addPrefItem(historyMaxSize, R.string.pref_entries_history_max_size_desc, R.string.pref_entries_history_max_size_text) {
+        addPrefItem(
+            historyMaxSize,
+            R.string.pref_entries_history_max_size_desc,
+            { context, value -> buildString { append(value.toString(), context.getString(R.string.pref_entries_history_max_size_text)) } }
+        ) {
             openNumberPickerDialog(
                 historyMaxSize,
                 min = EntriesHistoryKey.MAX_SIZE_LOWER_BOUND,
