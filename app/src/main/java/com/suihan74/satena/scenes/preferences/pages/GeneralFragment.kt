@@ -6,7 +6,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.suihan74.hatenaLib.NoticeVerb
 import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
@@ -15,6 +14,7 @@ import com.suihan74.satena.models.*
 import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.scenes.preferences.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
+import com.suihan74.utilities.extensions.NoticeVerbCompat
 import com.suihan74.utilities.extensions.alsoAs
 import com.suihan74.utilities.extensions.putObjectExtra
 import com.suihan74.utilities.extensions.requireActivity
@@ -206,7 +206,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
             addPrefItem(
                 checkNoticesInterval,
                 R.string.pref_generals_checking_notices_intervals_desc,
-                R.string.minutes
+                { context, value -> buildString { append(value.toString(), context.getString(R.string.minutes)) } }
             ) {
                 openNumberPickerDialog(
                     checkNoticesInterval,
@@ -222,7 +222,11 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
                     )
                 }
             }
-            addPrefItem(activeNoticeVerbs, R.string.pref_generals_enabled_notice_verbs_desc) {
+            addPrefItem(
+                activeNoticeVerbs,
+                R.string.pref_generals_enabled_notice_verbs_desc,
+                { context, value -> createNoticeTypesText(context, value as Int) }
+            ) {
                 openEnabledNoticeVerbsSelectionDialog(fragmentManager)
             }
             addPrefToggleItem(ignoreNoticesToSilentBookmark, R.string.pref_generals_ignore_notices_from_spam_desc)
@@ -288,12 +292,7 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
 
     private fun openEnabledNoticeVerbsSelectionDialog(fragmentManager: FragmentManager) {
         val value = activeNoticeVerbs.value ?: 0
-        val valueLabelPairs = listOf(
-            NoticeVerb.ADD_FAVORITE to R.string.notice_verb_add_favorite,
-            NoticeVerb.STAR to R.string.notice_verb_star,
-            NoticeVerb.BOOKMARK to R.string.notice_verb_bookmark,
-            NoticeVerb.FIRST_BOOKMARK to R.string.notice_verb_first_bookmark
-        )
+        val valueLabelPairs = NoticeVerbCompat.valueTextPairs()
         val labels = valueLabelPairs.map { it.second }
         val states = valueLabelPairs.map { it.first.code and value > 0 }.toBooleanArray()
 
@@ -311,6 +310,15 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
                     }
             }
             .show(fragmentManager)
+    }
+
+    private fun createNoticeTypesText(context: Context, value: Int) : String {
+        val labels = NoticeVerbCompat.valueTextPairs().mapNotNull { pair ->
+            if (pair.first.code and value > 0) context.getString(pair.second)
+            else null
+        }
+        return if (labels.isEmpty()) "すべて無効"
+            else labels.joinToString(",")
     }
 
     // ------ //

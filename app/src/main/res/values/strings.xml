@@ -223,6 +223,7 @@
     <string name="notice_verb_bookmark">ブクマされた</string>
     <string name="notice_verb_star">スターがつけられた</string>
     <string name="notice_verb_first_bookmark">1stブクマしたエントリが盛り上がっている</string>
+    <string name="notice_verb_others">その他</string>
 
     <!-- PreferencesActivity -->
     <string name="pref_toolbar_title">設定 > %s</string>
