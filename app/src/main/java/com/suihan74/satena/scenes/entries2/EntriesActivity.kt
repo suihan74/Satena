@@ -547,11 +547,30 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         clearTabLayoutState(it)
     }
 
+    private var bottomSearchViewOnChangeVisibilityListener : ViewTreeObserver.OnGlobalLayoutListener? = null
+
     /** ボトムバーの状態を初期化する */
     private fun clearBottomAppBarState(bottomAppBar: BottomAppBar) {
         bottomAppBar.menu.clear()
         bottomAppBar.setOnMenuItemClickListener(null)
-        binding.bottomSearchView.visibility = View.GONE
+        binding.bottomSearchView.let { view ->
+            view.visibility = View.GONE
+            view.tag = View.GONE
+
+            bottomSearchViewOnChangeVisibilityListener?.let { listener ->
+                runCatching {
+                    view.viewTreeObserver.removeOnGlobalLayoutListener(listener)
+                }
+            }
+            bottomSearchViewOnChangeVisibilityListener = ViewTreeObserver.OnGlobalLayoutListener {
+                if (view.tag == view.visibility) return@OnGlobalLayoutListener
+                when (view.visibility) {
+                    View.VISIBLE -> closeExtraBottomMenu()
+                    else -> {}
+                }
+                view.tag = view.visibility
+            }.also { listener -> view.viewTreeObserver.addOnGlobalLayoutListener(listener) }
+        }
         bottomAppBar.alsoAs<CustomBottomAppBar> {
             it.bindMenuItemsGravity(viewModel.bottomBarItemsGravity)
         }
@@ -578,8 +597,9 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             }
 
         bottomAppBar.setOnMenuItemClickListener { clicked ->
+            closeExtraBottomMenu()
             val idx = menuItems.indexOf(clicked)
-            if (idx != -1) {
+            if (idx > -1) {
                 val item = viewModel.bottomBarItems[idx]
                 onBottomMenuItemClickListener?.invoke(item)
             }
@@ -587,6 +607,7 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         }
 
         setOnBottomMenuItemClickListener { item ->
+            closeExtraBottomMenu()
             viewModel.onBasicBottomMenuItemClicked(this, item)
         }
     }
@@ -603,10 +624,12 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
             background = getThemeDrawable(R.attr.actionBarItemBackground)
 
             setOnClickListener {
+                closeExtraBottomMenu()
                 onBottomMenuItemClickListener?.invoke(item)
             }
 
             setOnLongClickListener {
+                closeExtraBottomMenu()
                 viewModel.onBottomMenuItemLongClicked(this@EntriesActivity, item)
                 true
             }
@@ -745,6 +768,9 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
                         onBottomMenuItemClickListener?.invoke(item)
                     }
                 }
+                adapter.setOnLongClickListener {
+                    it.longClickable.whenTrue { viewModel.onBottomMenuItemLongClicked(this@EntriesActivity, it) }
+                }
             }
             layoutManager = GridLayoutManager(this@EntriesActivity, 5, GridLayoutManager.VERTICAL, false)
             setHasFixedSize(true)
@@ -759,6 +785,13 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
     private fun invalidateExtraBottomMenu(binding: ActivityEntries2Binding) {
         binding.bottomAppBar.setOnTouchListener(null)
         binding.entriesMenuButton.setOnTouchListener(null)
+    }
+
+    /**
+     * エクストラボトムメニューを閉じる
+     */
+    private fun closeExtraBottomMenu() {
+        BottomSheetBehavior.from(binding.extraBottomMenu).state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     // ------ //
