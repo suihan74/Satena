@@ -7,14 +7,20 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.suihan74.satena.GlideApp
 import com.suihan74.satena.databinding.ListviewItemExtraBottomMenuBinding
-import com.suihan74.utilities.Listener
+import com.suihan74.utilities.ItemClickedListener
+import com.suihan74.utilities.ItemLongClickedListener
 
 class ExtraBottomMenuAdapter : ListAdapter<UserBottomItem, ExtraBottomMenuAdapter.ViewHolder>(DiffCallback()) {
 
-    private var onClickListener : Listener<UserBottomItem>? = null
+    private var onClickListener : ItemClickedListener<UserBottomItem>? = null
+    private var onLongClickListener : ItemLongClickedListener<UserBottomItem>? = null
 
-    fun setOnClickListener(listener: Listener<UserBottomItem>?) {
+    fun setOnClickListener(listener: ItemClickedListener<UserBottomItem>?) {
         onClickListener = listener
+    }
+
+    fun setOnLongClickListener(listener: ItemLongClickedListener<UserBottomItem>?) {
+        onLongClickListener = listener
     }
 
     // ------ //
@@ -31,6 +37,9 @@ class ExtraBottomMenuAdapter : ListAdapter<UserBottomItem, ExtraBottomMenuAdapte
                 .into(holder.binding.icon)
             holder.binding.root.setOnClickListener {
                 onClickListener?.invoke(item)
+            }
+            holder.binding.root.setOnLongClickListener {
+                onLongClickListener?.invoke(item) == true
             }
         }
     }
