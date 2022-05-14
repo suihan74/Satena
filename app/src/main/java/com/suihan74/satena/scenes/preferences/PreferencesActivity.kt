@@ -99,7 +99,9 @@ class PreferencesActivity : AppCompatActivity() {
                         )
 
                         filteredPreferencesList.postValue(
-                            rawList.filter { regex.find(it.item.description) != null }
+                            rawList
+                                .filter { regex.find(it.item.description) != null }
+                                .filter { it.item !is PreferencesAdapter.Section }
                         )
                     }
                 }
