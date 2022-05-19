@@ -3,6 +3,8 @@ package com.suihan74.satena.scenes.browser
 import android.graphics.Bitmap
 import android.webkit.WebChromeClient
 import android.webkit.WebView
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 class BrowserWebChromeClient(
@@ -11,6 +13,8 @@ class BrowserWebChromeClient(
 ) : WebChromeClient() {
 
     private val viewModelRef = WeakReference(viewModel)
+    private val viewModel : BrowserViewModel?
+        get() = viewModelRef.get()
 
     /**
      * ページ読み込み進捗
@@ -25,9 +29,8 @@ class BrowserWebChromeClient(
      */
     override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
         super.onReceivedIcon(view, icon)
-        if (repo.faviconLoading.value == true) {
-            repo.faviconLoading.value = false
-            repo.faviconBitmap.value = icon
+        viewModel?.viewModelScope?.launch {
+            repo.loadFavicon(icon)
         }
     }
 
@@ -36,6 +39,6 @@ class BrowserWebChromeClient(
      */
     override fun onReceivedTitle(view: WebView?, title: String?) {
         super.onReceivedTitle(view, title)
-        viewModelRef.get()?.onReceivedTitle(view, title)
+        viewModel?.onReceivedTitle(view, title)
     }
 }

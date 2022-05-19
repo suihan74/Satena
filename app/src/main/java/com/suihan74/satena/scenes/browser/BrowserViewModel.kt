@@ -758,8 +758,7 @@ class BrowserViewModel(
         vm.title.value = url
         vm.url.value = url
         if (url != previousUrl) {
-            vm.faviconBitmap.value = null
-            vm.faviconLoading.value = true
+            browserRepo.startLoadingFavicon()
         }
         browserRepo.resourceUrls.clear()
     }
