@@ -209,36 +209,42 @@ class HistoryRepository(
 
     // ------ //
 
+    private val faviconMutex = Mutex()
+
     /** 読み込んだfaviconをアプリディレクトリ内にキャッシュ */
     @Suppress("BlockingMethodInNonBlockingContext")
     suspend fun saveFaviconCache(context: Context, bitmap: Bitmap, url: String?) = withContext(Dispatchers.IO) {
-        runCatching {
-            val domain = Uri.parse(url).host!!
-            val existed = SatenaApplication.instance.browserDao.findFaviconInfo(domain)
-            if (existed?.lastUpdated?.isAfter(ZonedDateTime.now().minusDays(FAVICON_CACHE_LIFESPAN)) == true) {
-                return@runCatching
-            }
-
-            File(context.filesDir, "favicon_cache").let { dir ->
-                dir.mkdir()
-                val byteArray =
-                    ByteArrayOutputStream().use { ostream ->
-                        val compressFormat =
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) Bitmap.CompressFormat.PNG
-                            else Bitmap.CompressFormat.WEBP_LOSSY
-                        bitmap.compress(compressFormat, 100, ostream)
-                        ostream.toByteArray()
-                    }
-
-                val filename = getSha256(byteArray)
-                val outFile = File(dir, filename)
-                outFile.outputStream().use { it.write(byteArray) }
-
-                runCatching {
-                    insertFaviconInfo(filename, url, domain)
-                }.onFailure {
-                    outFile.delete()
+        faviconMutex.withLock {
+            runCatching {
+                val domain = Uri.parse(url).host!!
+                val existed = SatenaApplication.instance.browserDao.findFaviconInfo(domain)
+                if (existed?.lastUpdated?.isAfter(ZonedDateTime.now().minusDays(FAVICON_CACHE_LIFESPAN)) == true) {
+                    return@runCatching
                 }
+
+                File(context.filesDir, "favicon_cache").let { dir ->
+                    dir.mkdir()
+                    val byteArray =
+                        ByteArrayOutputStream().use { ostream ->
+                            val compressFormat =
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) Bitmap.CompressFormat.PNG
+                                else Bitmap.CompressFormat.WEBP_LOSSY
+                            bitmap.compress(compressFormat, 100, ostream)
+                            ostream.toByteArray()
+                        }
+
+                    val filename = getSha256(byteArray)
+                    val outFile = File(dir, filename)
+                    outFile.outputStream().use { it.write(byteArray) }
+
+                    runCatching {
+                        insertFaviconInfo(filename, url, domain)
+                    }.onFailure {
+                        outFile.delete()
+                    }
+                }
+            }.onFailure {
+                FirebaseCrashlytics.getInstance().recordException(it)
             }
         }
     }
@@ -273,15 +279,48 @@ class HistoryRepository(
         }
     }
 
+    /**
+     * 使用されていないFaviconInfoを削除する
+     */
     private suspend fun clearOldFavicons(context: Context) {
-        runCatching {
-            val oldItems = dao.findOldFaviconInfo()
-            dao.deleteFaviconInfo(oldItems)
-            File(context.filesDir, "favicon_cache").let { dir ->
-                for (item in oldItems) {
-                    File(dir, item.filename).delete()
+        faviconMutex.withLock {
+            runCatching {
+                val oldItems = dao.findOldFaviconInfo()
+                dao.deleteFaviconInfo(oldItems)
+                File(context.filesDir, "favicon_cache").let { dir ->
+                    for (item in oldItems) {
+                        File(dir, item.filename).delete()
+                    }
                 }
+            }.onFailure {
+                FirebaseCrashlytics.getInstance().recordException(it)
             }
+        }
+        clearUnManagedFavicons(context)
+    }
+
+    private var clearUnManagedFaviconsCalled = false
+
+    /**
+     * ジャーナルにFaviconInfoが記載されていないのに存在するキャッシュファイルを削除する
+     */
+    private suspend fun clearUnManagedFavicons(context: Context) {
+        faviconMutex.withLock {
+            if (clearUnManagedFaviconsCalled) return
+            runCatching {
+                buildList {
+                    File(context.filesDir, "favicon_cache").listFiles { dir, filename ->
+                        add(filename)
+                    }
+                }.filterNot { filename ->
+                    dao.existFaviconInfo(filename)
+                }.forEach { filename ->
+                    File("${context.filesDir.absolutePath}/favicon_cache/$filename").delete()
+                }
+            }.onFailure {
+                FirebaseCrashlytics.getInstance().recordException(it)
+            }
+            clearUnManagedFaviconsCalled = true
         }
     }
 }

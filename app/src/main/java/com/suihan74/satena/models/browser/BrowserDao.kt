@@ -242,6 +242,11 @@ interface BrowserDao {
     """)
     suspend fun findFaviconInfo(domain: String) : FaviconInfo?
 
+    @Query("""
+        select exists (select * from browser_favicon_info where filename = :filename)
+    """)
+    suspend fun existFaviconInfo(filename: String) : Boolean
+
     @Query("delete from browser_favicon_info")
     suspend fun clearFaviconInfo()
 
