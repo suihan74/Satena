@@ -6,6 +6,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.suihan74.satena.models.browser.BrowserDao
+import com.suihan74.satena.models.browser.FaviconInfo
 import com.suihan74.satena.models.browser.HistoryLog
 import com.suihan74.satena.models.browser.HistoryPage
 import com.suihan74.satena.models.converters.LocalDateTimeConverter
@@ -31,9 +32,10 @@ import java.time.OffsetDateTime
         IgnoredEntry::class,
         HistoryPage::class,
         HistoryLog::class,
+        FaviconInfo::class,
         ReadEntry::class,
     ],
-    version = 7
+    version = 8
 )
 @TypeConverters(
     LocalDateTimeConverter::class,
@@ -62,7 +64,8 @@ fun RoomDatabase.Builder<AppDatabase>.migrate() : RoomDatabase.Builder<AppDataba
         // ------ //
         Migration1to5(),
         Migration5to6(),
-        Migration6to7()
+        Migration6to7(),
+        Migration7to8()
     )
     .fallbackToDestructiveMigration()
 
@@ -163,5 +166,16 @@ class Migration5to6 : Migration(5, 6) {
 class Migration6to7 : Migration(6, 7) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL("CREATE TABLE IF NOT EXISTS `read_entry` (`eid` INTEGER PRIMARY KEY NOT NULL, `timestamp` INTEGER NOT NULL)")
+    }
+}
+
+/**
+ * v1.11.0: faviconキャッシュの管理
+ */
+class Migration7to8 : Migration(7, 8) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS `browser_favicon_info` (`domain` TEXT NOT NULL, `filename` TEXT NOT NULL, `lastUpdated` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favicon_info_domain` ON `browser_favicon_info` (`domain`)")
+        database.execSQL("ALTER TABLE `browser_history_pages` ADD `faviconInfoId` INTEGER NOT NULL DEFAULT 0")
     }
 }

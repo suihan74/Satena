@@ -192,7 +192,7 @@ class BrowserViewModel(
     @MainThread
     fun initializeWebView(wv: WebView, activity: BrowserActivity) {
         wv.webViewClient = webViewClient ?: BrowserWebViewClient(activity, this).also { webViewClient = it }
-        wv.webChromeClient = webChromeClient ?: BrowserWebChromeClient(browserRepo, this).also { webChromeClient = it }
+        wv.webChromeClient = webChromeClient ?: BrowserWebChromeClient(browserRepo, historyRepo, this).also { webChromeClient = it }
 
         // DOMストレージ使用
         wv.settings.domStorageEnabled = true
@@ -778,12 +778,13 @@ class BrowserViewModel(
     fun onReceivedTitle(view: WebView?, title: String?) = viewModelScope.launch(Dispatchers.Main) {
         val vm = this@BrowserViewModel
         val url = view?.url ?: return@launch
+        val context = view.context ?: SatenaApplication.instance
         vm.url.value = url
         vm.title.value = title.orEmpty()
 
         _backForwardList.value = view.copyBackForwardList()
         if (privateBrowsingEnabled.value != true && URLUtil.isNetworkUrl(url)) {
-            historyRepo.insertOrUpdateHistory(url, title.orEmpty(), Uri.parse(url).faviconUrl)
+            historyRepo.insertOrUpdateHistory(context, url, title.orEmpty())
         }
     }
 

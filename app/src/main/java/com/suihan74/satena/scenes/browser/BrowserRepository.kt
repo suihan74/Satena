@@ -15,6 +15,7 @@ import com.suihan74.satena.models.browser.BrowserHistoryLifeSpan
 import com.suihan74.satena.scenes.preferences.createLiveDataEnum
 import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.whenTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -234,13 +235,12 @@ class BrowserRepository(
     }
 
     /** faviconのロード完了。リポジトリに保持 */
-    suspend fun loadFavicon(icon: Bitmap?) = withContext(Dispatchers.Main) {
+    suspend fun loadFavicon(icon: Bitmap?) : Boolean = withContext(Dispatchers.Main) {
         faviconMutex.withLock {
-            if (faviconLoading.value == true) {
+            faviconLoading.value.whenTrue {
                 _faviconLoading.value = false
                 _faviconBitmap.value = icon
             }
         }
     }
 }
-

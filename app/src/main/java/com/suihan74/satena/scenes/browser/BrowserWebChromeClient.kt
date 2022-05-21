@@ -4,11 +4,13 @@ import android.graphics.Bitmap
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.lifecycle.viewModelScope
+import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 class BrowserWebChromeClient(
-    private val repo : BrowserRepository,
+    private val browserRepo : BrowserRepository,
+    private val historyRepo : HistoryRepository,
     viewModel : BrowserViewModel
 ) : WebChromeClient() {
 
@@ -21,7 +23,7 @@ class BrowserWebChromeClient(
      */
     override fun onProgressChanged(view: WebView?, newProgress: Int) {
         super.onProgressChanged(view, newProgress)
-        repo.loadingProgress.value = newProgress
+        browserRepo.loadingProgress.value = newProgress
     }
 
     /**
@@ -29,8 +31,13 @@ class BrowserWebChromeClient(
      */
     override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
         super.onReceivedIcon(view, icon)
+        val context = view?.context?.applicationContext
+        val url = view?.url
         viewModel?.viewModelScope?.launch {
-            repo.loadFavicon(icon)
+            browserRepo.loadFavicon(icon)
+            if (context != null && icon != null) {
+                historyRepo.saveFaviconCache(context, icon, url)
+            }
         }
     }
 

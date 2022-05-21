@@ -17,7 +17,8 @@ data class MigrationData(
 ) {
     enum class DataType {
         PREFERENCE,
-        DATABASE;
+        DATABASE,
+        FILE;
 
         companion object {
             /**

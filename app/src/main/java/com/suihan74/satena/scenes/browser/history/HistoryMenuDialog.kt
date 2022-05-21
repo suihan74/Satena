@@ -36,10 +36,10 @@ class HistoryMenuDialog : DialogFragment() {
         val titleViewBinding = DialogTitleEntry2Binding.inflate(localLayoutInflater(), null, false).also {
             val history = viewModel.targetSite
             val page = history.page
-            it.title = page.title
-            it.url = page.url
-            it.rootUrl = page.url
-            it.faviconUrl = page.faviconUrl
+            it.title = page.page.title
+            it.url = page.page.url
+            it.rootUrl = page.page.url
+//            it.faviconUrl = page.page.faviconUrl
         }
 
         return createBuilder()

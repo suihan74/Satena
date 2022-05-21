@@ -371,10 +371,11 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(R.string.pref_browser_clear_history_dialog_message)
             .setNegativeButton(R.string.dialog_cancel)
-            .setPositiveButton(R.string.dialog_ok) {
+            .setPositiveButton(R.string.dialog_ok) { f ->
+                val context = f.requireContext()
                 viewModelScope.launch(Dispatchers.Main) {
                     runCatching {
-                        historyRepo.clearHistories()
+                        historyRepo.clearHistories(context)
                     }
                     SatenaApplication.instance.showToast(R.string.msg_browser_removed_all_histories)
                 }
