@@ -87,6 +87,25 @@ class PreferencesMigration {
         }
 
         /**
+         * {app}/files/以下のディレクトリを追加
+         *
+         * @throws IllegalStateException
+         */
+        suspend fun addFiles(dir: File) = withContext(Dispatchers.IO) {
+            if (!dir.absolutePath.startsWith(context.filesDir.absolutePath)) {
+                throw IllegalStateException("failure adding illegal files")
+            }
+            val dirname = dir.absolutePath.substring(context.filesDir.absolutePath.length)
+            dir.listFiles { file, filename ->
+                val bytes = File(file, filename).inputStream().buffered().use {
+                    it.readBytes()
+                }
+                val path = "$dirname/$filename"
+                items.add(MigrationData(MigrationData.DataType.FILE, "file__$path", 1, path, bytes.size, bytes))
+            }
+        }
+
+        /**
          * @throws IOException
          */
         @Suppress("BlockingMethodInNonBlockingContext")
@@ -191,6 +210,7 @@ class PreferencesMigration {
             when (data.type) {
                 MigrationData.DataType.PREFERENCE -> applyPreferences(data)
                 MigrationData.DataType.DATABASE -> applyDatabase(data)
+                MigrationData.DataType.FILE -> applyFile(data)
             }
         }
 
@@ -286,6 +306,21 @@ class PreferencesMigration {
             }
             finally {
                 backup.delete()
+            }
+        }
+
+        @Suppress("BlockingMethodInNonBlockingContext")
+        private suspend fun applyFile(data: MigrationData) = withContext(Dispatchers.IO) {
+            runCatching {
+                val file = File(context.filesDir.absolutePath + "/" + data.fileName)
+                if (file.parentFile?.exists() != true) {
+                    file.parentFile?.mkdirs()
+                }
+                file.outputStream().buffered().use {
+                    it.write(data.data)
+                }
+            }.onFailure {
+                throw MigrationFailureException("failed to read files", cause = it)
             }
         }
     }
