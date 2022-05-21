@@ -35,11 +35,13 @@ class HistoryMenuDialog : DialogFragment() {
         // カスタムタイトルを生成
         val titleViewBinding = DialogTitleEntry2Binding.inflate(localLayoutInflater(), null, false).also {
             val history = viewModel.targetSite
-            val page = history.page
-            it.title = page.page.title
-            it.url = page.page.url
-            it.rootUrl = page.page.url
-            it.faviconUrl = ""
+            val page = history.page.page
+            it.title = page.title
+            it.url = page.url
+            it.rootUrl = page.url
+            it.faviconUrl = history.page.faviconInfo?.filename?.let {
+                "${requireContext().filesDir}/favicon_cache/$it"
+            }.orEmpty()
         }
 
         return createBuilder()
