@@ -6,7 +6,7 @@
                 type="com.suihan74.satena.scenes.entries2.dialog.EntryMenuItem" />
         <variable
                 name="vm"
-                type="com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2.DialogViewModel" />
+                type="com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog.DialogViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

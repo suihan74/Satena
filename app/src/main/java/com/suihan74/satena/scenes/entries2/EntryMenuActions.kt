@@ -16,7 +16,7 @@ import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivityContract
-import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog2
+import com.suihan74.satena.scenes.entries2.dialog.EntryMenuDialog
 import com.suihan74.satena.scenes.entries2.dialog.ShareEntryDialog
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.satena.startInnerBrowser
@@ -68,7 +68,7 @@ interface EntryMenuActions {
         entry: Entry,
         fragmentManager: FragmentManager
     ) {
-        val dialog = EntryMenuDialog2.createInstance(entry).apply {
+        val dialog = EntryMenuDialog.createInstance(entry).apply {
             setShowCommentsListener { entry, f ->
                 showComments(f.requireActivity(), entry)
             }

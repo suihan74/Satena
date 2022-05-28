@@ -46,9 +46,9 @@ data class EntryMenuItem(
     val second : DialogListener<Entry>?
 )
 
-class EntryMenuDialog2 : DialogFragment() {
+class EntryMenuDialog : DialogFragment() {
     companion object {
-        fun createInstance(entry: Entry) = EntryMenuDialog2().withArguments {
+        fun createInstance(entry: Entry) = EntryMenuDialog().withArguments {
             putObject(ARG_ENTRY, entry)
         }
 
@@ -73,7 +73,7 @@ class EntryMenuDialog2 : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val inflater = localLayoutInflater()
-        val titleViewBinding = DialogTitleEntry2Binding.inflate(inflater, null, false).also {
+        val titleViewBinding = DialogTitleEntry2Binding.inflate(inflater).also {
             viewModel.entry.let { entry ->
                 it.title = entry.title
                 it.url = entry.url
@@ -82,7 +82,7 @@ class EntryMenuDialog2 : DialogFragment() {
             }
         }
 
-        val contentViewBinding = FragmentDialogEntryMenuBinding.inflate(inflater, null, false).also { binding ->
+        val contentViewBinding = FragmentDialogEntryMenuBinding.inflate(inflater).also { binding ->
             binding.recyclerView.adapter = MenuItemsAdapter(this, viewModel).also { adapter ->
                 adapter.submitList(viewModel.createItems(requireActivity()))
             }
@@ -255,7 +255,7 @@ class EntryMenuDialog2 : DialogFragment() {
 
 class MenuItemsAdapter(
     private val dialogFragment: DialogFragment,
-    private val viewModel: EntryMenuDialog2.DialogViewModel
+    private val viewModel: EntryMenuDialog.DialogViewModel
 ) : ListAdapter<EntryMenuItem, RecyclerView.ViewHolder>(DiffCallback()) {
     override fun getItemViewType(position: Int) = currentList[position].first
 
