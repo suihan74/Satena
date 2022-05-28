@@ -35,7 +35,9 @@ class FavoriteSitesRepository(
     /**
      * ページをお気に入りに登録する
      *
-     * @throws AlreadyExistedException
+     * @throws AlreadyExistedException 既にお気に入りのURL
+     * @throws InvalidUrlException URLが不正
+     * @throws EmptyException タイトルが空白
      */
     suspend fun favoritePage(
         url: String,

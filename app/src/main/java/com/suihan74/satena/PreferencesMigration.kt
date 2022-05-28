@@ -191,11 +191,6 @@ class PreferencesMigration {
                     catch (e: Throwable) {
                         throw MigrationFailureException(message = e.message, cause = e)
                     }
-                    finally {
-                        // バージョン移行
-                        SatenaApplication.instance.initializeDataBase()
-                        SatenaApplication.instance.updatePreferencesVersion()
-                    }
                 }
             }
 

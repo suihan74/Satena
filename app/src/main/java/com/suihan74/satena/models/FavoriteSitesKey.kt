@@ -3,6 +3,7 @@ package com.suihan74.satena.models
 import android.content.Context
 import android.util.Log
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.SharedPreferencesKey
 import com.suihan74.utilities.typeInfo
@@ -66,12 +67,16 @@ object FavoriteSitesKeyMigration {
     }
 
     private fun migrateFromVersion0(context: Context) = runBlocking(Dispatchers.IO) {
-        val repo = SatenaApplication.instance.favoriteSitesRepository
-        val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
         runCatching {
+            // `SatenaApplication#favoriteSitesRepository`はmigration時には初期化前なので直接利用できないため
+            // 移行処理用に別途作成する
+            val repo = FavoriteSitesRepository(SatenaApplication.instance.appDatabase.favoriteSiteDao())
+            val prefs = SafeSharedPreferences.create<FavoriteSitesKey>(context)
             val sites = prefs.get<List<FavoriteSite>>(FavoriteSitesKey.SITES)
             for (site in sites) {
-                repo.favoritePage(site.url, site.title, site.faviconUrl, site.isEnabled)
+                runCatching {
+                    repo.favoritePage(site.url, site.title, site.faviconUrl, site.isEnabled)
+                }
             }
             SafeSharedPreferences.delete<FavoriteSitesKey>(context)
         }.onFailure {
