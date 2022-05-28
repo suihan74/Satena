@@ -48,11 +48,13 @@ class HistoryAdapter(
             if (faviconInfo == null) {
                 if (altFaviconUrl.isNullOrBlank()) {
                     GlideApp.with(view)
-                        .clear(view)
+                        .load(R.drawable.ic_file)
+                        .into(view)
                 }
                 else {
                     GlideApp.with(view)
                         .load(altFaviconUrl)
+                        .error(R.drawable.ic_file)
                         .into(view)
                 }
             }
@@ -61,6 +63,7 @@ class HistoryAdapter(
                 File(view.context.filesDir, "favicon_cache").let { dir ->
                     GlideApp.with(view)
                         .load(File(dir, filename))
+                        .error(R.drawable.ic_file)
                         .into(view)
                 }
             }
