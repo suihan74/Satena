@@ -1,16 +1,19 @@
 package com.suihan74.satena.scenes.browser
 
 import android.graphics.Bitmap
+import android.net.Uri
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 class BrowserWebChromeClient(
     private val browserRepo : BrowserRepository,
     private val historyRepo : HistoryRepository,
+    private val favoriteSitesRepo : FavoriteSitesRepository,
     viewModel : BrowserViewModel
 ) : WebChromeClient() {
 
@@ -34,9 +37,14 @@ class BrowserWebChromeClient(
         val context = view?.context?.applicationContext
         val url = view?.url
         viewModel?.viewModelScope?.launch {
-            browserRepo.loadFavicon(icon)
-            if (context != null && icon != null) {
-                historyRepo.saveFaviconCache(context, icon, url)
+            runCatching {
+                browserRepo.loadFavicon(icon)
+                if (context != null && icon != null) {
+                    historyRepo.saveFaviconCache(context, icon, url)
+                    Uri.parse(url).host?.let { domain ->
+                        favoriteSitesRepo.updateFavicon(domain)
+                    }
+                }
             }
         }
     }

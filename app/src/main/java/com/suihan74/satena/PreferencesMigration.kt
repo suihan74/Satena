@@ -187,15 +187,14 @@ class PreferencesMigration {
                                 onErrorAction?.invoke(item)
                             }
                         }
-
-                        // バージョン移行
-                        SatenaApplication.instance.updatePreferencesVersion()
                     }
                     catch (e: Throwable) {
                         throw MigrationFailureException(message = e.message, cause = e)
                     }
                     finally {
+                        // バージョン移行
                         SatenaApplication.instance.initializeDataBase()
+                        SatenaApplication.instance.updatePreferencesVersion()
                     }
                 }
             }

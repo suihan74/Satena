@@ -535,6 +535,7 @@ class PreferencesActivity : AppCompatActivity() {
                     .read(targetUri)
 
                 withContext(Dispatchers.Main) {
+                    Log.i("satena", "restarting...")
                     val path = contentFilePath(context, targetUri)
                     context.showToast(R.string.msg_pref_information_load_succeeded, path)
 

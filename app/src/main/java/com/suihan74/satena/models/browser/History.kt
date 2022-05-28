@@ -42,7 +42,7 @@ data class HistoryPageAndFaviconInfo (
         parentColumn = "faviconInfoId",
         entityColumn = "id"
     )
-    val faviconInfo: FaviconInfo?
+    val faviconInfo : FaviconInfo?
 )
 
 /**

@@ -39,17 +39,30 @@ class HistoryAdapter(
         @JvmStatic
         @BindingAdapter("favicon")
         fun setFavicon(view: ImageView, faviconInfo: FaviconInfo?) {
-            if (faviconInfo == null) {
-                GlideApp.with(view)
-                    .clear(view)
-                return
-            }
+            setFavicon(view, faviconInfo, null)
+        }
 
-            val filename = faviconInfo.filename
-            File(view.context.filesDir, "favicon_cache").let { dir ->
-                GlideApp.with(view)
-                    .load(File(dir, filename))
-                    .into(view)
+        @JvmStatic
+        @BindingAdapter("favicon", "alternativeFaviconUrl")
+        fun setFavicon(view: ImageView, faviconInfo: FaviconInfo?, altFaviconUrl: String?) {
+            if (faviconInfo == null) {
+                if (altFaviconUrl.isNullOrBlank()) {
+                    GlideApp.with(view)
+                        .clear(view)
+                }
+                else {
+                    GlideApp.with(view)
+                        .load(altFaviconUrl)
+                        .into(view)
+                }
+            }
+            else {
+                val filename = faviconInfo.filename
+                File(view.context.filesDir, "favicon_cache").let { dir ->
+                    GlideApp.with(view)
+                        .load(File(dir, filename))
+                        .into(view)
+                }
             }
         }
     }
