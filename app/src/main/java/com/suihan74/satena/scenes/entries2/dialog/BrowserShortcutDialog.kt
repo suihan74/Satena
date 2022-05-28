@@ -11,14 +11,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentDialogBrowserShortcutBinding
-import com.suihan74.satena.models.FavoriteSite
+import com.suihan74.satena.models.favoriteSite.FavoriteSite
+import com.suihan74.satena.models.favoriteSite.FavoriteSiteAndFavicon
 import com.suihan74.satena.scenes.entries2.EntriesActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteMenuDialog
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSiteRegistrationDialog
@@ -32,6 +31,7 @@ import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.showSoftInputMethod
 import com.suihan74.utilities.lazyProvideViewModel
 import com.suihan74.utilities.showAllowingStateLoss
+import kotlinx.coroutines.launch
 
 /**
  * エントリ画面からブラウザを開く際の追加機能ショートカット
@@ -98,7 +98,7 @@ class BrowserShortcutDialog : ExpandableBottomSheetDialogFragment() {
 
         binding.favoriteSitesList.adapter = FavoriteSitesAdapter(viewLifecycleOwner).also { adapter ->
             adapter.setOnClickItemListener {
-                val url = it.site?.url ?: return@setOnClickItemListener
+                val url = it.site?.site?.url ?: return@setOnClickItemListener
                 dismissAfterOpenBrowser(url)
             }
 
@@ -169,8 +169,8 @@ class BrowserShortcutDialog : ExpandableBottomSheetDialogFragment() {
         val searchQuery = MutableLiveData<String>()
 
         /** お気に入りサイトリスト */
-        val favoriteSites : LiveData<List<FavoriteSite>> by lazy { _favoriteSites }
-        private val _favoriteSites = favoriteSitesRepo.favoriteSites
+        val favoriteSites : LiveData<List<FavoriteSiteAndFavicon>> =
+            favoriteSitesRepo.favoriteSitesFlow.asLiveData(viewModelScope.coroutineContext)
 
         // ------ //
 
@@ -197,12 +197,12 @@ class BrowserShortcutDialog : ExpandableBottomSheetDialogFragment() {
         /**
          * お気に入りサイトのメニューダイアログを表示する
          */
-        fun openFavoriteSiteMenuDialog(site: FavoriteSite, fragmentManager: FragmentManager) {
+        fun openFavoriteSiteMenuDialog(site: FavoriteSiteAndFavicon, fragmentManager: FragmentManager) {
             val dialog = FavoriteSiteMenuDialog.createInstance(site)
 
             dialog.setOnOpenListener { value, f ->
                 runCatching {
-                    openBrowserWithQuery(f.requireActivity(), value.url)
+                    openBrowserWithQuery(f.requireActivity(), value.site.url)
                     fragment?.dismissAllowingStateLoss()
                 }
             }
@@ -210,20 +210,22 @@ class BrowserShortcutDialog : ExpandableBottomSheetDialogFragment() {
             dialog.setOnOpenEntriesListener { value, f ->
                 runCatching {
                     val activity = f.requireActivity()
-                    openEntries(activity, value)
+                    openEntries(activity, value.site)
                     fragment?.dismissAllowingStateLoss()
                 }
             }
 
             dialog.setOnModifyListener { value, f ->
                 runCatching {
-                    openFavoriteSiteModificationDialog(value, f.parentFragmentManager)
+                    openFavoriteSiteModificationDialog(value.site, f.parentFragmentManager)
                     // ボトムシートは閉じない
                 }
             }
 
             dialog.setOnDeleteListener { value, f ->
-                deleteFavoriteSite(f.requireActivity(), value)
+                f.lifecycleScope.launch {
+                    deleteFavoriteSite(f.requireActivity(), value.site)
+                }
                 // ボトムシートは閉じない
             }
 
@@ -253,36 +255,20 @@ class BrowserShortcutDialog : ExpandableBottomSheetDialogFragment() {
          */
         private fun openFavoriteSiteModificationDialog(site: FavoriteSite, fragmentManager: FragmentManager) {
             val dialog = FavoriteSiteRegistrationDialog.createModificationInstance(site)
-
-            dialog.setDuplicationChecker { item ->
-                item.url != site.url && favoriteSitesRepo.contains(item.url)
-            }
-
-            dialog.setOnModifyListener { result ->
-                _favoriteSites.value = _favoriteSites.value.orEmpty()
-                    .map {
-                        if (it.url == result.url) result
-                        else it
-                    }
-            }
-
             dialog.showAllowingStateLoss(fragmentManager)
         }
 
         /**
          * 選択したお気に入り項目を削除する
          */
-        private fun deleteFavoriteSite(context: Context, site: FavoriteSite) {
-            val result = runCatching {
+        private suspend fun deleteFavoriteSite(context: Context, site: com.suihan74.satena.models.favoriteSite.FavoriteSite) {
+            runCatching {
                 favoriteSitesRepo.unfavoritePage(site)
-            }
-
-            if (result.isSuccess) {
+            }.onSuccess {
                 context.showToast(R.string.unfavorite_site_succeeded)
-            }
-            else {
+            }.onFailure { e ->
                 context.showToast(R.string.unfavorite_site_failed)
-                Log.w("unfavoriteSite", Log.getStackTraceString(result.exceptionOrNull()))
+                Log.w("unfavoriteSite", Log.getStackTraceString(e))
             }
         }
     }

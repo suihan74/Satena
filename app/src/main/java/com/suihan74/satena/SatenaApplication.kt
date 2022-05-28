@@ -146,6 +146,10 @@ class SatenaApplication : Application() {
     private val readEntryDao
         get() = appDatabase.readEntryDao()
 
+    /** お気に入りサイト */
+    private val favoriteSiteDao
+        get() = appDatabase.favoriteSiteDao()
+
     // ------ //
 
     override fun onCreate() {
@@ -219,10 +223,7 @@ class SatenaApplication : Application() {
             }
         }
 
-        favoriteSitesRepository = FavoriteSitesRepository(
-            SafeSharedPreferences.create(this),
-            HatenaClient
-        )
+        favoriteSitesRepository = FavoriteSitesRepository(favoriteSiteDao)
 
         readEntriesRepository = ReadEntriesRepository(
             readEntryDao,
@@ -263,6 +264,7 @@ class SatenaApplication : Application() {
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
             .migrate()
             .build()
+        Log.i("satena", "database initialized")
     }
 
     /** 各種設定のバージョン移行が必要か確認 */
@@ -270,7 +272,9 @@ class SatenaApplication : Application() {
         runCatching {
             PreferenceKeyMigration.check(applicationContext)
             EntriesHistoryKeyMigration.check(applicationContext)
+            FavoriteSitesKeyMigration.check(applicationContext)
         }
+        Log.i("satena", "preferences updated")
     }
 
     // ------ //

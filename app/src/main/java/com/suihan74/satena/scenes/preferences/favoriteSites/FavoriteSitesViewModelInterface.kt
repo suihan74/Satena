@@ -1,7 +1,7 @@
 package com.suihan74.satena.scenes.preferences.favoriteSites
 
 import android.app.Activity
-import com.suihan74.satena.models.FavoriteSite
+import com.suihan74.satena.models.favoriteSite.FavoriteSiteAndFavicon
 import com.suihan74.satena.scenes.preferences.pages.FavoriteSitesFragment
 
 /**
@@ -12,7 +12,7 @@ interface FavoriteSitesViewModelInterface {
      * お気に入りサイト項目をクリックした際の処理
      */
     fun onClickItem(
-        site: FavoriteSite,
+        site: FavoriteSiteAndFavicon,
         activity: Activity,
         fragment: FavoriteSitesFragment
     )
@@ -21,7 +21,7 @@ interface FavoriteSitesViewModelInterface {
      * お気に入りサイト項目をロングクリックした際の処理
      */
     fun onLongClickItem(
-        site: FavoriteSite,
+        site: FavoriteSiteAndFavicon,
         activity: Activity,
         fragment: FavoriteSitesFragment
     )
@@ -38,7 +38,7 @@ interface FavoriteSitesViewModelInterface {
      * サイトを内部ブラウザで開く
      */
     fun openInBrowser(
-        site: FavoriteSite,
+        site: FavoriteSiteAndFavicon,
         activity: Activity
     )
 }

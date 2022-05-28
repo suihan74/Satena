@@ -11,8 +11,10 @@ import com.google.gson.reflect.TypeToken
 import com.suihan74.hatenaLib.BooleanDeserializer
 import com.suihan74.utilities.LocalDateSerializer
 import com.suihan74.utilities.LocalDateTimeSerializer
+import com.suihan74.utilities.ZonedDateTimeSerializer
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import kotlin.reflect.KClass
 
 /** Enum<T>::classから直接valuesを取得する */
@@ -94,6 +96,7 @@ val Bundle.gson : Gson by lazy {
         .serializeNulls()
         .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
         .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeSerializer())
+        .registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeSerializer())
         .registerTypeAdapter(LocalDate::class.java, LocalDateSerializer())
         .registerTypeAdapter(Boolean::class.java, BooleanDeserializer())
         .create()

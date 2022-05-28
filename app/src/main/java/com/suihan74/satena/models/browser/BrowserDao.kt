@@ -120,12 +120,12 @@ interface BrowserDao {
      * 外部からはこのメソッドを使用して項目追加する
      */
     @Transaction
-    suspend fun insertHistory(history: History) {
-        __insertHistoryPage(history.page)
-        val page = getHistoryPage(history.page.url)!!
+    suspend fun insertHistory(page: HistoryPage, log: HistoryLog) {
+        __insertHistoryPage(page)
+        val page = getHistoryPage(page.url)!!
 
         // 同日内の同一URL履歴を削除する
-        val date = history.log.visitedAt.toLocalDate()
+        val date = log.visitedAt.toLocalDate()
         val startOfDay = LocalTime.ofSecondOfDay(0L)
         val start = LocalDateTime.of(date, startOfDay)
         val end = LocalDateTime.of(date.plusDays(1L), startOfDay)
@@ -133,7 +133,7 @@ interface BrowserDao {
             deleteHistoryLog(it)
         }
 
-        val item = history.log.copy(pageId = page.id)
+        val item = log.copy(pageId = page.id)
         __insertHistoryLog(item)
     }
 
@@ -227,7 +227,38 @@ interface BrowserDao {
     suspend fun clearHistory() {
         clearHistoryLogs()
         __clearHistoryPages()
+        clearFaviconInfo()
     }
+
+    // --------------- //
+    // --- favicon --- //
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFaviconInfo(faviconCache: FaviconInfo)
+
+    @Query("""
+        select * from browser_favicon_info
+        where domain = :domain
+    """)
+    suspend fun findFaviconInfo(domain: String) : FaviconInfo?
+
+    @Query("""
+        select exists (select * from browser_favicon_info where filename = :filename)
+    """)
+    suspend fun existFaviconInfo(filename: String) : Boolean
+
+    @Query("delete from browser_favicon_info")
+    suspend fun clearFaviconInfo()
+
+    @Query("""
+        select * from browser_favicon_info
+        where not exists (select 1 from browser_history_pages where faviconInfoId = id) 
+            and not exists (select 1 from favorite_site where faviconInfoId = id)
+    """)
+    suspend fun findOldFaviconInfo() : List<FaviconInfo>
+
+    @Delete
+    suspend fun deleteFaviconInfo(items: List<FaviconInfo>)
 
     // --------------- //
 

@@ -2,6 +2,7 @@ package com.suihan74.satena.scenes.browser
 
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.webkit.WebViewFeature
 import com.suihan74.hatenaLib.HatenaClient
@@ -14,6 +15,11 @@ import com.suihan74.satena.models.browser.BrowserHistoryLifeSpan
 import com.suihan74.satena.scenes.preferences.createLiveDataEnum
 import com.suihan74.utilities.PreferenceLiveData
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.whenTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 class BrowserRepository(
     private val client: HatenaClient,
@@ -175,10 +181,14 @@ class BrowserRepository(
     val loadingProgress = MutableLiveData<Int>()
 
     /** 表示中ページのfavicon */
-    val faviconBitmap = MutableLiveData<Bitmap?>()
+    val faviconBitmap : LiveData<Bitmap?> = MutableLiveData<Bitmap?>()
+    private val _faviconBitmap = faviconBitmap as MutableLiveData<Bitmap?>
 
     /** faviconの読み込み状態 */
-    val faviconLoading = MutableLiveData(false)
+    val faviconLoading : LiveData<Boolean> = MutableLiveData(false)
+    private val _faviconLoading = faviconLoading as MutableLiveData<Boolean>
+
+    private val faviconMutex = Mutex()
 
     // ------ //
 
@@ -213,5 +223,24 @@ class BrowserRepository(
         }
         else queryUrl + encodedKeyword
     }
-}
 
+    // ------ //
+
+    /** faviconのロード開始 */
+    suspend fun startLoadingFavicon() = withContext(Dispatchers.Main) {
+        faviconMutex.withLock {
+            _faviconBitmap.value = null
+            _faviconLoading.value = true
+        }
+    }
+
+    /** faviconのロード完了。リポジトリに保持 */
+    suspend fun loadFavicon(icon: Bitmap?) : Boolean = withContext(Dispatchers.Main) {
+        faviconMutex.withLock {
+            faviconLoading.value.whenTrue {
+                _faviconLoading.value = false
+                _faviconBitmap.value = icon
+            }
+        }
+    }
+}

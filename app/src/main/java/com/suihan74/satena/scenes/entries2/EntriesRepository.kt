@@ -698,14 +698,14 @@ class EntriesRepository(
     /** お気に入りサイトのエントリリストを読み込む */
     private suspend fun loadFavoriteSitesEntries(tabPosition: Int, page: Int? = null) : List<Entry> {
         val entriesType = EntriesType.fromId(tabPosition)
-        val sites = favoriteSitesRepo.favoriteSites.value ?: emptyList()
+        val sites = favoriteSitesRepo.allSites()
 
         val tasks = sites
-            .filter { it.isEnabled }
+            .filter { it.site.isEnabled }
             .map { site -> client.async {
                 try {
                     client.getEntriesAsync(
-                        url = site.url,
+                        url = site.site.url,
                         entriesType = entriesType,
                         allMode = true,
                         page = page ?: 0

@@ -38,6 +38,7 @@ import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 
 data class EntryMenuItem(
     @StringRes
@@ -205,7 +206,6 @@ class EntryMenuDialog2 : DialogFragment() {
 
         // ------ //
 
-        @OptIn(ExperimentalStdlibApi::class)
         fun createItems(activity: FragmentActivity) = buildList<EntryMenuItem> {
             add(TapEntryAction.SHOW_COMMENTS.textId, showComments)
             add(TapEntryAction.SHOW_PAGE.textId, showPage)
@@ -213,9 +213,11 @@ class EntryMenuDialog2 : DialogFragment() {
             add(TapEntryAction.SHARE.textId, sharePage)
             add(R.string.entry_action_show_entries, showEntries)
 
-            val alreadyFavorite = favoriteSitesRepo.favoriteSites.value?.any {
-                it.url == entry.rootUrl || it.url == entry.url
-            } != false
+            val alreadyFavorite =
+                runBlocking {
+                    favoriteSitesRepo.contains(entry.rootUrl) || favoriteSitesRepo.contains(entry.url)
+                }
+
             if (alreadyFavorite) {
                 add(R.string.entry_action_unfavorite, unfavorite)
             }

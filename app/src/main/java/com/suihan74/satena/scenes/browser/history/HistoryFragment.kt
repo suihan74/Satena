@@ -12,10 +12,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.databinding.FragmentBrowserHistoryBinding
 import com.suihan74.satena.scenes.browser.BrowserActivity
-import com.suihan74.utilities.*
+import com.suihan74.utilities.RecyclerViewScrollingUpdater
+import com.suihan74.utilities.ScrollableToTop
+import com.suihan74.utilities.TabItem
 import com.suihan74.utilities.extensions.hideSoftInputMethod
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import com.suihan74.utilities.extensions.requireActivity
+import com.suihan74.utilities.lazyProvideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -67,7 +70,7 @@ class HistoryFragment :
             recyclerView.adapter = HistoryAdapter(viewModel, viewLifecycleOwner).also { adapter ->
                 adapter.setOnClickItemListener { binding ->
                     val history = binding.history ?: return@setOnClickItemListener
-                    viewModel.goAddress(history.page.url, browserActivity)
+                    viewModel.goAddress(history.page.page.url, browserActivity)
                 }
 
                 adapter.setOnLongLickItemListener { binding ->

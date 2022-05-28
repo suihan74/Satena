@@ -1,20 +1,23 @@
 package com.suihan74.satena.scenes.browser.history
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.BrowserSettingsKey
-import com.suihan74.satena.models.browser.BrowserDao
-import com.suihan74.satena.models.browser.History
-import com.suihan74.satena.models.browser.HistoryLog
-import com.suihan74.satena.models.browser.HistoryPage
+import com.suihan74.satena.models.browser.*
 import com.suihan74.utilities.SafeSharedPreferences
-import com.suihan74.utilities.extensions.faviconUrl
 import com.suihan74.utilities.extensions.toSystemZonedDateTime
+import com.suihan74.utilities.getSha256
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
@@ -23,6 +26,10 @@ class HistoryRepository(
     private val prefs: SafeSharedPreferences<BrowserSettingsKey>,
     private val dao: BrowserDao
 ) {
+    companion object {
+        /** faviconキャッシュを再書き込みするまでの日数 */
+        private const val FAVICON_CACHE_LIFESPAN = 30L
+    }
 
     /** 閲覧履歴 */
     val histories = MutableLiveData<List<History>>()
@@ -34,65 +41,57 @@ class HistoryRepository(
     // ------ //
 
     /** 履歴を追加する */
-    suspend fun insertHistory(
-        url: String,
-        title: String,
-        faviconUrl: String? = null
-    ) = withContext(Dispatchers.Default) {
+    private suspend fun insertHistory(context: Context, url: String, title: String) = withContext(Dispatchers.Default) {
         val now = LocalDateTime.now()
         val today = now.toLocalDate()
-        val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
         val decodedUrl = Uri.decode(url)
 
-        val page = dao.getHistoryPage(decodedUrl)?.let {
-            it.copy(visitTimes = it.visitTimes + 1)
-        } ?: HistoryPage(
-            url = decodedUrl,
-            title = title,
-            faviconUrl = favicon,
-            lastVisited = now
-        )
+        val faviconInfoId =
+            Uri.parse(url).host?.let { domain -> dao.findFaviconInfo(domain)?.id } ?: 0L
+
+        val page =
+            dao.getHistoryPage(decodedUrl)?.let {
+                it.copy(visitTimes = it.visitTimes + 1, faviconInfoId = faviconInfoId)
+            } ?: HistoryPage(
+                url = decodedUrl,
+                title = title,
+                lastVisited = now,
+                faviconInfoId = faviconInfoId
+            )
 
         val visited = HistoryLog(visitedAt = now)
 
-        val history = History(
-            page = page,
-            log = visited
-        )
-        dao.insertHistory(history)
+        dao.insertHistory(page = page, log = visited)
         dao.getHistory(now)?.let { inserted ->
-            clearOldHistories()
+            clearOldHistories(context)
             historiesCacheLock.withLock {
                 val items =
                     histories.value.orEmpty()
                         .filterNot {
                             it.log.visitedAt.toSystemZonedDateTime("UTC").toLocalDate().equals(today)
-                                    && it.page.url == inserted.page.url
+                                    && it.page.page.url == inserted.page.page.url
                         }.plus(inserted)
                 histories.postValue(items)
             }
         }
     }
 
-    suspend fun insertOrUpdateHistory(
-        url: String,
-        title: String,
-        faviconUrl: String? = null
-    ) = withContext(Dispatchers.Default) {
+    suspend fun insertOrUpdateHistory(context: Context, url: String, title: String) = withContext(Dispatchers.Default) {
         val decodedUrl = Uri.decode(url)
         val existed = dao.getRecentHistories(limit = 1).firstOrNull()
         val existedPage = existed?.page
-        if (existedPage == null || existedPage.url != decodedUrl) {
-            insertHistory(url, title, faviconUrl)
+        if (existedPage == null || existedPage.page.url != decodedUrl) {
+            insertHistory(context, url, title)
         }
         else {
             historiesCacheLock.withLock {
-                val favicon = faviconUrl ?: Uri.parse(url).faviconUrl
-                val updated = existedPage.copy(title = title, faviconUrl = favicon)
+                val domain = Uri.parse(url).host!!
+                val faviconInfo = existedPage.faviconInfo ?: dao.findFaviconInfo(domain)
+                val updated = existedPage.page.copy(title = title, faviconInfoId = faviconInfo?.id ?: 0)
                 dao.updateHistoryPage(updated)
                 histories.postValue(
                     histories.value.orEmpty().map {
-                        if (it.page.id == existedPage.id) it.copy(page = updated)
+                        if (it.page.page.id == existedPage.page.id) it.copy(page = existedPage.copy(page = updated))
                         else it
                     }
                 )
@@ -127,8 +126,11 @@ class HistoryRepository(
     }
 
     /** 履歴をすべて削除 */
-    suspend fun clearHistories() = withContext(Dispatchers.Default) {
-        dao.clearHistory()
+    suspend fun clearHistories(context: Context) = withContext(Dispatchers.Default) {
+        runCatching {
+            dao.clearHistory()
+            File(context.filesDir, "favicon_cache").deleteRecursively()
+        }
         loadHistories()
     }
 
@@ -168,7 +170,7 @@ class HistoryRepository(
     }
 
     /** 寿命切れの履歴を削除する */
-    private suspend fun clearOldHistories() {
+    private suspend fun clearOldHistories(context: Context) {
         val now = ZonedDateTime.now()
         val today = now.toLocalDate()
         val lifeSpanDays = prefs.getInt(BrowserSettingsKey.HISTORY_LIFESPAN)
@@ -191,6 +193,9 @@ class HistoryRepository(
             )
         }
 
+        // 参照されなくなったfaviconキャッシュを削除する
+        clearOldFavicons(context)
+
         prefs.editSync {
             putObject(BrowserSettingsKey.HISTORY_LAST_REFRESHED, now)
         }
@@ -199,6 +204,123 @@ class HistoryRepository(
     fun clearLastRefreshed() {
         prefs.edit {
             remove(BrowserSettingsKey.HISTORY_LAST_REFRESHED)
+        }
+    }
+
+    // ------ //
+
+    private val faviconMutex = Mutex()
+
+    /** 読み込んだfaviconをアプリディレクトリ内にキャッシュ */
+    @Suppress("BlockingMethodInNonBlockingContext")
+    suspend fun saveFaviconCache(context: Context, bitmap: Bitmap, url: String?) = withContext(Dispatchers.IO) {
+        faviconMutex.withLock {
+            runCatching {
+                val domain = Uri.parse(url).host!!
+                val existed = SatenaApplication.instance.browserDao.findFaviconInfo(domain)
+                if (existed?.lastUpdated?.isAfter(ZonedDateTime.now().minusDays(FAVICON_CACHE_LIFESPAN)) == true) {
+                    return@runCatching
+                }
+
+                File(context.filesDir, "favicon_cache").let { dir ->
+                    dir.mkdir()
+                    val byteArray =
+                        ByteArrayOutputStream().use { ostream ->
+                            val compressFormat =
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) Bitmap.CompressFormat.PNG
+                                else Bitmap.CompressFormat.WEBP_LOSSY
+                            bitmap.compress(compressFormat, 100, ostream)
+                            ostream.toByteArray()
+                        }
+
+                    val filename = getSha256(byteArray)
+                    val outFile = File(dir, filename)
+                    outFile.outputStream().use { it.write(byteArray) }
+
+                    runCatching {
+                        insertFaviconInfo(filename, url, domain)
+                    }.onFailure {
+                        outFile.delete()
+                    }
+                }
+            }.onFailure {
+                FirebaseCrashlytics.getInstance().recordException(it)
+            }
+        }
+    }
+
+    private suspend fun insertFaviconInfo(filename: String, url: String?, domain: String) {
+        url!!
+        SatenaApplication.instance.browserDao.let { dao ->
+            dao.insertFaviconInfo(FaviconInfo(domain, filename, ZonedDateTime.now()))
+            dao.getHistoryPage(Uri.decode(url))?.let { historyPage ->
+                val faviconInfo = dao.findFaviconInfo(domain)!!
+                dao.updateHistoryPage(historyPage.copy(faviconInfoId = faviconInfo.id))
+                updateHistoryFavicon(faviconInfo)
+            }
+        }
+    }
+
+    private suspend fun updateHistoryFavicon(faviconInfo: FaviconInfo) = withContext(Dispatchers.Default) {
+        historiesCacheLock.withLock {
+            histories.postValue(
+                histories.value.orEmpty()
+                    .map { h ->
+                        if (h.page.page.faviconInfoId == faviconInfo.id || (h.page.page.faviconInfoId == 0L && Uri.parse(h.page.page.url).host == faviconInfo.domain)) {
+                            val updatedPage = h.page.page.copy(faviconInfoId = faviconInfo.id)
+                            if (h.page.page.faviconInfoId == 0L) {
+                                dao.updateHistoryPage(updatedPage)
+                            }
+                            h.copy(page = h.page.copy(page = updatedPage, faviconInfo = faviconInfo))
+                        }
+                        else h
+                    }
+            )
+        }
+    }
+
+    /**
+     * 使用されていないFaviconInfoを削除する
+     */
+    private suspend fun clearOldFavicons(context: Context) {
+        faviconMutex.withLock {
+            runCatching {
+                val oldItems = dao.findOldFaviconInfo()
+                dao.deleteFaviconInfo(oldItems)
+                File(context.filesDir, "favicon_cache").let { dir ->
+                    for (item in oldItems) {
+                        File(dir, item.filename).delete()
+                    }
+                }
+            }.onFailure {
+                FirebaseCrashlytics.getInstance().recordException(it)
+            }
+        }
+        clearUnManagedFavicons(context)
+    }
+
+    private var clearUnManagedFaviconsCalled = false
+
+    /**
+     * ジャーナルにFaviconInfoが記載されていないのに存在するキャッシュファイルを削除する
+     */
+    private suspend fun clearUnManagedFavicons(context: Context) {
+        faviconMutex.withLock {
+            if (clearUnManagedFaviconsCalled) return
+            runCatching {
+                buildList {
+                    File(context.filesDir, "favicon_cache").listFiles { dir, filename ->
+                        add(filename)
+                    }
+                }.filterNot { filename ->
+                    dao.existFaviconInfo(filename)
+                }.forEach { filename ->
+                    File("${context.filesDir.absolutePath}/favicon_cache/$filename").delete()
+                }
+            }.onFailure {
+                FirebaseCrashlytics.getInstance().recordException(it)
+            }
+            clearUnManagedFaviconsCalled = true
         }
     }
 }

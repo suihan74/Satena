@@ -28,23 +28,25 @@ class HistoryMenuDialog : DialogFragment() {
 
     private val viewModel by lazyProvideViewModel {
         val targetSite = requireArguments().getObject<History>(ARG_TARGET_SITE)!!
-        DialogViewModel(requireContext(), targetSite)
+        DialogViewModel(targetSite)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         // カスタムタイトルを生成
         val titleViewBinding = DialogTitleEntry2Binding.inflate(localLayoutInflater(), null, false).also {
             val history = viewModel.targetSite
-            val page = history.page
+            val page = history.page.page
             it.title = page.title
             it.url = page.url
             it.rootUrl = page.url
-            it.faviconUrl = page.faviconUrl
+            it.faviconUrl = history.page.faviconInfo?.filename?.let {
+                "${requireContext().filesDir}/favicon_cache/$it"
+            }.orEmpty()
         }
 
         return createBuilder()
             .setCustomTitle(titleViewBinding.root)
-            .setItems(viewModel.labels) { _, which ->
+            .setItems(viewModel.labels(requireContext())) { _, which ->
                 viewModel.invokeAction(which)
             }
             .setNegativeButton(R.string.dialog_cancel, null)
@@ -71,10 +73,7 @@ class HistoryMenuDialog : DialogFragment() {
 
     // ------ //
 
-    class DialogViewModel(
-        val context: Context,
-        val targetSite: History
-    ) : ViewModel() {
+    class DialogViewModel(val targetSite: History) : ViewModel() {
         /** メニュー項目と対応するイベント */
         private val menuItems = listOf(
             R.string.dialog_history_open to { onOpen?.invoke(targetSite) },
@@ -84,7 +83,8 @@ class HistoryMenuDialog : DialogFragment() {
         )
 
         /** メニュー表示項目 */
-        val labels = menuItems.map { context.getString(it.first) }.toTypedArray()
+        fun labels(context: Context) =
+            menuItems.map { context.getString(it.first) }.toTypedArray()
 
         /** 対象アイテムを内部ブラウザで開く */
         var onOpen : Listener<History>? = null

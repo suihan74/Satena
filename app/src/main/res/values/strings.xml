@@ -147,8 +147,8 @@
     <string name="entry_action_show_page_in_browser">ページを外部アプリで開く</string>
     <string name="entry_action_share">共有</string>
     <string name="entry_action_show_menu">メニューダイアログを開く</string>
-    <string name="entry_action_favorite">お気に入りに追加</string>
-    <string name="entry_action_unfavorite">お気に入りから除外</string>
+    <string name="entry_action_favorite">お気に入りサイトに追加</string>
+    <string name="entry_action_unfavorite">サイトをお気に入りから除外</string>
     <string name="entry_action_show_entries">このサイトのエントリ</string>
     <string name="entry_action_read_later">あとで読む</string>
     <string name="entry_action_read">読んだ</string>

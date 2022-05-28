@@ -2,15 +2,19 @@ package com.suihan74.satena.scenes.browser.history
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
+import com.suihan74.satena.GlideApp
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.ListviewItemBrowserHistoryBinding
 import com.suihan74.satena.databinding.ListviewSectionHistoryBinding
+import com.suihan74.satena.models.browser.FaviconInfo
 import com.suihan74.satena.models.browser.History
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.alsoAs
+import java.io.File
 import java.time.LocalDate
 
 class HistoryAdapter(
@@ -28,6 +32,36 @@ class HistoryAdapter(
             items?.let {
                 view.adapter.alsoAs<HistoryAdapter> { adapter ->
                     adapter.submitList(it)
+                }
+            }
+        }
+
+        @JvmStatic
+        @BindingAdapter("favicon")
+        fun setFavicon(view: ImageView, faviconInfo: FaviconInfo?) {
+            setFavicon(view, faviconInfo, null)
+        }
+
+        @JvmStatic
+        @BindingAdapter("favicon", "alternativeFaviconUrl")
+        fun setFavicon(view: ImageView, faviconInfo: FaviconInfo?, altFaviconUrl: String?) {
+            if (faviconInfo == null) {
+                if (altFaviconUrl.isNullOrBlank()) {
+                    GlideApp.with(view)
+                        .clear(view)
+                }
+                else {
+                    GlideApp.with(view)
+                        .load(altFaviconUrl)
+                        .into(view)
+                }
+            }
+            else {
+                val filename = faviconInfo.filename
+                File(view.context.filesDir, "favicon_cache").let { dir ->
+                    GlideApp.with(view)
+                        .load(File(dir, filename))
+                        .into(view)
                 }
             }
         }
@@ -92,9 +126,9 @@ class HistoryAdapter(
             oldItem?.log?.id == newItem?.log?.id
 
         override fun areModelContentsTheSame(oldItem: History?, newItem: History?): Boolean =
-            oldItem?.page?.url == newItem?.page?.url &&
-                    oldItem?.page?.title == newItem?.page?.title &&
-                    oldItem?.page?.faviconUrl == newItem?.page?.faviconUrl &&
+            oldItem?.page?.page?.url == newItem?.page?.page?.url &&
+                    oldItem?.page?.page?.title == newItem?.page?.page?.title &&
+                    oldItem?.page?.page?.faviconInfoId == newItem?.page?.page?.faviconInfoId &&
                     oldItem?.log?.visitedAt == newItem?.log?.visitedAt
     }
 }

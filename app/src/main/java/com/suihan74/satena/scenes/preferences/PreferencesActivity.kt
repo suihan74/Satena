@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.io.File
 import java.time.LocalDateTime
 
 class PreferencesActivity : AppCompatActivity() {
@@ -498,6 +499,7 @@ class PreferencesActivity : AppCompatActivity() {
                     addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME)
                     addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME + "-shm")
                     addDatabase<AppDatabase>(SatenaApplication.APP_DATABASE_FILE_NAME + "-wal")
+                    addFiles(File(context.filesDir, "favicon_cache"))
                     write(targetUri)
                 }
 
@@ -533,6 +535,7 @@ class PreferencesActivity : AppCompatActivity() {
                     .read(targetUri)
 
                 withContext(Dispatchers.Main) {
+                    Log.i("satena", "restarting...")
                     val path = contentFilePath(context, targetUri)
                     context.showToast(R.string.msg_pref_information_load_succeeded, path)
 

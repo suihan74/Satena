@@ -21,14 +21,28 @@ data class HistoryPage (
 
     val title : String,
 
-    val faviconUrl : String,
-
     val lastVisited : LocalDateTime,
 
     val visitTimes : Long = 1L,
 
+    val faviconInfoId : Long = 0L,
+
+    @Deprecated("migrate to faviconInfo")
+    val faviconUrl : String = "",
+
     @PrimaryKey(autoGenerate = true)
     val id : Long = 0L
+)
+
+data class HistoryPageAndFaviconInfo (
+    @Embedded
+    val page : HistoryPage,
+
+    @Relation(
+        parentColumn = "faviconInfoId",
+        entityColumn = "id"
+    )
+    val faviconInfo : FaviconInfo?
 )
 
 /**
@@ -56,8 +70,9 @@ data class History (
     val log : HistoryLog,
 
     @Relation(
+        entity = HistoryPage::class,
         parentColumn = "pageId",
         entityColumn = "id"
     )
-    val page : HistoryPage
+    val page : HistoryPageAndFaviconInfo
 )

@@ -10,6 +10,8 @@ import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesReposit
 import com.suihan74.utilities.OnError
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class FavoriteSitesViewModel(
@@ -27,15 +29,9 @@ class FavoriteSitesViewModel(
         fragmentManager: FragmentManager,
         tag: String? = null
     ) = viewModelScope.launch(Dispatchers.Main) {
-        val sites = repository.favoriteSites.value.orEmpty()
-
-        FavoriteSitesSelectionDialog.createInstance(sites).run {
-            showAllowingStateLoss(fragmentManager, tag)
-
-            setOnCompleteListener { newList ->
-                repository.favoriteSites.value = newList
-            }
-        }
+        val sites = repository.allSites()
+        FavoriteSitesSelectionDialog.createInstance(sites)
+            .showAllowingStateLoss(fragmentManager, tag)
     }
 
     override fun connectToTab(
@@ -45,10 +41,9 @@ class FavoriteSitesViewModel(
         onError: OnError?
     ) {
         super.connectToTab(fragment, entriesAdapter, viewModel, onError)
-        repository.favoriteSites.observe(fragment.viewLifecycleOwner, {
-            fragment.lifecycleScope.launchWhenResumed {
+        repository.favoriteSitesFlow
+            .onEach {
                 runCatching { viewModel.reloadLists() }
-            }
-        })
+            }.launchIn(fragment.lifecycleScope)
     }
 }

@@ -10,16 +10,18 @@ import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
-import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.utilities.DialogListener
+import com.suihan74.satena.models.favoriteSite.FavoriteSiteAndFavicon
+import com.suihan74.utilities.SuspendDialogListener
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.lazyProvideViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class FavoriteSiteMenuDialog : DialogFragment() {
     companion object {
-        fun createInstance(targetSite: FavoriteSite) = FavoriteSiteMenuDialog().withArguments {
+        fun createInstance(targetSite: FavoriteSiteAndFavicon) = FavoriteSiteMenuDialog().withArguments {
             putObject(ARG_TARGET_SITE, targetSite)
         }
 
@@ -27,77 +29,91 @@ class FavoriteSiteMenuDialog : DialogFragment() {
     }
 
     private val viewModel by lazyProvideViewModel {
-        val targetSite = requireArguments().getObject<FavoriteSite>(ARG_TARGET_SITE)!!
-        DialogViewModel(requireContext(), targetSite)
+        val targetSite = requireArguments().getObject<FavoriteSiteAndFavicon>(ARG_TARGET_SITE)!!
+        DialogViewModel(targetSite)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val context = requireContext()
+
         // カスタムタイトルを生成
         val titleViewBinding = DialogTitleEntry2Binding.inflate(localLayoutInflater(), null, false).also {
-            val site = viewModel.targetSite
-            it.title = site.title
-            it.url = site.url
-            it.rootUrl = site.url
-            it.faviconUrl = site.faviconUrl
+            val target = viewModel.target
+            it.title = target.site.title
+            it.url = target.site.url
+            it.rootUrl = target.site.url
+            it.faviconUrl =
+                target.faviconInfo?.filename?.let { filename ->
+                    "${context.filesDir}/favicon_cache/$filename"
+                } ?: target.site.faviconUrl
         }
 
         return createBuilder()
             .setCustomTitle(titleViewBinding.root)
-            .setItems(viewModel.labels) { _, which ->
-                viewModel.invokeAction(which, this)
-            }
+            .setItems(viewModel.labels(context), null)
             .setNegativeButton(R.string.dialog_cancel, null)
             .create()
+            .apply {
+                listView.setOnItemClickListener { adapterView, view, i, l ->
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        runCatching {
+                            viewModel.invokeAction(i, this@FavoriteSiteMenuDialog)
+                        }
+                        runCatching {
+                            dismiss()
+                        }
+                    }
+                }
+            }
     }
 
     // ------ //
 
-    fun setOnOpenListener(listener: DialogListener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+    fun setOnOpenListener(listener: SuspendDialogListener<FavoriteSiteAndFavicon>?) = lifecycleScope.launchWhenCreated {
         viewModel.onOpen = listener
     }
 
-    fun setOnModifyListener(listener: DialogListener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+    fun setOnModifyListener(listener: SuspendDialogListener<FavoriteSiteAndFavicon>?) = lifecycleScope.launchWhenCreated {
         viewModel.onModify = listener
     }
 
-    fun setOnOpenEntriesListener(listener: DialogListener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+    fun setOnOpenEntriesListener(listener: SuspendDialogListener<FavoriteSiteAndFavicon>?) = lifecycleScope.launchWhenCreated {
         viewModel.onOpenEntries = listener
     }
 
-    fun setOnDeleteListener(listener: DialogListener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
+    fun setOnDeleteListener(listener: SuspendDialogListener<FavoriteSiteAndFavicon>?) = lifecycleScope.launchWhenCreated {
         viewModel.onDelete = listener
     }
 
     // ------ //
 
     class DialogViewModel(
-        val context: Context,
-        val targetSite: FavoriteSite
+        val target: FavoriteSiteAndFavicon
     ) : ViewModel() {
         /** メニュー項目と対応するイベント */
-        val menuItems = listOf<Pair<Int, (FavoriteSiteMenuDialog)->Unit>>(
-            R.string.dialog_favorite_sites_open to { onOpen?.invoke(targetSite, it) },
-            R.string.dialog_favorite_sites_open_entries to { onOpenEntries?.invoke(targetSite, it) },
-            R.string.dialog_favorite_sites_modify to { onModify?.invoke(targetSite, it) },
-            R.string.dialog_favorite_sites_delete to { onDelete?.invoke(targetSite, it) }
+        private val menuItems = listOf<Pair<Int, suspend (FavoriteSiteMenuDialog)->Unit>>(
+            R.string.dialog_favorite_sites_open to { onOpen?.invoke(target, it) },
+            R.string.dialog_favorite_sites_open_entries to { onOpenEntries?.invoke(target, it) },
+            R.string.dialog_favorite_sites_modify to { onModify?.invoke(target, it) },
+            R.string.dialog_favorite_sites_delete to { onDelete?.invoke(target, it) }
         )
 
         /** メニュー表示項目 */
-        val labels = menuItems.map { context.getString(it.first) }.toTypedArray()
+        fun labels(context: Context) = menuItems.map { context.getString(it.first) }.toTypedArray()
 
         /** 対象アイテムを内部ブラウザで開く */
-        var onOpen: DialogListener<FavoriteSite>? = null
+        var onOpen: SuspendDialogListener<FavoriteSiteAndFavicon>? = null
 
         /** 対象アイテムを編集する */
-        var onModify: DialogListener<FavoriteSite>? = null
+        var onModify: SuspendDialogListener<FavoriteSiteAndFavicon>? = null
 
         /** 対象サイトのエントリ一覧を開く */
-        var onOpenEntries: DialogListener<FavoriteSite>? = null
+        var onOpenEntries: SuspendDialogListener<FavoriteSiteAndFavicon>? = null
 
         /** 対象アイテムを削除 */
-        var onDelete: DialogListener<FavoriteSite>? = null
+        var onDelete: SuspendDialogListener<FavoriteSiteAndFavicon>? = null
 
-        fun invokeAction(which: Int, dialogFragment: FavoriteSiteMenuDialog) {
+        suspend fun invokeAction(which: Int, dialogFragment: FavoriteSiteMenuDialog) {
             menuItems[which].second.invoke(dialogFragment)
         }
     }

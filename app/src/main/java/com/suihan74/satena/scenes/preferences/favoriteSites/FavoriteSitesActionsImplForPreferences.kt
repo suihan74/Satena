@@ -2,13 +2,13 @@ package com.suihan74.satena.scenes.preferences.favoriteSites
 
 import android.app.Activity
 import android.content.Intent
-import com.suihan74.satena.models.FavoriteSite
+import com.suihan74.satena.models.favoriteSite.FavoriteSiteAndFavicon
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.preferences.pages.FavoriteSitesFragment
 
 class FavoriteSitesActionsImplForPreferences : FavoriteSitesViewModelInterface {
     private fun openMenuDialog(
-        site: FavoriteSite,
+        site: FavoriteSiteAndFavicon,
         activity: Activity,
         fragment: FavoriteSitesFragment
     ) {
@@ -20,7 +20,7 @@ class FavoriteSitesActionsImplForPreferences : FavoriteSitesViewModelInterface {
     }
 
     override fun onClickItem(
-        site: FavoriteSite,
+        site: FavoriteSiteAndFavicon,
         activity: Activity,
         fragment: FavoriteSitesFragment
     ) {
@@ -28,7 +28,7 @@ class FavoriteSitesActionsImplForPreferences : FavoriteSitesViewModelInterface {
     }
 
     override fun onLongClickItem(
-        site: FavoriteSite,
+        site: FavoriteSiteAndFavicon,
         activity: Activity,
         fragment: FavoriteSitesFragment
     ) {
@@ -45,9 +45,9 @@ class FavoriteSitesActionsImplForPreferences : FavoriteSitesViewModelInterface {
         )
     }
 
-    override fun openInBrowser(site: FavoriteSite, activity: Activity) {
+    override fun openInBrowser(site: FavoriteSiteAndFavicon, activity: Activity) {
         val intent = Intent(activity, BrowserActivity::class.java).also {
-            it.putExtra(BrowserActivity.EXTRA_URL, site.url)
+            it.putExtra(BrowserActivity.EXTRA_URL, site.site.url)
         }
         activity.startActivity(intent)
     }
