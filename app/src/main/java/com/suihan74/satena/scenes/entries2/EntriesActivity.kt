@@ -586,12 +586,8 @@ class EntriesActivity : AppCompatActivity(), ScrollableToTop {
         val tint = ColorStateList.valueOf(getThemeColor(R.attr.textColor))
         val menuItems = viewModel.bottomBarItems
             .take(maxButtonsNum)
-            .mapNotNull { item ->
-                val result = runCatching {
-                    if (item.requireSignedIn && viewModel.signedIn.value != true) null
-                    else item.toMenuItem(bottomAppBar.menu, tint)
-                }
-                result.getOrNull()?.also { menuItem ->
+            .map { item ->
+                item.toMenuItem(bottomAppBar.menu, tint).also { menuItem ->
                     initializeBottomMenuItemActionView(item, menuItem)
                 }
             }

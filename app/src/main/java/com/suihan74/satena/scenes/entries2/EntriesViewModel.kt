@@ -111,7 +111,10 @@ class EntriesViewModel(
 
     /** ボトムバーの項目 */
     val bottomBarItems : List<UserBottomItem>
-        get() = repository.bottomBarItems
+        get() = repository.bottomBarItems.mapNotNull { item ->
+            if (item.requireSignedIn && signedIn.value != true) null
+            else item
+        }
 
     /** ボトムバーの項目の配置方法 */
     val bottomBarItemsGravity : Int
