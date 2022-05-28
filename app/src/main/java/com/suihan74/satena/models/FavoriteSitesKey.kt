@@ -78,7 +78,9 @@ object FavoriteSitesKeyMigration {
                     repo.favoritePage(site.url, site.title, site.faviconUrl, site.isEnabled)
                 }
             }
-            SafeSharedPreferences.delete<FavoriteSitesKey>(context)
+            prefs.edit {
+                remove(FavoriteSitesKey.SITES)
+            }
         }.onFailure {
             Log.e("favoriteSites", it.stackTraceToString())
             throw it
