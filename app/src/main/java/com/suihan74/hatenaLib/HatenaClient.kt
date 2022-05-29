@@ -521,9 +521,13 @@ object HatenaClient : BaseClient(), CoroutineScope {
             val dateTimeFormat = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
 
             html.body().getElementsByClass("$classNamePrefix-main").mapNotNull m@ { entry ->
-                val (title, entryUrl) = entry.getElementsByClass("$classNamePrefix-title").firstOrNull()?.let {
+                val (title, entryUrl, eid) = entry.getElementsByClass("$classNamePrefix-title").firstOrNull()?.let {
                     it.getElementsByTag("a").firstOrNull()?.let { link ->
-                        link.attr("title") to link.attr("href")
+                        Triple(
+                            link.attr("title"),
+                            link.attr("href"),
+                            link.attr("data-entry-id")?.toLongOrNull()
+                        )
                     }
                 } ?: return@m null
 
@@ -564,7 +568,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 }
 
                 Entry(
-                    id = 0,  // eidはコメントページを見ないと手に入らない
+                    id = eid ?: 0L,
                     title = title,
                     description = description,
                     count = count,
