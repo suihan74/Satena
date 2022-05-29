@@ -190,12 +190,13 @@ class Migration7to8 : Migration(7, 8) {
 }
 
 /**
- * v1.11.0: お気に入りサイト情報をDB管理下に移行
+ * v1.11.0: お気に入りサイト情報をDB管理下に移行、eid=0の既読エントリを削除
  */
 class Migration8to9 : Migration(8, 9) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL("CREATE TABLE IF NOT EXISTS `favorite_site` (`url` TEXT NOT NULL, `title` TEXT NOT NULL, `isEnabled` INTEGER NOT NULL, `faviconInfoId` INTEGER NOT NULL, `faviconUrl` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
         database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favorite_site_url` ON `favorite_site` (`url`)")
+        database.execSQL("DELETE FROM `read_entry` WHERE eid = 0")
         Log.i("migration8to9", "completed")
     }
 }

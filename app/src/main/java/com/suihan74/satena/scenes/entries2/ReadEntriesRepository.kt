@@ -64,6 +64,7 @@ class ReadEntriesRepository(
 
     suspend fun insert(entry: Entry, timing: ReadEntryCondition) {
         if (readEntryCondition.value.contains(timing)) {
+            if (entry.id == 0L) return
             dao.insert(entry)
             readEntryIdsCache.add(entry.id)
             if (displaying.value) {
