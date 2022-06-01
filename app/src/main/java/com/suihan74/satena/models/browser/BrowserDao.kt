@@ -236,6 +236,9 @@ interface BrowserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFaviconInfo(faviconCache: FaviconInfo)
 
+    @Update
+    suspend fun updateFaviconInfo(faviconCache: FaviconInfo)
+
     @Query("""
         select * from browser_favicon_info
         where domain = :domain
@@ -251,9 +254,9 @@ interface BrowserDao {
     suspend fun clearFaviconInfo()
 
     @Query("""
-        select * from browser_favicon_info
-        where not exists (select 1 from browser_history_pages where faviconInfoId = id) 
-            and not exists (select 1 from favorite_site where faviconInfoId = id)
+        select * from browser_favicon_info f
+        where not exists (select * from browser_history_pages where faviconInfoId = f.id) 
+            and not exists (select * from favorite_site where faviconInfoId = f.id)
     """)
     suspend fun findOldFaviconInfo() : List<FaviconInfo>
 

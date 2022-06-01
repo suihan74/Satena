@@ -13,6 +13,7 @@ import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.EmptyException
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.exceptions.TaskFailureException
+import com.suihan74.utilities.extensions.estimatedHierarchy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -72,7 +73,8 @@ class FavoriteSitesRepository(
         }
 
         val domain =
-            runCatching { Uri.parse(site.url).host!! }.getOrElse { throw InvalidUrlException(url = site.url) }
+            runCatching { Uri.parse(site.url).estimatedHierarchy!! }
+                .getOrElse { throw InvalidUrlException(url = site.url) }
 
         val existed = dao.findFavoriteSite(site.url)
 

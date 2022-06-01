@@ -10,6 +10,7 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.BrowserSettingsKey
 import com.suihan74.satena.models.browser.*
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.extensions.estimatedHierarchy
 import com.suihan74.utilities.extensions.toSystemZonedDateTime
 import com.suihan74.utilities.getSha256
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +19,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.ByteBuffer
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
@@ -26,11 +28,6 @@ class HistoryRepository(
     private val prefs: SafeSharedPreferences<BrowserSettingsKey>,
     private val dao: BrowserDao
 ) {
-    companion object {
-        /** faviconキャッシュを再書き込みするまでの日数 */
-        private const val FAVICON_CACHE_LIFESPAN = 30L
-    }
-
     /** 閲覧履歴 */
     val histories = MutableLiveData<List<History>>()
     private val historiesCacheLock = Mutex()
@@ -47,7 +44,7 @@ class HistoryRepository(
         val decodedUrl = Uri.decode(url)
 
         val faviconInfoId =
-            Uri.parse(url).host?.let { domain -> dao.findFaviconInfo(domain)?.id } ?: 0L
+            Uri.parse(url).estimatedHierarchy?.let { domain -> dao.findFaviconInfo(domain)?.id } ?: 0L
 
         val page =
             dao.getHistoryPage(decodedUrl)?.let {
@@ -85,7 +82,7 @@ class HistoryRepository(
         }
         else {
             historiesCacheLock.withLock {
-                val domain = Uri.parse(url).host!!
+                val domain = Uri.parse(url).estimatedHierarchy!!
                 val faviconInfo = existedPage.faviconInfo ?: dao.findFaviconInfo(domain)
                 val updated = existedPage.page.copy(title = title, faviconInfoId = faviconInfo?.id ?: 0)
                 dao.updateHistoryPage(updated)
@@ -216,31 +213,38 @@ class HistoryRepository(
     suspend fun saveFaviconCache(context: Context, bitmap: Bitmap, url: String?) = withContext(Dispatchers.IO) {
         faviconMutex.withLock {
             runCatching {
-                val domain = Uri.parse(url).host!!
-                val existed = SatenaApplication.instance.browserDao.findFaviconInfo(domain)
-                if (existed?.lastUpdated?.isAfter(ZonedDateTime.now().minusDays(FAVICON_CACHE_LIFESPAN)) == true) {
+                val estimatedHierarchy = Uri.parse(url).estimatedHierarchy!!
+                val existed = SatenaApplication.instance.browserDao.findFaviconInfo(estimatedHierarchy)
+
+                val filename =
+                    ByteBuffer.allocate(bitmap.byteCount).let { buffer ->
+                        bitmap.copyPixelsToBuffer(buffer)
+                        getSha256(buffer.array())
+                    }
+
+                // ファイルがDB上で見つかるキャッシュは再書き込みしない
+                if (existed?.filename == filename) {
                     return@runCatching
                 }
 
                 File(context.filesDir, "favicon_cache").let { dir ->
-                    dir.mkdir()
-                    val byteArray =
-                        ByteArrayOutputStream().use { ostream ->
-                            val compressFormat =
-                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) Bitmap.CompressFormat.PNG
-                                else Bitmap.CompressFormat.WEBP_LOSSY
-                            bitmap.compress(compressFormat, 100, ostream)
-                            ostream.toByteArray()
-                        }
-
-                    val filename = getSha256(byteArray)
+                    dir.mkdirs()
                     val outFile = File(dir, filename)
-                    outFile.outputStream().use { it.write(byteArray) }
-
                     runCatching {
-                        insertFaviconInfo(filename, url, domain)
+                        if (!outFile.exists()) {
+                            val byteArray =
+                                ByteArrayOutputStream().use { ostream ->
+                                    val compressFormat =
+                                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) Bitmap.CompressFormat.PNG
+                                        else Bitmap.CompressFormat.WEBP_LOSSY
+                                    bitmap.compress(compressFormat, 100, ostream)
+                                    ostream.toByteArray()
+                                }
+                            outFile.outputStream().use { it.write(byteArray) }
+                        }
+                        insertFaviconInfo(filename, url, estimatedHierarchy, existed)
                     }.onFailure {
-                        outFile.delete()
+                        runCatching { outFile.delete() }
                     }
                 }
             }.onFailure {
@@ -249,10 +253,21 @@ class HistoryRepository(
         }
     }
 
-    private suspend fun insertFaviconInfo(filename: String, url: String?, domain: String) {
+    private suspend fun insertFaviconInfo(filename: String, url: String?, domain: String, existed: FaviconInfo?) {
         url!!
         SatenaApplication.instance.browserDao.let { dao ->
-            dao.insertFaviconInfo(FaviconInfo(domain, filename, ZonedDateTime.now()))
+            if (existed != null) {
+                dao.updateFaviconInfo(
+                    existed.copy(
+                        domain = domain,
+                        filename = filename,
+                        lastUpdated = ZonedDateTime.now()
+                    )
+                )
+            }
+            else {
+                dao.insertFaviconInfo(FaviconInfo(domain, filename, ZonedDateTime.now()))
+            }
             dao.getHistoryPage(Uri.decode(url))?.let { historyPage ->
                 val faviconInfo = dao.findFaviconInfo(domain)!!
                 dao.updateHistoryPage(historyPage.copy(faviconInfoId = faviconInfo.id))
@@ -266,7 +281,7 @@ class HistoryRepository(
             histories.postValue(
                 histories.value.orEmpty()
                     .map { h ->
-                        if (h.page.page.faviconInfoId == faviconInfo.id || (h.page.page.faviconInfoId == 0L && Uri.parse(h.page.page.url).host == faviconInfo.domain)) {
+                        if (h.page.page.faviconInfoId == faviconInfo.id || (h.page.page.faviconInfoId == 0L && Uri.parse(h.page.page.url).estimatedHierarchy == faviconInfo.domain)) {
                             val updatedPage = h.page.page.copy(faviconInfoId = faviconInfo.id)
                             if (h.page.page.faviconInfoId == 0L) {
                                 dao.updateHistoryPage(updatedPage)
@@ -302,7 +317,7 @@ class HistoryRepository(
     private var clearUnManagedFaviconsCalled = false
 
     /**
-     * ジャーナルにFaviconInfoが記載されていないのに存在するキャッシュファイルを削除する
+     * すべてのFaviconInfoから参照されていないのに存在するキャッシュファイルを削除する
      */
     private suspend fun clearUnManagedFavicons(context: Context) {
         faviconMutex.withLock {

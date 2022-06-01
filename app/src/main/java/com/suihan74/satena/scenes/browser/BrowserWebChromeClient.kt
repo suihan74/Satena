@@ -7,6 +7,7 @@ import android.webkit.WebView
 import androidx.lifecycle.viewModelScope
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
+import com.suihan74.utilities.extensions.estimatedHierarchy
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
@@ -41,8 +42,8 @@ class BrowserWebChromeClient(
                 browserRepo.loadFavicon(icon)
                 if (context != null && icon != null) {
                     historyRepo.saveFaviconCache(context, icon, url)
-                    Uri.parse(url).host?.let { domain ->
-                        favoriteSitesRepo.updateFavicon(domain)
+                    Uri.parse(url).estimatedHierarchy?.let {
+                        favoriteSitesRepo.updateFavicon(it)
                     }
                 }
             }

@@ -132,6 +132,7 @@ class HistoryAdapter(
             oldItem?.page?.page?.url == newItem?.page?.page?.url &&
                     oldItem?.page?.page?.title == newItem?.page?.page?.title &&
                     oldItem?.page?.page?.faviconInfoId == newItem?.page?.page?.faviconInfoId &&
+                    oldItem?.page?.faviconInfo?.lastUpdated?.isEqual(newItem?.page?.faviconInfo?.lastUpdated) == true &&
                     oldItem?.log?.visitedAt == newItem?.log?.visitedAt
     }
 }

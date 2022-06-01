@@ -41,7 +41,7 @@ class HistoryMenuDialog : DialogFragment() {
             it.rootUrl = page.url
             it.faviconUrl = history.page.faviconInfo?.filename?.let {
                 "${requireContext().filesDir}/favicon_cache/$it"
-            }.orEmpty()
+            }
         }
 
         return createBuilder()
