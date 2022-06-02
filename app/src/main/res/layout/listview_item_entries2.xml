@@ -30,6 +30,7 @@
         <ImageView
                 android:id="@+id/favicon"
                 src="@{entry.faviconUrl}"
+                errorSrc="@{@drawable/ic_file}"
                 android:contentDescription="@null"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="8dp"
@@ -37,7 +38,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 android:layout_width="16dp"
                 android:layout_height="16dp"
-                tools:src="@drawable/ic_stat_name" />
+                tools:src="@drawable/ic_file" />
 
         <ImageView
                 android:id="@+id/image"
