@@ -2,51 +2,58 @@ package com.suihan74.satena.scenes.browser
 
 import android.app.Dialog
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.webkit.WebHistoryItem
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
 import com.suihan74.satena.databinding.DialogTitleEntry2Binding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
+import com.suihan74.satena.models.browser.FaviconInfo
 import com.suihan74.utilities.DialogListener
-import com.suihan74.utilities.extensions.faviconUrl
 import com.suihan74.utilities.lazyProvideViewModel
 
 class BackStackItemMenuDialog : DialogFragment() {
     companion object {
-        fun createInstance(page: WebHistoryItem) = BackStackItemMenuDialog().also {
+        fun createInstance(page: WebHistoryItem, faviconInfo: FaviconInfo?) = BackStackItemMenuDialog().also {
             it.lifecycleScope.launchWhenCreated {
-                it.viewModel.page = page
+                it.viewModel.page.value = page
+                it.viewModel.faviconInfo.value = faviconInfo
             }
         }
     }
 
     private val viewModel by lazyProvideViewModel {
-        DialogViewModel(requireContext())
+        DialogViewModel()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val context = requireContext()
         // カスタムタイトルを生成
         val titleViewBinding = DialogTitleEntry2Binding.inflate(
             localLayoutInflater(),
             null,
             false
         ).also { binding ->
-            viewModel.page!!.let { page ->
-                binding.title = page.title
-                binding.url = page.url
-                binding.rootUrl = page.url
-                binding.faviconUrl = Uri.parse(page.url).faviconUrl
+            viewModel.page.observe(this) { page ->
+                binding.title = page?.title.orEmpty()
+                binding.url = page?.url.orEmpty()
+                binding.rootUrl = page?.url.orEmpty()
             }
+            viewModel.faviconInfo.observe(this) { fi ->
+                binding.faviconUrl = fi?.filename?.let {
+                    "${requireContext().filesDir}/favicon_cache/$it"
+                }.orEmpty()
+            }
+            binding.lifecycleOwner = this
         }
 
         return createBuilder()
             .setCustomTitle(titleViewBinding.root)
-            .setItems(viewModel.labels) { _, which ->
+            .setItems(viewModel.labels(context)) { _, which ->
                 viewModel.invokeAction(this, which)
             }
             .setNegativeButton(R.string.dialog_cancel, null)
@@ -69,8 +76,10 @@ class BackStackItemMenuDialog : DialogFragment() {
 
     // ------ //
 
-    class DialogViewModel(val context: Context) : ViewModel() {
-        var page: WebHistoryItem? = null
+    class DialogViewModel : ViewModel() {
+        var page = MutableLiveData<WebHistoryItem?>()
+
+        var faviconInfo = MutableLiveData<FaviconInfo?>()
 
         /** 対象アイテムを内部ブラウザで開く */
         var onOpen : DialogListener<WebHistoryItem>? = null
@@ -89,13 +98,13 @@ class BackStackItemMenuDialog : DialogFragment() {
         )
 
         /** メニュー表示項目 */
-        val labels = menuItems.map { context.getString(it.first) }.toTypedArray()
+        fun labels(context: Context) = menuItems.map { context.getString(it.first) }.toTypedArray()
 
         // ------ //
 
         fun invokeAction(fragment: DialogFragment, which: Int) {
             val action = menuItems[which].second()
-            action?.invoke(page!!, fragment)
+            action?.invoke(page.value!!, fragment)
         }
     }
 }

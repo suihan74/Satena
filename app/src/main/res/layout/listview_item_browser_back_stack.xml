@@ -33,6 +33,7 @@
             <ImageView
                     android:id="@+id/favicon"
                     src="@{item.favicon}"
+                    errorSrc="@{@drawable/ic_file}"
                     android:contentDescription="@null"
                     android:layout_marginTop="2dp"
                     android:layout_marginEnd="6dp"

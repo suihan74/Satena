@@ -10,7 +10,6 @@ import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesViewModelInterface
 import com.suihan74.satena.scenes.preferences.pages.FavoriteSitesFragment
 import com.suihan74.utilities.extensions.alsoAs
-import com.suihan74.utilities.extensions.faviconUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -50,7 +49,7 @@ class FavoriteSitesActionsImplForBrowser(
                 val faviconUrl =
                     browserDao.findFaviconInfo(Uri.parse(url).host!!)?.filename?.let {
                         "${activity.filesDir.absolutePath}/favicon_cache/$it"
-                    } ?: Uri.parse(url).faviconUrl
+                    }.orEmpty()
 
                 val site = FavoriteSite(
                     url,

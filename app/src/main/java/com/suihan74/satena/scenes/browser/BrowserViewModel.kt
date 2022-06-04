@@ -828,7 +828,7 @@ class BrowserViewModel(
         title: String,
         fragmentManager: FragmentManager
     ) {
-        val site = FavoriteSite(url, title, false, 0, Uri.parse(url).faviconUrl)
+        val site = FavoriteSite(url, title, false, 0)
         val dialog = FavoriteSiteRegistrationDialog.createRegistrationInstance(site)
         dialog.showAllowingStateLoss(fragmentManager)
     }
@@ -896,15 +896,18 @@ class BrowserViewModel(
         }
 
         dialog.setOnLongClickItemListener { item, f ->
-            openBackStackItemMenuDialog(item, f.parentFragmentManager)
+            f.lifecycleScope.launch {
+                openBackStackItemMenuDialog(item, f.parentFragmentManager)
+            }
         }
 
         dialog.show(fragmentManager, "BackStackDialog")
     }
 
     /** 「戻る/進む」履歴項目のメニューダイアログを開く */
-    private fun openBackStackItemMenuDialog(page: WebHistoryItem, fragmentManager: FragmentManager) {
-        val dialog = BackStackItemMenuDialog.createInstance(page)
+    private suspend fun openBackStackItemMenuDialog(page: WebHistoryItem, fragmentManager: FragmentManager) {
+        val faviconInfo = historyRepo.findFaviconInfo(page.url)
+        val dialog = BackStackItemMenuDialog.createInstance(page, faviconInfo)
         dialog.setOnOpenListener { item, f ->
             runCatching {
                 val backStackDialog = f.parentFragmentManager.findFragmentByTag("BackStackDialog")

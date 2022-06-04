@@ -208,6 +208,13 @@ class HistoryRepository(
 
     private val faviconMutex = Mutex()
 
+    suspend fun findFaviconInfo(url: String) : FaviconInfo? = faviconMutex.withLock {
+        runCatching {
+            val site = Uri.parse(url).estimatedHierarchy ?: return null
+            dao.findFaviconInfo(site)
+        }.getOrNull()
+    }
+
     /** 読み込んだfaviconをアプリディレクトリ内にキャッシュ */
     @Suppress("BlockingMethodInNonBlockingContext")
     suspend fun saveFaviconCache(context: Context, bitmap: Bitmap, url: String?) = withContext(Dispatchers.IO) {

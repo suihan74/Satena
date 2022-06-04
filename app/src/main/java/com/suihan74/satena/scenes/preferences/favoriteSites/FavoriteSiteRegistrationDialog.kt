@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.preferences.favoriteSites
 
 import android.app.Dialog
 import android.content.DialogInterface
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.DialogFragment
@@ -144,13 +143,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
 
         val title = MutableLiveData(targetSite?.title ?: "")
 
-        val faviconUrl = MutableLiveData(targetSite?.faviconUrl ?: "")
-
-        val url = MutableLiveData(targetSite?.url.orEmpty()).also {
-            it.observeForever { u ->
-                faviconUrl.value = Uri.parse(u).faviconUrl
-            }
-        }
+        val url = MutableLiveData(targetSite?.url.orEmpty())
 
         val waiting = MutableLiveData(false)
 
@@ -169,7 +162,7 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
             repo.favoritePage(
                 url = url.value!!,
                 title = title.value!!,
-                faviconUrl = faviconUrl.value!!,
+                faviconUrl = "",
                 isEnabled = targetSite?.isEnabled ?: false,
                 modify = (mode == Mode.MODIFY),
                 id = targetSite?.id ?: 0L

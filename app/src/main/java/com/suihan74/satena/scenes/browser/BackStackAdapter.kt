@@ -51,6 +51,7 @@ class BackStackAdapter(
             return oldItem?.url == newItem?.url
                     && oldItem?.title == newItem?.title
                     && oldItem?.originalUrl == newItem?.originalUrl
+                    && oldItem?.favicon == newItem?.favicon
         }
     }
 
