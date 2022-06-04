@@ -72,7 +72,7 @@ class FavoriteSitesRepository(
             throw EmptyException()
         }
 
-        val domain =
+        val rootUrl =
             runCatching { Uri.parse(site.url).estimatedHierarchy!! }
                 .getOrElse { throw InvalidUrlException(url = site.url) }
 
@@ -83,7 +83,7 @@ class FavoriteSitesRepository(
                 throw AlreadyExistedException("the site has already existed as the favorite site: ${site.url}")
             }
             dao.update(
-                dao.findFaviconInfo(domain)?.let { site.copy(faviconInfoId = it.id) } ?: site
+                dao.findFaviconInfo(rootUrl)?.let { site.copy(faviconInfoId = it.id) } ?: site
             )
         }
         else {
@@ -91,7 +91,7 @@ class FavoriteSitesRepository(
                 throw AlreadyExistedException("the site has already existed as the favorite site: ${site.url}")
             }
             dao.insert(
-                dao.findFaviconInfo(domain)?.let { site.copy(faviconInfoId = it.id) } ?: site
+                dao.findFaviconInfo(rootUrl)?.let { site.copy(faviconInfoId = it.id) } ?: site
             )
         }
     }
@@ -112,11 +112,11 @@ class FavoriteSitesRepository(
     /**
      * faviconInfoと紐づいていないお気に入りサイトにfaviconInfoを紐づける
      */
-    suspend fun updateFavicon(domain: String) {
+    suspend fun updateFavicon(site: String) {
         runCatching {
-            val faviconInfo = dao.findFaviconInfo(domain) ?: return
+            val faviconInfo = dao.findFaviconInfo(site) ?: return
             val items = dao.findItemsFaviconInfoNotSet()
-                .filter { Uri.parse(it.url).host == domain }
+                .filter { Uri.parse(it.url).host == site }
                 .map { it.copy(faviconInfoId = faviconInfo.id) }
             dao.update(items)
         }

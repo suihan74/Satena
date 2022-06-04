@@ -239,11 +239,13 @@ interface BrowserDao {
     @Update
     suspend fun updateFaviconInfo(faviconCache: FaviconInfo)
 
-    @Query("""
+    @Query(
+        """
         select * from browser_favicon_info
-        where domain = :domain
-    """)
-    suspend fun findFaviconInfo(domain: String) : FaviconInfo?
+        where site = :site
+    """
+    )
+    suspend fun findFaviconInfo(site: String) : FaviconInfo?
 
     @Query("""
         select exists (select * from browser_favicon_info where filename = :filename)

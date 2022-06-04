@@ -39,7 +39,7 @@ import java.time.OffsetDateTime
         ReadEntry::class,
         FavoriteSite::class
     ],
-    version = 9
+    version = 10
 )
 @TypeConverters(
     LocalDateTimeConverter::class,
@@ -70,8 +70,13 @@ fun RoomDatabase.Builder<AppDatabase>.migrate() : RoomDatabase.Builder<AppDataba
         Migration1to5(),
         Migration5to6(),
         Migration6to7(),
+        // ------ //
+        // for development v1.11.0
         Migration7to8(),
-        Migration8to9()
+        Migration8to9(),
+        Migration9to10(),
+        // ------ //
+        Migration7to10()
     )
     .fallbackToDestructiveMigration()
 
@@ -191,6 +196,8 @@ class Migration7to8 : Migration(7, 8) {
 
 /**
  * v1.11.0: お気に入りサイト情報をDB管理下に移行、eid=0の既読エントリを削除
+ *
+ * 開発バージョン用
  */
 class Migration8to9 : Migration(8, 9) {
     override fun migrate(database: SupportSQLiteDatabase) {
@@ -198,5 +205,49 @@ class Migration8to9 : Migration(8, 9) {
         database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favorite_site_url` ON `favorite_site` (`url`)")
         database.execSQL("DELETE FROM `read_entry` WHERE eid = 0")
         Log.i("migration8to9", "completed")
+    }
+}
+
+/**
+ * v1.11.0: faviconInfoの対象サイトを表すカラムの名称を`domain`から`site`に変更
+ */
+class Migration9to10 : Migration(9, 10) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS `MIG_TEMP` (`site` TEXT NOT NULL, `filename` TEXT NOT NULL, `lastUpdated` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
+        database.execSQL("INSERT INTO `MIG_TEMP` SELECT * FROM `browser_favicon_info`")
+        database.execSQL("DROP TABLE `browser_favicon_info`")
+        database.execSQL("ALTER TABLE `MIG_TEMP` RENAME TO `browser_favicon_info`")
+        database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favicon_info_site` ON `browser_favicon_info` (`site`)")
+        Log.i("migration9to10", "completed")
+    }
+}
+
+/**
+ * v1.11.0: v8~v10のマイグレーション処理をリリース版用にまとめたもの
+ */
+class Migration7to10 : Migration(7, 10) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        createTableFaviconInfo(database)
+        createTableFavoriteSite(database)
+        deleteReadEntryHasInvalidEid(database)
+        Log.i("migration7to10", "completed")
+    }
+
+    /** v8, v10: favicon情報を管理する */
+    private fun createTableFaviconInfo(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `browser_favicon_info` (`site` TEXT NOT NULL, `filename` TEXT NOT NULL, `lastUpdated` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favicon_info_site` ON `browser_favicon_info` (`site`)")
+        db.execSQL("ALTER TABLE `browser_history_pages` ADD `faviconInfoId` INTEGER NOT NULL DEFAULT 0")
+    }
+
+    /** v9: お気に入りサイト情報をDBに移行する */
+    private fun createTableFavoriteSite(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `favorite_site` (`url` TEXT NOT NULL, `title` TEXT NOT NULL, `isEnabled` INTEGER NOT NULL, `faviconInfoId` INTEGER NOT NULL, `faviconUrl` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `favorite_site_url` ON `favorite_site` (`url`)")
+    }
+
+    /** v9: eid=0の既読エントリ情報を削除する */
+    private fun deleteReadEntryHasInvalidEid(db: SupportSQLiteDatabase) {
+        db.execSQL("DELETE FROM `read_entry` WHERE eid = 0")
     }
 }

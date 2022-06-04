@@ -213,8 +213,8 @@ class HistoryRepository(
     suspend fun saveFaviconCache(context: Context, bitmap: Bitmap, url: String?) = withContext(Dispatchers.IO) {
         faviconMutex.withLock {
             runCatching {
-                val estimatedHierarchy = Uri.parse(url).estimatedHierarchy!!
-                val existed = SatenaApplication.instance.browserDao.findFaviconInfo(estimatedHierarchy)
+                val site = Uri.parse(url).estimatedHierarchy!!
+                val existed = SatenaApplication.instance.browserDao.findFaviconInfo(site)
 
                 val filename =
                     ByteBuffer.allocate(bitmap.byteCount).let { buffer ->
@@ -242,7 +242,7 @@ class HistoryRepository(
                                 }
                             outFile.outputStream().use { it.write(byteArray) }
                         }
-                        insertFaviconInfo(filename, url, estimatedHierarchy, existed)
+                        insertFaviconInfo(filename, url, site, existed)
                     }.onFailure {
                         runCatching { outFile.delete() }
                     }
@@ -253,23 +253,23 @@ class HistoryRepository(
         }
     }
 
-    private suspend fun insertFaviconInfo(filename: String, url: String?, domain: String, existed: FaviconInfo?) {
+    private suspend fun insertFaviconInfo(filename: String, url: String?, site: String, existed: FaviconInfo?) {
         url!!
         SatenaApplication.instance.browserDao.let { dao ->
             if (existed != null) {
                 dao.updateFaviconInfo(
                     existed.copy(
-                        domain = domain,
+                        site = site,
                         filename = filename,
                         lastUpdated = ZonedDateTime.now()
                     )
                 )
             }
             else {
-                dao.insertFaviconInfo(FaviconInfo(domain, filename, ZonedDateTime.now()))
+                dao.insertFaviconInfo(FaviconInfo(site, filename, ZonedDateTime.now()))
             }
             dao.getHistoryPage(Uri.decode(url))?.let { historyPage ->
-                val faviconInfo = dao.findFaviconInfo(domain)!!
+                val faviconInfo = dao.findFaviconInfo(site)!!
                 dao.updateHistoryPage(historyPage.copy(faviconInfoId = faviconInfo.id))
                 updateHistoryFavicon(faviconInfo)
             }
@@ -281,7 +281,7 @@ class HistoryRepository(
             histories.postValue(
                 histories.value.orEmpty()
                     .map { h ->
-                        if (h.page.page.faviconInfoId == faviconInfo.id || (h.page.page.faviconInfoId == 0L && Uri.parse(h.page.page.url).estimatedHierarchy == faviconInfo.domain)) {
+                        if (h.page.page.faviconInfoId == faviconInfo.id || (h.page.page.faviconInfoId == 0L && Uri.parse(h.page.page.url).estimatedHierarchy == faviconInfo.site)) {
                             val updatedPage = h.page.page.copy(faviconInfoId = faviconInfo.id)
                             if (h.page.page.faviconInfoId == 0L) {
                                 dao.updateHistoryPage(updatedPage)

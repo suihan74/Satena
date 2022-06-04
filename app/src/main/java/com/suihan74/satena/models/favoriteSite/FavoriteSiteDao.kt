@@ -52,7 +52,7 @@ interface FavoriteSiteDao {
 
     // ------ //
 
-    @Query("select * from browser_favicon_info where domain = :domain")
-    suspend fun findFaviconInfo(domain: String) : FaviconInfo?
+    @Query("select * from browser_favicon_info where site = :site")
+    suspend fun findFaviconInfo(site: String) : FaviconInfo?
 
 }
