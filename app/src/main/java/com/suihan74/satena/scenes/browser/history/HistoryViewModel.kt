@@ -118,19 +118,19 @@ class HistoryViewModel(
     ) {
         val dialog = HistoryMenuDialog.createInstance(targetSite)
         dialog.setOnOpenListener { history ->
-            activity.viewModel.goAddress(history.page.url)
+            activity.viewModel.goAddress(history.page.page.url)
         }
 
         dialog.setOnOpenBookmarksListener { history ->
             val intent = Intent(activity, BookmarksActivity::class.java).apply {
-                putExtra(BookmarksActivity.EXTRA_ENTRY_URL, history.page.url)
+                putExtra(BookmarksActivity.EXTRA_ENTRY_URL, history.page.page.url)
             }
             activity.startActivity(intent)
         }
 
         dialog.setOnOpenEntriesListener { history ->
             viewModelScope.launch {
-                val rootUrl = getEntryRootUrl(history.page.url)
+                val rootUrl = getEntryRootUrl(history.page.page.url)
                 val intent = Intent(activity, EntriesActivity::class.java).apply {
                     putExtra(EntriesActivity.EXTRA_SITE_URL, rootUrl)
                 }

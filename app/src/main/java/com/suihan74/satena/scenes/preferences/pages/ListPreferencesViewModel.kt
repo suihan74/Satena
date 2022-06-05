@@ -16,6 +16,7 @@ import com.suihan74.satena.scenes.preferences.PreferencesAdapter
 import com.suihan74.satena.scenes.preferences.PreferencesViewModel
 import com.suihan74.utilities.SafeSharedPreferences
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 
 /**
@@ -32,7 +33,9 @@ abstract class ListPreferencesViewModel(
     fun load(fragment: ListPreferencesFragment) {
         fragment.lifecycleScope.launchWhenCreated {
             withContext(Dispatchers.IO) {
-                _preferencesItems.postValue(createList(fragment))
+                _preferencesItems.postValue(
+                    createList(fragment.requireActivity(), fragment.childFragmentManager)
+                )
             }
         }
     }
@@ -52,7 +55,8 @@ abstract class ListPreferencesViewModel(
      *
      */
     abstract fun createList(
-        fragment: ListPreferencesFragment
+        context: Context,
+        fragmentManager: FragmentManager
     ) : List<PreferencesAdapter.Item>
 
     /**
@@ -61,6 +65,33 @@ abstract class ListPreferencesViewModel(
     fun <T> openEnumSelectionDialog(
         values: Array<T>,
         liveData: MutableLiveData<T>,
+        @StringRes titleId: Int,
+        fragmentManager: FragmentManager,
+        onSelected: ((f: AlertDialogFragment, old: T, new: T)->Unit)? = null
+    ) where T: Enum<T>, T: TextIdContainer {
+        val labelIds = values.map { it.textId }
+        val old = liveData.value as T
+        val initialSelected = values.indexOf(old)
+
+        AlertDialogFragment.Builder()
+            .setTitle(titleId)
+            .setSingleChoiceItems(labelIds, initialSelected) { f, which ->
+                val new = values[which]
+                liveData.value = new
+                onSelected?.invoke(f, old, new)
+            }
+            .dismissOnClickItem(true)
+            .setNegativeButton(R.string.dialog_cancel)
+            .create()
+            .show(fragmentManager, null)
+    }
+
+    /**
+     * Enum値を選択するダイアログを開く
+     */
+    fun <T> openEnumSelectionDialog(
+        values: Array<T>,
+        liveData: MutableStateFlow<T>,
         @StringRes titleId: Int,
         fragmentManager: FragmentManager,
         onSelected: ((f: AlertDialogFragment, old: T, new: T)->Unit)? = null

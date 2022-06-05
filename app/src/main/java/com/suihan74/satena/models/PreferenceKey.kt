@@ -3,8 +3,10 @@ package com.suihan74.satena.models
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
+import com.suihan74.hatenaLib.NoticeVerb
 import com.suihan74.satena.models.browser.ClearingImageCacheSpan
 import com.suihan74.satena.models.browser.ReadEntryLifetime
+import com.suihan74.satena.models.readEntry.ReadEntryBehavior
 import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.scenes.bookmarks.BookmarksTabType
 import com.suihan74.satena.scenes.bookmarks.TapTitleBarAction
@@ -21,7 +23,7 @@ import java.lang.reflect.Type
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
-@SharedPreferencesKey(fileName = "default", version = 10, latest = true)
+@SharedPreferencesKey(fileName = "default", version = 11, latest = true)
 enum class PreferenceKey(
     override val valueType: Type,
     override val defaultValue: Any?
@@ -105,6 +107,9 @@ enum class PreferenceKey(
     /** スパムと思われる通知を報せない */
     IGNORE_NOTICES_FROM_SPAM(typeInfo<Boolean>(), true),
 
+    /** システムの通知を行うはてな通知タイプ */
+    ACTIVE_NOTICE_VERBS(typeInfo<Int>(), NoticeVerb.all),
+
     /** 最後に起動したときのアプリバージョン */
     APP_VERSION_LAST_LAUNCH(typeInfo<String>(), "0"),
 
@@ -135,6 +140,9 @@ enum class PreferenceKey(
 
     /** ボトムバーの追加項目の表示位置 */
     ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT(typeInfo<Int>(), ExtraBottomItemsAlignment.DEFAULT.id),
+
+    /** エクストラボトムメニューを使用する */
+    ENTRIES_USE_EXTRA_BOTTOM_MENU(typeInfo<Boolean>(), true),
 
     /** エクストラスクロール機能のツマミの配置 */
     ENTRIES_EXTRA_SCROLL_ALIGNMENT(typeInfo<Int>(), ExtraScrollingAlignment.RIGHT.id),
@@ -187,6 +195,9 @@ enum class PreferenceKey(
     /** タブのスワイプ感度 */
     ENTRIES_PAGER_SCROLL_SENSITIVITY(typeInfo<Float>(), 1f),
 
+    /** 人気カテゴリを一度のロードで全て読み込む */
+    ENTRIES_FULL_FETCHING_POPULARS(typeInfo<Boolean>(), false),
+
     /** エントリメニューから「あとで読む」ときデフォルトで非公開ブクマにする */
     ENTRY_PRIVATE_READ_LATER(typeInfo<Boolean>(), false),
 
@@ -200,13 +211,22 @@ enum class PreferenceKey(
     ENTRY_SEARCH_SETTING(typeInfo<EntrySearchSetting>(), EntrySearchSetting()),
 
     /** 既読マークを表示するかどうか */
+    @Deprecated("migrated to ENTRY_READ_BEHAVIOR")
     ENTRY_DISPLAY_READ_MARK(typeInfo<Boolean>(), true),
+
+    /** 既読マークを表示するかどうか */
+    ENTRY_READ_BEHAVIOR(typeInfo<Int>(), ReadEntryBehavior.DISPLAY_READ_MARK.int),
 
     /** どうしたら既読マークがつくか */
     ENTRY_READ_MARK_CONDITION(typeInfo<Int>(), ReadEntryCondition.BOOKMARKS_OR_PAGE_SHOWN.int),
 
     /** 既読マーク情報の寿命（日） */
     ENTRY_READ_MARK_LIFETIME(typeInfo<Int>(), ReadEntryLifetime.MONTH_3.days),
+
+    /** 既読エントリを非表示にしないカテゴリ(PreferenceKey.ENTRY_READ_BEHAVIOR -> ReadEntryBehavior.HIDE_ENTRYのとき) */
+    ENTRY_CATEGORIES_WITHOUT_HIDING_READ_ENTRY(typeInfo<List<Int>>(), Category.values().filterNot {
+        it == Category.MyBookmarks || it == Category.History || it == Category.Stars
+    }.map { it.id }),
 
     ////////////////////////////////////////
     // bookmarks
@@ -576,6 +596,27 @@ object PreferenceKeyMigration {
                 putInt(PreferenceKey.ENTRY_EDGE_SINGLE_TAP_ACTION, prefs.getInt(PreferenceKey.ENTRY_SINGLE_TAP_ACTION))
                 putInt(PreferenceKey.ENTRY_EDGE_LONG_TAP_ACTION, prefs.getInt(PreferenceKey.ENTRY_LONG_TAP_ACTION))
                 putInt(PreferenceKey.ENTRY_EDGE_MULTIPLE_TAP_ACTION, prefs.getInt(PreferenceKey.ENTRY_MULTIPLE_TAP_ACTION))
+            }
+        }.onFailure {
+            prefs.edit {}
+        }
+    }
+
+    /**
+     * v10 -> v11
+     *
+     * 「既読マークの表示/非表示」設定を「既読エントリの振舞い」に変更
+     */
+    private fun migrateFromVersion10(context: Context) {
+        val prefs = SafeSharedPreferences.create<PreferenceKey>(context)
+        runCatching {
+            prefs.edit {
+                val readMarkVisible = prefs.getBoolean(PreferenceKey.ENTRY_DISPLAY_READ_MARK)
+                val behavior =
+                    if (readMarkVisible) ReadEntryBehavior.DISPLAY_READ_MARK
+                    else ReadEntryBehavior.NONE
+                putInt(PreferenceKey.ENTRY_READ_BEHAVIOR, behavior.int)
+                remove(PreferenceKey.ENTRY_DISPLAY_READ_MARK)
             }
         }.onFailure {
             prefs.edit {}

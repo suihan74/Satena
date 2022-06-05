@@ -2,14 +2,16 @@ package com.suihan74.satena.scenes.entries2
 
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.satena.SatenaApplication
+import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.PreferenceKey
+import com.suihan74.satena.models.readEntry.ReadEntryBehavior
 import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.models.readEntry.ReadEntryDao
 import com.suihan74.utilities.SafeSharedPreferences
+import com.suihan74.utilities.preferenceEnumStateFlow
+import com.suihan74.utilities.preferenceStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import java.time.ZonedDateTime
 
 class ReadEntriesRepository(
@@ -18,30 +20,42 @@ class ReadEntriesRepository(
 ) {
     /** ロード済みの既読エントリID */
     val readEntryIds : StateFlow<Set<Long>> = MutableStateFlow(emptySet())
-    private val _readEntryIds
-        get() = readEntryIds as MutableStateFlow<Set<Long>>
+    private val _readEntryIds = readEntryIds as MutableStateFlow<Set<Long>>
 
     private val readEntryIdsCache = HashSet<Long>()
 
     /** 既読マークを表示するか否か */
     val displaying : StateFlow<Boolean> = MutableStateFlow(
-        prefs.getBoolean(PreferenceKey.ENTRY_DISPLAY_READ_MARK)
+        prefs.getInt(PreferenceKey.ENTRY_READ_BEHAVIOR) != ReadEntryBehavior.NONE.int
     )
-    private val _displaying
-        get() = displaying as MutableStateFlow<Boolean>
+    private val _displaying = displaying as MutableStateFlow<Boolean>
+
+    /** 既読エントリの振舞い */
+    val readEntryBehavior = preferenceEnumStateFlow(
+        prefs,
+        PreferenceKey.ENTRY_READ_BEHAVIOR,
+        { it.int },
+        { ReadEntryBehavior.fromInt(it) },
+        SatenaApplication.instance.coroutineScope
+    ) { setBehavior(it) }
 
     /** 既読マークをつけるタイミング */
-    val readEntryCondition = MutableStateFlow(
-        ReadEntryCondition.fromInt(
-            prefs.getInt(PreferenceKey.ENTRY_READ_MARK_CONDITION)
-        )
-    ).apply {
-        onEach {
-            prefs.edit {
-                putInt(PreferenceKey.ENTRY_READ_MARK_CONDITION, it.int)
-            }
-        }.launchIn(SatenaApplication.instance.coroutineScope)
-    }
+    val readEntryCondition = preferenceEnumStateFlow(
+        prefs,
+        PreferenceKey.ENTRY_READ_MARK_CONDITION,
+        { it.int },
+        { ReadEntryCondition.fromInt(it) },
+        SatenaApplication.instance.coroutineScope
+    )
+
+    /** 既読エントリを隠すカテゴリ */
+    val categoriesHidingReadEntries = preferenceStateFlow<PreferenceKey, List<Int>, List<Category>>(
+        prefs,
+        PreferenceKey.ENTRY_CATEGORIES_WITHOUT_HIDING_READ_ENTRY,
+        { list -> list.map { it.id } },
+        { list -> list.map { Category.fromId(it) } },
+        SatenaApplication.instance.coroutineScope
+    )
 
     /** 期限切れのアイテムを最後に削除した日時 */
     private var lastDeletedOldItems : ZonedDateTime? = null
@@ -50,6 +64,7 @@ class ReadEntriesRepository(
 
     suspend fun insert(entry: Entry, timing: ReadEntryCondition) {
         if (readEntryCondition.value.contains(timing)) {
+            if (entry.id == 0L) return
             dao.insert(entry)
             readEntryIdsCache.add(entry.id)
             if (displaying.value) {
@@ -81,11 +96,8 @@ class ReadEntriesRepository(
         }
     }
 
-    suspend fun setDisplaying(enabled: Boolean) {
-        if (enabled == displaying.value) return
-        prefs.edit {
-            putBoolean(PreferenceKey.ENTRY_DISPLAY_READ_MARK, enabled)
-        }
+    private suspend fun setBehavior(behavior: ReadEntryBehavior) {
+        val enabled = behavior != ReadEntryBehavior.NONE
         _displaying.emit(enabled)
         _readEntryIds.emit(
             if (enabled) readEntryIdsCache

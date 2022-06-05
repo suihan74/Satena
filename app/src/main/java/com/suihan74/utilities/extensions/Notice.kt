@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.content.ContextCompat
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.hatenaLib.Notice
+import com.suihan74.hatenaLib.NoticeVerb
 import com.suihan74.satena.R
 
 private val spamRegex by lazy { Regex("""はてなブックマーク\s*-\s*\d+に関する.+のブックマーク""") }
@@ -43,7 +44,7 @@ fun Notice.message(context: Context) : String {
     )
 
     return when (verb) {
-        Notice.VERB_STAR -> {
+        NoticeVerb.STAR.str -> {
             val starsText =
                 this.objects.distinctBy { it.color }
                     .reversed()
@@ -60,13 +61,13 @@ fun Notice.message(context: Context) : String {
             }
         }
 
-        Notice.VERB_ADD_FAVORITE ->
+        NoticeVerb.ADD_FAVORITE.str ->
             "${usersStr}があなたのブックマークをお気に入りに追加しました"
 
-        Notice.VERB_BOOKMARK ->
+        NoticeVerb.BOOKMARK.str ->
             "${usersStr}があなたのエントリをブックマークしました"
 
-        Notice.VERB_FIRST_BOOKMARK -> {
+        NoticeVerb.FIRST_BOOKMARK.str -> {
             runCatching {
                 val md = metadata!!.firstBookmarkMetadata!!
                 val titleDigest =

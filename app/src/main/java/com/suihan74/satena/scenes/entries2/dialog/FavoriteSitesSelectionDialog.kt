@@ -4,22 +4,26 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.lifecycleScope
 import com.suihan74.satena.R
+import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.createBuilder
-import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.utilities.Listener
+import com.suihan74.satena.models.favoriteSite.FavoriteSiteAndFavicon
+import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.utilities.extensions.getObject
 import com.suihan74.utilities.extensions.putObject
 import com.suihan74.utilities.extensions.withArguments
 import com.suihan74.utilities.lazyProvideViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** 有効なお気に入りサイトを選択するダイアログ */
 // TODO: BottomSheetDialog化する？
 // TODO: タイトル・URL両方を表示する
 class FavoriteSitesSelectionDialog : DialogFragment() {
     companion object {
-        fun createInstance(sites: List<FavoriteSite>) = FavoriteSitesSelectionDialog().withArguments {
+        fun createInstance(sites: List<FavoriteSiteAndFavicon>) = FavoriteSitesSelectionDialog().withArguments {
             putObject(ARG_SITES, sites)
         }
 
@@ -27,57 +31,50 @@ class FavoriteSitesSelectionDialog : DialogFragment() {
     }
 
     private val viewModel: DialogViewModel by lazyProvideViewModel {
-        val sites = requireArguments().getObject<List<FavoriteSite>>(ARG_SITES)!!
-        DialogViewModel(sites)
+        val repo = SatenaApplication.instance.favoriteSitesRepository
+        val sites = requireArguments().getObject<List<FavoriteSiteAndFavicon>>(ARG_SITES)!!
+        DialogViewModel(repo, sites)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return createBuilder()
             .setTitle(R.string.desc_favorite_sites_settings)
+            .setPositiveButton(R.string.dialog_ok, null)
             .setNegativeButton(R.string.dialog_cancel, null)
-            .setPositiveButton(R.string.dialog_ok) { _, _ ->
-                viewModel.invokeOnComplete()
-            }
             .setMultiChoiceItems(viewModel.labels, viewModel.checkedItems) { _, which, checked ->
                 viewModel.checkedItems[which] = checked
             }
-            .create()
-    }
-
-    /** 完了時処理をセット */
-    suspend fun setOnCompleteListener(listener: Listener<List<FavoriteSite>>?) = whenStarted {
-        viewModel.onComplete = listener
+            .show()
+            .apply {
+                getButton(Dialog.BUTTON_POSITIVE).setOnClickListener {
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        viewModel.onComplete()
+                        dismiss()
+                    }
+                }
+            }
     }
 
     // ------ //
 
     class DialogViewModel(
+        private val repo : FavoriteSitesRepository,
         /** 登録されているサイト設定一覧 */
-        val sites: List<FavoriteSite>
+        val sites: List<FavoriteSiteAndFavicon>
     ): ViewModel() {
         /** チェック状態 */
-        val checkedItems: BooleanArray by lazy {
-            sites.map { it.isEnabled }.toBooleanArray()
-        }
+        val checkedItems: BooleanArray = sites.map { it.site.isEnabled }.toBooleanArray()
+
 
         /** リスト項目の表示内容 */
-        val labels: Array<String> by lazy {
-            sites.map { it.title }.toTypedArray()
-        }
+        val labels: Array<String> = sites.map { it.site.title }.toTypedArray()
 
-        /**
-         * 決定時の処理
-         *
-         * 新しい有効状態が反映されたFavoriteSiteリストを渡す
-         */
-        var onComplete: Listener<List<FavoriteSite>>? = null
-
-        fun invokeOnComplete() {
+        suspend fun onComplete() = withContext(Dispatchers.Default) {
             val newList = sites.mapIndexed { idx, value ->
-                if (checkedItems[idx] == value.isEnabled) value
-                else value.copy(isEnabled = checkedItems[idx])
+                if (checkedItems[idx] == value.site.isEnabled) value.site
+                else value.site.copy(isEnabled = checkedItems[idx])
             }
-            onComplete?.invoke(newList)
+            repo.update(newList)
         }
     }
 }

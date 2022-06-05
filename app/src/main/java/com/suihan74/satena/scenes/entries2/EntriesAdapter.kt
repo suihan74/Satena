@@ -15,7 +15,9 @@ import com.suihan74.satena.databinding.FooterRecyclerViewLoadableBinding
 import com.suihan74.satena.databinding.ListviewItemEntries2Binding
 import com.suihan74.utilities.*
 import com.suihan74.utilities.extensions.alsoAs
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 
 class EntriesAdapter(
@@ -161,7 +163,9 @@ class EntriesAdapter(
             when {
                 items.isNullOrEmpty() -> emptyList()
                 else -> RecyclerState.makeStatesWithFooter(
-                    items.map { DisplayEntry(it, readEntryIds?.contains(it.id) ?: false) }
+                    items.map {
+                        DisplayEntry(it, readEntryIds?.contains(it.id) ?: false)
+                    }
                 )
             }
 

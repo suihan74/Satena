@@ -11,9 +11,8 @@ import com.sys1yagi.mastodon4j.MastodonClient
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
@@ -35,11 +34,11 @@ class AccountLoader(
 
     // ------ //
 
-    private val sharedHatenaFlow = MutableSharedFlow<Account?>()
-    val hatenaFlow : SharedFlow<Account?> = sharedHatenaFlow.asSharedFlow()
+    private val sharedHatenaFlow = MutableStateFlow<Account?>(null)
+    val hatenaFlow : StateFlow<Account?> = sharedHatenaFlow
 
-    private val sharedMastodonFlow = MutableSharedFlow<MastodonAccount?>()
-    val mastodonFlow : SharedFlow<MastodonAccount?> = sharedMastodonFlow.asSharedFlow()
+    private val sharedMastodonFlow = MutableStateFlow<MastodonAccount?>(null)
+    val mastodonFlow : StateFlow<MastodonAccount?> = sharedMastodonFlow
 
 
     // ------ //

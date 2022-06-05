@@ -28,7 +28,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 /////////////////////////////////////////////////////////////////
@@ -522,9 +521,13 @@ object HatenaClient : BaseClient(), CoroutineScope {
             val dateTimeFormat = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm")
 
             html.body().getElementsByClass("$classNamePrefix-main").mapNotNull m@ { entry ->
-                val (title, entryUrl) = entry.getElementsByClass("$classNamePrefix-title").firstOrNull()?.let {
+                val (title, entryUrl, eid) = entry.getElementsByClass("$classNamePrefix-title").firstOrNull()?.let {
                     it.getElementsByTag("a").firstOrNull()?.let { link ->
-                        link.attr("title") to link.attr("href")
+                        Triple(
+                            link.attr("title"),
+                            link.attr("href"),
+                            link.attr("data-entry-id")?.toLongOrNull()
+                        )
                     }
                 } ?: return@m null
 
@@ -565,11 +568,11 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 }
 
                 Entry(
-                    id = 0,  // eidはコメントページを見ないと手に入らない
+                    id = eid ?: 0L,
                     title = title,
                     description = description,
                     count = count,
-                    url = entryUrl,
+                    _url = entryUrl,
                     rootUrl = rootUrl,
                     faviconUrl = faviconUrl,
                     _imageUrl = imageUrl,
@@ -778,7 +781,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     title = title,
                     description = description,
                     count = 0,
-                    url = actualUrl,
+                    _url = actualUrl,
                     rootUrl = getTemporaryRootUrl(uri),
                     faviconUrl = getFaviconUrl(uri),
                     _imageUrl = imageUrl)
@@ -790,7 +793,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                     title = "",
                     description = "",
                     count = 0,
-                    url = url,
+                    _url = url,
                     rootUrl = getTemporaryRootUrl(uri),
                     faviconUrl = getFaviconUrl(uri),
                     _imageUrl = "")
@@ -903,7 +906,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                 title = title,
                 description = description,
                 count = count,
-                url = entryUrl,
+                _url = entryUrl,
                 rootUrl = rootUrl,
                 faviconUrl = faviconUrl,
                 _imageUrl = imageUrl,
@@ -1305,7 +1308,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
         val fixNoticesTasks = response.notices.map { notice ->
             async {
                 runCatching {
-                    if (notice.verb == Notice.VERB_STAR && notice.metadata?.subjectTitle.isNullOrBlank()) {
+                    if (notice.verb == NoticeVerb.STAR.str && notice.metadata?.subjectTitle.isNullOrBlank()) {
                         val md = NoticeMetadata(
                             getBookmarkPageAsync(
                                 notice.eid,
@@ -1813,7 +1816,7 @@ object HatenaClient : BaseClient(), CoroutineScope {
                         title = title,
                         description = description,
                         count = bookmarkCount,
-                        url = entryUrl,
+                        _url = entryUrl,
                         rootUrl = rootUrl,
                         faviconUrl = faviconUrl,
                         _imageUrl = imageUrl,

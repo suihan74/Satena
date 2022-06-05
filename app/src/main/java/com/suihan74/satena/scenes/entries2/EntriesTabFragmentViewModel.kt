@@ -12,6 +12,9 @@ import com.suihan74.satena.models.Category
 import com.suihan74.satena.models.EntrySearchSetting
 import com.suihan74.satena.models.ExtraScrollingAlignment
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -21,6 +24,7 @@ import kotlinx.coroutines.withContext
 
 class EntriesTabFragmentViewModel(
     private val repository: EntriesRepository,
+    readEntriesRepository: ReadEntriesRepository,
     val category: Category,
     private val tabPosition: Int
 ) :
@@ -66,20 +70,21 @@ class EntriesTabFragmentViewModel(
         }
 
     /** フィルタされていない全エントリリスト */
-    private val entries by lazy {
-        MutableLiveData<List<Entry>>()
-    }
-
-    /** タブで表示するエントリリスト */
-    val filteredEntries by lazy {
-        MutableLiveData<List<Entry>>().also { filtered ->
-            entries.observeForever {
-                viewModelScope.launch {
-                    filtered.postValue(repository.filterEntries(it ?: emptyList()))
-                }
+    private val entries = MutableLiveData<List<Entry>>().apply {
+        observeForever {
+            viewModelScope.launch(Dispatchers.Default) {
+                filter(it.orEmpty())
             }
         }
     }
+
+    /** タブで表示するエントリリスト */
+    val filteredEntries : LiveData<List<Entry>> = MutableLiveData()
+    private val _filteredEntries = filteredEntries as MutableLiveData<List<Entry>>
+
+    /** フィルタによって除外されたエントリ */
+    val excludedEntries : LiveData<List<Entry>> = MutableLiveData()
+    private val _excludedEntries = excludedEntries as MutableLiveData<List<Entry>>
 
     /** フィルタされていない全通知リスト */
     val notices by lazy {
@@ -105,6 +110,14 @@ class EntriesTabFragmentViewModel(
 
     // ------ //
 
+    init {
+        combine(readEntriesRepository.readEntryBehavior, readEntriesRepository.categoriesHidingReadEntries, ::Pair)
+            .onEach { filter() }
+            .launchIn(viewModelScope)
+    }
+
+    // ------ //
+
     fun onResume() {
         extraScrollBarVisibility.value = extraScrollingAlignment != ExtraScrollingAlignment.NONE
     }
@@ -112,34 +125,49 @@ class EntriesTabFragmentViewModel(
     // ------ //
 
     /** フィルタリングを任意で実行する */
-    fun filter() = viewModelScope.launch(Dispatchers.Main) {
-        entries.value = entries.value
+    suspend fun filter() {
+        filter(entries.value.orEmpty())
+    }
+
+    private suspend fun filter(entries: List<Entry>) = withContext(Dispatchers.Default) {
+        val (activeEntries, inactiveEntries) = repository.filterEntries(category, entries)
+        _filteredEntries.postValue(activeEntries)
+        _excludedEntries.postValue(inactiveEntries)
     }
 
     /** 指定したエントリを削除する */
-    fun delete(entry: Entry) {
-        entries.value = entries.value?.filterNot { it.same(entry) }
+    suspend fun delete(entry: Entry) = withContext(Dispatchers.Default) {
+        entries.postValue(
+            entries.value?.filterNot { it.same(entry) }
+        )
     }
 
     /** 指定したエントリのブクマを削除する */
-    fun deleteBookmark(entry: Entry) {
+    suspend fun deleteBookmark(entry: Entry) = withContext(Dispatchers.Default) {
         if (category == Category.MyBookmarks) {
             delete(entry)
         }
         else {
-            entries.value = entries.value?.map {
-                if (it.same(entry)) it.copy(bookmarkedData = null)
-                else it
-            }
+            entries.postValue(
+                entries.value?.map {
+                    if (it.same(entry)) it.copy(bookmarkedData = null)
+                    else it
+                }
+            )
         }
     }
 
     /** エントリに付けたブクマを更新する */
-    fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
-        entries.value = entries.value?.map {
-            if (it.same(entry)) it.copy(bookmarkedData = bookmarkResult)
-            else it
-        }
+    suspend fun updateBookmark(
+        entry: Entry,
+        bookmarkResult: BookmarkResult?
+    ) = withContext(Dispatchers.Default) {
+        entries.postValue(
+            entries.value?.map {
+                if (it.same(entry)) it.copy(bookmarkedData = bookmarkResult)
+                else it
+            }
+        )
     }
 
     /** 表示項目リストを初期化 */

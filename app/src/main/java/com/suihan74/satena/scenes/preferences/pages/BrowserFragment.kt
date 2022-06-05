@@ -23,6 +23,7 @@ import com.suihan74.utilities.SafeSharedPreferences
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.observerForOnlyUpdates
 import com.suihan74.utilities.extensions.whenFalse
+import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -31,7 +32,10 @@ import kotlinx.coroutines.launch
  */
 class BrowserFragment : ListPreferencesFragment() {
     override val viewModel by lazy {
-        BrowserViewModel(requireContext())
+        when (val activity = requireActivity()) {
+            is PreferencesActivity -> activity.browserViewModel
+            else -> provideViewModel(this) { BrowserViewModel(activity) }
+        }
     }
 }
 
@@ -113,13 +117,14 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun createList(fragment: ListPreferencesFragment): List<PreferencesAdapter.Item> = buildList {
-        val fragmentManager = fragment.childFragmentManager
-
+    override fun createList(
+        context: Context,
+        fragmentManager: FragmentManager
+    ): List<PreferencesAdapter.Item> = buildList {
         addSection(R.string.pref_browser_section_browser)
         // アプリ内ブラウザから直接開かれている場合はブラウザ変更できないようにする
-        if (fragment.activity is PreferencesActivity) {
-            addPrefItem(fragment, browserMode, R.string.pref_browser_mode_desc) {
+        if (context is PreferencesActivity) {
+            addPrefItem(browserMode, R.string.pref_browser_mode_desc) {
                 openEnumSelectionDialog(
                     BrowserMode.values(),
                     browserMode,
@@ -128,7 +133,7 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
                 )
             }
         }
-        addPrefItem(fragment, startPage, R.string.pref_browser_start_page_desc) {
+        addPrefItem(startPage, R.string.pref_browser_start_page_desc) {
             openStartPageUrlEditingDialog(fragmentManager)
         }
 
@@ -140,7 +145,7 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_browser_section_display)
-        addPrefItem(fragment, webViewTheme, R.string.pref_browser_theme_desc) {
+        addPrefItem(webViewTheme, R.string.pref_browser_theme_desc) {
             val values = buildList {
                 add(WebViewTheme.AUTO)
                 add(WebViewTheme.NORMAL)
@@ -158,14 +163,14 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addPrefToggleItem(fragment, useBottomAppBar, R.string.pref_browser_use_bottom_app_bar_desc)
-        addPrefToggleItem(fragment, useMarqueeOnBackStackItems, R.string.pref_browser_use_marquee_on_back_stack_items_desc)
+        addPrefToggleItem(useBottomAppBar, R.string.pref_browser_use_bottom_app_bar_desc)
+        addPrefToggleItem(useMarqueeOnBackStackItems, R.string.pref_browser_use_marquee_on_back_stack_items_desc)
 
         // --- //
 
         addSection(R.string.pref_browser_section_features)
-        addPrefToggleItem(fragment, secretModeEnabled, R.string.pref_browser_private_browsing_enabled_desc)
-        addPrefToggleItem(fragment, javascriptEnabled, R.string.pref_browser_javascript_enabled_desc) { value ->
+        addPrefToggleItem(secretModeEnabled, R.string.pref_browser_private_browsing_enabled_desc)
+        addPrefToggleItem(javascriptEnabled, R.string.pref_browser_javascript_enabled_desc) { value ->
             AlertDialogFragment.Builder()
                 .setTitle(R.string.confirm_dialog_title_simple)
                 .setMessage(
@@ -178,23 +183,23 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
                 .setNegativeButton(R.string.dialog_cancel)
                 .show(fragmentManager)
         }
-        addPrefToggleItem(fragment, useUrlBlock, R.string.pref_browser_use_url_blocking_desc)
-        addButton(fragment, R.string.pref_browser_open_url_blocking_desc) {
-            fragment.childFragmentManager.beginTransaction()
+        addPrefToggleItem(useUrlBlock, R.string.pref_browser_use_url_blocking_desc)
+        addButton(context, R.string.pref_browser_open_url_blocking_desc) {
+            fragmentManager.beginTransaction()
                 .replace(R.id.main_layout, UrlBlockingFragment.createInstance())
                 .commit()
         }
-        addPrefItem(fragment, searchEngine, R.string.pref_browser_search_engine_desc) {
+        addPrefItem(searchEngine, R.string.pref_browser_search_engine_desc) {
             openSearchEngineSelectionDialog(fragmentManager)
         }
-        addPrefItem(fragment, userAgent, R.string.pref_browser_user_agent_desc) {
+        addPrefItem(userAgent, R.string.pref_browser_user_agent_desc) {
             openUserAgentEditingDialog(fragmentManager)
         }
 
         // --- //
 
         addSection(R.string.pref_browser_section_behavior)
-        addButton(fragment, R.string.pref_browser_drawer_touch_slop_desc) {
+        addButton(context, R.string.pref_browser_drawer_touch_slop_desc) {
             SliderDialog.createInstance(
                 titleId = R.string.pref_browser_drawer_touch_slop_desc,
                 messageId = R.string.pref_browser_drawer_touch_slop_dialog_message,
@@ -205,7 +210,7 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
                 drawerTouchSlopScale.value = value
             }.show(fragmentManager, null)
         }
-        addButton(fragment, R.string.pref_browser_drawer_pager_touch_slop_desc) {
+        addButton(context, R.string.pref_browser_drawer_pager_touch_slop_desc) {
             SliderDialog.createInstance(
                 titleId = R.string.pref_browser_drawer_pager_touch_slop_desc,
                 messageId = R.string.pref_pager_scroll_sensitivity_dialog_message,
@@ -220,8 +225,8 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_browser_section_bookmarks)
-        addPrefToggleItem(fragment, autoFetchBookmarks, R.string.pref_browser_auto_fetch_bookmarks_desc)
-        addPrefItem(fragment, initialBookmarksList, R.string.pref_browser_initial_bookmarks_list_desc) {
+        addPrefToggleItem(autoFetchBookmarks, R.string.pref_browser_auto_fetch_bookmarks_desc)
+        addPrefItem(initialBookmarksList, R.string.pref_browser_initial_bookmarks_list_desc) {
             openEnumSelectionDialog(
                 BookmarksListType.values(),
                 initialBookmarksList,
@@ -233,7 +238,7 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
         // --- //
 
         addSection(R.string.pref_browser_section_optimize)
-        addPrefItem(fragment, historyLifeSpan, R.string.pref_browser_history_lifespan_desc) {
+        addPrefItem(historyLifeSpan, R.string.pref_browser_history_lifespan_desc) {
             openEnumSelectionDialog(
                 BrowserHistoryLifeSpan.values(),
                 historyLifeSpan,
@@ -241,13 +246,13 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
                 fragmentManager
             )
         }
-        addButton(fragment, R.string.pref_browser_clear_cache_desc, textColorId = R.color.clearCache) {
+        addButton(context, R.string.pref_browser_clear_cache_desc, textColorId = R.color.clearCache) {
             openClearCacheDialog(fragmentManager)
         }
-        addButton(fragment, R.string.pref_browser_clear_cookie_desc, textColorId = R.color.clearCache) {
+        addButton(context, R.string.pref_browser_clear_cookie_desc, textColorId = R.color.clearCache) {
             openClearCookieDialog(fragmentManager)
         }
-        addButton(fragment, R.string.pref_browser_clear_history_desc, textColorId = R.color.clearCache) {
+        addButton(context, R.string.pref_browser_clear_history_desc, textColorId = R.color.clearCache) {
             openClearHistoryDialog(fragmentManager)
         }
     }
@@ -366,10 +371,11 @@ class BrowserViewModel(context: Context) : ListPreferencesViewModel(context) {
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(R.string.pref_browser_clear_history_dialog_message)
             .setNegativeButton(R.string.dialog_cancel)
-            .setPositiveButton(R.string.dialog_ok) {
+            .setPositiveButton(R.string.dialog_ok) { f ->
+                val context = f.requireContext()
                 viewModelScope.launch(Dispatchers.Main) {
                     runCatching {
-                        historyRepo.clearHistories()
+                        historyRepo.clearHistories(context)
                     }
                     SatenaApplication.instance.showToast(R.string.msg_browser_removed_all_histories)
                 }

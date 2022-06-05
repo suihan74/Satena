@@ -2,10 +2,8 @@ package com.suihan74.satena.scenes.preferences.favoriteSites
 
 import android.app.Dialog
 import android.content.DialogInterface
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.webkit.URLUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,11 +13,8 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.DialogFavoriteSiteRegistrationBinding
 import com.suihan74.satena.dialogs.createBuilder
 import com.suihan74.satena.dialogs.localLayoutInflater
-import com.suihan74.satena.models.FavoriteSite
-import com.suihan74.utilities.Listener
-import com.suihan74.utilities.OnSuccess
-import com.suihan74.utilities.Switcher
-import com.suihan74.utilities.exceptions.DuplicateException
+import com.suihan74.satena.models.favoriteSite.FavoriteSite
+import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.EmptyException
 import com.suihan74.utilities.exceptions.InvalidUrlException
 import com.suihan74.utilities.extensions.*
@@ -65,8 +60,9 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
         val args = requireArguments()
         val mode = args.getEnum<Mode>(ARG_MODE)!!
         val site = args.getObject<FavoriteSite>(ARG_TARGET_SITE)
+        val repo = SatenaApplication.instance.favoriteSitesRepository
 
-        DialogViewModel(mode, site)
+        DialogViewModel(mode, site, repo)
     }
 
     // ------ //
@@ -95,30 +91,26 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
 
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
                     viewModel.waiting.value = true
-                    lifecycleScope.launch(Dispatchers.Default) {
+                    lifecycleScope.launch {
                         val result = runCatching {
                             viewModel.invokePositiveAction()
                         }
 
-                        onCompleted(result.getOrNull(), result.exceptionOrNull())
+                        onCompleted(result.exceptionOrNull())
                     }
                 }
             }
     }
 
-    private suspend fun onCompleted(
-        site: FavoriteSite?,
-        e: Throwable?
-    ) = withContext(Dispatchers.Main) {
+    private suspend fun onCompleted(e: Throwable?) = withContext(Dispatchers.Main) {
         val c = SatenaApplication.instance
         when (e) {
             null -> {
                 c.showToast(R.string.msg_favorite_site_registration_succeeded)
-                viewModel.onSuccess?.invoke(site!!)
                 dismissAllowingStateLoss()
             }
 
-            is DuplicateException -> {
+            is AlreadyExistedException -> {
                 c.showToast(R.string.msg_favorite_site_already_existed)
                 viewModel.waiting.value = false
             }
@@ -143,113 +135,38 @@ class FavoriteSiteRegistrationDialog : DialogFragment() {
 
     // ------ //
 
-    /** 登録時に呼ばれるリスナをセットする */
-    fun setOnRegisterListener(listener: Listener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
-        viewModel.onRegister = listener
-    }
-
-    /** 編集完了時に呼ばれるリスナをセットする */
-    fun setOnModifyListener(listener: Listener<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
-        viewModel.onModify = listener
-    }
-
-    /**
-     *  重複確認処理をセットする
-     *
-     *  TODO: 外部から渡す必要をなくす
-     *
-     *  @return true:既に登録されている false:登録可能
-     */
-    fun setDuplicationChecker(switcher: Switcher<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
-        viewModel.duplicationChecker = switcher
-    }
-
-    /** 登録成功後の処理をセットする */
-    fun setOnSuccessListener(listener: OnSuccess<FavoriteSite>?) = lifecycleScope.launchWhenCreated {
-        viewModel.onSuccess = listener
-    }
-
-    // ------ //
-
     class DialogViewModel(
-        val mode: Mode,
-        private val targetSite: FavoriteSite?
+        val mode : Mode,
+        private val targetSite : FavoriteSite?,
+        private val repo : FavoriteSitesRepository
     ) : ViewModel() {
 
-        val url by lazy {
-            MutableLiveData(targetSite?.url ?: "").also {
-                it.observeForever { u ->
-                    faviconUrl.value = Uri.parse(u).faviconUrl
-                }
-            }
-        }
+        val title = MutableLiveData(targetSite?.title ?: "")
 
-        val title by lazy {
-            MutableLiveData(targetSite?.title ?: "")
-        }
+        val url = MutableLiveData(targetSite?.url.orEmpty())
 
-        val faviconUrl by lazy {
-            MutableLiveData(targetSite?.faviconUrl ?: "")
-        }
-
-        val waiting by lazy {
-            MutableLiveData(false)
-        }
+        val waiting = MutableLiveData(false)
 
         // ------ //
 
         /**
          * 登録処理を実行する
          *
+         * @throws NullPointerException 入力内容が取得できない
+         * @throws AlreadyExistedException 既に登録されているURL
          * @throws InvalidUrlException URLが不正・入力されていない
          * @throws EmptyException タイトルが入力されていない
-         * @throws DuplicateException 他の項目と重複している
-         * @throws NullPointerException 重複確認処理が登録されていない場合
          * @throws Throwable onRegister, onModify内で起きたエラー
          */
-        suspend fun invokePositiveAction() : FavoriteSite {
-            val site = FavoriteSite(
+        suspend fun invokePositiveAction() = withContext(Dispatchers.Default) {
+            repo.favoritePage(
                 url = url.value!!,
                 title = title.value!!,
-                faviconUrl = faviconUrl.value!!,
-                isEnabled = targetSite?.isEnabled ?: false
+                faviconUrl = "",
+                isEnabled = targetSite?.isEnabled ?: false,
+                modify = (mode == Mode.MODIFY),
+                id = targetSite?.id ?: 0L
             )
-
-            if (!URLUtil.isValidUrl(site.url)
-                || !URLUtil.isHttpsUrl(site.url)
-                || !URLUtil.isHttpsUrl(site.url)
-                || Uri.parse(site.url).host.isNullOrBlank()
-            ) {
-                throw InvalidUrlException(site.url)
-            }
-
-            if (site.title.isBlank()) {
-                throw EmptyException()
-            }
-
-            withContext(Dispatchers.Main) {
-                val duplicated = duplicationChecker!!.invoke(site)
-                if (duplicated) {
-                    throw DuplicateException()
-                }
-
-                when (mode) {
-                    Mode.ADD -> onRegister?.invoke(site)
-                    Mode.MODIFY -> onModify?.invoke(site)
-                }
-            }
-
-            return site
         }
-
-        // ------ //
-
-        var onRegister : Listener<FavoriteSite>? = null
-
-        var onModify : Listener<FavoriteSite>? = null
-
-        var duplicationChecker : Switcher<FavoriteSite>? = null
-
-        var onSuccess : OnSuccess<FavoriteSite>? = null
     }
 }

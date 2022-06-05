@@ -237,18 +237,15 @@ class SafeSharedPreferences<KeyT> private constructor (
      * 値を編集する（apply()はaction終了後自動で実行される）
      * 今実装ではaction中に例外送出された場合，その時点まででapply()される（するべきか否かはよく考えていない）
      */
+    @Suppress("CommitPrefEdits")
     fun edit(action: SafeEditor<KeyT>.()->Unit) {
-        @Suppress("CommitPrefEdits")
-        val editor = if (editorCache.get() == null) {
-            val editor = SafeEditor(rawPrefs.edit(), this)
-            editorCache = WeakReference(editor)
-            editor
-        } else editorCache.get()!!
+        synchronized(this) {
+            val editor =
+                editorCache.get() ?: SafeEditor(rawPrefs.edit(), this).also { editorCache = WeakReference(it) }
 
-        try {
-            action.invoke(editor)
-        }
-        finally {
+            runCatching {
+                action.invoke(editor)
+            }
             editor.apply()
         }
     }
@@ -257,28 +254,16 @@ class SafeSharedPreferences<KeyT> private constructor (
      * 値を編集し，変更の反映完了を待機する
      */
     suspend fun editSync(action: SafeEditor<KeyT>.()->Unit) = withContext(Dispatchers.IO) {
-        @Suppress("CommitPrefEdits")
-        val editor = if (editorCache.get() == null) {
-            val editor = SafeEditor(rawPrefs.edit(), this@SafeSharedPreferences)
-            editorCache = WeakReference(editor)
-            editor
-        } else editorCache.get()!!
-
-        try {
-            action.invoke(editor)
-        }
-        finally {
-            editor.commit()
-        }
+        edit(action)
     }
 
     val all : Map<String, *>
-        get() = lock(this) { rawPrefs.all }
+        get() = rawPrefs.all
 
     val version
-        get() = lock(this) { rawPrefs.getInt(INTERNAL_KEY_VERSION, versionDefault) }
+        get() = rawPrefs.getInt(INTERNAL_KEY_VERSION, versionDefault)
 
-    fun contains(key: KeyT) = lock(this) { rawPrefs.contains(key.name) }
+    fun contains(key: KeyT) = rawPrefs.contains(key.name)
 
     inline fun <reified T> get(key: KeyT) : T = getNullable<T>(key) ?: throw NullPointerException()
 
@@ -295,27 +280,27 @@ class SafeSharedPreferences<KeyT> private constructor (
     // ssp.get<Boolean>(Key.FOO) とかやるよりは ssp.getBoolean(Key.FOO) でいい気がする
 
     fun getBoolean(key: KeyT) = when(key.valueType) {
-        typeInfo<Boolean>() -> lock(key) { rawPrefs.getBoolean(key.name, key.defaultValue as Boolean) }
+        typeInfo<Boolean>() -> synchronized(key) { rawPrefs.getBoolean(key.name, key.defaultValue as Boolean) }
         else -> throw RuntimeException("type mismatch")
     }
     fun getInt(key: KeyT) = when(key.valueType) {
-        typeInfo<Int>() -> lock(key) { rawPrefs.getInt(key.name, key.defaultValue as Int) }
+        typeInfo<Int>() -> synchronized(key) { rawPrefs.getInt(key.name, key.defaultValue as Int) }
         else -> throw RuntimeException("type mismatch")
     }
     fun getLong(key: KeyT) = when(key.valueType) {
-        typeInfo<Long>() -> lock(key) { rawPrefs.getLong(key.name, key.defaultValue as Long) }
+        typeInfo<Long>() -> synchronized(key) { rawPrefs.getLong(key.name, key.defaultValue as Long) }
         else -> throw RuntimeException("type mismatch")
     }
     fun getFloat(key: KeyT) = when(key.valueType) {
-        typeInfo<Float>() -> lock(key) { rawPrefs.getFloat(key.name, key.defaultValue as Float) }
+        typeInfo<Float>() -> synchronized(key) { rawPrefs.getFloat(key.name, key.defaultValue as Float) }
         else -> throw RuntimeException("type mismatch")
     }
     fun getString(key: KeyT) : String? = when(key.valueType) {
-        typeInfo<String>() -> lock(key) { rawPrefs.getString(key.name, key.defaultValue as? String) }
+        typeInfo<String>() -> synchronized(key) { rawPrefs.getString(key.name, key.defaultValue as? String) }
         else -> throw RuntimeException("type mismatch")
     }
 
-    inline fun <reified T> getObject(key: KeyT) = lock(key) { rawPrefs.getObject(key.name, key.defaultValue as? T) }
+    inline fun <reified T> getObject(key: KeyT) = synchronized(key) { rawPrefs.getObject(key.name, key.defaultValue as? T) }
 
 
     /**
@@ -342,55 +327,55 @@ class SafeSharedPreferences<KeyT> private constructor (
 
         fun putBoolean(key: KeyT, value: Boolean) {
             if (key.valueType != typeInfo<Boolean>()) throw RuntimeException("type mismatch")
-            lock(key) {
+            synchronized(key) {
                 rawEditor.putBoolean(key.name, value)
             }
         }
         fun putInt(key: KeyT, value: Int) {
             if (key.valueType != typeInfo<Int>()) throw RuntimeException("type mismatch")
-            lock(key) {
+            synchronized(key) {
                 rawEditor.putInt(key.name, value)
             }
         }
         fun putLong(key: KeyT, value: Long) {
             if (key.valueType != typeInfo<Long>()) throw RuntimeException("type mismatch")
-            lock(key) {
+            synchronized(key) {
                 rawEditor.putLong(key.name, value)
             }
         }
         fun putFloat(key: KeyT, value: Float) {
             if (key.valueType != typeInfo<Float>()) throw RuntimeException("type mismatch")
-            lock(key) {
+            synchronized(key) {
                 rawEditor.putFloat(key.name, value)
             }
         }
         fun putString(key: KeyT, value: String?) {
             if (key.valueType != typeInfo<String>()) throw RuntimeException("type mismatch")
-            lock(key) {
+            synchronized(key) {
                 rawEditor.putString(key.name, value)
             }
         }
         fun putObject(key: KeyT, value: Any?) {
-            lock(key) {
+            synchronized(key) {
                 rawEditor.putObject(key.name, value)
             }
         }
 
         fun remove(key: KeyT) {
-            lock(key) {
+            synchronized(key) {
                 rawEditor.remove(key.name)
             }
         }
 
         internal fun apply() {
-            lock(safeSharedPreferences) {
+            synchronized(this) {
                 rawEditor.putInt(INTERNAL_KEY_VERSION, safeSharedPreferences.keyVersion)
                 rawEditor.apply()
             }
         }
 
         internal fun commit() {
-            lock(safeSharedPreferences) {
+            synchronized(this) {
                 rawEditor.putInt(INTERNAL_KEY_VERSION, safeSharedPreferences.keyVersion)
                 rawEditor.commit()
             }

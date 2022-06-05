@@ -8,6 +8,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.hatenaLib.HatenaClient
 import com.suihan74.hatenaLib.Notice
+import com.suihan74.hatenaLib.NoticeVerb
 import com.suihan74.satena.models.Category
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.entries2.EntriesTabFragmentBase
@@ -38,10 +39,10 @@ class NoticesTabFragment : EntriesTabFragmentBase() {
         val noticesAdapter = NoticesAdapter().apply {
             setOnItemClickedListener { notice ->
                 when (notice.verb) {
-                    Notice.VERB_STAR -> onClickedForStar(notice)
-                    Notice.VERB_ADD_FAVORITE -> onClickFavoriteNotice(notice)
-                    Notice.VERB_BOOKMARK -> onClickBookmarkedNotice(notice)
-                    Notice.VERB_FIRST_BOOKMARK -> onClickFirstBookmarkNotice(notice)
+                    NoticeVerb.STAR.str -> onClickedForStar(notice)
+                    NoticeVerb.ADD_FAVORITE.str -> onClickFavoriteNotice(notice)
+                    NoticeVerb.BOOKMARK.str -> onClickBookmarkedNotice(notice)
+                    NoticeVerb.FIRST_BOOKMARK.str -> onClickFirstBookmarkNotice(notice)
                     else -> onClickUnknownNotice(notice)
                 }
             }

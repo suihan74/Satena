@@ -41,7 +41,7 @@
         <ImageButton
                 android:id="@+id/openButton"
                 android:src="@drawable/ic_baseline_open_in_new"
-                android:tint="?textColor"
+                app:tint="?textColor"
                 android:background="?actionBarItemBackground"
                 tooltipText="@{@string/dialog_browser_shortcut_open_start_page}"
                 android:contentDescription="@null"
@@ -76,7 +76,7 @@
         <ImageButton
                 android:id="@+id/searchButton"
                 android:src="@drawable/ic_baseline_search"
-                android:tint="?colorPrimary"
+                app:tint="?colorPrimary"
                 android:background="?actionBarItemBackground"
                 tooltipText="@{@string/search_button_tooltip}"
                 android:contentDescription="@null"

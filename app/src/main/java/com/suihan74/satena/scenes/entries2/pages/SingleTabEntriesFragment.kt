@@ -65,4 +65,8 @@ abstract class SingleTabEntriesFragment : EntriesFragment() {
     override fun scrollToTop() {
         contentFragment?.scrollToTop()
     }
+
+    override fun openExcludedEntriesDialog() {
+        contentFragment?.openExcludedEntriesDialog()
+    }
 }

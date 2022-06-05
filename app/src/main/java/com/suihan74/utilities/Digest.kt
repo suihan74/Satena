@@ -16,3 +16,13 @@ fun getMd5(srcBytes: ByteArray) : String {
     val bigInt = BigInteger(1, md5bytes)
     return bigInt.toString(16)
 }
+
+// ------ //
+
+fun getSha256Bytes(src: ByteArray) : ByteArray =
+    MessageDigest.getInstance("SHA-256").digest(src)
+
+fun getSha256(srcBytes: ByteArray) : String {
+    val digest = getSha256Bytes(srcBytes)
+    return BigInteger(1, digest).toString(16)
+}

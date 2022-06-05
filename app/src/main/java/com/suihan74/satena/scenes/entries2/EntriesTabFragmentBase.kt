@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.suihan74.hatenaLib.BookmarkResult
@@ -17,6 +18,8 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.FragmentEntriesTab2Binding
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.scenes.entries2.dialog.ExcludedEntriesDialog
+import com.suihan74.satena.scenes.entries2.dialog.ExcludedEntry
 import com.suihan74.utilities.ScrollableToTop
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.alsoAs
@@ -24,6 +27,7 @@ import com.suihan74.utilities.extensions.getEnum
 import com.suihan74.utilities.provideViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
     companion object {
@@ -53,6 +57,7 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
             EntriesTabFragmentViewModel(
                 activityViewModel.repository,
+                SatenaApplication.instance.readEntriesRepository,
                 category,
                 tabPosition
             )
@@ -204,17 +209,33 @@ abstract class EntriesTabFragmentBase : Fragment(), ScrollableToTop {
 
     /** リストを再構成する(取得はしない) */
     fun refreshList() {
-        viewModel.filter()
+        viewModel.viewModelScope.launch {
+            viewModel.filter()
+        }
     }
 
     /** エントリに付けたブクマを削除 */
     fun removeBookmark(entry: Entry) {
-        viewModel.deleteBookmark(entry)
+        viewModel.viewModelScope.launch {
+            viewModel.deleteBookmark(entry)
+        }
     }
 
     /** エントリに付けたブクマを更新する */
     fun updateBookmark(entry: Entry, bookmarkResult: BookmarkResult?) {
-        viewModel.updateBookmark(entry, bookmarkResult)
+        viewModel.viewModelScope.launch {
+            viewModel.updateBookmark(entry, bookmarkResult)
+        }
+    }
+
+    /** 非表示対象のエントリ一覧 */
+    fun openExcludedEntriesDialog() {
+        ExcludedEntriesDialog.createInstance(
+            viewModel.excludedEntries.value.orEmpty()
+                .map {
+                    ExcludedEntry(it, activityViewModel.repository.readEntryIds.value.contains(it.id))
+                }
+        ).show(childFragmentManager, null)
     }
 
     /** リストを上端までスクロールする */

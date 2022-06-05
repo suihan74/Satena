@@ -23,7 +23,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.suihan74.satena.*
 import com.suihan74.satena.dialogs.AlertDialogFragment
-import com.suihan74.satena.models.FavoriteSite
+import com.suihan74.satena.models.favoriteSite.FavoriteSite
 import com.suihan74.satena.scenes.bookmarks.BookmarksActivity
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.browser.history.HistoryRepository
@@ -38,6 +38,8 @@ import com.suihan74.utilities.extensions.*
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.math.absoluteValue
@@ -76,8 +78,8 @@ class BrowserViewModel(
         observeForever {
             val url = it.orEmpty()
             addressText.value = Uri.decode(url)
-            isUrlFavorite.value = favoriteSitesRepo.contains(url)
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.Main) {
+                isUrlFavorite.value = favoriteSitesRepo.contains(url)
                 entryUrl.value = modifySpecificUrls(url) ?: url
             }
         }
@@ -137,12 +139,7 @@ class BrowserViewModel(
 
     /** お気に入りサイト */
     val favoriteSites =
-        favoriteSitesRepo.favoriteSites.also {
-            it.observeForever {
-                val url = url.value ?: return@observeForever
-                isUrlFavorite.value = favoriteSitesRepo.contains(url)
-            }
-        }
+        favoriteSitesRepo.favoriteSitesFlow
 
     /** 表示中のページがお気に入りに登録されているか */
     val isUrlFavorite = MutableLiveData(false)
@@ -178,6 +175,13 @@ class BrowserViewModel(
     // ------ //
 
     init {
+        favoriteSitesRepo.favoriteSitesFlow
+            .onEach {
+                val url = url.value ?: return@onEach
+                isUrlFavorite.value = favoriteSitesRepo.contains(url)
+            }
+            .launchIn(viewModelScope)
+
         viewModelScope.launch {
             historyRepo.loadHistories()
         }
@@ -192,7 +196,8 @@ class BrowserViewModel(
     @MainThread
     fun initializeWebView(wv: WebView, activity: BrowserActivity) {
         wv.webViewClient = webViewClient ?: BrowserWebViewClient(activity, this).also { webViewClient = it }
-        wv.webChromeClient = webChromeClient ?: BrowserWebChromeClient(browserRepo, this).also { webChromeClient = it }
+        wv.webChromeClient =
+            webChromeClient ?: BrowserWebChromeClient(browserRepo, historyRepo, favoriteSitesRepo, this).also { webChromeClient = it }
 
         // DOMストレージ使用
         wv.settings.domStorageEnabled = true
@@ -758,8 +763,7 @@ class BrowserViewModel(
         vm.title.value = url
         vm.url.value = url
         if (url != previousUrl) {
-            vm.faviconBitmap.value = null
-            vm.faviconLoading.value = true
+            browserRepo.startLoadingFavicon()
         }
         browserRepo.resourceUrls.clear()
     }
@@ -779,12 +783,13 @@ class BrowserViewModel(
     fun onReceivedTitle(view: WebView?, title: String?) = viewModelScope.launch(Dispatchers.Main) {
         val vm = this@BrowserViewModel
         val url = view?.url ?: return@launch
+        val context = view.context ?: SatenaApplication.instance
         vm.url.value = url
         vm.title.value = title.orEmpty()
 
         _backForwardList.value = view.copyBackForwardList()
         if (privateBrowsingEnabled.value != true && URLUtil.isNetworkUrl(url)) {
-            historyRepo.insertOrUpdateHistory(url, title.orEmpty(), Uri.parse(url).faviconUrl)
+            historyRepo.insertOrUpdateHistory(context, url, title.orEmpty())
         }
     }
 
@@ -805,11 +810,14 @@ class BrowserViewModel(
     /** 表示中のページをお気に入りから除外する */
     fun unfavoriteCurrentPage(fragmentManager: FragmentManager) {
         val url = url.value ?: return
-        val site = favoriteSitesRepo.favoriteSites.value?.firstOrNull { it.url == url } ?: let {
-            SatenaApplication.instance.showToast(R.string.unfavorite_site_failed)
-            return
+        viewModelScope.launch(Dispatchers.Main) {
+            val site =
+                favoriteSitesRepo.get(url) ?: let {
+                    SatenaApplication.instance.showToast(R.string.unfavorite_site_failed)
+                    return@launch
+                }
+            openUnfavoritePageDialog(site.site, fragmentManager)
         }
-        openUnfavoritePageDialog(site, fragmentManager)
     }
 
     // ------ //
@@ -820,42 +828,28 @@ class BrowserViewModel(
         title: String,
         fragmentManager: FragmentManager
     ) {
-        val faviconUrl = Uri.parse(url).faviconUrl
-        val site = FavoriteSite(url, title, faviconUrl, false)
+        val site = FavoriteSite(url, title, false, 0)
         val dialog = FavoriteSiteRegistrationDialog.createRegistrationInstance(site)
-
-        dialog.setOnRegisterListener {
-            favoriteSitesRepo.favoritePage(url, title, faviconUrl)
-        }
-
-        dialog.setDuplicationChecker {
-            favoriteSitesRepo.contains(url)
-        }
-
         dialog.showAllowingStateLoss(fragmentManager)
     }
 
     /** ページをお気に入りから除外するか確認するダイアログを開く */
-    private fun openUnfavoritePageDialog(
-        site: FavoriteSite,
-        fragmentManager: FragmentManager
-    ) {
+    private fun openUnfavoritePageDialog(site: FavoriteSite, fragmentManager: FragmentManager) {
         val context = SatenaApplication.instance
         val dialog = AlertDialogFragment.Builder()
             .setTitle(R.string.confirm_dialog_title_simple)
             .setMessage(context.getString(R.string.browser_unfavorite_confirm_msg, site.title))
             .setNegativeButton(R.string.dialog_cancel)
-            .setPositiveButton(R.string.dialog_ok) {
-                val result = runCatching {
-                    favoriteSitesRepo.unfavoritePage(site)
-                }
-
-                if (result.isSuccess) {
-                    context.showToast(R.string.unfavorite_site_succeeded)
-                }
-                else {
-                    context.showToast(R.string.unfavorite_site_failed)
-                    Log.w("unfavorite", Log.getStackTraceString(result.exceptionOrNull()))
+            .setPositiveButton(R.string.dialog_ok) { f ->
+                f.requireActivity().lifecycleScope.launch {
+                    runCatching {
+                        favoriteSitesRepo.unfavoritePage(site)
+                    }.onSuccess {
+                        context.showToast(R.string.unfavorite_site_succeeded)
+                    }.onFailure { e ->
+                        context.showToast(R.string.unfavorite_site_failed)
+                        Log.w("unfavorite", Log.getStackTraceString(e))
+                    }
                 }
             }
             .create()
@@ -864,9 +858,7 @@ class BrowserViewModel(
     }
 
     /** 新しいブロック設定を追加するダイアログを開く */
-    fun openBlockUrlDialog(
-        fragmentManager: FragmentManager
-    ) {
+    fun openBlockUrlDialog(fragmentManager: FragmentManager) {
         val dialog = UrlBlockingDialog.createInstance(resourceUrls)
 
         dialog.setOnCompleteListener { setting ->
@@ -904,15 +896,18 @@ class BrowserViewModel(
         }
 
         dialog.setOnLongClickItemListener { item, f ->
-            openBackStackItemMenuDialog(item, f.parentFragmentManager)
+            f.lifecycleScope.launch {
+                openBackStackItemMenuDialog(item, f.parentFragmentManager)
+            }
         }
 
         dialog.show(fragmentManager, "BackStackDialog")
     }
 
     /** 「戻る/進む」履歴項目のメニューダイアログを開く */
-    private fun openBackStackItemMenuDialog(page: WebHistoryItem, fragmentManager: FragmentManager) {
-        val dialog = BackStackItemMenuDialog.createInstance(page)
+    private suspend fun openBackStackItemMenuDialog(page: WebHistoryItem, fragmentManager: FragmentManager) {
+        val faviconInfo = historyRepo.findFaviconInfo(page.url)
+        val dialog = BackStackItemMenuDialog.createInstance(page, faviconInfo)
         dialog.setOnOpenListener { item, f ->
             runCatching {
                 val backStackDialog = f.parentFragmentManager.findFragmentByTag("BackStackDialog")

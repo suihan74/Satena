@@ -1,19 +1,12 @@
 package com.suihan74.satena.models
 
-import android.net.Uri
 import android.util.Log
 import androidx.room.Room
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.platform.app.InstrumentationRegistry
-import com.suihan74.satena.models.browser.History
-import com.suihan74.satena.models.browser.HistoryLog
-import com.suihan74.satena.models.browser.HistoryPage
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Test
 import org.junit.runner.RunWith
-import java.time.LocalDateTime
 
 @Suppress("NonAsciiCharacters", "SpellCheckingInspection")
 @RunWith(AndroidJUnit4ClassRunner::class)
@@ -35,6 +28,7 @@ class BrowserDaoTest {
         }
     }
 
+    /*
     @Test
     fun クエリを使った履歴検索() = runBlocking {
         runBlocking {
@@ -81,4 +75,5 @@ class BrowserDaoTest {
         assertEquals(1, dao.findHistory("goo").size)
         assertEquals(1, dao.findHistory("aho").size)
     }
+     */
 }

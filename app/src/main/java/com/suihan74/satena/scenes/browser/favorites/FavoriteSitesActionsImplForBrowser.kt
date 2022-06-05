@@ -2,27 +2,33 @@ package com.suihan74.satena.scenes.browser.favorites
 
 import android.app.Activity
 import android.net.Uri
-import com.suihan74.satena.models.FavoriteSite
+import androidx.lifecycle.lifecycleScope
+import com.suihan74.satena.models.browser.BrowserDao
+import com.suihan74.satena.models.favoriteSite.FavoriteSite
+import com.suihan74.satena.models.favoriteSite.FavoriteSiteAndFavicon
 import com.suihan74.satena.scenes.browser.BrowserActivity
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesViewModelInterface
 import com.suihan74.satena.scenes.preferences.pages.FavoriteSitesFragment
 import com.suihan74.utilities.extensions.alsoAs
-import com.suihan74.utilities.extensions.faviconUrl
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class FavoriteSitesActionsImplForBrowser : FavoriteSitesViewModelInterface {
+class FavoriteSitesActionsImplForBrowser(
+    private val browserDao: BrowserDao
+) : FavoriteSitesViewModelInterface {
     override fun onClickItem(
-        site: FavoriteSite,
+        site: FavoriteSiteAndFavicon,
         activity: Activity,
         fragment: FavoriteSitesFragment
     ) {
         activity.alsoAs<BrowserActivity> { browserActivity ->
-            browserActivity.viewModel.goAddress(site.url)
+            browserActivity.viewModel.goAddress(site.site.url)
             browserActivity.closeDrawer()
         }
     }
 
     override fun onLongClickItem(
-        site: FavoriteSite,
+        site: FavoriteSiteAndFavicon,
         activity: Activity,
         fragment: FavoriteSitesFragment
     ) {
@@ -35,29 +41,31 @@ class FavoriteSitesActionsImplForBrowser : FavoriteSitesViewModelInterface {
         }
     }
 
-    override fun onClickAddButton(
-        activity: Activity,
-        fragment: FavoriteSitesFragment
-    ) {
+    override fun onClickAddButton(activity: Activity, fragment: FavoriteSitesFragment) {
         activity.alsoAs<BrowserActivity> { browserActivity ->
             val vm = browserActivity.viewModel
             val url = vm.url.value ?: ""
-            val site = FavoriteSite(
-                url = url,
-                title = vm.title.value ?: url,
-                faviconUrl = Uri.parse(url).faviconUrl,
-                isEnabled = false
-            )
-            fragment.viewModel.openItemRegistrationDialog(
-                site,
-                fragment.childFragmentManager
-            )
+            fragment.lifecycleScope.launch(Dispatchers.Main) {
+                val faviconUrl =
+                    browserDao.findFaviconInfo(Uri.parse(url).host!!)?.filename?.let {
+                        "${activity.filesDir.absolutePath}/favicon_cache/$it"
+                    }.orEmpty()
+
+                val site = FavoriteSite(
+                    url,
+                    vm.title.value ?: url,
+                    false,
+                    0L,
+                    faviconUrl
+                )
+                fragment.viewModel.openItemRegistrationDialog(site, fragment.childFragmentManager)
+            }
         }
     }
 
-    override fun openInBrowser(site: FavoriteSite, activity: Activity) {
+    override fun openInBrowser(site: FavoriteSiteAndFavicon, activity: Activity) {
         activity.alsoAs<BrowserActivity> { browserActivity ->
-            browserActivity.openUrl(site.url)
+            browserActivity.openUrl(site.site.url)
         }
     }
 }

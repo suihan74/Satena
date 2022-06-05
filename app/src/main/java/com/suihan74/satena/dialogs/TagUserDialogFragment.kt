@@ -17,8 +17,10 @@ import com.suihan74.satena.databinding.FragmentDialogTaggedUserBinding
 import com.suihan74.utilities.SuspendSwitcher
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.extensions.showSoftInputMethod
-import com.suihan74.utilities.lock
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.TimeUnit
@@ -134,9 +136,9 @@ class TagUserDialogFragment : DialogFragment() {
         var userName: String = ""
 
         var isUserExisted: Boolean = false
-            get() = lock(this) { field }
+            get() = synchronized(this) { field }
             private set(value) {
-                lock(this) {
+                synchronized(this) {
                     field = value
                 }
             }

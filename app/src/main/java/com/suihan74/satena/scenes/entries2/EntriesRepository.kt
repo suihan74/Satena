@@ -17,6 +17,7 @@ import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.*
 import com.suihan74.satena.models.Category
+import com.suihan74.satena.models.readEntry.ReadEntryBehavior
 import com.suihan74.satena.scenes.preferences.favoriteSites.FavoriteSitesRepository
 import com.suihan74.satena.scenes.preferences.ignored.IgnoredEntriesRepository
 import com.suihan74.utilities.AccountLoader
@@ -201,6 +202,10 @@ class EntriesRepository(
     val extraBottomItemsAlignment : ExtraBottomItemsAlignment
         get() = ExtraBottomItemsAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_BOTTOM_ITEMS_ALIGNMENT))
 
+    /** エクストラボトムメニューを使用する */
+    val useExtraBottomMenu : Boolean
+        get() = prefs.get(PreferenceKey.ENTRIES_USE_EXTRA_BOTTOM_MENU)
+
     /** エクストラスクロール機能のツマミの配置 */
     val extraScrollingAlignment
         get() = ExtraScrollingAlignment.fromId(prefs.getInt(PreferenceKey.ENTRIES_EXTRA_SCROLL_ALIGNMENT))
@@ -211,6 +216,10 @@ class EntriesRepository(
             p.getObject<EntrySearchSetting>(key)
         }
     }
+
+    /** 人気タブでは一度のロードで全件取得する */
+    private val fullFetchingPopularEntries
+        get() = prefs.getBoolean(PreferenceKey.ENTRIES_FULL_FETCHING_POPULARS)
 
     /** 「あとで読む」するときデフォルトで非公開ブクマにする */
     private val privateReadLater : Boolean
@@ -272,26 +281,27 @@ class EntriesRepository(
         val entries =
             if (issue == null) loadEntries(category, tabPosition, offset, params)
             else loadEntries(issue, tabPosition, offset)
-
-        // 広告エントリURLをリダイレクト先のURLに解決する
-        return (entries.map { entry ->
-            if (entry.url.startsWith("https://ad-hatena.com/hatena")) {
-                entry.copy(
-                    url = Uri.parse(entry.url).getQueryParameter("url") ?: entry.url,
-                    adUrl = entry.url
-                )
-            }
-            else entry
-        }).also {
-            readEntryRepo.load(it)
-        }
+        return entries.also { readEntryRepo.load(it) }
     }
 
     /** 最新のエントリーリストを読み込む(Category指定) */
     private suspend fun loadEntries(category: Category, tabPosition: Int, offset: Int?, params: LoadEntryParameter?) : List<Entry> =
         when (val apiCat = category.categoryInApi) {
             null -> loadSpecificEntries(category, tabPosition, offset, params)
-            else -> loadHatenaEntries(tabPosition, apiCat, offset)
+            else -> {
+                if (fullFetchingPopularEntries && tabPosition == EntriesTabType.HOT.tabOrdinal) {
+                    buildList {
+                        var of = offset ?: 0
+                        while (true) {
+                            val entries = loadHatenaEntries(tabPosition, apiCat, of)
+                            if (entries.isEmpty()) break
+                            addAll(entries)
+                            of += entries.size
+                        }
+                    }
+                }
+                else loadHatenaEntries(tabPosition, apiCat, offset)
+            }
         }
 
     /** はてなから提供されているカテゴリ以外のエントリ情報を取得する */
@@ -432,7 +442,7 @@ class EntriesRepository(
         val fixNoticesTasks = notices.map { notice ->
             async {
                 runCatching {
-                    if (notice.verb == Notice.VERB_STAR && notice.metadata?.subjectTitle.isNullOrBlank()) {
+                    if (notice.verb == NoticeVerb.STAR.str && notice.metadata?.subjectTitle.isNullOrBlank()) {
                         val md = NoticeMetadata(
                             client.getBookmarkPageAsync(
                                 notice.eid,
@@ -688,14 +698,14 @@ class EntriesRepository(
     /** お気に入りサイトのエントリリストを読み込む */
     private suspend fun loadFavoriteSitesEntries(tabPosition: Int, page: Int? = null) : List<Entry> {
         val entriesType = EntriesType.fromId(tabPosition)
-        val sites = favoriteSitesRepo.favoriteSites.value ?: emptyList()
+        val sites = favoriteSitesRepo.allSites()
 
         val tasks = sites
-            .filter { it.isEnabled }
+            .filter { it.site.isEnabled }
             .map { site -> client.async {
                 try {
                     client.getEntriesAsync(
-                        url = site.url,
+                        url = site.site.url,
                         entriesType = entriesType,
                         allMode = true,
                         page = page ?: 0
@@ -774,10 +784,42 @@ class EntriesRepository(
     // ------ //
 
     /** エントリをフィルタリングする */
-    suspend fun filterEntries(entries: List<Entry>) : List<Entry> = withContext(Dispatchers.IO) {
-        return@withContext entries.filterNot { entry ->
+    suspend fun filterEntries(
+        category: Category,
+        entries: List<Entry>
+    ) : Pair<List<Entry>, List<Entry>> = withContext(Dispatchers.IO) {
+        fun filterIgnoredEntries(entry: Entry) : Boolean =
             ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.isMatched(entry) } == true
+
+        val activeEntries = ArrayList<Entry>()
+        val inactiveEntries = ArrayList<Entry>()
+
+        when (readEntryRepo.readEntryBehavior.value) {
+            ReadEntryBehavior.HIDE_ENTRY -> {
+                val targetCategory = readEntryRepo.categoriesHidingReadEntries.value.contains(category)
+                if (targetCategory) {
+                    val ids = readEntryIds.value
+                    for (entry in entries) {
+                        if (ids.contains(entry.id) || filterIgnoredEntries(entry)) inactiveEntries.add(entry)
+                        else activeEntries.add(entry)
+                    }
+                }
+                else {
+                    for (entry in entries) {
+                        if (filterIgnoredEntries(entry)) inactiveEntries.add(entry)
+                        else activeEntries.add(entry)
+                    }
+                }
+            }
+            else -> {
+                for (entry in entries) {
+                    if (filterIgnoredEntries(entry)) inactiveEntries.add(entry)
+                    else activeEntries.add(entry)
+                }
+            }
         }
+
+        activeEntries to inactiveEntries
     }
 
     /** アプリ内アップデートを使用する */

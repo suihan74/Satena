@@ -31,8 +31,9 @@ class FavoriteSitesFragment :
         get() = requireActivity() as? BrowserActivity
 
     val viewModel by lazyProvideViewModel {
+        val browserDao = SatenaApplication.instance.browserDao
         val actionsImpl =
-            if (browserActivity != null) FavoriteSitesActionsImplForBrowser()
+            if (browserActivity != null) FavoriteSitesActionsImplForBrowser(browserDao)
             else FavoriteSitesActionsImplForPreferences()
 
         FavoriteSitesViewModel(

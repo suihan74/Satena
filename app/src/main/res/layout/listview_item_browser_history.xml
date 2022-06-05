@@ -16,7 +16,7 @@
 
         <ImageView
                 android:id="@+id/favicon"
-                src="@{history.page.faviconUrl}"
+                favicon="@{history.page.faviconInfo}"
                 android:contentDescription="@null"
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="6dp"
@@ -29,7 +29,7 @@
                 android:id="@+id/title"
                 style="@style/MarqueeTextView"
                 android:ellipsize="end"
-                android:text="@{history.page.title}"
+                android:text="@{history.page.page.title}"
                 android:contentDescription="@null"
                 android:textSize="16sp"
                 android:layout_toEndOf="@id/favicon"
@@ -41,7 +41,7 @@
                 android:id="@+id/url"
                 style="@style/MarqueeTextView"
                 android:ellipsize="end"
-                android:text="@{history.page.url}"
+                android:text="@{history.page.page.url}"
                 android:textColor="?attr/tagTextColor"
                 android:textSize="13sp"
                 android:layout_below="@id/title"

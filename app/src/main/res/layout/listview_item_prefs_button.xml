@@ -49,8 +49,7 @@
 
         <TextView
                 android:id="@+id/valueText"
-                currentPreference="@{item.liveData}"
-                suffixId="@{item.suffixId}"
+                android:text="@{item.textConverter.invoke(context, item.liveData)}"
                 tools:text="current value"
                 android:textSize="13sp"
                 android:textColor="?textColor"

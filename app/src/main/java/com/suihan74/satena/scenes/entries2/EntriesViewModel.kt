@@ -111,7 +111,10 @@ class EntriesViewModel(
 
     /** ボトムバーの項目 */
     val bottomBarItems : List<UserBottomItem>
-        get() = repository.bottomBarItems
+        get() = repository.bottomBarItems.mapNotNull { item ->
+            if (item.requireSignedIn && signedIn.value != true) null
+            else item
+        }
 
     /** ボトムバーの項目の配置方法 */
     val bottomBarItemsGravity : Int
@@ -120,6 +123,10 @@ class EntriesViewModel(
     /** ボトムバーの追加項目の配置方法 */
     val extraBottomItemsAlignment : ExtraBottomItemsAlignment
         get() = repository.extraBottomItemsAlignment
+
+    /** エクストラボトムメニューを使用する */
+    val useExtraBottomMenu : Boolean
+        get() = repository.useExtraBottomMenu
 
     /** 表示中画面のタブ位置 */
     val currentTabPosition = MutableLiveData<Int>()
@@ -205,6 +212,8 @@ class EntriesViewModel(
         UserBottomItem.NOTICE -> showCategory(activity, Category.Notices)
 
         UserBottomItem.INNER_BROWSER -> activity.startInnerBrowser()
+
+        UserBottomItem.EXCLUDED_ENTRIES -> activity.openExcludedEntriesDialog()
 
         UserBottomItem.SEARCH -> showCategory(activity, Category.Search)
 

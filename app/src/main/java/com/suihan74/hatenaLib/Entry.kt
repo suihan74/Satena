@@ -17,7 +17,8 @@ class Entry (
     @SerializedName("count", alternate = ["total_bookmarks"])
     val count : Int,
 
-    val url : String,
+    @SerializedName("url")
+    private val _url : String,
 
     rootUrl : String?,
 
@@ -37,17 +38,30 @@ class Entry (
 
     @JsonAdapter(TimestampDeserializer::class)
     val date: LocalDateTime? = null,
+) {
+
+    // for Gson
+    internal constructor() : this(0, "", "", 0, "", null, null)
 
     /**
      * 広告エントリの場合のURL
      *
      * 手動でURL解決し元の広告用URLはここに退避させるため、APIから返された時点では常にnull
      */
-    val adUrl : String? = null
-) {
+    @delegate:Transient
+    val adUrl : String? by lazy {
+        if (_url.startsWith("https://ad-hatena.com/")) _url
+        else null
+    }
 
-    // for Gson
-    internal constructor() : this(0, "", "", 0, "", null, null)
+    /**
+     * エントリのURL
+     */
+    @delegate:Transient
+    val url : String by lazy {
+        if (adUrl == null) _url
+        else Uri.parse(_url).getQueryParameter("url") ?: _url
+    }
 
     @SerializedName("title")
     private val mTitle : String = title
@@ -100,29 +114,27 @@ class Entry (
         title: String = this.title,
         description: String = this.description,
         count: Int = this.count,
-        url: String = this.url,
+        url: String = this._url,
         rootUrl: String = this.rootUrl,
         faviconUrl: String? = this.faviconUrl,
         imageUrl: String = this.imageUrl,
         ampUrl: String? = this.ampUrl,
         bookmarkedData: BookmarkResult? = this.bookmarkedData,
         myhotentryComments: List<BookmarkResult>? = this.myHotEntryComments,
-        date: LocalDateTime? = this.date,
-        adUrl: String? = this.adUrl
+        date: LocalDateTime? = this.date
     ) = Entry(
         id = id,
         title = title,
         description = description,
         count = count,
-        url = url,
+        _url = url,
         rootUrl = rootUrl,
         faviconUrl = faviconUrl,
         _imageUrl = imageUrl,
         ampUrl = ampUrl,
         bookmarkedData = bookmarkedData,
         myHotEntryComments = myhotentryComments,
-        date = date,
-        adUrl = adUrl
+        date = date
     )
 
     /** 同じエントリに対するインスタンスかを確認する */

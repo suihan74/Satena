@@ -32,7 +32,7 @@ internal data class HistoricalEntry (
         title = title,
         description = "",
         count = totalBookmarks ?: count ?: 0,
-        url = canonicalUrl,
+        _url = canonicalUrl,
         rootUrl = rootUrl,
         faviconUrl = faviconUrl,
         bookmarkedData = bookmarkedData

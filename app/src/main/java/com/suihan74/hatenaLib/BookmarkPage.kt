@@ -71,7 +71,7 @@ data class FollowingBookmark (
         title = entry.title,
         description = entry.content,
         count = entry.count,
-        url = entry.url,
+        _url = entry.url,
         rootUrl = Uri.parse(entry.url).authority,
         faviconUrl = entry.faviconUrl,
         _imageUrl = entry.imageUrl,

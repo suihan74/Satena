@@ -44,10 +44,11 @@ object ImageViewBindingAdapters {
     }
 
     @JvmStatic
-    @BindingAdapter("src")
-    fun setSource(imageView: ImageView, bitmap: Bitmap?) {
+    @BindingAdapter(value = ["src", "errorSrc"], requireAll = false)
+    fun setSource(imageView: ImageView, bitmap: Bitmap?, errorSrc: Drawable? = null) {
         GlideApp.with(imageView.context)
             .load(bitmap)
+            .error(errorSrc)
             .into(imageView)
     }
 

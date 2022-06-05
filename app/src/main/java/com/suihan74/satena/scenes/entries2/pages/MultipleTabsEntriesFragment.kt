@@ -183,4 +183,12 @@ abstract class MultipleTabsEntriesFragment : EntriesFragment() {
             scrollContentToTop(it)
         }
     }
+
+    override fun openExcludedEntriesDialog() {
+        entriesTabPager?.currentItem.alsoAs<Int> { tabPosition ->
+            entriesTabAdapter?.findFragment(tabPosition).alsoAs<EntriesTabFragment> {
+                it.openExcludedEntriesDialog()
+            }
+        }
+    }
 }
