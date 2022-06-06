@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.satena.SatenaApplication
@@ -255,7 +256,9 @@ class HistoryRepository(
                     }
                 }
             }.onFailure {
-                FirebaseCrashlytics.getInstance().recordException(it)
+                // faviconロード完了時にブラウザが閉じられているとヌルポ発生する可能性あり
+                Log.e("faviconCache", "failed to save a favicon cache for URL(${url ?: "null"})")
+                //FirebaseCrashlytics.getInstance().recordException(it)
             }
         }
     }
