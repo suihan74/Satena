@@ -16,6 +16,7 @@ import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemGeneralButtonBinding
@@ -173,7 +174,7 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
     ) {
         this.liveData = liveData
         this.titleId = titleId
-        this.textConverter = textConverter ?: { context, value -> defaultTextConverter(context, value) }
+        this.textConverter = textConverter ?: { context, value -> defaultTextConverter(context, value, titleId) }
         this.onLongClick = onLongClick
         this.onClick = onClick
     }
@@ -187,7 +188,7 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
     ) {
         this.liveData = flow.asLiveData()
         this.titleId = titleId
-        this.textConverter = textConverter ?: { context, value -> defaultTextConverter(context, value) }
+        this.textConverter = textConverter ?: { context, value -> defaultTextConverter(context, value, titleId) }
         this.onLongClick = onLongClick
         this.onClick = onClick
     }
@@ -244,11 +245,16 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
                 old.onClick == new.onClick
 
     companion object {
-        fun <T> defaultTextConverter(context: Context, value: T): String =
+        fun <T> defaultTextConverter(context: Context, value: T?, titleId: Int): String =
             when (value) {
                 is Number -> value.toString()
                 is Boolean -> context.getString(if (value) R.string.on else R.string.off)
                 is TextIdContainer -> context.getString(value.textId)
+                null -> {
+                    val text = context.getString(titleId)
+                    FirebaseCrashlytics.getInstance().recordException(NullPointerException("value is null; title=`$text`"))
+                    "null"
+                }
                 else -> value.toString()
             }
     }
