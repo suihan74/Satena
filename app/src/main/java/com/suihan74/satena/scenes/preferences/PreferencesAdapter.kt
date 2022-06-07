@@ -16,7 +16,6 @@ import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.databinding.ListviewItemGeneralButtonBinding
@@ -168,13 +167,13 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
     constructor(
         liveData: LiveData<T>,
         @StringRes titleId: Int,
-        textConverter: ((Context, Any) -> String)? = null,
+        textConverter: ((Context, Any?) -> String)? = null,
         onLongClick: (() -> Unit)? = null,
         onClick: (() -> Unit)? = null
     ) {
         this.liveData = liveData
         this.titleId = titleId
-        this.textConverter = textConverter ?: { context, value -> defaultTextConverter(context, value, titleId) }
+        this.textConverter = textConverter ?: { context, value -> defaultTextConverter(context, value) }
         this.onLongClick = onLongClick
         this.onClick = onClick
     }
@@ -182,13 +181,13 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
     constructor(
         flow: Flow<T>,
         @StringRes titleId: Int,
-        textConverter: ((Context, Any) -> String)? = null,
+        textConverter: ((Context, Any?) -> String)? = null,
         onLongClick: (() -> Unit)? = null,
         onClick: (() -> Unit)? = null
     ) {
         this.liveData = flow.asLiveData()
         this.titleId = titleId
-        this.textConverter = textConverter ?: { context, value -> defaultTextConverter(context, value, titleId) }
+        this.textConverter = textConverter ?: { context, value -> defaultTextConverter(context, value) }
         this.onLongClick = onLongClick
         this.onClick = onClick
     }
@@ -200,7 +199,7 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
     @StringRes
     val titleId: Int
 
-    val textConverter: (Context, Any) -> String
+    val textConverter: (Context, Any?) -> String
 
     private val onLongClick: (() -> Unit)?
 
@@ -245,17 +244,12 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
                 old.onClick == new.onClick
 
     companion object {
-        fun <T> defaultTextConverter(context: Context, value: T?, titleId: Int): String =
+        fun <T> defaultTextConverter(context: Context, value: T?): String =
             when (value) {
                 is Number -> value.toString()
                 is Boolean -> context.getString(if (value) R.string.on else R.string.off)
                 is TextIdContainer -> context.getString(value.textId)
-                null -> {
-                    val text = context.getString(titleId)
-                    FirebaseCrashlytics.getInstance().recordException(NullPointerException("value is null; title=`$text`"))
-                    "null"
-                }
-                else -> value.toString()
+                else -> value?.toString() ?: "null"
             }
     }
 }
@@ -266,7 +260,7 @@ open class PreferenceItem<T> : PreferencesAdapter.Item {
 open class PreferenceToggleItem(
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
-    textConverter: ((Context, Any) -> String)? = null,
+    textConverter: ((Context, Any?) -> String)? = null,
     action: ((Boolean)->Unit)? = null
 ) : PreferenceItem<Boolean>(liveData, titleId, textConverter, null, {
     action?.invoke(liveData.value == true) ?: run {
@@ -356,7 +350,7 @@ fun MutableList<PreferencesAdapter.Item>.addButton(
 fun <T> MutableList<PreferencesAdapter.Item>.addPrefItem(
     liveData: LiveData<T>,
     @StringRes titleId: Int,
-    textConverter: ((Context, Any) -> String)? = null,
+    textConverter: ((Context, Any?) -> String)? = null,
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) = add(PreferenceItem(liveData, titleId, textConverter, onLongClick, onClick))
@@ -367,7 +361,7 @@ fun <T> MutableList<PreferencesAdapter.Item>.addPrefItem(
 fun <T> MutableList<PreferencesAdapter.Item>.addPrefItem(
     flow: Flow<T>,
     @StringRes titleId: Int,
-    textConverter: ((Context, Any) -> String)? = null,
+    textConverter: ((Context, Any?) -> String)? = null,
     onLongClick: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) = add(PreferenceItem(flow, titleId, textConverter, onLongClick, onClick))
@@ -378,7 +372,7 @@ fun <T> MutableList<PreferencesAdapter.Item>.addPrefItem(
 fun MutableList<PreferencesAdapter.Item>.addPrefToggleItem(
     liveData: MutableLiveData<Boolean>,
     @StringRes titleId: Int,
-    textConverter: ((Context, Any) -> String)? = null,
+    textConverter: ((Context, Any?) -> String)? = null,
     action: ((Boolean)->Unit)? = null
 ) = add(PreferenceToggleItem(liveData, titleId, textConverter, action))
 
@@ -415,7 +409,7 @@ object PreferencesAdapterBindingAdapters {
 
     @JvmStatic
     @BindingAdapter("currentPreference", "converter")
-    fun bindPref(textView: TextView, liveData: LiveData<*>?, converter: ((Context, Any)->String)?) {
+    fun bindPref(textView: TextView, liveData: LiveData<*>?, converter: ((Context, Any?)->String)?) {
         val context = textView.context
         textView.text =
             liveData?.value?.let { value ->
