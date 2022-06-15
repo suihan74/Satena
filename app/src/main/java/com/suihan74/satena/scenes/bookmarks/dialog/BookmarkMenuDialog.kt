@@ -45,7 +45,6 @@ class BookmarkMenuDialog : DialogFragment() {
         DialogViewModel(requireArguments())
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val titleViewBinding = DialogTitleBookmarkBinding.inflate(localLayoutInflater()).also {
             it.root.setCustomTitle(viewModel.bookmark)
@@ -170,7 +169,6 @@ class BookmarkMenuDialog : DialogFragment() {
         // ------ //
 
         /** メニュー項目 */
-        @OptIn(ExperimentalStdlibApi::class)
         val items by lazy {
             buildList<Pair<Int, (BookmarkMenuDialog)->Unit>> {
                 add(R.string.bookmark_show_user_entries to { onShowEntries?.invoke(bookmark.user, it) })

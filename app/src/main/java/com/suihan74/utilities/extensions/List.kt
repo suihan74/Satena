@@ -18,7 +18,6 @@ suspend fun <T, R> Iterable<T>.parallelMap(transform: suspend (T)->R): List<R> =
  *
  * 追加する場合、リストの末尾に追加する
  */
-@OptIn(ExperimentalStdlibApi::class)
 inline fun <T> List<T>.updateFirstOrPlus(value: T, predicate: (T)->Boolean) : List<T> {
     val prevList = this
     val idx = prevList.indexOfFirst(predicate)
@@ -36,7 +35,6 @@ inline fun <T> List<T>.updateFirstOrPlus(value: T, predicate: (T)->Boolean) : Li
  *
  * 追加する場合、リストの先頭に追加する
  */
-@OptIn(ExperimentalStdlibApi::class)
 inline fun <T> List<T>.updateFirstOrPlusAhead(value: T, predicate: (T)->Boolean) : List<T> {
     val prevList = this
     val idx = prevList.indexOfFirst(predicate)

@@ -150,7 +150,6 @@ class GeneralViewModel(context: Context) : ListPreferencesViewModel(context) {
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun createList(
         context: Context,
         fragmentManager: FragmentManager

@@ -73,7 +73,6 @@ class BookmarksTabViewModel(
 
     // ------ //
 
-    @OptIn(ExperimentalStdlibApi::class)
     private suspend fun createDisplayBookmarks(
         bookmarks: List<Bookmark>
     ) : List<RecyclerState<Entity>> = withContext(Dispatchers.Default) {
@@ -114,7 +113,6 @@ class BookmarksTabViewModel(
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private suspend fun createDisplayBookmarksDigest() : List<RecyclerState<Entity>> = withContext(Dispatchers.Default) {
         buildList {
 

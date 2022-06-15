@@ -44,7 +44,6 @@ interface CommentMenuActions {
     // ------ //
 
     /** コメントに対するメニューダイアログを開く */
-    @OptIn(ExperimentalStdlibApi::class)
     fun openCommentMenuDialog(
         entry: Entry,
         bookmarkResult: BookmarkResult,

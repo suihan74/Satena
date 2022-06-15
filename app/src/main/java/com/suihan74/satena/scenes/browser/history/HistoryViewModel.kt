@@ -79,7 +79,6 @@ class HistoryViewModel(
 
     // ------ //
 
-    @OptIn(ExperimentalStdlibApi::class)
     suspend fun createDisplayItems(histories: List<History>) = withContext(Dispatchers.Default) {
         // 日付ごとに区切りを表示する
         val states = buildList {

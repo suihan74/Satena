@@ -309,7 +309,6 @@ class EntriesViewModel(
     /**
      * ホームカテゴリ・初期表示タブの設定ダイアログを開く
      */
-    @OptIn(ExperimentalStdlibApi::class)
     fun openDefaultTabSettingDialog(context: Context, category: Category, tab: EntriesTabType, fragmentManager: FragmentManager) {
         val categoryText = context.getText(category.textId)
         val tabText = context.getText(tab.textId)

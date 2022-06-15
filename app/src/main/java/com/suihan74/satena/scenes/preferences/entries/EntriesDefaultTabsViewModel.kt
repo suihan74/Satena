@@ -38,7 +38,6 @@ class EntriesDefaultTabsViewModel(private val prefs : SafeSharedPreferences<Pref
 
     // ------ //
 
-    @OptIn(ExperimentalStdlibApi::class)
     fun openTabSelectionDialog(category: Category, fragmentManager: FragmentManager) {
         val items = buildList {
             add(EntriesTabType.MAINTAIN)

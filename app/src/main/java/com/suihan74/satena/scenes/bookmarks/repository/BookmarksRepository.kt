@@ -478,7 +478,6 @@ class BookmarksRepository(
     /**
      * ブクマエントリにユーザーの非公開ブクマを挿入する
      */
-    @OptIn(ExperimentalStdlibApi::class)
     private fun insertMyBookmark(bookmarksEntry: BookmarksEntry) : BookmarksEntry {
         val bookmarkData = entry.value?.bookmarkedData ?: return bookmarksEntry
         val user = bookmarkData.user
@@ -779,7 +778,6 @@ class BookmarksRepository(
     /**
      * 指定ブクマのスター数を更新する
      */
-    @OptIn(ExperimentalStdlibApi::class)
     suspend fun updateStarCounts(bookmark: Bookmark) {
         val starsEntry = getStarsEntry(bookmark).value ?: return
         val user = bookmark.user
@@ -860,7 +858,6 @@ class BookmarksRepository(
      * @throws TimeoutException
      * @throws ForbiddenException
      */
-    @OptIn(ExperimentalStdlibApi::class)
     suspend fun loadRecentBookmarks(
         additionalLoading: Boolean = false
     ) = withContext(Dispatchers.Default) {
@@ -1000,7 +997,6 @@ class BookmarksRepository(
     /**
      * ユーザー定義のブックマークダイジェストを生成する
      */
-    @OptIn(ExperimentalStdlibApi::class)
     suspend fun loadUserCustomizedDigest() : List<BookmarkWithStarCount> {
         val maxNumOfElements = customDigest.maxNumOfElements.value ?: return emptyList()
         val bookmarks =

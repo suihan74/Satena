@@ -636,7 +636,6 @@ class BrowserViewModel(
     // ------ //
 
     /** はてなキーワードの解説ポップアップを開く */
-    @OptIn(ExperimentalStdlibApi::class)
     private fun openKeywordPopup(
         anchor: View,
         x: Int,

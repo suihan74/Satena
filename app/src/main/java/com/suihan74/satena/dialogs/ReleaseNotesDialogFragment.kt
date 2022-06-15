@@ -197,7 +197,6 @@ class ReleaseNotesDialogFragment : DialogFragment() {
             return result
         }
 
-        @OptIn(ExperimentalStdlibApi::class)
         suspend fun loadNextItems(num: Int) = coroutineScope {
             if (lastVersionName != null && lastVersionName == lastLoadedVersion) return@coroutineScope
 
@@ -297,7 +296,6 @@ class ReleaseNotesDialogFragment : DialogFragment() {
          *
          * @throws TaskFailureException
          */
-        @OptIn(ExperimentalStdlibApi::class)
         suspend fun loadReleaseNotes() = withContext(Dispatchers.Default) {
             repository.loadNextItems(num = 10)
         }

@@ -313,7 +313,6 @@ class BookmarkPostRepository(
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun insertTagToUsedTagsList(tag: String) : List<Tag> {
         val existingTags = tags.value.orEmpty()
         return if (existingTags.none { it.text == tag }) {
