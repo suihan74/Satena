@@ -9,7 +9,6 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.CustomDigestSettingsKey
 import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
@@ -253,16 +252,6 @@ class BookmarksRepository(
     /** スター付与ボタンのタップ判定領域をブクマ項目右端部分に拡大する */
     val useAddStarEdge : Boolean by lazy {
         prefs.getBoolean(PreferenceKey.BOOKMARKS_USE_ADD_STAR_EDGE)
-    }
-
-    /** リンクをクリックしたときの処理 */
-    val linkSingleTapEntryAction by lazy {
-        TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
-    }
-
-    /** リンクを長押ししたときの処理 */
-    val linkLongTapEntryAction by lazy {
-        TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
     }
 
     /** （リンクを）「あとで読む」したときデフォルトで非公開ブクマにする */
