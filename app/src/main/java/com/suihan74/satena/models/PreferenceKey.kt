@@ -328,6 +328,9 @@ enum class PreferenceKey(
     /** タイトル部分ロングクリック時の挙動 */
     BOOKMARKS_TITLE_LONG_CLICK_BEHAVIOR(typeInfo<Int>(), TapTitleBarAction.SHOW_MENU.id),
 
+    /** ブクマ詳細画面で文字列選択時に表示されるメニューに「検索」ボタンを追加する */
+    BOOKMARKS_COMMENT_TEXT_SEARCH_BUTTON(typeInfo<Boolean>(), true),
+
     ////////////////////////////////////////
     // custom bookmarks tab
     ////////////////////////////////////////

@@ -1,14 +1,15 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
 import android.app.Activity
-import android.content.Intent
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
 import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.TooltipCompat
@@ -130,46 +131,8 @@ class BookmarkDetailFragment : Fragment() {
         // コメントの文字列選択
         // 選択テキストを画面下部で強調表示，スターを付ける際に引用文とする
         // 「検索」ボタンを追加
-        binding.comment.customSelectionActionModeCallback = object : ActionMode.Callback {
-            private var searchMenuItemId : Int = -1
-            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) : Boolean {
-                val result = runCatching {
-                    binding.comment.let {
-                        it.text.substring(it.selectionStart, it.selectionEnd)
-                    }
-                }
-                viewModel.selectedText.value = result.getOrNull()
-                return false
-            }
-            override fun onDestroyActionMode(mode: ActionMode?) {
-                viewModel.selectedText.value = null
-            }
-            override fun onCreateActionMode(mode: ActionMode?, menu: Menu?) : Boolean {
-                searchMenuItemId = menu?.add("検索")?.itemId ?: -1
-                return true
-            }
-            override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?) : Boolean {
-                return when (item?.itemId) {
-                    -1 -> false
-                    searchMenuItemId -> {
-                        val selectedText = binding.comment.let { comment ->
-                            comment.text.substring(
-                                comment.selectionStart,
-                                comment.selectionEnd
-                            )
-                        }
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("https://www.google.com/search?q=${Uri.encode(selectedText)}")
-                        )
-                        requireContext().startActivity(intent)
-                        mode?.finish()
-                        true
-                    }
-                    else -> false
-                }
-            }
-        }
+        binding.comment.customSelectionActionModeCallback =
+            viewModel.customSelectionActionCallback(requireContext(), binding.comment)
 
         // スター付与ボタン設定
         initializeStarButtons(binding)

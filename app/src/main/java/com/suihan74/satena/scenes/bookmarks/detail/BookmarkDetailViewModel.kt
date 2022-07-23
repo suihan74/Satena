@@ -1,15 +1,22 @@
 package com.suihan74.satena.scenes.bookmarks.detail
 
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.view.ActionMode
+import android.view.Menu
+import android.view.MenuItem
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import com.suihan74.hatenaLib.Bookmark
 import com.suihan74.hatenaLib.Entry
+import com.suihan74.satena.R
 import com.suihan74.satena.scenes.bookmarks.repository.BookmarksRepository
 import com.suihan74.satena.scenes.bookmarks.repository.StarRelation
 import com.suihan74.satena.scenes.bookmarks.viewModel.BookmarkMenuActionsImpl
 import com.suihan74.satena.scenes.post.BookmarkPostActivity
 import com.suihan74.utilities.exceptions.TaskFailureException
+import com.suihan74.utilities.views.SelectableTextView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -218,6 +225,60 @@ class BookmarkDetailViewModel(
             updateList(DetailTabAdapter.TabType.BOOKMARKS_TO_USER, forceUpdate = true)
         }
     }
+
+    // ------ //
+
+    /**
+     * コメントの文字列選択時処理
+     *
+     * 選択テキストを画面下部で強調表示，スターを付ける際に引用文とする
+     * 「検索」ボタンを追加
+     */
+    fun customSelectionActionCallback(
+        context: Context,
+        commentTextView: SelectableTextView
+    ) = object : ActionMode.Callback {
+        private var searchMenuItemId : Int = -1
+        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) : Boolean {
+            val result = runCatching {
+                commentTextView.let { c ->
+                    c.text.substring(c.selectionStart, c.selectionEnd)
+                }
+            }
+            selectedText.value = result.getOrNull()
+            return false
+        }
+        override fun onDestroyActionMode(mode: ActionMode?) {
+            selectedText.value = null
+        }
+        override fun onCreateActionMode(mode: ActionMode?, menu: Menu?) : Boolean {
+            if (repository.isCommentTextSearchButtonEnabled) {
+                val text = context.getText(R.string.comment_text_search_button_text)
+                searchMenuItemId = menu?.add(text)?.itemId ?: -1
+            }
+            return true
+        }
+        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?) : Boolean {
+            return when (item?.itemId) {
+                -1 -> false
+                searchMenuItemId -> {
+                    val selectedText = commentTextView.let { c ->
+                        c.text.substring(c.selectionStart, c.selectionEnd)
+                    }
+                    val intent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://www.google.com/search?q=${Uri.encode(selectedText)}")
+                    )
+                    context.startActivity(intent)
+                    mode?.finish()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    // ------ //
 
     /** ブクマをブクマするためのアクティビティを開く */
     suspend fun openPostBookmarkActivity(fragment: BookmarkDetailFragment) = withContext(Dispatchers.Main) {

@@ -274,6 +274,15 @@ class BookmarksRepository(
 
     // ------ //
 
+    /**
+     * 詳細画面でブコメの選択中部分を検索するボタンをメニューに追加する
+     */
+    val isCommentTextSearchButtonEnabled by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_COMMENT_TEXT_SEARCH_BUTTON)
+    }
+
+    // ------ //
+
     private val _staticLoading = MutableLiveData<Boolean>()
     /** 画面を停止して行うべき読み込みの発生状態 */
     val staticLoading : LiveData<Boolean> = _staticLoading
