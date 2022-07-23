@@ -6,7 +6,10 @@ import android.content.Intent
 import android.util.Log
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
-import com.suihan74.hatenaLib.*
+import com.suihan74.hatenaLib.Bookmark
+import com.suihan74.hatenaLib.Entry
+import com.suihan74.hatenaLib.Star
+import com.suihan74.hatenaLib.StarsEntry
 import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.dialogs.AlertDialogFragment
@@ -25,7 +28,10 @@ import com.suihan74.utilities.exceptions.AlreadyExistedException
 import com.suihan74.utilities.exceptions.TaskFailureException
 import com.suihan74.utilities.extensions.ContextExtensions.showToast
 import com.suihan74.utilities.showAllowingStateLoss
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 interface BookmarkMenuActions {
 
@@ -375,7 +381,6 @@ class BookmarkMenuActionsImpl(
     }
 
     /** 自分がつけたスターを取り消すダイアログを開く */
-    @OptIn(ExperimentalStdlibApi::class)
     fun openDeleteStarDialog(
         entry: Entry,
         bookmark: Bookmark,

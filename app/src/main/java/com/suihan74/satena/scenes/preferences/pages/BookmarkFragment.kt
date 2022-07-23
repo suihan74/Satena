@@ -203,6 +203,11 @@ class BookmarkViewModel(
         { i -> TagsListOrder.fromOrdinal(i) }
     )
 
+    /** ブクマ詳細画面で文字列選択時に表示されるメニューに「検索」ボタンを追加する */
+    private val isCommentTextSearchButtonEnabled = createLiveData<Boolean>(
+        PreferenceKey.BOOKMARKS_COMMENT_TEXT_SEARCH_BUTTON
+    )
+
     // ------ //
     /** アプリ独自のダイジェスト抽出機能用の設定ファイル */
     private val customDigest = mutableCustomDigestRepository(SafeSharedPreferences.create(context))
@@ -255,7 +260,6 @@ class BookmarkViewModel(
 
     // ------ //
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun createList(
         context: Context,
         fragmentManager: FragmentManager
@@ -355,6 +359,7 @@ class BookmarkViewModel(
                 fragmentManager
             )
         }
+        addPrefToggleItem(isCommentTextSearchButtonEnabled, R.string.pref_bookmarks_comment_text_search_button_desc)
 
         // --- //
 

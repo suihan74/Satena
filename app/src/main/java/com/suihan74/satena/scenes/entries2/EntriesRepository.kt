@@ -298,7 +298,7 @@ class EntriesRepository(
                             addAll(entries)
                             of += entries.size
                         }
-                    }
+                    }.distinctBy { it.id }
                 }
                 else loadHatenaEntries(tabPosition, apiCat, offset)
             }

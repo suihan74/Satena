@@ -101,7 +101,6 @@ class CustomTabSettingsDialog : DialogFragment() {
         }
 
         /** メニュー項目 */
-        @OptIn(ExperimentalStdlibApi::class)
         val items by lazy {
             buildList {
                 addAll(staticItems)

@@ -236,7 +236,6 @@ class EntryViewModel(context: Context) : ListPreferencesViewModel(context) {
         }.launchIn(fragment.lifecycleScope)
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun createList(
         context: Context,
         fragmentManager: FragmentManager

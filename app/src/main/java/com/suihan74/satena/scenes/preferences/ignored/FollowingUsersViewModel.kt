@@ -150,7 +150,6 @@ class FollowingUsersViewModel(
     private val DIALOG_MENU by lazy { "DIALOG_MENU" }
 
     /** 項目に対するメニューを開く */
-    @OptIn(ExperimentalStdlibApi::class)
     fun openMenuDialog(
         user: String,
         fragmentManager: FragmentManager

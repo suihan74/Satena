@@ -453,6 +453,9 @@
     <string name="pref_bookmarks_change_home_by_long_tapping_desc">タブ長押しで初期タブを変更する</string>
     <string name="pref_bookmarks_title_single_click_behavior_desc">タイトル部分をタップしたときの動作</string>
     <string name="pref_bookmarks_title_long_click_behavior_desc">タイトル部分をロングタップしたときの動作</string>
+    <string name="pref_bookmarks_comment_text_search_button_desc">ブクマ詳細画面でブコメの文字列選択時に表示されるメニューに「検索」ボタンを追加する</string>
+
+    <string name="comment_text_search_button_text">検索</string>
 
     <string name="post_bookmark_tags_list_order_index">名前順</string>
     <string name="post_bookmark_tags_list_order_count">使用回数順</string>

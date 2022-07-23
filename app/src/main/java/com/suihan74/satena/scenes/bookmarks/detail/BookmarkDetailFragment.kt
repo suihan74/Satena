@@ -6,7 +6,10 @@ import android.os.Bundle
 import android.transition.Fade
 import android.transition.Slide
 import android.transition.TransitionSet
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.TooltipCompat
@@ -70,7 +73,7 @@ class BookmarkDetailFragment : Fragment() {
             val entry = args.getObject<Entry>(ARG_ENTRY)!!
             val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
             val repository = bookmarksViewModel.repository
-            BookmarkDetailViewModel(this, repository, entry, bookmark)
+            BookmarkDetailViewModel(repository, entry, bookmark)
         }
     }
 
@@ -127,22 +130,9 @@ class BookmarkDetailFragment : Fragment() {
 
         // コメントの文字列選択
         // 選択テキストを画面下部で強調表示，スターを付ける際に引用文とする
-        binding.comment.customSelectionActionModeCallback = object : ActionMode.Callback {
-            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) : Boolean {
-                val result = runCatching {
-                    binding.comment.let {
-                        it.text.substring(it.selectionStart, it.selectionEnd)
-                    }
-                }
-                viewModel.selectedText.value = result.getOrNull()
-                return false
-            }
-            override fun onDestroyActionMode(mode: ActionMode?) {
-                viewModel.selectedText.value = null
-            }
-            override fun onCreateActionMode(mode: ActionMode?, menu: Menu?) = true
-            override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?) = false
-        }
+        // 「検索」ボタンを追加
+        binding.comment.customSelectionActionModeCallback =
+            viewModel.customSelectionActionCallback(requireContext(), binding.comment)
 
         // スター付与ボタン設定
         initializeStarButtons(binding)

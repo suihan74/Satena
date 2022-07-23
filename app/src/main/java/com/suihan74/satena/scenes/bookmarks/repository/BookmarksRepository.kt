@@ -9,7 +9,6 @@ import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.CustomDigestSettingsKey
 import com.suihan74.satena.models.EntryReadActionType
 import com.suihan74.satena.models.PreferenceKey
-import com.suihan74.satena.models.TapEntryAction
 import com.suihan74.satena.models.readEntry.ReadEntryCondition
 import com.suihan74.satena.models.userTag.UserTagDao
 import com.suihan74.satena.modifySpecificUrls
@@ -255,16 +254,6 @@ class BookmarksRepository(
         prefs.getBoolean(PreferenceKey.BOOKMARKS_USE_ADD_STAR_EDGE)
     }
 
-    /** リンクをクリックしたときの処理 */
-    val linkSingleTapEntryAction by lazy {
-        TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_SINGLE_TAP_ACTION))
-    }
-
-    /** リンクを長押ししたときの処理 */
-    val linkLongTapEntryAction by lazy {
-        TapEntryAction.fromId(prefs.getInt(PreferenceKey.BOOKMARK_LINK_LONG_TAP_ACTION))
-    }
-
     /** （リンクを）「あとで読む」したときデフォルトで非公開ブクマにする */
     val privateReadLater : Boolean
         get() = prefs.getBoolean(PreferenceKey.ENTRY_PRIVATE_READ_LATER)
@@ -281,6 +270,15 @@ class BookmarksRepository(
         PreferenceLiveData(prefs, PreferenceKey.BOOKMARKS_TITLE_LONG_CLICK_BEHAVIOR) { p, key ->
             TapTitleBarAction.fromId(p.getInt(key))
         }
+    }
+
+    // ------ //
+
+    /**
+     * 詳細画面でブコメの選択中部分を検索するボタンをメニューに追加する
+     */
+    val isCommentTextSearchButtonEnabled by lazy {
+        prefs.getBoolean(PreferenceKey.BOOKMARKS_COMMENT_TEXT_SEARCH_BUTTON)
     }
 
     // ------ //
@@ -478,7 +476,6 @@ class BookmarksRepository(
     /**
      * ブクマエントリにユーザーの非公開ブクマを挿入する
      */
-    @OptIn(ExperimentalStdlibApi::class)
     private fun insertMyBookmark(bookmarksEntry: BookmarksEntry) : BookmarksEntry {
         val bookmarkData = entry.value?.bookmarkedData ?: return bookmarksEntry
         val user = bookmarkData.user
@@ -779,7 +776,6 @@ class BookmarksRepository(
     /**
      * 指定ブクマのスター数を更新する
      */
-    @OptIn(ExperimentalStdlibApi::class)
     suspend fun updateStarCounts(bookmark: Bookmark) {
         val starsEntry = getStarsEntry(bookmark).value ?: return
         val user = bookmark.user
@@ -860,7 +856,6 @@ class BookmarksRepository(
      * @throws TimeoutException
      * @throws ForbiddenException
      */
-    @OptIn(ExperimentalStdlibApi::class)
     suspend fun loadRecentBookmarks(
         additionalLoading: Boolean = false
     ) = withContext(Dispatchers.Default) {
@@ -1000,7 +995,6 @@ class BookmarksRepository(
     /**
      * ユーザー定義のブックマークダイジェストを生成する
      */
-    @OptIn(ExperimentalStdlibApi::class)
     suspend fun loadUserCustomizedDigest() : List<BookmarkWithStarCount> {
         val maxNumOfElements = customDigest.maxNumOfElements.value ?: return emptyList()
         val bookmarks =
