@@ -16,7 +16,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class BookmarkDetailViewModel(
-    val fragment: BookmarkDetailFragment,
     val repository : BookmarksRepository,
     val entry : Entry,
     bookmark : Bookmark

@@ -72,7 +72,7 @@ class BookmarkDetailFragment : Fragment() {
             val entry = args.getObject<Entry>(ARG_ENTRY)!!
             val bookmark = args.getObject<Bookmark>(ARG_BOOKMARK)!!
             val repository = bookmarksViewModel.repository
-            BookmarkDetailViewModel(this, repository, entry, bookmark)
+            BookmarkDetailViewModel(repository, entry, bookmark)
         }
     }
 
