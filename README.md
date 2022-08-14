@@ -1,22 +1,15 @@
 # Satena
+## 言い訳
+バージョン2.0開発作業中のため、現在こちらへの機能追加は一旦停止しています。（新しくバグなど見つかったら修正します）
+
+- Jetpack Compose への置き換え
+
+- 全コードの刷新
+
+などを余暇にチマチマやっているので多分とても時間がかかります。
+
 ## なにこれ
 [はてなブックマーク](https://b.hatena.ne.jp/)をいい感じに閲覧するためのAndroidアプリです．
 Playストアのページは[こちら](https://play.google.com/store/apps/details?id=com.suihan74.satena)
 
 Androidの要求バージョンは6.0(M)以上としています．
-
-## ファイルの場所など
-* Kotlinコード
-  * [com.suihan74.*](/app/src/main/java/com/suihan74)
-    * [はてなAPI](/app/src/main/java/com/suihan74/hatenaLib)
-    * [アプリ部分](/app/src/main/java/com/suihan74/satena)
-      * [モデル](/app/src/main/java/com/suihan74/satena/models)
-      * [各画面](/app/src/main/java/com/suihan74/satena/scenes)
-    * [ユーティリティ・拡張](/app/src/main/java/com/suihan74/utilities)
-* 画面レイアウト
-  * [res/layout](/app/src/main/res/layout)
-  * [res/layout-land](/app/src/main/res/layout-land)
-* ビュー中の文字列・スタイルなどのリソース
-  * [res/values](/app/src/main/res/values)
-* ベクタイメージ
-  * [res/drawable](/app/src/main/res/drawable)
