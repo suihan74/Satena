@@ -50,6 +50,8 @@ class BookmarkPostViewModel(
 
     val postFacebook = repository.postFacebook
 
+    val share = repository.share
+
     /** コメント長 */
     val commentLength = MutableLiveData(0)
 
@@ -112,7 +114,8 @@ class BookmarkPostViewModel(
             private = private.value ?: false,
             postTwitter = postTwitter.value ?: false,
             postMastodon = postMastodon.value ?: false,
-            postFacebook = postFacebook.value ?: false
+            postFacebook = postFacebook.value ?: false,
+            share = share.value ?: false,
         )
 
     /** 編集データを再現する */
@@ -126,6 +129,7 @@ class BookmarkPostViewModel(
         postTwitter.value = editData.postTwitter
         postMastodon.value = editData.postMastodon
         postFacebook.value = editData.postFacebook
+        share.value = editData.share
     }
 
     /** 初期化 */
@@ -239,7 +243,7 @@ class BookmarkPostViewModel(
         nowLoading.value = true
 
         runCatching {
-            repository.postBookmark(editData)
+            repository.postBookmark(context, editData)
         }.onSuccess { (bookmarkResult, err) ->
             if (err == null) context.showToast(R.string.msg_post_bookmark_succeeded)
             else context.showToast(R.string.msg_post_mastodon_failed)

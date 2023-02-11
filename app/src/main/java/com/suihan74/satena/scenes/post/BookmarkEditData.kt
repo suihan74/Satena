@@ -22,5 +22,8 @@ data class BookmarkEditData (
     val postMastodon : Boolean,
 
     /** Facebookに投稿する */
-    val postFacebook : Boolean
+    val postFacebook : Boolean,
+
+    /** 投稿後に共有する */
+    val share : Boolean
 )

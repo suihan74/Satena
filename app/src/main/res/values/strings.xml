@@ -631,6 +631,7 @@
     <string name="hint_mastodon_toggle">Mastodonに投稿します</string>
     <string name="hint_twitter_toggle">Twitterに投稿します</string>
     <string name="hint_facebook_toggle">Facebookに投稿します</string>
+    <string name="hint_share_toggle">投稿後に「共有」します</string>
     <string name="hint_private_toggle">非公開でブクマします</string>
     <string name="hint_private_toggle_on">非公開ブクマ: ON</string>
     <string name="hint_private_toggle_off">非公開ブクマ: OFF</string>
@@ -646,6 +647,7 @@
     <string name="search_query_hint">検索キーワード</string>
     <string name="add_new_tag_hint">タグを追加</string>
     <string name="adding_tag_dialog_close_button_text">閉じる</string>
+    <string name="share_after_post_title">投稿内容を共有</string>
 
     <!-- ブコメ通報ダイアログ -->
     <string name="report_bookmark_dialog_title">ブコメを通報</string>
