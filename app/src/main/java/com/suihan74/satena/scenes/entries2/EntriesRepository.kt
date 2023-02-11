@@ -789,7 +789,7 @@ class EntriesRepository(
         entries: List<Entry>
     ) : Pair<List<Entry>, List<Entry>> = withContext(Dispatchers.IO) {
         fun filterIgnoredEntries(entry: Entry) : Boolean =
-            ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.isMatched(entry) } == true
+            ignoredEntriesRepo.ignoredEntriesForEntries.value?.any { it.match(entry) } == true
 
         val activeEntries = ArrayList<Entry>()
         val inactiveEntries = ArrayList<Entry>()

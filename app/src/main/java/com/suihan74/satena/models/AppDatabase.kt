@@ -39,7 +39,7 @@ import java.time.OffsetDateTime
         ReadEntry::class,
         FavoriteSite::class
     ],
-    version = 10
+    version = 11
 )
 @TypeConverters(
     LocalDateTimeConverter::class,
@@ -76,7 +76,8 @@ fun RoomDatabase.Builder<AppDatabase>.migrate() : RoomDatabase.Builder<AppDataba
         Migration8to9(),
         Migration9to10(),
         // ------ //
-        Migration7to10()
+        Migration7to10(),
+        Migration10to11()
     )
     .fallbackToDestructiveMigration()
 
@@ -249,5 +250,20 @@ class Migration7to10 : Migration(7, 10) {
     /** v9: eid=0の既読エントリ情報を削除する */
     private fun deleteReadEntryHasInvalidEid(db: SupportSQLiteDatabase) {
         db.execSQL("DELETE FROM `read_entry` WHERE eid = 0")
+    }
+}
+
+/**
+ * v1.11.3:
+ */
+class Migration10to11 : Migration(10, 11) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        addIgnoredEntryAsRegex(database)
+        Log.i("migration10to11", "completed")
+    }
+
+    /** NG設定に正規表現モードを追加 */
+    private fun addIgnoredEntryAsRegex(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `ignored_entry` ADD `asRegex` INTEGER NOT NULL DEFAULT 0")
     }
 }

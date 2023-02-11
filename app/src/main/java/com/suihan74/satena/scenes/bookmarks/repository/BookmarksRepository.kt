@@ -575,17 +575,13 @@ class BookmarksRepository(
      */
     private suspend fun checkIgnored(user: String) : Boolean {
         if (isIgnored(user)) return true
-        return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w -> user.contains(w) }
+        return ignoredEntriesRepo.ignoredEntriesForBookmarks.any { user.contains(it.query) }
     }
 
     /** ブクマが非表示対象かを判別する */
     private suspend fun checkIgnored(bookmark: Bookmark) : Boolean {
         if (isIgnored(bookmark.user)) return true
-        return ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
-            bookmark.commentRaw.contains(w)
-                    || bookmark.user.contains(w)
-                    || bookmark.tags.any { t -> t.contains(w) }
-        }
+        return ignoredEntriesRepo.ignoredEntriesForBookmarks.any { it.match(bookmark) }
     }
 
     /** ブクマが非表示対象かを判別する */
@@ -593,16 +589,11 @@ class BookmarksRepository(
         if (isIgnored(bookmark.user)) true
         else containsNGWords(bookmark)
 
-    fun containsNGWords(bookmark: BookmarkWithStarCount) : Boolean =
-        containsNGWords(bookmark.comment, bookmark.user, bookmark.tags)
+    private fun containsNGWords(bookmark: BookmarkWithStarCount) : Boolean =
+        ignoredEntriesRepo.ignoredEntriesForBookmarks.any { it.match(bookmark) }
 
     fun containsNGWords(bookmark: Bookmark) : Boolean =
-        containsNGWords(bookmark.comment, bookmark.user, bookmark.tags)
-
-    private fun containsNGWords(comment: String, user: String, tags: List<String>) : Boolean =
-        ignoredEntriesRepo.ignoredWordsForBookmarks.any { w ->
-            comment.contains(w) || user.contains(w) || tags.any { t -> t.contains(w) }
-        }
+        ignoredEntriesRepo.ignoredEntriesForBookmarks.any { it.match(bookmark) }
 
     /** 非表示対象を除外する */
     private suspend fun filterIgnored(src: List<BookmarkWithStarCount>) : List<Bookmark> {
