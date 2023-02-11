@@ -1,11 +1,14 @@
 package com.suihan74.satena.scenes.post
 
+import android.content.Context
+import android.content.Intent
 import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.BookmarkResult
 import com.suihan74.hatenaLib.ConnectionFailureException
 import com.suihan74.hatenaLib.Entry
 import com.suihan74.hatenaLib.Tag
+import com.suihan74.satena.R
 import com.suihan74.satena.SatenaApplication
 import com.suihan74.satena.models.PreferenceKey
 import com.suihan74.satena.models.Theme
@@ -100,6 +103,8 @@ class BookmarkPostRepository(
     val postMastodon = MutableLiveData(false)
 
     val postFacebook = MutableLiveData(false)
+
+    val share = MutableLiveData(false)
 
     /** 使用したことがあるタグのリスト */
     val tags = MutableLiveData<List<Tag>>()
@@ -379,6 +384,7 @@ class BookmarkPostRepository(
      * @throws PostingMastodonFailureException Mastodonへの投稿失敗(ブクマは自体は成功)
      */
     suspend fun postBookmark(
+        context: Context,
         editData: BookmarkEditData
     ) : Pair<BookmarkResult, PostingMastodonFailureException?> = withContext(Dispatchers.Default) {
         val entry = editData.entry
@@ -441,6 +447,17 @@ class BookmarkPostRepository(
             }.onFailure {
                 mstdnException = PostingMastodonFailureException(cause = it)
             }
+        }
+
+        if (editData.share) {
+            val status =
+                if (bookmarkResult.comment.isBlank()) "\"${entry.title}\" ${entry.url}"
+                else "${bookmarkResult.comment} / \"${entry.title}\" ${entry.url}"
+            val intent = Intent(Intent.ACTION_SEND).also {
+                it.putExtra(Intent.EXTRA_TEXT, status)
+                it.type = "text/plain"
+            }
+            context.startActivity(Intent.createChooser(intent, context.getString(R.string.share_after_post_title)))
         }
 
         return@withContext bookmarkResult to mstdnException
