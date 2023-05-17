@@ -2,7 +2,6 @@ package com.suihan74.satena.scenes.post
 
 import android.content.Context
 import android.content.Intent
-import android.content.Intent
 import android.webkit.URLUtil
 import androidx.lifecycle.MutableLiveData
 import com.suihan74.hatenaLib.BookmarkResult

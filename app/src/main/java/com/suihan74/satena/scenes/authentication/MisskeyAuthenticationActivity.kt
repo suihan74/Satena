@@ -65,6 +65,7 @@ class MisskeyAuthenticationActivity : AppCompatActivity() {
                 Log.i("misskey", "authorization has been completed")
                 appCredential = null
                 session = null
+                finish()
                 showToast(R.string.pref_account_misskey_msg_auth_succeeded)
             }.onFailure {
                 Log.e("misskey", "authorization failure")

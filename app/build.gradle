@@ -113,6 +113,9 @@ dependencies {
     implementation "com.github.sys1yagi.mastodon4j:mastodon4j:$mastodon4j_version"
     implementation "com.github.sys1yagi.mastodon4j:mastodon4j-rx:$mastodon4j_version"
 
+    // misskey client
+    implementation "com.github.suihan74:misskeyclient-kotlin:0.0.7"
+
     // http client
     def okhttp_version = '4.9.0'
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
